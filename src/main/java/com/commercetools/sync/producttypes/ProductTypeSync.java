@@ -666,7 +666,6 @@ public class ProductTypeSync
                         CTP_PRODUCT_TYPE_UPDATE_FAILED,
                         key,
                         "Failed to fetch from CTP while retrying after concurrency modification.");
-                // todo: add newProductType or updateActions to handleError
                 handleError(errorMessage, exception, 1, oldProductType, null, null);
                 return CompletableFuture.completedFuture(null);
               }
@@ -681,7 +680,6 @@ public class ProductTypeSync
                                 key,
                                 "Not found when attempting to fetch while retrying "
                                     + "after concurrency modification.");
-                        // todo: add newProductType or updateActions to handleError
                         handleError(errorMessage, null, 1, oldProductType, null, null);
                         return CompletableFuture.completedFuture(null);
                       });

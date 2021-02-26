@@ -132,8 +132,6 @@ public final class ProductITUtils {
    * Gets the supplied {@link ProductDraft} with the price reference attached on all its variants'
    * prices.
    *
-   * <p>TODO: GITHUB ISSUE#152
-   *
    * @param productDraft the product draft to attach the channel reference on its variants' prices.
    * @param channelReference the channel reference to attach on the product draft's variants'
    *     prices.
@@ -179,8 +177,6 @@ public final class ProductITUtils {
    * Builds a list of {@link PriceDraft} elements which are identical to the supplied {@link
    * ProductVariantDraft}'s list of prices and sets the channel and custom type references on the
    * prices if they are not null.
-   *
-   * <p>TODO: GITHUB ISSUE#152
    *
    * @param productVariant the product variant to create an identical price list from.
    * @param channelReference the channel reference to set on the resulting price drafts.

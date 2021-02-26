@@ -432,9 +432,6 @@ public final class ProductUpdateActionUtils {
         new HashMap<>(oldProductVariantsNoMaster);
     oldProductVariantsWithMaster.put(oldMasterVariant.getKey(), oldMasterVariant);
 
-    // TODO: Should use getAllVariants as soon as
-    // https://github.com/commercetools/commercetools-sync-java/issues/13
-    // is fixed.
     final List<ProductVariantDraft> newAllProductVariants =
         new ArrayList<>(newProduct.getVariants());
     newAllProductVariants.add(newProduct.getMasterVariant());

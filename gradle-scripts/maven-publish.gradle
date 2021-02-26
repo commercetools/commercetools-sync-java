@@ -1,48 +1,45 @@
-// maven-specific publishing settings
-def pomConfig = {
-    licenses {
-        license {
-            name "The Apache Software License, Version 2.0"
-            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
-            distribution "repo"
-        }
-    }
-    scm {
-        connection "scm:git:$scmHttpsUrl"
-        developerConnection "scm:git:$scmSshUrl"
-        url "$scmProjectUrl"
-    }
-    developers {
-        developer {
-            id 'commercetools'
-            name 'commercetools Professional Services'
-            url 'https://github.com/commercetools'
-            email 'ps-dev@commercetools.com'
-        }
-    }
-}
+group = rootProject.group
+version = rootProject.version
+
+
 publishing {
     publications {
-        Production(MavenPublication) {
+        mavenJava(MavenPublication) {
+            artifactId = project.name
             from components.java
             artifact sourcesJar
             artifact javadocJar
-            groupId rootProject.group
-            artifactId project.name
-            version rootProject.version
 
-            pom.withXml {
-                def root = asNode()
-                root.appendNode('description', project.description)
-                root.appendNode('name', project.name)
-                root.appendNode('url', scmHttpsUrl)
-                root.children().last() + pomConfig
+            pom {
+                name = project.name
+                description = project.description
+                url = scmHttpsUrl
+                licenses {
+                    license {
+                        name = "The Apache Software License, Version 2.0"
+                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                        distribution = "repo"
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'commercetools'
+                        name = 'commercetools Professional Services'
+                        url = 'https://github.com/commercetools'
+                        email = 'ps-dev@commercetools.com'
+                    }
+                }
+                scm {
+                    connection = "scm:git:$scmHttpsUrl"
+                    developerConnection = "scm:git:$scmSshUrl"
+                    url = "$scmProjectUrl"
+                }
             }
         }
     }
     repositories {
         maven {
-            name = "OSSRH"
+            name = "maven"
             def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
             def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
             url = rootProject.version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
@@ -51,5 +48,19 @@ publishing {
                 password = System.getenv("MAVEN_PASSWORD")
             }
         }
+    }
+}
+
+signing {
+    def signingKey = System.getenv("PGP_KEY")
+    def signingPassword = System.getenv("PGP_PASSWORD")
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign publishing.publications.mavenJava
+}
+
+
+javadoc {
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
     }
 }

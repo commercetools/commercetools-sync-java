@@ -149,7 +149,6 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
       @Nullable final List<UpdateAction<State>> updateActions,
       final int failedTimes) {
     syncOptions.applyErrorCallback(syncException, entry, draft, updateActions);
-    ;
     statistics.incrementFailed(failedTimes);
   }
 
