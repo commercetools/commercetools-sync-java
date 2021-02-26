@@ -6,6 +6,8 @@ plugins {
     id 'ru.vyarus.mkdocs' version '2.0.1'
     id "com.github.spotbugs" version "4.6.2"
     id 'com.diffplug.spotless' version '5.9.0'
+    id 'io.codearte.nexus-staging' version '0.22.0'
+
 }
 
 ext{
@@ -16,14 +18,14 @@ ext{
     pmdVersion = '6.14.0'
     jacocoVersion = '0.8.4'
     caffeineVersion = '2.8.5'
+    nexusStagingPluginVersion = '0.22.0'
 }
-
+apply from: "$rootDir/gradle-scripts/repositories.gradle"
 apply from: "$rootDir/gradle-scripts/plugins.gradle"
 apply from: "$rootDir/gradle-scripts/extensions.gradle"
 apply from: "$rootDir/gradle-scripts/project-info.gradle"
 apply from: "$rootDir/gradle-scripts/package.gradle"
 apply from: "$rootDir/gradle-scripts/java-compile.gradle"
-apply from: "$rootDir/gradle-scripts/repositories.gradle"
 apply from: "$rootDir/gradle-scripts/integration-tests.gradle"
 apply from: "$rootDir/gradle-scripts/test.gradle"
 apply from: "$rootDir/gradle-scripts/benchmark.gradle"
@@ -32,6 +34,7 @@ apply from: "$rootDir/gradle-scripts/pmd.gradle"
 apply from: "$rootDir/gradle-scripts/jacoco.gradle"
 apply from: "$rootDir/gradle-scripts/spotbugs.gradle"
 apply from: "$rootDir/gradle-scripts/maven-publish.gradle"
+apply from: "$rootDir/gradle-scripts/nexus-staging.gradle"
 apply from: "$rootDir/gradle-scripts/javadocs-publish.gradle"
 apply from: "$rootDir/gradle-scripts/set-library-version.gradle"
 apply from: "$rootDir/gradle-scripts/execution-order.gradle"
