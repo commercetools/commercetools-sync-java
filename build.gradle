@@ -6,6 +6,8 @@ plugins {
     id 'ru.vyarus.mkdocs' version '2.0.1'
     id "com.github.spotbugs" version "4.6.0"
     id 'com.diffplug.spotless' version '5.9.0'
+    id 'io.codearte.nexus-staging' version '0.22.0'
+
 }
 
 ext{
@@ -18,13 +20,12 @@ ext{
     caffeineVersion = '2.8.5'
     nexusStagingPluginVersion = '0.22.0'
 }
-
+apply from: "$rootDir/gradle-scripts/repositories.gradle"
 apply from: "$rootDir/gradle-scripts/plugins.gradle"
 apply from: "$rootDir/gradle-scripts/extensions.gradle"
 apply from: "$rootDir/gradle-scripts/project-info.gradle"
 apply from: "$rootDir/gradle-scripts/package.gradle"
 apply from: "$rootDir/gradle-scripts/java-compile.gradle"
-apply from: "$rootDir/gradle-scripts/repositories.gradle"
 apply from: "$rootDir/gradle-scripts/integration-tests.gradle"
 apply from: "$rootDir/gradle-scripts/test.gradle"
 apply from: "$rootDir/gradle-scripts/benchmark.gradle"
@@ -51,5 +52,4 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterApiVersion}"
     testRuntimeOnly "org.junit.vintage:junit-vintage-engine:${jupiterApiVersion}"
     testImplementation "org.assertj:assertj-core:${assertjVersion}"
-    classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:${nexusStagingPluginVersion}"
 }
