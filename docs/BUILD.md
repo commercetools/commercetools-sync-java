@@ -3,9 +3,8 @@
 **Table of Contents** 
 
 - [Release workflow](#release-workflow)
-  - [Step 1: Release](#step-1-release)
-  - [Step 2: Publish](#step-2-publish)
-  - [Step 3: Sync](#step-3-sync)
+  - [Step 1: Pull request](#step-1-pull-request)
+  - [Step 2: Release library in Github](#step-2-release-library-in-github)
   - [Final Step](#final-step)
     - [Checklist](#checklist)
 
@@ -13,9 +12,9 @@
 
 # Release workflow
 
-The main goal of the build process is to publish the artifacts to public repositories [JCenter](https://bintray.com/commercetools/maven/commercetools-sync-java) and [Maven Central](https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java).
+The main goal of the build process is to publish the artifacts to public repository [Maven Central](https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java).
      
-## Step 1: Release
+## Step 1: Pull request
 
 Create a new PR for the new release: 
 - Increment the release version to the new library version, please follow the [semantic versioning](https://semver.org/) for finding the new version.
@@ -26,7 +25,7 @@ Create a new PR for the new release:
 For example PR, see: https://github.com/commercetools/commercetools-sync-java/pull/412
 
 ------
-    
+## Step 2: Release library in Github   
 To release the library, you need to ["create a new release"](https://github.com/commercetools/commercetools-sync-java/releases/new) with Github, 
 describe the new release as below and publish it. 
 
@@ -39,30 +38,12 @@ For example, define the link to the release notes pointing to a released version
 
 > Additionally define important changes, breaking changes or important new features into the description.
 
-After the release build status is **success** follow the next steps below. Check [here](https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ADEPLOY)
- for github action build status.
-
-## Step 2: Publish
-
-- Go to [https://bintray.com/commercetools/maven/commercetools-sync-java](https://bintray.com/commercetools/maven/commercetools-sync-java)
-- Click the _Publish_ button as shown below:
-
-<img width="600" alt="Screenshot-1" src="https://user-images.githubusercontent.com/3469524/86367568-671ad600-bc7c-11ea-84e9-786f9f850d96.png">
-
-## Step 3: Sync
-
-- Click to the Maven Central tab.
-- Enter the commercetools Sonatype Maven Central API Key and password (into User token key and User token password fields)
-- Click the _Sync_ button and check the `Sync Status`. 
-
-<img width="600" alt="Screenshot-2" src="https://user-images.githubusercontent.com/3469524/86331559-906e3e80-bc49-11ea-9390-e813bc12c163.png">
+The creation of a github release triggers a [github action](https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ACD), which will deploy the library to [Maven Central](https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java).
 
 ## Final Step
-
-Ensure the new version is publicly available at [JCenter](https://bintray.com/commercetools/maven/commercetools-sync-java) and [Maven Central](https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java). 
+After the release build status is **success** ensure that the new version is publicly available at [Maven Central](https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java). 
 
 ### Checklist 
 
-- [Publish](#step-2-publish) and [Sync](#step-3-sync) completed without an issue.
-- The new version is available in the bintray: [https://dl.bintray.com/commercetools/maven/com/commercetools/commercetools-sync-java/](https://dl.bintray.com/commercetools/maven/com/commercetools/commercetools-sync-java/)
+- [Publish] completed without an issue.
 - The new version is available in the maven: [https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java/](https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java/)
