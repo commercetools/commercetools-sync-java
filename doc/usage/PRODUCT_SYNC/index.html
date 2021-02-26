@@ -685,7 +685,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/3.2.0/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/4.0.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -1002,7 +1002,7 @@ against a <a href="https://docs.commercetools.com/http-api-projects-products.htm
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
 <h4 id="sphereclient">SphereClient<a class="headerlink" href="#sphereclient" title="Permanent link">&para;</a></h4>
-<p>Use the <a href="https://github.com/commercetools/commercetools-sync-java/blob/3.2.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45">ClientConfigurationUtils</a> which apply the best practices for <code>SphereClient</code> creation.
+<p>Use the <a href="https://github.com/commercetools/commercetools-sync-java/blob/4.0.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45">ClientConfigurationUtils</a> which apply the best practices for <code>SphereClient</code> creation.
 If you have custom requirements for the sphere client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
 <div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">SphereClientConfig</span> <span class="n">clientConfig</span> <span class="o">=</span> <span class="n">SphereClientConfig</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;project-key&quot;</span><span class="p">,</span> <span class="s">&quot;client-id&quot;</span><span class="p">,</span> <span class="s">&quot;client-secret&quot;</span><span class="p">);</span>
 
@@ -1065,7 +1065,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 </tr>
 <tr>
 <td align="left"><code>variants.prices.customerGroup</code></td>
-<td align="left">Reference to a CustomerGroup</td>
+<td align="left">ResourceIdentifier to a CustomerGroup</td>
 </tr>
 <tr>
 <td align="left"><code>variants.prices.custom.type</code></td>
@@ -1086,7 +1086,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.</p>
 </blockquote>
 <h5 id="syncing-from-a-commercetools-project">Syncing from a commercetools project<a class="headerlink" href="#syncing-from-a-commercetools-project" title="Permanent link">&para;</a></h5>
-<p>When syncing from a source commercetools project, you can use <a href="https://commercetools.github.io/commercetools-sync-java/v/3.2.0/com/commercetools/sync/products/utils/ProductReferenceResolutionUtils.html#mapToProductDrafts-java.util.List-"><code>mapToProductDrafts</code></a>
+<p>When syncing from a source commercetools project, you can use <a href="https://commercetools.github.io/commercetools-sync-java/v/4.0.0/com/commercetools/sync/products/utils/ProductReferenceResolutionUtils.html#mapToProductDrafts-java.util.List-"><code>mapToProductDrafts</code></a>
 the method that maps from a <code>Product</code> to <code>ProductDraft</code> in order to make them ready for reference resolution by the sync, for example: </p>
 <div class="codehilite"><pre><span></span><code><span class="c1">// Build a ProductQuery for fetching products from a source CTP project with all the needed references expanded for the sync:</span>
 <span class="kd">final</span> <span class="n">ProductQuery</span> <span class="n">productQueryWithReferenceExpanded</span> <span class="o">=</span> <span class="n">ProductReferenceResolutionUtils</span><span class="p">.</span><span class="na">buildProductQuery</span><span class="p">();</span>
@@ -1119,17 +1119,17 @@ the method that maps from a <code>Product</code> to <code>ProductDraft</code> in
         <span class="p">.</span><span class="na">state</span><span class="p">(</span><span class="n">ResourceIdentifier</span><span class="p">.</span><span class="na">ofKey</span><span class="p">(</span><span class="s">&quot;tax-category-key&quot;</span><span class="p">))</span>
         <span class="p">.</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
+<p><code>java
+ final PriceDraft priceDraft = PriceDraftBuilder
+    of(MoneyImpl.of("20", "EUR"))
+    .channel(ResourceIdentifier.ofKey("channel-key"))
+    .customerGroup(ResourceIdentifier.ofKey("customer-group-key"))
+    .custom(CustomFieldsDraft.ofTypeKeyAndJson("type-key", emptyMap()))
+    .build();</code></p>
 <ul>
-<li>Some references in the product like <code>customerGroup</code> of a price and variant attributes with type <code>ReferenceType</code> do not support the <code>ResourceIdentifier</code> yet, 
-for those references you have to provide the <code>key</code> value on the <code>id</code> field of the reference. This means that calling <code>getId()</code> on the reference should return its <code>key</code>. </li>
+<li>The product variant attributes with a type <code>ReferenceType</code> do not support the <code>ResourceIdentifier</code> yet, for those 
+references you have to provide the <code>key</code>  value on the <code>id</code> field of the reference. This means that calling <code>getId()</code> on the reference should return its <code>key</code>.</li>
 </ul>
-<div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">PriceDraft</span> <span class="n">priceDraft</span> <span class="o">=</span> <span class="n">PriceDraftBuilder</span>
-    <span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">MoneyImpl</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;20&quot;</span><span class="p">,</span> <span class="s">&quot;EUR&quot;</span><span class="p">))</span>
-    <span class="p">.</span><span class="na">channel</span><span class="p">(</span><span class="n">ResourceIdentifier</span><span class="p">.</span><span class="na">ofKey</span><span class="p">(</span><span class="s">&quot;channel-key&quot;</span><span class="p">))</span>
-    <span class="p">.</span><span class="na">customerGroup</span><span class="p">(</span><span class="n">CustomerGroup</span><span class="p">.</span><span class="na">referenceOfId</span><span class="p">(</span><span class="s">&quot;customer-group-key&quot;</span><span class="p">))</span> <span class="c1">// note that customer group key provided in the id field </span>
-    <span class="p">.</span><span class="na">custom</span><span class="p">(</span><span class="n">CustomFieldsDraft</span><span class="p">.</span><span class="na">ofTypeKeyAndJson</span><span class="p">(</span><span class="s">&quot;type-key&quot;</span><span class="p">,</span> <span class="n">emptyMap</span><span class="p">()))</span>
-    <span class="p">.</span><span class="na">build</span><span class="p">();</span>
-</code></pre></div>
 <div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">ObjectNode</span> <span class="n">productReference</span> <span class="o">=</span> <span class="n">JsonNodeFactory</span><span class="p">.</span><span class="na">instance</span><span class="p">.</span><span class="na">objectNode</span><span class="p">();</span>
 <span class="n">productReference</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&quot;typeId&quot;</span><span class="p">,</span> <span class="n">Product</span><span class="p">.</span><span class="na">referenceTypeId</span><span class="p">());</span>
 <span class="n">productReference</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&quot;id&quot;</span><span class="p">,</span> <span class="s">&quot;product-key&quot;</span><span class="p">);</span> <span class="c1">// note that reference key provided in the id field </span>
