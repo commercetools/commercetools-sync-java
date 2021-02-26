@@ -219,9 +219,6 @@ public final class PriceReferenceResolver
    * identifier to return a {@link CompletionStage} which contains the same instance of draft
    * builder with the resolved customer group resource identifier.
    *
-   * <p>Note: The key of the customer group reference taken from the value of the key field of the
-   * resource identifier.
-   *
    * @param draftBuilder the priceDraftBuilder to resolve its customer group reference.
    * @return a {@link CompletionStage} that contains as a result a new price draft builder instance
    *     with resolved customer group resource identifier or no customer group resource identifier
