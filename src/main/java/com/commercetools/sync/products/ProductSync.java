@@ -62,9 +62,9 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, ProductSyncOptions> {
   private static final String CTP_PRODUCT_FETCH_FAILED =
-      "Failed to fetch existing products with keys:" + " '%s'.";
+      "Failed to fetch existing products with keys: '%s'.";
   private static final String UNRESOLVED_REFERENCES_STORE_FETCH_FAILED =
-      "Failed to fetch ProductDrafts waiting to " + "be resolved with keys '%s'.";
+      "Failed to fetch ProductDrafts waiting to be resolved with keys '%s'.";
   private static final String UPDATE_FAILED = "Failed to update Product with key: '%s'. Reason: %s";
   private static final String FAILED_TO_PROCESS =
       "Failed to process the ProductDraft with key:'%s'. Reason: %s";

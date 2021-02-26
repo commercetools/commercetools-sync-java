@@ -4,13 +4,13 @@ plugins {
     id 'org.ajoberstar.grgit' version '4.1.0'
     id "com.github.ben-manes.versions" version '0.36.0'
     id 'ru.vyarus.mkdocs' version '2.0.1'
-    id "com.github.spotbugs" version "4.6.0"
+    id "com.github.spotbugs" version "4.6.2"
     id 'com.diffplug.spotless' version '5.9.0'
 }
 
 ext{
     commercetoolsJvmSdkVersion = '1.59.0'
-    mockitoJunitJupiterVersion = '3.7.7'
+    mockitoJunitJupiterVersion = '3.8.0'
     jupiterApiVersion = '5.7.0'
     assertjVersion = '3.19.0'
     pmdVersion = '6.14.0'
@@ -40,7 +40,7 @@ apply from: "$rootDir/gradle-scripts/spotless.gradle"
 
 dependencies {
     implementation "com.commercetools.sdk.jvm.core:commercetools-models:${commercetoolsJvmSdkVersion}"
-    implementation "com.commercetools.sdk.jvm.core:commercetools-java-client:${commercetoolsJvmSdkVersion}"
+    implementation "com.commercetools.sdk.jvm.core:commercetools-java-client-ahc-2_5:${commercetoolsJvmSdkVersion}"
     implementation "com.commercetools.sdk.jvm.core:commercetools-convenience:${commercetoolsJvmSdkVersion}"
     implementation "com.github.ben-manes.caffeine:caffeine:${caffeineVersion}"
     testImplementation "org.mockito:mockito-junit-jupiter:${mockitoJunitJupiterVersion}"

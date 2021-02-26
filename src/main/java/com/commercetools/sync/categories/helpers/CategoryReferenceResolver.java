@@ -114,7 +114,7 @@ public final class CategoryReferenceResolver
     final ResourceIdentifier<Category> parent = draftBuilder.getParent();
     if (parent != null && parent.getId() == null) {
       try {
-        return getParentCategoryKey(draftBuilder)
+        return getParentCategoryKey(parent, draftBuilder.getKey())
             .map(
                 parentCategoryKey ->
                     fetchAndResolveParentReference(draftBuilder, parentCategoryKey))
@@ -127,36 +127,19 @@ public final class CategoryReferenceResolver
   }
 
   @Nonnull
-  public static Optional<String> getParentCategoryKey(
-      @Nonnull final CategoryDraftBuilder draftBuilder) throws ReferenceResolutionException {
-    return getParentCategoryKey(draftBuilder.getParent(), draftBuilder.getKey());
-  }
-
-  @Nonnull
-  public static Optional<String> getParentCategoryKey(@Nonnull final CategoryDraft draft)
-      throws ReferenceResolutionException {
-    return getParentCategoryKey(draft.getParent(), draft.getKey());
-  }
-
-  @Nonnull
   private static Optional<String> getParentCategoryKey(
-      @Nullable final ResourceIdentifier<Category> parentCategoryResourceIdentifier,
+      @Nonnull final ResourceIdentifier<Category> parentCategoryResourceIdentifier,
       @Nullable final String categoryKey)
       throws ReferenceResolutionException {
 
-    if (parentCategoryResourceIdentifier != null
-        && parentCategoryResourceIdentifier.getId() == null) {
-      try {
-        final String parentKey = getKeyFromResourceIdentifier(parentCategoryResourceIdentifier);
-        return Optional.of(parentKey);
-      } catch (ReferenceResolutionException referenceResolutionException) {
-        throw new ReferenceResolutionException(
-            format(
-                FAILED_TO_RESOLVE_PARENT, categoryKey, referenceResolutionException.getMessage()),
-            referenceResolutionException);
-      }
+    try {
+      final String parentKey = getKeyFromResourceIdentifier(parentCategoryResourceIdentifier);
+      return Optional.of(parentKey);
+    } catch (ReferenceResolutionException referenceResolutionException) {
+      throw new ReferenceResolutionException(
+          format(FAILED_TO_RESOLVE_PARENT, categoryKey, referenceResolutionException.getMessage()),
+          referenceResolutionException);
     }
-    return Optional.empty();
   }
 
   @Nonnull

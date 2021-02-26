@@ -256,6 +256,9 @@ class CategorySyncTest {
         mockCategoryService(existingCategories, null, mockCategory);
     when(mockCategoryService.fetchCachedCategoryId(Mockito.eq("parentKey")))
         .thenReturn(CompletableFuture.completedFuture(Optional.of("parentId")));
+    when(mockCategoryService.fetchCategory(Mockito.eq("key")))
+        .thenReturn(CompletableFuture.completedFuture(Optional.of(mockCategory)));
+
     final CategorySync mockCategorySync =
         new CategorySync(
             categorySyncOptions,
@@ -281,6 +284,9 @@ class CategorySyncTest {
     final CategoryDraft identicalCategoryDraft = CategoryDraftBuilder.of(mockCategory).build();
     final CategoryService mockCategoryService =
         mockCategoryService(singleton(mockCategory), null, mockCategory);
+    when(mockCategoryService.fetchCategory(Mockito.eq("key")))
+        .thenReturn(CompletableFuture.completedFuture(Optional.of(mockCategory)));
+
     final CategorySync mockCategorySync =
         new CategorySync(
             categorySyncOptions,
@@ -292,9 +298,9 @@ class CategorySyncTest {
     final CategorySyncStatistics syncStatistics =
         mockCategorySync.sync(categoryDrafts).toCompletableFuture().join();
 
-    assertThat(syncStatistics).hasValues(1, 0, 0, 0);
     assertThat(errorCallBackMessages).hasSize(0);
     assertThat(errorCallBackExceptions).hasSize(0);
+    assertThat(syncStatistics).hasValues(1, 0, 0, 0);
   }
 
   @Test
@@ -318,17 +324,8 @@ class CategorySyncTest {
 
     assertThat(syncStatistics).hasValues(1, 0, 0, 1);
     assertThat(errorCallBackMessages).hasSize(1);
-    assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(
-            format(
-                "Failed to process the CategoryDraft with"
-                    + " key: 'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft"
-                    + " with key:'key'. Reason: %s",
-                ReferenceResolutionException.class.getCanonicalName(),
-                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+    assertThat(errorCallBackMessages.get(0)).contains(BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER);
     assertThat(errorCallBackExceptions).hasSize(1);
-    assertThat(errorCallBackExceptions.get(0))
-        .isExactlyInstanceOf(ReferenceResolutionException.class);
   }
 
   @Test
@@ -336,6 +333,9 @@ class CategorySyncTest {
     final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
     final CategoryService mockCategoryService =
         mockCategoryService(singleton(mockCategory), null, mockCategory);
+    when(mockCategoryService.fetchCategory(Mockito.eq("key")))
+        .thenReturn(CompletableFuture.completedFuture(Optional.of(mockCategory)));
+
     final CategorySync categorySync =
         new CategorySync(
             categorySyncOptions,
@@ -353,9 +353,9 @@ class CategorySyncTest {
     final CategorySyncStatistics syncStatistics =
         categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
-    assertThat(syncStatistics).hasValues(1, 0, 1, 0);
     assertThat(errorCallBackMessages).hasSize(0);
     assertThat(errorCallBackExceptions).hasSize(0);
+    assertThat(syncStatistics).hasValues(1, 0, 1, 0);
   }
 
   @Test
@@ -363,6 +363,8 @@ class CategorySyncTest {
     final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
     final CategoryService mockCategoryService =
         mockCategoryService(singleton(mockCategory), null, mockCategory);
+    when(mockCategoryService.fetchCategory(Mockito.eq("key")))
+        .thenReturn(CompletableFuture.completedFuture(Optional.of(mockCategory)));
     final CategorySync categorySync =
         new CategorySync(
             categorySyncOptions,
@@ -379,17 +381,8 @@ class CategorySyncTest {
 
     assertThat(syncStatistics).hasValues(1, 0, 0, 1);
     assertThat(errorCallBackMessages).hasSize(1);
-    assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(
-            format(
-                "Failed to process the CategoryDraft with"
-                    + " key: 'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft with key:'key'. "
-                    + "Reason: %s",
-                ReferenceResolutionException.class.getCanonicalName(),
-                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+    assertThat(errorCallBackMessages.get(0)).contains(BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER);
     assertThat(errorCallBackExceptions).hasSize(1);
-    assertThat(errorCallBackExceptions.get(0))
-        .isExactlyInstanceOf(ReferenceResolutionException.class);
   }
 
   @Test
@@ -739,7 +732,7 @@ class CategorySyncTest {
     // preparation
     final CategoryDraft categoryDraft =
         getMockCategoryDraft(
-            Locale.ENGLISH, "name", "1", "parentKey", "customTypeId", new HashMap<>());
+            Locale.ENGLISH, "name", "categoryKey1", "parentKey", "customTypeId", new HashMap<>());
 
     final Category mockedExistingCategory =
         readObjectFromResource(CATEGORY_KEY_1_RESOURCE_PATH, Category.class);
@@ -752,9 +745,16 @@ class CategorySyncTest {
             singleton(mockedExistingCategory), mockedExistingCategory, mockedExistingCategory);
 
     Map<String, String> cache = new HashMap<>();
-    cache.put("1", UUID.randomUUID().toString());
-    cache.put("parentKey", UUID.randomUUID().toString());
+    cache.put("categoryKey1", mockedExistingCategory.getId());
+    cache.put("parentKey", mockedExistingCategory.getParent().getId());
     when(categoryService.cacheKeysToIds(anySet())).thenReturn(completedFuture(cache));
+
+    when(categoryService.fetchCachedCategoryId(Mockito.eq("parentKey")))
+        .thenReturn(
+            CompletableFuture.completedFuture(
+                Optional.of(mockedExistingCategory.getParent().getId())));
+    when(categoryService.fetchCategory(Mockito.eq("categoryKey1")))
+        .thenReturn(CompletableFuture.completedFuture(Optional.of(mockedExistingCategory)));
 
     final CategorySyncOptions spyCategorySyncOptions = spy(categorySyncOptions);
 

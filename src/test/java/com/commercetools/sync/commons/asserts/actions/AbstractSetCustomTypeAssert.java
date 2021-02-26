@@ -21,7 +21,7 @@ public class AbstractSetCustomTypeAssert<
 
   /**
    * Verifies that the actual {@link SetCustomTypeBase} value has identical fields as the ones
-   * supplied. TODO: GITHUB ISSUE#257
+   * supplied.
    *
    * @param actionName the update action name.
    * @param customFields the new custom type fields.

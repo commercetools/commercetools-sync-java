@@ -8,11 +8,11 @@ import static io.sphere.sdk.states.commands.updateactions.SetTransitions.of;
 import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;
 
+import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
@@ -32,6 +32,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -61,9 +63,13 @@ public final class StateITUtils {
    */
   public static <T extends State> void deleteStates(@Nonnull final SphereClient ctpClient) {
     // delete transitions
-    QueryExecutionUtils.queryAll(
+    CtpQueryUtils.queryAll(
             ctpClient,
-            StateQueryBuilder.of().plusPredicates(QueryPredicate.of("builtIn = false")).build())
+            StateQueryBuilder.of().plusPredicates(QueryPredicate.of("builtIn = false")).build(),
+            Function.identity())
+        .thenApply(
+            fetchedCategories ->
+                fetchedCategories.stream().flatMap(List::stream).collect(Collectors.toList()))
         .thenCompose(
             result -> {
               final List<CompletionStage<State>> clearStates = new ArrayList<>();

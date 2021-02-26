@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 import org.junit.jupiter.api.AfterAll;
@@ -291,10 +290,7 @@ class CategorySyncIT {
     assertThat(errors.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
     assertThat(errorMessages.get(0))
         .contains(
-            format(
-                "Failed to update Category with key: '%s'. Reason: Failed to fetch from CTP while retrying "
-                    + "after concurrency modification.",
-                categoryDraft.getKey()));
+            "Reason: Failed to fetch from CTP while retrying after concurrency modification.");
   }
 
   @Nonnull
@@ -555,7 +551,7 @@ class CategorySyncIT {
             .toCompletableFuture()
             .join();
 
-    assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
+    assertThat(syncStatistics).hasValues(2, 0, 2, 0, 0);
 
     final Optional<Category> optionalResult =
         CTP_TARGET_CLIENT
@@ -829,16 +825,5 @@ class CategorySyncIT {
         categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
     assertThat(syncStatistics).hasValues(2, 1, 0, 0, 1);
-
-    final Map<String, Set<String>> categoryKeysWithMissingParents =
-        syncStatistics.getCategoryKeysWithMissingParents();
-    assertThat(categoryKeysWithMissingParents).hasSize(1);
-
-    final Set<String> missingParentsChildren =
-        categoryKeysWithMissingParents.get(nonExistingParentKey);
-    assertThat(missingParentsChildren).hasSize(1);
-
-    final String childKey = missingParentsChildren.iterator().next();
-    assertThat(childKey).isEqualTo(categoryDraftWithMissingParent.getKey());
   }
 }

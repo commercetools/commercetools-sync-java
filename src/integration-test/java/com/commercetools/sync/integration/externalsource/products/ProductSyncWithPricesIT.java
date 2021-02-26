@@ -1218,8 +1218,6 @@ class ProductSyncWithPricesIT {
    * prices (prices are matched by key). It asserts that the matching assets have the same name,
    * description, custom fields, tags, and asset sources.
    *
-   * <p>TODO: This should be refactored into Asset asserts helpers. GITHUB ISSUE#261
-   *
    * @param prices the list of prices to compare to the list of price drafts.
    * @param priceDrafts the list of price drafts to compare to the list of prices.
    */

@@ -109,7 +109,6 @@ public class ProductSyncMockUtils {
   /**
    * Builds a {@link ProductDraftBuilder} based on the staged projection of the product JSON
    * resource located at the {@code jsonResourcePath} and based on the supplied {@code productType}.
-   * TODO: GITHUB ISSUE#152
    *
    * @param jsonResourcePath the path of the JSON resource to build the product draft from.
    * @param productTypeReference the reference of the product type that the product draft belongs
@@ -219,7 +218,7 @@ public class ProductSyncMockUtils {
    * located at the {@code jsonResourcePath} and based on the supplied {@code productType}, {@code
    * taxCategoryReference} and {@code stateReference}. The method also attaches the created {@link
    * ProductDraft} to all the {@code categories} specified and assigns {@code categoryOrderHints}
-   * for it for each category assigned. TODO: GITHUB ISSUE#152
+   * for it for each category assigned.
    *
    * @param jsonResourcePath the path of the JSON resource to build the product draft from.
    * @param productTypeReference the reference of the product type that the product draft belongs

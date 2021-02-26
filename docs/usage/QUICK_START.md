@@ -44,7 +44,7 @@
 ````groovy
 // Add commercetools-jvm-sdk dependencies.
 implementation 'com.commercetools.sdk.jvm.core:commercetools-models:1.57.0'
-implementation 'com.commercetools.sdk.jvm.core:commercetools-java-client:1.57.0'
+implementation 'com.commercetools.sdk.jvm.core:commercetools-java-client-ahc-2_5:1.57.0'
 implementation 'com.commercetools.sdk.jvm.core:commercetools-convenience:1.57.0'
 
 // Add commercetools-sync-java dependency.
