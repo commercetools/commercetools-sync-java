@@ -5,10 +5,6 @@
 - [Release workflow](#release-workflow)
   - [Step 1: Pull request](#step-1-pull-request)
   - [Step 2: Release library in Github](#step-2-release-library-in-github)
-  - [Step 3: Publish to Maven central](#step-3-publish-to-maven-central)
-    - [Login into nexus repository manager](#login-into-nexus-repository-manager)
-    - [Locate and examine your staging repository](#locate-and-examine-your-staging-repository)
-    - [Close and drop or release your staging repository](#close-and-drop-or-release-your-staging-repository)
   - [Final Step](#final-step)
     - [Checklist](#checklist)
 
@@ -42,31 +38,10 @@ For example, define the link to the release notes pointing to a released version
 
 > Additionally define important changes, breaking changes or important new features into the description.
 
-The creation of a github release triggers a [github action](https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ACD),
-which will deploy the library to the the staging repository of the[nexus repository manager](https://oss.sonatype.org/).
-
-## Step 3: Publish to Maven central
-
-### Login into nexus repository manager
-You need to login to [nexus repository manager](https://oss.sonatype.org/) in order to access and work with your staging repositories. 
-
-### Locate and examine your staging repository
-Once you are logged in you will be able to access the build promotion menu in the left hand navigation and select the
-staging repository. The staging repository you created during the deployment will have a name starting with the
-groupId for your projects with the dots removed appended with a dash and a 4 digit number. E.g. if your project groupId
-is com.example.applications, your staging profile name would start with comexampleapplications. The sequential numbers 
-start at 1000 and are incremented per deployment so you could e.g. have a staging repository name of comexampleapplication-1010.
-
-Select the staging repository and the panel below the list will display further details about the repository.
-
-### Close and drop or release your staging repository
-After your deployment the repository will be in an open status. You can evaluate the deployed components in the
-repository using the Contents tab. If you believe everything is correct, you can press the close button above the list.
-This will trigger the evaluations of the components against the requirements.Once you have successfully closed the staging repository, you can release it by pressing the Release button. 
-This will move the components into the release repository of [nexus repository manager](https://oss.sonatype.org/)  where it will be synced to the Central Repository.
+The creation of a github release triggers a [github action](https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ACD), which will deploy the library to [Maven Central](https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java).
 
 ## Final Step
-After the component is moved to the release repository ensure that the new version is synced to [Maven Central](https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java). 
+After the release build status is **success** ensure that the new version is publicly available at [Maven Central](https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java). 
 
 ### Checklist 
 

@@ -16,6 +16,7 @@ ext{
     pmdVersion = '6.14.0'
     jacocoVersion = '0.8.4'
     caffeineVersion = '2.8.5'
+    nexusStagingPluginVersion = '0.22.0'
 }
 
 apply from: "$rootDir/gradle-scripts/plugins.gradle"
@@ -32,6 +33,7 @@ apply from: "$rootDir/gradle-scripts/pmd.gradle"
 apply from: "$rootDir/gradle-scripts/jacoco.gradle"
 apply from: "$rootDir/gradle-scripts/spotbugs.gradle"
 apply from: "$rootDir/gradle-scripts/maven-publish.gradle"
+apply from: "$rootDir/gradle-scripts/nexus-staging.gradle"
 apply from: "$rootDir/gradle-scripts/javadocs-publish.gradle"
 apply from: "$rootDir/gradle-scripts/set-library-version.gradle"
 apply from: "$rootDir/gradle-scripts/execution-order.gradle"
@@ -49,4 +51,5 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterApiVersion}"
     testRuntimeOnly "org.junit.vintage:junit-vintage-engine:${jupiterApiVersion}"
     testImplementation "org.assertj:assertj-core:${assertjVersion}"
+    classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:${nexusStagingPluginVersion}"
 }
