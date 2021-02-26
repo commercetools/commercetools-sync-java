@@ -1,6 +1,6 @@
 package com.commercetools.sync.products.helpers;
 
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_REFERENCE;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroup;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroupService;
 import static com.commercetools.sync.products.helpers.PriceReferenceResolver.CUSTOMER_GROUP_DOES_NOT_EXIST;
@@ -21,7 +21,7 @@ import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.models.DefaultCurrencyUnits;
-import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.utils.MoneyImpl;
@@ -51,9 +51,11 @@ class PriceCustomerGroupReferenceResolverTest {
 
   @Test
   void resolveCustomerGroupReference_WithKeys_ShouldResolveReference() {
+    final ResourceIdentifier<CustomerGroup> customerGroupResourceIdentifier =
+        ResourceIdentifier.ofKey("anyKey");
     final PriceDraftBuilder priceBuilder =
         PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-            .customerGroup(CustomerGroup.referenceOfId("anyKey"));
+            .customerGroup(customerGroupResourceIdentifier);
 
     final PriceDraftBuilder resolvedDraft =
         referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture().join();
@@ -74,9 +76,11 @@ class PriceCustomerGroupReferenceResolverTest {
 
   @Test
   void resolveCustomerGroupReference_WithNonExistentCustomerGroup_ShouldNotResolveReference() {
+    final ResourceIdentifier<CustomerGroup> customerGroupResourceIdentifier =
+        ResourceIdentifier.ofKey("nonExistentKey");
     final PriceDraftBuilder priceBuilder =
         PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-            .customerGroup(CustomerGroup.referenceOfId("nonExistentKey"));
+            .customerGroup(customerGroupResourceIdentifier);
 
     when(customerGroupService.fetchCachedCustomerGroupId(anyString()))
         .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
@@ -95,10 +99,13 @@ class PriceCustomerGroupReferenceResolverTest {
 
   @Test
   void
-      resolveCustomerGroupReference_WithNullIdOnCustomerGroupReference_ShouldNotResolveReference() {
+      resolveCustomerGroupReference_WithNullKeyOnCustomerGroupResourceIdentifier_ShouldNotResolveReference() {
+    final ResourceIdentifier<CustomerGroup> customerGroupResourceIdentifier =
+        ResourceIdentifier.ofKey(null);
+
     final PriceDraftBuilder priceBuilder =
         PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-            .customerGroup(Reference.of(CustomerGroup.referenceTypeId(), (String) null));
+            .customerGroup(customerGroupResourceIdentifier);
 
     assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
         .hasFailed()
@@ -108,15 +115,19 @@ class PriceCustomerGroupReferenceResolverTest {
             format(
                 "Failed to resolve 'customer-group' reference on PriceDraft with country:'%s' and"
                     + " value: '%s'. Reason: %s",
-                priceBuilder.getCountry(), priceBuilder.getValue(), BLANK_ID_VALUE_ON_REFERENCE));
+                priceBuilder.getCountry(),
+                priceBuilder.getValue(),
+                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
   }
 
   @Test
   void
-      resolveCustomerGroupReference_WithEmptyIdOnCustomerGroupReference_ShouldNotResolveReference() {
+      resolveCustomerGroupReference_WithEmptyKeyOnCustomerGroupResourceIdentifier_ShouldNotResolveReference() {
+    final ResourceIdentifier<CustomerGroup> customerGroupResourceIdentifier =
+        ResourceIdentifier.ofKey("");
     final PriceDraftBuilder priceBuilder =
         PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-            .customerGroup(CustomerGroup.referenceOfId(""));
+            .customerGroup(customerGroupResourceIdentifier);
 
     assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
         .hasFailed()
@@ -126,14 +137,18 @@ class PriceCustomerGroupReferenceResolverTest {
             format(
                 "Failed to resolve 'customer-group' reference on PriceDraft with country:'%s' and"
                     + " value: '%s'. Reason: %s",
-                priceBuilder.getCountry(), priceBuilder.getValue(), BLANK_ID_VALUE_ON_REFERENCE));
+                priceBuilder.getCountry(),
+                priceBuilder.getValue(),
+                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
   }
 
   @Test
   void resolveCustomerGroupReference_WithExceptionOnFetch_ShouldNotResolveReference() {
+    final ResourceIdentifier<CustomerGroup> customerGroupResourceIdentifier =
+        ResourceIdentifier.ofKey("CustomerGroupKey");
     final PriceDraftBuilder priceBuilder =
         PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-            .customerGroup(CustomerGroup.referenceOfId("CustomerGroupKey"));
+            .customerGroup(customerGroupResourceIdentifier);
 
     final CompletableFuture<Optional<String>> futureThrowingSphereException =
         new CompletableFuture<>();

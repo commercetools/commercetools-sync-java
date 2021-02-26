@@ -26,6 +26,17 @@
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
+### 4.0.0 - Mar xx, 2021
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/3.2.0...4.0.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/4.0.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/4.0.0)
+
+- 🚧 **Breaking Changes** (1)
+    - **Product Sync**: `PriceDraft.getCustomerGroup()` is changed from `Reference<CustomerGroup>` to `ResourceIdentifier<CustomerGroup>`, so as a library user you don't need to provide a key field in the id field of the Reference. (Now API and JVM SDK support `ResourceIdentifiers` and it supports id or key as a field). [#676](https://github.com/commercetools/commercetools-sync-java/pull/676)
+
+- 🛠️ **Dependency Updates** (1)
+    - `commercetools-jvm-sdk` `1.57.0` -> [`1.60.0`](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_60_0)
+
 ### 3.2.0 - Feb 3, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/3.1.0...3.2.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/3.2.0/) | 

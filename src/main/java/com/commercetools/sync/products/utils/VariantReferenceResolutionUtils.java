@@ -118,12 +118,7 @@ public final class VariantReferenceResolutionUtils {
                 PriceDraftBuilder.of(price)
                     .custom(mapToCustomFieldsDraft(price))
                     .channel(getResourceIdentifierWithKey(price.getChannel()))
-                    .customerGroup(
-                        getReferenceWithKeyReplaced(
-                            price.getCustomerGroup(),
-                            () ->
-                                CustomerGroup.referenceOfId(
-                                    price.getCustomerGroup().getObj().getKey())))
+                    .customerGroup(getResourceIdentifierWithKey(price.getCustomerGroup()))
                     .build())
         .collect(toList());
   }

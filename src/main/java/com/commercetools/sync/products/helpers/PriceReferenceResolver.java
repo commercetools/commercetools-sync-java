@@ -12,7 +12,6 @@ import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.customergroups.CustomerGroup;
-import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
@@ -216,27 +215,26 @@ public final class PriceReferenceResolver
   }
 
   /**
-   * Given a {@link PriceDraftBuilder} this method attempts to resolve the customer group reference
-   * to return a {@link CompletionStage} which contains the same instance of draft builder with the
-   * resolved customer group reference.
-   *
-   * <p>Note: The key of the customer group reference taken from the value of the id field of the
-   * reference.
+   * Given a {@link PriceDraftBuilder} this method attempts to resolve the customer group resource
+   * identifier to return a {@link CompletionStage} which contains the same instance of draft
+   * builder with the resolved customer group resource identifier.
    *
    * @param draftBuilder the priceDraftBuilder to resolve its customer group reference.
    * @return a {@link CompletionStage} that contains as a result a new price draft builder instance
-   *     with resolved customer group reference or no customer group reference if the customer group
-   *     doesn't exist or in case an error occurs during reference resolution a {@link
-   *     ReferenceResolutionException}.
+   *     with resolved customer group resource identifier or no customer group resource identifier
+   *     if the customer group doesn't exist or in case an error occurs during reference resolution
+   *     a {@link ReferenceResolutionException}.
    */
   @Nonnull
   CompletionStage<PriceDraftBuilder> resolveCustomerGroupReference(
       @Nonnull final PriceDraftBuilder draftBuilder) {
-    final Reference<CustomerGroup> customerGroupReference = draftBuilder.getCustomerGroup();
-    if (customerGroupReference != null) {
-      String customerGroupKey;
+    final ResourceIdentifier<CustomerGroup> customerGroupResourceIdentifier =
+        draftBuilder.getCustomerGroup();
+    if (customerGroupResourceIdentifier != null
+        && customerGroupResourceIdentifier.getId() == null) {
+      String customerGroupKey = "";
       try {
-        customerGroupKey = getIdFromReference(customerGroupReference);
+        customerGroupKey = getKeyFromResourceIdentifier(customerGroupResourceIdentifier);
       } catch (ReferenceResolutionException referenceResolutionException) {
         return exceptionallyCompletedFuture(
             new ReferenceResolutionException(
@@ -247,7 +245,6 @@ public final class PriceReferenceResolver
                     draftBuilder.getValue(),
                     referenceResolutionException.getMessage())));
       }
-
       return fetchAndResolveCustomerGroupReference(draftBuilder, customerGroupKey);
     }
     return completedFuture(draftBuilder);
@@ -266,7 +263,8 @@ public final class PriceReferenceResolver
                         resolvedCustomerGroupId ->
                             completedFuture(
                                 draftBuilder.customerGroup(
-                                    CustomerGroup.referenceOfId(resolvedCustomerGroupId))))
+                                    CustomerGroup.referenceOfId(resolvedCustomerGroupId)
+                                        .toResourceIdentifier())))
                     .orElseGet(
                         () -> {
                           final String errorMessage =

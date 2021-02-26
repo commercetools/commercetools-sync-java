@@ -65,7 +65,7 @@ public final class PriceCompositeId {
         priceDraft.getValue().getCurrency().getCurrencyCode(),
         priceDraft.getCountry(),
         ofNullable(priceDraft.getChannel()).map(ResourceIdentifier::getId).orElse(null),
-        ofNullable(priceDraft.getCustomerGroup()).map(Reference::getId).orElse(null),
+        ofNullable(priceDraft.getCustomerGroup()).map(ResourceIdentifier::getId).orElse(null),
         priceDraft.getValidFrom(),
         priceDraft.getValidUntil());
   }

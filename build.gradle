@@ -7,11 +7,10 @@ plugins {
     id "com.github.spotbugs" version "4.6.2"
     id 'com.diffplug.spotless' version '5.9.0'
     id 'io.codearte.nexus-staging' version '0.22.0'
-
 }
 
 ext{
-    commercetoolsJvmSdkVersion = '1.59.0'
+    commercetoolsJvmSdkVersion = '1.60.0'
     mockitoJunitJupiterVersion = '3.8.0'
     jupiterApiVersion = '5.7.0'
     assertjVersion = '3.19.0'
