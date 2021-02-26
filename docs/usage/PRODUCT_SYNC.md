@@ -116,9 +116,18 @@ final ProductDraft productDraft =
         .state(ResourceIdentifier.ofKey("tax-category-key"))
         .build();
 ````
+ 
+ ````java
+ final PriceDraft priceDraft = PriceDraftBuilder
+    of(MoneyImpl.of("20", "EUR"))
+    .channel(ResourceIdentifier.ofKey("channel-key"))
+    .customerGroup(ResourceIdentifier.ofKey("customer-group-key")) // note that customer group key provided in the id field 
+    .custom(CustomFieldsDraft.ofTypeKeyAndJson("type-key", emptyMap()))
+    .build();
+````
 
--  Some references in the product like variant attributes with type `ReferenceType` do not support the `ResourceIdentifier` yet, 
-for those references you have to provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the reference should return its `key`. 
+-  The product variant attributes with a type `ReferenceType` do not support the `ResourceIdentifier` yet, for those 
+references you have to provide the `key`  value on the `id` field of the reference. This means that calling `getId()` on the reference should return its `key`.
 
 ````java
 final ObjectNode productReference = JsonNodeFactory.instance.objectNode();
