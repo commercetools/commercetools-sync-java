@@ -121,7 +121,7 @@ final ProductDraft productDraft =
  final PriceDraft priceDraft = PriceDraftBuilder
     of(MoneyImpl.of("20", "EUR"))
     .channel(ResourceIdentifier.ofKey("channel-key"))
-    .customerGroup(ResourceIdentifier.ofKey("customer-group-key")) // note that customer group key provided in the id field 
+    .customerGroup(ResourceIdentifier.ofKey("customer-group-key"))
     .custom(CustomFieldsDraft.ofTypeKeyAndJson("type-key", emptyMap()))
     .build();
 ````
