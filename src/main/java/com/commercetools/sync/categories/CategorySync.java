@@ -172,10 +172,6 @@ public class CategorySync
       @Nonnull final Set<CategoryDraft> categoryDrafts,
       @Nonnull final Map<String, String> keyToIdCache) {
 
-    if (categoryDrafts.isEmpty()) {
-      return CompletableFuture.completedFuture(null);
-    }
-
     final Set<String> categoryDraftKeys =
         categoryDrafts.stream().map(CategoryDraft::getKey).collect(Collectors.toSet());
 
