@@ -25,7 +25,6 @@ import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.ResourceIdentifier;
 import java.util.Collections;
@@ -103,33 +102,11 @@ public class CategorySync
     return syncBatches(batches, completedFuture(statistics));
   }
 
-  /**
-   * Given a list of {@code CategoryDraft} that represent a batch of category drafts, this method
-   * for the first batch only caches a mapping of key to the id of <b>all categories</b> in the CTP
-   * project. It then validates the category drafts, then resolves all the references. Then it
-   * creates all categories that need to be created in parallel while keeping track of the
-   * categories that have their non-existing parents. Then it does update actions that don't require
-   * parent changes in parallel. Then in a blocking fashion issues update actions that don't involve
-   * parent changes sequentially.
-   *
-   * <p>In case of error during of fetch during the caching of category keys or during of fetching
-   * of existing categories, the error callback will be triggered. And the sync process would stop
-   * for the given batch.
-   *
-   * <p>More on the exact implementation of how the sync works here:
-   * https://github.com/commercetools/commercetools-sync-java/wiki/Category-Sync-Underlying-Concept
-   *
-   * @param categoryDrafts the list of new category drafts to sync to the CTP project.
-   * @return an instance of {@link CompletionStage}&lt;{@link CategorySyncStatistics}&gt; which
-   *     contains as a result an instance of {@link CategorySyncStatistics} representing the {@code
-   *     statistics} instance attribute of {@code this} {@link CategorySync}.
-   */
   @Override
   protected CompletionStage<CategorySyncStatistics> processBatch(
       @Nonnull final List<CategoryDraft> categoryDrafts) {
 
-    readyToResolve = ConcurrentHashMap.newKeySet();
-    categoryDraftsToUpdateSequentially = new ConcurrentHashMap<>();
+    setBatchState();
 
     final ImmutablePair<Set<CategoryDraft>, CategoryBatchValidator.ReferencedKeys> result =
         batchValidator.validateAndCollectReferencedKeys(categoryDrafts);
@@ -165,6 +142,11 @@ public class CategorySync
               statistics.incrementProcessed(categoryDrafts.size());
               return statistics;
             });
+  }
+
+  private void setBatchState() {
+    readyToResolve = ConcurrentHashMap.newKeySet();
+    categoryDraftsToUpdateSequentially = new ConcurrentHashMap<>();
   }
 
   @Nonnull
@@ -358,23 +340,7 @@ public class CategorySync
       @Nonnull final Category category, @Nonnull final CategoryDraft categoryDraft) {
     return !areResourceIdentifiersEqual(category.getParent(), categoryDraft.getParent());
   }
-  /**
-   * Given a {@link Category} and a {@link List} of {@link UpdateAction} elements, this method
-   * issues a request to the CTP project defined by the client configuration stored in the {@code
-   * syncOptions} instance of this class to update the specified category with this list of update
-   * actions. If the update request failed due to a {@link ConcurrentModificationException}, the
-   * method recalculates the update actions required for syncing the {@link Category} and reissues
-   * the update request.
-   *
-   * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was
-   * carried out successfully or not. If an exception was thrown on executing the request to CTP,
-   * the optional error callback specified in the {@code syncOptions} is called.
-   *
-   * @param oldCategory the category to update.
-   * @param newCategory the category draft where we get the new data.
-   * @param updateActions the list of update actions to update the category with.
-   * @return a future which contains an empty result after execution of the update.
-   */
+
   private CompletionStage<Void> updateCategory(
       @Nonnull final Category oldCategory,
       @Nonnull final CategoryDraft newCategory,
@@ -498,10 +464,10 @@ public class CategorySync
   }
 
   /**
-   * Given a {@link Map} of categoryDrafts to Categories that require syncing, this method filters
-   * out the pairs that need a {@link io.sphere.sdk.categories.commands.updateactions.ChangeParent}
-   * update action, and in turn performs the sync on them in a sequential/blocking fashion as
-   * advised by the CTP documentation:
+   * Given a {@link Map} of categoryDrafts to Categories that require syncing, this method updares
+   * only categories which need a {@link
+   * io.sphere.sdk.categories.commands.updateactions.ChangeParent} update action, and in turn
+   * performs the sync on them in a sequential/blocking fashion as advised by the CTP documentation:
    * https://docs.commercetools.com/api/projects/categories#change-parent
    *
    * @param matchingCategories a {@link Map} of categoryDrafts to Categories that require syncing.

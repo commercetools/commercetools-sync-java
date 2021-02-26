@@ -35,8 +35,8 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
    * Builds a summary of the category sync statistics instance that looks like the following
    * example:
    *
-   * <p>"Summary: 2 categories were processed in total (0 created, 0 updated and 0 categories failed
-   * to sync)."
+   * <p>"Summary: 2 categories were processed in total (1 created, 1 updated and 0 categories failed
+   * to sync and 0 categories with a missing parent)."
    *
    * @return a summary message of the category sync statistics instance.
    */
