@@ -2,7 +2,7 @@ plugins {
     id 'org.ajoberstar.git-publish' version '3.0.0'
     id 'com.adarshr.test-logger' version '2.1.1'
     id 'org.ajoberstar.grgit' version '4.1.0'
-    id "com.github.ben-manes.versions" version '0.36.0'
+    id "com.github.ben-manes.versions" version '0.38.0'
     id 'ru.vyarus.mkdocs' version '2.0.1'
     id "com.github.spotbugs" version "4.6.2"
     id 'com.diffplug.spotless' version '5.9.0'
