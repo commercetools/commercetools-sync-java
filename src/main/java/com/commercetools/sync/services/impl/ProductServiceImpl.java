@@ -79,7 +79,8 @@ public final class ProductServiceImpl
 
     return fetchMatchingResources(
         productKeys,
-        () -> ProductQuery.of().withPredicates(buildProductKeysQueryPredicate(productKeys)));
+        (keysNotCached) ->
+            ProductQuery.of().withPredicates(buildProductKeysQueryPredicate(keysNotCached)));
   }
 
   @Nonnull

@@ -57,9 +57,9 @@ public final class ShoppingListServiceImpl
     return fetchMatchingResources(
         keys,
         ShoppingList::getKey,
-        () ->
+        (keysNotCached) ->
             ShoppingListQuery.of()
-                .plusPredicates(queryModel -> queryModel.key().isIn(keys))
+                .plusPredicates(queryModel -> queryModel.key().isIn(keysNotCached))
                 .plusExpansionPaths(ExpansionPath.of("lineItems[*].variant")));
   }
 

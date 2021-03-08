@@ -2,12 +2,14 @@ package com.commercetools.sync.services.impl;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyId;
+import com.commercetools.sync.commons.utils.ChunkUtils;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -18,6 +20,7 @@ import io.sphere.sdk.commands.UpdateCommand;
 import io.sphere.sdk.models.ResourceView;
 import io.sphere.sdk.queries.MetaModelQueryDsl;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -59,6 +62,12 @@ abstract class BaseService<
 
   private static final int MAXIMUM_ALLOWED_UPDATE_ACTIONS = 500;
   static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
+  /*
+   * A key is a 41 characters long hashed string. (i.e: c25a67e262265fbc36edb33ed0375263586be278) We
+   * chunk them in 250 keys we will have around a query around 11.000 characters. Above this size it
+   * could return - Error 413 (Request Entity Too Large)
+   */
+  static final int CHUNK_SIZE = 250;
 
   BaseService(@Nonnull final S syncOptions) {
     this.syncOptions = syncOptions;
@@ -222,7 +231,8 @@ abstract class BaseService<
 
   /**
    * Given a set of keys this method caches a mapping of the keys to ids of such keys only for the
-   * keys which are not already in the cache.
+   * keys which are not already in the cache. This method uses {@link ChunkUtils} to chunk the keys
+   * and execute query to avoid 413 error.
    *
    * @param keys keys to cache.
    * @param keyMapper a function to get the key from the resource.
@@ -242,13 +252,21 @@ abstract class BaseService<
       return CompletableFuture.completedFuture(keyToIdCache.asMap());
     }
 
-    final Consumer<List<U>> pageConsumer =
-        page ->
-            page.forEach(resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
+    final List<List<String>> chunkedKeys = ChunkUtils.chunk(keysNotCached, CHUNK_SIZE);
 
-    return CtpQueryUtils.queryAll(
-            syncOptions.getCtpClient(), keysQueryMapper.apply(keysNotCached), pageConsumer)
-        .thenApply(result -> keyToIdCache.asMap());
+    List<Q> keysQueryMapperList =
+        chunkedKeys.stream()
+            .map(_keys -> keysQueryMapper.apply(new HashSet<>(_keys)))
+            .collect(toList());
+
+    return ChunkUtils.executeChunks(syncOptions.getCtpClient(), keysQueryMapperList)
+        .thenApply(ChunkUtils::flattenPagedQueryResults)
+        .thenApply(
+            chunk -> {
+              chunk.forEach(
+                  resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
+              return keyToIdCache.asMap();
+            });
   }
 
   /**
@@ -268,7 +286,8 @@ abstract class BaseService<
 
   /**
    * Given a set of keys this method caches a mapping of the keys to ids of such keys only for the
-   * keys which are not already in the cache.
+   * keys which are not already in the cache. This method uses {@link ChunkUtils} to chunk the keys
+   * and execute query to avoid 413 error.
    *
    * @param keys keys to cache.
    * @param keyToIdMapper a function to get the key from the resource.
@@ -288,22 +307,32 @@ abstract class BaseService<
       return CompletableFuture.completedFuture(keyToIdCache.asMap());
     }
 
-    final Consumer<Set<ResourceKeyId>> resultConsumer =
-        results -> results.forEach(resource -> keyToIdCache.putAll(keyToIdMapper.apply(resource)));
+    final List<List<String>> chunkedKeys = ChunkUtils.chunk(keysNotCached, CHUNK_SIZE);
 
-    return CtpQueryUtils.queryAll(
-            syncOptions.getCtpClient(), keysRequestMapper.apply(keysNotCached), resultConsumer)
-        .thenApply(result -> keyToIdCache.asMap());
+    List<ResourceKeyIdGraphQlRequest> keysQueryMapperList =
+        chunkedKeys.stream()
+            .map(_keys -> keysRequestMapper.apply(new HashSet<>(_keys)))
+            .collect(toList());
+
+    return ChunkUtils.executeChunks(syncOptions.getCtpClient(), keysQueryMapperList)
+        .thenApply(ChunkUtils::flattenGraphQLBaseResults)
+        .thenApply(
+            chunk -> {
+              chunk.forEach(resource -> keyToIdCache.putAll(keyToIdMapper.apply(resource)));
+              return keyToIdCache.asMap();
+            });
   }
 
   /**
    * Given a {@link Set} of resource keys, this method fetches a set of all the resources, matching
    * this given set of keys in the CTP project, defined in an injected {@link SphereClient}. A
-   * mapping of the key to the id of the fetched resources is persisted in an in-memory map.
+   * mapping of the key to the id of the fetched resources is persisted in an in-memory map. This
+   * method uses {@link ChunkUtils} to chunk the keys and execute query to avoid 413 error.
    *
    * @param keys set of keys to fetch matching resources by.
    * @param keyMapper a function to get the key from the resource.
-   * @param querySupplier supplies the query to fetch the resources with the given keys.
+   * @param keysQueryMapper function that accepts a set of keys which are not cached and maps it to
+   *     a query object representing the query to CTP on such keys.
    * @return {@link CompletionStage}&lt;{@link Set}&lt;{@code U}&gt;&gt; in which the result of it's
    *     completion contains a {@link Set} of all matching resources.
    */
@@ -311,20 +340,27 @@ abstract class BaseService<
   CompletionStage<Set<U>> fetchMatchingResources(
       @Nonnull final Set<String> keys,
       @Nonnull final Function<U, String> keyMapper,
-      @Nonnull final Supplier<Q> querySupplier) {
+      @Nonnull final Function<Set<String>, Q> keysQueryMapper) {
 
     if (keys.isEmpty()) {
       return CompletableFuture.completedFuture(Collections.emptySet());
     }
 
-    return CtpQueryUtils.queryAll(
-            syncOptions.getCtpClient(), querySupplier.get(), Function.identity())
+    final List<List<String>> chunkedKeys = ChunkUtils.chunk(keys, CHUNK_SIZE);
+
+    List<Q> keysQueryMapperList =
+        chunkedKeys.stream()
+            .map(_keys -> keysQueryMapper.apply(new HashSet<>(_keys)))
+            .collect(toList());
+
+    return ChunkUtils.executeChunks(syncOptions.getCtpClient(), keysQueryMapperList)
+        .thenApply(ChunkUtils::flattenPagedQueryResults)
         .thenApply(
-            fetchedResources ->
-                fetchedResources.stream()
-                    .flatMap(List::stream)
-                    .peek(resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()))
-                    .collect(Collectors.toSet()));
+            chunk -> {
+              chunk.forEach(
+                  resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
+              return new HashSet<>(chunk);
+            });
   }
 
   /**

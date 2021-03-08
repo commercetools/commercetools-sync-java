@@ -79,10 +79,10 @@ public final class StateServiceImpl
       @Nonnull final Set<String> stateKeys, final boolean withTransitions) {
     return fetchMatchingResources(
         stateKeys,
-        () -> {
+        (keysNotCached) -> {
           StateQuery stateQuery =
               StateQuery.of()
-                  .plusPredicates(stateQueryModel -> stateQueryModel.key().isIn(stateKeys));
+                  .plusPredicates(stateQueryModel -> stateQueryModel.key().isIn(keysNotCached));
           if (withTransitions) {
             stateQuery = stateQuery.withExpansionPaths(StateExpansionModel::transitions);
           }

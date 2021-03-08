@@ -40,9 +40,9 @@ public final class InventoryServiceImpl
     return fetchMatchingResources(
         skus,
         draft -> String.valueOf(InventoryEntryIdentifier.of(draft)),
-        () ->
+        (skusNotCached) ->
             InventoryEntryQueryBuilder.of()
-                .plusPredicates(queryModel -> queryModel.sku().isIn(skus))
+                .plusPredicates(queryModel -> queryModel.sku().isIn(skusNotCached))
                 .build());
   }
 

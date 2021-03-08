@@ -65,9 +65,9 @@ public final class TaxCategoryServiceImpl
       @Nonnull final Set<String> keys) {
     return fetchMatchingResources(
         keys,
-        () ->
+        (keysNotCached) ->
             TaxCategoryQueryBuilder.of()
-                .plusPredicates(queryModel -> queryModel.key().isIn(keys))
+                .plusPredicates(queryModel -> queryModel.key().isIn(keysNotCached))
                 .build());
   }
 
