@@ -34,8 +34,11 @@ import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.utils.CompletableFutureUtils;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -43,6 +46,8 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.data.MapEntry;
 import org.junit.jupiter.api.AfterEach;
@@ -187,6 +192,52 @@ class BaseServiceImplTest {
     assertThat(cachedKey2).contains(mock2.getId());
     // still 1 request from the first #fetchMatchingProductsByKeys call
     verify(client, times(1)).execute(any(ProductQuery.class));
+  }
+
+  @Test
+  void fetchMatchingResources_WithKeySetOf500_ShouldChunkAndFetchResourcesAndCacheKeys() {
+    // preparation
+    List<String> randomKeys = new ArrayList<>();
+    IntStream.range(0, 500)
+             .forEach(ignore ->
+                 randomKeys.add(RandomStringUtils.random(15))
+             );
+
+    final HashSet<String> resourceKeys = new HashSet<>();
+    resourceKeys.addAll(randomKeys);
+
+    final Product mock1 = mock(Product.class);
+    when(mock1.getId()).thenReturn(RandomStringUtils.random(15));
+    when(mock1.getKey()).thenReturn(randomKeys.get(0));
+
+    final Product mock2 = mock(Product.class);
+    when(mock2.getId()).thenReturn(RandomStringUtils.random(15));
+    when(mock2.getKey()).thenReturn(randomKeys.get(251));
+
+    final PagedQueryResult result = mock(PagedQueryResult.class);
+    when(result.getResults()).thenReturn(Arrays.asList(mock1, mock2));
+
+    when(client.execute(any(ProductQuery.class))).thenReturn(completedFuture(result));
+
+    // test fetch
+    final Set<Product> resources =
+        service.fetchMatchingProductsByKeys(resourceKeys).toCompletableFuture().join();
+
+    // assertions
+    assertThat(resources).containsExactlyInAnyOrder(mock1, mock2);
+    verify(client, times(2)).execute(any(ProductQuery.class));
+
+    // test caching
+    final Optional<String> cachedKey1 =
+        service.getIdFromCacheOrFetch(mock1.getKey()).toCompletableFuture().join();
+
+    final Optional<String> cachedKey2 =
+        service.getIdFromCacheOrFetch(mock2.getKey()).toCompletableFuture().join();
+
+    // assertions
+    assertThat(cachedKey1).contains(mock1.getId());
+    assertThat(cachedKey2).contains(mock2.getId());
+    verify(client, times(2)).execute(any(ProductQuery.class));
   }
 
   @Test
@@ -352,6 +403,34 @@ class BaseServiceImplTest {
   }
 
   @Test
+  void cacheKeysToIdsUsingGraphQl_With500Keys_ShouldChunkAndMakeRequestAndReturnCachedEntry() {
+    // preparation
+    Set<String> randomKeys = new HashSet<>();
+    IntStream.range(0, 500)
+             .forEach(ignore ->
+                 randomKeys.add(RandomStringUtils.random(15))
+             );
+
+    final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult =
+        mock(ResourceKeyIdGraphQlResult.class);
+    final ResourceKeyId mockResourceKeyId = mock(ResourceKeyId.class);
+    final String key = randomKeys.stream().findFirst().get();
+    final String id = "testId";
+    when(mockResourceKeyId.getKey()).thenReturn(key);
+    when(mockResourceKeyId.getId()).thenReturn(id);
+    when(resourceKeyIdGraphQlResult.getResults()).thenReturn(singleton(mockResourceKeyId));
+    when(client.execute(any())).thenReturn(completedFuture(resourceKeyIdGraphQlResult));
+
+    // test
+    final Map<String, String> optional =
+        service.cacheKeysToIds(randomKeys).toCompletableFuture().join();
+
+    // assertions
+    assertThat(optional).containsExactly(MapEntry.entry(key, id));
+    verify(client, times(2)).execute(any(ResourceKeyIdGraphQlRequest.class));
+  }
+
+  @Test
   void cacheKeysToIdsUsingGraphQl_WithBadGateWayException_ShouldCompleteExceptionally() {
     // preparation
     final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult =
@@ -429,5 +508,43 @@ class BaseServiceImplTest {
                             .toString()))
                 .isEqualTo(customObjectId));
     verify(client).execute(any(CustomObjectQuery.class));
+  }
+
+  @Test
+  void cacheKeysToIds_With500CustomObjectIdentifiers_ShouldChunkAndMakeRequestAndReturnCacheEntries() {
+    // preparation
+    Set<CustomObjectCompositeIdentifier> randomIdentifiers = new HashSet<>();
+    IntStream.range(0, 500)
+             .forEach(i ->
+                 randomIdentifiers.add(
+                     CustomObjectCompositeIdentifier.of(
+                         "customObjectId"+i, "customObjectContainer"+i)
+             ));
+
+
+    final CustomObjectSyncOptions customObjectSyncOptions =
+        CustomObjectSyncOptionsBuilder.of(client).build();
+    final CustomObjectServiceImpl serviceImpl =
+        new CustomObjectServiceImpl(customObjectSyncOptions);
+    final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
+    final CustomObject customObject = mock(CustomObject.class);
+    final String customObjectId = randomIdentifiers.stream().findFirst().get().getKey();
+    final String customObjectContainer = randomIdentifiers.stream().findFirst().get().getContainer();
+    final String customObjectKey = "customObjectKey";
+
+    when(customObject.getId()).thenReturn(customObjectId);
+    when(customObject.getKey()).thenReturn(customObjectKey);
+    when(customObject.getContainer()).thenReturn(customObjectContainer);
+    when(pagedQueryResult.getResults()).thenReturn(singletonList(customObject));
+    when(client.execute(any())).thenReturn(completedFuture(pagedQueryResult));
+
+    //test
+    serviceImpl
+            .cacheKeysToIds(randomIdentifiers)
+            .toCompletableFuture()
+            .join();
+
+    //assertion
+    verify(client, times(2)).execute(any(CustomObjectQuery.class));
   }
 }
