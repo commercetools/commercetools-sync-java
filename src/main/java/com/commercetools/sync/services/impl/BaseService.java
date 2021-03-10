@@ -231,8 +231,7 @@ abstract class BaseService<
 
   /**
    * Given a set of keys this method caches a mapping of the keys to ids of such keys only for the
-   * keys which are not already in the cache. This method uses {@link ChunkUtils} to chunk the keys
-   * and execute query to avoid 413 error.
+   * keys which are not already in the cache.
    *
    * @param keys keys to cache.
    * @param keyMapper a function to get the key from the resource.
@@ -286,8 +285,7 @@ abstract class BaseService<
 
   /**
    * Given a set of keys this method caches a mapping of the keys to ids of such keys only for the
-   * keys which are not already in the cache. This method uses {@link ChunkUtils} to chunk the keys
-   * and execute query to avoid 413 error.
+   * keys which are not already in the cache.
    *
    * @param keys keys to cache.
    * @param keyToIdMapper a function to get the key from the resource.
@@ -326,8 +324,7 @@ abstract class BaseService<
   /**
    * Given a {@link Set} of resource keys, this method fetches a set of all the resources, matching
    * this given set of keys in the CTP project, defined in an injected {@link SphereClient}. A
-   * mapping of the key to the id of the fetched resources is persisted in an in-memory map. This
-   * method uses {@link ChunkUtils} to chunk the keys and execute query to avoid 413 error.
+   * mapping of the key to the id of the fetched resources is persisted in an in-memory map.
    *
    * @param keys set of keys to fetch matching resources by.
    * @param keyMapper a function to get the key from the resource.

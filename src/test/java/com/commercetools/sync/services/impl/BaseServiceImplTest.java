@@ -34,7 +34,6 @@ import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.utils.CompletableFutureUtils;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -47,7 +46,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.data.MapEntry;
 import org.junit.jupiter.api.AfterEach;
@@ -198,10 +196,7 @@ class BaseServiceImplTest {
   void fetchMatchingResources_WithKeySetOf500_ShouldChunkAndFetchResourcesAndCacheKeys() {
     // preparation
     List<String> randomKeys = new ArrayList<>();
-    IntStream.range(0, 500)
-             .forEach(ignore ->
-                 randomKeys.add(RandomStringUtils.random(15))
-             );
+    IntStream.range(0, 500).forEach(ignore -> randomKeys.add(RandomStringUtils.random(15)));
 
     final HashSet<String> resourceKeys = new HashSet<>();
     resourceKeys.addAll(randomKeys);
@@ -406,10 +401,7 @@ class BaseServiceImplTest {
   void cacheKeysToIdsUsingGraphQl_With500Keys_ShouldChunkAndMakeRequestAndReturnCachedEntry() {
     // preparation
     Set<String> randomKeys = new HashSet<>();
-    IntStream.range(0, 500)
-             .forEach(ignore ->
-                 randomKeys.add(RandomStringUtils.random(15))
-             );
+    IntStream.range(0, 500).forEach(ignore -> randomKeys.add(RandomStringUtils.random(15)));
 
     final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult =
         mock(ResourceKeyIdGraphQlResult.class);
@@ -511,16 +503,16 @@ class BaseServiceImplTest {
   }
 
   @Test
-  void cacheKeysToIds_With500CustomObjectIdentifiers_ShouldChunkAndMakeRequestAndReturnCacheEntries() {
+  void
+      cacheKeysToIds_With500CustomObjectIdentifiers_ShouldChunkAndMakeRequestAndReturnCacheEntries() {
     // preparation
     Set<CustomObjectCompositeIdentifier> randomIdentifiers = new HashSet<>();
     IntStream.range(0, 500)
-             .forEach(i ->
-                 randomIdentifiers.add(
-                     CustomObjectCompositeIdentifier.of(
-                         "customObjectId"+i, "customObjectContainer"+i)
-             ));
-
+        .forEach(
+            i ->
+                randomIdentifiers.add(
+                    CustomObjectCompositeIdentifier.of(
+                        "customObjectId" + i, "customObjectContainer" + i)));
 
     final CustomObjectSyncOptions customObjectSyncOptions =
         CustomObjectSyncOptionsBuilder.of(client).build();
@@ -529,7 +521,8 @@ class BaseServiceImplTest {
     final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
     final CustomObject customObject = mock(CustomObject.class);
     final String customObjectId = randomIdentifiers.stream().findFirst().get().getKey();
-    final String customObjectContainer = randomIdentifiers.stream().findFirst().get().getContainer();
+    final String customObjectContainer =
+        randomIdentifiers.stream().findFirst().get().getContainer();
     final String customObjectKey = "customObjectKey";
 
     when(customObject.getId()).thenReturn(customObjectId);
@@ -538,13 +531,10 @@ class BaseServiceImplTest {
     when(pagedQueryResult.getResults()).thenReturn(singletonList(customObject));
     when(client.execute(any())).thenReturn(completedFuture(pagedQueryResult));
 
-    //test
-    serviceImpl
-            .cacheKeysToIds(randomIdentifiers)
-            .toCompletableFuture()
-            .join();
+    // test
+    serviceImpl.cacheKeysToIds(randomIdentifiers).toCompletableFuture().join();
 
-    //assertion
+    // assertion
     verify(client, times(2)).execute(any(CustomObjectQuery.class));
   }
 }
