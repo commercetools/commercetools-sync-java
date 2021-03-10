@@ -65,7 +65,7 @@ abstract class BaseService<
   /*
    * Considering maximum of 256 characters for key and sku fields (key and sku field doesn't have
    * limit except for ProductType(256)) We chunk them in 60 (keys or sku) we will have around a query
-   * around 15.000 characters. Above this size it could return - Error 413 (Request Entity Too Large)
+   * around 15.000 characters. Above this size it could return - Error 414 (Request-URI Too Large)
    */
   static final int CHUNK_SIZE = 60;
 
