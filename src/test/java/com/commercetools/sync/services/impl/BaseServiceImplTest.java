@@ -220,7 +220,7 @@ class BaseServiceImplTest {
 
     // assertions
     assertThat(resources).containsExactlyInAnyOrder(mock1, mock2);
-    verify(client, times(9)).execute(any(ProductQuery.class));
+    verify(client, times(2)).execute(any(ProductQuery.class));
 
     // test caching
     final Optional<String> cachedKey1 =
@@ -232,7 +232,7 @@ class BaseServiceImplTest {
     // assertions
     assertThat(cachedKey1).contains(mock1.getId());
     assertThat(cachedKey2).contains(mock2.getId());
-    verify(client, times(9)).execute(any(ProductQuery.class));
+    verify(client, times(2)).execute(any(ProductQuery.class));
   }
 
   @Test
@@ -419,7 +419,7 @@ class BaseServiceImplTest {
 
     // assertions
     assertThat(optional).containsExactly(MapEntry.entry(key, id));
-    verify(client, times(9)).execute(any(ResourceKeyIdGraphQlRequest.class));
+    verify(client, times(2)).execute(any(ResourceKeyIdGraphQlRequest.class));
   }
 
   @Test
@@ -535,6 +535,6 @@ class BaseServiceImplTest {
     serviceImpl.cacheKeysToIds(randomIdentifiers).toCompletableFuture().join();
 
     // assertion
-    verify(client, times(9)).execute(any(CustomObjectQuery.class));
+    verify(client, times(2)).execute(any(CustomObjectQuery.class));
   }
 }
