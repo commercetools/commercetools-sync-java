@@ -55,9 +55,9 @@ public final class TypeServiceImpl
 
     return fetchMatchingResources(
         keys,
-        () ->
+        (keysNotCached) ->
             TypeQueryBuilder.of()
-                .plusPredicates(queryModel -> queryModel.key().isIn(keys))
+                .plusPredicates(queryModel -> queryModel.key().isIn(keysNotCached))
                 .build());
   }
 

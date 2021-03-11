@@ -55,9 +55,10 @@ public final class CategoryServiceImpl
 
     return fetchMatchingResources(
         categoryKeys,
-        () ->
+        (keysNotCached) ->
             CategoryQuery.of()
-                .plusPredicates(categoryQueryModel -> categoryQueryModel.key().isIn(categoryKeys)));
+                .plusPredicates(
+                    categoryQueryModel -> categoryQueryModel.key().isIn(keysNotCached)));
   }
 
   @Nonnull

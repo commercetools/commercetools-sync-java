@@ -131,7 +131,7 @@ abstract class BaseServiceWithKey<
    */
   @Nonnull
   CompletionStage<Set<U>> fetchMatchingResources(
-      @Nonnull final Set<String> keys, @Nonnull final Supplier<Q> querySupplier) {
+      @Nonnull final Set<String> keys, @Nonnull final Function<Set<String>, Q> querySupplier) {
 
     // Why method reference is not used:
     // http://mail.openjdk.java.net/pipermail/compiler-dev/2015-November/009824.html

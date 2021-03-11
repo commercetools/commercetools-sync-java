@@ -56,9 +56,9 @@ public final class CustomerServiceImpl
       @Nonnull final Set<String> customerKeys) {
     return fetchMatchingResources(
         customerKeys,
-        () ->
+        (keysNotCached) ->
             CustomerQueryBuilder.of()
-                .plusPredicates(customerQueryModel -> customerQueryModel.key().isIn(customerKeys))
+                .plusPredicates(customerQueryModel -> customerQueryModel.key().isIn(keysNotCached))
                 .build());
   }
 

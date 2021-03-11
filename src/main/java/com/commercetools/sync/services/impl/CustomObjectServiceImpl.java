@@ -72,7 +72,7 @@ public class CustomObjectServiceImpl
       @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
 
     return fetchMatchingResources(
-        getKeys(identifiers), this::keyMapper, () -> queryIdentifiers(identifiers));
+        getKeys(identifiers), this::keyMapper, (keysNotCached) -> queryIdentifiers(identifiers));
   }
 
   @Nonnull

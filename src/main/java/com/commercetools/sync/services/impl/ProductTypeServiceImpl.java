@@ -112,9 +112,9 @@ public final class ProductTypeServiceImpl
       @Nonnull final Set<String> keys) {
     return fetchMatchingResources(
         keys,
-        () ->
+        (keysNotCached) ->
             ProductTypeQueryBuilder.of()
-                .plusPredicates(queryModel -> queryModel.key().isIn(keys))
+                .plusPredicates(queryModel -> queryModel.key().isIn(keysNotCached))
                 .build());
   }
 

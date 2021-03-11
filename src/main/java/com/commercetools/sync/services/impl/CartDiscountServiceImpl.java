@@ -39,9 +39,9 @@ public class CartDiscountServiceImpl
 
     return fetchMatchingResources(
         keys,
-        () ->
+        (keysNotCached) ->
             CartDiscountQueryBuilder.of()
-                .plusPredicates(queryModel -> queryModel.key().isIn(keys))
+                .plusPredicates(queryModel -> queryModel.key().isIn(keysNotCached))
                 .build());
   }
 
