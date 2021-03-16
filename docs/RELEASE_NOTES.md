@@ -32,9 +32,8 @@
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/4.0.1)
 
 - ✨ **Enhancements** (1)
-    -  To improve performance and to avoid 414 request-URI too large error, the services are using chunking on the
-    list of input(keys or sku's) to query only the keys which are not in cache already and cache the results.
-    Related to the issue [659](https://github.com/commercetools/commercetools-sync-java/issues/659).
+    -  To avoid 414 request-URI too large error, the services are using chunking on the input list(keys or sku's) to
+     chunk the input considering the length of the request URI and execute the query for these chunks.
     
 ### 4.0.0 - Feb 26, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/3.2.0...4.0.0) |
