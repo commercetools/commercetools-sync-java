@@ -26,7 +26,16 @@
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
-### 4.0.0 - Mar 26, 2021
+### 4.0.1 - Mar 16, 2021
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/4.0.0...4.0.1) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/4.0.1)
+
+- ✨ **Enhancements** (1)
+    -  To avoid 414 request-URI too large error, the services are using chunking on the input list(keys or sku's) to
+     chunk the input considering the length of the request URI and execute the query for these chunks.
+    
+### 4.0.0 - Feb 26, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/3.2.0...4.0.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/4.0.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/4.0.0)
