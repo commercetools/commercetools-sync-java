@@ -59,18 +59,18 @@ Here are the most popular ones:
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>4.0.1</version>
+  <version>4.0.2</version>
 </dependency>
 ````
 #### Gradle
 ````groovy
-implementation 'com.commercetools:commercetools-sync-java:4.0.1'
+implementation 'com.commercetools:commercetools-sync-java:4.0.2'
 ````
 #### SBT 
 ````
-libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "4.0.1"
+libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "4.0.2"
 ````
 #### Ivy 
 ````xml
-<dependency org="com.commercetools" name="commercetools-sync-java" rev="4.0.1"/>
+<dependency org="com.commercetools" name="commercetools-sync-java" rev="4.0.2"/>
 ````
