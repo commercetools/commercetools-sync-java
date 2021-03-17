@@ -26,6 +26,19 @@
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
+### 4.0.2 - Mar 17, 2021
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/4.0.1...4.0.2) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/4.0.2/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/4.0.2)
+
+- 🛠️ **Dependency Updates** (1)
+    - Updated the following transitive dependencies to fix vulnerability issues of previous versions:
+    - `com.fasterxml.jackson.dataformat:jackson-dataformat-cbor` `2.11.4` -> Fixed vulnerability issue for DoS attacks
+    - `io.netty:netty-codec-http` `4.1.59.Final` -> Fixed vulnerability issue for Information Disclosure
+    - `org.apache.httpcomponents:httpclient` `4.5.13` -> Fixed vulnerability issue for Improper Input Validation
+    - `commons-codec:commons-codec` `1.13` -> Fixed vulnerability issue for Information Exposure
+    
+     
 ### 4.0.1 - Mar 16, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/4.0.0...4.0.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/) | 
