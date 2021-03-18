@@ -179,7 +179,8 @@ class ProductSyncWithAssetsIT {
     final List<Product> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
 
-    final List<ProductDraft> productDrafts = mapToProductDrafts(products);
+    Map<String, String> idToKeyCache = new HashMap<>();
+    final List<ProductDraft> productDrafts = mapToProductDrafts(products, idToKeyCache);
 
     final ProductSyncStatistics syncStatistics =
         productSync.sync(productDrafts).toCompletableFuture().join();
@@ -253,7 +254,8 @@ class ProductSyncWithAssetsIT {
     final List<Product> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
 
-    final List<ProductDraft> productDrafts = mapToProductDrafts(products);
+    Map<String, String> idToKeyCache = new HashMap<>();
+    final List<ProductDraft> productDrafts = mapToProductDrafts(products, idToKeyCache);
 
     final ProductSyncStatistics syncStatistics =
         productSync.sync(productDrafts).toCompletableFuture().join();

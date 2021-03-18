@@ -7,7 +7,6 @@ import com.commercetools.sync.commons.helpers.CategoryReferencePair;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.customergroups.CustomerGroup;
-import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
@@ -19,10 +18,8 @@ import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.Attribute;
-import io.sphere.sdk.products.expansion.ProductExpansionModel;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.types.Type;
@@ -109,11 +106,14 @@ public final class ProductReferenceResolutionUtils {
    * update/create API request without reference resolution.
    *
    * @param products the products with expanded references.
+   * @param referenceIdToKeyMap the map containing the cached id to key values.
    * @return a {@link List} of {@link ProductDraft} built from the supplied {@link List} of {@link
    *     Product}.
    */
   @Nonnull
-  public static List<ProductDraft> mapToProductDrafts(@Nonnull final List<Product> products) {
+  public static List<ProductDraft> mapToProductDrafts(
+      @Nonnull final List<Product> products,
+      @Nonnull final Map<String, String> referenceIdToKeyMap) {
     return products.stream()
         .filter(Objects::nonNull)
         .map(
@@ -121,7 +121,7 @@ public final class ProductReferenceResolutionUtils {
               final ProductDraft productDraft = getDraftBuilderFromStagedProduct(product).build();
 
               final CategoryReferencePair categoryReferencePair =
-                  mapToCategoryReferencePair(product);
+                  mapToCategoryReferencePair(product, referenceIdToKeyMap);
               final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers =
                   categoryReferencePair.getCategoryResourceIdentifiers();
               final CategoryOrderHints categoryOrderHintsWithKeys =
@@ -130,18 +130,21 @@ public final class ProductReferenceResolutionUtils {
               final List<ProductVariant> allVariants =
                   product.getMasterData().getStaged().getAllVariants();
               final List<ProductVariantDraft> variantDraftsWithKeys =
-                  VariantReferenceResolutionUtils.mapToProductVariantDrafts(allVariants);
+                  VariantReferenceResolutionUtils.mapToProductVariantDrafts(
+                      allVariants, referenceIdToKeyMap);
               final ProductVariantDraft masterVariantDraftWithKeys =
                   variantDraftsWithKeys.remove(0);
 
               return ProductDraftBuilder.of(productDraft)
                   .masterVariant(masterVariantDraftWithKeys)
                   .variants(variantDraftsWithKeys)
-                  .productType(getResourceIdentifierWithKey(product.getProductType()))
+                  .productType(
+                      getResourceIdentifierWithKey(product.getProductType(), referenceIdToKeyMap))
                   .categories(categoryResourceIdentifiers)
                   .categoryOrderHints(categoryOrderHintsWithKeys)
-                  .taxCategory(getResourceIdentifierWithKey(product.getTaxCategory()))
-                  .state(getResourceIdentifierWithKey(product.getState()))
+                  .taxCategory(
+                      getResourceIdentifierWithKey(product.getTaxCategory(), referenceIdToKeyMap))
+                  .state(getResourceIdentifierWithKey(product.getState(), referenceIdToKeyMap))
                   .build();
             })
         .collect(Collectors.toList());
@@ -184,7 +187,8 @@ public final class ProductReferenceResolutionUtils {
   }
 
   @Nonnull
-  static CategoryReferencePair mapToCategoryReferencePair(@Nonnull final Product product) {
+  static CategoryReferencePair mapToCategoryReferencePair(
+      @Nonnull final Product product, @Nonnull final Map<String, String> referenceIdToKeyMap) {
     final Set<Reference<Category>> categoryReferences =
         product.getMasterData().getStaged().getCategories();
     final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = new HashSet<>();
@@ -196,9 +200,9 @@ public final class ProductReferenceResolutionUtils {
     categoryReferences.forEach(
         categoryReference -> {
           if (categoryReference != null) {
-            if (categoryReference.getObj() != null) {
-              final String categoryId = categoryReference.getId();
-              final String categoryKey = categoryReference.getObj().getKey();
+            final String categoryId = categoryReference.getId();
+            if (referenceIdToKeyMap.containsKey(categoryId)) {
+              final String categoryKey = referenceIdToKeyMap.get(categoryId);
 
               if (categoryOrderHints != null) {
                 final String categoryOrderHintValue = categoryOrderHints.get(categoryId);
@@ -247,30 +251,7 @@ public final class ProductReferenceResolutionUtils {
    */
   @Nonnull
   public static ProductQuery buildProductQuery() {
-    return ProductQuery.of()
-        .withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE)
-        .withExpansionPaths(ProductExpansionModel::productType)
-        .plusExpansionPaths(ProductExpansionModel::taxCategory)
-        .plusExpansionPaths(ExpansionPath.of("state"))
-        .plusExpansionPaths(expansionModel -> expansionModel.masterData().staged().categories())
-        .plusExpansionPaths(
-            expansionModel -> expansionModel.masterData().staged().allVariants().prices().channel())
-        .plusExpansionPaths(
-            expansionModel ->
-                expansionModel.masterData().staged().allVariants().prices().customerGroup())
-        .plusExpansionPaths(
-            ExpansionPath.of("masterData.staged.masterVariant.prices[*].custom.type"))
-        .plusExpansionPaths(ExpansionPath.of("masterData.staged.variants[*].prices[*].custom.type"))
-        .plusExpansionPaths(
-            expansionModel ->
-                expansionModel.masterData().staged().allVariants().attributes().value())
-        .plusExpansionPaths(
-            expansionModel ->
-                expansionModel.masterData().staged().allVariants().attributes().valueSet())
-        .plusExpansionPaths(
-            ExpansionPath.of("masterData.staged.masterVariant.assets[*].custom.type"))
-        .plusExpansionPaths(
-            ExpansionPath.of("masterData.staged.variants[*].assets[*].custom.type"));
+    return ProductQuery.of();
   }
 
   private ProductReferenceResolutionUtils() {}

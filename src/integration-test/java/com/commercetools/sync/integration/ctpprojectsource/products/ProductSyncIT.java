@@ -73,8 +73,10 @@ import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterAll;
@@ -246,7 +248,8 @@ class ProductSyncIT {
     final List<Product> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
 
-    final List<ProductDraft> productDrafts = mapToProductDrafts(products);
+    Map<String, String> idToKeyCache = new HashMap<>();
+    final List<ProductDraft> productDrafts = mapToProductDrafts(products, idToKeyCache);
 
     final ProductSyncStatistics syncStatistics =
         productSync.sync(productDrafts).toCompletableFuture().join();
@@ -290,7 +293,8 @@ class ProductSyncIT {
     final List<Product> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
 
-    final List<ProductDraft> productDrafts = mapToProductDrafts(products);
+    Map<String, String> idToKeyCache = new HashMap<>();
+    final List<ProductDraft> productDrafts = mapToProductDrafts(products, idToKeyCache);
 
     final ProductSyncStatistics syncStatistics =
         productSync.sync(productDrafts).toCompletableFuture().join();
@@ -336,7 +340,8 @@ class ProductSyncIT {
     final List<Product> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
 
-    final List<ProductDraft> productDrafts = mapToProductDrafts(products);
+    Map<String, String> idToKeyCache = new HashMap<>();
+    final List<ProductDraft> productDrafts = mapToProductDrafts(products, idToKeyCache);
 
     final ProductSyncStatistics syncStatistics =
         productSync.sync(productDrafts).toCompletableFuture().join();
@@ -396,7 +401,8 @@ class ProductSyncIT {
     final List<Product> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
 
-    final List<ProductDraft> productDrafts = mapToProductDrafts(products);
+    Map<String, String> idToKeyCache = new HashMap<>();
+    final List<ProductDraft> productDrafts = mapToProductDrafts(products, idToKeyCache);
 
     final ProductSyncStatistics syncStatistics =
         productSync.sync(productDrafts).toCompletableFuture().join();
@@ -533,7 +539,8 @@ class ProductSyncIT {
     // Test
     final List<Product> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
-    final List<ProductDraft> productDrafts = mapToProductDrafts(products);
+    Map<String, String> idToKeyCache = new HashMap<>();
+    final List<ProductDraft> productDrafts = mapToProductDrafts(products, idToKeyCache);
     final ProductSyncStatistics syncStatistics =
         customSync.sync(productDrafts).toCompletableFuture().join();
 
@@ -617,7 +624,8 @@ class ProductSyncIT {
     // Test
     final List<Product> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
-    final List<ProductDraft> productDrafts = mapToProductDrafts(products);
+    Map<String, String> idToKeyCache = new HashMap<>();
+    final List<ProductDraft> productDrafts = mapToProductDrafts(products, idToKeyCache);
     final ProductSyncStatistics syncStatistics =
         customSync.sync(productDrafts).toCompletableFuture().join();
 
@@ -757,7 +765,8 @@ class ProductSyncIT {
     // Test
     final List<Product> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
-    final List<ProductDraft> productDrafts = mapToProductDrafts(products);
+    Map<String, String> idToKeyCache = new HashMap<>();
+    final List<ProductDraft> productDrafts = mapToProductDrafts(products, idToKeyCache);
     final ProductSyncStatistics syncStatistics =
         customSync.sync(productDrafts).toCompletableFuture().join();
 

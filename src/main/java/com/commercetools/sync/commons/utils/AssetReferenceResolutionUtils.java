@@ -7,6 +7,7 @@ import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.AssetDraftBuilder;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nonnull;
 
 /**
@@ -24,12 +25,38 @@ public final class AssetReferenceResolutionUtils {
    * key.
    *
    * @param assets the list of assets to replace their custom ids with keys.
-   * @return a {@link List} of {@link AssetDraft} that has all channel references with keys.
+   * @return a {@link List} of {@link AssetDraft} that has all channel references with keys. TODO:
+   *     Should Remove this method when all the resources adapts reference resolution with
+   *     Cache(CTPI-443).
    */
   @Nonnull
   public static List<AssetDraft> mapToAssetDrafts(@Nonnull final List<Asset> assets) {
     return assets.stream()
         .map(asset -> AssetDraftBuilder.of(asset).custom(mapToCustomFieldsDraft(asset)).build())
+        .collect(toList());
+  }
+
+  /**
+   * Takes an asset list that is supposed to have all its assets' custom references expanded in
+   * order to be able to fetch the keys for the custom references. This method returns as a result a
+   * {@link List} of {@link AssetDraft} that has all custom references with keys.
+   *
+   * <p>Any custom reference that is not expanded will have its id in place and not replaced by the
+   * key.
+   *
+   * @param assets the list of assets to replace their custom ids with keys.
+   * @param referenceIdToKeyMap the cache contains reference Id to Keys.
+   * @return a {@link List} of {@link AssetDraft} that has all channel references with keys.
+   */
+  @Nonnull
+  public static List<AssetDraft> mapToAssetDrafts(
+      @Nonnull final List<Asset> assets, @Nonnull final Map<String, String> referenceIdToKeyMap) {
+    return assets.stream()
+        .map(
+            asset ->
+                AssetDraftBuilder.of(asset)
+                    .custom(mapToCustomFieldsDraft(asset, referenceIdToKeyMap))
+                    .build())
         .collect(toList());
   }
 

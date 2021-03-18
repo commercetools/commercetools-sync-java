@@ -41,8 +41,10 @@ import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -151,7 +153,8 @@ class ProductReferenceResolverIT {
     final List<Product> products =
         CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
 
-    final List<ProductDraft> productDrafts = mapToProductDrafts(products);
+    Map<String, String> idToKeyCache = new HashMap<>();
+    final List<ProductDraft> productDrafts = mapToProductDrafts(products, idToKeyCache);
 
     // test
     final ProductSyncStatistics syncStatistics =
@@ -180,7 +183,8 @@ class ProductReferenceResolverIT {
     final List<Product> products =
         CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
 
-    final List<ProductDraft> productDrafts = mapToProductDrafts(products);
+    Map<String, String> idToKeyCache = new HashMap<>();
+    final List<ProductDraft> productDrafts = mapToProductDrafts(products, idToKeyCache);
 
     // test
     final ProductSyncStatistics syncStatistics =

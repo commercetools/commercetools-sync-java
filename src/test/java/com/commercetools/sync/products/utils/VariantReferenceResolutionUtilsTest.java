@@ -93,7 +93,7 @@ class VariantReferenceResolutionUtilsTest {
         getProductVariantMock(singletonList(price), singletonList(asset));
 
     final List<ProductVariantDraft> variantDrafts =
-        mapToProductVariantDrafts(singletonList(productVariant));
+        mapToProductVariantDrafts(singletonList(productVariant), null);
 
     assertThat(variantDrafts).hasSize(1);
     assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
@@ -167,7 +167,7 @@ class VariantReferenceResolutionUtilsTest {
     when(productVariant1.getAttributes()).thenReturn(singletonList(nonExpandedProductRefAttribute));
 
     final List<ProductVariantDraft> variantDrafts =
-        mapToProductVariantDrafts(asList(productVariant1, productVariant2));
+        mapToProductVariantDrafts(asList(productVariant1, productVariant2), null);
 
     assertThat(variantDrafts).hasSize(2);
     assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
@@ -241,7 +241,7 @@ class VariantReferenceResolutionUtilsTest {
         getProductVariantMock(singletonList(price), singletonList(asset2));
 
     final List<ProductVariantDraft> variantDrafts =
-        mapToProductVariantDrafts(singletonList(productVariant));
+        mapToProductVariantDrafts(singletonList(productVariant), null);
 
     assertThat(variantDrafts).hasSize(1);
     assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
@@ -275,7 +275,7 @@ class VariantReferenceResolutionUtilsTest {
     final Price price = getPriceMockWithReferences(channelReference, typeReference, null);
     final ProductVariant productVariant = getProductVariantMock(singletonList(price));
 
-    final List<PriceDraft> priceDrafts = mapToPriceDrafts(productVariant);
+    final List<PriceDraft> priceDrafts = mapToPriceDrafts(productVariant, null);
 
     assertThat(priceDrafts).hasSize(1);
     final PriceDraft priceDraftAfterReplacement = priceDrafts.get(0);
@@ -319,7 +319,7 @@ class VariantReferenceResolutionUtilsTest {
 
     final ProductVariant productVariant = getProductVariantMock(asList(price1, price2));
 
-    final List<PriceDraft> priceDrafts = mapToPriceDrafts(productVariant);
+    final List<PriceDraft> priceDrafts = mapToPriceDrafts(productVariant, null);
 
     assertThat(priceDrafts).hasSize(2);
 
@@ -370,7 +370,7 @@ class VariantReferenceResolutionUtilsTest {
 
     final ProductVariant productVariant = getProductVariantMock(asList(price1, price2));
 
-    final List<PriceDraft> priceDrafts = mapToPriceDrafts(productVariant);
+    final List<PriceDraft> priceDrafts = mapToPriceDrafts(productVariant, null);
 
     assertThat(priceDrafts).hasSize(2);
 

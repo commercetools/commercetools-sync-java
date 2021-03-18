@@ -27,6 +27,7 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.types.Type;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -86,39 +87,45 @@ public final class VariantReferenceResolutionUtils {
    * update/create API request without reference resolution.
    *
    * @param productVariants the product variants with expanded references.
+   * @param referenceIdToKeyMap the cache contains reference Id to Keys.
    * @return a {@link List} of {@link ProductVariantDraft} built from the supplied {@link List} of
    *     {@link ProductVariant}.
    */
   @Nonnull
   public static List<ProductVariantDraft> mapToProductVariantDrafts(
-      @Nonnull final List<ProductVariant> productVariants) {
+      @Nonnull final List<ProductVariant> productVariants,
+      @Nonnull final Map<String, String> referenceIdToKeyMap) {
 
     return productVariants.stream()
         .filter(Objects::nonNull)
-        .map(VariantReferenceResolutionUtils::mapToProductVariantDraft)
+        .map(variants -> mapToProductVariantDraft(variants, referenceIdToKeyMap))
         .collect(toList());
   }
 
   @Nonnull
   private static ProductVariantDraft mapToProductVariantDraft(
-      @Nonnull final ProductVariant productVariant) {
+      @Nonnull final ProductVariant productVariant,
+      @Nonnull final Map<String, String> referenceIdToKeyMap) {
     return ProductVariantDraftBuilder.of(productVariant)
-        .prices(mapToPriceDrafts(productVariant))
+        .prices(mapToPriceDrafts(productVariant, referenceIdToKeyMap))
         .attributes(replaceAttributesReferencesIdsWithKeys(productVariant))
-        .assets(mapToAssetDrafts(productVariant.getAssets()))
+        .assets(mapToAssetDrafts(productVariant.getAssets(), referenceIdToKeyMap))
         .build();
   }
 
   @Nonnull
-  static List<PriceDraft> mapToPriceDrafts(@Nonnull final ProductVariant productVariant) {
+  static List<PriceDraft> mapToPriceDrafts(
+      @Nonnull final ProductVariant productVariant,
+      @Nonnull final Map<String, String> referenceIdToKeyMap) {
 
     return productVariant.getPrices().stream()
         .map(
             price ->
                 PriceDraftBuilder.of(price)
-                    .custom(mapToCustomFieldsDraft(price))
-                    .channel(getResourceIdentifierWithKey(price.getChannel()))
-                    .customerGroup(getResourceIdentifierWithKey(price.getCustomerGroup()))
+                    .custom(mapToCustomFieldsDraft(price, referenceIdToKeyMap))
+                    .channel(getResourceIdentifierWithKey(price.getChannel(), referenceIdToKeyMap))
+                    .customerGroup(
+                        getResourceIdentifierWithKey(price.getCustomerGroup(), referenceIdToKeyMap))
                     .build())
         .collect(toList());
   }
