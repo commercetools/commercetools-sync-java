@@ -49,7 +49,7 @@ dependencies {
         implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.11.4") {
             because "previous versions are vulnerable to DoS"
         }
-        implementation("io.netty:netty-codec-http:4.1.59.Final") {
+        implementation("io.netty:netty-codec-http:4.1.60.Final") {
             because "previous versions are vulnerable to Information Disclosure"
         }
         implementation("org.apache.httpcomponents:httpclient:4.5.13") {
