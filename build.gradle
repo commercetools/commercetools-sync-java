@@ -55,7 +55,7 @@ dependencies {
         implementation("org.apache.httpcomponents:httpclient:4.5.13") {
             because "previous versions are vulnerable to Improper Input Validation"
         }
-        implementation("commons-codec:commons-codec:1.13") {
+        implementation("commons-codec:commons-codec:1.15") {
             because "previous versions are vulnerable to Information Exposure"
         }
     }
