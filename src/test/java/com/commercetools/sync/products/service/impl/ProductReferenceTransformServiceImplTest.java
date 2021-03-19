@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 class ProductReferenceTransformServiceImplTest {
 
   @Test
-  void transform_WithAttributeReferences_ShouldReplaceProductReferenceIdsWithKeys() {
+  void transform_WithAttributeReferences_ShouldReplaceAttributeReferenceIdsWithKeys() {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
     final Map<String, String> cacheMap = new HashMap<>();
@@ -64,15 +64,15 @@ class ProductReferenceTransformServiceImplTest {
         .thenReturn(CompletableFuture.completedFuture(categoriesResult));
 
     // test
-    final List<Product> productsResolved =
+    final List<ProductDraft> productsResolved =
         productReferenceTransformService
-            .replaceAttributeReferenceIdsWithKeys(productPage)
+            .transformProductReferences(productPage)
             .toCompletableFuture()
             .join();
 
     // assertions
 
-    final Optional<Product> productKey1 =
+    final Optional<ProductDraft> productKey1 =
         productsResolved.stream()
             .filter(productDraft -> "productKey4".equals(productDraft.getKey()))
             .findFirst();
@@ -80,11 +80,11 @@ class ProductReferenceTransformServiceImplTest {
     assertThat(productKey1)
         .hasValueSatisfying(
             product ->
-                assertThat(product.getMasterData().getStaged().getMasterVariant().getAttributes())
+                assertThat(product.getMasterVariant().getAttributes())
                     .anySatisfy(
                         attribute -> {
                           assertThat(attribute.getName()).isEqualTo("productReference");
-                          final JsonNode referenceSet = attribute.getValueAsJsonNode();
+                          final JsonNode referenceSet = attribute.getValue();
                           assertThat(referenceSet)
                               .anySatisfy(
                                   reference ->
@@ -98,11 +98,11 @@ class ProductReferenceTransformServiceImplTest {
     assertThat(productKey1)
         .hasValueSatisfying(
             product ->
-                assertThat(product.getMasterData().getStaged().getMasterVariant().getAttributes())
+                assertThat(product.getMasterVariant().getAttributes())
                     .anySatisfy(
                         attribute -> {
                           assertThat(attribute.getName()).isEqualTo("categoryReference");
-                          final JsonNode referenceSet = attribute.getValueAsJsonNode();
+                          final JsonNode referenceSet = attribute.getValue();
                           assertThat(referenceSet)
                               .anySatisfy(
                                   reference ->
@@ -116,11 +116,11 @@ class ProductReferenceTransformServiceImplTest {
     assertThat(productKey1)
         .hasValueSatisfying(
             product ->
-                assertThat(product.getMasterData().getStaged().getMasterVariant().getAttributes())
+                assertThat(product.getMasterVariant().getAttributes())
                     .anySatisfy(
                         attribute -> {
                           assertThat(attribute.getName()).isEqualTo("productTypeReference");
-                          assertThat(attribute.getValueAsJsonNode().get("id").asText())
+                          assertThat(attribute.getValue().get("id").asText())
                               .isEqualTo("prodType1");
                         }));
   }
@@ -161,9 +161,9 @@ class ProductReferenceTransformServiceImplTest {
         .thenReturn(CompletableFuture.completedFuture(productTypesResult));
 
     // test
-    final List<Product> productsFromPageStage =
+    final List<ProductDraft> productsFromPageStage =
         productReferenceTransformService
-            .replaceAttributeReferenceIdsWithKeys(productPage)
+            .transformProductReferences(productPage)
             .toCompletableFuture()
             .join();
 
@@ -172,33 +172,31 @@ class ProductReferenceTransformServiceImplTest {
     assertThat(productsFromPageStage)
         .anySatisfy(
             product ->
-                assertThat(product.getMasterData().getStaged().getMasterVariant().getAttributes())
+                assertThat(product.getMasterVariant().getAttributes())
                     .anySatisfy(
                         attribute -> {
                           assertThat(attribute.getName()).isEqualTo("productReference");
-                          assertThat(attribute.getValueAsJsonNode().get("id").asText())
-                              .isEqualTo("prod1");
+                          assertThat(attribute.getValue().get("id").asText()).isEqualTo("prod1");
                         }));
 
     assertThat(productsFromPageStage)
         .anySatisfy(
             product ->
-                assertThat(product.getMasterData().getStaged().getMasterVariant().getAttributes())
+                assertThat(product.getMasterVariant().getAttributes())
                     .anySatisfy(
                         attribute -> {
                           assertThat(attribute.getName()).isEqualTo("categoryReference");
-                          assertThat(attribute.getValueAsJsonNode().get("id").asText())
-                              .isEqualTo("cat1");
+                          assertThat(attribute.getValue().get("id").asText()).isEqualTo("cat1");
                         }));
 
     assertThat(productsFromPageStage)
         .anySatisfy(
             product ->
-                assertThat(product.getMasterData().getStaged().getMasterVariant().getAttributes())
+                assertThat(product.getMasterVariant().getAttributes())
                     .anySatisfy(
                         attribute -> {
                           assertThat(attribute.getName()).isEqualTo("productTypeReference");
-                          assertThat(attribute.getValueAsJsonNode().get("id").asText())
+                          assertThat(attribute.getValue().get("id").asText())
                               .isEqualTo("prodType1");
                         }));
   }
@@ -221,11 +219,11 @@ class ProductReferenceTransformServiceImplTest {
         .thenReturn(CompletableFutureUtils.failed(badGatewayException));
 
     // test
-    final CompletionStage<List<Product>> productsFromPageStage =
-        productReferenceTransformService.replaceAttributeReferenceIdsWithKeys(productPage);
+    final CompletionStage<List<ProductDraft>> productDraftsFromPageStage =
+        productReferenceTransformService.transformProductReferences(productPage);
 
     // assertions
-    assertThat(productsFromPageStage)
+    assertThat(productDraftsFromPageStage)
         .failsWithin(1, TimeUnit.SECONDS)
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(BadGatewayException.class);
@@ -295,7 +293,7 @@ class ProductReferenceTransformServiceImplTest {
     // test
     final List<ProductDraft> productsResolved =
         productReferenceTransformService
-            .transformProductReferencesAndMapToProductDrafts(productPage)
+            .transformProductReferences(productPage)
             .toCompletableFuture()
             .join();
 

@@ -14,7 +14,6 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.sync.products.utils.ProductReferenceResolutionUtils.buildProductQuery;
-import static com.commercetools.sync.products.utils.ProductReferenceResolutionUtils.mapToProductDrafts;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toMap;
@@ -24,6 +23,8 @@ import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.commercetools.sync.products.service.ProductReferenceTransformService;
+import com.commercetools.sync.products.service.impl.ProductReferenceTransformServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.commands.UpdateAction;
@@ -70,6 +71,8 @@ class ProductSyncWithAssetsIT {
   private List<String> warningCallBackMessages;
   private List<UpdateAction<Product>> updateActions;
   private List<Throwable> errorCallBackExceptions;
+  private final Map<String, String> idToKeyCache = new HashMap<>();
+  private ProductReferenceTransformService productReferenceTransformService;
 
   /**
    * Delete all product related test data from target and source projects. Then creates for both CTP
@@ -101,6 +104,8 @@ class ProductSyncWithAssetsIT {
     deleteAllProducts(CTP_TARGET_CLIENT);
     deleteAllProducts(CTP_SOURCE_CLIENT);
     productSync = new ProductSync(buildSyncOptions());
+    productReferenceTransformService =
+        new ProductReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
   }
 
   private void clearSyncTestCollections() {
@@ -179,8 +184,8 @@ class ProductSyncWithAssetsIT {
     final List<Product> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
 
-    Map<String, String> idToKeyCache = new HashMap<>();
-    final List<ProductDraft> productDrafts = mapToProductDrafts(products, idToKeyCache);
+    final List<ProductDraft> productDrafts =
+        productReferenceTransformService.transformProductReferences(products).join();
 
     final ProductSyncStatistics syncStatistics =
         productSync.sync(productDrafts).toCompletableFuture().join();
@@ -254,8 +259,8 @@ class ProductSyncWithAssetsIT {
     final List<Product> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
 
-    Map<String, String> idToKeyCache = new HashMap<>();
-    final List<ProductDraft> productDrafts = mapToProductDrafts(products, idToKeyCache);
+    final List<ProductDraft> productDrafts =
+        productReferenceTransformService.transformProductReferences(products).join();
 
     final ProductSyncStatistics syncStatistics =
         productSync.sync(productDrafts).toCompletableFuture().join();

@@ -21,7 +21,6 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
 import static com.commercetools.sync.products.utils.ProductReferenceResolutionUtils.buildProductQuery;
-import static com.commercetools.sync.products.utils.ProductReferenceResolutionUtils.mapToProductDrafts;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -30,6 +29,8 @@ import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.commercetools.sync.products.service.ProductReferenceTransformService;
+import com.commercetools.sync.products.service.impl.ProductReferenceTransformServiceImpl;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
@@ -64,6 +65,9 @@ class ProductReferenceResolverIT {
   private List<String> errorCallBackMessages;
   private List<String> warningCallBackMessages;
   private List<Throwable> errorCallBackExceptions;
+  private final Map<String, String> idToKeyCache = new HashMap<>();
+  ProductReferenceTransformService productReferenceTransformService =
+      new ProductReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
 
   /**
    * Delete all product related test data from target and source projects. Then creates custom types
@@ -153,8 +157,8 @@ class ProductReferenceResolverIT {
     final List<Product> products =
         CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
 
-    Map<String, String> idToKeyCache = new HashMap<>();
-    final List<ProductDraft> productDrafts = mapToProductDrafts(products, idToKeyCache);
+    final List<ProductDraft> productDrafts =
+        productReferenceTransformService.transformProductReferences(products).join();
 
     // test
     final ProductSyncStatistics syncStatistics =
@@ -183,8 +187,8 @@ class ProductReferenceResolverIT {
     final List<Product> products =
         CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
 
-    Map<String, String> idToKeyCache = new HashMap<>();
-    final List<ProductDraft> productDrafts = mapToProductDrafts(products, idToKeyCache);
+    final List<ProductDraft> productDrafts =
+        productReferenceTransformService.transformProductReferences(products).join();
 
     // test
     final ProductSyncStatistics syncStatistics =

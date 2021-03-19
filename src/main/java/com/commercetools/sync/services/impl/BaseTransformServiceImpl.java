@@ -8,8 +8,6 @@ import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyId;
 import com.commercetools.sync.commons.utils.ChunkUtils;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import io.sphere.sdk.client.SphereClient;
 import java.util.Collections;
 import java.util.HashSet;
@@ -40,11 +38,6 @@ public class BaseTransformServiceImpl {
 
   protected SphereClient getCtpClient() {
     return ctpClient;
-  }
-
-  @Nonnull
-  private static Cache<String, String> initializeCache() {
-    return Caffeine.newBuilder().maximumSize(100_000).executor(Runnable::run).build();
   }
 
   //  @SuppressFBWarnings(

@@ -70,7 +70,7 @@ public final class ProductReferenceResolutionUtils {
    *     <tr>
    *        <td>variants.prices.customerGroup *</td>
    *        <td>{@link Reference}&lt;{@link CustomerGroup}&gt;</td>
-   *        <td>{@link Reference}&lt;{@link CustomerGroup}&gt; (with key replaced with id field)</td>
+   *        <td>{@link ResourceIdentifier}&lt;{@link CustomerGroup}&gt;</td>
    *     </tr>
    *     <tr>
    *        <td>variants.prices.custom.type</td>
@@ -100,10 +100,10 @@ public final class ProductReferenceResolutionUtils {
    *   </tbody>
    * </table>
    *
-   * <p><b>Note:</b> The aforementioned references should be expanded with a key. Any reference that
-   * is not expanded will have its id in place and not replaced by the key will be considered as
-   * existing resources on the target commercetools project and the library will issues an
-   * update/create API request without reference resolution.
+   * <p><b>Note:</b> The aforementioned references should contain Id in the map(cache) with a key
+   * value. Any reference that is not available in the map will have its id in place and not
+   * replaced by the key will be considered as existing resources on the target commercetools
+   * project and the library will issues an update/create API request without reference resolution.
    *
    * @param products the products with expanded references.
    * @param referenceIdToKeyMap the map containing the cached id to key values.
@@ -225,29 +225,9 @@ public final class ProductReferenceResolutionUtils {
   }
 
   /**
-   * Builds a {@link ProductQuery} for fetching products from a source CTP project with all the
-   * needed references expanded for the sync:
+   * Builds a {@link ProductQuery} for fetching products from a source CTP project.
    *
-   * <ul>
-   *   <li>Product Type
-   *   <li>Tax Category
-   *   <li>Product State
-   *   <li>Staged Assets' Custom Types
-   *   <li>Staged Product Categories
-   *   <li>Staged Prices' Channels
-   *   <li>Staged Prices' Customer Groups
-   *   <li>Staged Prices' Custom Types
-   *   <li>Reference Attributes
-   *   <li>Reference Set Attributes
-   * </ul>
-   *
-   * <p>Note: Please only use this util if you desire to sync all the aforementioned references from
-   * a source commercetools project. Otherwise, it is more efficient to build the query without
-   * expansions, if they are not needed, to avoid unnecessarily bigger payloads fetched from the
-   * source project.
-   *
-   * @return the query for fetching products from the source CTP project with all the aforementioned
-   *     references expanded.
+   * @return the query for fetching products from the source CTP project.
    */
   @Nonnull
   public static ProductQuery buildProductQuery() {

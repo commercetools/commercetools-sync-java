@@ -63,7 +63,18 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
 
   @Nonnull
   @Override
-  public CompletableFuture<List<ProductDraft>> transformProductReferencesAndMapToProductDrafts(
+  public CompletableFuture<List<ProductDraft>> transformProductReferences(
+      @Nonnull final List<Product> products) {
+
+    return replaceAttributeReferenceIdsWithKeys(products)
+        .thenCompose(
+            productsWithAttributesResolved ->
+                transformReferencesAndMapToProductDrafts(productsWithAttributesResolved))
+        .toCompletableFuture();
+  }
+
+  @Nonnull
+  private CompletionStage<List<ProductDraft>> transformReferencesAndMapToProductDrafts(
       @Nonnull final List<Product> products) {
 
     final List<CompletableFuture<Void>> transformReferencesToRunParallel = new ArrayList<>();
@@ -240,12 +251,20 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
         customerGroupIds, GraphQlQueryResources.CUSTOMER_GROUPS);
   }
 
+  /**
+   * Replaces the ids on attribute references with keys. If a product has at least one irresolvable
+   * reference, it will be filtered out and not returned in the new list.
+   *
+   * <p>Note: this method mutates the products passed by changing the reference keys with ids.
+   *
+   * @param products the products to replace the reference attributes ids with keys on.
+   * @return a new list which contains only products which have all their attributes references
+   *     resolvable and already replaced with keys.
+   */
   @Nonnull
-  @Override
   public CompletionStage<List<Product>> replaceAttributeReferenceIdsWithKeys(
       @Nonnull final List<Product> products) {
 
-    // TODO (CTPI-432): Those calls below should be part of the mapTo methods in java-sync later.
     final List<JsonNode> allAttributeReferences = getAllReferences(products);
 
     final List<JsonNode> allProductReferences =
