@@ -63,6 +63,8 @@ public final class InventoryServiceImpl
       @Nonnull final InventoryEntry inventoryEntry,
       @Nonnull final List<UpdateAction<InventoryEntry>> updateActions) {
 
-    return updateResource(inventoryEntry, InventoryEntryUpdateCommand::of, updateActions);
+    return updateResource(inventoryEntry, InventoryEntryUpdateCommand.o
+
+            InventoryEntryUpdateCommand::of, updateActions);
   }
 }
