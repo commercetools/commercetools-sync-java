@@ -11,13 +11,15 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class ProductSyncOptions extends BaseSyncOptions<Product, ProductDraft> {
+public final class ProductSyncOptions extends BaseSyncOptions<ProductProjection,ProductDraft, UpdateAction<Product>> {
   private final SyncFilter
       syncFilter; // which attributes to calculate update actions to black list or white list
   private final boolean ensurePriceChannels;
@@ -27,20 +29,21 @@ public final class ProductSyncOptions extends BaseSyncOptions<Product, ProductDr
       @Nullable
           final QuadConsumer<
                   SyncException,
-                  Optional<ProductDraft>,
-                  Optional<Product>,
+              Optional<ProductDraft>    ,
+              Optional<ProductProjection>,
+
                   List<UpdateAction<Product>>>
               errorCallBack,
       @Nullable
-          final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>>
+          final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
               warningCallBack,
       final int batchSize,
       @Nullable final SyncFilter syncFilter,
       @Nullable
           final TriFunction<
-                  List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
+                  List<UpdateAction<Product>>, ProductDraft, ProductProjection,List<UpdateAction<Product>>>
               beforeUpdateCallback,
-      @Nullable final Function<ProductDraft, ProductDraft> beforeCreateCallback,
+      @Nullable final Function<ProductDraft,ProductDraft> beforeCreateCallback,
       final long cacheSize,
       boolean ensurePriceChannels) {
     super(

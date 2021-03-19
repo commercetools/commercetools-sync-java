@@ -4,6 +4,8 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -56,7 +58,7 @@ public interface ProductService {
    *     contains a {@link Set} of all matching products.
    */
   @Nonnull
-  CompletionStage<Set<Product>> fetchMatchingProductsByKeys(@Nonnull Set<String> productKeys);
+  CompletionStage<Set<ProductProjection>>  fetchMatchingProductsByKeys(@Nonnull Set<String> productKeys);
 
   /**
    * Given a product key, this method fetches a product that matches this given key in the CTP
@@ -70,7 +72,7 @@ public interface ProductService {
    *     otherwise empty.
    */
   @Nonnull
-  CompletionStage<Optional<Product>> fetchProduct(@Nullable String key);
+  CompletionStage<Optional<ProductProjection>> fetchProduct(@Nullable String key);
 
   /**
    * Given a resource draft of type {@link ProductDraft}, this method attempts to create a resource
@@ -110,6 +112,7 @@ public interface ProductService {
    *     {@link io.sphere.sdk.models.SphereException}.
    */
   @Nonnull
-  CompletionStage<Product> updateProduct(
-      @Nonnull Product product, @Nonnull List<UpdateAction<Product>> updateActions);
+  public CompletionStage<ProductProjection> updateProduct(
+          @Nonnull final ProductProjection productProjection,
+          @Nonnull final List<UpdateAction<Product>> updateActions) ;
 }

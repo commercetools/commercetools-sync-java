@@ -58,6 +58,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import io.sphere.sdk.products.ProductProjection;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, ProductSyncOptions> {
@@ -65,11 +67,11 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
       "Failed to fetch existing products with keys: '%s'.";
   private static final String UNRESOLVED_REFERENCES_STORE_FETCH_FAILED =
       "Failed to fetch ProductDrafts waiting to be resolved with keys '%s'.";
-  private static final String UPDATE_FAILED = "Failed to update Product with key: '%s'. Reason: %s";
+  private static final String UPDATE_FAILED = "Failed to update ProductProjection with key: '%s'. Reason: %s";
   private static final String FAILED_TO_PROCESS =
       "Failed to process the ProductDraft with key:'%s'. Reason: %s";
   private static final String FAILED_TO_FETCH_PRODUCT_TYPE =
-      "Failed to fetch a productType for the product to "
+      "Failed to fetch a productType for the ProductProjection to "
           + "build the products' attributes metadata.";
 
   private final ProductService productService;
@@ -83,7 +85,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
   /**
    * Takes a {@link ProductSyncOptions} instance to instantiate a new {@link ProductSync} instance
-   * that could be used to sync product drafts with the given products in the CTP project specified
+   * that could be used to sync ProductProjection drafts with the given products in the CTP project specified
    * in the injected {@link ProductSyncOptions} instance.
    *
    * @param productSyncOptions the container of all the options of the sync process including the
@@ -219,11 +221,11 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
   }
 
   /**
-   * Given a set of product drafts, for each new draft: if it doesn't have any product references
+   * Given a set of ProductProjection drafts, for each new draft: if it doesn't have any ProductProjection references
    * which are missing, it syncs the new draft. However, if it does have missing references, it
    * keeps track of it by persisting it.
    *
-   * @param oldProducts old product types.
+   * @param oldProducts old ProductProjection types.
    * @param newProducts drafts that need to be synced.
    * @return a {@link CompletionStage} which contains an empty result after execution of the update
    */
@@ -377,11 +379,11 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         .resolveReferences(newProductDraft)
         .thenCompose(
             resolvedDraft -> {
-              final Product oldProduct = oldProductMap.get(newProductDraft.getKey());
+              final ProductProjection oldProduct = oldProductMap.get(newProductDraft.getKey());
 
               return ofNullable(oldProduct)
                   .map(
-                      product -> fetchProductAttributesMetadataAndUpdate(oldProduct, resolvedDraft))
+                      ProductProjection -> fetchProductAttributesMetadataAndUpdate(oldProduct, resolvedDraft))
                   .orElseGet(() -> applyCallbackAndCreate(resolvedDraft));
             })
         .exceptionally(
@@ -398,7 +400,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
   @Nonnull
   private CompletionStage<Void> fetchProductAttributesMetadataAndUpdate(
-      @Nonnull final Product oldProduct, @Nonnull final ProductDraft newProduct) {
+      @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
 
     return productTypeService
         .fetchCachedProductAttributeMetaDataMap(oldProduct.getProductType().getId())
@@ -413,7 +415,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
                           final List<UpdateAction<Product>> beforeUpdateCallBackApplied =
                               syncOptions.applyBeforeUpdateCallback(
-                                  updateActions, newProduct, oldProduct);
+                                  updateActions,oldProduct, newProduct);
 
                           if (!beforeUpdateCallBackApplied.isEmpty()) {
                             return updateProduct(
@@ -434,7 +436,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
   @Nonnull
   private CompletionStage<Void> updateProduct(
-      @Nonnull final Product oldProduct,
+      @Nonnull final ProductProjection oldProduct,
       @Nonnull final ProductDraft newProduct,
       @Nonnull final List<UpdateAction<Product>> updateActions) {
 
@@ -472,12 +474,12 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
    * made to CTP to update the existing one, otherwise it doesn't issue a request.
    *
    * @param oldProduct the product which could be updated.
-   * @param newProduct the product draft where we get the new data.
+   * @param newProduct the ProductProjection draft where we get the new data.
    * @return a future which contains an empty result after execution of the update.
    */
   @Nonnull
   private CompletionStage<Void> fetchAndUpdate(
-      @Nonnull final Product oldProduct, @Nonnull final ProductDraft newProduct) {
+      @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
 
     final String key = oldProduct.getKey();
     return productService
@@ -546,7 +548,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
    */
   private void handleError(
       @Nonnull final String errorMessage,
-      @Nullable final Product oldResource,
+      @Nullable final ProductProjection oldResource,
       @Nullable final ProductDraft newResource) {
     handleError(errorMessage, null, oldResource, newResource, null);
   }
@@ -558,28 +560,28 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
    *
    * @param errorMessage The error message describing the reason(s) of failure.
    * @param exception The exception that called caused the failure, if any.
-   * @param oldProduct the product which could be updated.
-   * @param newProduct the product draft where we get the new data.
+   * @param oldProduct the ProductProjection which could be updated.
+   * @param newProduct the ProductProjection draft where we get the new data.
    * @param updateActions the update actions to update the {@link Product} with.
    */
   private void handleError(
       @Nonnull final String errorMessage,
       @Nullable final Throwable exception,
-      @Nullable final Product oldProduct,
+      @Nullable final ProductProjection oldProduct,
       @Nullable final ProductDraft newProduct,
       @Nullable final List<UpdateAction<Product>> updateActions) {
     SyncException syncException =
         exception != null
             ? new SyncException(errorMessage, exception)
             : new SyncException(errorMessage);
-    syncOptions.applyErrorCallback(syncException, oldProduct, newProduct, updateActions);
+    syncOptions.applyErrorCallback(syncException, oldProduct,newProduct, updateActions);
     statistics.incrementFailed();
   }
 
   /**
    * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this
    * method calls the optional error callback specified in the {@code syncOptions} and updates the
-   * {@code statistics} instance by incrementing the total number of failed product to sync with the
+   * {@code statistics} instance by incrementing the total number of failed ProductProjection to sync with the
    * supplied {@code failedTimes}.
    *
    * @param syncException The exception that caused the failure.
