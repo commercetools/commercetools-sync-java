@@ -8,8 +8,10 @@ import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.ProductService;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.Versioned;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.expansion.ProductExpansionModel;
@@ -102,7 +104,12 @@ public final class ProductServiceImpl
   @Nonnull
   @Override
   public CompletionStage<Product> updateProduct(
-      @Nonnull final Product product, @Nonnull final List<UpdateAction<Product>> updateActions) {
-    return updateResource(product, ProductUpdateCommand::of, updateActions);
+          @Nonnull final ProductProjection product, @Nonnull final List<UpdateAction<Product>> updateActions) {
+    Versioned<Object> r = Versioned.of(product.getId(), product.getVersion());
+ProductUpdateCommand.ofKey(product.getKey(),product.getVersion(),updateActions);
+
+  return updateResourceByKey(product,ProductUpdateCommand::ofKey,updateActions);
+
+          //updateResource(r, ProductUpdateCommand., updateActions);
   }
 }

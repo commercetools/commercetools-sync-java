@@ -105,6 +105,20 @@ abstract class BaseService<
         CompletableFuture.completedFuture(resource), updateCommandFunction, actionBatches);
   }
 
+  @Nonnull
+  CompletionStage<U> updateResourceByKey(
+          @Nonnull final U resource,
+          @Nonnull
+          final BiFunction<String, List<? extends UpdateAction<U>>, UpdateCommand<U>>
+                  updateCommandFunction,
+          @Nonnull final List<UpdateAction<U>> updateActions) {
+
+    final List<List<UpdateAction<U>>> actionBatches =
+            batchElements(updateActions, MAXIMUM_ALLOWED_UPDATE_ACTIONS);
+    return null;//updateBatches(
+       //     CompletableFuture.completedFuture(resource), updateCommandFunction, actionBatches);
+  }
+
   /**
    * Given a list of update actions batches represented by a {@link List}&lt;{@link List}&gt; of
    * {@link UpdateAction}, this method executes the update command, computed by {@code
