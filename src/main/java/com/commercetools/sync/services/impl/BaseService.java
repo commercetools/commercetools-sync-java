@@ -273,7 +273,7 @@ abstract class BaseService<
                 _keys ->
                     keysQueryMapper
                         .apply(new HashSet<>(_keys))
-                        .withLimit(_keys.size())
+                        .withLimit(CHUNK_SIZE)
                         .withFetchTotal(false))
             .collect(toList());
 
