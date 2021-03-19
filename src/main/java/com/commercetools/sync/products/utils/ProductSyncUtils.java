@@ -26,6 +26,7 @@ import com.commercetools.sync.products.SyncFilter;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +66,7 @@ public final class ProductSyncUtils {
    */
   @Nonnull
   public static List<UpdateAction<Product>> buildActions(
-      @Nonnull final Product oldProduct,
+      @Nonnull final ProductProjection oldProduct,
       @Nonnull final ProductDraft newProduct,
       @Nonnull final ProductSyncOptions syncOptions,
       @Nonnull final Map<String, AttributeMetaData> attributesMetaData) {
@@ -129,8 +130,7 @@ public final class ProductSyncUtils {
     buildPublishOrUnpublishUpdateAction(oldProduct, newProduct, hasNewUpdateActions)
         .ifPresent(updateActions::add);
 
-    return prioritizeUpdateActions(
-        updateActions, oldProduct.getMasterData().getStaged().getMasterVariant().getId());
+    return prioritizeUpdateActions(updateActions, oldProduct.getMasterVariant().getId());
   }
 
   /**
@@ -209,7 +209,7 @@ public final class ProductSyncUtils {
    */
   @Nonnull
   public static List<UpdateAction<Product>> buildCategoryActions(
-      @Nonnull final Product oldProduct, @Nonnull final ProductDraft newProduct) {
+      @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     final List<UpdateAction<Product>> updateActions = new ArrayList<>();
     updateActions.addAll(buildAddToCategoryUpdateActions(oldProduct, newProduct));
     updateActions.addAll(buildSetCategoryOrderHintUpdateActions(oldProduct, newProduct));

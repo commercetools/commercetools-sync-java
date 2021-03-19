@@ -9,7 +9,11 @@ import javax.annotation.Nonnull;
 /** Builder for creation of {@link InventorySyncOptions}. */
 public final class InventorySyncOptionsBuilder
     extends BaseSyncOptionsBuilder<
-        InventorySyncOptionsBuilder, InventorySyncOptions, InventoryEntry, InventoryEntryDraft> {
+        InventorySyncOptionsBuilder,
+        InventorySyncOptions,
+        InventoryEntry,
+        InventoryEntryDraft,
+        InventoryEntry> {
   static final int BATCH_SIZE_DEFAULT = 150;
   static final boolean ENSURE_CHANNELS_DEFAULT = false;
   private boolean ensureChannels = ENSURE_CHANNELS_DEFAULT;

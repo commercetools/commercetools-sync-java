@@ -5,7 +5,6 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -58,7 +57,8 @@ public interface ProductService {
    *     contains a {@link Set} of all matching products.
    */
   @Nonnull
-  CompletionStage<Set<ProductProjection>>  fetchMatchingProductsByKeys(@Nonnull Set<String> productKeys);
+  CompletionStage<Set<ProductProjection>> fetchMatchingProductsByKeys(
+      @Nonnull Set<String> productKeys);
 
   /**
    * Given a product key, this method fetches a product that matches this given key in the CTP
@@ -113,6 +113,6 @@ public interface ProductService {
    */
   @Nonnull
   public CompletionStage<ProductProjection> updateProduct(
-          @Nonnull final ProductProjection productProjection,
-          @Nonnull final List<UpdateAction<Product>> updateActions) ;
+      @Nonnull final ProductProjection productProjection,
+      @Nonnull final List<UpdateAction<Product>> updateActions);
 }

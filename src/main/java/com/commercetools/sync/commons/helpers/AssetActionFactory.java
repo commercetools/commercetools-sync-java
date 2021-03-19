@@ -29,10 +29,7 @@ public abstract class AssetActionFactory<T extends Resource, D> {
    * @return update actions needed to sync the two assets.
    */
   public abstract List<UpdateAction<T>> buildAssetActions(
-      @Nonnull final T oldResource,
-      @Nonnull final D newResource,
-      @Nonnull Asset oldAsset,
-      @Nonnull AssetDraft newAssetDraft);
+      @Nonnull final D newResource, @Nonnull Asset oldAsset, @Nonnull AssetDraft newAssetDraft);
 
   /**
    * Takes an asset key to build a RemoveAsset action of the type T.

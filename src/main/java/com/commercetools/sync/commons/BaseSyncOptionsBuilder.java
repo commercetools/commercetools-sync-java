@@ -12,14 +12,14 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 
 public abstract class BaseSyncOptionsBuilder<
-    T extends BaseSyncOptionsBuilder<T, S, U, V>, S extends BaseSyncOptions, U, V> {
+    T extends BaseSyncOptionsBuilder<T, S, U, V, A>, S extends BaseSyncOptions, U, V, A> {
 
   protected SphereClient ctpClient;
-  protected QuadConsumer<SyncException, Optional<V>, Optional<U>, List<UpdateAction<U>>>
+  protected QuadConsumer<SyncException, Optional<V>, Optional<U>, List<UpdateAction<A>>>
       errorCallback;
   protected TriConsumer<SyncException, Optional<V>, Optional<U>> warningCallback;
   protected int batchSize = 30;
-  protected TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
+  protected TriFunction<List<UpdateAction<A>>, V, U, List<UpdateAction<A>>> beforeUpdateCallback;
   protected Function<V, V> beforeCreateCallback;
   protected long cacheSize = 10_000;
 
@@ -32,7 +32,7 @@ public abstract class BaseSyncOptionsBuilder<
    */
   public T errorCallback(
       @Nonnull
-          final QuadConsumer<SyncException, Optional<V>, Optional<U>, List<UpdateAction<U>>>
+          final QuadConsumer<SyncException, Optional<V>, Optional<U>, List<UpdateAction<A>>>
               errorCallback) {
     this.errorCallback = errorCallback;
     return getThis();
@@ -107,7 +107,7 @@ public abstract class BaseSyncOptionsBuilder<
    */
   public T beforeUpdateCallback(
       @Nonnull
-          final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>>
+          final TriFunction<List<UpdateAction<A>>, V, U, List<UpdateAction<A>>>
               beforeUpdateCallback) {
     this.beforeUpdateCallback = beforeUpdateCallback;
     return getThis();

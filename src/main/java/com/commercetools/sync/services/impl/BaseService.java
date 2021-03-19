@@ -107,16 +107,16 @@ abstract class BaseService<
 
   @Nonnull
   CompletionStage<U> updateResourceByKey(
-          @Nonnull final U resource,
-          @Nonnull
+      @Nonnull final U resource,
+      @Nonnull
           final BiFunction<String, List<? extends UpdateAction<U>>, UpdateCommand<U>>
-                  updateCommandFunction,
-          @Nonnull final List<UpdateAction<U>> updateActions) {
+              updateCommandFunction,
+      @Nonnull final List<UpdateAction<U>> updateActions) {
 
     final List<List<UpdateAction<U>>> actionBatches =
-            batchElements(updateActions, MAXIMUM_ALLOWED_UPDATE_ACTIONS);
-    return null;//updateBatches(
-       //     CompletableFuture.completedFuture(resource), updateCommandFunction, actionBatches);
+        batchElements(updateActions, MAXIMUM_ALLOWED_UPDATE_ACTIONS);
+    return null; // updateBatches(
+    //     CompletableFuture.completedFuture(resource), updateCommandFunction, actionBatches);
   }
 
   /**

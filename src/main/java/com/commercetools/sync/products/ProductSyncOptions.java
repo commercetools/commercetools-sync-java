@@ -12,14 +12,14 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class ProductSyncOptions extends BaseSyncOptions<ProductProjection,ProductDraft, UpdateAction<Product>> {
+public final class ProductSyncOptions
+    extends BaseSyncOptions<ProductProjection, ProductDraft, Product> {
   private final SyncFilter
       syncFilter; // which attributes to calculate update actions to black list or white list
   private final boolean ensurePriceChannels;
@@ -29,9 +29,8 @@ public final class ProductSyncOptions extends BaseSyncOptions<ProductProjection,
       @Nullable
           final QuadConsumer<
                   SyncException,
-              Optional<ProductDraft>    ,
-              Optional<ProductProjection>,
-
+                  Optional<ProductDraft>,
+                  Optional<ProductProjection>,
                   List<UpdateAction<Product>>>
               errorCallBack,
       @Nullable
@@ -41,9 +40,12 @@ public final class ProductSyncOptions extends BaseSyncOptions<ProductProjection,
       @Nullable final SyncFilter syncFilter,
       @Nullable
           final TriFunction<
-                  List<UpdateAction<Product>>, ProductDraft, ProductProjection,List<UpdateAction<Product>>>
+                  List<UpdateAction<Product>>,
+                  ProductDraft,
+                  ProductProjection,
+                  List<UpdateAction<Product>>>
               beforeUpdateCallback,
-      @Nullable final Function<ProductDraft,ProductDraft> beforeCreateCallback,
+      @Nullable final Function<ProductDraft, ProductDraft> beforeCreateCallback,
       final long cacheSize,
       boolean ensurePriceChannels) {
     super(

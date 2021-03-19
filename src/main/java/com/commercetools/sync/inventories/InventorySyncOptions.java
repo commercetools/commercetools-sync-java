@@ -16,7 +16,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public final class InventorySyncOptions
-    extends BaseSyncOptions<InventoryEntry, InventoryEntryDraft> {
+    extends BaseSyncOptions<InventoryEntry, InventoryEntryDraft, InventoryEntry> {
   private final boolean ensureChannels;
 
   InventorySyncOptions(

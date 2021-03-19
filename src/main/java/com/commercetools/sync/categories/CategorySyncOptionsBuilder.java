@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 
 public final class CategorySyncOptionsBuilder
     extends BaseSyncOptionsBuilder<
-        CategorySyncOptionsBuilder, CategorySyncOptions, Category, CategoryDraft> {
+        CategorySyncOptionsBuilder, CategorySyncOptions, Category, CategoryDraft, Category> {
   public static final int BATCH_SIZE_DEFAULT = 50;
 
   private CategorySyncOptionsBuilder(@Nonnull final SphereClient ctpClient) {
