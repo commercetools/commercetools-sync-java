@@ -298,7 +298,6 @@ public final class TextLineItemUpdateActionUtils {
       @Nonnull final ShoppingListSyncOptions syncOptions) {
 
     return CustomUpdateActionUtils.buildCustomUpdateActions(
-        oldShoppingList,
         newShoppingList,
         oldTextLineItem::getCustom,
         newTextLineItem::getCustom,

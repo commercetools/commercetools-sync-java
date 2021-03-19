@@ -15,6 +15,7 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Resource;
+import io.sphere.sdk.models.ResourceView;
 import io.sphere.sdk.types.Custom;
 import io.sphere.sdk.types.CustomDraft;
 import io.sphere.sdk.types.CustomFields;
@@ -140,9 +141,8 @@ public final class CustomUpdateActionUtils {
    */
   @SuppressWarnings("unchecked")
   @Nonnull
-  public static <D, T extends Custom, S extends CustomDraft, U extends Resource<U>>
+  public static <D, T extends Custom, S extends CustomDraft, U extends ResourceView>
       List<UpdateAction<U>> buildCustomUpdateActions(
-          @Nullable final Resource oldMainResource,
           @Nullable final D newMainResourceDraft,
           @Nonnull final T oldResource,
           @Nonnull final S newResourceDraft,
@@ -176,7 +176,7 @@ public final class CustomUpdateActionUtils {
                 exception.getMessage());
         syncOptions.applyErrorCallback(
             new SyncException(errorMessage, exception),
-            oldMainResource != null ? oldMainResource : oldResource,
+            oldResource,
             newMainResourceDraft != null ? newMainResourceDraft : newResourceDraft,
             null);
       }
@@ -196,7 +196,7 @@ public final class CustomUpdateActionUtils {
                     CUSTOM_TYPE_ID_IS_BLANK);
             syncOptions.applyErrorCallback(
                 new SyncException(errorMessage, null),
-                oldMainResource != null ? oldMainResource : oldResource,
+                oldResource,
                 newMainResourceDraft != null ? newMainResourceDraft : newResourceDraft,
                 null);
           } else {
@@ -240,7 +240,6 @@ public final class CustomUpdateActionUtils {
           @Nonnull final Function<T, String> updateIdGetter,
           @Nonnull final BaseSyncOptions syncOptions) {
     return buildCustomUpdateActions(
-        null,
         null,
         oldResource,
         newResourceDraft,
@@ -298,7 +297,7 @@ public final class CustomUpdateActionUtils {
    *     update actions are needed.
    */
   @Nonnull
-  static <T extends Custom, U extends Resource<U>>
+  static <T extends Custom, U extends ResourceView>
       List<UpdateAction<U>> buildNonNullCustomFieldsUpdateActions(
           @Nonnull final CustomFields oldCustomFields,
           @Nonnull final CustomFieldsDraft newCustomFields,
@@ -400,7 +399,7 @@ public final class CustomUpdateActionUtils {
    *     update actions are needed.
    */
   @Nonnull
-  static <T extends Custom, U extends Resource<U>>
+  static <T extends Custom, U extends ResourceView>
       List<UpdateAction<U>> buildSetCustomFieldsUpdateActions(
           @Nonnull final Map<String, JsonNode> oldCustomFields,
           @Nonnull final Map<String, JsonNode> newCustomFields,
@@ -457,7 +456,7 @@ public final class CustomUpdateActionUtils {
    *     update actions are needed.
    */
   @Nonnull
-  private static <T extends Custom, U extends Resource<U>>
+  private static <T extends Custom, U extends ResourceView>
       List<UpdateAction<U>> buildNewOrModifiedCustomFieldsUpdateActions(
           @Nonnull final Map<String, JsonNode> oldCustomFields,
           @Nonnull final Map<String, JsonNode> newCustomFields,
@@ -511,7 +510,7 @@ public final class CustomUpdateActionUtils {
    *     update actions are needed.
    */
   @Nonnull
-  private static <T extends Custom, U extends Resource<U>>
+  private static <T extends Custom, U extends ResourceView>
       List<UpdateAction<U>> buildRemovedCustomFieldsUpdateActions(
           @Nonnull final Map<String, JsonNode> oldCustomFields,
           @Nonnull final Map<String, JsonNode> newCustomFields,

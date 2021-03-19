@@ -1,5 +1,12 @@
 package com.commercetools.sync.services.impl;
 
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+import static io.sphere.sdk.products.ProductProjectionType.STAGED;
+import static java.lang.String.format;
+import static java.util.Collections.singleton;
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.commons.utils.ChunkUtils;
@@ -8,26 +15,17 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.ProductService;
 import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.ResourceView;
-import io.sphere.sdk.models.ResourceViewImpl;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.ProductProjectionType;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.expansion.ProductExpansionModel;
-import io.sphere.sdk.products.expansion.ProductProjectionExpansionModel;
 import io.sphere.sdk.products.queries.ProductProjectionQuery;
-import io.sphere.sdk.products.queries.ProductProjectionQueryModel;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.products.queries.ProductQueryModel;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.queries.QueryPredicate;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -40,13 +38,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
-import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
-import static io.sphere.sdk.products.ProductProjectionType.STAGED;
-import static java.lang.String.format;
-import static java.util.Collections.singleton;
-import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang3.StringUtils.isBlank;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringUtils;
 
 public final class ProductServiceImpl
     extends BaseServiceWithKey<
@@ -66,24 +60,19 @@ public final class ProductServiceImpl
   @Override
   public CompletionStage<Optional<String>> getIdFromCacheOrFetch(@Nullable final String key) {
 
-
-
-
-
-
-return  fetchCachedResourceIdInternal(key, resource -> resource.getKey(),
-          () -> ProductProjectionQuery.ofStaged().withPredicates(buildProductKeysQueryPredicate(singleton(key))));
-
-
-
+    return fetchCachedResourceIdInternal(
+        key,
+        resource -> resource.getKey(),
+        () ->
+            ProductProjectionQuery.ofStaged()
+                .withPredicates(buildProductKeysQueryPredicate(singleton(key))));
   }
-
 
   @Nonnull
   CompletionStage<Optional<String>> fetchCachedResourceIdInternal(
-          @Nullable final String key,
-          @Nonnull final Function<ProductProjection, String> keyMapper,
-          @Nonnull final Supplier<ProductProjectionQuery> querySupplier) {
+      @Nullable final String key,
+      @Nonnull final Function<ProductProjection, String> keyMapper,
+      @Nonnull final Supplier<ProductProjectionQuery> querySupplier) {
 
     if (isBlank(key)) {
       return CompletableFuture.completedFuture(Optional.empty());
@@ -94,18 +83,14 @@ return  fetchCachedResourceIdInternal(key, resource -> resource.getKey(),
       return CompletableFuture.completedFuture(Optional.of(id));
     }
     final Consumer<List<ProductProjection>> pageConsumer =
-            page ->
-                    page.forEach(resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
+        page ->
+            page.forEach(resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
 
     return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), querySupplier.get(), pageConsumer)
-            .thenApply(result -> Optional.ofNullable(keyToIdCache.getIfPresent(key)));
+        .thenApply(result -> Optional.ofNullable(keyToIdCache.getIfPresent(key)));
   }
 
-
-
-
-
-    @Nonnull
+  @Nonnull
   @Override
   public CompletionStage<Map<String, String>> cacheKeysToIds(
       @Nonnull final Set<String> productKeys) {
@@ -116,7 +101,8 @@ return  fetchCachedResourceIdInternal(key, resource -> resource.getKey(),
             new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.PRODUCTS));
   }
 
-  QueryPredicate<ProductProjection> buildProductKeysQueryPredicate(@Nonnull final Set<String> productKeys) {
+  QueryPredicate<ProductProjection> buildProductKeysQueryPredicate(
+      @Nonnull final Set<String> productKeys) {
     final List<String> keysSurroundedWithDoubleQuotes =
         productKeys.stream()
             .filter(StringUtils::isNotBlank)
@@ -135,13 +121,14 @@ return  fetchCachedResourceIdInternal(key, resource -> resource.getKey(),
 
     return fetchMatchingResourcesInternal(
         productKeys,
-            resource -> resource.getKey(),
+        resource -> resource.getKey(),
         (keysNotCached) ->
-            ProductProjectionQuery.ofStaged().withPredicates(buildProductKeysQueryPredicate(keysNotCached)));
+            ProductProjectionQuery.ofStaged()
+                .withPredicates(buildProductKeysQueryPredicate(keysNotCached)));
   }
 
-
-  <Q extends   SphereRequest<PagedQueryResult<T>>,T extends ProductProjection> CompletionStage<Set<ProductProjection>> fetchMatchingResourcesInternal(
+  <Q extends SphereRequest<PagedQueryResult<T>>, T extends ProductProjection>
+      CompletionStage<Set<ProductProjection>> fetchMatchingResourcesInternal(
           @Nonnull final Set<String> keys,
           @Nonnull final Function<T, String> keyMapper,
           @Nonnull final Function<Set<String>, Q> keysQueryMapper) {
@@ -152,18 +139,19 @@ return  fetchCachedResourceIdInternal(key, resource -> resource.getKey(),
 
     final List<List<String>> chunkedKeys = ChunkUtils.chunk(keys, CHUNK_SIZE);
 
-    List<Q> keysQueryMapperList = chunkedKeys.stream()
+    List<Q> keysQueryMapperList =
+        chunkedKeys.stream()
             .map(_keys -> keysQueryMapper.apply(new HashSet<>(_keys)))
             .collect(toList());
 
     return ChunkUtils.executeChunks(syncOptions.getCtpClient(), keysQueryMapperList)
-            .thenApply(ChunkUtils::flattenPagedQueryResults)
-            .thenApply(
-                    chunk -> {
-                      chunk.forEach(
-                              resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
-                      return new HashSet<>(chunk);
-                    });
+        .thenApply(ChunkUtils::flattenPagedQueryResults)
+        .thenApply(
+            chunk -> {
+              chunk.forEach(
+                  resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
+              return new HashSet<>(chunk);
+            });
   }
 
   @Nonnull
@@ -175,20 +163,20 @@ return  fetchCachedResourceIdInternal(key, resource -> resource.getKey(),
     }
 
     return syncOptions
-            .getCtpClient()
-            .execute( ProductProjectionQuery.ofStaged().withPredicates(buildProductKeysQueryPredicate(singleton(key))))
-            .thenApply(
-                    pagedQueryResult ->
-                            pagedQueryResult
-                                    .head()
-                                    .map(
-                                            resource -> {
-                                              keyToIdCache.put(key, resource.getId());
-                                              return resource;
-                                            }));
+        .getCtpClient()
+        .execute(
+            ProductProjectionQuery.ofStaged()
+                .withPredicates(buildProductKeysQueryPredicate(singleton(key))))
+        .thenApply(
+            pagedQueryResult ->
+                pagedQueryResult
+                    .head()
+                    .map(
+                        resource -> {
+                          keyToIdCache.put(key, resource.getId());
+                          return resource;
+                        }));
   }
-
-
 
   @Nonnull
   @Override

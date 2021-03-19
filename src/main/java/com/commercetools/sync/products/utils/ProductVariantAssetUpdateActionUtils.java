@@ -10,7 +10,6 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.commands.updateactions.ChangeAssetName;
 import io.sphere.sdk.products.commands.updateactions.SetAssetDescription;
@@ -40,7 +39,6 @@ public final class ProductVariantAssetUpdateActionUtils {
    */
   @Nonnull
   public static <D> List<UpdateAction<Product>> buildActions(
-      @Nonnull final Resource oldResource,
       @Nonnull final D newResource,
       @Nonnull final Integer variantId,
       @Nonnull final Asset oldAsset,
@@ -55,8 +53,7 @@ public final class ProductVariantAssetUpdateActionUtils {
             buildSetAssetSourcesUpdateAction(variantId, oldAsset, newAsset));
 
     updateActions.addAll(
-        buildCustomUpdateActions(
-            oldResource, newResource, variantId, oldAsset, newAsset, syncOptions));
+        buildCustomUpdateActions(newResource, variantId, oldAsset, newAsset, syncOptions));
     return updateActions;
   }
 
@@ -179,7 +176,6 @@ public final class ProductVariantAssetUpdateActionUtils {
    */
   @Nonnull
   public static <D> List<UpdateAction<Product>> buildCustomUpdateActions(
-      @Nonnull final Resource oldResource,
       @Nonnull final D newResource,
       @Nonnull final Integer variantId,
       @Nonnull final Asset oldAsset,
@@ -187,7 +183,6 @@ public final class ProductVariantAssetUpdateActionUtils {
       @Nonnull final ProductSyncOptions syncOptions) {
 
     return CustomUpdateActionUtils.buildCustomUpdateActions(
-        oldResource,
         newResource,
         oldAsset,
         newAsset,

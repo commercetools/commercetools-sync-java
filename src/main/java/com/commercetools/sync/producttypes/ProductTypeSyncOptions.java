@@ -15,7 +15,8 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class ProductTypeSyncOptions extends BaseSyncOptions<ProductType, ProductTypeDraft> {
+public final class ProductTypeSyncOptions
+    extends BaseSyncOptions<ProductType, ProductTypeDraft, ProductType> {
   ProductTypeSyncOptions(
       @Nonnull final SphereClient ctpClient,
       @Nullable

@@ -15,7 +15,7 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class TypeSyncOptions extends BaseSyncOptions<Type, TypeDraft> {
+public final class TypeSyncOptions extends BaseSyncOptions<Type, TypeDraft, Type> {
 
   TypeSyncOptions(
       @Nonnull final SphereClient ctpClient,

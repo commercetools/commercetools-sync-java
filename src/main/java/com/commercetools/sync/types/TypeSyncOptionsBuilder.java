@@ -7,7 +7,7 @@ import io.sphere.sdk.types.TypeDraft;
 import javax.annotation.Nonnull;
 
 public final class TypeSyncOptionsBuilder
-    extends BaseSyncOptionsBuilder<TypeSyncOptionsBuilder, TypeSyncOptions, Type, TypeDraft> {
+    extends BaseSyncOptionsBuilder<TypeSyncOptionsBuilder, TypeSyncOptions, Type, TypeDraft, Type> {
 
   public static final int BATCH_SIZE_DEFAULT = 50;
 

@@ -2,7 +2,7 @@ package com.commercetools.sync.commons.helpers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Resource;
+import io.sphere.sdk.models.ResourceView;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
  *
  * @param <T> the type of the resource to create update actions for.
  */
-public interface GenericCustomActionBuilder<T extends Resource<T>> {
+public interface GenericCustomActionBuilder<T extends ResourceView> {
   /**
    * Creates a CTP "setCustomType" update action on the given resource {@code T} that removes the
    * custom type set on the given resource {@code T}. If the resource that has the custom fields is

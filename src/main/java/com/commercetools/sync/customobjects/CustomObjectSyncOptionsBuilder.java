@@ -12,7 +12,8 @@ public final class CustomObjectSyncOptionsBuilder
         CustomObjectSyncOptionsBuilder,
         CustomObjectSyncOptions,
         CustomObject<JsonNode>,
-        CustomObjectDraft<JsonNode>> {
+        CustomObjectDraft<JsonNode>,
+        CustomObject<JsonNode>> {
 
   public static final int BATCH_SIZE_DEFAULT = 50;
 

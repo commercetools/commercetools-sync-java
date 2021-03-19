@@ -16,7 +16,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public final class ShoppingListSyncOptions
-    extends BaseSyncOptions<ShoppingList, ShoppingListDraft> {
+    extends BaseSyncOptions<ShoppingList, ShoppingListDraft, ShoppingList> {
 
   ShoppingListSyncOptions(
       @Nonnull final SphereClient ctpClient,

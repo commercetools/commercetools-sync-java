@@ -28,6 +28,7 @@ import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.attributes.Attribute;
@@ -100,7 +101,7 @@ public final class ProductVariantUpdateActionUtils {
    */
   @Nonnull
   public static List<UpdateAction<Product>> buildProductVariantPricesUpdateActions(
-      @Nullable final Product oldProduct,
+      @Nullable final ProductProjection oldProduct,
       @Nonnull final ProductDraft newProduct,
       @Nonnull final ProductVariant oldProductVariant,
       @Nonnull final ProductVariantDraft newProductVariant,
@@ -142,12 +143,7 @@ public final class ProductVariantUpdateActionUtils {
                         .map(
                             oldPrice ->
                                 buildActions(
-                                    oldProduct,
-                                    newProduct,
-                                    variantId,
-                                    oldPrice,
-                                    newPrice,
-                                    syncOptions))
+                                    newProduct, variantId, oldPrice, newPrice, syncOptions))
                         .orElseGet(
                             () -> singletonList(AddPrice.ofVariantId(variantId, newPrice, true)));
                 updateActions.addAll(updateOrAddPrice);
@@ -289,7 +285,7 @@ public final class ProductVariantUpdateActionUtils {
    */
   @Nonnull
   public static List<UpdateAction<Product>> buildProductVariantAssetsUpdateActions(
-      @Nonnull final Product oldProduct,
+      @Nonnull final ProductProjection oldProduct,
       @Nonnull final ProductDraft newProduct,
       @Nonnull final ProductVariant oldProductVariant,
       @Nonnull final ProductVariantDraft newProductVariant,
@@ -297,7 +293,6 @@ public final class ProductVariantUpdateActionUtils {
 
     try {
       return buildAssetsUpdateActions(
-          oldProduct,
           newProduct,
           oldProductVariant.getAssets(),
           newProductVariant.getAssets(),
@@ -341,7 +336,7 @@ public final class ProductVariantUpdateActionUtils {
    */
   @Nonnull
   public static List<UpdateAction<Product>> buildProductVariantAttributesUpdateActions(
-      @Nonnull final Product oldProduct,
+      @Nonnull final ProductProjection oldProduct,
       @Nonnull final ProductDraft newProduct,
       @Nonnull final ProductVariant oldProductVariant,
       @Nonnull final ProductVariantDraft newProductVariant,

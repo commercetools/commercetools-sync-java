@@ -8,7 +8,11 @@ import javax.annotation.Nonnull;
 
 public final class ProductTypeSyncOptionsBuilder
     extends BaseSyncOptionsBuilder<
-        ProductTypeSyncOptionsBuilder, ProductTypeSyncOptions, ProductType, ProductTypeDraft> {
+        ProductTypeSyncOptionsBuilder,
+        ProductTypeSyncOptions,
+        ProductType,
+        ProductTypeDraft,
+        ProductType> {
 
   public static final int BATCH_SIZE_DEFAULT = 50;
 
