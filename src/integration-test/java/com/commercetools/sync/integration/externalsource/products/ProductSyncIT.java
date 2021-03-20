@@ -63,6 +63,7 @@ import io.sphere.sdk.products.PriceDraftDsl;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.ProductVariantDraftDsl;
@@ -169,7 +170,7 @@ class ProductSyncIT {
   }
 
   private ProductSyncOptions buildSyncOptions() {
-    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallBack =
+    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>> warningCallBack =
         (exception, newResource, oldResource) ->
             warningCallBackMessages.add(exception.getMessage());
 
@@ -228,7 +229,7 @@ class ProductSyncIT {
             .state(null)
             .build();
 
-    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallBack =
+    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>> warningCallBack =
         (exception, newResource, oldResource) ->
             warningCallBackMessages.add(exception.getMessage());
 
@@ -986,7 +987,7 @@ class ProductSyncIT {
   void sync_withProductContainingAttributeChanges_shouldSyncProductCorrectly() {
     // preparation
     final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallBack =
+    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>> warningCallBack =
         (exception, newResource, oldResource) ->
             warningCallBackMessages.add(exception.getMessage());
 

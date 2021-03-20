@@ -32,6 +32,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.Attribute;
@@ -118,7 +119,7 @@ class ProductSyncWithNestedReferencedProductTypesIT {
   }
 
   private ProductSyncOptions buildSyncOptions() {
-    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallback =
+    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>> warningCallback =
         (syncException, productDraft, product) ->
             warningCallBackMessages.add(syncException.getMessage());
 
@@ -139,7 +140,7 @@ class ProductSyncWithNestedReferencedProductTypesIT {
   private List<UpdateAction<Product>> collectActions(
       @Nonnull final List<UpdateAction<Product>> actions,
       @Nonnull final ProductDraft productDraft,
-      @Nonnull final Product product) {
+      @Nonnull final ProductProjection product) {
     this.actions.addAll(actions);
     return actions;
   }
