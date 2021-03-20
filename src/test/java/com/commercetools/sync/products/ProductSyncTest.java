@@ -42,6 +42,7 @@ import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.queries.ProductQuery;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -296,8 +297,8 @@ class ProductSyncTest {
             .state(null)
             .build();
 
-    final Product mockedExistingProduct =
-        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class);
+    final ProductProjection mockedExistingProduct =
+        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, ProductProjection.class);
 
     final ProductSyncOptions productSyncOptions =
         ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
@@ -355,8 +356,8 @@ class ProductSyncTest {
             .state(null)
             .build();
 
-    final Product mockedExistingProduct =
-        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class);
+    final ProductProjection mockedExistingProduct =
+        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, ProductProjection.class);
     final List<String> errorMessages = new ArrayList<>();
     final List<Throwable> exceptions = new ArrayList<>();
 

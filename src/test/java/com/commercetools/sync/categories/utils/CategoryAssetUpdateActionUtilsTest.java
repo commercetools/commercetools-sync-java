@@ -99,7 +99,7 @@ class CategoryAssetUpdateActionUtilsTest {
             .build();
 
     final List<UpdateAction<Category>> updateActions =
-        buildActions(mainCategory, mainCategoryDraft, oldAsset, newAssetDraft, SYNC_OPTIONS);
+        buildActions(mainCategoryDraft, oldAsset, newAssetDraft, SYNC_OPTIONS);
 
     assertThat(updateActions).hasSize(5);
     assertThat(updateActions)
@@ -141,7 +141,7 @@ class CategoryAssetUpdateActionUtilsTest {
     final AssetDraft newAssetDraft = AssetDraftBuilder.of(oldAsset).build();
 
     final List<UpdateAction<Category>> updateActions =
-        buildActions(mainCategory, mainCategoryDraft, oldAsset, newAssetDraft, SYNC_OPTIONS);
+        buildActions( mainCategoryDraft, oldAsset, newAssetDraft, SYNC_OPTIONS);
 
     assertThat(updateActions).isEmpty();
   }
@@ -349,7 +349,7 @@ class CategoryAssetUpdateActionUtilsTest {
 
     final List<UpdateAction<Category>> updateActions =
         buildCustomUpdateActions(
-            mainCategory, mainCategoryDraft, oldAsset, newAssetDraft, SYNC_OPTIONS);
+ mainCategoryDraft, oldAsset, newAssetDraft, SYNC_OPTIONS);
 
     assertThat(updateActions).isEmpty();
   }
@@ -381,7 +381,7 @@ class CategoryAssetUpdateActionUtilsTest {
 
     final List<UpdateAction<Category>> updateActions =
         buildCustomUpdateActions(
-            mainCategory, mainCategoryDraft, oldAsset, newAssetDraft, SYNC_OPTIONS);
+    mainCategoryDraft, oldAsset, newAssetDraft, SYNC_OPTIONS);
 
     assertThat(updateActions).hasSize(2);
   }
@@ -405,7 +405,7 @@ class CategoryAssetUpdateActionUtilsTest {
 
     final List<UpdateAction<Category>> updateActions =
         buildCustomUpdateActions(
-            mainCategory, mainCategoryDraft, oldAsset, newAssetDraft, SYNC_OPTIONS);
+         mainCategoryDraft, oldAsset, newAssetDraft, SYNC_OPTIONS);
 
     assertThat(updateActions)
         .containsExactly(SetAssetCustomType.ofKey(newAssetDraft.getKey(), newCustomFieldsDraft));
@@ -448,7 +448,7 @@ class CategoryAssetUpdateActionUtilsTest {
 
     final List<UpdateAction<Category>> updateActions =
         buildCustomUpdateActions(
-            mainCategory, mainCategoryDraft, oldAsset, newAssetDraft, syncOptions);
+       mainCategoryDraft, oldAsset, newAssetDraft, syncOptions);
 
     assertThat(updateActions).isEmpty();
     assertThat(errors).hasSize(1);

@@ -35,6 +35,7 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductData;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
@@ -244,8 +245,8 @@ public class ProductSyncMockUtils {
         .build();
   }
 
-  public static Product createProductFromJson(@Nonnull final String jsonResourcePath) {
-    return readObjectFromResource(jsonResourcePath, Product.class);
+  public static ProductProjection createProductFromJson(@Nonnull final String jsonResourcePath) {
+    return readObjectFromResource(jsonResourcePath, ProductProjection.class);
   }
 
   public static ProductDraft createProductDraftFromJson(@Nonnull final String jsonResourcePath) {

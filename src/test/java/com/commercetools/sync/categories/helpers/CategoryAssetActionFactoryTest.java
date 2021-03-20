@@ -80,7 +80,7 @@ class CategoryAssetActionFactoryTest {
     Category category = mock(Category.class);
     CategoryDraft categoryDraft = mock(CategoryDraft.class);
     final List<UpdateAction<Category>> updateActions =
-        categoryAssetActionFactory.buildAssetActions(category, categoryDraft, asset, assetDraft);
+        categoryAssetActionFactory.buildAssetActions( categoryDraft, asset, assetDraft);
 
     assertThat(updateActions).isNotNull();
     assertThat(updateActions).containsExactly(SetAssetTags.ofKey(asset.getKey(), newTags));

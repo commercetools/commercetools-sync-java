@@ -101,7 +101,7 @@ class ProductVariantAssetUpdateActionUtilsTest {
     Product product = mock(Product.class);
     ProductDraft productDraft = mock(ProductDraft.class);
     final List<UpdateAction<Product>> updateActions =
-        buildActions(product, productDraft, 1, oldAsset, newAssetDraft, SYNC_OPTIONS);
+        buildActions(productDraft, 1, oldAsset, newAssetDraft, SYNC_OPTIONS);
 
     assertThat(updateActions).hasSize(5);
     assertThat(updateActions)
@@ -143,7 +143,7 @@ class ProductVariantAssetUpdateActionUtilsTest {
     final AssetDraft newAssetDraft = AssetDraftBuilder.of(oldAsset).build();
 
     final List<UpdateAction<Product>> updateActions =
-        buildActions(product, productDraft, 1, oldAsset, newAssetDraft, SYNC_OPTIONS);
+        buildActions( productDraft, 1, oldAsset, newAssetDraft, SYNC_OPTIONS);
 
     assertThat(updateActions).isEmpty();
   }
@@ -350,7 +350,7 @@ class ProductVariantAssetUpdateActionUtilsTest {
         AssetDraftBuilder.of(emptyList(), empty()).custom(newCustomFieldsDraft).build();
 
     final List<UpdateAction<Product>> updateActions =
-        buildCustomUpdateActions(product, productDraft, 1, oldAsset, newAssetDraft, SYNC_OPTIONS);
+        buildCustomUpdateActions( productDraft, 1, oldAsset, newAssetDraft, SYNC_OPTIONS);
 
     assertThat(updateActions).isEmpty();
   }
@@ -381,7 +381,7 @@ class ProductVariantAssetUpdateActionUtilsTest {
         AssetDraftBuilder.of(emptyList(), empty()).custom(newCustomFieldsDraft).build();
 
     final List<UpdateAction<Product>> updateActions =
-        buildCustomUpdateActions(product, productDraft, 1, oldAsset, newAssetDraft, SYNC_OPTIONS);
+        buildCustomUpdateActions( productDraft, 1, oldAsset, newAssetDraft, SYNC_OPTIONS);
 
     assertThat(updateActions).hasSize(2);
   }
@@ -403,7 +403,7 @@ class ProductVariantAssetUpdateActionUtilsTest {
         AssetDraftBuilder.of(emptyList(), empty()).custom(newCustomFieldsDraft).build();
 
     final List<UpdateAction<Product>> updateActions =
-        buildCustomUpdateActions(product, productDraft, 1, oldAsset, newAssetDraft, SYNC_OPTIONS);
+        buildCustomUpdateActions( productDraft, 1, oldAsset, newAssetDraft, SYNC_OPTIONS);
 
     assertThat(updateActions)
         .containsExactly(
@@ -447,7 +447,7 @@ class ProductVariantAssetUpdateActionUtilsTest {
             .build();
 
     final List<UpdateAction<Product>> updateActions =
-        buildCustomUpdateActions(product, productDraft, 1, oldAsset, newAssetDraft, syncOptions);
+        buildCustomUpdateActions(productDraft, 1, oldAsset, newAssetDraft, syncOptions);
 
     assertThat(updateActions).isEmpty();
     assertThat(errors).hasSize(1);
@@ -496,7 +496,7 @@ class ProductVariantAssetUpdateActionUtilsTest {
             .build();
     // test
     final List<UpdateAction<Product>> updateActions =
-        buildCustomUpdateActions(product, productDraft, 1, oldAsset, newAssetDraft, syncOptions);
+        buildCustomUpdateActions( productDraft, 1, oldAsset, newAssetDraft, syncOptions);
 
     // assertion
     assertThat(errors).isEmpty();
@@ -541,7 +541,7 @@ class ProductVariantAssetUpdateActionUtilsTest {
             .build();
     // test
     final List<UpdateAction<Product>> updateActions =
-        buildCustomUpdateActions(product, productDraft, 1, oldAsset, newAssetDraft, syncOptions);
+        buildCustomUpdateActions( productDraft, 1, oldAsset, newAssetDraft, syncOptions);
 
     // assertion
     assertThat(errors).isEmpty();

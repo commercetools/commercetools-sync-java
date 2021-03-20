@@ -17,11 +17,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
+
+import io.sphere.sdk.products.ProductProjection;
 import org.junit.jupiter.api.Test;
 
 class BuildRemoveFromCategoryUpdateActionsTest {
-  private static final Product MOCK_OLD_PUBLISHED_PRODUCT =
-      readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
+  private static final ProductProjection MOCK_OLD_PUBLISHED_PRODUCT =
+      readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, ProductProjection.class);
 
   @Test
   void buildRemoveFromCategoryUpdateActions_WithDifferentStagedValues_ShouldBuildUpdateAction() {
@@ -48,7 +50,7 @@ class BuildRemoveFromCategoryUpdateActionsTest {
   }
 
   private List<UpdateAction<Product>> getRemoveFromCategoryUpdateActions(
-      @Nonnull final Product oldProduct,
+      @Nonnull final ProductProjection oldProduct,
       @Nonnull final Set<ResourceIdentifier<Category>> newProductCategories) {
 
     final ProductDraft newProductDraft = mock(ProductDraft.class);

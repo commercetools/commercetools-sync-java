@@ -18,6 +18,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
+import io.sphere.sdk.products.ProductProjectionType;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.expansion.ProductExpansionModel;
@@ -180,9 +181,10 @@ public final class ProductServiceImpl
 
   @Nonnull
   @Override
-  public CompletionStage<Optional<Product>> createProduct(
+  public CompletionStage<Optional<ProductProjection>> createProduct(
       @Nonnull final ProductDraft productDraft) {
-    return createResource(productDraft, ProductCreateCommand::of);
+    return createResource(productDraft, ProductCreateCommand::of)
+        .thenApply(product -> product.map(opt -> opt.toProjection(STAGED)));
   }
 
   @Nonnull
