@@ -9,6 +9,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductCatalogData;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.commands.updateactions.Publish;
 import io.sphere.sdk.products.commands.updateactions.Unpublish;
 import java.util.Optional;
@@ -180,8 +181,8 @@ class BuildPublishOrUnpublishUpdateActionTest {
     when(productCatalogData.isPublished()).thenReturn(isOldProductPublished);
     when(productCatalogData.hasStagedChanges()).thenReturn(hasOldProductStagedChanges);
 
-    final Product oldProduct = mock(Product.class);
-    when(oldProduct.getMasterData()).thenReturn(productCatalogData);
+    final ProductProjection oldProduct = mock(ProductProjection.class);
+   // when(oldProduct.getMasterData()).thenReturn(productCatalogData);
 
     final ProductDraft newProductDraft = mock(ProductDraft.class);
     when(newProductDraft.isPublish()).thenReturn(isNewProductDraftPublished);

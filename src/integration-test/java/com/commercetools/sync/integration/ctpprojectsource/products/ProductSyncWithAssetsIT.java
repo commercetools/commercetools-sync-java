@@ -118,7 +118,7 @@ class ProductSyncWithAssetsIT {
         .warningCallback(
             (exception, oldResource, newResource) ->
                 warningCallBackMessages.add(exception.getMessage()))
-        .beforeUpdateCallback(this::beforeUpdateCallback)
+        .beforeUpdateCallback((updateActions1, newProductDraft, oldProduct) -> beforeUpdateCallback(updateActions1))
         .build();
   }
 
@@ -129,9 +129,7 @@ class ProductSyncWithAssetsIT {
   }
 
   private List<UpdateAction<Product>> beforeUpdateCallback(
-      @Nonnull final List<UpdateAction<Product>> updateActions,
-      @Nonnull final ProductDraft newProductDraft,
-      @Nonnull final Product oldProduct) {
+          @Nonnull final List<UpdateAction<Product>> updateActions) {
     this.updateActions.addAll(updateActions);
     return updateActions;
   }

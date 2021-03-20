@@ -31,6 +31,7 @@ import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.utils.CompletableFutureUtils;
@@ -58,7 +59,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 class BaseServiceImplTest {
 
   @SuppressWarnings("unchecked")
-  private TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallback =
+  private TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>> warningCallback =
       mock(TriConsumer.class);
 
   private SphereClient client = mock(SphereClient.class);
@@ -138,7 +139,7 @@ class BaseServiceImplTest {
   @Test
   void fetchMatchingResources_WithEmptyKeySet_ShouldFetchAndCacheNothing() {
     // test
-    final Set<Product> resources =
+    final Set<ProductProjection> resources =
         service.fetchMatchingProductsByKeys(new HashSet<>()).toCompletableFuture().join();
 
     // assertions
@@ -157,11 +158,11 @@ class BaseServiceImplTest {
     resourceKeys.add(key1);
     resourceKeys.add(key2);
 
-    final Product mock1 = mock(Product.class);
+    final ProductProjection mock1 = mock(ProductProjection.class);
     when(mock1.getId()).thenReturn(RandomStringUtils.random(15));
     when(mock1.getKey()).thenReturn(key1);
 
-    final Product mock2 = mock(Product.class);
+    final ProductProjection mock2 = mock(ProductProjection.class);
     when(mock2.getId()).thenReturn(RandomStringUtils.random(15));
     when(mock2.getKey()).thenReturn(key2);
 
@@ -171,7 +172,7 @@ class BaseServiceImplTest {
     when(client.execute(any(ProductQuery.class))).thenReturn(completedFuture(result));
 
     // test fetch
-    final Set<Product> resources =
+    final Set<ProductProjection> resources =
         service.fetchMatchingProductsByKeys(resourceKeys).toCompletableFuture().join();
 
     // assertions
@@ -201,11 +202,11 @@ class BaseServiceImplTest {
     final HashSet<String> resourceKeys = new HashSet<>();
     resourceKeys.addAll(randomKeys);
 
-    final Product mock1 = mock(Product.class);
+    final ProductProjection mock1 = mock(ProductProjection.class);
     when(mock1.getId()).thenReturn(RandomStringUtils.random(15));
     when(mock1.getKey()).thenReturn(randomKeys.get(0));
 
-    final Product mock2 = mock(Product.class);
+    final ProductProjection mock2 = mock(ProductProjection.class);
     when(mock2.getId()).thenReturn(RandomStringUtils.random(15));
     when(mock2.getKey()).thenReturn(randomKeys.get(251));
 
@@ -215,7 +216,7 @@ class BaseServiceImplTest {
     when(client.execute(any(ProductQuery.class))).thenReturn(completedFuture(result));
 
     // test fetch
-    final Set<Product> resources =
+    final Set<ProductProjection> resources =
         service.fetchMatchingProductsByKeys(resourceKeys).toCompletableFuture().join();
 
     // assertions
@@ -249,7 +250,7 @@ class BaseServiceImplTest {
         .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
     // test
-    final CompletionStage<Set<Product>> result = service.fetchMatchingProductsByKeys(resourceKeys);
+    final CompletionStage<Set<ProductProjection>> result = service.fetchMatchingProductsByKeys(resourceKeys);
 
     // assertions
     assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);
@@ -261,7 +262,7 @@ class BaseServiceImplTest {
   @ValueSource(strings = {" "})
   void fetchResource_WithBlankKey_ShouldMakeNoRequestAndReturnEmptyOptional(final String key) {
     // test
-    final Optional<Product> optional = service.fetchProduct(key).toCompletableFuture().join();
+    final Optional<ProductProjection> optional = service.fetchProduct(key).toCompletableFuture().join();
 
     // assertions
     assertThat(optional).isEmpty();
@@ -275,17 +276,17 @@ class BaseServiceImplTest {
     final String resourceId = RandomStringUtils.random(15);
     final String resourceKey = RandomStringUtils.random(15);
 
-    final Product mockProductResult = mock(Product.class);
+    final ProductProjection mockProductResult = mock(ProductProjection.class);
     when(mockProductResult.getKey()).thenReturn(resourceKey);
     when(mockProductResult.getId()).thenReturn(resourceId);
 
-    final PagedQueryResult<Product> result = mock(PagedQueryResult.class);
+    final PagedQueryResult<ProductProjection> result = mock(PagedQueryResult.class);
     when(result.head()).thenReturn(Optional.of(mockProductResult));
 
     when(client.execute(any())).thenReturn(completedFuture(result));
 
     // test
-    final Optional<Product> resourceOptional =
+    final Optional<ProductProjection> resourceOptional =
         service.fetchProduct(resourceKey).toCompletableFuture().join();
 
     // assertions
@@ -300,7 +301,7 @@ class BaseServiceImplTest {
         .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
     // test
-    final CompletionStage<Optional<Product>> result = service.fetchProduct("foo");
+    final CompletionStage<Optional<ProductProjection>> result = service.fetchProduct("foo");
 
     // assertions
     assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);

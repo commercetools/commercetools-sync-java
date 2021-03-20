@@ -96,7 +96,7 @@ public interface ProductService {
    *     successful otherwise an empty optional.
    */
   @Nonnull
-  CompletionStage<Optional<Product>> createProduct(@Nonnull ProductDraft productDraft);
+  CompletionStage<Optional<ProductProjection>>  createProduct(@Nonnull ProductDraft productDraft);
 
   /**
    * Given a {@link Product} and a {@link List}&lt;{@link UpdateAction}&lt;{@link Product}&gt;&gt;,

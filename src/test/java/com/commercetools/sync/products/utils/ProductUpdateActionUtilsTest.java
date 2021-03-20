@@ -32,6 +32,7 @@ import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
@@ -87,7 +88,7 @@ class ProductUpdateActionUtilsTest {
   @Test
   void buildVariantsUpdateActions_updatesVariants() {
     // preparation
-    final Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+    final ProductProjection productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
     final ProductDraft productDraftNew =
         createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
 
@@ -161,13 +162,13 @@ class ProductUpdateActionUtilsTest {
     assertThat(updateActions.subList(size - 2, size))
         .containsExactly(
             ChangeMasterVariant.ofSku("var-7-sku", true),
-            RemoveVariant.of(productOld.getMasterData().getStaged().getMasterVariant()));
+            RemoveVariant.of(productOld.getMasterVariant()));
   }
 
   @Test
   void buildVariantsUpdateActions_updateVariantsWithSameForAll() {
     // preparation
-    final Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+    final ProductProjection  productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
     final ProductDraft productDraftNew =
         createProductDraftFromJson(NEW_PROD_DRAFT_WITH_MATCHING_VARIANTS_WITH_UPDATED_ATTR_VALUES);
 
@@ -203,7 +204,7 @@ class ProductUpdateActionUtilsTest {
 
   @Test
   void buildVariantsUpdateActions_doesNotRemoveMaster() {
-    final Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+    final ProductProjection productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
     final ProductDraft productDraftNew =
         createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_MOVE_MASTER);
 
@@ -235,7 +236,7 @@ class ProductUpdateActionUtilsTest {
     // Old master variant should NOT be removed because it exists in
     // NEW_PROD_DRAFT_WITH_VARIANTS_MOVE_MASTER
     final ProductVariant oldMasterVariant =
-        productOld.getMasterData().getStaged().getMasterVariant();
+        productOld.getMasterVariant();
     assertThat(updateActions)
         .filteredOn(
             action -> {
@@ -279,7 +280,7 @@ class ProductUpdateActionUtilsTest {
 
   private void assertMissingMasterVariantKey(
       final String oldProduct, final String newProduct, final String... errorMessages) {
-    final Product productOld = createProductFromJson(oldProduct);
+    final ProductProjection productOld = createProductFromJson(oldProduct);
     final ProductDraft productDraftNew = createProductDraftFromJson(newProduct);
 
     final List<String> errorsCatcher = new ArrayList<>();
@@ -306,7 +307,7 @@ class ProductUpdateActionUtilsTest {
 
   @Test
   void buildChangeMasterVariantUpdateAction_changesMasterVariant() {
-    final Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+    final ProductProjection productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
     final ProductDraft productDraftNew =
         createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
 
@@ -319,7 +320,7 @@ class ProductUpdateActionUtilsTest {
     assertThat(changeMasterVariant.get(0))
         .isEqualTo(ChangeMasterVariant.ofSku(productDraftNew.getMasterVariant().getSku(), true));
     assertThat(changeMasterVariant.get(1))
-        .isEqualTo(RemoveVariant.of(productOld.getMasterData().getStaged().getMasterVariant()));
+        .isEqualTo(RemoveVariant.of(productOld.getMasterVariant()));
   }
 
   @Test
@@ -336,7 +337,7 @@ class ProductUpdateActionUtilsTest {
 
   private void assertChangeMasterVariantEmptyErrorCatcher(
       final String productMockName, final String expectedErrorReason) {
-    final Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+    final ProductProjection productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
     final ProductDraft productDraftNew_withoutKey = createProductDraftFromJson(productMockName);
 
     final List<String> errorsCatcher = new ArrayList<>();
