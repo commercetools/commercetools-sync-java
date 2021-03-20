@@ -37,12 +37,12 @@ public final class AssetReferenceResolutionUtils {
   }
 
   /**
-   * Takes an asset list that is supposed to have all its assets' custom references expanded in
-   * order to be able to fetch the keys for the custom references. This method returns as a result a
-   * {@link List} of {@link AssetDraft} that has all custom references with keys.
+   * Takes an asset list that is supposed to have all its asset's custom references id's are cached
+   * in the map in order to be able to fetch the keys for the custom references. This method returns
+   * as a result a {@link List} of {@link AssetDraft} that has all custom references with keys.
    *
-   * <p>Any custom reference that is not expanded will have its id in place and not replaced by the
-   * key.
+   * <p>Any custom reference that is not in the map(cache) will have its id in place and not
+   * replaced by the key.
    *
    * @param assets the list of assets to replace their custom ids with keys.
    * @param referenceIdToKeyMap the cache contains reference Id to Keys.

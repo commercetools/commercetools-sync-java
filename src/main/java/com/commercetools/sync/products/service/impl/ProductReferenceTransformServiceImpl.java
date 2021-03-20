@@ -32,12 +32,14 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.types.CustomFields;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -67,10 +69,30 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
       @Nonnull final List<Product> products) {
 
     return replaceAttributeReferenceIdsWithKeys(products)
+        .handle(
+            (productsResolved, throwable) -> {
+              if (throwable != null) {
+                LOGGER.warn(
+                    "Failed to replace referenced resource ids with keys on the attributes of the products in "
+                        + "the current fetched page from the source project. This page will not be synced to the target "
+                        + "project.",
+                    getCompletionExceptionCause(throwable));
+                return Collections.<Product>emptyList();
+              }
+              return productsResolved;
+            })
         .thenCompose(
             productsWithAttributesResolved ->
                 transformReferencesAndMapToProductDrafts(productsWithAttributesResolved))
         .toCompletableFuture();
+  }
+
+  @Nonnull
+  private static Throwable getCompletionExceptionCause(@Nonnull final Throwable exception) {
+    if (exception instanceof CompletionException) {
+      return getCompletionExceptionCause(exception.getCause());
+    }
+    return exception;
   }
 
   @Nonnull

@@ -88,14 +88,14 @@ public final class SyncUtils {
   }
 
   /**
-   * Given a reference to a resource of type {@code T}, this method checks if the reference is
-   * expanded. If it is, then it return the resource identifier with key. Otherwise, it returns the
-   * resource identifier with id. Since, the reference could be {@code null}, this method could also
-   * return null if the reference was not expanded.
+   * Given a reference to a resource of type {@code T}, this method checks if the reference id is
+   * cached in the map. If it is, then it return the resource identifier with key. Otherwise, it
+   * returns the resource identifier with id. Since, the reference could be {@code null}, this
+   * method could also return null if the reference id was not in the map.
    *
-   * @param reference the reference of the resource to check if it's expanded.
+   * @param reference the reference of the resource to check if it's cached.
    * @param <T> the type of the resource.
-   * @return returns the resource identifier with key if the {@code reference} was expanded.
+   * @return returns the resource identifier with key if the {@code reference} id was in cache.
    *     Otherwise, it returns the resource identifier with id.
    */
   @Nullable

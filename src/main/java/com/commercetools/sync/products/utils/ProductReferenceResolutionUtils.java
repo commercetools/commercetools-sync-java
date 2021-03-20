@@ -105,7 +105,7 @@ public final class ProductReferenceResolutionUtils {
    * replaced by the key will be considered as existing resources on the target commercetools
    * project and the library will issues an update/create API request without reference resolution.
    *
-   * @param products the products with expanded references.
+   * @param products the products without expansion of references.
    * @param referenceIdToKeyMap the map containing the cached id to key values.
    * @return a {@link List} of {@link ProductDraft} built from the supplied {@link List} of {@link
    *     Product}.

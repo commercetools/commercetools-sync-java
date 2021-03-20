@@ -61,7 +61,7 @@ public final class VariantReferenceResolutionUtils {
    *     <tr>
    *        <td>variants.prices.customerGroup *</td>
    *        <td>{@link Reference}&lt;{@link CustomerGroup}&gt;</td>
-   *        <td>{@link Reference}&lt;{@link CustomerGroup}&gt; (with key replaced with id field)</td>
+   *        <td>{@link ResourceIdentifier}&lt;{@link CustomerGroup}&gt;</td>
    *     </tr>
    *     <tr>
    *        <td>variants.prices.custom.type</td>
@@ -81,13 +81,13 @@ public final class VariantReferenceResolutionUtils {
    *   </tbody>
    * </table>
    *
-   * <p><b>Note:</b> The aforementioned references should be expanded with a key. Any reference that
-   * is not expanded will have its id in place and not replaced by the key will be considered as
-   * existing resources on the target commercetools project and the library will issues an
-   * update/create API request without reference resolution.
+   * <p><b>Note:</b> The aforementioned references should be cached(idToKey value fetched and
+   * stored in a map). Any reference that is not cached will have its id in place and not
+   * replaced by the key will be considered as existing resources on the target commercetools
+   * project and the library will issues an update/create API request without reference resolution.
    *
-   * @param productVariants the product variants with expanded references.
-   * @param referenceIdToKeyMap the cache contains reference Id to Keys.
+   * @param productVariants the product variants without expansion of references.
+   * @param referenceIdToKeyMap the map(cache) contains reference Id to Key values.
    * @return a {@link List} of {@link ProductVariantDraft} built from the supplied {@link List} of
    *     {@link ProductVariant}.
    */
@@ -132,12 +132,13 @@ public final class VariantReferenceResolutionUtils {
 
   /**
    * Takes a product variant that is supposed to have all its attribute product references and
-   * product set references expanded in order to be able to fetch the keys and replace the reference
-   * ids with the corresponding keys for the references. This method returns as a result a {@link
-   * List} of {@link AttributeDraft} that has all product references with keys replacing the ids.
+   * product set references id's cached(fetch and store key value for the reference id) in order
+   * to be able to replace the reference ids with the corresponding keys for the references.
+   * This method returns as a result a {@link List} of {@link AttributeDraft} that has all product
+   * references with keys replacing the ids.
    *
-   * <p>Any product reference that is not expanded will have it's id in place and not replaced by
-   * the key.
+   * <p>Any product reference that is not cached(reference id is not present in the map) will have
+   * it's id in place and not replaced by the key.
    *
    * @param productVariant the product variant to replace its attribute product references ids with
    *     keys.
