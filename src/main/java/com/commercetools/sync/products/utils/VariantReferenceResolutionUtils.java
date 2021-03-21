@@ -43,8 +43,7 @@ public final class VariantReferenceResolutionUtils {
    * applying the mapping from {@link ProductVariant} to {@link ProductVariantDraft} with
    * considering reference resolution.
    *
-   * <table>
-   *   <caption>Mapping of Reference fields for the reference resolution</caption>
+   * <table summary="Mapping of Reference fields for the reference resolution">
    *   <thead>
    *     <tr>
    *       <th>Reference field</th>
