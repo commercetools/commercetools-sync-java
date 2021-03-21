@@ -252,21 +252,33 @@ abstract class BaseService<
       return CompletableFuture.completedFuture(keyToIdCache.asMap());
     }
 
-    final List<List<String>> chunkedKeys = ChunkUtils.chunk(keysNotCached, CHUNK_SIZE);
-
-    List<Q> keysQueryMapperList =
-        chunkedKeys.stream()
-            .map(_keys -> keysQueryMapper.apply(new HashSet<>(_keys)))
-            .collect(toList());
-
-    return ChunkUtils.executeChunks(syncOptions.getCtpClient(), keysQueryMapperList)
-        .thenApply(ChunkUtils::flattenPagedQueryResults)
+    return fetchWithChunks(keysQueryMapper, keysNotCached)
         .thenApply(
             chunk -> {
               chunk.forEach(
                   resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
               return keyToIdCache.asMap();
             });
+  }
+
+  private CompletableFuture<List<U>> fetchWithChunks(
+      @Nonnull final Function<Set<String>, Q> keysQueryMapper,
+      @Nonnull final Set<String> keysNotCached) {
+
+    final List<List<String>> chunkedKeys = ChunkUtils.chunk(keysNotCached, CHUNK_SIZE);
+
+    final List<Q> keysQueryMapperList =
+        chunkedKeys.stream()
+            .map(
+                _keys ->
+                    keysQueryMapper
+                        .apply(new HashSet<>(_keys))
+                        .withLimit(CHUNK_SIZE)
+                        .withFetchTotal(false))
+            .collect(toList());
+
+    return ChunkUtils.executeChunks(syncOptions.getCtpClient(), keysQueryMapperList)
+        .thenApply(ChunkUtils::flattenPagedQueryResults);
   }
 
   /**
@@ -344,15 +356,7 @@ abstract class BaseService<
       return CompletableFuture.completedFuture(Collections.emptySet());
     }
 
-    final List<List<String>> chunkedKeys = ChunkUtils.chunk(keys, CHUNK_SIZE);
-
-    List<Q> keysQueryMapperList =
-        chunkedKeys.stream()
-            .map(_keys -> keysQueryMapper.apply(new HashSet<>(_keys)))
-            .collect(toList());
-
-    return ChunkUtils.executeChunks(syncOptions.getCtpClient(), keysQueryMapperList)
-        .thenApply(ChunkUtils::flattenPagedQueryResults)
+    return fetchWithChunks(keysQueryMapper, keys)
         .thenApply(
             chunk -> {
               chunk.forEach(
