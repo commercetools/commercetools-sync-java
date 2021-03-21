@@ -8,6 +8,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.createProduct
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static io.sphere.sdk.products.ProductProjectionType.STAGED;
 import static io.sphere.sdk.utils.MoneyImpl.createCurrencyByCode;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -85,7 +86,8 @@ class ProductSyncUtilsTest {
     productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
 
     oldProduct =
-        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, ProductProjection.class);
+        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class)
+            .toProjection(STAGED);
   }
 
   @Test
@@ -373,8 +375,8 @@ class ProductSyncUtilsTest {
   void buildActions_FromDraftsWithDifferentAttributes_ShouldBuildUpdateActions() {
     // Reloading the oldProduct object with a specific file for this test
     oldProduct =
-        readObjectFromResource(
-            SIMPLE_PRODUCT_WITH_MULTIPLE_VARIANTS_RESOURCE_PATH, ProductProjection.class);
+        readObjectFromResource(SIMPLE_PRODUCT_WITH_MULTIPLE_VARIANTS_RESOURCE_PATH, Product.class)
+            .toProjection(STAGED);
     final AttributeDraft brandNameAttribute = AttributeDraft.of("brandName", "myBrand");
     final AttributeDraft orderLimitAttribute = AttributeDraft.of("orderLimit", "5");
     final AttributeDraft priceInfoAttribute = AttributeDraft.of("priceInfo", "80,20/kg");

@@ -53,7 +53,6 @@ import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
 import io.sphere.sdk.products.commands.updateactions.SetKey;
 import io.sphere.sdk.products.queries.ProductProjectionQuery;
-import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.queries.QueryPredicate;
@@ -307,7 +306,7 @@ class ProductServiceImplIT {
     // preparation
     // Mock sphere client to return BadGatewayException on any request.
     final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-    when(spyClient.execute(any(ProductQuery.class)))
+    when(spyClient.execute(any(ProductProjectionQuery.class)))
         .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
         .thenCallRealMethod();
     final ProductSyncOptions spyOptions =
@@ -536,7 +535,7 @@ class ProductServiceImplIT {
     final Optional<ProductProjection> fetchedProductOptional =
         CTP_TARGET_CLIENT
             .execute(
-                ProductProjectionQuery.ofCurrent()
+                ProductProjectionQuery.ofStaged()
                     .withPredicates(QueryPredicate.of(format("key = \"%s\"", product.getKey()))))
             .toCompletableFuture()
             .join()
@@ -694,7 +693,7 @@ class ProductServiceImplIT {
     final Optional<ProductProjection> fetchedProductOptional =
         productService.fetchProduct(product.getKey()).toCompletableFuture().join();
     assertThat(fetchedProductOptional).isNotEmpty();
-    assertThat(fetchedProductOptional).contains(product);
+    assertThat(fetchedProductOptional.get().getId()).contains(product.getId());
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
   }
@@ -731,7 +730,7 @@ class ProductServiceImplIT {
     // preparation
     // Mock sphere client to return BadGatewayException on any request.
     final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-    when(spyClient.execute(any(ProductQuery.class)))
+    when(spyClient.execute(any(ProductProjectionQuery.class)))
         .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
         .thenCallRealMethod();
     final ProductSyncOptions spyOptions =
