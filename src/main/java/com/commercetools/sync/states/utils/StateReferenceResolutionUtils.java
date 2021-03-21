@@ -25,8 +25,7 @@ public final class StateReferenceResolutionUtils {
    * Returns an {@link List}&lt;{@link StateDraft}&gt; consisting of the results of applying the
    * mapping from {@link State} to {@link StateDraft} with considering reference resolution.
    *
-   * <table>
-   *   <caption>Mapping of Reference fields for the reference resolution</caption>
+   * <table summary="Mapping of Reference fields for the reference resolution">
    *   <thead>
    *     <tr>
    *       <th>Reference field</th>

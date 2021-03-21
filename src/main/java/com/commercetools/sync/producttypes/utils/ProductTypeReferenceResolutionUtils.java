@@ -37,8 +37,7 @@ public final class ProductTypeReferenceResolutionUtils {
    * the mapping from {@link ProductType} to {@link ProductTypeDraft} with considering reference
    * resolution.
    *
-   * <table>
-   *   <caption>Mapping of Reference fields for the reference resolution</caption>
+   * <table summary="Mapping of Reference fields for the reference resolution">
    *   <thead>
    *     <tr>
    *       <th>Reference field</th>
