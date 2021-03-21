@@ -76,7 +76,6 @@ class ProductAssetActionFactoryTest {
 
   @Test
   void buildAssetActions_always_ShouldBuildCorrectAction() {
-    final Product mainProduct = mock(Product.class);
     final ProductDraft mainProductDraft = mock(ProductDraft.class);
     final Asset asset = mock(Asset.class);
     when(asset.getKey()).thenReturn("assetKey");
