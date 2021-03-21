@@ -59,8 +59,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 class BaseServiceImplTest {
 
   @SuppressWarnings("unchecked")
-  private TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>> warningCallback =
-      mock(TriConsumer.class);
+  private TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
+      warningCallback = mock(TriConsumer.class);
 
   private SphereClient client = mock(SphereClient.class);
   private ProductService service;
@@ -250,7 +250,8 @@ class BaseServiceImplTest {
         .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
     // test
-    final CompletionStage<Set<ProductProjection>> result = service.fetchMatchingProductsByKeys(resourceKeys);
+    final CompletionStage<Set<ProductProjection>> result =
+        service.fetchMatchingProductsByKeys(resourceKeys);
 
     // assertions
     assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);
@@ -262,7 +263,8 @@ class BaseServiceImplTest {
   @ValueSource(strings = {" "})
   void fetchResource_WithBlankKey_ShouldMakeNoRequestAndReturnEmptyOptional(final String key) {
     // test
-    final Optional<ProductProjection> optional = service.fetchProduct(key).toCompletableFuture().join();
+    final Optional<ProductProjection> optional =
+        service.fetchProduct(key).toCompletableFuture().join();
 
     // assertions
     assertThat(optional).isEmpty();

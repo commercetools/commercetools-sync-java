@@ -46,7 +46,8 @@ class BuildSetDescriptionUpdateActionTest {
   }
 
   private Optional<UpdateAction<Product>> getSetDescriptionUpdateAction(
-      @Nonnull final ProductProjection oldProduct, @Nonnull final LocalizedString newProductDescription) {
+      @Nonnull final ProductProjection oldProduct,
+      @Nonnull final LocalizedString newProductDescription) {
     final ProductDraft newProductDraft = mock(ProductDraft.class);
     when(newProductDraft.getDescription()).thenReturn(newProductDescription);
     return buildSetDescriptionUpdateAction(oldProduct, newProductDraft);

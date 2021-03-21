@@ -84,7 +84,8 @@ class ProductSyncUtilsTest {
   void setup() {
     productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
 
-    oldProduct = readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, ProductProjection.class);
+    oldProduct =
+        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, ProductProjection.class);
   }
 
   @Test
@@ -372,7 +373,8 @@ class ProductSyncUtilsTest {
   void buildActions_FromDraftsWithDifferentAttributes_ShouldBuildUpdateActions() {
     // Reloading the oldProduct object with a specific file for this test
     oldProduct =
-        readObjectFromResource(SIMPLE_PRODUCT_WITH_MULTIPLE_VARIANTS_RESOURCE_PATH, ProductProjection.class);
+        readObjectFromResource(
+            SIMPLE_PRODUCT_WITH_MULTIPLE_VARIANTS_RESOURCE_PATH, ProductProjection.class);
     final AttributeDraft brandNameAttribute = AttributeDraft.of("brandName", "myBrand");
     final AttributeDraft orderLimitAttribute = AttributeDraft.of("orderLimit", "5");
     final AttributeDraft priceInfoAttribute = AttributeDraft.of("priceInfo", "80,20/kg");

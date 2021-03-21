@@ -168,7 +168,7 @@ class ProductUpdateActionUtilsTest {
   @Test
   void buildVariantsUpdateActions_updateVariantsWithSameForAll() {
     // preparation
-    final ProductProjection  productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+    final ProductProjection productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
     final ProductDraft productDraftNew =
         createProductDraftFromJson(NEW_PROD_DRAFT_WITH_MATCHING_VARIANTS_WITH_UPDATED_ATTR_VALUES);
 
@@ -235,8 +235,7 @@ class ProductUpdateActionUtilsTest {
 
     // Old master variant should NOT be removed because it exists in
     // NEW_PROD_DRAFT_WITH_VARIANTS_MOVE_MASTER
-    final ProductVariant oldMasterVariant =
-        productOld.getMasterVariant();
+    final ProductVariant oldMasterVariant = productOld.getMasterVariant();
     assertThat(updateActions)
         .filteredOn(
             action -> {

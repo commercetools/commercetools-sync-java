@@ -22,7 +22,7 @@ public class KeepOtherVariantsSync {
    *     actions.
    */
   public static List<UpdateAction<Product>> keepOtherVariants(
-          @Nonnull final List<UpdateAction<Product>> updateActions) {
+      @Nonnull final List<UpdateAction<Product>> updateActions) {
     return updateActions.stream()
         .filter(updateAction -> !(updateAction instanceof RemoveVariant))
         .collect(Collectors.toList());

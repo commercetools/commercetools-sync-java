@@ -12,13 +12,12 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
-
-import io.sphere.sdk.products.ProductProjection;
 import org.junit.jupiter.api.Test;
 
 class BuildRemoveFromCategoryUpdateActionsTest {

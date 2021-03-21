@@ -102,8 +102,10 @@ class ProductSyncWithReferencedCategoriesIT {
   }
 
   private ProductSyncOptions buildSyncOptions() {
-    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>> warningCallback =
-        (syncException, draft, product) -> warningCallBackMessages.add(syncException.getMessage());
+    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
+        warningCallback =
+            (syncException, draft, product) ->
+                warningCallBackMessages.add(syncException.getMessage());
 
     return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
         .errorCallback(
@@ -121,7 +123,7 @@ class ProductSyncWithReferencedCategoriesIT {
   }
 
   private List<UpdateAction<Product>> collectActions(
-          @Nonnull final List<UpdateAction<Product>> actions) {
+      @Nonnull final List<UpdateAction<Product>> actions) {
     this.actions.addAll(actions);
     return actions;
   }

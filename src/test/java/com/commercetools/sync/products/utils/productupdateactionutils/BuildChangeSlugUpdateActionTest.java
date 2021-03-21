@@ -44,7 +44,8 @@ class BuildChangeSlugUpdateActionTest {
   }
 
   private Optional<UpdateAction<Product>> getChangeSlugUpdateAction(
-          @Nonnull final ProductProjection oldProduct, @Nonnull final LocalizedString newProductDescription) {
+      @Nonnull final ProductProjection oldProduct,
+      @Nonnull final LocalizedString newProductDescription) {
     final ProductDraft newProductDraft = mock(ProductDraft.class);
     when(newProductDraft.getSlug()).thenReturn(newProductDescription);
     return buildChangeSlugUpdateAction(oldProduct, newProductDraft);

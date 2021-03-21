@@ -117,7 +117,7 @@ class ProductVariantPriceUpdateActionUtilsTest {
 
     // test
     final List<UpdateAction<Product>> result =
-        buildActions( mainProductDraft, 0, oldPrice, newPrice, syncOptions);
+        buildActions(mainProductDraft, 0, oldPrice, newPrice, syncOptions);
 
     // assertion
     assertEquals(expectedResult, result);
@@ -306,8 +306,7 @@ class ProductVariantPriceUpdateActionUtilsTest {
             .build();
 
     final List<UpdateAction<Product>> updateActions =
-        buildCustomUpdateActions(
-          mainProductDraft, 1, oldPrice, newPrice, SYNC_OPTIONS);
+        buildCustomUpdateActions(mainProductDraft, 1, oldPrice, newPrice, SYNC_OPTIONS);
 
     assertThat(updateActions).isEmpty();
   }
@@ -345,8 +344,7 @@ class ProductVariantPriceUpdateActionUtilsTest {
             .build();
 
     final List<UpdateAction<Product>> updateActions =
-        buildCustomUpdateActions(
- mainProductDraft, 1, oldPrice, newPrice, SYNC_OPTIONS);
+        buildCustomUpdateActions(mainProductDraft, 1, oldPrice, newPrice, SYNC_OPTIONS);
 
     assertThat(updateActions).hasSize(2);
   }
@@ -375,8 +373,7 @@ class ProductVariantPriceUpdateActionUtilsTest {
             .build();
 
     final List<UpdateAction<Product>> updateActions =
-        buildCustomUpdateActions(
-  mainProductDraft, 1, oldPrice, newPrice, SYNC_OPTIONS);
+        buildCustomUpdateActions(mainProductDraft, 1, oldPrice, newPrice, SYNC_OPTIONS);
 
     assertThat(updateActions)
         .containsExactly(

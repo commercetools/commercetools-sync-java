@@ -123,7 +123,8 @@ class ProductServiceTest {
 
     final List<UpdateAction<Product>> updateActions =
         singletonList(ChangeName.of(LocalizedString.of(ENGLISH, "new name")));
-    final ProductProjection product = service.updateProduct(mock, updateActions).toCompletableFuture().join();
+    final ProductProjection product =
+        service.updateProduct(mock, updateActions).toCompletableFuture().join();
 
     assertThat(product).isSameAs(mock);
     verify(productSyncOptions.getCtpClient())

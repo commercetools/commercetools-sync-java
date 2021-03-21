@@ -88,8 +88,7 @@ class ProductAssetActionFactoryTest {
     final AssetDraft assetDraft = AssetDraftBuilder.of(asset).tags(newTags).build();
 
     final List<UpdateAction<Product>> updateActions =
-        productAssetActionFactory.buildAssetActions(
-       mainProductDraft, asset, assetDraft);
+        productAssetActionFactory.buildAssetActions(mainProductDraft, asset, assetDraft);
 
     assertThat(updateActions).isNotNull();
     assertThat(updateActions)

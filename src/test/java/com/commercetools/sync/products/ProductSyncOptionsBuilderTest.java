@@ -73,7 +73,10 @@ class ProductSyncOptionsBuilderTest {
   @Test
   void beforeUpdateCallback_WithFilterAsCallback_ShouldSetCallback() {
     final TriFunction<
-            List<UpdateAction<Product>>, ProductDraft, ProductProjection, List<UpdateAction<Product>>>
+            List<UpdateAction<Product>>,
+            ProductDraft,
+            ProductProjection,
+            List<UpdateAction<Product>>>
         beforeUpdateCallback = (updateActions, newProduct, oldProduct) -> emptyList();
     productSyncOptionsBuilder.beforeUpdateCallback(beforeUpdateCallback);
 
@@ -92,7 +95,10 @@ class ProductSyncOptionsBuilderTest {
   @Test
   public void errorCallBack_WithCallBack_ShouldSetCallBack() {
     final QuadConsumer<
-            SyncException, Optional<ProductDraft>, Optional<ProductProjection>, List<UpdateAction<Product>>>
+            SyncException,
+            Optional<ProductDraft>,
+            Optional<ProductProjection>,
+            List<UpdateAction<Product>>>
         mockErrorCallback = (exception, newDraft, old, actions) -> {};
     productSyncOptionsBuilder.errorCallback(mockErrorCallback);
 
@@ -165,7 +171,10 @@ class ProductSyncOptionsBuilderTest {
   @Test
   void applyBeforeUpdateCallBack_WithNullReturnCallback_ShouldReturnEmptyList() {
     final TriFunction<
-            List<UpdateAction<Product>>, ProductDraft, ProductProjection, List<UpdateAction<Product>>>
+            List<UpdateAction<Product>>,
+            ProductDraft,
+            ProductProjection,
+            List<UpdateAction<Product>>>
         beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> null;
     final ProductSyncOptions productSyncOptions =
         ProductSyncOptionsBuilder.of(CTP_CLIENT).beforeUpdateCallback(beforeUpdateCallback).build();
@@ -182,7 +191,10 @@ class ProductSyncOptionsBuilderTest {
 
   private interface MockTriFunction
       extends TriFunction<
-          List<UpdateAction<Product>>, ProductDraft, ProductProjection, List<UpdateAction<Product>>> {}
+          List<UpdateAction<Product>>,
+          ProductDraft,
+          ProductProjection,
+          List<UpdateAction<Product>>> {}
 
   @Test
   void applyBeforeUpdateCallBack_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
@@ -205,7 +217,10 @@ class ProductSyncOptionsBuilderTest {
   @Test
   void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
     final TriFunction<
-            List<UpdateAction<Product>>, ProductDraft, ProductProjection, List<UpdateAction<Product>>>
+            List<UpdateAction<Product>>,
+            ProductDraft,
+            ProductProjection,
+            List<UpdateAction<Product>>>
         beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> emptyList();
     final ProductSyncOptions productSyncOptions =
         ProductSyncOptionsBuilder.of(CTP_CLIENT).beforeUpdateCallback(beforeUpdateCallback).build();

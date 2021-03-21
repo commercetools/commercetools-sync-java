@@ -139,7 +139,10 @@ class CustomUpdateActionUtilsTest {
     // Mock custom options error callback
     final ArrayList<Object> callBackResponses = new ArrayList<>();
     final QuadConsumer<
-            SyncException, Optional<ProductDraft>, Optional<ProductProjection>, List<UpdateAction<Product>>>
+            SyncException,
+            Optional<ProductDraft>,
+            Optional<ProductProjection>,
+            List<UpdateAction<Product>>>
         errorCallback =
             (exception, newResource, oldResource, updateActions) -> {
               callBackResponses.add(exception.getMessage());
@@ -152,7 +155,6 @@ class CustomUpdateActionUtilsTest {
 
     final List<UpdateAction<Product>> updateActions =
         buildCustomUpdateActions(
-
             maiNewResource,
             oldAsset,
             newAssetDraft,
@@ -228,7 +230,10 @@ class CustomUpdateActionUtilsTest {
     // Mock custom options error callback
     final ArrayList<Object> callBackResponses = new ArrayList<>();
     final QuadConsumer<
-            SyncException, Optional<ProductDraft>, Optional<ProductProjection>, List<UpdateAction<Product>>>
+            SyncException,
+            Optional<ProductDraft>,
+            Optional<ProductProjection>,
+            List<UpdateAction<Product>>>
         errorCallback =
             (exception, newResource, oldResource, updateActions) -> {
               callBackResponses.add(exception.getMessage());
@@ -241,8 +246,6 @@ class CustomUpdateActionUtilsTest {
 
     final List<UpdateAction<Product>> updateActions =
         buildCustomUpdateActions(
-
-
             maiNewResource,
             oldAsset,
             newAssetDraft,
@@ -274,7 +277,10 @@ class CustomUpdateActionUtilsTest {
     // Mock custom options error callback
     final ArrayList<Object> callBackResponses = new ArrayList<>();
     final QuadConsumer<
-            SyncException, Optional<ProductDraft>, Optional<ProductProjection>, List<UpdateAction<Product>>>
+            SyncException,
+            Optional<ProductDraft>,
+            Optional<ProductProjection>,
+            List<UpdateAction<Product>>>
         errorCallback =
             (exception, newResource, oldResource, updateActions) -> {
               callBackResponses.add(exception.getMessage());
@@ -287,7 +293,6 @@ class CustomUpdateActionUtilsTest {
 
     final List<UpdateAction<Product>> updateActions =
         buildCustomUpdateActions(
-
             maiNewResource,
             oldAsset,
             newAssetDraft,
@@ -410,7 +415,10 @@ class CustomUpdateActionUtilsTest {
     // Mock custom options error callback
     final ArrayList<String> errorMessages = new ArrayList<>();
     final QuadConsumer<
-            SyncException, Optional<ProductDraft>, Optional<ProductProjection>, List<UpdateAction<Product>>>
+            SyncException,
+            Optional<ProductDraft>,
+            Optional<ProductProjection>,
+            List<UpdateAction<Product>>>
         errorCallback =
             (exception, newResource, oldResource, updateActions) ->
                 errorMessages.add(exception.getMessage());
