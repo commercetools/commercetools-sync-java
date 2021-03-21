@@ -76,6 +76,7 @@ import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.commands.updateactions.SetTaxCategory;
 import io.sphere.sdk.products.queries.ProductByKeyGet;
+import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.queries.PagedQueryResult;
@@ -526,7 +527,7 @@ class ProductSyncIT {
                 new ConcurrentModificationException()))
         .thenCallRealMethod();
 
-    final ProductQuery anyProductQuery = any(ProductQuery.class);
+    final ProductProjectionQuery anyProductQuery = any(ProductProjectionQuery.class);
     when(spyClient.execute(anyProductQuery))
         .thenCallRealMethod() // Call real fetch on fetching matching products
         .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
@@ -589,7 +590,7 @@ class ProductSyncIT {
                 new ConcurrentModificationException()))
         .thenCallRealMethod();
 
-    final ProductQuery anyProductQuery = any(ProductQuery.class);
+    final ProductProjectionQuery anyProductQuery = any(ProductProjectionQuery.class);
 
     when(spyClient.execute(anyProductQuery))
         .thenCallRealMethod() // Call real fetch on fetching matching products
