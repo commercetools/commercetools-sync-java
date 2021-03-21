@@ -32,7 +32,6 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductData;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductProjection;
@@ -120,31 +119,31 @@ public class ProductSyncMockUtils {
   public static ProductDraftBuilder createProductDraftBuilder(
       @Nonnull final String jsonResourcePath,
       @Nonnull final ResourceIdentifiable<ProductType> productTypeReference) {
-    final Product productFromJson = readObjectFromResource(jsonResourcePath, Product.class);
-    final ProductData productData = productFromJson.getMasterData().getStaged();
+    final ProductProjection productFromJson =
+        readObjectFromResource(jsonResourcePath, ProductProjection.class);
 
     @SuppressWarnings("ConstantConditions")
     final List<ProductVariantDraft> allVariants =
-        productData.getAllVariants().stream()
+        productFromJson.getAllVariants().stream()
             .map(productVariant -> ProductVariantDraftBuilder.of(productVariant).build())
             .collect(toList());
 
     return ProductDraftBuilder.of(
-            productTypeReference, productData.getName(), productData.getSlug(), allVariants)
-        .metaDescription(productData.getMetaDescription())
-        .metaKeywords(productData.getMetaKeywords())
-        .metaTitle(productData.getMetaTitle())
-        .description(productData.getDescription())
-        .searchKeywords(productData.getSearchKeywords())
+            productTypeReference, productFromJson.getName(), productFromJson.getSlug(), allVariants)
+        .metaDescription(productFromJson.getMetaDescription())
+        .metaKeywords(productFromJson.getMetaKeywords())
+        .metaTitle(productFromJson.getMetaTitle())
+        .description(productFromJson.getDescription())
+        .searchKeywords(productFromJson.getSearchKeywords())
         .taxCategory(productFromJson.getTaxCategory())
         .state(productFromJson.getState())
         .key(productFromJson.getKey())
         .categories(
-            productData.getCategories().stream()
+            productFromJson.getCategories().stream()
                 .map(Reference::toResourceIdentifier)
                 .collect(Collectors.toSet()))
-        .categoryOrderHints(productData.getCategoryOrderHints())
-        .publish(productFromJson.getMasterData().isPublished());
+        .categoryOrderHints(productFromJson.getCategoryOrderHints())
+        .publish(productFromJson.isPublished());
   }
 
   /**

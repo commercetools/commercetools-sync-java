@@ -102,7 +102,7 @@ abstract class BaseService<
     final List<List<UpdateAction<U>>> actionBatches =
         batchElements(updateActions, MAXIMUM_ALLOWED_UPDATE_ACTIONS);
     return updateBatches(
-     CompletableFuture.completedFuture(resource), updateCommandFunction, actionBatches);
+        CompletableFuture.completedFuture(resource), updateCommandFunction, actionBatches);
   }
 
   /**

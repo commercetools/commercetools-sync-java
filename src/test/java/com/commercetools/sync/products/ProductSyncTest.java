@@ -42,7 +42,7 @@ import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.queries.ProductQuery;
+import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -169,7 +169,7 @@ class ProductSyncTest {
             .build();
 
     final SphereClient mockClient = mock(SphereClient.class);
-    when(mockClient.execute(any(ProductQuery.class)))
+    when(mockClient.execute(any(ProductProjectionQuery.class)))
         .thenReturn(
             supplyAsync(
                 () -> {

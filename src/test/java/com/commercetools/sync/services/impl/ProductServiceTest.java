@@ -19,6 +19,7 @@ import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
+import io.sphere.sdk.products.ProductProjectionType;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
@@ -55,11 +56,15 @@ class ProductServiceTest {
 
   @Test
   void createProduct_WithSuccessfulMockCtpResponse_ShouldReturnMock() {
-    final ProductProjection mock = mock(ProductProjection.class);
-    when(mock.getId()).thenReturn("productId");
-    when(mock.getKey()).thenReturn("productKey");
+    final Product product = mock(Product.class);
+    final ProductProjection mockProductProjection = mock(ProductProjection.class);
 
-    when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
+
+    when(product.toProjection(any())).thenReturn(mockProductProjection);
+    when(product.getId()).thenReturn("productId");
+    when(product.getKey()).thenReturn("productKey");
+
+    when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(product));
 
     final ProductDraft draft = mock(ProductDraft.class);
     when(draft.getKey()).thenReturn("productKey");
@@ -67,7 +72,7 @@ class ProductServiceTest {
         service.createProduct(draft).toCompletableFuture().join();
 
     assertThat(productOptional).isNotEmpty();
-    assertThat(productOptional).containsSame(mock);
+    assertThat(productOptional).containsSame(product.toProjection(ProductProjectionType.STAGED));
     verify(productSyncOptions.getCtpClient()).execute(eq(ProductCreateCommand.of(draft)));
   }
 
@@ -119,16 +124,20 @@ class ProductServiceTest {
   @Test
   void updateProduct_WithMockCtpResponse_ShouldReturnMock() {
     final ProductProjection mock = mock(ProductProjection.class);
-    when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
+    when(mock.getKey()).thenReturn("anyKey");
+    final Product product = mock(Product.class);
+    when(product.toProjection(any())).thenReturn(mock);
+
+    when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(product));
 
     final List<UpdateAction<Product>> updateActions =
         singletonList(ChangeName.of(LocalizedString.of(ENGLISH, "new name")));
-    final ProductProjection product =
+    final ProductProjection productProjection =
         service.updateProduct(mock, updateActions).toCompletableFuture().join();
 
-    assertThat(product).isSameAs(mock);
+    assertThat(productProjection).isSameAs(mock);
     verify(productSyncOptions.getCtpClient())
-        .execute(eq(ProductUpdateCommand.of(mock, updateActions)));
+        .execute(eq(ProductUpdateCommand.ofKey(mock.getKey(), mock.getVersion(), updateActions)));
   }
 
   @Test

@@ -210,7 +210,7 @@ public final class ProductServiceImpl
                       .getCtpClient()
                       .execute(
                           ProductUpdateCommand.ofKey(
-                              productProjection.getKey(), resource.getVersion(), batch))
+                              productProjection.getKey(), productProjection.getVersion(), batch))
                       .thenApply(p -> p.toProjection(STAGED)));
     }
     return resultStage;
