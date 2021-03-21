@@ -231,7 +231,7 @@ class ProductReferenceTransformServiceImplTest {
   }
 
   @Test
-  void transform_ProductReferences_ShouldReplaceReferencesIdsWithKeysAndVerifyMappedProductDraft() {
+  void transform_ProductReferences_ShouldReplaceReferencesIdsWithKeysAndMapToProductDraft() {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
     final Map<String, String> cacheMap = new HashMap<>();

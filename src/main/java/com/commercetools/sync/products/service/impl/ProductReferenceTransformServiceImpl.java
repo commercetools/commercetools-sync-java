@@ -53,8 +53,8 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
       LoggerFactory.getLogger(ProductReferenceTransformServiceImpl.class);
   private static final String WITH_IRRESOLVABLE_REFS_ERROR_MSG =
       "The product with id '%s' on the source project ('%s') will "
-          + "not be synced because it has the following reference attribute(s): \n"
-          + "%s.\nThese references are either pointing to a non-existent resource or to an existing one but with a blank key. "
+          + "not be synced because it has the following reference attribute(s): %n"
+          + "%s.%nThese references are either pointing to a non-existent resource or to an existing one but with a blank key. "
           + "Please make sure these referenced resources are existing and have non-blank (i.e. non-null and non-empty) keys.";
 
   public ProductReferenceTransformServiceImpl(
@@ -71,7 +71,7 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
     return replaceAttributeReferenceIdsWithKeys(products)
         .handle(
             (productsResolved, throwable) -> {
-              if (throwable != null) {
+              if (throwable != null && LOGGER.isWarnEnabled()) {
                 LOGGER.warn(
                     "Failed to replace referenced resource ids with keys on the attributes of the products in "
                         + "the current fetched page from the source project. This page will not be synced to the target "

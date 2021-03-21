@@ -17,6 +17,7 @@ import io.sphere.sdk.products.ProductCatalogData;
 import io.sphere.sdk.products.ProductData;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.queries.ProductQuery;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,9 +26,17 @@ import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class ProductReferenceResolutionUtilsTest {
+
+  Map<String, String> idToKeyValueMap = new HashMap<>();
+
+  @AfterEach
+  void setup() {
+    idToKeyValueMap.clear();
+  }
 
   @Test
   void mapToProductDrafts_WithNonExpandedReferences_ShouldUseCacheAndReplaceReferences() {
@@ -35,18 +44,17 @@ class ProductReferenceResolutionUtilsTest {
     final List<Product> products =
         asList(readObjectFromResource("product-with-unresolved-references.json", Product.class));
 
-    Map<String, String> idToKeyMap = new HashMap<>();
-    idToKeyMap.put("cda0dbf7-b42e-40bf-8453-241d5b587f93", "productTypeKey");
-    idToKeyMap.put("1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f", "categoryKey1");
-    idToKeyMap.put("2dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f", "categoryKey2");
-    idToKeyMap.put("cdcf8bea-48f2-54bc-b3c2-cdc94bf94f2c", "channelKey");
-    idToKeyMap.put("d1229e6f-2b79-441e-b419-180311e52754", "customerGroupKey");
-    idToKeyMap.put("ebbe95fb-2282-4f9a-8747-fbe440e02dc0", "taxCategoryKey");
-    idToKeyMap.put("ste95fb-2282-4f9a-8747-fbe440e02dcs0", "stateKey");
-    idToKeyMap.put("custom_type_id", "typeKey");
+    idToKeyValueMap.put("cda0dbf7-b42e-40bf-8453-241d5b587f93", "productTypeKey");
+    idToKeyValueMap.put("1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f", "categoryKey1");
+    idToKeyValueMap.put("2dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f", "categoryKey2");
+    idToKeyValueMap.put("cdcf8bea-48f2-54bc-b3c2-cdc94bf94f2c", "channelKey");
+    idToKeyValueMap.put("d1229e6f-2b79-441e-b419-180311e52754", "customerGroupKey");
+    idToKeyValueMap.put("ebbe95fb-2282-4f9a-8747-fbe440e02dc0", "taxCategoryKey");
+    idToKeyValueMap.put("ste95fb-2282-4f9a-8747-fbe440e02dcs0", "stateKey");
+    idToKeyValueMap.put("custom_type_id", "typeKey");
 
     final List<ProductDraft> productDraftsWithKeysOnReferences =
-        ProductReferenceResolutionUtils.mapToProductDrafts(products, idToKeyMap);
+        ProductReferenceResolutionUtils.mapToProductDrafts(products, idToKeyValueMap);
 
     // assertions
 
@@ -98,9 +106,8 @@ class ProductReferenceResolutionUtilsTest {
 
     final Product product = getProductMock(categoryReferences, categoryOrderHints);
 
-    Map<String, String> idToKeyMap = new HashMap<>();
     final CategoryReferencePair categoryReferencePair =
-        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, idToKeyMap);
+        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, idToKeyValueMap);
 
     assertThat(categoryReferencePair).isNotNull();
 
@@ -124,9 +131,8 @@ class ProductReferenceResolutionUtilsTest {
         singleton(Category.referenceOfId(categoryId));
     final Product product = getProductMock(categoryReferences, null);
 
-    Map<String, String> idToKeyMap = new HashMap<>();
     final CategoryReferencePair categoryReferencePair =
-        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, idToKeyMap);
+        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, idToKeyValueMap);
 
     assertThat(categoryReferencePair).isNotNull();
 
@@ -140,6 +146,40 @@ class ProductReferenceResolutionUtilsTest {
         .containsExactlyInAnyOrder(categoryId);
     assertThat(categoryOrderHintsWithKeys)
         .isEqualTo(product.getMasterData().getStaged().getCategoryOrderHints());
+  }
+
+  @Test
+  void mapToCategoryReferencePair_WithNoReferences_ShouldNotReplaceIds() {
+    final Product product = getProductMock(Collections.emptySet(), null);
+
+    final CategoryReferencePair categoryReferencePair =
+        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, idToKeyValueMap);
+
+    assertThat(categoryReferencePair).isNotNull();
+
+    final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
+        categoryReferencePair.getCategoryResourceIdentifiers();
+    final CategoryOrderHints categoryOrderHintsWithKeys =
+        categoryReferencePair.getCategoryOrderHints();
+    assertThat(categoryReferencesWithKeys).isEmpty();
+    assertThat(categoryOrderHintsWithKeys).isNull();
+  }
+
+  @Test
+  void mapToCategoryReferencePair_WithNullReferences_ShouldNotReplaceIds() {
+    final Product product = getProductMock(singleton(null), null);
+
+    final CategoryReferencePair categoryReferencePair =
+        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, idToKeyValueMap);
+
+    assertThat(categoryReferencePair).isNotNull();
+
+    final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
+        categoryReferencePair.getCategoryResourceIdentifiers();
+    final CategoryOrderHints categoryOrderHintsWithKeys =
+        categoryReferencePair.getCategoryOrderHints();
+    assertThat(categoryReferencesWithKeys).isEmpty();
+    assertThat(categoryOrderHintsWithKeys).isNull();
   }
 
   @Nonnull
