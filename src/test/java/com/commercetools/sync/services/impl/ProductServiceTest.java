@@ -59,7 +59,6 @@ class ProductServiceTest {
     final Product product = mock(Product.class);
     final ProductProjection mockProductProjection = mock(ProductProjection.class);
 
-
     when(product.toProjection(any())).thenReturn(mockProductProjection);
     when(product.getId()).thenReturn("productId");
     when(product.getKey()).thenReturn("productKey");

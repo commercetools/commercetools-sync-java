@@ -29,10 +29,9 @@ import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
-import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.queries.ProductQuery;
+import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import java.util.ArrayList;
@@ -98,7 +97,7 @@ class BaseServiceImplTest {
   void fetchCachedResourceId_WithFetchResourceWithKey_ShouldReturnResourceId() {
     // preparation
     final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
-    final Product mockProductResult = mock(Product.class);
+    final ProductProjection mockProductResult = mock(ProductProjection.class);
     final String key = "testKey";
     final String id = "testId";
     when(mockProductResult.getKey()).thenReturn(key);
@@ -118,7 +117,7 @@ class BaseServiceImplTest {
   void fetchCachedResourceId_WithCachedResource_ShouldReturnResourceIdWithoutMakingRequest() {
     // preparation
     final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
-    final Product mockProductResult = mock(Product.class);
+    final ProductProjection mockProductResult = mock(ProductProjection.class);
     final String key = "testKey";
     final String id = "testId";
     when(mockProductResult.getKey()).thenReturn(key);
@@ -133,7 +132,7 @@ class BaseServiceImplTest {
     // assertions
     assertThat(result).contains(id);
     // only 1 request of the first fetch, but no more since second time it gets it from cache.
-    verify(client, times(1)).execute(any(ProductQuery.class));
+    verify(client, times(1)).execute(any(ProductProjectionQuery.class));
   }
 
   @Test
@@ -144,7 +143,7 @@ class BaseServiceImplTest {
 
     // assertions
     assertThat(resources).isEmpty();
-    verify(client, never()).execute(any(ProductQuery.class));
+    verify(client, never()).execute(any(ProductProjectionQuery.class));
   }
 
   @SuppressWarnings("unchecked")
@@ -169,7 +168,7 @@ class BaseServiceImplTest {
     final PagedQueryResult result = mock(PagedQueryResult.class);
     when(result.getResults()).thenReturn(Arrays.asList(mock1, mock2));
 
-    when(client.execute(any(ProductQuery.class))).thenReturn(completedFuture(result));
+    when(client.execute(any(ProductProjectionQuery.class))).thenReturn(completedFuture(result));
 
     // test fetch
     final Set<ProductProjection> resources =
@@ -177,7 +176,7 @@ class BaseServiceImplTest {
 
     // assertions
     assertThat(resources).containsExactlyInAnyOrder(mock1, mock2);
-    verify(client, times(1)).execute(any(ProductQuery.class));
+    verify(client, times(1)).execute(any(ProductProjectionQuery.class));
 
     // test caching
     final Optional<String> cachedKey1 =
@@ -190,7 +189,7 @@ class BaseServiceImplTest {
     assertThat(cachedKey1).contains(mock1.getId());
     assertThat(cachedKey2).contains(mock2.getId());
     // still 1 request from the first #fetchMatchingProductsByKeys call
-    verify(client, times(1)).execute(any(ProductQuery.class));
+    verify(client, times(1)).execute(any(ProductProjectionQuery.class));
   }
 
   @Test
@@ -213,7 +212,7 @@ class BaseServiceImplTest {
     final PagedQueryResult result = mock(PagedQueryResult.class);
     when(result.getResults()).thenReturn(Arrays.asList(mock1, mock2));
 
-    when(client.execute(any(ProductQuery.class))).thenReturn(completedFuture(result));
+    when(client.execute(any(ProductProjectionQuery.class))).thenReturn(completedFuture(result));
 
     // test fetch
     final Set<ProductProjection> resources =
@@ -221,7 +220,7 @@ class BaseServiceImplTest {
 
     // assertions
     assertThat(resources).containsExactlyInAnyOrder(mock1, mock2);
-    verify(client, times(2)).execute(any(ProductQuery.class));
+    verify(client, times(2)).execute(any(ProductProjectionQuery.class));
 
     // test caching
     final Optional<String> cachedKey1 =
@@ -233,7 +232,7 @@ class BaseServiceImplTest {
     // assertions
     assertThat(cachedKey1).contains(mock1.getId());
     assertThat(cachedKey2).contains(mock2.getId());
-    verify(client, times(2)).execute(any(ProductQuery.class));
+    verify(client, times(2)).execute(any(ProductProjectionQuery.class));
   }
 
   @Test
@@ -246,7 +245,7 @@ class BaseServiceImplTest {
     resourceKeys.add(key1);
     resourceKeys.add(key2);
 
-    when(client.execute(any(ProductQuery.class)))
+    when(client.execute(any(ProductProjectionQuery.class)))
         .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
     // test
@@ -255,7 +254,7 @@ class BaseServiceImplTest {
 
     // assertions
     assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);
-    verify(client).execute(any(ProductQuery.class));
+    verify(client).execute(any(ProductProjectionQuery.class));
   }
 
   @ParameterizedTest
@@ -293,13 +292,13 @@ class BaseServiceImplTest {
 
     // assertions
     assertThat(resourceOptional).containsSame(mockProductResult);
-    verify(client).execute(any(ProductQuery.class));
+    verify(client).execute(any(ProductProjectionQuery.class));
   }
 
   @Test
   void fetchResource_WithBadGateWayException_ShouldCompleteExceptionally() {
     // preparation
-    when(client.execute(any(ProductQuery.class)))
+    when(client.execute(any(ProductProjectionQuery.class)))
         .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
     // test
@@ -307,7 +306,7 @@ class BaseServiceImplTest {
 
     // assertions
     assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);
-    verify(client, times(1)).execute(any(ProductQuery.class));
+    verify(client, times(1)).execute(any(ProductProjectionQuery.class));
   }
 
   @Test
@@ -325,7 +324,7 @@ class BaseServiceImplTest {
   void cacheKeysToIdsUsingGraphQl_WithAllCachedKeys_ShouldMakeNoRequestAndReturnCachedEntry() {
     // preparation
     final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
-    final Product mockProductResult = mock(Product.class);
+    final ProductProjection mockProductResult = mock(ProductProjection.class);
     final String key = "testKey";
     final String id = "testId";
     when(mockProductResult.getKey()).thenReturn(key);
@@ -340,17 +339,17 @@ class BaseServiceImplTest {
 
     // assertions
     assertThat(optional).containsExactly(MapEntry.entry(key, id));
-    verify(client, times(1)).execute(any(ProductQuery.class));
+    verify(client, times(1)).execute(any(ProductProjectionQuery.class));
   }
 
   @Test
   void cacheKeysToIds_WithCachedKeysExceedingCacheSize_ShouldNotReturnLeastUsedKeys() {
     // preparation
     final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
-    final Product product1 = mock(Product.class);
+    final ProductProjection product1 = mock(ProductProjection.class);
     when(product1.getKey()).thenReturn("key-1");
     when(product1.getId()).thenReturn("id-1");
-    final Product product2 = mock(Product.class);
+    final ProductProjection product2 = mock(ProductProjection.class);
     when(product2.getKey()).thenReturn("key-2");
     when(product2.getId()).thenReturn("id-2");
     when(pagedQueryResult.getResults()).thenReturn(Arrays.asList(product1, product2));
@@ -374,7 +373,7 @@ class BaseServiceImplTest {
     // assertions
     assertThat(optional)
         .containsExactly(MapEntry.entry("key-1", "id-1"), MapEntry.entry("testKey", "testId"));
-    verify(client, times(1)).execute(any(ProductQuery.class));
+    verify(client, times(1)).execute(any(ProductProjectionQuery.class));
     verify(client, times(1)).execute(any(ResourceKeyIdGraphQlRequest.class));
   }
 
