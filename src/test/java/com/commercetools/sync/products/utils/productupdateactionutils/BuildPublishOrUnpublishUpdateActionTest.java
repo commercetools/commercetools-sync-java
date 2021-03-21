@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductCatalogData;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.commands.updateactions.Publish;
@@ -177,13 +176,9 @@ class BuildPublishOrUnpublishUpdateActionTest {
       final boolean hasNewUpdateActions,
       final boolean hasOldProductStagedChanges) {
 
-    final ProductCatalogData productCatalogData = mock(ProductCatalogData.class);
-    when(productCatalogData.isPublished()).thenReturn(isOldProductPublished);
-    when(productCatalogData.hasStagedChanges()).thenReturn(hasOldProductStagedChanges);
-
     final ProductProjection oldProduct = mock(ProductProjection.class);
-    // when(oldProduct.getMasterData()).thenReturn(productCatalogData);
-
+    when(oldProduct.isPublished()).thenReturn(isOldProductPublished);
+    when(oldProduct.hasStagedChanges()).thenReturn(hasOldProductStagedChanges);
     final ProductDraft newProductDraft = mock(ProductDraft.class);
     when(newProductDraft.isPublish()).thenReturn(isNewProductDraftPublished);
     return buildPublishOrUnpublishUpdateAction(oldProduct, newProductDraft, hasNewUpdateActions);

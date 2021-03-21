@@ -66,12 +66,11 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
       "Failed to fetch existing products with keys: '%s'.";
   private static final String UNRESOLVED_REFERENCES_STORE_FETCH_FAILED =
       "Failed to fetch ProductDrafts waiting to be resolved with keys '%s'.";
-  private static final String UPDATE_FAILED =
-      "Failed to update Product with key: '%s'. Reason: %s";
+  private static final String UPDATE_FAILED = "Failed to update Product with key: '%s'. Reason: %s";
   private static final String FAILED_TO_PROCESS =
       "Failed to process the ProductDraft with key:'%s'. Reason: %s";
   private static final String FAILED_TO_FETCH_PRODUCT_TYPE =
-      "Failed to fetch a productType for the ProductProjection to "
+      "Failed to fetch a productType for the product to "
           + "build the products' attributes metadata.";
 
   private final ProductService productService;

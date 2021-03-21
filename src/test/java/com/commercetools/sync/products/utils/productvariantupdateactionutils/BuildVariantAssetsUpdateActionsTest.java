@@ -213,16 +213,18 @@ class BuildVariantAssetsUpdateActionsTest {
     assertThat(errorMessages).hasSize(1);
     assertThat(errorMessages.get(0))
         .matches(
-            "Failed to build update actions for the assets of the ProductProjection "
+            "Failed to build update actions for the assets of the product "
                 + "variant with the sku 'mv-sku'. Reason: .*DuplicateKeyException: Supplied asset drafts have "
-                + "duplicate keys. Asset keys are expected to be unique inside their container \\(a ProductProjection variant or a "
+                + "duplicate keys. Asset keys are expected to be unique inside their container \\(a product"
+                + " variant or a "
                 + "category\\).");
     assertThat(exceptions).hasSize(1);
     assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     assertThat(exceptions.get(0).getMessage())
         .contains(
             "Supplied asset drafts have duplicate "
-                + "keys. Asset keys are expected to be unique inside their container (a ProductProjection variant or a category).");
+                + "keys. Asset keys are expected to be unique inside their container (a product variant or a "
+                + "category).");
     assertThat(exceptions.get(0).getCause()).isExactlyInstanceOf(DuplicateKeyException.class);
   }
 

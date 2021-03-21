@@ -11,6 +11,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
+import io.sphere.sdk.products.ProductProjectionType;
 import io.sphere.sdk.products.commands.updateactions.SetSearchKeywords;
 import io.sphere.sdk.search.SearchKeyword;
 import io.sphere.sdk.search.SearchKeywords;
@@ -22,7 +23,8 @@ import org.junit.jupiter.api.Test;
 
 class BuildSetSearchKeywordsUpdateActionTest {
   private static final ProductProjection MOCK_OLD_PUBLISHED_PRODUCT =
-      readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, ProductProjection.class);
+      readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class)
+          .toProjection(ProductProjectionType.STAGED);
 
   @Test
   void buildSetSearchKeywordsUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
