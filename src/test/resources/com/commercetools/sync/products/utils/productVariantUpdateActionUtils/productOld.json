@@ -1,6 +1,7 @@
 {
   "key": "productToSyncKey",
-
+  "masterData": {
+    "staged": {
       "name": {
         "en": "Rehrücken ohne Knochen"
       },
@@ -111,7 +112,7 @@
         }
       ],
       "assets": []
-    ,
+    },
     "published": true
-
+  }
 }

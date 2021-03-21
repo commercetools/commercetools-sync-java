@@ -3,6 +3,7 @@ package com.commercetools.sync.products;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
+import static io.sphere.sdk.products.ProductProjectionType.STAGED;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
@@ -120,7 +121,7 @@ public class ProductSyncMockUtils {
       @Nonnull final String jsonResourcePath,
       @Nonnull final ResourceIdentifiable<ProductType> productTypeReference) {
     final ProductProjection productFromJson =
-        readObjectFromResource(jsonResourcePath, ProductProjection.class);
+        readObjectFromResource(jsonResourcePath, Product.class).toProjection(STAGED);
 
     @SuppressWarnings("ConstantConditions")
     final List<ProductVariantDraft> allVariants =
@@ -245,7 +246,7 @@ public class ProductSyncMockUtils {
   }
 
   public static ProductProjection createProductFromJson(@Nonnull final String jsonResourcePath) {
-    return readObjectFromResource(jsonResourcePath, ProductProjection.class);
+    return readObjectFromResource(jsonResourcePath, Product.class).toProjection(STAGED);
   }
 
   public static ProductDraft createProductDraftFromJson(@Nonnull final String jsonResourcePath) {

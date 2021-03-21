@@ -7,6 +7,8 @@
     "id": "cda0dbf7-b42e-40bf-8453-241d5b587f93"
   },
   "catalogs": [],
+  "masterData": {
+    "staged": {
   "name": {
     "en": "Rehrücken ohne Knochen"
   },
@@ -39,9 +41,11 @@
     "assets": []
   },
   "variants": [],
-  "searchKeywords": {},
+      "searchKeywords": {}
+    },
   "published": true,
-  "hasStagedChanges": false,
+    "hasStagedChanges": false
+  },
   "catalogData": {},
   "taxCategory": {
     "typeId": "tax-category",

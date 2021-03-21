@@ -4,6 +4,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWit
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static io.sphere.sdk.products.ProductProjectionType.STAGED;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
@@ -74,7 +75,7 @@ class BuildVariantAssetsUpdateActionsTest {
   void
       buildProductVariantAssetsUpdateActions_WithNullNewAssetsAndExistingAssets_ShouldBuild3RemoveActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, ProductProjection.class);
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
 
     final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     ProductVariantDraft variant = ProductVariantDraftBuilder.of().build();
@@ -99,7 +100,7 @@ class BuildVariantAssetsUpdateActionsTest {
   void
       buildProductVariantAssetsUpdateActions_WithNullNewAssetsAndNoOldAssets_ShouldNotBuildActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, ProductProjection.class);
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductVariant productVariant = mock(ProductVariant.class);
     when(productVariant.getAssets()).thenReturn(emptyList());
     ProductVariantDraft variant = ProductVariantDraftBuilder.of().build();
@@ -119,7 +120,7 @@ class BuildVariantAssetsUpdateActionsTest {
   @Test
   void buildProductVariantAssetsUpdateActions_WithNewAssetsAndNoOldAssets_ShouldBuild3AddActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITHOUT_ASSETS, ProductProjection.class);
+        readObjectFromResource(PRODUCT_WITHOUT_ASSETS, Product.class).toProjection(STAGED);
     final ProductVariant productVariant = oldProduct.getMasterVariant();
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ABC, ProductDraft.class);
@@ -169,7 +170,7 @@ class BuildVariantAssetsUpdateActionsTest {
   @Test
   void buildProductVariantAssetsUpdateActions_WithIdenticalAssets_ShouldNotBuildUpdateActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, ProductProjection.class);
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ABC, ProductDraft.class);
 
@@ -187,7 +188,7 @@ class BuildVariantAssetsUpdateActionsTest {
   void
       buildProductVariantAssetsUpdateActions_WithDuplicateAssetKeys_ShouldNotBuildActionsAndTriggerErrorCb() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, ProductProjection.class);
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ABB, ProductDraft.class);
 
@@ -232,7 +233,7 @@ class BuildVariantAssetsUpdateActionsTest {
   void
       buildProductVariantAssetsUpdateActions_WithSameAssetPositionButChangesWithin_ShouldBuildUpdateActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, ProductProjection.class);
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ABC_WITH_CHANGES, ProductDraft.class);
 
@@ -273,7 +274,7 @@ class BuildVariantAssetsUpdateActionsTest {
   @Test
   void buildProductVariantAssetsUpdateActions_WithOneMissingAsset_ShouldBuildRemoveAssetAction() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, ProductProjection.class);
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_AB, ProductDraft.class);
 
@@ -291,7 +292,7 @@ class BuildVariantAssetsUpdateActionsTest {
   @Test
   void buildProductVariantAssetsUpdateActions_WithOneExtraAsset_ShouldBuildAddAssetAction() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, ProductProjection.class);
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ABCD, ProductDraft.class);
 
@@ -320,7 +321,7 @@ class BuildVariantAssetsUpdateActionsTest {
   void
       buildProductVariantAssetsUpdateActions_WithOneAssetSwitch_ShouldBuildRemoveAndAddAssetActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, ProductProjection.class);
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ABD, ProductDraft.class);
 
@@ -349,7 +350,7 @@ class BuildVariantAssetsUpdateActionsTest {
   @Test
   void buildProductVariantAssetsUpdateActions_WithDifferent_ShouldBuildChangeAssetOrderAction() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, ProductProjection.class);
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_CAB, ProductDraft.class);
 
@@ -369,7 +370,7 @@ class BuildVariantAssetsUpdateActionsTest {
   void
       buildProductVariantAssetsUpdateActions_WithRemovedAndDifferentOrder_ShouldBuildChangeOrderAndRemoveActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, ProductProjection.class);
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_CB, ProductDraft.class);
 
@@ -390,7 +391,7 @@ class BuildVariantAssetsUpdateActionsTest {
   void
       buildProductVariantAssetsUpdateActions_WithAddedAndDifferentOrder_ShouldBuildChangeOrderAndAddActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, ProductProjection.class);
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ACBD, ProductDraft.class);
 
@@ -420,7 +421,7 @@ class BuildVariantAssetsUpdateActionsTest {
   void
       buildProductVariantAssetsUpdateActions_WithAddedAssetInBetween_ShouldBuildAddWithCorrectPositionActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, ProductProjection.class);
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ADBC, ProductDraft.class);
 
@@ -449,7 +450,7 @@ class BuildVariantAssetsUpdateActionsTest {
   void
       buildProductVariantAssetsUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAllThreeMoveAssetActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, ProductProjection.class);
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_CBD, ProductDraft.class);
 
@@ -480,7 +481,7 @@ class BuildVariantAssetsUpdateActionsTest {
   void
       buildProductVariantAssetsUpdateActions_WithAddedRemovedAndDifOrderAndNewName_ShouldBuildAllDiffAssetActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, ProductProjection.class);
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_CBD_WITH_CHANGES, ProductDraft.class);
 

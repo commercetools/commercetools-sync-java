@@ -1,6 +1,7 @@
 {
   "key": "product-without-assets",
- 
+  "masterData": {
+    "staged": {
       "name": {
         "en": "english name"
       },
@@ -16,8 +17,8 @@
         "assets": []
       },
       "variants": []
-  ,
+    },
     "published": true,
     "hasStagedChanges": true
-
+  }
 }

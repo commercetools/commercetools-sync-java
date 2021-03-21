@@ -6,6 +6,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_2
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static io.sphere.sdk.products.ProductProjectionType.STAGED;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
@@ -39,6 +40,7 @@ import com.commercetools.sync.services.impl.ProductServiceImpl;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
+import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductProjection;
@@ -297,7 +299,8 @@ class ProductSyncTest {
             .build();
 
     final ProductProjection mockedExistingProduct =
-        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, ProductProjection.class);
+        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class)
+            .toProjection(STAGED);
 
     final ProductSyncOptions productSyncOptions =
         ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
@@ -356,7 +359,8 @@ class ProductSyncTest {
             .build();
 
     final ProductProjection mockedExistingProduct =
-        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, ProductProjection.class);
+        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class)
+            .toProjection(STAGED);
     final List<String> errorMessages = new ArrayList<>();
     final List<Throwable> exceptions = new ArrayList<>();
 
