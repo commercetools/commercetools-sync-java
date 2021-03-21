@@ -45,7 +45,8 @@ class BuildSetMetaKeywordsUpdateActionTest {
   }
 
   private Optional<UpdateAction<Product>> getSetMetaKeywordsUpdateAction(
-          @Nonnull final ProductProjection oldProduct, @Nullable final LocalizedString newProductMetaKeywords) {
+      @Nonnull final ProductProjection oldProduct,
+      @Nullable final LocalizedString newProductMetaKeywords) {
     final ProductDraft newProductDraft = mock(ProductDraft.class);
     when(newProductDraft.getMetaKeywords()).thenReturn(newProductMetaKeywords);
     return buildSetMetaKeywordsUpdateAction(oldProduct, newProductDraft);

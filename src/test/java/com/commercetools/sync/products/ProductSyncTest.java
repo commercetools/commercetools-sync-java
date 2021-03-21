@@ -39,7 +39,6 @@ import com.commercetools.sync.services.impl.ProductServiceImpl;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
-import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductProjection;

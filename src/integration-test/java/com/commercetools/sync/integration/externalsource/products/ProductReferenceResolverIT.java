@@ -78,7 +78,10 @@ class ProductReferenceResolverIT {
 
   private ProductSyncOptions getProductSyncOptions() {
     final QuadConsumer<
-            SyncException, Optional<ProductDraft>, Optional<ProductProjection>, List<UpdateAction<Product>>>
+            SyncException,
+            Optional<ProductDraft>,
+            Optional<ProductProjection>,
+            List<UpdateAction<Product>>>
         errorCallBack =
             (exception, newResource, oldResource, updateActions) -> {
               errorCallBackExceptions.add(exception.getCause());

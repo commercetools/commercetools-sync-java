@@ -44,7 +44,8 @@ class BuildSetMetaTitleUpdateActionTest {
   }
 
   private Optional<UpdateAction<Product>> getSetMetaTitleUpdateAction(
-      @Nonnull final ProductProjection oldProduct, @Nullable final LocalizedString newProductMetaTitle) {
+      @Nonnull final ProductProjection oldProduct,
+      @Nullable final LocalizedString newProductMetaTitle) {
     final ProductDraft newProductDraft = mock(ProductDraft.class);
     when(newProductDraft.getMetaTitle()).thenReturn(newProductMetaTitle);
     return buildSetMetaTitleUpdateAction(oldProduct, newProductDraft);

@@ -170,9 +170,10 @@ class ProductSyncIT {
   }
 
   private ProductSyncOptions buildSyncOptions() {
-    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>> warningCallBack =
-        (exception, newResource, oldResource) ->
-            warningCallBackMessages.add(exception.getMessage());
+    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
+        warningCallBack =
+            (exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage());
 
     return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
         .errorCallback(
@@ -229,9 +230,10 @@ class ProductSyncIT {
             .state(null)
             .build();
 
-    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>> warningCallBack =
-        (exception, newResource, oldResource) ->
-            warningCallBackMessages.add(exception.getMessage());
+    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
+        warningCallBack =
+            (exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage());
 
     ProductSyncOptions syncOptions =
         ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -987,9 +989,10 @@ class ProductSyncIT {
   void sync_withProductContainingAttributeChanges_shouldSyncProductCorrectly() {
     // preparation
     final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>> warningCallBack =
-        (exception, newResource, oldResource) ->
-            warningCallBackMessages.add(exception.getMessage());
+    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
+        warningCallBack =
+            (exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage());
 
     final ProductSyncOptions customOptions =
         ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)

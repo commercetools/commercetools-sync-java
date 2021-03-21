@@ -51,7 +51,8 @@ class BuildSetSearchKeywordsUpdateActionTest {
   }
 
   private Optional<UpdateAction<Product>> getSetSearchKeywordsUpdateAction(
-          @Nonnull final ProductProjection oldProduct, @Nonnull final SearchKeywords newProductSearchKeywords) {
+      @Nonnull final ProductProjection oldProduct,
+      @Nonnull final SearchKeywords newProductSearchKeywords) {
     final ProductDraft newProductDraft = mock(ProductDraft.class);
     when(newProductDraft.getSearchKeywords()).thenReturn(newProductSearchKeywords);
     return buildSetSearchKeywordsUpdateAction(oldProduct, newProductDraft);

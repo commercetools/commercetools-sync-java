@@ -182,7 +182,7 @@ class BuildPublishOrUnpublishUpdateActionTest {
     when(productCatalogData.hasStagedChanges()).thenReturn(hasOldProductStagedChanges);
 
     final ProductProjection oldProduct = mock(ProductProjection.class);
-   // when(oldProduct.getMasterData()).thenReturn(productCatalogData);
+    // when(oldProduct.getMasterData()).thenReturn(productCatalogData);
 
     final ProductDraft newProductDraft = mock(ProductDraft.class);
     when(newProductDraft.isPublish()).thenReturn(isNewProductDraftPublished);

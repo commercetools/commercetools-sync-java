@@ -44,12 +44,15 @@ import io.sphere.sdk.products.Image;
 import io.sphere.sdk.products.ImageDimensions;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
+import io.sphere.sdk.products.ProductProjectionType;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
 import io.sphere.sdk.products.commands.updateactions.SetKey;
+import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
@@ -77,7 +80,7 @@ class ProductServiceImplIT {
   private ProductService productService;
   private static ProductType productType;
   private static List<Reference<Category>> categoryReferencesWithIds;
-  private Product product;
+  private ProductProjection product;
 
   private List<String> errorCallBackMessages;
   private List<String> warningCallBackMessages;
@@ -136,6 +139,7 @@ class ProductServiceImplIT {
     product =
         CTP_TARGET_CLIENT
             .execute(ProductCreateCommand.of(productDraft))
+            .thenApply(p -> p.toProjection(ProductProjectionType.STAGED))
             .toCompletableFuture()
             .join();
 
@@ -276,7 +280,7 @@ class ProductServiceImplIT {
 
   @Test
   void fetchMatchingProductsByKeys_WithEmptySetOfKeys_ShouldReturnEmptySet() {
-    final Set<Product> fetchedProducts =
+    final Set<ProductProjection> fetchedProducts =
         productService
             .fetchMatchingProductsByKeys(Collections.emptySet())
             .toCompletableFuture()
@@ -288,7 +292,7 @@ class ProductServiceImplIT {
 
   @Test
   void fetchMatchingProductsByKeys_WithAllExistingSetOfKeys_ShouldReturnSetOfProducts() {
-    final Set<Product> fetchedProducts =
+    final Set<ProductProjection> fetchedProducts =
         productService
             .fetchMatchingProductsByKeys(singleton(product.getKey()))
             .toCompletableFuture()
@@ -332,7 +336,7 @@ class ProductServiceImplIT {
     final Set<String> keys = new HashSet<>();
     keys.add(product.getKey());
     keys.add("new-key");
-    final Set<Product> fetchedProducts =
+    final Set<ProductProjection> fetchedProducts =
         productService.fetchMatchingProductsByKeys(keys).toCompletableFuture().join();
     assertThat(fetchedProducts).hasSize(1);
     assertThat(errorCallBackExceptions).isEmpty();
@@ -342,7 +346,7 @@ class ProductServiceImplIT {
   @Test
   void fetchMatchingProductsByKeys_WithAllExistingSetOfKeys_ShouldCacheFetchedProductsIds() {
     final String oldKey = product.getKey();
-    final Set<Product> fetchedProducts =
+    final Set<ProductProjection> fetchedProducts =
         productService.fetchMatchingProductsByKeys(singleton(oldKey)).toCompletableFuture().join();
     assertThat(fetchedProducts).hasSize(1);
 
@@ -387,7 +391,7 @@ class ProductServiceImplIT {
     final ProductService spyProductService = new ProductServiceImpl(spyOptions);
 
     // test
-    final Optional<Product> createdProductOptional =
+    final Optional<ProductProjection> createdProductOptional =
         spyProductService.createProduct(productDraft1).toCompletableFuture().join();
 
     // assertion
@@ -395,10 +399,10 @@ class ProductServiceImplIT {
     assertThat(errorCallBackMessages).isEmpty();
 
     // assert CTP state
-    final Optional<Product> queriedOptional =
+    final Optional<ProductProjection> queriedOptional =
         CTP_TARGET_CLIENT
             .execute(
-                ProductQuery.of()
+                ProductProjectionQuery.ofCurrent()
                     .withPredicates(
                         QueryPredicate.of(format("key = \"%s\"", productDraft1.getKey()))))
             .toCompletableFuture()
@@ -412,10 +416,8 @@ class ProductServiceImplIT {
                     .hasValueSatisfying(
                         created -> {
                           assertThat(queried.getKey()).isEqualTo(created.getKey());
-                          assertThat(queried.getMasterData().getCurrent().getName())
-                              .isEqualTo(created.getMasterData().getCurrent().getName());
-                          assertThat(queried.getMasterData().getCurrent().getSlug())
-                              .isEqualTo(created.getMasterData().getCurrent().getSlug());
+                          assertThat(queried.getName()).isEqualTo(created.getName());
+                          assertThat(queried.getSlug()).isEqualTo(created.getSlug());
                         }));
 
     // Assert that the created product is cached
@@ -443,7 +445,7 @@ class ProductServiceImplIT {
             .build();
 
     // test
-    final Optional<Product> createdProductOptional =
+    final Optional<ProductProjection> createdProductOptional =
         productService.createProduct(productDraft1).toCompletableFuture().join();
 
     // assertion
@@ -466,7 +468,7 @@ class ProductServiceImplIT {
             .masterVariant(ProductVariantDraftBuilder.of().build())
             .build();
 
-    final Optional<Product> createdProductOptional =
+    final Optional<ProductProjection> createdProductOptional =
         productService.createProduct(productDraft1).toCompletableFuture().join();
 
     assertThat(createdProductOptional).isEmpty();
@@ -505,10 +507,11 @@ class ProductServiceImplIT {
             });
 
     // assert CTP state
-    final Optional<Product> productOptional =
+    final Optional<ProductProjection> productOptional =
         CTP_TARGET_CLIENT
             .execute(
-                ProductQuery.of().withPredicates(QueryPredicate.of(format("key = \"%s\"", newKey))))
+                ProductProjectionQuery.ofStaged()
+                    .withPredicates(QueryPredicate.of(format("key = \"%s\"", newKey))))
             .toCompletableFuture()
             .join()
             .head();
@@ -522,7 +525,7 @@ class ProductServiceImplIT {
     final ChangeName changeNameUpdateAction =
         ChangeName.of(LocalizedString.of(Locale.GERMAN, newProductName));
 
-    final Product updatedProduct =
+    final ProductProjection updatedProduct =
         productService
             .updateProduct(product, Collections.singletonList(changeNameUpdateAction))
             .toCompletableFuture()
@@ -530,10 +533,10 @@ class ProductServiceImplIT {
     assertThat(updatedProduct).isNotNull();
 
     // assert CTP state
-    final Optional<Product> fetchedProductOptional =
+    final Optional<ProductProjection> fetchedProductOptional =
         CTP_TARGET_CLIENT
             .execute(
-                ProductQuery.of()
+                ProductProjectionQuery.ofCurrent()
                     .withPredicates(QueryPredicate.of(format("key = \"%s\"", product.getKey()))))
             .toCompletableFuture()
             .join()
@@ -542,11 +545,9 @@ class ProductServiceImplIT {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(fetchedProductOptional).isNotEmpty();
-    final Product fetchedProduct = fetchedProductOptional.get();
-    assertThat(fetchedProduct.getMasterData().getCurrent().getName())
-        .isEqualTo(updatedProduct.getMasterData().getCurrent().getName());
-    assertThat(fetchedProduct.getMasterData().getCurrent().getSlug())
-        .isEqualTo(updatedProduct.getMasterData().getCurrent().getSlug());
+    final ProductProjection fetchedProduct = fetchedProductOptional.get();
+    assertThat(fetchedProduct.getName()).isEqualTo(updatedProduct.getName());
+    assertThat(fetchedProduct.getSlug()).isEqualTo(updatedProduct.getSlug());
     assertThat(fetchedProduct.getKey()).isEqualTo(updatedProduct.getKey());
   }
 
@@ -597,19 +598,18 @@ class ProductServiceImplIT {
         .join();
 
     // assert CTP state
-    final Optional<Product> fetchedProductOptional =
+    final Optional<ProductProjection> fetchedProductOptional =
         CTP_TARGET_CLIENT
             .execute(
-                ProductQuery.of()
+                ProductProjectionQuery.ofCurrent()
                     .withPredicates(QueryPredicate.of(format("key = \"%s\"", product.getKey()))))
             .toCompletableFuture()
             .join()
             .head();
 
     assertThat(fetchedProductOptional).isNotEmpty();
-    final Product fetchedProduct = fetchedProductOptional.get();
-    assertThat(fetchedProduct.getMasterData().getCurrent().getSlug())
-        .isNotEqualTo(productDraft1.getSlug());
+    final ProductProjection fetchedProduct = fetchedProductOptional.get();
+    assertThat(fetchedProduct.getSlug()).isNotEqualTo(productDraft1.getSlug());
   }
 
   @Test
@@ -622,15 +622,15 @@ class ProductServiceImplIT {
             .mapToObj(i -> ChangeName.of(LocalizedString.of(Locale.GERMAN, format("name:%s", i))))
             .collect(Collectors.toList());
 
-    final Product updatedProduct =
+    final ProductProjection updatedProduct =
         productService.updateProduct(product, updateActions).toCompletableFuture().join();
     assertThat(updatedProduct).isNotNull();
 
     // assert CTP state
-    final Optional<Product> fetchedProductOptional =
+    final Optional<ProductProjection> fetchedProductOptional =
         CTP_TARGET_CLIENT
             .execute(
-                ProductQuery.of()
+                ProductProjectionQuery.ofStaged()
                     .withPredicates(QueryPredicate.of(format("key = \"%s\"", product.getKey()))))
             .toCompletableFuture()
             .join()
@@ -639,18 +639,17 @@ class ProductServiceImplIT {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(fetchedProductOptional).isNotEmpty();
-    final Product fetchedProduct = fetchedProductOptional.get();
+    final ProductProjection fetchedProduct = fetchedProductOptional.get();
 
     // Test that the fetched product has the name of the last update action that was applied.
-    assertThat(fetchedProduct.getMasterData().getStaged().getName())
+    assertThat(fetchedProduct.getName())
         .isEqualTo(LocalizedString.of(Locale.GERMAN, format("name:%s", numberOfUpdateActions)));
   }
 
   @Test
   @SuppressWarnings("ConstantConditions")
   void updateProduct_WithMoreThan500ImageAdditions_ShouldHaveAllNewImages() {
-    final Integer productMasterVariantId =
-        product.getMasterData().getStaged().getMasterVariant().getId();
+    final Integer productMasterVariantId = product.getMasterVariant().getId();
 
     // Update the product by adding 600 images in separate update actions
     final int numberOfImages = 600;
@@ -666,15 +665,15 @@ class ProductServiceImplIT {
                 })
             .collect(Collectors.toList());
 
-    final Product updatedProduct =
+    final ProductProjection updatedProduct =
         productService.updateProduct(product, updateActions).toCompletableFuture().join();
     assertThat(updatedProduct).isNotNull();
 
     // assert CTP state
-    final Optional<Product> fetchedProductOptional =
+    final Optional<ProductProjection> fetchedProductOptional =
         CTP_TARGET_CLIENT
             .execute(
-                ProductQuery.of()
+                ProductProjectionQuery.ofStaged()
                     .withPredicates(QueryPredicate.of(format("key = \"%s\"", product.getKey()))))
             .toCompletableFuture()
             .join()
@@ -684,16 +683,15 @@ class ProductServiceImplIT {
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(fetchedProductOptional).isNotEmpty();
 
-    final Product fetchedProduct = fetchedProductOptional.get();
+    final ProductProjection fetchedProduct = fetchedProductOptional.get();
     // Test that the fetched product has exactly the 600 images added before.
-    final List<Image> currentMasterVariantImages =
-        fetchedProduct.getMasterData().getStaged().getMasterVariant().getImages();
+    final List<Image> currentMasterVariantImages = fetchedProduct.getMasterVariant().getImages();
     assertThat(currentMasterVariantImages).containsAll(addedImages);
   }
 
   @Test
   void fetchProduct_WithExistingKey_ShouldReturnProduct() {
-    final Optional<Product> fetchedProductOptional =
+    final Optional<ProductProjection> fetchedProductOptional =
         productService.fetchProduct(product.getKey()).toCompletableFuture().join();
     assertThat(fetchedProductOptional).isNotEmpty();
     assertThat(fetchedProductOptional).contains(product);
@@ -703,7 +701,7 @@ class ProductServiceImplIT {
 
   @Test
   void fetchProduct_WithNonExistingKey_ShouldNotReturnProduct() {
-    final Optional<Product> fetchedProductOptional =
+    final Optional<ProductProjection> fetchedProductOptional =
         productService.fetchProduct("someNonExistingKey").toCompletableFuture().join();
     assertThat(fetchedProductOptional).isEmpty();
     assertThat(errorCallBackExceptions).isEmpty();
@@ -712,7 +710,7 @@ class ProductServiceImplIT {
 
   @Test
   void fetchProduct_WithNullKey_ShouldNotReturnProduct() {
-    final Optional<Product> fetchedProductOptional =
+    final Optional<ProductProjection> fetchedProductOptional =
         productService.fetchProduct(null).toCompletableFuture().join();
     assertThat(fetchedProductOptional).isEmpty();
     assertThat(errorCallBackExceptions).isEmpty();
@@ -721,7 +719,7 @@ class ProductServiceImplIT {
 
   @Test
   void fetchProduct_WithBlankKey_ShouldNotReturnProduct() {
-    final Optional<Product> fetchedProductOptional =
+    final Optional<ProductProjection> fetchedProductOptional =
         productService.fetchProduct(StringUtils.EMPTY).toCompletableFuture().join();
     assertThat(fetchedProductOptional).isEmpty();
     assertThat(errorCallBackExceptions).isEmpty();

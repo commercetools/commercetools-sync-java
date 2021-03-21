@@ -44,7 +44,7 @@ class BuildChangeNameUpdateActionTest {
   }
 
   private Optional<UpdateAction<Product>> getChangeNameUpdateAction(
-          @Nonnull final ProductProjection oldProduct, @Nonnull final LocalizedString newProductName) {
+      @Nonnull final ProductProjection oldProduct, @Nonnull final LocalizedString newProductName) {
     final ProductDraft newProductDraft = mock(ProductDraft.class);
     when(newProductDraft.getName()).thenReturn(newProductName);
     return buildChangeNameUpdateAction(oldProduct, newProductDraft);
