@@ -55,7 +55,6 @@ class CustomUpdateActionUtilsTest {
   private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
   private static final CategorySyncOptions CATEGORY_SYNC_OPTIONS =
       CategorySyncOptionsBuilder.of(CTP_CLIENT).build();
-  Resource mainOldResource = mock(Resource.class);
   Resource maiNewResource = mock(Resource.class);
 
   @Test
