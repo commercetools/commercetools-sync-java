@@ -51,7 +51,6 @@ class CategoryAssetUpdateActionUtilsTest {
   private static final CategorySyncOptions SYNC_OPTIONS =
       CategorySyncOptionsBuilder.of(mock(SphereClient.class)).build();
 
-  Category mainCategory = mock(Category.class);
   CategoryDraft mainCategoryDraft = mock(CategoryDraft.class);
 
   @Test

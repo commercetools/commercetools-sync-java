@@ -98,7 +98,6 @@ class ProductVariantAssetUpdateActionUtilsTest {
             .custom(newCustomFieldsDraft)
             .build();
 
-    Product product = mock(Product.class);
     ProductDraft productDraft = mock(ProductDraft.class);
     final List<UpdateAction<Product>> updateActions =
         buildActions(productDraft, 1, oldAsset, newAssetDraft, SYNC_OPTIONS);
