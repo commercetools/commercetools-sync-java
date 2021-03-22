@@ -85,10 +85,10 @@ the method that maps from a `Product` to `ProductDraft` in order to make them re
 
 ````java
 // Build a ProductQuery for fetching products from a source CTP project with all the needed references expanded for the sync:
-final ProductQuery productQueryWithReferenceExpanded = ProductReferenceResolutionUtils.buildProductQuery();
+final ProductProjectionQuery productQuery = ProductReferenceResolutionUtils.buildProductQuery();
 
 // Query all products (NOTE this is only for example, please adjust your logic)
-final List<Product> products =
+final List<ProductProjection> products =
     CtpQueryUtils
         .queryAll(sphereClient, productQueryWithReferenceExpanded, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
@@ -193,7 +193,7 @@ following context about the warning message:
  final Logger logger = LoggerFactory.getLogger(ProductSync.class);
  final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder
          .of(sphereClient)
-         .warningCallback((syncException, draft, product, updateActions) -> 
+         .warningCallback((syncException, draft, productProjection, updateActions) -> 
             logger.warn(new SyncException("My customized message"), syncException)).build();
 ````
 
@@ -208,7 +208,8 @@ actions array with custom actions or discard unwanted actions. The callback prov
 
 ````java
 final TriFunction<
-        List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>> beforeUpdateProductCallback =
+        List<UpdateAction<Product>>, ProductDraft, ProductProjection, List<UpdateAction<Product
+>>> beforeUpdateProductCallback =
             (updateActions, newProductDraft, oldProduct) ->  updateActions.stream()
                     .filter(updateAction -> !(updateAction instanceof RemoveVariant))
                     .collect(Collectors.toList());

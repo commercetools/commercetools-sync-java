@@ -24,13 +24,13 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductCatalogData;
-import io.sphere.sdk.products.ProductData;
+
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.queries.ProductQuery;
+import io.sphere.sdk.products.queries.ProductProjectionQuery;
+
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
@@ -89,27 +89,27 @@ class ProductReferenceResolutionUtilsTest {
     final ProductVariant productVariant =
         getProductVariantMock(singletonList(price), asList(asset1, asset2));
 
-    final Product productWithNonExpandedProductType = getProductMock(singletonList(productVariant));
+    final ProductProjection productWithNonExpandedProductType = getProductMock(singletonList(productVariant));
 
     when(productWithNonExpandedProductType.getProductType())
         .thenReturn(nonExpandedProductTypeReference);
     when(productWithNonExpandedProductType.getTaxCategory()).thenReturn(taxCategoryReference);
     when(productWithNonExpandedProductType.getState()).thenReturn(stateReference);
 
-    final Product productWithNonExpandedTaxCategory = getProductMock(singletonList(productVariant));
+    final ProductProjection productWithNonExpandedTaxCategory = getProductMock(singletonList(productVariant));
 
     when(productWithNonExpandedTaxCategory.getProductType()).thenReturn(productTypeReference);
     when(productWithNonExpandedTaxCategory.getTaxCategory())
         .thenReturn(nonExpandedTaxCategoryReference);
     when(productWithNonExpandedTaxCategory.getState()).thenReturn(stateReference);
 
-    final Product productWithNonExpandedSate = getProductMock(singletonList(productVariant));
+    final ProductProjection productWithNonExpandedSate = getProductMock(singletonList(productVariant));
 
     when(productWithNonExpandedSate.getProductType()).thenReturn(productTypeReference);
     when(productWithNonExpandedSate.getTaxCategory()).thenReturn(taxCategoryReference);
     when(productWithNonExpandedSate.getState()).thenReturn(nonExpandedStateReference);
 
-    final List<Product> products =
+    final List<ProductProjection> products =
         asList(
             productWithNonExpandedProductType,
             productWithNonExpandedTaxCategory,
@@ -194,7 +194,7 @@ class ProductReferenceResolutionUtilsTest {
         Reference.ofResourceTypeIdAndIdAndObj(
             Category.referenceTypeId(), category.getId(), category);
 
-    final Product productWithNonExpandedProductType =
+    final ProductProjection productWithNonExpandedProductType =
         getProductMock(singleton(categoryReference), null, singletonList(productVariant));
 
     when(productWithNonExpandedProductType.getProductType())
@@ -202,7 +202,7 @@ class ProductReferenceResolutionUtilsTest {
     when(productWithNonExpandedProductType.getTaxCategory()).thenReturn(taxCategoryReference);
     when(productWithNonExpandedProductType.getState()).thenReturn(stateReference);
 
-    final Product productWithNonExpandedTaxCategoryAndState =
+    final ProductProjection productWithNonExpandedTaxCategoryAndState =
         getProductMock(singletonList(productVariant));
 
     when(productWithNonExpandedTaxCategoryAndState.getProductType())
@@ -212,7 +212,7 @@ class ProductReferenceResolutionUtilsTest {
     when(productWithNonExpandedTaxCategoryAndState.getState())
         .thenReturn(nonExpandedStateReference);
 
-    final List<Product> products =
+    final List<ProductProjection> products =
         asList(productWithNonExpandedProductType, productWithNonExpandedTaxCategoryAndState, null);
 
     final List<ProductDraft> productDraftsWithKeysOnReferences =
@@ -253,25 +253,25 @@ class ProductReferenceResolutionUtilsTest {
 
   @Test
   void buildProductQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
-    final ProductQuery productQuery = ProductReferenceResolutionUtils.buildProductQuery();
+    final ProductProjectionQuery productQuery = ProductReferenceResolutionUtils.buildProductQuery();
     assertThat(productQuery.expansionPaths())
         .containsExactly(
             ExpansionPath.of("productType"),
             ExpansionPath.of("taxCategory"),
             ExpansionPath.of("state"),
-            ExpansionPath.of("masterData.staged.categories[*]"),
-            ExpansionPath.of("masterData.staged.masterVariant.prices[*].channel"),
-            ExpansionPath.of("masterData.staged.variants[*].prices[*].channel"),
-            ExpansionPath.of("masterData.staged.masterVariant.prices[*].customerGroup"),
-            ExpansionPath.of("masterData.staged.variants[*].prices[*].customerGroup"),
-            ExpansionPath.of("masterData.staged.masterVariant.prices[*].custom.type"),
-            ExpansionPath.of("masterData.staged.variants[*].prices[*].custom.type"),
-            ExpansionPath.of("masterData.staged.masterVariant.attributes[*].value"),
-            ExpansionPath.of("masterData.staged.variants[*].attributes[*].value"),
-            ExpansionPath.of("masterData.staged.masterVariant.attributes[*].value[*]"),
-            ExpansionPath.of("masterData.staged.variants[*].attributes[*].value[*]"),
-            ExpansionPath.of("masterData.staged.masterVariant.assets[*].custom.type"),
-            ExpansionPath.of("masterData.staged.variants[*].assets[*].custom.type"));
+            ExpansionPath.of("categories[*]"),
+            ExpansionPath.of("masterVariant.prices[*].channel"),
+            ExpansionPath.of("variants[*].prices[*].channel"),
+            ExpansionPath.of("masterVariant.prices[*].customerGroup"),
+            ExpansionPath.of("variants[*].prices[*].customerGroup"),
+            ExpansionPath.of("masterVariant.prices[*].custom.type"),
+            ExpansionPath.of("variants[*].prices[*].custom.type"),
+            ExpansionPath.of("masterVariant.attributes[*].value"),
+            ExpansionPath.of("variants[*].attributes[*].value"),
+            ExpansionPath.of("masterVariant.attributes[*].value[*]"),
+            ExpansionPath.of("variants[*].attributes[*].value[*]"),
+            ExpansionPath.of("masterVariant.assets[*].custom.type"),
+            ExpansionPath.of("variants[*].assets[*].custom.type"));
   }
 
   @Test
@@ -282,7 +282,7 @@ class ProductReferenceResolutionUtilsTest {
         singleton(Category.referenceOfId(categoryId));
     final CategoryOrderHints categoryOrderHints = getCategoryOrderHintsMock(categoryReferences);
 
-    final Product product = getProductMock(categoryReferences, categoryOrderHints);
+    final ProductProjection product = getProductMock(categoryReferences, categoryOrderHints);
 
     final CategoryReferencePair categoryReferencePair =
         ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
@@ -298,7 +298,7 @@ class ProductReferenceResolutionUtilsTest {
         .extracting(ResourceIdentifier::getId)
         .containsExactlyInAnyOrder(categoryId);
     assertThat(categoryOrderHintsWithKeys)
-        .isEqualTo(product.getMasterData().getStaged().getCategoryOrderHints());
+        .isEqualTo(product.getCategoryOrderHints());
   }
 
   @Test
@@ -307,7 +307,7 @@ class ProductReferenceResolutionUtilsTest {
     final String categoryId = UUID.randomUUID().toString();
     final Set<Reference<Category>> categoryReferences =
         singleton(Category.referenceOfId(categoryId));
-    final Product product = getProductMock(categoryReferences, null);
+    final ProductProjection product = getProductMock(categoryReferences, null);
 
     final CategoryReferencePair categoryReferencePair =
         ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
@@ -323,7 +323,7 @@ class ProductReferenceResolutionUtilsTest {
         .extracting(ResourceIdentifier::getId)
         .containsExactlyInAnyOrder(categoryId);
     assertThat(categoryOrderHintsWithKeys)
-        .isEqualTo(product.getMasterData().getStaged().getCategoryOrderHints());
+        .isEqualTo(product.getCategoryOrderHints());
   }
 
   @Test
@@ -337,7 +337,7 @@ class ProductReferenceResolutionUtilsTest {
     final Set<Reference<Category>> categoryReferences = singleton(categoryReference);
     final CategoryOrderHints categoryOrderHints = getCategoryOrderHintsMock(categoryReferences);
 
-    final Product product = getProductMock(categoryReferences, categoryOrderHints);
+    final ProductProjection product = getProductMock(categoryReferences, categoryOrderHints);
 
     final CategoryReferencePair categoryReferencePair =
         ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
@@ -358,8 +358,7 @@ class ProductReferenceResolutionUtilsTest {
             entry(
                 categoryKey,
                 product
-                    .getMasterData()
-                    .getStaged()
+  
                     .getCategoryOrderHints()
                     .getAsMap()
                     .get(category.getId())));
@@ -372,7 +371,7 @@ class ProductReferenceResolutionUtilsTest {
     final Reference<Category> categoryReference =
         Reference.ofResourceTypeIdAndIdAndObj(
             Category.referenceTypeId(), category.getId(), category);
-    final Product product = getProductMock(singleton(categoryReference), null);
+    final ProductProjection product = getProductMock(singleton(categoryReference), null);
 
     final CategoryReferencePair categoryReferencePair =
         ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
@@ -413,7 +412,7 @@ class ProductReferenceResolutionUtilsTest {
     final CategoryOrderHints categoryOrderHints =
         getCategoryOrderHintsMock(singleton(categoryReference1));
 
-    final Product product = getProductMock(categoryReferences, categoryOrderHints);
+    final ProductProjection product = getProductMock(categoryReferences, categoryOrderHints);
 
     final CategoryReferencePair categoryReferencePair =
         ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
@@ -435,8 +434,7 @@ class ProductReferenceResolutionUtilsTest {
             entry(
                 categoryKey1,
                 product
-                    .getMasterData()
-                    .getStaged()
+                 
                     .getCategoryOrderHints()
                     .getAsMap()
                     .get(category1.getId())));
@@ -444,7 +442,7 @@ class ProductReferenceResolutionUtilsTest {
 
   @Test
   void mapToCategoryReferencePair_WithNoReferences_ShouldNotReplaceIds() {
-    final Product product = getProductMock(Collections.emptySet(), null);
+    final ProductProjection product = getProductMock(Collections.emptySet(), null);
 
     final CategoryReferencePair categoryReferencePair =
         ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
@@ -461,7 +459,7 @@ class ProductReferenceResolutionUtilsTest {
 
   @Test
   void mapToCategoryReferencePair_WithNullReferences_ShouldNotReplaceIds() {
-    final Product product = getProductMock(singleton(null), null);
+    final ProductProjection product = getProductMock(singleton(null), null);
 
     final CategoryReferencePair categoryReferencePair =
         ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
@@ -477,49 +475,49 @@ class ProductReferenceResolutionUtilsTest {
   }
 
   @Nonnull
-  private static Product getProductMock(
+  private static ProductProjection getProductMock(
       @Nonnull final Set<Reference<Category>> references,
       @Nullable final CategoryOrderHints categoryOrderHints,
       @Nonnull final List<ProductVariant> productVariants) {
-    final ProductData productData = mock(ProductData.class);
-    mockProductDataCategories(references, categoryOrderHints, productData);
-    mockProductDataVariants(productVariants, productData);
-    return mockStagedProductData(productData);
+    final ProductProjection product = mock(ProductProjection.class);
+    mockproductCategories(references, categoryOrderHints, product);
+    mockproductVariants(productVariants, product);
+    return product;
   }
 
   @Nonnull
-  private static Product getProductMock(
+  private static ProductProjection getProductMock(
       @Nonnull final Set<Reference<Category>> references,
       @Nullable final CategoryOrderHints categoryOrderHints) {
-    final ProductData productData = mock(ProductData.class);
-    mockProductDataCategories(references, categoryOrderHints, productData);
-    return mockStagedProductData(productData);
+    final ProductProjection product = mock(ProductProjection.class);
+    mockproductCategories(references, categoryOrderHints, product);
+    return product;
   }
 
   @Nonnull
-  private static Product getProductMock(@Nonnull final List<ProductVariant> productVariants) {
-    final ProductData productData = mock(ProductData.class);
-    mockProductDataVariants(productVariants, productData);
-    return mockStagedProductData(productData);
+  private static ProductProjection getProductMock(@Nonnull final List<ProductVariant> productVariants) {
+    final ProductProjection product = mock(ProductProjection.class);
+    mockproductVariants(productVariants, product);
+    return  product;
   }
 
-  private static void mockProductDataCategories(
+  private static void mockproductCategories(
       @Nonnull final Set<Reference<Category>> references,
       @Nullable final CategoryOrderHints categoryOrderHints,
-      @Nonnull final ProductData productData) {
-    when(productData.getCategories()).thenReturn(references);
-    when(productData.getCategoryOrderHints()).thenReturn(categoryOrderHints);
+      @Nonnull final ProductProjection product) {
+    when(product.getCategories()).thenReturn(references);
+    when(product.getCategoryOrderHints()).thenReturn(categoryOrderHints);
   }
 
-  private static void mockProductDataVariants(
-      @Nonnull final List<ProductVariant> productVariants, @Nonnull final ProductData productData) {
+  private static void mockproductVariants(
+      @Nonnull final List<ProductVariant> productVariants, @Nonnull final ProductProjection product) {
     if (!productVariants.isEmpty()) {
       final ProductVariant masterVariant = productVariants.get(0);
       final List<ProductVariant> variants = productVariants.subList(1, productVariants.size());
 
-      when(productData.getMasterVariant()).thenReturn(masterVariant);
-      when(productData.getVariants()).thenReturn(variants);
-      when(productData.getAllVariants()).thenReturn(productVariants);
+      when(product.getMasterVariant()).thenReturn(masterVariant);
+      when(product.getVariants()).thenReturn(variants);
+      when(product.getAllVariants()).thenReturn(productVariants);
     }
   }
 
@@ -564,13 +562,4 @@ class ProductReferenceResolutionUtilsTest {
     return state;
   }
 
-  @Nonnull
-  private static Product mockStagedProductData(@Nonnull final ProductData productData) {
-    final ProductCatalogData productCatalogData = mock(ProductCatalogData.class);
-    when(productCatalogData.getStaged()).thenReturn(productData);
-
-    final Product product = mock(Product.class);
-    when(product.getMasterData()).thenReturn(productCatalogData);
-    return product;
-  }
 }
