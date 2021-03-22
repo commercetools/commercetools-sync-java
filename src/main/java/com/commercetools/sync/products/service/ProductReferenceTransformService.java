@@ -19,7 +19,7 @@ public interface ProductReferenceTransformService {
    * executes the query to fetch the key value for the reference id's and store the idToKey value
    * pair in the cache for reuse.
    *
-   * <p>Also maps the Product to ProductDraft by performing reference resolution considering idToKey
+   * <p>Then maps the Product to ProductDraft by performing reference resolution considering idToKey
    * value from the cache.
    *
    * @param products the products to replace the references and attributes id's with keys.
