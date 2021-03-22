@@ -26,6 +26,19 @@
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
+
+    
+### 4.1.0 - ???
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/4.0.1...4.1.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/4.1.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/4.1.0)
+
+- 🚧 **Breaking Changes** (1)
+    - **Product Sync**: The `productProjections` endpoint is used instead of `products` endpoint to improve the
+     performance of the `product Sync`. So the `callbacks` of the `product Sync` will now work with `productProjections`
+     instead of `products`  
+  
+
 ### 4.0.1 - Mar 16, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/4.0.0...4.0.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/) | 
