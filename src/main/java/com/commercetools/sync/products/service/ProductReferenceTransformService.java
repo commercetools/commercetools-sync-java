@@ -15,7 +15,7 @@ public interface ProductReferenceTransformService {
    * for the reference id's) non null and unexpanded references of the product{@link Product} by
    * using cache.
    *
-   * <p>If the reference id's are already cached, key values are fetched from the cache else it
+   * <p>If the reference ids are already cached, key values are pulled from the cache, otherwise it
    * executes the query to fetch the key value for the reference id's and store the idToKey value
    * pair in the cache for reuse.
    *
