@@ -244,7 +244,7 @@ class ProductSyncIT {
         .toCompletableFuture()
         .join();
 
-    final List<Product> products =
+    final List<ProductProjection> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts = mapToProductDrafts(products);
@@ -288,7 +288,7 @@ class ProductSyncIT {
         .toCompletableFuture()
         .join();
 
-    final List<Product> products =
+    final List<ProductProjection> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts = mapToProductDrafts(products);
@@ -334,7 +334,7 @@ class ProductSyncIT {
         .toCompletableFuture()
         .join();
 
-    final List<Product> products =
+    final List<ProductProjection> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts = mapToProductDrafts(products);
@@ -394,7 +394,7 @@ class ProductSyncIT {
         .toCompletableFuture()
         .join();
 
-    final List<Product> products =
+    final List<ProductProjection> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts = mapToProductDrafts(products);
@@ -532,7 +532,7 @@ class ProductSyncIT {
         .join();
 
     // Test
-    final List<Product> products =
+    final List<ProductProjection> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
     final List<ProductDraft> productDrafts = mapToProductDrafts(products);
     final ProductSyncStatistics syncStatistics =
@@ -616,7 +616,7 @@ class ProductSyncIT {
         .join();
 
     // Test
-    final List<Product> products =
+    final List<ProductProjection> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
     final List<ProductDraft> productDrafts = mapToProductDrafts(products);
     final ProductSyncStatistics syncStatistics =
@@ -756,7 +756,7 @@ class ProductSyncIT {
         .join();
 
     // Test
-    final List<Product> products =
+    final List<ProductProjection> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
     final List<ProductDraft> productDrafts = mapToProductDrafts(products);
     final ProductSyncStatistics syncStatistics =
