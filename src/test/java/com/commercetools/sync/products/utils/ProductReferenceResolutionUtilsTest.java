@@ -24,13 +24,11 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
-
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.queries.ProductProjectionQuery;
-
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
@@ -89,21 +87,24 @@ class ProductReferenceResolutionUtilsTest {
     final ProductVariant productVariant =
         getProductVariantMock(singletonList(price), asList(asset1, asset2));
 
-    final ProductProjection productWithNonExpandedProductType = getProductMock(singletonList(productVariant));
+    final ProductProjection productWithNonExpandedProductType =
+        getProductMock(singletonList(productVariant));
 
     when(productWithNonExpandedProductType.getProductType())
         .thenReturn(nonExpandedProductTypeReference);
     when(productWithNonExpandedProductType.getTaxCategory()).thenReturn(taxCategoryReference);
     when(productWithNonExpandedProductType.getState()).thenReturn(stateReference);
 
-    final ProductProjection productWithNonExpandedTaxCategory = getProductMock(singletonList(productVariant));
+    final ProductProjection productWithNonExpandedTaxCategory =
+        getProductMock(singletonList(productVariant));
 
     when(productWithNonExpandedTaxCategory.getProductType()).thenReturn(productTypeReference);
     when(productWithNonExpandedTaxCategory.getTaxCategory())
         .thenReturn(nonExpandedTaxCategoryReference);
     when(productWithNonExpandedTaxCategory.getState()).thenReturn(stateReference);
 
-    final ProductProjection productWithNonExpandedSate = getProductMock(singletonList(productVariant));
+    final ProductProjection productWithNonExpandedSate =
+        getProductMock(singletonList(productVariant));
 
     when(productWithNonExpandedSate.getProductType()).thenReturn(productTypeReference);
     when(productWithNonExpandedSate.getTaxCategory()).thenReturn(taxCategoryReference);
@@ -297,8 +298,7 @@ class ProductReferenceResolutionUtilsTest {
     assertThat(categoryReferencesWithKeys)
         .extracting(ResourceIdentifier::getId)
         .containsExactlyInAnyOrder(categoryId);
-    assertThat(categoryOrderHintsWithKeys)
-        .isEqualTo(product.getCategoryOrderHints());
+    assertThat(categoryOrderHintsWithKeys).isEqualTo(product.getCategoryOrderHints());
   }
 
   @Test
@@ -322,8 +322,7 @@ class ProductReferenceResolutionUtilsTest {
     assertThat(categoryReferencesWithKeys)
         .extracting(ResourceIdentifier::getId)
         .containsExactlyInAnyOrder(categoryId);
-    assertThat(categoryOrderHintsWithKeys)
-        .isEqualTo(product.getCategoryOrderHints());
+    assertThat(categoryOrderHintsWithKeys).isEqualTo(product.getCategoryOrderHints());
   }
 
   @Test
@@ -355,13 +354,7 @@ class ProductReferenceResolutionUtilsTest {
     assertThat(categoryOrderHintsWithKeys).isNotNull();
     assertThat(categoryOrderHintsWithKeys.getAsMap())
         .containsOnly(
-            entry(
-                categoryKey,
-                product
-  
-                    .getCategoryOrderHints()
-                    .getAsMap()
-                    .get(category.getId())));
+            entry(categoryKey, product.getCategoryOrderHints().getAsMap().get(category.getId())));
   }
 
   @Test
@@ -431,13 +424,7 @@ class ProductReferenceResolutionUtilsTest {
     assertThat(categoryOrderHintsWithKeys).isNotNull();
     assertThat(categoryOrderHintsWithKeys.getAsMap())
         .containsOnly(
-            entry(
-                categoryKey1,
-                product
-                 
-                    .getCategoryOrderHints()
-                    .getAsMap()
-                    .get(category1.getId())));
+            entry(categoryKey1, product.getCategoryOrderHints().getAsMap().get(category1.getId())));
   }
 
   @Test
@@ -495,10 +482,11 @@ class ProductReferenceResolutionUtilsTest {
   }
 
   @Nonnull
-  private static ProductProjection getProductMock(@Nonnull final List<ProductVariant> productVariants) {
+  private static ProductProjection getProductMock(
+      @Nonnull final List<ProductVariant> productVariants) {
     final ProductProjection product = mock(ProductProjection.class);
     mockproductVariants(productVariants, product);
-    return  product;
+    return product;
   }
 
   private static void mockproductCategories(
@@ -510,7 +498,8 @@ class ProductReferenceResolutionUtilsTest {
   }
 
   private static void mockproductVariants(
-      @Nonnull final List<ProductVariant> productVariants, @Nonnull final ProductProjection product) {
+      @Nonnull final List<ProductVariant> productVariants,
+      @Nonnull final ProductProjection product) {
     if (!productVariants.isEmpty()) {
       final ProductVariant masterVariant = productVariants.get(0);
       final List<ProductVariant> variants = productVariants.subList(1, productVariants.size());
@@ -561,5 +550,4 @@ class ProductReferenceResolutionUtilsTest {
     when(state.getId()).thenReturn(UUID.randomUUID().toString());
     return state;
   }
-
 }
