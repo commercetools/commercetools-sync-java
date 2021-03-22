@@ -11,18 +11,21 @@ import static org.mockito.Mockito.when;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.queries.CategoryQuery;
-import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class CategoryReferenceResolutionUtilsTest {
+
+  Map<String, String> idToKeyValueMap = new HashMap<>();
 
   @Test
   void mapToCategoryDrafts_WithAllExpandedCategoryReferences_ShouldReturnReferencesWithKeys() {
@@ -65,7 +68,7 @@ class CategoryReferenceResolutionUtilsTest {
       assertThat(category.getCustom().getType().getId()).isEqualTo(mockCustomType.getId());
     }
     final List<CategoryDraft> referenceReplacedDrafts =
-        CategoryReferenceResolutionUtils.mapToCategoryDrafts(mockCategories);
+        CategoryReferenceResolutionUtils.mapToCategoryDrafts(mockCategories, idToKeyValueMap);
 
     for (int i = 0; i < referenceReplacedDrafts.size(); i++) {
       assertThat(referenceReplacedDrafts.get(i).getParent().getKey()).isEqualTo("parentKey" + i);
@@ -118,7 +121,7 @@ class CategoryReferenceResolutionUtilsTest {
       assertThat(category.getCustom().getType().getId()).isEqualTo(customTypeId);
     }
     final List<CategoryDraft> referenceReplacedDrafts =
-        CategoryReferenceResolutionUtils.mapToCategoryDrafts(mockCategories);
+        CategoryReferenceResolutionUtils.mapToCategoryDrafts(mockCategories, idToKeyValueMap);
 
     for (CategoryDraft referenceReplacedDraft : referenceReplacedDrafts) {
       assertThat(referenceReplacedDraft.getParent().getId()).isEqualTo(parentId);
@@ -143,7 +146,7 @@ class CategoryReferenceResolutionUtilsTest {
       mockCategories.add(mockCategory);
     }
     final List<CategoryDraft> referenceReplacedDrafts =
-        CategoryReferenceResolutionUtils.mapToCategoryDrafts(mockCategories);
+        CategoryReferenceResolutionUtils.mapToCategoryDrafts(mockCategories, idToKeyValueMap);
     for (CategoryDraft referenceReplacedDraft : referenceReplacedDrafts) {
       assertThat(referenceReplacedDraft.getParent()).isNull();
       assertThat(referenceReplacedDraft.getCustom()).isNull();
@@ -152,12 +155,8 @@ class CategoryReferenceResolutionUtilsTest {
   }
 
   @Test
-  void buildCategoryQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
+  void buildCategoryQuery_Always_ShouldReturnQueryWithoutReferencesExpanded() {
     final CategoryQuery categoryQuery = CategoryReferenceResolutionUtils.buildCategoryQuery();
-    assertThat(categoryQuery.expansionPaths())
-        .containsExactly(
-            ExpansionPath.of("custom.type"),
-            ExpansionPath.of("assets[*].custom.type"),
-            ExpansionPath.of("parent"));
+    assertThat(categoryQuery.expansionPaths()).isEmpty();
   }
 }

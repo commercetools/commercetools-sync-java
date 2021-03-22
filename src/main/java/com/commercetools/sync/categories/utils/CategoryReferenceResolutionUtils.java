@@ -7,14 +7,13 @@ import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifi
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
-import io.sphere.sdk.categories.expansion.CategoryExpansionModel;
 import io.sphere.sdk.categories.queries.CategoryQuery;
-import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.Type;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
@@ -67,18 +66,21 @@ public final class CategoryReferenceResolutionUtils {
    *     Category}.
    */
   @Nonnull
-  public static List<CategoryDraft> mapToCategoryDrafts(@Nonnull final List<Category> categories) {
+  public static List<CategoryDraft> mapToCategoryDrafts(
+      @Nonnull final List<Category> categories,
+      @Nonnull final Map<String, String> referenceIdToKeyMap) {
     return categories.stream()
-        .map(CategoryReferenceResolutionUtils::mapToCategoryDraft)
+        .map(category -> mapToCategoryDraft(category, referenceIdToKeyMap))
         .collect(Collectors.toList());
   }
 
   @Nonnull
-  private static CategoryDraft mapToCategoryDraft(@Nonnull final Category category) {
+  private static CategoryDraft mapToCategoryDraft(
+      @Nonnull final Category category, @Nonnull final Map<String, String> referenceIdToKeyMap) {
     return CategoryDraftBuilder.of(category)
-        .custom(mapToCustomFieldsDraft(category))
-        .assets(mapToAssetDrafts(category.getAssets()))
-        .parent(getResourceIdentifierWithKey(category.getParent()))
+        .custom(mapToCustomFieldsDraft(category, referenceIdToKeyMap))
+        .assets(mapToAssetDrafts(category.getAssets(), referenceIdToKeyMap))
+        .parent(getResourceIdentifierWithKey(category.getParent(), referenceIdToKeyMap))
         .build();
   }
 
@@ -101,10 +103,6 @@ public final class CategoryReferenceResolutionUtils {
    *     aforementioned references expanded.
    */
   public static CategoryQuery buildCategoryQuery() {
-    return CategoryQuery.of()
-        .withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE)
-        .withExpansionPaths(ExpansionPath.of("custom.type"))
-        .plusExpansionPaths(ExpansionPath.of("assets[*].custom.type"))
-        .plusExpansionPaths(CategoryExpansionModel::parent);
+    return CategoryQuery.of().withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE);
   }
 }
