@@ -40,8 +40,6 @@ public class BaseTransformServiceImpl {
     return ctpClient;
   }
 
-  //  @SuppressFBWarnings(
-  //      "NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
   protected CompletableFuture<Void> fetchAndFillReferenceIdToKeyCache(
       @Nonnull final Set<String> ids, @Nonnull final GraphQlQueryResources requestType) {
 
