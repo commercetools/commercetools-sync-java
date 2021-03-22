@@ -202,35 +202,6 @@ class ProductReferenceTransformServiceImplTest {
   }
 
   @Test
-  void transform_WithErrorOnGraphQlRequest_ShouldThrowBadGatewayException() {
-    // preparation
-    final SphereClient sourceClient = mock(SphereClient.class);
-    final Map<String, String> cacheMap = new HashMap<>();
-    final ProductReferenceTransformService productReferenceTransformService =
-        new ProductReferenceTransformServiceImpl(sourceClient, cacheMap);
-    final List<Product> productPage =
-        asList(
-            readObjectFromResource("product-key-5.json", Product.class),
-            readObjectFromResource("product-key-6.json", Product.class));
-
-    final BadGatewayException badGatewayException =
-        new BadGatewayException("Failed Graphql request");
-    when(sourceClient.execute(any(ResourceIdsGraphQlRequest.class)))
-        .thenReturn(CompletableFutureUtils.failed(badGatewayException));
-
-    // test
-    final CompletionStage<List<ProductDraft>> productDraftsFromPageStage =
-        productReferenceTransformService.transformProductReferences(productPage);
-
-    // assertions
-    assertThat(productDraftsFromPageStage)
-        .failsWithin(1, TimeUnit.SECONDS)
-        .withThrowableOfType(ExecutionException.class)
-        .withCauseExactlyInstanceOf(BadGatewayException.class);
-    ;
-  }
-
-  @Test
   void transform_ProductReferences_ShouldReplaceReferencesIdsWithKeysAndMapToProductDraft() {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
