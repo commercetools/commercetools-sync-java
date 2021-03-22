@@ -87,7 +87,7 @@ public class BaseTransformServiceImpl {
             resourceKeyId -> {
               final String key = resourceKeyId.getKey();
               final String id = resourceKeyId.getId();
-              if (!isBlank(key)) {
+              if (!isBlank(id)) {
                 referenceIdToKeyCache.put(id, key);
               }
             });
