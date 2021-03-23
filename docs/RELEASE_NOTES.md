@@ -26,6 +26,17 @@
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
+### 5.0.0 - ???
+
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/4.0.1...5.0.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/5.0.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/5.0.0)
+
+- 🚧 **Breaking Changes** (1)
+    - **Product Sync**: The `productProjections` endpoint is used instead of `products` endpoint to improve the
+     performance of the `product Sync`. So the `callbacks` of the `product Sync` will now work with `productProjections`
+     instead of `products`. 
+
 ### 4.0.1 - Mar 19, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/4.0.0...4.0.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/) | 
@@ -35,16 +46,6 @@
     -  To avoid 414 request-URI too large error, the services are using chunking on the input list(keys or sku's) to
      chunk the input considering the length of the request URI and execute the query for these chunks.
 
-- ✨ **Build Tools** (1)
-  - Migrated from gradle `v5.6.2` to `v6.8.2`.
-  
-- 🛠️ **Dependency Updates** (1)
-  - Updated the following transitive dependencies to avoid vulnerability issues of previous versions:
-    - `com.fasterxml.jackson.dataformat:jackson-dataformat-cbor` -> Fixed vulnerability issue for DoS attacks
-    - `io.netty:netty-codec-http` -> Fixed vulnerability issue for Information Disclosure
-    - `org.apache.httpcomponents:httpclient` -> Fixed vulnerability issue for Improper Input Validation
-    - `commons-codec:commons-codec`-> Fixed vulnerability issue for Information Exposure
-    
 ### 4.0.0 - Feb 26, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/3.2.0...4.0.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/4.0.0/) | 
