@@ -42,7 +42,7 @@ public class CategoryReferenceTransformServiceImpl extends BaseTransformServiceI
     transformReferencesToRunParallel.add(this.transformCustomTypeReference(categories));
 
     return CompletableFuture.allOf(
-            transformReferencesToRunParallel.toArray(new CompletableFuture[0]))
+            transformReferencesToRunParallel.stream().toArray(CompletableFuture[]::new))
         .thenApply(
             ignore ->
                 CategoryReferenceResolutionUtils.mapToCategoryDrafts(
