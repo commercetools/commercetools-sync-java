@@ -45,13 +45,13 @@ public final class ProductSyncUtils {
 
   /**
    * Compares all the fields (including the variants see {@link
-   * ProductUpdateActionUtils#buildVariantsUpdateActions(ProductProjection, ProductDraft, ProductSyncOptions,
-   * Map)}) of a {@link ProductProjection} and a {@link ProductDraft}, given that each of these fields pass
-   * the specified {@link SyncFilter}. It returns a {@link List} of {@link UpdateAction}&lt;{@link
-   * Product}&gt; as a result. If no update action is needed, for example in case where both the
-   * {@link ProductProjection} and the {@link ProductDraft} have the same names, an empty {@link List} is
-   * returned. Then it applies a specified filter function in the {@link ProductSyncOptions}
-   * instance on the resultant list and returns this result.
+   * ProductUpdateActionUtils#buildVariantsUpdateActions(ProductProjection, ProductDraft,
+   * ProductSyncOptions, Map)}) of a {@link ProductProjection} and a {@link ProductDraft}, given
+   * that each of these fields pass the specified {@link SyncFilter}. It returns a {@link List} of
+   * {@link UpdateAction}&lt;{@link Product}&gt; as a result. If no update action is needed, for
+   * example in case where both the {@link ProductProjection} and the {@link ProductDraft} have the
+   * same names, an empty {@link List} is returned. Then it applies a specified filter function in
+   * the {@link ProductSyncOptions} instance on the resultant list and returns this result.
    *
    * @param oldProduct the productprojection which should be updated.
    * @param newProduct the product draft where we get the new data.
@@ -198,10 +198,10 @@ public final class ProductSyncUtils {
   }
 
   /**
-   * Compares the categories of a {@link ProductProjection} and a {@link ProductDraft}. It returns a {@link
-   * List} of {@link UpdateAction}&lt;{@link Product}&gt; as a result. If no update action is
-   * needed, for example in case where both the {@link ProductProjection} and the {@link ProductDraft} have
-   * the identical categories, an empty {@link List} is returned.
+   * Compares the categories of a {@link ProductProjection} and a {@link ProductDraft}. It returns a
+   * {@link List} of {@link UpdateAction}&lt;{@link Product}&gt; as a result. If no update action is
+   * needed, for example in case where both the {@link ProductProjection} and the {@link
+   * ProductDraft} have the identical categories, an empty {@link List} is returned.
    *
    * @param oldProduct the productprojection which should be updated.
    * @param newProduct the product draft where we get the new data.

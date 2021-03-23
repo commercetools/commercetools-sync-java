@@ -87,10 +87,10 @@ public final class ProductUpdateActionUtils {
   static final String BLANK_NEW_MASTER_VARIANT_SKU = "New master variant has blank SKU.";
 
   /**
-   * Compares the {@link LocalizedString} names of a {@link ProductDraft} and a {@link ProductProjection}. It
-   * returns an {@link ChangeName} as a result in an {@link Optional}. If both the {@link ProductProjection}
-   * and the {@link ProductDraft} have the same name, then no update action is needed and hence an
-   * empty {@link Optional} is returned.
+   * Compares the {@link LocalizedString} names of a {@link ProductDraft} and a {@link
+   * ProductProjection}. It returns an {@link ChangeName} as a result in an {@link Optional}. If
+   * both the {@link ProductProjection} and the {@link ProductDraft} have the same name, then no
+   * update action is needed and hence an empty {@link Optional} is returned.
    *
    * <p>NOTE: Comparison is done against the staged projection of the old product.
    *
@@ -101,7 +101,7 @@ public final class ProductUpdateActionUtils {
    */
   @Nonnull
   public static Optional<UpdateAction<Product>> buildChangeNameUpdateAction(
-          @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
+      @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     final LocalizedString newName = newProduct.getName();
     final LocalizedString oldName = oldProduct.getName();
     return buildUpdateAction(oldName, newName, () -> ChangeName.of(newName, true));
@@ -109,9 +109,9 @@ public final class ProductUpdateActionUtils {
 
   /**
    * Compares the {@link LocalizedString} descriptions of a {@link ProductDraft} and a {@link
-   * ProductProjection}. It returns an {@link SetDescription} as a result in an {@link Optional}. If both the
-   * {@link ProductProjection} and the {@link ProductDraft} have the same description, then no update action
-   * is needed and hence an empty {@link Optional} is returned.
+   * ProductProjection}. It returns an {@link SetDescription} as a result in an {@link Optional}. If
+   * both the {@link ProductProjection} and the {@link ProductDraft} have the same description, then
+   * no update action is needed and hence an empty {@link Optional} is returned.
    *
    * <p>NOTE: Comparison is done against the staged projection of the old product.
    *
@@ -130,10 +130,10 @@ public final class ProductUpdateActionUtils {
   }
 
   /**
-   * Compares the {@link LocalizedString} slugs of a {@link ProductDraft} and a {@link ProductProjection}. It
-   * returns a {@link ChangeSlug} update action as a result in an {@link Optional}. If both the
-   * {@link ProductProjection} and the {@link ProductDraft} have the same slug, then no update action is
-   * needed and hence an empty {@link Optional} is returned.
+   * Compares the {@link LocalizedString} slugs of a {@link ProductDraft} and a {@link
+   * ProductProjection}. It returns a {@link ChangeSlug} update action as a result in an {@link
+   * Optional}. If both the {@link ProductProjection} and the {@link ProductDraft} have the same
+   * slug, then no update action is needed and hence an empty {@link Optional} is returned.
    *
    * <p>NOTE: Comparison is done against the staged projection of the old product.
    *
@@ -152,10 +152,11 @@ public final class ProductUpdateActionUtils {
 
   /**
    * Compares the {@link Set} of {@link Category} {@link Reference}s of a {@link ProductDraft} and a
-   * {@link ProductProjection}. It returns a {@link List} of {@link AddToCategory} update actions as a result,
-   * if the old product needs to be added to a category to have the same set of categories as the
-   * new product. If both the {@link ProductProjection} and the {@link ProductDraft} have the same set of
-   * categories, then no update actions are needed and hence an empty {@link List} is returned.
+   * {@link ProductProjection}. It returns a {@link List} of {@link AddToCategory} update actions as
+   * a result, if the old product needs to be added to a category to have the same set of categories
+   * as the new product. If both the {@link ProductProjection} and the {@link ProductDraft} have the
+   * same set of categories, then no update actions are needed and hence an empty {@link List} is
+   * returned.
    *
    * <p>NOTE: Comparison is done against the staged projection of the old product.
    *
@@ -168,8 +169,7 @@ public final class ProductUpdateActionUtils {
   public static List<UpdateAction<Product>> buildAddToCategoryUpdateActions(
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     final Set<ResourceIdentifier<Category>> newCategories = newProduct.getCategories();
-    final Set<Reference<Category>> oldCategories =
-        oldProduct.getCategories();
+    final Set<Reference<Category>> oldCategories = oldProduct.getCategories();
     return buildUpdateActions(
         oldCategories,
         newCategories,
@@ -193,14 +193,16 @@ public final class ProductUpdateActionUtils {
   }
 
   /**
-   * Compares the {@link CategoryOrderHints} of a {@link ProductDraft} and a {@link ProductProjection}. It
-   * returns a {@link SetCategoryOrderHint} update action as a result in an {@link List}. If both
-   * the {@link ProductProjection} and the {@link ProductDraft} have the same categoryOrderHints, then no
-   * update actions are needed and hence an empty {@link List} is returned.
+   * Compares the {@link CategoryOrderHints} of a {@link ProductDraft} and a {@link
+   * ProductProjection}. It returns a {@link SetCategoryOrderHint} update action as a result in an
+   * {@link List}. If both the {@link ProductProjection} and the {@link ProductDraft} have the same
+   * categoryOrderHints, then no update actions are needed and hence an empty {@link List} is
+   * returned.
    *
    * <p>NOTE: Comparison is done against the staged projection of the old product.
    *
-   {@link ProductProjection} which should be updated.
+   * <p>{@link ProductProjection} which should be updated.
+   *
    * @param newProduct the product draft where we get the new categoryOrderHints.
    * @return A list containing the update actions or an empty list if the categoryOrderHints are
    *     identical.
@@ -209,8 +211,7 @@ public final class ProductUpdateActionUtils {
   public static List<UpdateAction<Product>> buildSetCategoryOrderHintUpdateActions(
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     final CategoryOrderHints newCategoryOrderHints = newProduct.getCategoryOrderHints();
-    final CategoryOrderHints oldCategoryOrderHints =
-        oldProduct.getCategoryOrderHints();
+    final CategoryOrderHints oldCategoryOrderHints = oldProduct.getCategoryOrderHints();
     return buildUpdateActions(
         oldCategoryOrderHints,
         newCategoryOrderHints,
@@ -249,11 +250,11 @@ public final class ProductUpdateActionUtils {
 
   /**
    * Compares the {@link Set} of {@link Category} {@link Reference}s of a {@link ProductDraft} and a
-   * {@link ProductProjection}. It returns a {@link List} of {@link RemoveFromCategory} update actions as a
-   * result, if the old product needs to be removed from a category to have the same set of
-   * categories as the new product. If both the {@link ProductProjection} and the {@link ProductDraft} have
-   * the same set of categories, then no update actions are needed and hence an empty {@link List}
-   * is returned.
+   * {@link ProductProjection}. It returns a {@link List} of {@link RemoveFromCategory} update
+   * actions as a result, if the old product needs to be removed from a category to have the same
+   * set of categories as the new product. If both the {@link ProductProjection} and the {@link
+   * ProductDraft} have the same set of categories, then no update actions are needed and hence an
+   * empty {@link List} is returned.
    *
    * <p>NOTE: Comparison is done against the staged projection of the old product.
    *
@@ -266,8 +267,7 @@ public final class ProductUpdateActionUtils {
   public static List<UpdateAction<Product>> buildRemoveFromCategoryUpdateActions(
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     final Set<ResourceIdentifier<Category>> newCategories = newProduct.getCategories();
-    final Set<Reference<Category>> oldCategories =
-        oldProduct.getCategories();
+    final Set<Reference<Category>> oldCategories = oldProduct.getCategories();
     return buildUpdateActions(
         oldCategories,
         newCategories,
@@ -286,10 +286,10 @@ public final class ProductUpdateActionUtils {
   }
 
   /**
-   * Compares the {@link SearchKeywords} of a {@link ProductDraft} and a {@link ProductProjection}. It returns
-   * a {@link SetSearchKeywords} update action as a result in an {@link Optional}. If both the
-   * {@link ProductProjection} and the {@link ProductDraft} have the same search keywords, then no update
-   * action is needed and hence an empty {@link Optional} is returned.
+   * Compares the {@link SearchKeywords} of a {@link ProductDraft} and a {@link ProductProjection}.
+   * It returns a {@link SetSearchKeywords} update action as a result in an {@link Optional}. If
+   * both the {@link ProductProjection} and the {@link ProductDraft} have the same search keywords,
+   * then no update action is needed and hence an empty {@link Optional} is returned.
    *
    * <p>NOTE: Comparison is done against the staged projection of the old product.
    *
@@ -302,8 +302,7 @@ public final class ProductUpdateActionUtils {
   public static Optional<UpdateAction<Product>> buildSetSearchKeywordsUpdateAction(
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     final SearchKeywords newSearchKeywords = newProduct.getSearchKeywords();
-    final SearchKeywords oldSearchKeywords =
-        oldProduct.getSearchKeywords();
+    final SearchKeywords oldSearchKeywords = oldProduct.getSearchKeywords();
     return buildUpdateAction(
         oldSearchKeywords, newSearchKeywords, () -> SetSearchKeywords.of(newSearchKeywords, true));
   }
@@ -311,8 +310,9 @@ public final class ProductUpdateActionUtils {
   /**
    * Compares the {@link LocalizedString} meta descriptions of a {@link ProductDraft} and a {@link
    * Product}. It returns a {@link SetMetaDescription} update action as a result in an {@link
-   * Optional}. If both the {@link ProductProjection} and the {@link ProductDraft} have the same meta
-   * description, then no update action is needed and hence an empty {@link Optional} is returned.
+   * Optional}. If both the {@link ProductProjection} and the {@link ProductDraft} have the same
+   * meta description, then no update action is needed and hence an empty {@link Optional} is
+   * returned.
    *
    * <p>NOTE: Comparison is done against the staged projection of the old product.
    *
@@ -325,8 +325,7 @@ public final class ProductUpdateActionUtils {
   public static Optional<UpdateAction<Product>> buildSetMetaDescriptionUpdateAction(
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     final LocalizedString newMetaDescription = newProduct.getMetaDescription();
-    final LocalizedString oldMetaDescription =
-        oldProduct.getMetaDescription();
+    final LocalizedString oldMetaDescription = oldProduct.getMetaDescription();
     return buildUpdateAction(
         oldMetaDescription, newMetaDescription, () -> SetMetaDescription.of(newMetaDescription));
   }
@@ -334,8 +333,8 @@ public final class ProductUpdateActionUtils {
   /**
    * Compares the {@link LocalizedString} meta keywordss of a {@link ProductDraft} and a {@link
    * Product}. It returns a {@link SetMetaKeywords} update action as a result in an {@link
-   * Optional}. If both the {@link ProductProjection} and the {@link ProductDraft} have the same meta
-   * keywords, then no update action is needed and hence an empty {@link Optional} is returned.
+   * Optional}. If both the {@link ProductProjection} and the {@link ProductDraft} have the same
+   * meta keywords, then no update action is needed and hence an empty {@link Optional} is returned.
    *
    * <p>NOTE: Comparison is done against the staged projection of the old product.
    *
@@ -348,8 +347,7 @@ public final class ProductUpdateActionUtils {
   public static Optional<UpdateAction<Product>> buildSetMetaKeywordsUpdateAction(
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     final LocalizedString newMetaKeywords = newProduct.getMetaKeywords();
-    final LocalizedString oldMetaKeywords =
-        oldProduct.getMetaKeywords();
+    final LocalizedString oldMetaKeywords = oldProduct.getMetaKeywords();
     return buildUpdateAction(
         oldMetaKeywords, newMetaKeywords, () -> SetMetaKeywords.of(newMetaKeywords));
   }
@@ -357,8 +355,8 @@ public final class ProductUpdateActionUtils {
   /**
    * Compares the {@link LocalizedString} meta titles of a {@link ProductDraft} and a {@link
    * Product}. It returns a {@link SetMetaTitle} update action as a result in an {@link Optional}.
-   * If both the {@link ProductProjection} and the {@link ProductDraft} have the same meta title, then no
-   * update action is needed and hence an empty {@link Optional} is returned.
+   * If both the {@link ProductProjection} and the {@link ProductDraft} have the same meta title,
+   * then no update action is needed and hence an empty {@link Optional} is returned.
    *
    * <p>NOTE: Comparison is done against the staged projection of the old product.
    *
@@ -392,12 +390,13 @@ public final class ProductUpdateActionUtils {
    *   <li>... and more variant level update actions.
    * </ul>
    *
-   * If both the {@link ProductProjection} and the {@link ProductDraft} have identical variants, then no
-   * update actions are needed and hence an empty {@link List} is returned.
+   * If both the {@link ProductProjection} and the {@link ProductDraft} have identical variants,
+   * then no update actions are needed and hence an empty {@link List} is returned.
    *
    * <p>NOTE: Comparison is done against the staged projection of the old product.
    *
-   {@link ProductProjection} which should be updated.
+   * <p>{@link ProductProjection} which should be updated.
+   *
    * @param newProduct the product draft where we get the new meta title.
    * @param syncOptions the sync options wrapper which contains options related to the sync process
    *     supplied by the user. For example, custom callbacks to call in case of warnings or errors
@@ -419,11 +418,9 @@ public final class ProductUpdateActionUtils {
       return emptyList();
     }
 
-    final ProductVariant oldMasterVariant =
-        oldProduct.getMasterVariant();
+    final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
 
-    final List<ProductVariant> oldProductVariantsWithoutMaster =
-        oldProduct.getVariants();
+    final List<ProductVariant> oldProductVariantsWithoutMaster = oldProduct.getVariants();
 
     final Map<String, ProductVariant> oldProductVariantsNoMaster =
         collectionToMap(oldProductVariantsWithoutMaster, ProductVariant::getKey);
@@ -588,8 +585,8 @@ public final class ProductUpdateActionUtils {
   }
 
   /**
-   * Compares the 'published' field of a {@link ProductDraft} and a {@link ProductProjection} with the new
-   * update actions and hasStagedChanges of the old product. Accordingly it returns a {@link
+   * Compares the 'published' field of a {@link ProductDraft} and a {@link ProductProjection} with
+   * the new update actions and hasStagedChanges of the old product. Accordingly it returns a {@link
    * Publish} or {@link Unpublish} update action as a result in an {@link Optional}. Check the
    * calculation table below for all different combinations named as states.
    *
@@ -756,8 +753,7 @@ public final class ProductUpdateActionUtils {
     final boolean isOldProductPublished = toBoolean(oldProduct.isPublished());
 
     if (isNewProductPublished) {
-      if (isOldProductPublished
-          && (hasNewUpdateActions || oldProduct.hasStagedChanges())) {
+      if (isOldProductPublished && (hasNewUpdateActions || oldProduct.hasStagedChanges())) {
         // covers the state 14, state 15 and state 16.
         return Optional.of(Publish.of());
       }
@@ -823,8 +819,7 @@ public final class ProductUpdateActionUtils {
           // because this body is called only if newKey != oldKey
           if (newProduct.getVariants().stream()
               .noneMatch(variant -> Objects.equals(variant.getKey(), oldKey))) {
-            updateActions.add(
-                RemoveVariant.of(oldProduct.getMasterVariant()));
+            updateActions.add(RemoveVariant.of(oldProduct.getMasterVariant()));
           }
           return updateActions;
         });
@@ -837,7 +832,8 @@ public final class ProductUpdateActionUtils {
    *
    * <p>If the old value is set, but the new one is empty - the command will unset the tax category.
    *
-   {@link ProductProjection} which should be updated.
+   * <p>{@link ProductProjection} which should be updated.
+   *
    * @param newProduct the product draft with new {@link io.sphere.sdk.taxcategories.TaxCategory}
    *     reference.
    * @return An optional with {@link SetTaxCategory} update action.
@@ -852,8 +848,8 @@ public final class ProductUpdateActionUtils {
   }
 
   /**
-   * Compares the {@link State} references of an old {@link ProductProjection} and new {@link ProductDraft}.
-   * If they are different - return {@link TransitionState} update action.
+   * Compares the {@link State} references of an old {@link ProductProjection} and new {@link
+   * ProductDraft}. If they are different - return {@link TransitionState} update action.
    *
    * <p>If the old value is set, but the new one is empty - return empty object, because unset
    * transition state is not possible.
@@ -983,8 +979,7 @@ public final class ProductUpdateActionUtils {
       @Nonnull final ProductSyncOptions syncOptions) {
     boolean hasError = false;
 
-    final ProductVariant oldMasterVariant =
-        oldProduct.getMasterVariant();
+    final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     if (isBlank(oldMasterVariant.getKey())) {
       handleBuildVariantsUpdateActionsError(oldProduct, BLANK_OLD_MASTER_VARIANT_KEY, syncOptions);
       hasError = true;
