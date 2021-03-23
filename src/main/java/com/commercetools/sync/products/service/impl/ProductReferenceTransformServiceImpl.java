@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -76,14 +75,6 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
             productsWithAttributesResolved ->
                 transformReferencesAndMapToProductDrafts(productsWithAttributesResolved))
         .toCompletableFuture();
-  }
-
-  @Nonnull
-  private static Throwable getCompletionExceptionCause(@Nonnull final Throwable exception) {
-    if (exception instanceof CompletionException) {
-      return getCompletionExceptionCause(exception.getCause());
-    }
-    return exception;
   }
 
   @Nonnull
