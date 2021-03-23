@@ -7,6 +7,7 @@ ext {
     scmSshUrl = "git@$scmRepo:$scmProjectPath"              // developers VCS read-write repo
     SNAPSHOT_SUFFIX = "-SNAPSHOT"
     versionWIP = "development$SNAPSHOT_SUFFIX"
+    tmpGHPagesDirPath = "${project.rootDir}/tmp_git_dir/"
     validateVersion = { prefix ->
         // validate version is set and not a default version
         if (!rootProject.version?.trim() || rootProject.version == versionWIP) {
