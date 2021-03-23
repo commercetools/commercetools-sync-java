@@ -67,7 +67,8 @@ public final class SyncFilter {
    *
    * <p>Passing the filter has an XOR logic as follows:
    *
-   * <table summary="syncFilter filtering logic">
+   * <table>
+   * <caption>syncFilter filtering logic</caption>
    * <tr>
    * <th> includeOnly </th> <th> actionGroups contains actionGroup </th> <th> passes filter </th>
    * </tr>
