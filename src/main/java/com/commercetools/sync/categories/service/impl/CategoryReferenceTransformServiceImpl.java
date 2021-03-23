@@ -60,7 +60,28 @@ public class CategoryReferenceTransformServiceImpl extends BaseTransformServiceI
             .map(Reference::getId)
             .collect(Collectors.toSet());
 
+    fillCategoryIdAndKeyValuesIntoCache(categories);
+
     return fetchAndFillReferenceIdToKeyCache(parentCategoryIds, GraphQlQueryResources.CATEGORIES);
+  }
+
+  /**
+   * This method will fill already-fetched category keys (as it's a native field of category) it
+   * means it could fill the cache with category id to category key without an extra query (or at
+   * least a minimum amount) because a category could be a parent to another category or a child of
+   * another parent category, this way we could optimize the query if the parent and child are in
+   * the same batch/page (which is highly probable).
+   *
+   * <p>Simply iterate and fill all category keys with their ids, which means more keys stored in
+   * the cache, which might not be an issue as the internal cache is fast and not putting much
+   * memory overhead.
+   *
+   * @param categories
+   */
+  private void fillCategoryIdAndKeyValuesIntoCache(List<Category> categories) {
+    categories.stream()
+        .filter(category -> !referenceIdToKeyCache.containsKey(category.getId()))
+        .forEach(category -> referenceIdToKeyCache.put(category.getId(), category.getKey()));
   }
 
   @Nonnull
