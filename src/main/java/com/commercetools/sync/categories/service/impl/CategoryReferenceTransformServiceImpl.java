@@ -23,10 +23,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
-public class CategoryReferenceTransformTransformServiceImpl extends BaseTransformServiceImpl
+public class CategoryReferenceTransformServiceImpl extends BaseTransformServiceImpl
     implements CategoryReferenceTransformService {
 
-  public CategoryReferenceTransformTransformServiceImpl(
+  public CategoryReferenceTransformServiceImpl(
       @Nonnull final SphereClient ctpClient,
       @Nonnull final Map<String, String> referenceIdToKeyCache) {
     super(ctpClient, referenceIdToKeyCache);

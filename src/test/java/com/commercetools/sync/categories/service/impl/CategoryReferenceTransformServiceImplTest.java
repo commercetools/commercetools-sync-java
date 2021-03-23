@@ -30,7 +30,7 @@ public class CategoryReferenceTransformServiceImplTest {
     Map<String, String> idToKeyValueMap = new HashMap<>();
     final SphereClient sourceClient = mock(SphereClient.class);
     CategoryReferenceTransformService categoryReferenceTransformService =
-        new CategoryReferenceTransformTransformServiceImpl(sourceClient, idToKeyValueMap);
+        new CategoryReferenceTransformServiceImpl(sourceClient, idToKeyValueMap);
     final List<Category> categoryPage =
         asList(
             readObjectFromResource("category-key-1.json", Category.class),
