@@ -188,10 +188,10 @@ public final class ProductServiceImpl
 
   @Nonnull
   public CompletionStage<ProductProjection> updateProduct(
-      @Nonnull final ProductProjection productProjection,
+      @Nonnull final ProductProjection product,
       @Nonnull final List<UpdateAction<Product>> updateActions) {
 
-    return updateResourceByKey(productProjection, updateActions);
+    return updateResourceByKey(product, updateActions);
   }
 
   @Nonnull
