@@ -47,7 +47,7 @@ class CategoryReferenceResolutionUtilsIT {
   }
 
   @Test
-  void buildCategoryQuery_Always_ShouldFetchProductWithAllExpandedReferences() {
+  void buildCategoryQuery_Always_ShouldFetchProductWithoutExpansionOnReferences() {
     final CategoryDraft parentDraft =
         CategoryDraftBuilder.of(ofEnglish("parent"), ofEnglish("parent")).build();
     final Category parentCategory =
@@ -77,18 +77,18 @@ class CategoryReferenceResolutionUtilsIT {
     assertThat(categories).hasSize(1);
     final Category fetchedCategory = categories.get(0);
 
-    // Assert category parent references are expanded.
+    // Assert category parent references are not expanded.
     assertThat(fetchedCategory.getParent()).isNotNull();
-    assertThat(fetchedCategory.getParent().getObj()).isNotNull();
+    assertThat(fetchedCategory.getParent().getObj()).isNull();
 
-    // Assert category custom type references are expanded.
+    // Assert category custom type references are not expanded.
     assertThat(fetchedCategory.getCustom()).isNotNull();
-    assertThat(fetchedCategory.getCustom().getType().getObj()).isNotNull();
+    assertThat(fetchedCategory.getCustom().getType().getObj()).isNull();
 
-    // Assert category assets custom type references are expanded.
+    // Assert category assets custom type references are not expanded.
     assertThat(fetchedCategory.getAssets()).hasSize(1);
     final Asset masterVariantAsset = fetchedCategory.getAssets().get(0);
     assertThat(masterVariantAsset.getCustom()).isNotNull();
-    assertThat(masterVariantAsset.getCustom().getType().getObj()).isNotNull();
+    assertThat(masterVariantAsset.getCustom().getType().getObj()).isNull();
   }
 }
