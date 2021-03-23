@@ -45,7 +45,8 @@ public final class ProductReferenceResolutionUtils {
 
   /**
    * Returns an {@link List}&lt;{@link ProductDraft}&gt; consisting of the results of applying the
-   * mapping from {@link Product} to {@link ProductDraft} with considering reference resolution.
+   * mapping from the staged version of a {@link ProductProjection} to {@link ProductDraft} with considering reference
+   * resolution.
    *
    * <table>
    *   <caption>Mapping of Reference fields for the reference resolution</caption>
@@ -110,7 +111,7 @@ public final class ProductReferenceResolutionUtils {
    * existing resources on the target commercetools project and the library will issues an
    * update/create API request without reference resolution.
    *
-   * @param products the products with expanded references.
+   * @param products the productprojection (staged) with expanded references.
    * @return a {@link List} of {@link ProductDraft} built from the supplied {@link List} of {@link
    *     Product}.
    */
