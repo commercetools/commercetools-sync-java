@@ -2,7 +2,6 @@ package com.commercetools.sync.integration.ctpprojectsource.customers;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.customers.utils.CustomerReferenceResolutionUtils.buildCustomerQuery;
-import static com.commercetools.sync.customers.utils.CustomerReferenceResolutionUtils.mapToCustomerDrafts;
 import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.createSampleCustomerJaneDoe;
 import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.createSampleCustomerJohnDoe;
 import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.deleteCustomerSyncTestData;
@@ -18,6 +17,8 @@ import com.commercetools.sync.customers.CustomerSync;
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
 import com.commercetools.sync.customers.helpers.CustomerSyncStatistics;
+import com.commercetools.sync.customers.service.CustomerReferenceTransformService;
+import com.commercetools.sync.customers.service.impl.CustomerReferenceTransformServiceImpl;
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
@@ -27,7 +28,9 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.stores.Store;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.junit.jupiter.api.AfterAll;
@@ -38,6 +41,8 @@ class CustomerSyncIT {
   private List<String> errorMessages;
   private List<Throwable> exceptions;
   private CustomerSync customerSync;
+  private Map<String, String> idToKeyCache;
+  private CustomerReferenceTransformService customerReferenceTransformService;
 
   @BeforeEach
   void setup() {
@@ -73,6 +78,9 @@ class CustomerSyncIT {
                 })
             .build();
     customerSync = new CustomerSync(customerSyncOptions);
+    idToKeyCache = new HashMap<>();
+    customerReferenceTransformService =
+        new CustomerReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
   }
 
   @Test
@@ -81,7 +89,8 @@ class CustomerSyncIT {
     final List<Customer> customers =
         CTP_SOURCE_CLIENT.execute(buildCustomerQuery()).toCompletableFuture().join().getResults();
 
-    final List<CustomerDraft> customerDrafts = mapToCustomerDrafts(customers);
+    final List<CustomerDraft> customerDrafts =
+        customerReferenceTransformService.transformCustomerReferences(customers).join();
 
     final CustomerSyncStatistics customerSyncStatistics =
         customerSync.sync(customerDrafts).toCompletableFuture().join();
@@ -119,7 +128,10 @@ class CustomerSyncIT {
 
     final Store storeCologne = createStore(CTP_TARGET_CLIENT, "store-cologne");
 
-    return mapToCustomerDrafts(customers).stream()
+    final List<CustomerDraft> customerDrafts =
+        customerReferenceTransformService.transformCustomerReferences(customers).join();
+
+    return customerDrafts.stream()
         .map(
             customerDraft ->
                 CustomerDraftBuilder.of(customerDraft)
