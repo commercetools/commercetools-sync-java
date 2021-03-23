@@ -45,8 +45,8 @@ public final class ProductReferenceResolutionUtils {
 
   /**
    * Returns an {@link List}&lt;{@link ProductDraft}&gt; consisting of the results of applying the
-   * mapping from the staged version of a {@link ProductProjection} to {@link ProductDraft} with considering reference
-   * resolution.
+   * mapping from the staged version of a {@link ProductProjection} to {@link ProductDraft} with
+   * considering reference resolution.
    *
    * <table>
    *   <caption>Mapping of Reference fields for the reference resolution</caption>

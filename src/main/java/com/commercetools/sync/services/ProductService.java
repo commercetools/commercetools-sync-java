@@ -22,12 +22,15 @@ public interface ProductService {
    * the key; this method attempts to fetch the id of the key from the CTP project, caches it and
    * returns a {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the
    * result of it's completion could contain an {@link Optional} with the id inside of it or an
-   * empty {@link Optional} if no {@link ProductProjection} was found in the CTP project with this key.
+   * empty {@link Optional} if no {@link ProductProjection} was found in the CTP project with this
+   * key.
    *
-   * @param key the key by which a {@link ProductProjection} id should be fetched from the CTP project.
+   * @param key the key by which a {@link ProductProjection} id should be fetched from the CTP
+   *     project.
    * @return {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the
    *     result of it's completion could contain an {@link Optional} with the id inside of it or an
-   *     empty {@link Optional} if no {@link ProductProjection} was found in the CTP project with this key.
+   *     empty {@link Optional} if no {@link ProductProjection} was found in the CTP project with
+   *     this key.
    */
   @Nonnull
   CompletionStage<Optional<String>> getIdFromCacheOrFetch(@Nullable String key);
@@ -68,8 +71,8 @@ public interface ProductService {
    *
    * @param key the key of the product to fetch.
    * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion
-   *     contains an {@link Optional} that contains the matching {@link ProductProjection} if exists,
-   *     otherwise empty.
+   *     contains an {@link Optional} that contains the matching {@link ProductProjection} if
+   *     exists, otherwise empty.
    */
   @Nonnull
   CompletionStage<Optional<ProductProjection>> fetchProduct(@Nullable String key);
@@ -99,17 +102,18 @@ public interface ProductService {
   CompletionStage<Optional<ProductProjection>> createProduct(@Nonnull ProductDraft productDraft);
 
   /**
-   * Given a {@link ProductProjection} and a {@link List}&lt;{@link UpdateAction}&lt;{@link Product}&gt;&gt;,
-   * this method issues an update request with these update actions on this {@link ProductProjection} in the
-   * CTP project defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}. This
-   * method returns {@link CompletionStage}&lt;{@link ProductProjection}&gt; in which the result of it's
-   * completion contains an instance of the {@link ProductProjection} which was updated in the CTP project.
+   * Given a {@link ProductProjection} and a {@link List}&lt;{@link UpdateAction}&lt;{@link
+   * Product}&gt;&gt;, this method issues an update request with these update actions on this {@link
+   * ProductProjection} in the CTP project defined in a potentially injected {@link
+   * io.sphere.sdk.client.SphereClient}. This method returns {@link CompletionStage}&lt;{@link
+   * ProductProjection}&gt; in which the result of it's completion contains an instance of the
+   * {@link ProductProjection} which was updated in the CTP project.
    *
    * @param product the {@link ProductProjection} to update.
    * @param updateActions the update actions to update the {@link ProductProjection} with.
    * @return {@link CompletionStage}&lt;{@link ProductProjection}&gt; containing as a result of it's
-   *     completion an instance of the {@link ProductProjection} which was updated in the CTP project or a
-   *     {@link io.sphere.sdk.models.SphereException}.
+   *     completion an instance of the {@link ProductProjection} which was updated in the CTP
+   *     project or a {@link io.sphere.sdk.models.SphereException}.
    */
   @Nonnull
   public CompletionStage<ProductProjection> updateProduct(
