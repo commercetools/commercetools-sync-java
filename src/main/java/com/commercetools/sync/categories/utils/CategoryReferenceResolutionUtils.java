@@ -56,12 +56,13 @@ public final class CategoryReferenceResolutionUtils {
    *   </tbody>
    * </table>
    *
-   * <p><b>Note:</b> The {@link Category} and {@link Type} references should be expanded with a key.
-   * Any reference that is not expanded will have its id in place and not replaced by the key will
-   * be considered as existing resources on the target commercetools project and the library will
-   * issues an update/create API request without reference resolution.
+   * <p><b>Note:</b> The {@link Category} and {@link Type} references should contain Id in the
+   * map(cache) with a key value. Any reference that is not available in the map will have its id in
+   * place and not replaced by the key will be considered as existing resources on the target
+   * commercetools project and the library will issues an update/create API request without
+   * reference resolution.
    *
-   * @param categories the categories with expanded references.
+   * @param categories the categories without expansion of references.
    * @return a {@link List} of {@link CategoryDraft} built from the supplied {@link List} of {@link
    *     Category}.
    */
@@ -85,22 +86,10 @@ public final class CategoryReferenceResolutionUtils {
   }
 
   /**
-   * Builds a {@link CategoryQuery} for fetching categories from a source CTP project with all the
-   * needed references expanded for the sync:
+   * Builds a {@link CategoryQuery} for fetching categories from a source CTP project.
    *
-   * <ul>
-   *   <li>Custom Type
-   *   <li>Assets Custom Types
-   *   <li>Parent Category
-   * </ul>
-   *
-   * <p>Note: Please only use this util if you desire to sync all the aforementioned references from
-   * a source commercetools project. Otherwise, it is more efficient to build the query without
-   * expansions, if they are not needed, to avoid unnecessarily bigger payloads fetched from the
-   * source project.
-   *
-   * @return the query for fetching categories from the source CTP project with all the
-   *     aforementioned references expanded.
+   * @return the query for fetching categories from the source CTP project without any references
+   *     expanded.
    */
   public static CategoryQuery buildCategoryQuery() {
     return CategoryQuery.of().withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE);
