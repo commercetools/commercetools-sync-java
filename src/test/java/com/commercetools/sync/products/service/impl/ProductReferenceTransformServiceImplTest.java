@@ -7,20 +7,26 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.sync.commons.exceptions.ReferenceTransformException;
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
 import com.commercetools.sync.products.service.ProductReferenceTransformService;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.SphereApiConfig;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.utils.CompletableFutureUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 class ProductReferenceTransformServiceImplTest {
@@ -293,5 +299,35 @@ class ProductReferenceTransformServiceImplTest {
                         assertThat(categoryDraft.getKey()).isEqualTo("categoryKey1");
                       });
             });
+  }
+
+  @Test
+  void transform_WithErrorOnGraphQlRequest_ShouldThrowReferenceTransformException() {
+    // preparation
+    final SphereClient sourceClient = mock(SphereClient.class);
+    final Map<String, String> cacheMap = new HashMap<>();
+    final ProductReferenceTransformService productReferenceTransformService =
+        new ProductReferenceTransformServiceImpl(sourceClient, cacheMap);
+    final List<Product> productPage =
+        asList(
+            readObjectFromResource("product-key-5.json", Product.class),
+            readObjectFromResource("product-key-6.json", Product.class));
+
+    final BadGatewayException badGatewayException =
+        new BadGatewayException("Failed Graphql request");
+    when(sourceClient.execute(any(ResourceIdsGraphQlRequest.class)))
+        .thenReturn(CompletableFutureUtils.failed(badGatewayException));
+
+    // test
+    final CompletionStage<List<ProductDraft>> productDraftsFromPageStage =
+        productReferenceTransformService.transformProductReferences(productPage);
+
+    // assertions
+    assertThat(productDraftsFromPageStage)
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceTransformException.class)
+        .withRootCauseExactlyInstanceOf(BadGatewayException.class);
+    ;
   }
 }

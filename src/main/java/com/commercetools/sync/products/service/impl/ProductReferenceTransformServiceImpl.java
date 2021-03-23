@@ -3,10 +3,11 @@ package com.commercetools.sync.products.service.impl;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.sync.products.utils.ProductReferenceResolutionUtils.mapToProductDrafts;
-import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
+import com.commercetools.sync.commons.exceptions.ReferenceReplacementException;
+import com.commercetools.sync.commons.exceptions.ReferenceTransformException;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.utils.ChunkUtils;
@@ -32,7 +33,6 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.types.CustomFields;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -43,19 +43,14 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ProductReferenceTransformServiceImpl extends BaseTransformServiceImpl
     implements ProductReferenceTransformService {
 
-  private static final Logger LOGGER =
-      LoggerFactory.getLogger(ProductReferenceTransformServiceImpl.class);
-  private static final String WITH_IRRESOLVABLE_REFS_ERROR_MSG =
-      "The product with id '%s' on the source project ('%s') will "
-          + "not be synced because it has the following reference attribute(s): %n"
-          + "%s.%nThese references are either pointing to a non-existent resource or to an existing one but with a blank key. "
-          + "Please make sure these referenced resources are existing and have non-blank (i.e. non-null and non-empty) keys.";
+  private static final String FAILED_TO_REPLACE_REFERENCES_ON_ATTRIBUTES =
+      "Failed to replace referenced resource ids with keys on the attributes of the products in "
+          + "the current fetched page from the source project. This page will not be synced to the target "
+          + "project.";
 
   public ProductReferenceTransformServiceImpl(
       @Nonnull final SphereClient ctpClient,
@@ -66,18 +61,14 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
   @Nonnull
   @Override
   public CompletableFuture<List<ProductDraft>> transformProductReferences(
-      @Nonnull final List<Product> products) {
+      @Nonnull final List<Product> products) throws ReferenceReplacementException {
 
     return replaceAttributeReferenceIdsWithKeys(products)
         .handle(
             (productsResolved, throwable) -> {
-              if (throwable != null && LOGGER.isWarnEnabled()) {
-                LOGGER.warn(
-                    "Failed to replace referenced resource ids with keys on the attributes of the products in "
-                        + "the current fetched page from the source project. This page will not be synced to the target "
-                        + "project.",
-                    getCompletionExceptionCause(throwable));
-                return Collections.<Product>emptyList();
+              if (throwable != null) {
+                throw new ReferenceTransformException(
+                    FAILED_TO_REPLACE_REFERENCES_ON_ATTRIBUTES, throwable);
               }
               return productsResolved;
             })
@@ -374,16 +365,7 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
             product -> {
               final Set<JsonNode> irresolvableReferences =
                   getIrresolvableReferences(product, idToKey);
-              final boolean hasIrresolvableReferences = !irresolvableReferences.isEmpty();
-              if (hasIrresolvableReferences) {
-                LOGGER.warn(
-                    format(
-                        WITH_IRRESOLVABLE_REFS_ERROR_MSG,
-                        product.getId(),
-                        getCtpClient().getConfig().getProjectKey(),
-                        irresolvableReferences));
-              }
-              return !hasIrresolvableReferences;
+              return irresolvableReferences.isEmpty();
             })
         .collect(Collectors.toList());
   }
