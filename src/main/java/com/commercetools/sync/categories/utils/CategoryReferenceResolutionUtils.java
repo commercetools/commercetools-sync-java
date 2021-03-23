@@ -58,9 +58,9 @@ public final class CategoryReferenceResolutionUtils {
    *
    * <p><b>Note:</b> The {@link Category} and {@link Type} references should contain Id in the
    * map(cache) with a key value. Any reference that is not available in the map will have its id in
-   * place and not replaced by the key will be considered as existing resources on the target
-   * commercetools project and the library will issues an update/create API request without
-   * reference resolution.
+   * place and not replaced by the key. This reference will be considered as existing resources on
+   * the target commercetools project and the library will issues an update/create API request
+   * without reference resolution.
    *
    * @param categories the categories without expansion of references.
    * @return a {@link List} of {@link CategoryDraft} built from the supplied {@link List} of {@link
