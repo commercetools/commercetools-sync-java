@@ -16,10 +16,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * @param <U> Resource (e.g. {@link io.sphere.sdk.products.Product}, {@link
+ * @param <U> Resource (e.g. {@link io.sphere.sdk.products.ProductProjection}, {@link
  *     io.sphere.sdk.categories.Category}, etc..
  * @param <V> Resource Draft (e.g. {@link io.sphere.sdk.products.ProductDraft}, {@link
  *     io.sphere.sdk.categories.CategoryDraft}, etc
+ * @param <A> Resource to update (e.g. {@link io.sphere.sdk.products.Product}, {@link
+ *     io.sphere.sdk.categories.Category}, etc..
  */
 public class BaseSyncOptions<U, V, A> {
   private final SphereClient ctpClient;
