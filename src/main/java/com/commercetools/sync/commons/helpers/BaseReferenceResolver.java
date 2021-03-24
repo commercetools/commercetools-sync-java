@@ -4,6 +4,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import java.util.concurrent.CompletionStage;
@@ -92,7 +93,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
       @Nonnull final ResourceIdentifier<T> resourceIdentifier) throws ReferenceResolutionException {
 
     final String key = resourceIdentifier.getKey();
-    if (isBlank(key)) {
+    if (isBlank(key) || key.equalsIgnoreCase(BaseTransformServiceImpl.BLANK_KEY_VALUE)) {
       throw new ReferenceResolutionException(BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER);
     }
     return key;
