@@ -13,7 +13,6 @@ import com.commercetools.sync.commons.utils.ChunkUtils;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.ProductService;
-import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -24,7 +23,6 @@ import io.sphere.sdk.products.expansion.ProductExpansionModel;
 import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.products.queries.ProductQueryModel;
-import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.queries.QueryPredicate;
 import java.util.Collections;
 import java.util.HashSet;
@@ -127,11 +125,10 @@ public final class ProductServiceImpl
                 .withPredicates(buildProductKeysQueryPredicate(keysNotCached)));
   }
 
-  <Q extends SphereRequest<PagedQueryResult<T>>, T extends ProductProjection>
-      CompletionStage<Set<ProductProjection>> fetchMatchingResourcesInternal(
-          @Nonnull final Set<String> keys,
-          @Nonnull final Function<T, String> keyMapper,
-          @Nonnull final Function<Set<String>, Q> keysQueryMapper) {
+  CompletionStage<Set<ProductProjection>> fetchMatchingResourcesInternal(
+      @Nonnull final Set<String> keys,
+      @Nonnull final Function<ProductProjection, String> keyMapper,
+      @Nonnull final Function<Set<String>, ProductProjectionQuery> keysQueryMapper) {
 
     if (keys.isEmpty()) {
       return CompletableFuture.completedFuture(Collections.emptySet());
@@ -139,11 +136,15 @@ public final class ProductServiceImpl
 
     final List<List<String>> chunkedKeys = ChunkUtils.chunk(keys, CHUNK_SIZE);
 
-    List<Q> keysQueryMapperList =
+    final List<ProductProjectionQuery> keysQueryMapperList =
         chunkedKeys.stream()
-            .map(_keys -> keysQueryMapper.apply(new HashSet<>(_keys)))
+            .map(
+                _keys ->
+                    keysQueryMapper
+                        .apply(new HashSet<>(_keys))
+                        .withLimit(CHUNK_SIZE)
+                        .withFetchTotal(false))
             .collect(toList());
-
     return ChunkUtils.executeChunks(syncOptions.getCtpClient(), keysQueryMapperList)
         .thenApply(ChunkUtils::flattenPagedQueryResults)
         .thenApply(
