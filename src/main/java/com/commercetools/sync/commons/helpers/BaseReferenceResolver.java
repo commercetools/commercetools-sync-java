@@ -77,6 +77,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
    *
    * <ul>
    *   <li>Checks if the key value is not null or not empty.
+   *   <li>Checks if the key value is not equal to BLANK_KEY_VALUE(fetched from cache).
    * </ul>
    *
    * If the above checks pass, the key value is returned. Otherwise a {@link
