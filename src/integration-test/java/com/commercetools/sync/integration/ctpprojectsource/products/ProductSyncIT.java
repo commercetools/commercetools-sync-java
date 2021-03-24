@@ -43,6 +43,7 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.SyncFilter;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.commercetools.sync.products.service.DefaultTransformServiceCache;
 import com.commercetools.sync.products.service.ProductReferenceTransformService;
 import com.commercetools.sync.products.service.impl.ProductReferenceTransformServiceImpl;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -74,7 +75,6 @@ import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -104,7 +104,8 @@ class ProductSyncIT {
   private static List<Reference<Category>> sourceCategoryReferencesWithIds;
   private static List<Reference<Category>> targetCategoryReferencesWithIds;
   private ProductSync productSync;
-  private final Map<String, String> idToKeyCache = new HashMap<>();
+  private final Map<String, String> idToKeyCache =
+      DefaultTransformServiceCache.referenceIdToKeyCache.asMap();
   private ProductReferenceTransformService productReferenceTransformService;
   private List<String> errorCallBackMessages;
   private List<String> warningCallBackMessages;
