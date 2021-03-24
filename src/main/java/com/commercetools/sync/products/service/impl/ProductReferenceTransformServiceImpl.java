@@ -91,7 +91,7 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
     transformReferencesToRunParallel.add(this.transformPricesCustomerGroupReference(products));
 
     return CompletableFuture.allOf(
-            transformReferencesToRunParallel.toArray(new CompletableFuture[0]))
+            transformReferencesToRunParallel.stream().toArray(CompletableFuture[]::new))
         .thenApply(ignore -> mapToProductDrafts(products, referenceIdToKeyCache));
   }
 
