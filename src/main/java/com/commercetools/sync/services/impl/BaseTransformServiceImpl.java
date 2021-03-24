@@ -9,8 +9,6 @@ import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyId;
 import com.commercetools.sync.commons.utils.ChunkUtils;
 import io.sphere.sdk.client.SphereClient;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -19,6 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
+import org.apache.commons.lang3.StringUtils;
 
 public class BaseTransformServiceImpl {
   /*

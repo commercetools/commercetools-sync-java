@@ -93,7 +93,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
       @Nonnull final ResourceIdentifier<T> resourceIdentifier) throws ReferenceResolutionException {
 
     final String key = resourceIdentifier.getKey();
-    if (isBlank(key) || key.equalsIgnoreCase(BaseTransformServiceImpl.BLANK_KEY_VALUE)) {
+    if (isBlank(key) || BaseTransformServiceImpl.BLANK_KEY_VALUE.equalsIgnoreCase(key)) {
       throw new ReferenceResolutionException(BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER);
     }
     return key;
