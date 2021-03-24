@@ -193,9 +193,10 @@ public final class ProductServiceImpl
 
     return updateResourceByKey(product, updateActions);
   }
-  // TODO (JVM-SDK), remove this replicated code, when the "update by id" method is provided by the
-  // JVM-SDK
-  // see: https://github.com/commercetools/commercetools-jvm-sdk/issues/2129
+  // TODO: (JVM-SDK), remove this replicated code, when the the JVM-SDK allows to use
+  // ProductProjections in a ProductUpdateCommand.
+
+  // see: https://github.com/commercetools/commercetools-sync-java/pull/699#discussion_r600457980
   @Nonnull
   CompletionStage<ProductProjection> updateResourceByKey(
       @Nonnull final ProductProjection resource,
