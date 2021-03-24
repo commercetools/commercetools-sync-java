@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
+import org.apache.commons.lang3.StringUtils;
 
 public class BaseTransformServiceImpl {
   /*
@@ -25,6 +26,7 @@ public class BaseTransformServiceImpl {
    * could return - Error 413 (Request Entity Too Large)
    */
   public static final int CHUNK_SIZE = 300;
+  public static final String BLANK_KEY_VALUE = "KEY_VALUE_EITHER_NULL_OR_BLANK";
   protected final Map<String, String> referenceIdToKeyCache;
 
   private final SphereClient ctpClient;
@@ -83,9 +85,10 @@ public class BaseTransformServiceImpl {
         .orElseGet(Collections::emptySet)
         .forEach(
             resourceKeyId -> {
-              final String key = resourceKeyId.getKey();
+              final String keyValue = resourceKeyId.getKey();
+              final String key = StringUtils.isBlank(keyValue) ? BLANK_KEY_VALUE : keyValue;
               final String id = resourceKeyId.getId();
-              if (!isBlank(id)) {
+              if (!isBlank(key)) {
                 referenceIdToKeyCache.put(id, key);
               }
             });

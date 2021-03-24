@@ -20,6 +20,7 @@ import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.commercetools.sync.products.service.DefaultTransformServiceCache;
 import com.commercetools.sync.products.service.ProductReferenceTransformService;
 import com.commercetools.sync.products.service.impl.ProductReferenceTransformServiceImpl;
 import com.neovisionaries.i18n.CountryCode;
@@ -79,7 +80,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -100,7 +100,8 @@ class ProductSyncWithUnexpandedReferencesIT {
   private List<String> errorCallBackMessages;
   private List<String> warningCallBackMessages;
   private List<Throwable> errorCallBackExceptions;
-  private final Map<String, String> idToKeyCache = new HashMap<>();
+  private final Map<String, String> idToKeyCache =
+      DefaultTransformServiceCache.referenceIdToKeyCache.asMap();
   ProductReferenceTransformService productReferenceTransformService =
       new ProductReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
 
