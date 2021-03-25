@@ -61,8 +61,8 @@ public final class CustomerReferenceResolutionUtils {
    * </table>
    *
    * <p><b>Note:</b> The {@link CustomerGroup} and {@link Type} references should contain Id in the
-   * map(cache) with a key value. Any reference that is not available in the map will have its id in
-   * place and not replaced by the key. This reference will be considered as existing resources on
+   * map(cache) with a key value. Any reference, which have its id in place and not replaced by the key, it would not 
+   * be found in the map. In this case, this reference will be considered as existing resources on 
    * the target commercetools project and the library will issues an update/create API request
    * without reference resolution.
    *
