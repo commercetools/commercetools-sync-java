@@ -108,7 +108,7 @@ public final class VariantReferenceResolutionUtils {
       @Nonnull final Map<String, String> referenceIdToKeyMap) {
     return ProductVariantDraftBuilder.of(productVariant)
         .prices(mapToPriceDrafts(productVariant, referenceIdToKeyMap))
-        .attributes(replaceAttributesReferencesIdsWithKeys(productVariant))
+        .attributes(replaceAttributesReferencesIdsWithKeys(productVariant, referenceIdToKeyMap))
         .assets(mapToAssetDrafts(productVariant.getAssets(), referenceIdToKeyMap))
         .build();
   }
@@ -147,17 +147,18 @@ public final class VariantReferenceResolutionUtils {
    */
   @Nonnull
   static List<AttributeDraft> replaceAttributesReferencesIdsWithKeys(
-      @Nonnull final ProductVariant productVariant) {
+      @Nonnull final ProductVariant productVariant,
+      @Nonnull final Map<String, String> referenceIdToKeyMap) {
     return productVariant.getAttributes().stream()
         .map(
             attribute ->
-                replaceAttributeReferenceIdWithKey(attribute)
+                replaceAttributeReferenceIdWithKey(attribute, referenceIdToKeyMap)
                     .map(
                         productReference ->
                             AttributeDraft.of(attribute.getName(), productReference))
                     .orElseGet(
                         () ->
-                            replaceAttributeReferenceSetIdsWithKeys(attribute)
+                            replaceAttributeReferenceSetIdsWithKeys(attribute, referenceIdToKeyMap)
                                 .map(
                                     productReferenceSet ->
                                         AttributeDraft.of(attribute.getName(), productReferenceSet))
@@ -171,13 +172,14 @@ public final class VariantReferenceResolutionUtils {
   @SuppressWarnings(
       "ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
   static Optional<Reference<Product>> replaceAttributeReferenceIdWithKey(
-      @Nonnull final Attribute attribute) {
+      @Nonnull final Attribute attribute, @Nonnull final Map<String, String> referenceIdToKeyMap) {
     return getProductReference(attribute)
         .map(
             productReference ->
                 getReferenceWithKeyReplaced(
                     productReference,
-                    () -> Product.referenceOfId(productReference.getObj().getKey())));
+                    () -> Product.referenceOfId(referenceIdToKeyMap.get(productReference.getId())),
+                    referenceIdToKeyMap));
   }
 
   private static Optional<Reference<Product>> getProductReference(
@@ -189,10 +191,8 @@ public final class VariantReferenceResolutionUtils {
                 productReferenceAttribute.getValue(AttributeAccess.ofProductReference()));
   }
 
-  @SuppressWarnings(
-      "ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
   static Optional<Set<Reference<Product>>> replaceAttributeReferenceSetIdsWithKeys(
-      @Nonnull final Attribute attribute) {
+      @Nonnull final Attribute attribute, @Nonnull final Map<String, String> referenceIdToKeyMap) {
     return getProductReferenceSet(attribute)
         .map(
             productReferenceSet ->
@@ -201,7 +201,10 @@ public final class VariantReferenceResolutionUtils {
                         productReference ->
                             getReferenceWithKeyReplaced(
                                 productReference,
-                                () -> Product.referenceOfId(productReference.getObj().getKey())))
+                                () ->
+                                    Product.referenceOfId(
+                                        referenceIdToKeyMap.get(productReference.getId())),
+                                referenceIdToKeyMap))
                     .collect(toSet()));
   }
 

@@ -10,35 +10,44 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class CustomTypeReferenceResolutionUtilsTest {
 
+  Map<String, String> idToKeyValueMap = new HashMap<>();
+
   @Test
   void mapToCustomFieldsDraft_WithNullCustomType_ShouldReturnNullCustomFields() {
     final Category mockCategory = mock(Category.class);
 
-    final CustomFieldsDraft customFieldsDraft = mapToCustomFieldsDraft(mockCategory);
+    final CustomFieldsDraft customFieldsDraft =
+        mapToCustomFieldsDraft(mockCategory, idToKeyValueMap);
 
     assertThat(customFieldsDraft).isNull();
   }
 
   @Test
-  void mapToCustomFieldsDraft_WithExpandedCategory_ShouldReturnCustomFieldsDraft() {
+  void
+      mapToCustomFieldsDraft_WithNonExpandedCategoryAndIdsAreCached_ShouldReturnCustomFieldsDraft() {
     // preparation
     final Category mockCategory = mock(Category.class);
     final CustomFields mockCustomFields = mock(CustomFields.class);
-    final Type mockType = mock(Type.class);
     final String typeKey = "typeKey";
-    when(mockType.getKey()).thenReturn(typeKey);
+    final String typeId = UUID.randomUUID().toString();
     final Reference<Type> mockCustomType =
-        Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), mockType);
+        Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), typeId);
     when(mockCustomFields.getType()).thenReturn(mockCustomType);
     when(mockCategory.getCustom()).thenReturn(mockCustomFields);
 
+    // Cache typeKey Value with typeId
+    idToKeyValueMap.put(typeId, typeKey);
+
     // test
-    final CustomFieldsDraft customFieldsDraft = mapToCustomFieldsDraft(mockCategory);
+    final CustomFieldsDraft customFieldsDraft =
+        mapToCustomFieldsDraft(mockCategory, idToKeyValueMap);
 
     // assertion
     assertThat(customFieldsDraft).isNotNull();
@@ -47,7 +56,8 @@ class CustomTypeReferenceResolutionUtilsTest {
   }
 
   @Test
-  void mapToCustomFieldsDraft_WithNonExpandedCategory_ShouldReturnResourceIdentifierWithoutKey() {
+  void
+      mapToCustomFieldsDraft_WithNonExpandedCategoryAndIdsNotCached_ShouldReturnResourceIdentifierWithoutKey() {
     // preparation
     final Category mockCategory = mock(Category.class);
     final CustomFields mockCustomFields = mock(CustomFields.class);
@@ -58,7 +68,8 @@ class CustomTypeReferenceResolutionUtilsTest {
     when(mockCategory.getCustom()).thenReturn(mockCustomFields);
 
     // test
-    final CustomFieldsDraft customFieldsDraft = mapToCustomFieldsDraft(mockCategory);
+    final CustomFieldsDraft customFieldsDraft =
+        mapToCustomFieldsDraft(mockCategory, idToKeyValueMap);
 
     // assertion
     assertThat(customFieldsDraft).isNotNull();

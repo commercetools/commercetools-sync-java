@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
@@ -14,15 +13,19 @@ import io.sphere.sdk.states.queries.StateQuery;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import org.junit.jupiter.api.Test;
 
 class StateReferenceResolutionUtilsTest {
 
+  Map<String, String> idToKeyValueMap = new HashMap<>();
+
   @Test
-  void mapToStateDrafts_WithAllExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
+  void mapToStateDrafts_WithAllUnexpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
     // preparation
     final List<State> mockStates = new ArrayList<>();
     final String stateReferenceKey = "state-key";
@@ -31,15 +34,17 @@ class StateReferenceResolutionUtilsTest {
       final State mockState = mock(State.class);
 
       final State state = getStateMock(stateReferenceKey);
-      final Reference<State> expandedStateReference =
-          Reference.ofResourceTypeIdAndIdAndObj(State.referenceTypeId(), state.getId(), state);
-      when(mockState.getTransitions()).thenReturn(Collections.singleton(expandedStateReference));
+      final String stateId = state.getId();
+      final Reference<State> unexpandedStateReference =
+          Reference.ofResourceTypeIdAndId(State.referenceTypeId(), stateId);
+      when(mockState.getTransitions()).thenReturn(Collections.singleton(unexpandedStateReference));
+      idToKeyValueMap.put(stateId, stateReferenceKey);
 
       mockStates.add(mockState);
     }
 
     // test
-    final List<StateDraft> referenceReplacedDrafts = mapToStateDrafts(mockStates);
+    final List<StateDraft> referenceReplacedDrafts = mapToStateDrafts(mockStates, idToKeyValueMap);
 
     // assertion
     referenceReplacedDrafts.forEach(
@@ -71,7 +76,7 @@ class StateReferenceResolutionUtilsTest {
     }
 
     // test
-    final List<StateDraft> referenceReplacedDrafts = mapToStateDrafts(mockStates);
+    final List<StateDraft> referenceReplacedDrafts = mapToStateDrafts(mockStates, idToKeyValueMap);
 
     // assertion
     referenceReplacedDrafts.forEach(
@@ -96,7 +101,7 @@ class StateReferenceResolutionUtilsTest {
 
     // test
     final List<StateDraft> referenceReplacedDrafts =
-        mapToStateDrafts(Arrays.asList(mockState1, mockState2));
+        mapToStateDrafts(Arrays.asList(mockState1, mockState2), idToKeyValueMap);
 
     assertThat(referenceReplacedDrafts.get(0).getTransitions()).isEqualTo(Collections.emptySet());
     assertThat(referenceReplacedDrafts.get(1).getTransitions()).isEqualTo(Collections.emptySet());
@@ -105,7 +110,7 @@ class StateReferenceResolutionUtilsTest {
   @Test
   void buildStateQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
     final StateQuery stateQuery = buildStateQuery();
-    assertThat(stateQuery.expansionPaths()).containsExactly(ExpansionPath.of("transitions[*]"));
+    assertThat(stateQuery.expansionPaths()).isEmpty();
   }
 
   @Nonnull

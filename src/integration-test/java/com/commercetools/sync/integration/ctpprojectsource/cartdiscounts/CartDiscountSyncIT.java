@@ -1,7 +1,6 @@
 package com.commercetools.sync.integration.ctpprojectsource.cartdiscounts;
 
 import static com.commercetools.sync.cartdiscounts.utils.CartDiscountReferenceResolutionUtils.buildCartDiscountQuery;
-import static com.commercetools.sync.cartdiscounts.utils.CartDiscountReferenceResolutionUtils.mapToCartDiscountDrafts;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.createCartDiscountCustomType;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.deleteCartDiscountsFromTargetAndSource;
@@ -18,6 +17,8 @@ import com.commercetools.sync.cartdiscounts.CartDiscountSync;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
+import com.commercetools.sync.cartdiscounts.service.CartDiscountReferenceTransformService;
+import com.commercetools.sync.cartdiscounts.service.impl.CartDiscountReferenceTransformServiceImpl;
 import io.sphere.sdk.cartdiscounts.AbsoluteCartDiscountValue;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
@@ -35,8 +36,10 @@ import io.sphere.sdk.types.Type;
 import io.sphere.sdk.utils.MoneyImpl;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,12 +47,17 @@ import org.junit.jupiter.api.Test;
 
 class CartDiscountSyncIT {
 
+  private final Map<String, String> idToKeyCache = new HashMap<>();
+  private CartDiscountReferenceTransformService cartDiscountReferenceTransformService;
+
   @BeforeEach
   void setup() {
     deleteCartDiscountsFromTargetAndSource();
     deleteTypesFromTargetAndSource();
     populateSourceProject();
     populateTargetProject();
+    cartDiscountReferenceTransformService =
+        new CartDiscountReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
   }
 
   @AfterAll
@@ -68,7 +76,8 @@ class CartDiscountSyncIT {
             .join()
             .getResults();
 
-    final List<CartDiscountDraft> cartDiscountDrafts = mapToCartDiscountDrafts(cartDiscounts);
+    final List<CartDiscountDraft> cartDiscountDrafts =
+        cartDiscountReferenceTransformService.transformCartDiscountReferences(cartDiscounts).join();
 
     final List<String> errorMessages = new ArrayList<>();
     final List<Throwable> exceptions = new ArrayList<>();
@@ -112,7 +121,8 @@ class CartDiscountSyncIT {
     final Type newTargetCustomType =
         createCartDiscountCustomType(newTypeKey, Locale.ENGLISH, newTypeKey, CTP_TARGET_CLIENT);
 
-    final List<CartDiscountDraft> cartDiscountDrafts = mapToCartDiscountDrafts(cartDiscounts);
+    final List<CartDiscountDraft> cartDiscountDrafts =
+        cartDiscountReferenceTransformService.transformCartDiscountReferences(cartDiscounts).join();
 
     // Apply some changes
     final List<CartDiscountDraft> updatedCartDiscountDrafts =
