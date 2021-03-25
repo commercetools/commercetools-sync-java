@@ -56,11 +56,17 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class VariantReferenceResolutionUtilsTest {
 
   Map<String, String> idToKeyValueMap = new HashMap<>();
+
+  @AfterEach
+  void clearCache() {
+    idToKeyValueMap.clear();
+  }
 
   @Test
   void
