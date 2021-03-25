@@ -99,7 +99,7 @@ final List<ProductProjection> productProjections =
         .toCompletableFuture()
          .join();
 
-// Mapping from product projection to ProductDraft with considering reference resolution.
+// Mapping from ProductProjection to ProductDraft with considering reference resolution.
 final List<ProductDraft> productDrafts = ProductReferenceResolutionUtils.mapToProductDrafts(productProjections);
 ````
 ##### Syncing from an external resource
