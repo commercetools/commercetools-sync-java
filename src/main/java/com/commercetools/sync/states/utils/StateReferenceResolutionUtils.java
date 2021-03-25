@@ -43,8 +43,8 @@ public final class StateReferenceResolutionUtils {
    * </table>
    *
    * <p><b>Note:</b> The transition references should be cached(idToKey value fetched and stored in
-   * a map). Any reference that is not cached will have its id in place and not replaced by the key
-   * will be considered as existing resources on the target commercetools project and the library
+   * a map). Any reference, which have its id in place and not replaced by the key, it would 
+   * not be found in the map. In this case, this reference will be considered as existing resources on the target commercetools project and the library
    * will issues an update/create API request without reference resolution..
    *
    * @param states the states without expansion of references.
