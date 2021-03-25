@@ -36,27 +36,31 @@ public final class SyncUtils {
   }
 
   /**
-   * Given a reference to a resource of type {@code T}, this method checks if the reference is
-   * expanded. If it is, then it executes the {@code keyInReferenceSupplier} and returns it's
-   * result. Otherwise, it returns the supplied reference as is. Since, the reference could be
-   * {@code null}, this method could also return null if the reference was not expanded.
+   * Given a reference to a resource of type {@code T}, this method checks if the reference id is
+   * cached in the map. If it is, then it executes the {@code keyInReferenceSupplier} and returns
+   * it's result. Otherwise, it returns the supplied reference as is. Since, the reference could be
+   * {@code null}, this method could also return null if the reference id is not in the map.
    *
    * <p>This method expects the passed supplier to either
    *
-   * @param reference the reference of the resource to check if it's expanded.
+   * @param reference the reference of the resource to check if it's cached.
    * @param <T> the type of the resource.
    * @param keyInReferenceSupplier the supplier to execute and return its result if the {@code
    *     reference} was expanded.
-   * @return returns the result of the {@code keyInReferenceSupplier} if the {@code reference} was
-   *     expanded. Otherwise, it returns the supplied reference as is.
+   * @return returns the result of the {@code keyInReferenceSupplier} if the {@code reference} id
+   *     was in cache. Otherwise, it returns the supplied reference as is.
    */
   @Nullable
   public static <T> Reference<T> getReferenceWithKeyReplaced(
       @Nullable final Reference<T> reference,
-      @Nonnull final Supplier<Reference<T>> keyInReferenceSupplier) {
+      @Nonnull final Supplier<Reference<T>> keyInReferenceSupplier,
+      @Nonnull final Map<String, String> referenceIdToKeyMap) {
 
-    if (reference != null && reference.getObj() != null) {
-      return keyInReferenceSupplier.get();
+    if (reference != null) {
+      final String id = reference.getId();
+      if (referenceIdToKeyMap.containsKey(id)) {
+        return keyInReferenceSupplier.get();
+      }
     }
     return reference;
   }

@@ -60,10 +60,11 @@ import org.junit.jupiter.api.Test;
 
 class VariantReferenceResolutionUtilsTest {
 
+  Map<String, String> idToKeyValueMap = new HashMap<>();
+
   @Test
   void
       mapToProductVariantDrafts_WithReferenceIdToKeyValuesCached_ShouldReturnVariantDraftsWithReplacedKeys() {
-    Map<String, String> idToKeyValueMap = new HashMap<>();
 
     final String customTypeId = UUID.randomUUID().toString();
     final String customTypeKey = "customTypeKey";
@@ -122,7 +123,6 @@ class VariantReferenceResolutionUtilsTest {
 
   @Test
   void mapToProductVariantDrafts_WithReferenceIdToKeyValuesNoneCached_ShouldNotReplaceIds() {
-    Map<String, String> idToKeyValueMap = new HashMap<>();
     final Reference<Channel> channelReference = Channel.referenceOfId(UUID.randomUUID().toString());
     final Reference<Type> customTypeReference = Type.referenceOfId(UUID.randomUUID().toString());
 
@@ -163,7 +163,6 @@ class VariantReferenceResolutionUtilsTest {
 
   @Test
   void mapToPriceDraft_WithReferenceIdToKeyValuesNoneCached_ShouldNotReplaceIds() {
-    Map<String, String> idToKeyValueMap = new HashMap<>();
     final Reference<Channel> channelReference = Channel.referenceOfId(UUID.randomUUID().toString());
     final Reference<Type> typeReference = Type.referenceOfId(UUID.randomUUID().toString());
 
@@ -192,7 +191,6 @@ class VariantReferenceResolutionUtilsTest {
 
   @Test
   void mapToPriceDraft_WithReferenceIdToKeyValuesCached_ShouldReplaceIds() {
-    Map<String, String> idToKeyValueMap = new HashMap<>();
     final String customTypeId = UUID.randomUUID().toString();
     final String customTypeKey = "customTypeKey";
     idToKeyValueMap.put(customTypeId, customTypeKey);
@@ -249,7 +247,7 @@ class VariantReferenceResolutionUtilsTest {
   void replaceAttributeReferenceIdWithKey_WithTextAttribute_ShouldReturnEmptyOptional() {
     final Attribute attribute = Attribute.of("attrName", AttributeAccess.ofText(), "value");
     final Optional<Reference<Product>> attributeReferenceIdWithKey =
-        replaceAttributeReferenceIdWithKey(attribute);
+        replaceAttributeReferenceIdWithKey(attribute, idToKeyValueMap);
 
     assertThat(attributeReferenceIdWithKey).isEmpty();
   }
@@ -260,41 +258,45 @@ class VariantReferenceResolutionUtilsTest {
     final Attribute attribute =
         Attribute.of("attrName", AttributeAccess.ofProductReferenceSet(), new HashSet<>());
     final Optional<Reference<Product>> attributeReferenceIdWithKey =
-        replaceAttributeReferenceIdWithKey(attribute);
+        replaceAttributeReferenceIdWithKey(attribute, idToKeyValueMap);
 
     assertThat(attributeReferenceIdWithKey).isEmpty();
   }
 
   @Test
   void replaceAttributeReferenceIdWithKey_WithProductReferenceAttribute_ShouldNotReplaceId() {
-    final Reference<Product> nonExpandedReference =
+    final Reference<Product> unexpandedReference =
         Product.referenceOfId(UUID.randomUUID().toString());
     final Attribute attribute =
-        Attribute.of("attrName", AttributeAccess.ofProductReference(), nonExpandedReference);
+        Attribute.of("attrName", AttributeAccess.ofProductReference(), unexpandedReference);
     final Optional<Reference<Product>> attributeReferenceIdWithKey =
-        replaceAttributeReferenceIdWithKey(attribute);
+        replaceAttributeReferenceIdWithKey(attribute, idToKeyValueMap);
 
-    assertThat(attributeReferenceIdWithKey).contains(nonExpandedReference);
+    assertThat(attributeReferenceIdWithKey).contains(unexpandedReference);
   }
 
   @Test
-  void replaceAttributeReferenceIdWithKey_WithExpandedProductReferenceAttribute_ShouldReplaceId() {
-    final Product product = readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
-    final Reference<Product> expandedReference =
-        Reference.ofResourceTypeIdAndIdAndObj(
-            Product.referenceTypeId(), UUID.randomUUID().toString(), product);
+  void
+      replaceAttributeReferenceIdWithKey_WithUnexpandedProductReferenceAttribute_ShouldReplaceId() {
+    final String productAttributeKey = "productKey1";
+    final String productAttributeId = UUID.randomUUID().toString();
+    final Reference<Product> unexpandedReference =
+        Reference.ofResourceTypeIdAndId(Product.referenceTypeId(), productAttributeId);
+
+    idToKeyValueMap.put(productAttributeId, productAttributeKey);
+
     final Attribute attribute =
-        Attribute.of("attrName", AttributeAccess.ofProductReference(), expandedReference);
+        Attribute.of("attrName", AttributeAccess.ofProductReference(), unexpandedReference);
     final Optional<Reference<Product>> attributeReferenceIdWithKey =
-        replaceAttributeReferenceIdWithKey(attribute);
-    assertThat(attributeReferenceIdWithKey).contains(Product.referenceOfId("productKey1"));
+        replaceAttributeReferenceIdWithKey(attribute, idToKeyValueMap);
+    assertThat(attributeReferenceIdWithKey).contains(Product.referenceOfId(productAttributeKey));
   }
 
   @Test
   void replaceAttributeReferenceSetIdsWithKeys_WithTextAttribute_ShouldReturnEmptyOptional() {
     final Attribute attribute = Attribute.of("attrName", AttributeAccess.ofText(), "value");
     final Optional<Set<Reference<Product>>> attributeReferenceSetIdsWithKeys =
-        replaceAttributeReferenceSetIdsWithKeys(attribute);
+        replaceAttributeReferenceSetIdsWithKeys(attribute, idToKeyValueMap);
 
     assertThat(attributeReferenceSetIdsWithKeys).isEmpty();
   }
@@ -303,7 +305,8 @@ class VariantReferenceResolutionUtilsTest {
   void replaceAttributesReferencesIdsWithKeys_WithNoAttributes_ShouldNotReplaceIds() {
     final ProductVariant variant = mock(ProductVariant.class);
     when(variant.getAttributes()).thenReturn(new ArrayList<>());
-    final List<AttributeDraft> replacedDrafts = replaceAttributesReferencesIdsWithKeys(variant);
+    final List<AttributeDraft> replacedDrafts =
+        replaceAttributesReferencesIdsWithKeys(variant, idToKeyValueMap);
     assertThat(replacedDrafts).isEmpty();
   }
 
@@ -313,7 +316,7 @@ class VariantReferenceResolutionUtilsTest {
     final Product product = readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
     final ProductVariant masterVariant = product.getMasterData().getStaged().getMasterVariant();
     final List<AttributeDraft> replacedDrafts =
-        replaceAttributesReferencesIdsWithKeys(masterVariant);
+        replaceAttributesReferencesIdsWithKeys(masterVariant, idToKeyValueMap);
     replacedDrafts.forEach(
         attributeDraft -> {
           final String name = attributeDraft.getName();
