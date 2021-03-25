@@ -275,7 +275,7 @@ It represents either a blacklist or a whitelist for filtering certain update act
     final ProductSyncOptions syncOptions = syncOptionsBuilder.syncFilter(ofBlackList(ActionGroup.PRICES)).build();
     ````
   
-  - __Whitelisting__ an update action group means that the groups in this whitelist will be the *only* group synced in product projections. One use case could be to whitelist prices when syncing product projections. In other words, syncing prices only in 
+  - __Whitelisting__ an update action group means that the groups in this whitelist will be the *only* group synced in products. One use case could be to whitelist prices when syncing products. In other words, syncing prices only in 
  product projections and nothing else.
   
     ````java                         
