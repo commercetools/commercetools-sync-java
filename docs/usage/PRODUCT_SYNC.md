@@ -1,7 +1,7 @@
 # Product Sync
 
 The module used for importing/syncing Products into a commercetools project. 
-It also provides utilities for generating update actions based on the comparison of a [product projection](https://docs.commercetools.com/http-api-projects-products.html#product) 
+It also provides utilities for generating update actions based on the comparison of a [ProductProjection](https://docs.commercetools.com/api/projects/productProjections#productprojection) 
 against a [ProductDraft](https://docs.commercetools.com/http-api-projects-products.html#productdraft).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
