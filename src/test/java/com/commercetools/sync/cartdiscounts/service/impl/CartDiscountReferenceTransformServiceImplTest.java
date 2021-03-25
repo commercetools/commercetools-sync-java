@@ -51,7 +51,7 @@ class CartDiscountReferenceTransformServiceImplTest {
       mockCartDiscountsPage.add(mockCartDiscount);
     }
 
-    String jsonStringCustomTypes =
+    final String jsonStringCustomTypes =
         "{\"results\":[{\"id\":\"" + customTypeId + "\"," + "\"key\":\"" + customTypeKey + "\"}]}";
     final ResourceKeyIdGraphQlResult customTypesResult =
         SphereJsonUtils.readObject(jsonStringCustomTypes, ResourceKeyIdGraphQlResult.class);
