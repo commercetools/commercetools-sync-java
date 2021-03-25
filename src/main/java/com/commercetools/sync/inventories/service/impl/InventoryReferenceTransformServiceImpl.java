@@ -63,7 +63,7 @@ public class InventoryReferenceTransformServiceImpl extends BaseTransformService
 
     final Set<String> setOfChannelIds =
         inventoryEntries.stream()
-            .map(inventoryEntry -> inventoryEntry.getSupplyChannel())
+            .map(InventoryEntry::getSupplyChannel)
             .filter(Objects::nonNull)
             .map(Reference::getId)
             .collect(toSet());
