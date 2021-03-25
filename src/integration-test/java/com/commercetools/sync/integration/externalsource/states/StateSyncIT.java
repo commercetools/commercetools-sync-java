@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
-import com.commercetools.sync.products.service.DefaultTransformServiceCache;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
 import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.commercetools.sync.services.impl.StateServiceImpl;
 import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
@@ -57,7 +57,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
@@ -80,11 +79,9 @@ class StateSyncIT {
   List<String> warningCallBackMessages;
   List<Throwable> errorCallBackExceptions;
   String key = "";
-
-  private final Map<String, String> idToKeyCache =
-      DefaultTransformServiceCache.referenceIdToKeyCache.asMap();
   private final StateReferenceTransformService stateReferenceTransformService =
-      new StateReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
+      new StateReferenceTransformServiceImpl(
+          CTP_SOURCE_CLIENT, InMemoryReferenceIdToKeyCache.getInstance());
 
   @AfterAll
   static void tearDown() {

@@ -5,9 +5,9 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static java.util.Collections.singletonList;
 
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
 import com.commercetools.sync.inventories.service.InventoryReferenceTransformService;
 import com.commercetools.sync.inventories.service.impl.InventoryReferenceTransformServiceImpl;
-import com.commercetools.sync.products.service.DefaultTransformServiceCache;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.channels.Channel;
@@ -64,11 +64,9 @@ public final class InventoryITUtils {
 
   public static final String CUSTOM_TYPE = "inventory-custom-type-name";
   public static final String CUSTOM_FIELD_NAME = "inventory-custom-field-1";
-
-  static final Map<String, String> idToKeyCache =
-      DefaultTransformServiceCache.referenceIdToKeyCache.asMap();
   public static final InventoryReferenceTransformService inventoryReferenceTransformService =
-      new InventoryReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
+      new InventoryReferenceTransformServiceImpl(
+          CTP_SOURCE_CLIENT, InMemoryReferenceIdToKeyCache.getInstance());
 
   /**
    * Deletes all inventory entries from CTP project, represented by provided {@code ctpClient}.

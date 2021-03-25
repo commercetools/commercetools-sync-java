@@ -38,12 +38,12 @@ import static java.util.Collections.singletonList;
 import static java.util.Locale.ENGLISH;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.SyncFilter;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
-import com.commercetools.sync.products.service.DefaultTransformServiceCache;
 import com.commercetools.sync.products.service.ProductReferenceTransformService;
 import com.commercetools.sync.products.service.impl.ProductReferenceTransformServiceImpl;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -77,7 +77,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterAll;
@@ -104,8 +103,6 @@ class ProductSyncIT {
   private static List<Reference<Category>> sourceCategoryReferencesWithIds;
   private static List<Reference<Category>> targetCategoryReferencesWithIds;
   private ProductSync productSync;
-  private final Map<String, String> idToKeyCache =
-      DefaultTransformServiceCache.referenceIdToKeyCache.asMap();
   private ProductReferenceTransformService productReferenceTransformService;
   private List<String> errorCallBackMessages;
   private List<String> warningCallBackMessages;
@@ -181,7 +178,8 @@ class ProductSyncIT {
     final ProductSyncOptions syncOptions = buildSyncOptions();
     productSync = new ProductSync(syncOptions);
     productReferenceTransformService =
-        new ProductReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
+        new ProductReferenceTransformServiceImpl(
+            CTP_SOURCE_CLIENT, InMemoryReferenceIdToKeyCache.getInstance());
   }
 
   private void clearSyncTestCollections() {
