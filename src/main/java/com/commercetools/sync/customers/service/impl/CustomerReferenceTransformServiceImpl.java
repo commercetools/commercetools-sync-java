@@ -48,7 +48,7 @@ public class CustomerReferenceTransformServiceImpl extends BaseTransformServiceI
 
     final Set<String> setOfTypeIds =
         customers.stream()
-            .map(customer -> customer.getCustom())
+            .map(Customer::getCustom)
             .filter(Objects::nonNull)
             .map(CustomFields::getType)
             .map(Reference::getId)
