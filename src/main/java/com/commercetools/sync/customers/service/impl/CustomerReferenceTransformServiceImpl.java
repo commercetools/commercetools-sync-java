@@ -63,7 +63,7 @@ public class CustomerReferenceTransformServiceImpl extends BaseTransformServiceI
 
     final Set<String> customerGroupIds =
         customers.stream()
-            .map(customer -> customer.getCustomerGroup())
+            .map(Customer::getCustomerGroup)
             .filter(Objects::nonNull)
             .map(Reference::getId)
             .collect(toSet());
