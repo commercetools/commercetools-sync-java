@@ -48,7 +48,7 @@ public class InventoryReferenceTransformServiceImpl extends BaseTransformService
 
     final Set<String> setOfTypeIds =
         inventoryEntries.stream()
-            .map(inventoryEntry -> inventoryEntry.getCustom())
+            .map(InventoryEntry::getCustom)
             .filter(Objects::nonNull)
             .map(CustomFields::getType)
             .map(Reference::getId)
