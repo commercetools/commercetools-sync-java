@@ -51,10 +51,10 @@ public final class InventoryReferenceResolutionUtils {
    * </table>
    *
    * <p><b>Note:</b> The {@link Channel} and {@link Type} reference should contain Id in the
-   * map(cache) with a key value. Any reference that is not available in the map will have its id in
-   * place and not replaced by the key will be considered as existing resources on the target
-   * commercetools project and the library will issues an update/create API request without
-   * reference resolution.
+   * map(cache) with a key value. Any reference, which have its id in place and not replaced by the
+   * key, it would not be found in the map. In this case, this reference will be considered as
+   * existing resources on the target commercetools project and the library will issues an
+   * update/create API request without reference resolution.
    *
    * @param inventoryEntries the inventory entries without expansion of references.
    * @return a {@link List} of {@link InventoryEntryDraft} built from the supplied {@link List} of

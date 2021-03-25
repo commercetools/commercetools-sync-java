@@ -21,11 +21,17 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class SyncUtilsTest {
 
   Map<String, String> idToKeyValueMap = new HashMap<>();
+
+  @AfterEach
+  void clearCache() {
+    idToKeyValueMap.clear();
+  }
 
   @Test
   void batchElements_WithValidSize_ShouldReturnCorrectBatches() {

@@ -42,7 +42,7 @@ public class CartDiscountReferenceTransformServiceImpl extends BaseTransformServ
 
     final Set<String> setOfTypeIds =
         cartDiscounts.stream()
-            .map(cartDiscount -> cartDiscount.getCustom())
+            .map(CartDiscount::getCustom)
             .filter(Objects::nonNull)
             .map(CustomFields::getType)
             .map(Reference::getId)

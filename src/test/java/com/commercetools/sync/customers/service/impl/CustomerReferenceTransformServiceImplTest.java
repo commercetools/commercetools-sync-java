@@ -56,12 +56,12 @@ class CustomerReferenceTransformServiceImplTest {
       mockCustomersPage.add(mockCustomer);
     }
 
-    String jsonStringCustomTypes =
+    final String jsonStringCustomTypes =
         "{\"results\":[{\"id\":\"" + customTypeId + "\"," + "\"key\":\"" + customTypeKey + "\"}]}";
     final ResourceKeyIdGraphQlResult customTypesResult =
         SphereJsonUtils.readObject(jsonStringCustomTypes, ResourceKeyIdGraphQlResult.class);
 
-    String jsonStringCustomerGroups =
+    final String jsonStringCustomerGroups =
         "{\"results\":[{\"id\":\""
             + customerGroupId
             + "\","
