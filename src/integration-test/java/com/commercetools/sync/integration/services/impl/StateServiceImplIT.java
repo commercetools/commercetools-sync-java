@@ -161,8 +161,8 @@ class StateServiceImplIT {
     assertThat(transition.getId()).isEqualTo(transitionState.getId());
     assertThat(transition.getObj()).isNull();
 
-    deleteStates(CTP_TARGET_CLIENT, STATE_TYPE);
     deleteStates(CTP_TARGET_CLIENT, TRANSITION_STATE_TYPE);
+    deleteStates(CTP_TARGET_CLIENT, STATE_TYPE);
   }
 
   @Test
