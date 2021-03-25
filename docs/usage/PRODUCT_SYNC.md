@@ -1,7 +1,7 @@
 # Product Sync
 
 The module used for importing/syncing Products into a commercetools project. 
-It also provides utilities for generating update actions based on the comparison of a [product projection](https://docs.commercetools.com/http-api-projects-products.html#product) 
+It also provides utilities for generating update actions based on the comparison of a [ProductProjection](https://docs.commercetools.com/api/projects/productProjections#productprojection) 
 against a [ProductDraft](https://docs.commercetools.com/http-api-projects-products.html#productdraft).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -81,7 +81,7 @@ resource on the target commercetools project and the library will issue an updat
 ##### Syncing from a commercetools project
 
 When syncing from a source commercetools project, you can use [`mapToProductDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/products/utils/ProductReferenceResolutionUtils.html#mapToProductDrafts-java.util.List-)
-the method that maps from a `product projection` to `ProductDraft` in order to make them ready for reference resolution by the sync, for example: 
+the method that maps from a `ProductProjection` to `ProductDraft` in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
 // Build a ProductQuery for fetching product projections from a source CTP project with all the needed references
@@ -99,7 +99,7 @@ final List<ProductProjection> productProjections =
         .toCompletableFuture()
          .join();
 
-// Mapping from product projection to ProductDraft with considering reference resolution.
+// Mapping from ProductProjection to ProductDraft with considering reference resolution.
 final List<ProductDraft> productDrafts = ProductReferenceResolutionUtils.mapToProductDrafts(productProjections);
 ````
 ##### Syncing from an external resource
@@ -275,7 +275,7 @@ It represents either a blacklist or a whitelist for filtering certain update act
     final ProductSyncOptions syncOptions = syncOptionsBuilder.syncFilter(ofBlackList(ActionGroup.PRICES)).build();
     ````
   
-  - __Whitelisting__ an update action group means that the groups in this whitelist will be the *only* group synced in product projections. One use case could be to whitelist prices when syncing product projections. In other words, syncing prices only in 
+  - __Whitelisting__ an update action group means that the groups in this whitelist will be the *only* group synced in products. One use case could be to whitelist prices when syncing products. In other words, syncing prices only in 
  product projections and nothing else.
   
     ````java                         
