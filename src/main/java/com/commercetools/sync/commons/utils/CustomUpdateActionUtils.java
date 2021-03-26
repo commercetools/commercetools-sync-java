@@ -122,7 +122,6 @@ public final class CustomUpdateActionUtils {
    * @param <T> the type of the old {@link Resource} which has the custom fields.
    * @param <S> the type of the new resource {@link CustomDraft}.
    * @param <U> the type of the resource in which the update actions will be applied on.
-   * @param oldMainResource the main resource of the resource which should be updated.
    * @param newMainResourceDraft the main resource of the resource draft where we get the new custom
    *     fields.
    * @param oldResource the resource which should be updated.

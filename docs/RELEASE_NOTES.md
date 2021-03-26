@@ -34,9 +34,23 @@
 
 - 🚧 **Breaking Changes** (1)
     - **Product Sync**: The `productProjections` endpoint is used instead of `products` endpoint to improve the
-     performance of the `product Sync`. So the `callbacks` of the `product Sync` will now work with `productProjections`
-     instead of `products`. 
-
+     performance of the `product Sync`. 
+    
+    - Changes:
+        - The `callbacks` of the `product Sync` will now work with `productProjections` instead of `products` 
+        - The update action (`buildCustomUpdateActions`,`buildAssetsUpdateActions`,`buildAssetActions`) doesn't
+          require the "old Resource" as parameter anymore.
+        - All update actions of products now working with `ProductProjections` instead of `Products`  
+        - The method `syncFrenchDataOnly` has a new signature `public static List<UpdateAction<Product>> syncFrenchDataOnly(@Nonnull final List<UpdateAction<Product>> updateActions, @Nonnull final ProductDraft newProductDraft,  @Nonnull final ProductProjection oldProduct)`  
+        - The method `keepOtherVariants` has a new signature `List<UpdateAction<Product>> keepOtherVariants( @Nonnull final List<UpdateAction<Product>> updateActions)`
+        - The method `mapToProductDrafts` has a new signature `public static List<ProductDraft> mapToProductDrafts(Nonnull final List<ProductProjection> products)`
+        - The method `getDraftBuilderFromStagedProduct` has a new signature `public static
+         ProductDraftBuildergetDraft BuilderFromStagedProduct(@Nonnull final ProductProjection product)`
+        - The method `buildProductQuery` has a new signature `public static ProductProjectionQuery buildProductQuery()`
+        - The method `buildCategoryActions` has a new signature `public static List<UpdateAction<Product>> buildCategoryActions(@Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct)`
+        - The class `BaseSyncOptions` has a new generics `<A>`, which indicate the resource type to update
+        - The class `BaseSyncOptionsBuilder` has a new generics `<A>`, which indicate the resource type to update
+ 
 ### 4.0.1 - Mar 19, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/4.0.0...4.0.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/) | 
