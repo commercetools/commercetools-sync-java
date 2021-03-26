@@ -421,10 +421,8 @@ Examples of its usage can be found in the tests
 
 ### Build particular update action(s)
 
-Utility methods provided by the library to compare the specific fields of a ProductProjection and a new ProductDraft
-, and in
- turn, build
- the update action. One example is the `buildChangeNameUpdateAction` which compares names:
+Utility methods provided by the library to compare the specific fields of a ProductProjection and a new ProductDraft,
+ build the update action. One example is the `buildChangeNameUpdateAction` which compares names:
   
 ````java
 Optional<UpdateAction<Product>> updateAction = buildChangeNameUpdateAction(oldProductProjection, productDraft);
