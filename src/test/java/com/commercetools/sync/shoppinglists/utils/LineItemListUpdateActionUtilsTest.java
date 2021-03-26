@@ -46,7 +46,9 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -85,6 +87,8 @@ class LineItemListUpdateActionUtilsTest {
 
   private static final LineItemReferenceResolver lineItemReferenceResolver =
       new LineItemReferenceResolver(SYNC_OPTIONS, getMockTypeService());
+
+  private static final Map<String, String> idToKeyValueMap = new HashMap<>();
 
   @Test
   void buildLineItemsUpdateActions_WithoutNewAndWithNullOldLineItems_ShouldNotBuildActions() {
@@ -648,7 +652,7 @@ class LineItemListUpdateActionUtilsTest {
 
     final ShoppingListDraft template =
         ShoppingListReferenceResolutionUtils.mapToShoppingListDraft(
-            readObjectFromResource(resourcePath, ShoppingList.class));
+            readObjectFromResource(resourcePath, ShoppingList.class), idToKeyValueMap);
 
     final ShoppingListDraftBuilder builder = ShoppingListDraftBuilder.of(template);
 

@@ -1,7 +1,5 @@
 package com.commercetools.sync.shoppinglists.utils;
 
-import static com.commercetools.sync.commons.MockUtils.getMockCustomer;
-import static com.commercetools.sync.commons.MockUtils.getTypeMock;
 import static com.commercetools.sync.shoppinglists.utils.ShoppingListReferenceResolutionUtils.buildShoppingListQuery;
 import static com.commercetools.sync.shoppinglists.utils.ShoppingListReferenceResolutionUtils.mapToShoppingListDrafts;
 import static java.util.Collections.emptyList;
@@ -27,32 +25,49 @@ import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class ShoppingListsReferenceResolutionUtilsTest {
 
+  private final Map<String, String> idToKeyValueMap = new HashMap<>();
+
+  @AfterEach
+  void clearCache() {
+    idToKeyValueMap.clear();
+  }
+
   @Test
-  void mapToShoppingListDrafts_WithExpandedReferences_ShouldReturnResourceIdentifiersWithKeys() {
-    final Type mockCustomType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
-    final Customer mockCustomer = getMockCustomer(UUID.randomUUID().toString(), "customerKey");
+  void mapToShoppingListDrafts_WithUnExpandedReferencesIdsCached_ShouldReturnResourceIdentifiersWithKeys() {
+    final String customTypeId = UUID.randomUUID().toString();
+    final String customTypeKey = "customTypeKey";
+    final String customerId = UUID.randomUUID().toString();
+    final String customerKey = "customerKey";
+
+    idToKeyValueMap.put(customTypeId, customTypeKey);
+    idToKeyValueMap.put(customerId, customerKey);
+
     final ProductVariant mockProductVariant = mock(ProductVariant.class);
     when(mockProductVariant.getSku()).thenReturn("variant-sku");
 
     final List<ShoppingList> mockShoppingLists = new ArrayList<>();
     mockShoppingLists.add(null);
 
+    final String textLineItemName = "textLineItemName";
     for (int i = 0; i < 3; i++) {
       final ShoppingList mockShoppingList = mock(ShoppingList.class);
 
       final Reference<Customer> customerReference =
-          Reference.ofResourceTypeIdAndObj(Customer.referenceTypeId(), mockCustomer);
+          Reference.ofResourceTypeIdAndId(Customer.referenceTypeId(), customerId);
       when(mockShoppingList.getCustomer()).thenReturn(customerReference);
 
       final CustomFields mockCustomFields = mock(CustomFields.class);
       final Reference<Type> typeReference =
-          Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), mockCustomType);
+          Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), customTypeId);
 
       when(mockCustomFields.getType()).thenReturn(typeReference);
       when(mockShoppingList.getCustom()).thenReturn(mockCustomFields);
@@ -64,7 +79,7 @@ class ShoppingListsReferenceResolutionUtilsTest {
       when(mockShoppingList.getLineItems()).thenReturn(singletonList(mockLineItem));
 
       final TextLineItem mockTextLineItem = mock(TextLineItem.class);
-      when(mockTextLineItem.getName()).thenReturn(LocalizedString.ofEnglish("textLineItemName"));
+      when(mockTextLineItem.getName()).thenReturn(LocalizedString.ofEnglish(textLineItemName));
       when(mockTextLineItem.getCustom()).thenReturn(mockCustomFields);
 
       when(mockShoppingList.getTextLineItems()).thenReturn(singletonList(mockTextLineItem));
@@ -72,24 +87,25 @@ class ShoppingListsReferenceResolutionUtilsTest {
       mockShoppingLists.add(mockShoppingList);
     }
 
-    final List<ShoppingListDraft> shoppingListDrafts = mapToShoppingListDrafts(mockShoppingLists);
+    final List<ShoppingListDraft> shoppingListDrafts =
+        mapToShoppingListDrafts(mockShoppingLists, idToKeyValueMap);
 
     assertThat(shoppingListDrafts).hasSize(3);
     shoppingListDrafts.forEach(
         draft -> {
-          assertThat(draft.getCustomer().getKey()).isEqualTo("customerKey");
-          assertThat(draft.getCustom().getType().getKey()).isEqualTo("customTypeKey");
+          assertThat(draft.getCustomer().getKey()).isEqualTo(customerKey);
+          assertThat(draft.getCustom().getType().getKey()).isEqualTo(customTypeKey);
 
           assertThat(draft.getLineItems())
               .containsExactly(
                   LineItemDraftBuilder.ofSku("variant-sku", 0L)
-                      .custom(CustomFieldsDraft.ofTypeKeyAndJson("customTypeKey", emptyMap()))
+                      .custom(CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, emptyMap()))
                       .build());
 
           assertThat(draft.getTextLineItems())
               .containsExactly(
-                  TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("textLineItemName"), 0L)
-                      .custom(CustomFieldsDraft.ofTypeKeyAndJson("customTypeKey", emptyMap()))
+                  TextLineItemDraftBuilder.of(LocalizedString.ofEnglish(textLineItemName), 0L)
+                      .custom(CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, emptyMap()))
                       .build());
         });
   }
@@ -130,7 +146,8 @@ class ShoppingListsReferenceResolutionUtilsTest {
       mockShoppingLists.add(mockShoppingList);
     }
 
-    final List<ShoppingListDraft> shoppingListDrafts = mapToShoppingListDrafts(mockShoppingLists);
+    final List<ShoppingListDraft> shoppingListDrafts =
+        mapToShoppingListDrafts(mockShoppingLists, idToKeyValueMap);
 
     assertThat(shoppingListDrafts).hasSize(3);
     shoppingListDrafts.forEach(
@@ -165,7 +182,7 @@ class ShoppingListsReferenceResolutionUtilsTest {
     when(mockShoppingList.getTextLineItems()).thenReturn(null);
 
     final List<ShoppingListDraft> shoppingListDrafts =
-        mapToShoppingListDrafts(singletonList(mockShoppingList));
+        mapToShoppingListDrafts(singletonList(mockShoppingList), idToKeyValueMap);
 
     assertThat(shoppingListDrafts)
         .containsExactly(
@@ -179,13 +196,8 @@ class ShoppingListsReferenceResolutionUtilsTest {
   }
 
   @Test
-  void buildShoppingListQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
+  void buildShoppingListQuery_Always_ShouldReturnQueryWithoutReferencesExpandedExceptVariant() {
     assertThat(buildShoppingListQuery().expansionPaths())
-        .containsExactly(
-            ExpansionPath.of("customer"),
-            ExpansionPath.of("custom.type"),
-            ExpansionPath.of("lineItems[*].variant"),
-            ExpansionPath.of("lineItems[*].custom.type"),
-            ExpansionPath.of("textLineItems[*].custom.type"));
+        .containsExactly(ExpansionPath.of("lineItems[*].variant"));
   }
 }

@@ -63,6 +63,7 @@ public final class CategoryReferenceResolutionUtils {
    * without reference resolution.
    *
    * @param categories the categories without expansion of references.
+   * @param referenceIdToKeyMap the map containing the cached id to key values.
    * @return a {@link List} of {@link CategoryDraft} built from the supplied {@link List} of {@link
    *     Category}.
    */
