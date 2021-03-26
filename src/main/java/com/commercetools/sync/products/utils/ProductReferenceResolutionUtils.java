@@ -12,14 +12,15 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductData;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.Attribute;
-import io.sphere.sdk.products.expansion.ProductExpansionModel;
+import io.sphere.sdk.products.expansion.ProductProjectionExpansionModel;
+import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.queries.QueryExecutionUtils;
@@ -44,7 +45,8 @@ public final class ProductReferenceResolutionUtils {
 
   /**
    * Returns an {@link List}&lt;{@link ProductDraft}&gt; consisting of the results of applying the
-   * mapping from {@link Product} to {@link ProductDraft} with considering reference resolution.
+   * mapping from the staged version of a {@link ProductProjection} to {@link ProductDraft} with
+   * considering reference resolution.
    *
    * <table>
    *   <caption>Mapping of Reference fields for the reference resolution</caption>
@@ -109,12 +111,13 @@ public final class ProductReferenceResolutionUtils {
    * existing resources on the target commercetools project and the library will issues an
    * update/create API request without reference resolution.
    *
-   * @param products the products with expanded references.
+   * @param products the productprojection (staged) with expanded references.
    * @return a {@link List} of {@link ProductDraft} built from the supplied {@link List} of {@link
    *     Product}.
    */
   @Nonnull
-  public static List<ProductDraft> mapToProductDrafts(@Nonnull final List<Product> products) {
+  public static List<ProductDraft> mapToProductDrafts(
+      @Nonnull final List<ProductProjection> products) {
     return products.stream()
         .filter(Objects::nonNull)
         .map(
@@ -128,8 +131,7 @@ public final class ProductReferenceResolutionUtils {
               final CategoryOrderHints categoryOrderHintsWithKeys =
                   categoryReferencePair.getCategoryOrderHints();
 
-              final List<ProductVariant> allVariants =
-                  product.getMasterData().getStaged().getAllVariants();
+              final List<ProductVariant> allVariants = product.getAllVariants();
               final List<ProductVariantDraft> variantDraftsWithKeys =
                   VariantReferenceResolutionUtils.mapToProductVariantDrafts(allVariants);
               final ProductVariantDraft masterVariantDraftWithKeys =
@@ -158,40 +160,37 @@ public final class ProductReferenceResolutionUtils {
    */
   @Nonnull
   public static ProductDraftBuilder getDraftBuilderFromStagedProduct(
-      @Nonnull final Product product) {
-    final ProductData productData = product.getMasterData().getStaged();
+      @Nonnull final ProductProjection product) {
     final List<ProductVariantDraft> allVariants =
-        productData.getAllVariants().stream()
+        product.getAllVariants().stream()
             .map(productVariant -> ProductVariantDraftBuilder.of(productVariant).build())
             .collect(toList());
     final ProductVariantDraft masterVariant =
-        ProductVariantDraftBuilder.of(product.getMasterData().getStaged().getMasterVariant())
-            .build();
+        ProductVariantDraftBuilder.of(product.getMasterVariant()).build();
 
     return ProductDraftBuilder.of(
-            product.getProductType(), productData.getName(), productData.getSlug(), allVariants)
+            product.getProductType(), product.getName(), product.getSlug(), allVariants)
         .masterVariant(masterVariant)
-        .metaDescription(productData.getMetaDescription())
-        .metaKeywords(productData.getMetaKeywords())
-        .metaTitle(productData.getMetaTitle())
-        .description(productData.getDescription())
-        .searchKeywords(productData.getSearchKeywords())
+        .metaDescription(product.getMetaDescription())
+        .metaKeywords(product.getMetaKeywords())
+        .metaTitle(product.getMetaTitle())
+        .description(product.getDescription())
+        .searchKeywords(product.getSearchKeywords())
         .taxCategory(product.getTaxCategory())
         .state(product.getState())
         .key(product.getKey())
-        .publish(product.getMasterData().isPublished())
-        .categories(new ArrayList<>(productData.getCategories()))
-        .categoryOrderHints(productData.getCategoryOrderHints());
+        .publish(product.isPublished())
+        .categories(new ArrayList<>(product.getCategories()))
+        .categoryOrderHints(product.getCategoryOrderHints());
   }
 
   @Nonnull
-  static CategoryReferencePair mapToCategoryReferencePair(@Nonnull final Product product) {
-    final Set<Reference<Category>> categoryReferences =
-        product.getMasterData().getStaged().getCategories();
+  static CategoryReferencePair mapToCategoryReferencePair(
+      @Nonnull final ProductProjection product) {
+    final Set<Reference<Category>> categoryReferences = product.getCategories();
     final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = new HashSet<>();
 
-    final CategoryOrderHints categoryOrderHints =
-        product.getMasterData().getStaged().getCategoryOrderHints();
+    final CategoryOrderHints categoryOrderHints = product.getCategoryOrderHints();
     final Map<String, String> categoryOrderHintsMapWithKeys = new HashMap<>();
 
     categoryReferences.forEach(
@@ -247,31 +246,21 @@ public final class ProductReferenceResolutionUtils {
    *     references expanded.
    */
   @Nonnull
-  public static ProductQuery buildProductQuery() {
-    return ProductQuery.of()
+  public static ProductProjectionQuery buildProductQuery() {
+    return ProductProjectionQuery.ofStaged()
         .withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE)
-        .withExpansionPaths(ProductExpansionModel::productType)
-        .plusExpansionPaths(ProductExpansionModel::taxCategory)
+        .withExpansionPaths(ProductProjectionExpansionModel::productType)
+        .plusExpansionPaths(ProductProjectionExpansionModel::taxCategory)
         .plusExpansionPaths(ExpansionPath.of("state"))
-        .plusExpansionPaths(expansionModel -> expansionModel.masterData().staged().categories())
-        .plusExpansionPaths(
-            expansionModel -> expansionModel.masterData().staged().allVariants().prices().channel())
-        .plusExpansionPaths(
-            expansionModel ->
-                expansionModel.masterData().staged().allVariants().prices().customerGroup())
-        .plusExpansionPaths(
-            ExpansionPath.of("masterData.staged.masterVariant.prices[*].custom.type"))
-        .plusExpansionPaths(ExpansionPath.of("masterData.staged.variants[*].prices[*].custom.type"))
-        .plusExpansionPaths(
-            expansionModel ->
-                expansionModel.masterData().staged().allVariants().attributes().value())
-        .plusExpansionPaths(
-            expansionModel ->
-                expansionModel.masterData().staged().allVariants().attributes().valueSet())
-        .plusExpansionPaths(
-            ExpansionPath.of("masterData.staged.masterVariant.assets[*].custom.type"))
-        .plusExpansionPaths(
-            ExpansionPath.of("masterData.staged.variants[*].assets[*].custom.type"));
+        .plusExpansionPaths(expansionModel -> expansionModel.categories())
+        .plusExpansionPaths(expansionModel -> expansionModel.allVariants().prices().channel())
+        .plusExpansionPaths(expansionModel -> expansionModel.allVariants().prices().customerGroup())
+        .plusExpansionPaths(ExpansionPath.of("masterVariant.prices[*].custom.type"))
+        .plusExpansionPaths(ExpansionPath.of("variants[*].prices[*].custom.type"))
+        .plusExpansionPaths(expansionModel -> expansionModel.allVariants().attributes().value())
+        .plusExpansionPaths(expansionModel -> expansionModel.allVariants().attributes().valueSet())
+        .plusExpansionPaths(ExpansionPath.of("masterVariant.assets[*].custom.type"))
+        .plusExpansionPaths(ExpansionPath.of("variants[*].assets[*].custom.type"));
   }
 
   private ProductReferenceResolutionUtils() {}

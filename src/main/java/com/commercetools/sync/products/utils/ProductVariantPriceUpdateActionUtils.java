@@ -40,7 +40,6 @@ public final class ProductVariantPriceUpdateActionUtils {
    */
   @Nonnull
   public static List<UpdateAction<Product>> buildActions(
-      @Nonnull final Product oldProduct,
       @Nonnull final ProductDraft newProduct,
       @Nonnull final Integer variantId,
       @Nonnull final Price oldPrice,
@@ -51,8 +50,7 @@ public final class ProductVariantPriceUpdateActionUtils {
 
     buildChangePriceUpdateAction(oldPrice, newPrice, syncOptions).ifPresent(updateActions::add);
     updateActions.addAll(
-        buildCustomUpdateActions(
-            oldProduct, newProduct, variantId, oldPrice, newPrice, syncOptions));
+        buildCustomUpdateActions(newProduct, variantId, oldPrice, newPrice, syncOptions));
 
     return updateActions;
   }
@@ -128,7 +126,6 @@ public final class ProductVariantPriceUpdateActionUtils {
    */
   @Nonnull
   public static List<UpdateAction<Product>> buildCustomUpdateActions(
-      @Nonnull final Product oldProduct,
       @Nonnull final ProductDraft newProduct,
       @Nonnull final Integer variantId,
       @Nonnull final Price oldPrice,
@@ -136,7 +133,6 @@ public final class ProductVariantPriceUpdateActionUtils {
       @Nonnull final ProductSyncOptions syncOptions) {
 
     return CustomUpdateActionUtils.buildCustomUpdateActions(
-        oldProduct,
         newProduct,
         oldPrice,
         newPrice,

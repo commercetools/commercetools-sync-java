@@ -15,7 +15,8 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class TaxCategorySyncOptions extends BaseSyncOptions<TaxCategory, TaxCategoryDraft> {
+public final class TaxCategorySyncOptions
+    extends BaseSyncOptions<TaxCategory, TaxCategoryDraft, TaxCategory> {
 
   TaxCategorySyncOptions(
       @Nonnull final SphereClient ctpClient,

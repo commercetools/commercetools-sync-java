@@ -12,6 +12,8 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
+import io.sphere.sdk.products.ProductProjectionType;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -20,8 +22,9 @@ import javax.annotation.Nonnull;
 import org.junit.jupiter.api.Test;
 
 class BuildRemoveFromCategoryUpdateActionsTest {
-  private static final Product MOCK_OLD_PUBLISHED_PRODUCT =
-      readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
+  private static final ProductProjection MOCK_OLD_PUBLISHED_PRODUCT =
+      readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class)
+          .toProjection(ProductProjectionType.STAGED);
 
   @Test
   void buildRemoveFromCategoryUpdateActions_WithDifferentStagedValues_ShouldBuildUpdateAction() {
@@ -48,7 +51,7 @@ class BuildRemoveFromCategoryUpdateActionsTest {
   }
 
   private List<UpdateAction<Product>> getRemoveFromCategoryUpdateActions(
-      @Nonnull final Product oldProduct,
+      @Nonnull final ProductProjection oldProduct,
       @Nonnull final Set<ResourceIdentifier<Category>> newProductCategories) {
 
     final ProductDraft newProductDraft = mock(ProductDraft.class);

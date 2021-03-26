@@ -55,6 +55,7 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.Attribute;
@@ -204,7 +205,7 @@ class ProductSyncIT {
   private List<UpdateAction<Product>> beforeUpdateCallback(
       @Nonnull final List<UpdateAction<Product>> updateActions,
       @Nonnull final ProductDraft newProductDraft,
-      @Nonnull final Product oldProduct) {
+      @Nonnull final ProductProjection oldProduct) {
     this.updateActions.addAll(updateActions);
     return updateActions;
   }
@@ -243,7 +244,7 @@ class ProductSyncIT {
         .toCompletableFuture()
         .join();
 
-    final List<Product> products =
+    final List<ProductProjection> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts = mapToProductDrafts(products);
@@ -287,7 +288,7 @@ class ProductSyncIT {
         .toCompletableFuture()
         .join();
 
-    final List<Product> products =
+    final List<ProductProjection> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts = mapToProductDrafts(products);
@@ -333,7 +334,7 @@ class ProductSyncIT {
         .toCompletableFuture()
         .join();
 
-    final List<Product> products =
+    final List<ProductProjection> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts = mapToProductDrafts(products);
@@ -393,7 +394,7 @@ class ProductSyncIT {
         .toCompletableFuture()
         .join();
 
-    final List<Product> products =
+    final List<ProductProjection> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts = mapToProductDrafts(products);
@@ -531,7 +532,7 @@ class ProductSyncIT {
         .join();
 
     // Test
-    final List<Product> products =
+    final List<ProductProjection> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
     final List<ProductDraft> productDrafts = mapToProductDrafts(products);
     final ProductSyncStatistics syncStatistics =
@@ -615,7 +616,7 @@ class ProductSyncIT {
         .join();
 
     // Test
-    final List<Product> products =
+    final List<ProductProjection> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
     final List<ProductDraft> productDrafts = mapToProductDrafts(products);
     final ProductSyncStatistics syncStatistics =
@@ -755,7 +756,7 @@ class ProductSyncIT {
         .join();
 
     // Test
-    final List<Product> products =
+    final List<ProductProjection> products =
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
     final List<ProductDraft> productDrafts = mapToProductDrafts(products);
     final ProductSyncStatistics syncStatistics =

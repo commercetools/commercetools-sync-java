@@ -17,7 +17,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public final class CustomObjectSyncOptions
-    extends BaseSyncOptions<CustomObject<JsonNode>, CustomObjectDraft<JsonNode>> {
+    extends BaseSyncOptions<
+        CustomObject<JsonNode>, CustomObjectDraft<JsonNode>, CustomObject<JsonNode>> {
 
   CustomObjectSyncOptions(
       @Nonnull final SphereClient ctpClient,

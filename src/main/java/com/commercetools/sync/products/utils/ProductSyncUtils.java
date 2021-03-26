@@ -26,6 +26,7 @@ import com.commercetools.sync.products.SyncFilter;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,15 +45,15 @@ public final class ProductSyncUtils {
 
   /**
    * Compares all the fields (including the variants see {@link
-   * ProductUpdateActionUtils#buildVariantsUpdateActions(Product, ProductDraft, ProductSyncOptions,
-   * Map)}) of a {@link Product} and a {@link ProductDraft}, given that each of these fields pass
-   * the specified {@link SyncFilter}. It returns a {@link List} of {@link UpdateAction}&lt;{@link
-   * Product}&gt; as a result. If no update action is needed, for example in case where both the
-   * {@link Product} and the {@link ProductDraft} have the same names, an empty {@link List} is
-   * returned. Then it applies a specified filter function in the {@link ProductSyncOptions}
-   * instance on the resultant list and returns this result.
+   * ProductUpdateActionUtils#buildVariantsUpdateActions(ProductProjection, ProductDraft,
+   * ProductSyncOptions, Map)}) of a {@link ProductProjection} and a {@link ProductDraft}, given
+   * that each of these fields pass the specified {@link SyncFilter}. It returns a {@link List} of
+   * {@link UpdateAction}&lt;{@link Product}&gt; as a result. If no update action is needed, for
+   * example in case where both the {@link ProductProjection} and the {@link ProductDraft} have the
+   * same names, an empty {@link List} is returned. Then it applies a specified filter function in
+   * the {@link ProductSyncOptions} instance on the resultant list and returns this result.
    *
-   * @param oldProduct the product which should be updated.
+   * @param oldProduct the productprojection which should be updated.
    * @param newProduct the product draft where we get the new data.
    * @param syncOptions the sync options wrapper which contains options related to the sync process
    *     supplied by the user. For example, custom callbacks to call in case of warnings or errors
@@ -65,7 +66,7 @@ public final class ProductSyncUtils {
    */
   @Nonnull
   public static List<UpdateAction<Product>> buildActions(
-      @Nonnull final Product oldProduct,
+      @Nonnull final ProductProjection oldProduct,
       @Nonnull final ProductDraft newProduct,
       @Nonnull final ProductSyncOptions syncOptions,
       @Nonnull final Map<String, AttributeMetaData> attributesMetaData) {
@@ -129,8 +130,7 @@ public final class ProductSyncUtils {
     buildPublishOrUnpublishUpdateAction(oldProduct, newProduct, hasNewUpdateActions)
         .ifPresent(updateActions::add);
 
-    return prioritizeUpdateActions(
-        updateActions, oldProduct.getMasterData().getStaged().getMasterVariant().getId());
+    return prioritizeUpdateActions(updateActions, oldProduct.getMasterVariant().getId());
   }
 
   /**
@@ -198,18 +198,18 @@ public final class ProductSyncUtils {
   }
 
   /**
-   * Compares the categories of a {@link Product} and a {@link ProductDraft}. It returns a {@link
-   * List} of {@link UpdateAction}&lt;{@link Product}&gt; as a result. If no update action is
-   * needed, for example in case where both the {@link Product} and the {@link ProductDraft} have
-   * the identical categories, an empty {@link List} is returned.
+   * Compares the categories of a {@link ProductProjection} and a {@link ProductDraft}. It returns a
+   * {@link List} of {@link UpdateAction}&lt;{@link Product}&gt; as a result. If no update action is
+   * needed, for example in case where both the {@link ProductProjection} and the {@link
+   * ProductDraft} have the identical categories, an empty {@link List} is returned.
    *
-   * @param oldProduct the product which should be updated.
+   * @param oldProduct the productprojection which should be updated.
    * @param newProduct the product draft where we get the new data.
    * @return A list of product category-related update actions.
    */
   @Nonnull
   public static List<UpdateAction<Product>> buildCategoryActions(
-      @Nonnull final Product oldProduct, @Nonnull final ProductDraft newProduct) {
+      @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     final List<UpdateAction<Product>> updateActions = new ArrayList<>();
     updateActions.addAll(buildAddToCategoryUpdateActions(oldProduct, newProduct));
     updateActions.addAll(buildSetCategoryOrderHintUpdateActions(oldProduct, newProduct));

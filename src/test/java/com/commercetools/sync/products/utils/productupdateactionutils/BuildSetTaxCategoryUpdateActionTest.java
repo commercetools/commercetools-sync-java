@@ -7,8 +7,8 @@ import static org.mockito.Mockito.when;
 
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.commands.updateactions.SetTaxCategory;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class BuildSetTaxCategoryUpdateActionTest {
 
-  @Mock private Product oldProduct;
+  @Mock private ProductProjection oldProduct;
 
   @Mock private ProductDraft newProduct;
 

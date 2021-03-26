@@ -16,18 +16,20 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
+ * @param <U> Resource (e.g. {@link io.sphere.sdk.products.ProductProjection}, {@link
+ *     io.sphere.sdk.categories.Category}, etc..
  * @param <V> Resource Draft (e.g. {@link io.sphere.sdk.products.ProductDraft}, {@link
- *     io.sphere.sdk.categories.CategoryDraft}, etc..
- * @param <U> Resource (e.g. {@link io.sphere.sdk.products.Product}, {@link
+ *     io.sphere.sdk.categories.CategoryDraft}, etc
+ * @param <A> Resource to update (e.g. {@link io.sphere.sdk.products.Product}, {@link
  *     io.sphere.sdk.categories.Category}, etc..
  */
-public class BaseSyncOptions<U, V> {
+public class BaseSyncOptions<U, V, A> {
   private final SphereClient ctpClient;
-  private final QuadConsumer<SyncException, Optional<V>, Optional<U>, List<UpdateAction<U>>>
+  private final QuadConsumer<SyncException, Optional<V>, Optional<U>, List<UpdateAction<A>>>
       errorCallback;
   private final TriConsumer<SyncException, Optional<V>, Optional<U>> warningCallback;
   private int batchSize;
-  private final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>>
+  private final TriFunction<List<UpdateAction<A>>, V, U, List<UpdateAction<A>>>
       beforeUpdateCallback;
   private final Function<V, V> beforeCreateCallback;
   private long cacheSize;
@@ -35,12 +37,12 @@ public class BaseSyncOptions<U, V> {
   protected BaseSyncOptions(
       @Nonnull final SphereClient ctpClient,
       @Nullable
-          final QuadConsumer<SyncException, Optional<V>, Optional<U>, List<UpdateAction<U>>>
+          final QuadConsumer<SyncException, Optional<V>, Optional<U>, List<UpdateAction<A>>>
               errorCallback,
       @Nullable final TriConsumer<SyncException, Optional<V>, Optional<U>> warningCallback,
       final int batchSize,
       @Nullable
-          final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>>
+          final TriFunction<List<UpdateAction<A>>, V, U, List<UpdateAction<A>>>
               beforeUpdateCallback,
       @Nullable final Function<V, V> beforeCreateCallback,
       final long cacheSize) {
@@ -74,7 +76,7 @@ public class BaseSyncOptions<U, V> {
    *     UpdateAction}&lt;{@code U}&gt;&gt; function set to {@code this} {@link BaseSyncOptions}
    */
   @Nullable
-  public QuadConsumer<SyncException, Optional<V>, Optional<U>, List<UpdateAction<U>>>
+  public QuadConsumer<SyncException, Optional<V>, Optional<U>, List<UpdateAction<A>>>
       getErrorCallback() {
     return errorCallback;
   }
@@ -128,7 +130,7 @@ public class BaseSyncOptions<U, V> {
       @Nonnull final SyncException exception,
       @Nullable final U oldResource,
       @Nullable final V newResourceDraft,
-      @Nullable final List<UpdateAction<U>> updateActions) {
+      @Nullable final List<UpdateAction<A>> updateActions) {
     if (this.errorCallback != null) {
       this.errorCallback.accept(
           exception,
@@ -200,7 +202,7 @@ public class BaseSyncOptions<U, V> {
    *     BaseSyncOptions}.
    */
   @Nullable
-  public TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> getBeforeUpdateCallback() {
+  public TriFunction<List<UpdateAction<A>>, V, U, List<UpdateAction<A>>> getBeforeUpdateCallback() {
     return beforeUpdateCallback;
   }
 
@@ -237,8 +239,8 @@ public class BaseSyncOptions<U, V> {
    *     null, an empty list is returned.
    */
   @Nonnull
-  public List<UpdateAction<U>> applyBeforeUpdateCallback(
-      @Nonnull final List<UpdateAction<U>> updateActions,
+  public List<UpdateAction<A>> applyBeforeUpdateCallback(
+      @Nonnull final List<UpdateAction<A>> updateActions,
       @Nonnull final V newResourceDraft,
       @Nonnull final U oldResource) {
 

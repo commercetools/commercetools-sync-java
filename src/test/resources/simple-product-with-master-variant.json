@@ -9,41 +9,41 @@
   "catalogs": [],
   "masterData": {
     "staged": {
-      "name": {
-        "en": "Rehrücken ohne Knochen"
+  "name": {
+    "en": "Rehrücken ohne Knochen"
+  },
+  "description": {
+    "en": "Die Rückenstücke des Rehs gelten als wahres Geschmackserlebnis und beherbergen die edelsten Teile des Rehs. Aus dem Rücken können Sie feine Filets herausschneiden, die sich hervorragend zum Kurzbraten oder Grillen eignen. Da der Knochen von uns bereits schonend entfernt wurde, können Sie sich voll und ganz auf den einzigartigen Geschmack konzentrieren."
+  },
+  "categories": [
+  ],
+  "categoryOrderHints": {},
+  "slug": {
+    "en": "1ehruecken-o-kn"
+  },
+  "masterVariant": {
+    "id": 1,
+    "key": "v2",
+    "sku": "1065833",
+    "prices": [
+    ],
+    "images": [],
+    "attributes": [
+      {
+        "name": "priceInfo",
+        "value": "64,90/kg"
       },
-      "description": {
-        "en": "Die Rückenstücke des Rehs gelten als wahres Geschmackserlebnis und beherbergen die edelsten Teile des Rehs. Aus dem Rücken können Sie feine Filets herausschneiden, die sich hervorragend zum Kurzbraten oder Grillen eignen. Da der Knochen von uns bereits schonend entfernt wurde, können Sie sich voll und ganz auf den einzigartigen Geschmack konzentrieren."
-      },
-      "categories": [
-      ],
-      "categoryOrderHints": {},
-      "slug": {
-        "en": "1ehruecken-o-kn"
-      },
-      "masterVariant": {
-        "id": 1,
-        "key": "v2",
-        "sku": "1065833",
-        "prices": [
-        ],
-        "images": [],
-        "attributes": [
-          {
-            "name": "priceInfo",
-            "value": "64,90/kg"
-          },
-          {
-            "name": "size",
-            "value": "ca. 1 x 1000 g"
-          }
-        ],
-        "assets": []
-      },
-      "variants": [],
+      {
+        "name": "size",
+        "value": "ca. 1 x 1000 g"
+      }
+    ],
+    "assets": []
+  },
+  "variants": [],
       "searchKeywords": {}
     },
-    "published": true,
+  "published": true,
     "hasStagedChanges": false
   },
   "catalogData": {},

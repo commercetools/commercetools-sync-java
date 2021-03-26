@@ -1,26 +1,40 @@
 package com.commercetools.sync.services.impl;
 
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+import static io.sphere.sdk.products.ProductProjectionType.STAGED;
 import static java.lang.String.format;
 import static java.util.Collections.singleton;
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
+import com.commercetools.sync.commons.utils.ChunkUtils;
+import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.ProductService;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.expansion.ProductExpansionModel;
+import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.products.queries.ProductQueryModel;
 import io.sphere.sdk.queries.QueryPredicate;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -44,9 +58,34 @@ public final class ProductServiceImpl
   @Override
   public CompletionStage<Optional<String>> getIdFromCacheOrFetch(@Nullable final String key) {
 
-    return fetchCachedResourceId(
+    return fetchCachedResourceIdInternal(
         key,
-        () -> ProductQuery.of().withPredicates(buildProductKeysQueryPredicate(singleton(key))));
+        resource -> resource.getKey(),
+        () ->
+            ProductProjectionQuery.ofStaged()
+                .withPredicates(buildProductKeysQueryPredicate(singleton(key))));
+  }
+
+  @Nonnull
+  CompletionStage<Optional<String>> fetchCachedResourceIdInternal(
+      @Nullable final String key,
+      @Nonnull final Function<ProductProjection, String> keyMapper,
+      @Nonnull final Supplier<ProductProjectionQuery> querySupplier) {
+
+    if (isBlank(key)) {
+      return CompletableFuture.completedFuture(Optional.empty());
+    }
+
+    final String id = keyToIdCache.getIfPresent(key);
+    if (id != null) {
+      return CompletableFuture.completedFuture(Optional.of(id));
+    }
+    final Consumer<List<ProductProjection>> pageConsumer =
+        page ->
+            page.forEach(resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
+
+    return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), querySupplier.get(), pageConsumer)
+        .thenApply(result -> Optional.ofNullable(keyToIdCache.getIfPresent(key)));
   }
 
   @Nonnull
@@ -60,7 +99,8 @@ public final class ProductServiceImpl
             new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.PRODUCTS));
   }
 
-  QueryPredicate<Product> buildProductKeysQueryPredicate(@Nonnull final Set<String> productKeys) {
+  QueryPredicate<ProductProjection> buildProductKeysQueryPredicate(
+      @Nonnull final Set<String> productKeys) {
     final List<String> keysSurroundedWithDoubleQuotes =
         productKeys.stream()
             .filter(StringUtils::isNotBlank)
@@ -74,35 +114,109 @@ public final class ProductServiceImpl
 
   @Nonnull
   @Override
-  public CompletionStage<Set<Product>> fetchMatchingProductsByKeys(
+  public CompletionStage<Set<ProductProjection>> fetchMatchingProductsByKeys(
       @Nonnull final Set<String> productKeys) {
 
-    return fetchMatchingResources(
+    return fetchMatchingResourcesInternal(
         productKeys,
+        resource -> resource.getKey(),
         (keysNotCached) ->
-            ProductQuery.of().withPredicates(buildProductKeysQueryPredicate(keysNotCached)));
+            ProductProjectionQuery.ofStaged()
+                .withPredicates(buildProductKeysQueryPredicate(keysNotCached)));
+  }
+
+  CompletionStage<Set<ProductProjection>> fetchMatchingResourcesInternal(
+      @Nonnull final Set<String> keys,
+      @Nonnull final Function<ProductProjection, String> keyMapper,
+      @Nonnull final Function<Set<String>, ProductProjectionQuery> keysQueryMapper) {
+
+    if (keys.isEmpty()) {
+      return CompletableFuture.completedFuture(Collections.emptySet());
+    }
+
+    final List<List<String>> chunkedKeys = ChunkUtils.chunk(keys, CHUNK_SIZE);
+
+    final List<ProductProjectionQuery> keysQueryMapperList =
+        chunkedKeys.stream()
+            .map(
+                _keys ->
+                    keysQueryMapper
+                        .apply(new HashSet<>(_keys))
+                        .withLimit(CHUNK_SIZE)
+                        .withFetchTotal(false))
+            .collect(toList());
+    return ChunkUtils.executeChunks(syncOptions.getCtpClient(), keysQueryMapperList)
+        .thenApply(ChunkUtils::flattenPagedQueryResults)
+        .thenApply(
+            chunk -> {
+              chunk.forEach(
+                  resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
+              return new HashSet<>(chunk);
+            });
   }
 
   @Nonnull
   @Override
-  public CompletionStage<Optional<Product>> fetchProduct(@Nullable final String key) {
+  public CompletionStage<Optional<ProductProjection>> fetchProduct(@Nullable final String key) {
 
-    return fetchResource(
-        key,
-        () -> ProductQuery.of().withPredicates(buildProductKeysQueryPredicate(singleton(key))));
+    if (isBlank(key)) {
+      return CompletableFuture.completedFuture(Optional.empty());
+    }
+
+    return syncOptions
+        .getCtpClient()
+        .execute(
+            ProductProjectionQuery.ofStaged()
+                .withPredicates(buildProductKeysQueryPredicate(singleton(key))))
+        .thenApply(
+            pagedQueryResult ->
+                pagedQueryResult
+                    .head()
+                    .map(
+                        resource -> {
+                          keyToIdCache.put(key, resource.getId());
+                          return resource;
+                        }));
   }
 
   @Nonnull
   @Override
-  public CompletionStage<Optional<Product>> createProduct(
+  public CompletionStage<Optional<ProductProjection>> createProduct(
       @Nonnull final ProductDraft productDraft) {
-    return createResource(productDraft, ProductCreateCommand::of);
+    return createResource(productDraft, ProductCreateCommand::of)
+        .thenApply(product -> product.map(opt -> opt.toProjection(STAGED)));
   }
 
   @Nonnull
-  @Override
-  public CompletionStage<Product> updateProduct(
-      @Nonnull final Product product, @Nonnull final List<UpdateAction<Product>> updateActions) {
-    return updateResource(product, ProductUpdateCommand::of, updateActions);
+  public CompletionStage<ProductProjection> updateProduct(
+      @Nonnull final ProductProjection product,
+      @Nonnull final List<UpdateAction<Product>> updateActions) {
+
+    return updateResourceByKey(product, updateActions);
+  }
+  // TODO: (JVM-SDK), remove this replicated code, when the the JVM-SDK allows to use
+  // ProductProjections in a ProductUpdateCommand.
+
+  // see: https://github.com/commercetools/commercetools-sync-java/pull/699#discussion_r600457980
+  @Nonnull
+  CompletionStage<ProductProjection> updateResourceByKey(
+      @Nonnull final ProductProjection resource,
+      @Nonnull final List<UpdateAction<Product>> updateActions) {
+
+    final List<List<UpdateAction<Product>>> batches =
+        batchElements(updateActions, MAXIMUM_ALLOWED_UPDATE_ACTIONS);
+    CompletionStage<ProductProjection> resultStage = CompletableFuture.completedFuture(resource);
+    for (final List<UpdateAction<Product>> batch : batches) {
+      resultStage =
+          resultStage.thenCompose(
+              productProjection ->
+                  syncOptions
+                      .getCtpClient()
+                      .execute(
+                          ProductUpdateCommand.ofKey(
+                              productProjection.getKey(), productProjection.getVersion(), batch))
+                      .thenApply(p -> p.toProjection(STAGED)));
+    }
+    return resultStage;
   }
 }
