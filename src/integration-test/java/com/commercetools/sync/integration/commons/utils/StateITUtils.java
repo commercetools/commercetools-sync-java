@@ -74,8 +74,8 @@ public final class StateITUtils {
     // delete transitions
     CtpQueryUtils.queryAll(ctpClient, stateQueryBuilder.build(), Function.identity())
         .thenApply(
-            fetchedCategories ->
-                fetchedCategories.stream().flatMap(List::stream).collect(Collectors.toList()))
+            fetchedStates ->
+                fetchedStates.stream().flatMap(List::stream).collect(Collectors.toList()))
         .thenCompose(
             result -> {
               final List<CompletionStage<State>> clearStates = new ArrayList<>();
