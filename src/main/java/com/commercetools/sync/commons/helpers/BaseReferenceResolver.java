@@ -77,7 +77,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
    *
    * <ul>
    *   <li>Checks if the key value is not null or not empty.
-   *   <li>Checks if the key value is not equal to BLANK_KEY_VALUE(fetched from cache).
+   *   <li>Checks if the key value is not equal to KEY_IS_NOT_SET(fetched from cache).
    * </ul>
    *
    * If the above checks pass, the key value is returned. Otherwise a {@link
@@ -94,8 +94,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
       @Nonnull final ResourceIdentifier<T> resourceIdentifier) throws ReferenceResolutionException {
 
     final String key = resourceIdentifier.getKey();
-    if (isBlank(key)
-        || BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER.equalsIgnoreCase(key)) {
+    if (isBlank(key) || BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER.equals(key)) {
       throw new ReferenceResolutionException(BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER);
     }
     return key;

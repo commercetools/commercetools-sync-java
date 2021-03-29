@@ -2,13 +2,14 @@ package com.commercetools.sync.services.impl;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyId;
 import com.commercetools.sync.commons.utils.ChunkUtils;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.models.Resource;
+import io.sphere.sdk.models.WithKey;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -76,8 +77,10 @@ public class BaseTransformServiceImpl {
   @Nonnull
   protected Set<String> getNonCachedReferenceIds(@Nonnull final Set<String> referenceIds) {
     return referenceIds.stream()
-        .filter(id -> (!referenceIdToKeyCache.containsKey(id) ||
-            KEY_IS_NOT_SET_PLACE_HOLDER.equalsIgnoreCase(referenceIdToKeyCache.get(id))))
+        .filter(
+            id ->
+                (!referenceIdToKeyCache.containsKey(id)
+                    || KEY_IS_NOT_SET_PLACE_HOLDER.equalsIgnoreCase(referenceIdToKeyCache.get(id))))
         .collect(toSet());
   }
 
@@ -85,11 +88,19 @@ public class BaseTransformServiceImpl {
     Optional.ofNullable(results)
         .orElseGet(Collections::emptySet)
         .forEach(
-            resourceKeyId -> {
-              final String keyValue = resourceKeyId.getKey();
-              final String key = StringUtils.isBlank(keyValue) ? KEY_IS_NOT_SET_PLACE_HOLDER : keyValue;
-              final String id = resourceKeyId.getId();
-              referenceIdToKeyCache.put(id, key);
-            });
+            resourceKeyId ->
+                fillReferenceIdToKeyCache(resourceKeyId.getId(), resourceKeyId.getKey()));
+  }
+
+  protected <U extends Resource<U> & WithKey> void cacheResourceReferenceKeys(
+      final List<U> results) {
+    Optional.ofNullable(results)
+        .orElseGet(Collections::emptyList)
+        .forEach(resource -> fillReferenceIdToKeyCache(resource.getId(), resource.getKey()));
+  }
+
+  private void fillReferenceIdToKeyCache(String id, String key) {
+    final String keyValue = StringUtils.isBlank(key) ? KEY_IS_NOT_SET_PLACE_HOLDER : key;
+    referenceIdToKeyCache.put(id, keyValue);
   }
 }
