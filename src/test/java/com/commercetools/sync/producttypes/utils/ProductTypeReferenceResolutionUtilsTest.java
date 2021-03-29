@@ -25,10 +25,14 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class ProductTypeReferenceResolutionUtilsTest {
+
+  Map<String, String> idToKeyValueMap = new HashMap<>();
 
   @Test
   void mapToProductDrafts_WithEmptyList_ShouldReturnEmptyList() {
@@ -36,7 +40,8 @@ class ProductTypeReferenceResolutionUtilsTest {
     final List<ProductType> productTypes = emptyList();
 
     // test
-    final List<ProductTypeDraft> productTypeDrafts = mapToProductTypeDrafts(productTypes);
+    final List<ProductTypeDraft> productTypeDrafts =
+        mapToProductTypeDrafts(productTypes, idToKeyValueMap);
 
     // assertion
     assertThat(productTypeDrafts).isEmpty();
@@ -48,7 +53,8 @@ class ProductTypeReferenceResolutionUtilsTest {
     final List<ProductType> productTypes = singletonList(null);
 
     // test
-    final List<ProductTypeDraft> productTypeDrafts = mapToProductTypeDrafts(productTypes);
+    final List<ProductTypeDraft> productTypeDrafts =
+        mapToProductTypeDrafts(productTypes, idToKeyValueMap);
 
     // assertion
     assertThat(productTypeDrafts).isEmpty();
@@ -64,7 +70,8 @@ class ProductTypeReferenceResolutionUtilsTest {
     final List<ProductType> productTypes = singletonList(productTypeFoo);
 
     // test
-    final List<ProductTypeDraft> productTypeDrafts = mapToProductTypeDrafts(productTypes);
+    final List<ProductTypeDraft> productTypeDrafts =
+        mapToProductTypeDrafts(productTypes, idToKeyValueMap);
 
     // assertion
     assertThat(productTypeDrafts)
@@ -90,7 +97,8 @@ class ProductTypeReferenceResolutionUtilsTest {
     final List<ProductType> productTypes = asList(productTypeFoo, productTypeBar);
 
     // test
-    final List<ProductTypeDraft> productTypeDrafts = mapToProductTypeDrafts(productTypes);
+    final List<ProductTypeDraft> productTypeDrafts =
+        mapToProductTypeDrafts(productTypes, idToKeyValueMap);
 
     // assertion
     assertThat(productTypeDrafts)
@@ -120,7 +128,8 @@ class ProductTypeReferenceResolutionUtilsTest {
     final List<ProductType> productTypes = singletonList(productType);
 
     // test
-    final List<ProductTypeDraft> productTypeDrafts = mapToProductTypeDrafts(productTypes);
+    final List<ProductTypeDraft> productTypeDrafts =
+        mapToProductTypeDrafts(productTypes, idToKeyValueMap);
 
     // assertion
     assertThat(productTypeDrafts)
@@ -151,7 +160,7 @@ class ProductTypeReferenceResolutionUtilsTest {
     final List<ProductType> productTypes = singletonList(productType);
 
     // test
-    assertThatThrownBy(() -> mapToProductTypeDrafts(productTypes))
+    assertThatThrownBy(() -> mapToProductTypeDrafts(productTypes, idToKeyValueMap))
         .isExactlyInstanceOf(ReferenceReplacementException.class)
         .hasMessageContaining("Some errors occurred during reference replacement.")
         .hasMessageContaining(
@@ -185,7 +194,8 @@ class ProductTypeReferenceResolutionUtilsTest {
     final List<ProductType> productTypes = singletonList(productType);
 
     // test
-    final List<ProductTypeDraft> productTypeDrafts = mapToProductTypeDrafts(productTypes);
+    final List<ProductTypeDraft> productTypeDrafts =
+        mapToProductTypeDrafts(productTypes, idToKeyValueMap);
 
     // assertion
     assertThat(productTypeDrafts)
@@ -220,7 +230,7 @@ class ProductTypeReferenceResolutionUtilsTest {
     final List<ProductType> productTypes = singletonList(productType);
 
     // test
-    assertThatThrownBy(() -> mapToProductTypeDrafts(productTypes))
+    assertThatThrownBy(() -> mapToProductTypeDrafts(productTypes, idToKeyValueMap))
         .isExactlyInstanceOf(ReferenceReplacementException.class)
         .hasMessageContaining("Some errors occurred during reference replacement. Causes:\n")
         .hasMessageContaining(
@@ -256,7 +266,8 @@ class ProductTypeReferenceResolutionUtilsTest {
     final List<ProductType> productTypes = singletonList(productType);
 
     // test
-    final List<ProductTypeDraft> productTypeDrafts = mapToProductTypeDrafts(productTypes);
+    final List<ProductTypeDraft> productTypeDrafts =
+        mapToProductTypeDrafts(productTypes, idToKeyValueMap);
 
     // assertion
     assertThat(productTypeDrafts)
@@ -291,7 +302,7 @@ class ProductTypeReferenceResolutionUtilsTest {
     final List<ProductType> productTypes = singletonList(productType);
 
     // test
-    assertThatThrownBy(() -> mapToProductTypeDrafts(productTypes))
+    assertThatThrownBy(() -> mapToProductTypeDrafts(productTypes, idToKeyValueMap))
         .isExactlyInstanceOf(ReferenceReplacementException.class)
         .hasMessageContaining("Some errors occurred during reference replacement. Causes:\n")
         .hasMessageContaining(
@@ -328,7 +339,8 @@ class ProductTypeReferenceResolutionUtilsTest {
     final List<ProductType> productTypes = singletonList(productType);
 
     // test
-    final List<ProductTypeDraft> productTypeDrafts = mapToProductTypeDrafts(productTypes);
+    final List<ProductTypeDraft> productTypeDrafts =
+        mapToProductTypeDrafts(productTypes, idToKeyValueMap);
 
     // assertion
     assertThat(productTypeDrafts)
@@ -351,43 +363,5 @@ class ProductTypeReferenceResolutionUtilsTest {
     final ProductTypeQuery productTypeQuery = buildProductTypeQuery();
     assertThat(productTypeQuery.expansionPaths())
         .containsExactly(ExpansionPath.of("attributes[*].type.typeReference"));
-  }
-
-  @Test
-  void buildProductTypeQuery_With0MaxSetDepth_ShouldReturnQueryWithAllNeededReferencesExpanded() {
-    final ProductTypeQuery productTypeQuery = buildProductTypeQuery(0);
-    assertThat(productTypeQuery.expansionPaths())
-        .containsExactly(ExpansionPath.of("attributes[*].type.typeReference"));
-  }
-
-  @Test
-  void buildProductTypeQuery_With1MaxSetDepth_ShouldReturnQueryWithAllNeededReferencesExpanded() {
-    final ProductTypeQuery productTypeQuery = buildProductTypeQuery(1);
-    assertThat(productTypeQuery.expansionPaths())
-        .containsExactly(
-            ExpansionPath.of("attributes[*].type.typeReference"),
-            ExpansionPath.of("attributes[*].type.elementType.typeReference"));
-  }
-
-  @Test
-  void buildProductTypeQuery_With2MaxSetDepth_ShouldReturnQueryWithAllNeededReferencesExpanded() {
-    final ProductTypeQuery productTypeQuery = buildProductTypeQuery(2);
-    assertThat(productTypeQuery.expansionPaths())
-        .containsExactly(
-            ExpansionPath.of("attributes[*].type.typeReference"),
-            ExpansionPath.of("attributes[*].type.elementType.typeReference"),
-            ExpansionPath.of("attributes[*].type.elementType.elementType.typeReference"));
-  }
-
-  @Test
-  void buildProductTypeQuery_With3MaxSetDepth_ShouldReturnQueryWithAllNeededReferencesExpanded() {
-    final ProductTypeQuery productTypeQuery = buildProductTypeQuery(3);
-    assertThat(productTypeQuery.expansionPaths())
-        .containsExactly(
-            ExpansionPath.of("attributes[*].type.typeReference"),
-            ExpansionPath.of("attributes[*].type.elementType.typeReference"),
-            ExpansionPath.of("attributes[*].type.elementType.elementType.typeReference"),
-            ExpansionPath.of(
-                "attributes[*].type.elementType.elementType.elementType.typeReference"));
   }
 }
