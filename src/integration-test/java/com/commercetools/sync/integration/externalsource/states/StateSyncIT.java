@@ -339,7 +339,7 @@ class StateSyncIT {
                   .isEqualTo(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS));
               Assertions.assertThat(state.isInitial()).isEqualTo(true);
             });
-    deleteStates(CTP_TARGET_CLIENT);
+    deleteStates(CTP_TARGET_CLIENT, Optional.empty());
   }
 
   @Test

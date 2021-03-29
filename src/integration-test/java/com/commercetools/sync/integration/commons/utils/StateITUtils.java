@@ -1,12 +1,12 @@
 package com.commercetools.sync.integration.commons.utils;
 
-import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.states.commands.updateactions.SetTransitions.of;
 import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;
+import static java.util.Optional.empty;
 
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import io.sphere.sdk.client.SphereClient;
@@ -52,24 +52,30 @@ public final class StateITUtils {
    * CTP_TARGET_CLIENT}.
    */
   public static void deleteStatesFromTargetAndSource() {
-    deleteStates(CTP_TARGET_CLIENT);
-    deleteStates(CTP_SOURCE_CLIENT);
+    deleteStates(CTP_TARGET_CLIENT, empty());
+    deleteStates(CTP_SOURCE_CLIENT, empty());
   }
 
   /**
    * Deletes all states from the CTP project defined by the {@code ctpClient}.
    *
    * @param ctpClient defines the CTP project to delete the states from.
+   * @param stateType optional type of states with should be deleted
    */
-  public static <T extends State> void deleteStates(@Nonnull final SphereClient ctpClient) {
+  public static <T extends State> void deleteStates(
+      @Nonnull final SphereClient ctpClient, final Optional<StateType> stateType) {
+    StateQueryBuilder stateQueryBuilder =
+        StateQueryBuilder.of().plusPredicates(QueryPredicate.of("builtIn = false"));
+    if (stateType.isPresent()) {
+      stateQueryBuilder =
+          stateQueryBuilder.plusPredicates(
+              QueryPredicate.of(format("type= \"%s\"", stateType.get().toSphereName())));
+    }
     // delete transitions
-    CtpQueryUtils.queryAll(
-            ctpClient,
-            StateQueryBuilder.of().plusPredicates(QueryPredicate.of("builtIn = false")).build(),
-            Function.identity())
+    CtpQueryUtils.queryAll(ctpClient, stateQueryBuilder.build(), Function.identity())
         .thenApply(
-            fetchedCategories ->
-                fetchedCategories.stream().flatMap(List::stream).collect(Collectors.toList()))
+            fetchedStates ->
+                fetchedStates.stream().flatMap(List::stream).collect(Collectors.toList()))
         .thenCompose(
             result -> {
               final List<CompletionStage<State>> clearStates = new ArrayList<>();
@@ -93,20 +99,6 @@ public final class StateITUtils {
                     stateToRemove -> ctpClient.execute(StateDeleteCommand.of(stateToRemove))))
         .toCompletableFuture()
         .join();
-  }
-
-  /**
-   * Deletes all states with {@code stateType} from the CTP project defined by the {@code
-   * ctpClient}.
-   *
-   * @param ctpClient defines the CTP project to delete the states from.
-   */
-  public static void deleteStates(
-      @Nonnull final SphereClient ctpClient, @Nonnull final StateType stateType) {
-    final QueryPredicate<State> stateQueryPredicate =
-        QueryPredicate.of(format("type= \"%s\"", stateType.toSphereName()));
-    final StateQuery stateQuery = StateQuery.of().withPredicates(stateQueryPredicate);
-    queryAndExecute(ctpClient, stateQuery, StateDeleteCommand::of);
   }
 
   /**

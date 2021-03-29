@@ -25,7 +25,8 @@ public final class CartDiscountReferenceResolutionUtils {
    * the mapping from {@link CartDiscount} to {@link CartDiscountDraft} with considering reference
    * resolution.
    *
-   * <table summary="Mapping of Reference fields for the reference resolution">
+   * <table>
+   *   <caption>Mapping of Reference fields for the reference resolution</caption>
    *   <thead>
    *     <tr>
    *       <th>Reference field</th>
