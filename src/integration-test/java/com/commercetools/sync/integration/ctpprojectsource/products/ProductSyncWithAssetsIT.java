@@ -19,11 +19,11 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
-import com.commercetools.sync.products.service.DefaultTransformServiceCache;
 import com.commercetools.sync.products.service.ProductReferenceTransformService;
 import com.commercetools.sync.products.service.impl.ProductReferenceTransformServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -72,8 +72,6 @@ class ProductSyncWithAssetsIT {
   private List<String> warningCallBackMessages;
   private List<UpdateAction<Product>> updateActions;
   private List<Throwable> errorCallBackExceptions;
-  private final Map<String, String> idToKeyCache =
-      DefaultTransformServiceCache.referenceIdToKeyCache.asMap();
   private ProductReferenceTransformService productReferenceTransformService;
 
   /**
@@ -107,7 +105,8 @@ class ProductSyncWithAssetsIT {
     deleteAllProducts(CTP_SOURCE_CLIENT);
     productSync = new ProductSync(buildSyncOptions());
     productReferenceTransformService =
-        new ProductReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
+        new ProductReferenceTransformServiceImpl(
+            CTP_SOURCE_CLIENT, InMemoryReferenceIdToKeyCache.getInstance());
   }
 
   private void clearSyncTestCollections() {

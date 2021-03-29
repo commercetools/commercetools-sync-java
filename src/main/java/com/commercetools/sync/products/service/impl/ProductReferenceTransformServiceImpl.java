@@ -6,7 +6,6 @@ import static com.commercetools.sync.products.utils.ProductReferenceResolutionUt
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-import com.commercetools.sync.commons.exceptions.ReferenceReplacementException;
 import com.commercetools.sync.commons.exceptions.ReferenceTransformException;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
@@ -60,7 +59,7 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
   @Nonnull
   @Override
   public CompletableFuture<List<ProductDraft>> transformProductReferences(
-      @Nonnull final List<Product> products) throws ReferenceReplacementException {
+      @Nonnull final List<Product> products) {
 
     return replaceAttributeReferenceIdsWithKeys(products)
         .handle(

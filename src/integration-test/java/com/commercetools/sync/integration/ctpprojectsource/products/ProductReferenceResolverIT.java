@@ -23,13 +23,14 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomC
 import static com.commercetools.sync.products.utils.ProductReferenceResolutionUtils.buildProductQuery;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.commons.exceptions.ReferenceTransformException;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
-import com.commercetools.sync.products.service.DefaultTransformServiceCache;
 import com.commercetools.sync.products.service.ProductReferenceTransformService;
 import com.commercetools.sync.products.service.impl.ProductReferenceTransformServiceImpl;
 import io.sphere.sdk.categories.Category;
@@ -45,7 +46,6 @@ import io.sphere.sdk.taxcategories.TaxCategory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -65,10 +65,9 @@ class ProductReferenceResolverIT {
   private List<String> errorCallBackMessages;
   private List<String> warningCallBackMessages;
   private List<Throwable> errorCallBackExceptions;
-  private final Map<String, String> idToKeyCache =
-      DefaultTransformServiceCache.referenceIdToKeyCache.asMap();
-  ProductReferenceTransformService productReferenceTransformService =
-      new ProductReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
+  private final ProductReferenceTransformService productReferenceTransformService =
+      new ProductReferenceTransformServiceImpl(
+          CTP_SOURCE_CLIENT, InMemoryReferenceIdToKeyCache.getInstance());
 
   /**
    * Delete all product related test data from target and source projects. Then creates custom types
@@ -173,7 +172,7 @@ class ProductReferenceResolverIT {
   }
 
   @Test
-  void sync_withNewProductWithNoProductTypeKey_ShouldFailCreatingTheProduct() {
+  void sync_withNewProductWithNoProductTypeKey_ShouldThrowCompletionException() {
     // preparation
     final ProductDraft productDraft =
         createProductDraft(
@@ -188,29 +187,16 @@ class ProductReferenceResolverIT {
     final List<Product> products =
         CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
 
-    final List<ProductDraft> productDrafts =
-        productReferenceTransformService.transformProductReferences(products).join();
+    Throwable exception =
+        assertThrows(
+            CompletionException.class,
+            () -> productReferenceTransformService.transformProductReferences(products).join());
 
-    // test
-    final ProductSyncStatistics syncStatistics =
-        productSync.sync(productDrafts).toCompletableFuture().join();
-
-    // assertion
-    assertThat(syncStatistics).hasValues(1, 0, 0, 1);
-    assertThat(errorCallBackMessages)
-        .containsExactly(
+    assertThat(exception.getMessage())
+        .isEqualTo(
             format(
-                "Failed to process the ProductDraft with"
-                    + " key:'%s'. Reason: "
-                    + ReferenceResolutionException.class.getCanonicalName()
+                ReferenceTransformException.class.getCanonicalName()
                     + ": "
-                    + "Failed to resolve 'product-type' resource identifier on ProductDraft with "
-                    + "key:'%s'. Reason: %s",
-                productDraft.getKey(),
-                productDraft.getKey(),
-                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
-    assertThat(errorCallBackExceptions).hasSize(1);
-    assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
-    assertThat(warningCallBackMessages).isEmpty();
+                    + BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
   }
 }
