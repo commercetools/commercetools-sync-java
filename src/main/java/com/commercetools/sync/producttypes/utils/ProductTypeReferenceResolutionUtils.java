@@ -31,7 +31,8 @@ public final class ProductTypeReferenceResolutionUtils {
      * the mapping from {@link ProductType} to {@link ProductTypeDraft} with considering reference
      * resolution.
      *
-     * <table summary="Mapping of Reference fields for the reference resolution">
+     * <table>
+     *   <caption>Mapping of Reference fields for the reference resolution</caption>
      *   <thead>
      *     <tr>
      *       <th>Reference field</th>
@@ -47,6 +48,7 @@ public final class ProductTypeReferenceResolutionUtils {
      *     </tr>
      *   </tbody>
      * </table>
+     *
      *
      * <p><b>Note:</b>If some references are not expanded for an attributeDefinition of a productType,
      * the method will throw a {@link ReferenceReplacementException} containing the root causes of the

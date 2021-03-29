@@ -593,145 +593,146 @@ public final class ProductUpdateActionUtils {
    * Publish} or {@link Unpublish} update action as a result in an {@link Optional}. Check the
    * calculation table below for all different combinations named as states.
    *
-   * <table summary="Mapping of product publish/unpublish update action calculation">
+   * <table>
+   * <caption>Mapping of product publish/unpublish update action calculation</caption>
    * <thead>
    * <tr>
-   * <th align="center">State</th>
-   * <th align="center">New draft publish</th>
-   * <th align="center">Old product publish</th>
-   * <th align="center">New update actions</th>
-   * <th align="center">Old product hasStagedChanges</th>
-   * <th align="center">Action</th>
+   * <th>State</th>
+   * <th>New draft publish</th>
+   * <th>Old product publish</th>
+   * <th>New update actions</th>
+   * <th>Old product hasStagedChanges</th>
+   * <th>Action</th>
    * </tr>
    * </thead>
    * <tbody>
    * <tr>
    * <td>State 1</td>
-   * <td align="center">false</td>
-   * <td align="center">false</td>
-   * <td align="center">false</td>
-   * <td align="center">false</td>
-   * <td align="center">-</td>
+   * <td>false</td>
+   * <td>false</td>
+   * <td>false</td>
+   * <td>false</td>
+   * <td>-</td>
    * </tr>
    * <tr>
    * <td>State 2</td>
-   * <td align="center">false</td>
-   * <td align="center">false</td>
-   * <td align="center">false</td>
-   * <td align="center">true</td>
-   * <td align="center">-</td>
+   * <td>false</td>
+   * <td>false</td>
+   * <td>false</td>
+   * <td>true</td>
+   * <td>-</td>
    * </tr>
    * <tr>
    * <td>State 3</td>
-   * <td align="center">false</td>
-   * <td align="center">false</td>
-   * <td align="center">true</td>
-   * <td align="center">false</td>
-   * <td align="center">-</td>
+   * <td>false</td>
+   * <td>false</td>
+   * <td>true</td>
+   * <td>false</td>
+   * <td>-</td>
    * </tr>
    * <tr>
    * <td>State 4</td>
-   * <td align="center">false</td>
-   * <td align="center">false</td>
-   * <td align="center">true</td>
-   * <td align="center">true</td>
-   * <td align="center">-</td>
+   * <td>false</td>
+   * <td>false</td>
+   * <td>true</td>
+   * <td>true</td>
+   * <td>-</td>
    * </tr>
    * <tr>
    * <td>State 5</td>
-   * <td align="center">false</td>
-   * <td align="center">true</td>
-   * <td align="center">false</td>
-   * <td align="center">false</td>
-   * <td align="center">unpublish</td>
+   * <td>false</td>
+   * <td>true</td>
+   * <td>false</td>
+   * <td>false</td>
+   * <td>unpublish</td>
    * </tr>
    * <tr>
    * <td>State 6</td>
-   * <td align="center">false</td>
-   * <td align="center">true</td>
-   * <td align="center">false</td>
-   * <td align="center">true</td>
-   * <td align="center">unpublish</td>
+   * <td>false</td>
+   * <td>true</td>
+   * <td>false</td>
+   * <td>true</td>
+   * <td>unpublish</td>
    * </tr>
    * <tr>
    * <td>State 7</td>
-   * <td align="center">false</td>
-   * <td align="center">true</td>
-   * <td align="center">true</td>
-   * <td align="center">false</td>
-   * <td align="center">unpublish</td>
+   * <td>false</td>
+   * <td>true</td>
+   * <td>true</td>
+   * <td>false</td>
+   * <td>unpublish</td>
    * </tr>
    * <tr>
    * <td>State 8</td>
-   * <td align="center">false</td>
-   * <td align="center">true</td>
-   * <td align="center">true</td>
-   * <td align="center">true</td>
-   * <td align="center">unpublish</td>
+   * <td>false</td>
+   * <td>true</td>
+   * <td>true</td>
+   * <td>true</td>
+   * <td>unpublish</td>
    * </tr>
    * <tr>
    * <td>State 9</td>
-   * <td align="center">true</td>
-   * <td align="center">false</td>
-   * <td align="center">false</td>
-   * <td align="center">false</td>
-   * <td align="center">publish</td>
+   * <td>true</td>
+   * <td>false</td>
+   * <td>false</td>
+   * <td>false</td>
+   * <td>publish</td>
    * </tr>
    * <tr>
    * <td>State 10</td>
-   * <td align="center">true</td>
-   * <td align="center">false</td>
-   * <td align="center">false</td>
-   * <td align="center">true</td>
-   * <td align="center">publish</td>
+   * <td>true</td>
+   * <td>false</td>
+   * <td>false</td>
+   * <td>true</td>
+   * <td>publish</td>
    * </tr>
    * <tr>
    * <td>State 11</td>
-   * <td align="center">true</td>
-   * <td align="center">false</td>
-   * <td align="center">true</td>
-   * <td align="center">false</td>
-   * <td align="center">publish</td>
+   * <td>true</td>
+   * <td>false</td>
+   * <td>true</td>
+   * <td>false</td>
+   * <td>publish</td>
    * </tr>
    * <tr>
    * <td>State 12</td>
-   * <td align="center">true</td>
-   * <td align="center">false</td>
-   * <td align="center">true</td>
-   * <td align="center">true</td>
-   * <td align="center">publish</td>
+   * <td>true</td>
+   * <td>false</td>
+   * <td>true</td>
+   * <td>true</td>
+   * <td>publish</td>
    * </tr>
    * <tr>
    * <td>State 13</td>
-   * <td align="center">true</td>
-   * <td align="center">true</td>
-   * <td align="center">false</td>
-   * <td align="center">false</td>
-   * <td align="center">-</td>
+   * <td>true</td>
+   * <td>true</td>
+   * <td>false</td>
+   * <td>false</td>
+   * <td>-</td>
    * </tr>
    * <tr>
    * <td>State 14</td>
-   * <td align="center">true</td>
-   * <td align="center">true</td>
-   * <td align="center">false</td>
-   * <td align="center">true</td>
-   * <td align="center">publish</td>
+   * <td>true</td>
+   * <td>true</td>
+   * <td>false</td>
+   * <td>true</td>
+   * <td>publish</td>
    * </tr>
    * <tr>
    * <td>State 15</td>
-   * <td align="center">true</td>
-   * <td align="center">true</td>
-   * <td align="center">true</td>
-   * <td align="center">false</td>
-   * <td align="center">publish</td>
+   * <td>true</td>
+   * <td>true</td>
+   * <td>true</td>
+   * <td>false</td>
+   * <td>publish</td>
    * </tr>
    * <tr>
    * <td>State 16</td>
-   * <td align="center">true</td>
-   * <td align="center">true</td>
-   * <td align="center">true</td>
-   * <td align="center">true</td>
-   * <td align="center">publish</td>
+   * <td>true</td>
+   * <td>true</td>
+   * <td>true</td>
+   * <td>true</td>
+   * <td>publish</td>
    * </tr>
    * </tbody>
    * </table>

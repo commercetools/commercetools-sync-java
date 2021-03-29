@@ -16,7 +16,7 @@ configurations {
 
 task benchmark(type: Test) {
     doFirst{
-        grgit.clone(dir: 'tmp_git_dir/', uri: scmProjectUrl, checkout: true, refToCheckout: 'gh-pages')
+        grgit.clone(dir: tmpGHPagesDirPath, uri: scmProjectUrl, checkout: true, refToCheckout: 'gh-pages')
     }
     useJUnitPlatform {
         includeEngines 'junit-jupiter', 'junit-vintage'
@@ -28,7 +28,7 @@ task benchmark(type: Test) {
 
 task benchmarkCommit() {
     doLast{
-        def git = grgit.open(dir: System.getenv('CI_BUILD_DIR') + '/tmp_git_dir')
+        def git = grgit.open(dir: tmpGHPagesDirPath)
         git.add(patterns: ['benchmarks/benchmarks.json'])
         git.commit(message: '#155: Add new benchmark result.')
         git.push()
