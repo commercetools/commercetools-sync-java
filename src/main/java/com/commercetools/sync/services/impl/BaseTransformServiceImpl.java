@@ -28,7 +28,7 @@ public class BaseTransformServiceImpl {
    * could return - Error 413 (Request Entity Too Large)
    */
   public static final int CHUNK_SIZE = 300;
-  public static final String BLANK_KEY_VALUE = "KEY_VALUE_EITHER_NULL_OR_BLANK";
+  public static final String KEY_IS_NOT_SET_PLACE_HOLDER = "KEY_IS_NOT_SET";
   protected final Map<String, String> referenceIdToKeyCache;
 
   private final SphereClient ctpClient;
