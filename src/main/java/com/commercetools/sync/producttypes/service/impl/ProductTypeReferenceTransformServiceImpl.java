@@ -7,11 +7,10 @@ import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
-
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import javax.annotation.Nonnull;
 
 public class ProductTypeReferenceTransformServiceImpl extends BaseTransformServiceImpl
     implements ProductTypeReferenceTransformService {
@@ -32,12 +31,14 @@ public class ProductTypeReferenceTransformServiceImpl extends BaseTransformServi
   public CompletableFuture<List<ProductTypeDraft>> transformProductTypeReferences(
       @Nonnull final List<ProductType> productTypes) throws ReferenceReplacementException {
 
-    // TODO: Collect all attributes with references (nestedAttributes, setAttributes with nested type) and
-    // check if the ids are already cached in referenceIdToKeyCache otherwise fetch the keys by ids of the references
+    // TODO: Collect all attributes with references (nestedAttributes, setAttributes with nested
+    // type) and
+    // check if the ids are already cached in referenceIdToKeyCache otherwise fetch the keys by ids
+    // of the references
     // and store in cache. Then call the utility function to map productTypes to productTypeDrafts
 
-    return CompletableFuture.completedFuture(ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts(productTypes,
-        referenceIdToKeyCache));
+    return CompletableFuture.completedFuture(
+        ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts(
+            productTypes, referenceIdToKeyCache));
   }
-
 }
