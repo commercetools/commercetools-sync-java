@@ -30,7 +30,8 @@ public final class CategoryReferenceResolutionUtils {
    * Returns an {@link List}&lt;{@link CategoryDraft}&gt; consisting of the results of applying the
    * mapping from {@link Category} to {@link CategoryDraft} with considering reference resolution.
    *
-   * <table summary="Mapping of Reference fields for the reference resolution">
+   * <table>
+   *   <caption>Mapping of Reference fields for the reference resolution</caption>
    *   <thead>
    *     <tr>
    *       <th>Reference field</th>

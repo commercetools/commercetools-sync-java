@@ -66,8 +66,8 @@ class StateServiceImplIT {
     errorCallBackMessages = new ArrayList<>();
     errorCallBackExceptions = new ArrayList<>();
 
-    deleteStates(CTP_TARGET_CLIENT, STATE_TYPE);
-    deleteStates(CTP_TARGET_CLIENT, TRANSITION_STATE_TYPE);
+    deleteStates(CTP_TARGET_CLIENT, Optional.of(STATE_TYPE));
+    deleteStates(CTP_TARGET_CLIENT, Optional.of(TRANSITION_STATE_TYPE));
     warnings = new ArrayList<>();
     oldState = createState(CTP_TARGET_CLIENT, STATE_TYPE);
 
@@ -82,8 +82,8 @@ class StateServiceImplIT {
   /** Cleans up the target test data that were built in this test class. */
   @AfterAll
   static void tearDown() {
-    deleteStates(CTP_TARGET_CLIENT, STATE_TYPE);
-    deleteStates(CTP_TARGET_CLIENT, TRANSITION_STATE_TYPE);
+    deleteStates(CTP_TARGET_CLIENT, Optional.of(STATE_TYPE));
+    deleteStates(CTP_TARGET_CLIENT, Optional.of(TRANSITION_STATE_TYPE));
   }
 
   @Test
@@ -162,7 +162,7 @@ class StateServiceImplIT {
     assertThat(transition.getObj()).isNull();
 
     clearTransitions(CTP_TARGET_CLIENT, fetchState);
-    deleteStates(CTP_TARGET_CLIENT, TRANSITION_STATE_TYPE);
+    deleteStates(CTP_TARGET_CLIENT, Optional.of(TRANSITION_STATE_TYPE));
   }
 
   @Test
@@ -261,7 +261,7 @@ class StateServiceImplIT {
     assertThat(transition.getObj()).isEqualTo(transitionState);
 
     clearTransitions(CTP_TARGET_CLIENT, fetchState);
-    deleteStates(CTP_TARGET_CLIENT, TRANSITION_STATE_TYPE);
+    deleteStates(CTP_TARGET_CLIENT, Optional.of(TRANSITION_STATE_TYPE));
   }
 
   @Test
