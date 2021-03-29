@@ -50,6 +50,7 @@ public final class CartDiscountReferenceResolutionUtils {
    * reference resolution.
    *
    * @param cartDiscounts the cart discounts without expansion of references.
+   * @param referenceIdToKeyMap the map containing the cached id to key values.
    * @return a {@link List} of {@link CartDiscountDraft} built from the supplied {@link List} of
    *     {@link CartDiscount}.
    */

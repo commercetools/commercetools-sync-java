@@ -58,6 +58,7 @@ public final class InventoryReferenceResolutionUtils {
    * update/create API request without reference resolution.
    *
    * @param inventoryEntries the inventory entries without expansion of references.
+   * @param referenceIdToKeyMap the map containing the cached id to key values.
    * @return a {@link List} of {@link InventoryEntryDraft} built from the supplied {@link List} of
    *     {@link InventoryEntry}.
    */

@@ -110,9 +110,10 @@ public final class CustomTypeReferenceResolutionUtils {
   public static CustomFieldsDraft mapToCustomFieldsDraft(
       @Nullable final CustomFields custom, @Nonnull final Map<String, String> referenceIdToKeyMap) {
     if (custom != null) {
-      if (referenceIdToKeyMap.containsKey(custom.getType().getId())) {
+      final String typeId = custom.getType().getId();
+      if (referenceIdToKeyMap.containsKey(typeId)) {
         return CustomFieldsDraft.ofTypeKeyAndJson(
-            referenceIdToKeyMap.get(custom.getType().getId()), custom.getFieldsJsonMap());
+            referenceIdToKeyMap.get(typeId), custom.getFieldsJsonMap());
       }
       return CustomFieldsDraftBuilder.of(custom).build();
     }
