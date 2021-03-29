@@ -51,7 +51,7 @@ class CategorySyncIT {
   private List<Throwable> callBackExceptions = new ArrayList<>();
   private List<String> callBackWarningResponses = new ArrayList<>();
   private final Map<String, String> idToKeyCache = new HashMap<>();
-  CategoryReferenceTransformService categoryReferenceTransformService =
+  private final CategoryReferenceTransformService categoryReferenceTransformService =
       new CategoryReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
 
   /**

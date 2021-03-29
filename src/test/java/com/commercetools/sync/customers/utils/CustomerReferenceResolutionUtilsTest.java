@@ -22,11 +22,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class CustomerReferenceResolutionUtilsTest {
 
-  Map<String, String> idToKeyValueMap = new HashMap<>();
+  private final Map<String, String> idToKeyValueMap = new HashMap<>();
+
+  @AfterEach
+  void clearCache() {
+    idToKeyValueMap.clear();
+  }
 
   @Test
   void
