@@ -163,7 +163,6 @@ class StateServiceImplIT {
 
     clearTransitions(CTP_TARGET_CLIENT, fetchState);
     deleteStates(CTP_TARGET_CLIENT, Optional.of(TRANSITION_STATE_TYPE));
-    deleteStates(CTP_TARGET_CLIENT, Optional.of(STATE_TYPE));
   }
 
   @Test
