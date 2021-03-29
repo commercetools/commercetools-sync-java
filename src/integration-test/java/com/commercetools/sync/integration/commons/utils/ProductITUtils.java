@@ -12,6 +12,7 @@ import static com.commercetools.sync.integration.commons.utils.StateITUtils.dele
 import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.deleteTaxCategories;
 import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
 import static java.util.Collections.singletonList;
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
@@ -55,7 +56,7 @@ public final class ProductITUtils {
     deleteAllCategories(ctpClient);
     deleteTypes(ctpClient);
     deleteChannels(ctpClient);
-    deleteStates(ctpClient);
+    deleteStates(ctpClient, empty());
     deleteTaxCategories(ctpClient);
     deleteCustomerGroups(ctpClient);
     deleteWaitingToBeResolvedCustomObjects(
