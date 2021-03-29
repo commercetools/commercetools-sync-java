@@ -1,12 +1,9 @@
 package com.commercetools.sync.services.impl;
 
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
-import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-import com.commercetools.sync.commons.exceptions.ReferenceTransformException;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyId;
@@ -20,6 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
+import org.apache.commons.lang3.StringUtils;
 
 public class BaseTransformServiceImpl {
   /*
@@ -61,11 +59,7 @@ public class BaseTransformServiceImpl {
         .thenApply(ChunkUtils::flattenGraphQLBaseResults)
         .thenCompose(
             results -> {
-              try {
-                cacheResourceReferenceKeys(results);
-              } catch (ReferenceTransformException referenceTransformException) {
-                return exceptionallyCompletedFuture(referenceTransformException);
-              }
+              cacheResourceReferenceKeys(results);
               return CompletableFuture.completedFuture(null);
             });
   }
@@ -91,12 +85,12 @@ public class BaseTransformServiceImpl {
         .orElseGet(Collections::emptySet)
         .forEach(
             resourceKeyId -> {
-              final String key = resourceKeyId.getKey();
+              final String keyValue = resourceKeyId.getKey();
+              final String key = StringUtils.isBlank(keyValue) ? KEY_IS_NOT_SET_PLACE_HOLDER : keyValue;
               final String id = resourceKeyId.getId();
-              if (isBlank(key)) {
-                throw new ReferenceTransformException(BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER);
+              if (!isBlank(key)) {
+                referenceIdToKeyCache.put(id, key);
               }
-              referenceIdToKeyCache.put(id, key);
             });
   }
 }
