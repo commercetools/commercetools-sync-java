@@ -44,12 +44,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
-import org.checkerframework.checker.nullness.Opt;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import javax.swing.text.html.Option;
 
 class StateServiceImplIT {
   private static final StateType STATE_TYPE = StateType.PRODUCT_STATE;
@@ -165,7 +162,7 @@ class StateServiceImplIT {
     assertThat(transition.getObj()).isNull();
 
     clearTransitions(CTP_TARGET_CLIENT, fetchState);
-    deleteStates(CTP_TARGET_CLIENT,Optional.of(TRANSITION_STATE_TYPE));
+    deleteStates(CTP_TARGET_CLIENT, Optional.of(TRANSITION_STATE_TYPE));
   }
 
   @Test
