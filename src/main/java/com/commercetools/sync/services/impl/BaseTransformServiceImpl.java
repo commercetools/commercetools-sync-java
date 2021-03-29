@@ -76,7 +76,8 @@ public class BaseTransformServiceImpl {
   @Nonnull
   protected Set<String> getNonCachedReferenceIds(@Nonnull final Set<String> referenceIds) {
     return referenceIds.stream()
-        .filter(id -> !referenceIdToKeyCache.containsKey(id))
+        .filter(id -> (!referenceIdToKeyCache.containsKey(id) ||
+            KEY_IS_NOT_SET_PLACE_HOLDER.equalsIgnoreCase(referenceIdToKeyCache.get(id))))
         .collect(toSet());
   }
 
@@ -88,9 +89,7 @@ public class BaseTransformServiceImpl {
               final String keyValue = resourceKeyId.getKey();
               final String key = StringUtils.isBlank(keyValue) ? KEY_IS_NOT_SET_PLACE_HOLDER : keyValue;
               final String id = resourceKeyId.getId();
-              if (!isBlank(key)) {
-                referenceIdToKeyCache.put(id, key);
-              }
+              referenceIdToKeyCache.put(id, key);
             });
   }
 }

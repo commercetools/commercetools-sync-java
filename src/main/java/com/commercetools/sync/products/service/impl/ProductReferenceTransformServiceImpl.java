@@ -364,7 +364,11 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
       @Nonnull final Product product, @Nonnull final Map<String, String> idToKey) {
 
     return getAllReferences(product).stream()
-        .filter(reference -> !idToKey.containsKey(getId(reference)))
+        .filter(reference -> {
+          String id = getId(reference);
+          return (!idToKey.containsKey(id) ||
+          KEY_IS_NOT_SET_PLACE_HOLDER.equalsIgnoreCase(referenceIdToKeyCache.get(id)));
+        })
         .collect(toSet());
   }
 
