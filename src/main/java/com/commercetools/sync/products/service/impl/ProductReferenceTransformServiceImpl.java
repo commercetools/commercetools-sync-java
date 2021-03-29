@@ -411,7 +411,7 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
     if (nonCachedProductIds.isEmpty()
         && nonCachedCategoryIds.isEmpty()
         && nonCachedProductTypeIds.isEmpty()) {
-      return fetchCustomObjectKeys(customObjectIds);
+      return fetchCustomObjectKeys(nonCachedCustomObjectIds);
     }
 
     List<List<String>> productIdsChunk = ChunkUtils.chunk(nonCachedProductIds, CHUNK_SIZE);
