@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 
-public class BaseTransformServiceImpl {
+public abstract class BaseTransformServiceImpl {
   /*
    * An id is a 36 characters long string. (i.e: 53c4a8b4-754f-4b95-b6f2-3e1e70e3d0c3) We
    * chunk them in 300 ids, we will have a query around 11.000 characters. Above this size it

@@ -1,5 +1,6 @@
 package com.commercetools.sync.products.service.impl;
 
+import static com.commercetools.sync.services.impl.BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -299,6 +300,90 @@ class ProductReferenceTransformServiceImplTest {
                         assertThat(categoryDraft.getKey()).isEqualTo("categoryKey1");
                       });
             });
+  }
+
+  @Test
+  void
+      transform_ProductWithProductTypeReferencesWithNullKey_ShouldReplaceReferencesKeyValueWithPlaceHolder() {
+    // preparation
+    final SphereClient sourceClient = mock(SphereClient.class);
+    final Map<String, String> cacheMap = new HashMap<>();
+    final ProductReferenceTransformService productReferenceTransformService =
+        new ProductReferenceTransformServiceImpl(sourceClient, cacheMap);
+    final List<Product> productPage =
+        asList(readObjectFromResource("product-with-unresolved-references.json", Product.class));
+
+    String jsonStringProductTypes =
+        "{\"results\":[{\"id\":\"cda0dbf7-b42e-40bf-8453-241d5b587f93\","
+            + "\"key\":"
+            + null
+            + "}]}";
+    final ResourceKeyIdGraphQlResult productTypesResult =
+        SphereJsonUtils.readObject(jsonStringProductTypes, ResourceKeyIdGraphQlResult.class);
+
+    when(sourceClient.execute(any(ResourceIdsGraphQlRequest.class)))
+        .thenReturn(CompletableFuture.completedFuture(productTypesResult));
+
+    // test
+    final List<ProductDraft> productsResolved =
+        productReferenceTransformService
+            .transformProductReferences(productPage)
+            .toCompletableFuture()
+            .join();
+
+    // assertions
+
+    final Optional<ProductDraft> productKey1 =
+        productsResolved.stream()
+            .filter(productDraft -> "productKeyResolved".equals(productDraft.getKey()))
+            .findFirst();
+
+    assertThat(productKey1)
+        .hasValueSatisfying(
+            productDraft ->
+                assertThat(productDraft.getProductType().getKey())
+                    .isEqualTo(KEY_IS_NOT_SET_PLACE_HOLDER));
+  }
+
+  @Test
+  void
+      transform_ProductWithProductTypeReferencesWithNullKeyAlreadyInCache_ShouldFetchAndReplaceReferencesKeyValue() {
+    // preparation
+    final SphereClient sourceClient = mock(SphereClient.class);
+    final Map<String, String> cacheMap = new HashMap<>();
+    cacheMap.put("cda0dbf7-b42e-40bf-8453-241d5b587f93", KEY_IS_NOT_SET_PLACE_HOLDER);
+    final ProductReferenceTransformService productReferenceTransformService =
+        new ProductReferenceTransformServiceImpl(sourceClient, cacheMap);
+    final List<Product> productPage =
+        asList(readObjectFromResource("product-with-unresolved-references.json", Product.class));
+
+    String jsonStringProductTypes =
+        "{\"results\":[{\"id\":\"cda0dbf7-b42e-40bf-8453-241d5b587f93\","
+            + "\"key\":\"productTypeKey\"}]}";
+    final ResourceKeyIdGraphQlResult productTypesResult =
+        SphereJsonUtils.readObject(jsonStringProductTypes, ResourceKeyIdGraphQlResult.class);
+
+    when(sourceClient.execute(any(ResourceIdsGraphQlRequest.class)))
+        .thenReturn(CompletableFuture.completedFuture(productTypesResult));
+
+    // test
+    final List<ProductDraft> productsResolved =
+        productReferenceTransformService
+            .transformProductReferences(productPage)
+            .toCompletableFuture()
+            .join();
+
+    // assertions
+
+    final Optional<ProductDraft> productKey1 =
+        productsResolved.stream()
+            .filter(productDraft -> "productKeyResolved".equals(productDraft.getKey()))
+            .findFirst();
+
+    assertThat(productKey1)
+        .hasValueSatisfying(
+            productDraft ->
+                assertThat(productDraft.getProductType().getKey()).isEqualTo("productTypeKey"));
   }
 
   @Test

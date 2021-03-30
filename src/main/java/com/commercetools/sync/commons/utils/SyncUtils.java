@@ -66,32 +66,6 @@ public final class SyncUtils {
   }
 
   /**
-   * Given a reference to a resource of type {@code T}, this method checks if the reference is
-   * expanded. If it is, then it return the resource identifier with key. Otherwise, it returns the
-   * resource identifier with id. Since, the reference could be {@code null}, this method could also
-   * return null if the reference was not expanded.
-   *
-   * @param reference the reference of the resource to check if it's expanded.
-   * @param <T> the type of the resource.
-   * @return returns the resource identifier with key if the {@code reference} was expanded.
-   *     Otherwise, it returns the resource identifier with id. TODO: Should Remove this method when
-   *     all the resources adapts reference resolution with Cache(CTPI-443).
-   */
-  @Nullable
-  public static <T extends WithKey> ResourceIdentifier<T> getResourceIdentifierWithKey(
-      @Nullable final Reference<T> reference) {
-
-    if (reference != null) {
-      if (reference.getObj() != null) {
-        return ResourceIdentifier.ofKey(reference.getObj().getKey());
-      }
-      return ResourceIdentifier.ofId(reference.getId());
-    }
-
-    return null;
-  }
-
-  /**
    * Given a reference to a resource of type {@code T}, this method checks if the reference id is
    * cached in the map. If it is, then it return the resource identifier with key. Otherwise, it
    * returns the resource identifier with id. Since, the reference could be {@code null}, this
