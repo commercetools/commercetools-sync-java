@@ -63,8 +63,8 @@ public class ProductTypeReferenceTransformServiceImpl extends BaseTransformServi
                 productType.getAttributes().stream()
                     .filter(Objects::nonNull)
                     .map(AttributeDefinition::getAttributeType)
-                    .map(attributeType -> getNestedAttributeIds(attributeType))
-                    .filter(id -> StringUtils.isNotBlank(id))
+                    .map(this::getNestedAttributeIds)
+                    .filter(StringUtils::isNotBlank)
                     .collect(toList()))
         .flatMap(Collection::stream)
         .collect(toSet());
@@ -80,7 +80,7 @@ public class ProductTypeReferenceTransformServiceImpl extends BaseTransformServi
     } else if (attributeType instanceof SetAttributeType) {
       final AttributeType elementType = ((SetAttributeType) attributeType).getElementType();
       if (elementType != null) {
-        getNestedAttributeIds(elementType);
+        return getNestedAttributeIds(elementType);
       }
     }
     return null;
