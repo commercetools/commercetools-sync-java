@@ -80,7 +80,7 @@ public abstract class BaseTransformServiceImpl {
         .filter(
             id ->
                 (!referenceIdToKeyCache.containsKey(id)
-                    || KEY_IS_NOT_SET_PLACE_HOLDER.equalsIgnoreCase(referenceIdToKeyCache.get(id))))
+                    || KEY_IS_NOT_SET_PLACE_HOLDER.equals(referenceIdToKeyCache.get(id))))
         .collect(toSet());
   }
 

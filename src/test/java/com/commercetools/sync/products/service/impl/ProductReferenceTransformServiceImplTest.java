@@ -3,9 +3,12 @@ package com.commercetools.sync.products.service.impl;
 import static com.commercetools.sync.services.impl.BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.commercetools.sync.commons.exceptions.ReferenceTransformException;
@@ -16,9 +19,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.SphereApiConfig;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.customobjects.CustomObject;
+import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import java.util.HashMap;
 import java.util.List;
@@ -125,6 +131,61 @@ class ProductReferenceTransformServiceImplTest {
                           assertThat(attribute.getValue().get("id").asText())
                               .isEqualTo("prodType1");
                         }));
+  }
+
+  @Test
+  void transform_WithNonCachedCustomObjectAttributeReference_ShouldFetchAndTransformProduct() {
+    // preparation
+    final SphereClient sourceClient = mock(SphereClient.class);
+    final Map<String, String> cacheMap = new HashMap<>();
+    final ProductReferenceTransformService productReferenceTransformService =
+        new ProductReferenceTransformServiceImpl(sourceClient, cacheMap);
+    final List<Product> productPage =
+        asList(readObjectFromResource("product-with-unresolved-references.json", Product.class));
+
+    String jsonStringProductTypes =
+        "{\"results\":[{\"id\":\"cda0dbf7-b42e-40bf-8453-241d5b587f93\","
+            + "\"key\":\"productTypeKey\"}]}";
+    final ResourceKeyIdGraphQlResult productTypesResult =
+        SphereJsonUtils.readObject(jsonStringProductTypes, ResourceKeyIdGraphQlResult.class);
+
+    when(sourceClient.execute(any(ResourceIdsGraphQlRequest.class)))
+        .thenReturn(CompletableFuture.completedFuture(productTypesResult));
+
+    mockAttributeCustomObjectReference(sourceClient);
+
+    // test
+    final List<ProductDraft> productsResolved =
+        productReferenceTransformService.transformProductReferences(productPage).join();
+
+    final Optional<ProductDraft> productKey1 =
+        productsResolved.stream()
+            .filter(productDraft -> "productKeyResolved".equals(productDraft.getKey()))
+            .findFirst();
+
+    assertThat(productKey1)
+        .hasValueSatisfying(
+            product ->
+                assertThat(product.getMasterVariant().getAttributes())
+                    .anySatisfy(
+                        attribute -> {
+                          assertThat(attribute.getName()).isEqualTo("customObjectReference");
+                        }));
+
+    verify(sourceClient, times(1)).execute(any(CustomObjectQuery.class));
+  }
+
+  private void mockAttributeCustomObjectReference(SphereClient sourceClient) {
+    final CustomObject<JsonNode> mockCustomObject = mock(CustomObject.class);
+    when(mockCustomObject.getId()).thenReturn("customObjectId1");
+    when(mockCustomObject.getKey()).thenReturn("customObjectKey1");
+    when(mockCustomObject.getContainer()).thenReturn("customObjectContainer");
+    final PagedQueryResult<CustomObject<JsonNode>> result = mock(PagedQueryResult.class);
+    when(result.getResults()).thenReturn(singletonList(mockCustomObject));
+
+    when(result.getResults()).thenReturn(asList(mockCustomObject));
+    when(sourceClient.execute(any(CustomObjectQuery.class)))
+        .thenReturn(CompletableFuture.completedFuture(result));
   }
 
   @Test
@@ -263,6 +324,8 @@ class ProductReferenceTransformServiceImplTest {
         .thenReturn(CompletableFuture.completedFuture(customerGroupResult))
         .thenReturn(CompletableFuture.completedFuture(customTypesResult));
 
+    mockAttributeCustomObjectReference(sourceClient);
+
     // test
     final List<ProductDraft> productsResolved =
         productReferenceTransformService
@@ -324,6 +387,8 @@ class ProductReferenceTransformServiceImplTest {
     when(sourceClient.execute(any(ResourceIdsGraphQlRequest.class)))
         .thenReturn(CompletableFuture.completedFuture(productTypesResult));
 
+    mockAttributeCustomObjectReference(sourceClient);
+
     // test
     final List<ProductDraft> productsResolved =
         productReferenceTransformService
@@ -365,6 +430,8 @@ class ProductReferenceTransformServiceImplTest {
 
     when(sourceClient.execute(any(ResourceIdsGraphQlRequest.class)))
         .thenReturn(CompletableFuture.completedFuture(productTypesResult));
+
+    mockAttributeCustomObjectReference(sourceClient);
 
     // test
     final List<ProductDraft> productsResolved =

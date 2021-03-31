@@ -45,7 +45,15 @@
             }
           }
         ],
-        "attributes": [],
+        "attributes": [
+          {
+            "name": "customObjectReference",
+            "value": {
+              "id": "customObjectId1",
+              "typeId": "key-value-document"
+            }
+          }
+        ],
         "assets": [
         ],
         "prices": [
