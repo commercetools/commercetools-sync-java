@@ -83,14 +83,38 @@ public class AttributeDefinitionReferenceResolver
       final SetAttributeType setAttributeType = (SetAttributeType) attributeType;
       final AttributeType elementType = setAttributeType.getElementType();
 
-      if (elementType instanceof NestedAttributeType) {
+      int maxDepth = 1;
+      AttributeType nestedAttributeType = elementType;
 
-        return resolveNestedTypeReference((NestedAttributeType) elementType)
-            .thenApply(SetAttributeType::of)
+      if (elementType instanceof SetAttributeType) {
+        nestedAttributeType = findMaxDepthOfSetAttributeType((SetAttributeType) elementType, ++maxDepth);
+      }
+      if (nestedAttributeType instanceof NestedAttributeType) {
+        final int totalMaxDepth = maxDepth;
+        return resolveNestedTypeReference((NestedAttributeType) nestedAttributeType)
+            .thenApply(
+                resolvedNestedAttributeType -> {
+                  SetAttributeType setAttributeTypeChain = SetAttributeType.of(resolvedNestedAttributeType);
+                  for (int i = 0; i < totalMaxDepth; i++) {
+                    setAttributeTypeChain = SetAttributeType.of(setAttributeTypeChain);
+                  }
+                  return setAttributeTypeChain;
+                })
             .thenApply(attributeDefinitionDraftBuilder::attributeType);
       }
     }
     return completedFuture(attributeDefinitionDraftBuilder);
+  }
+
+  private AttributeType findMaxDepthOfSetAttributeType(SetAttributeType setAttributeType, int maxDepth) {
+    final AttributeType elementType = setAttributeType.getElementType();
+    if (elementType instanceof SetAttributeType) {
+      return findMaxDepthOfSetAttributeType((SetAttributeType) elementType, ++maxDepth);
+    } else if(elementType instanceof NestedAttributeType) {
+      return elementType;
+    }
+
+    return null;
   }
 
   @Nonnull

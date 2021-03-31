@@ -29,6 +29,7 @@ import io.sphere.sdk.products.attributes.EnumAttributeType;
 import io.sphere.sdk.products.attributes.LocalizedEnumAttributeType;
 import io.sphere.sdk.products.attributes.LocalizedStringAttributeType;
 import io.sphere.sdk.products.attributes.NestedAttributeType;
+import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
@@ -142,13 +143,20 @@ public final class ProductTypeITUtils {
             .toCompletableFuture()
             .join();
 
-    final AttributeDefinition nestedTypeAttr1 =
-        AttributeDefinitionBuilder.of(
-                "nestedattr", ofEnglish("nestedattr"), NestedAttributeType.of(productType1))
-            .isSearchable(false)
+    final AttributeDefinitionDraft nestedTypeAttr1 =
+        AttributeDefinitionDraftBuilder.of(
+                AttributeDefinitionBuilder.of(
+                        "nestedattr",
+                        ofEnglish("nestedattr"),
+                        SetAttributeType.of(
+                            SetAttributeType.of(
+                                SetAttributeType.of(
+                                    SetAttributeType.of(NestedAttributeType.of(productType1))))))
+                    .build())
             // isSearchable=true is not supported for attribute type 'nested' and
-            // AttributeDefinitionBuilder sets
-            // it to true by default
+            // AttributeDefinitionBuilder sets it to
+            // true by default
+            .searchable(false)
             .build();
 
     final AttributeDefinition nestedTypeAttr2 =
