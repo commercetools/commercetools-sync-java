@@ -98,7 +98,7 @@ final List<InventoryEntryDraft> inventoryEntryDrafts = InventoryReferenceTransfo
 ````
 
 The cache here is used for a better performance. 
-Instead of expanding the references in the query for inventoryEntry resource. `InventoryReferenceTransformService` will execute a query to fetch key values for the Ids(nonCached) and store in cache. These cached id to key values then can be used by another resource for resolving its references instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
+Instead of expanding the references in the query for inventoryEntry resource. `InventoryReferenceTransformService` will execute a query to fetch key-id pairs and store in cache. These cached id to key values then can be used by another resource for resolving its references instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
 
 The [`InventoryReferenceResolutionUtils`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/inventories/utils/InventoryReferenceResolutionUtils.java) class now accepts the `cacheMap` and `inventoryEntries`, Then maps to `inventoryEntryDrafts` using cached id to key values.
 
