@@ -136,7 +136,7 @@ As soon, as the referenced parent Category draft is supplied to the sync, the dr
 ##### Syncing from a commercetools project
 
 When syncing from a source commercetools project, you can use [`transformCategoryReferences`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/categories/service/CategoryReferenceTransformService.html#transformCategoryReferences-java.util.List-)
-the method that transforms(resolves by querying and caching key values for Ids) and maps from a `Category` to `CategoryDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
+method that transforms(resolves by querying and caching key-id pairs) and maps from a `Category` to `CategoryDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
 // Build a CategoryQuery for fetching categories from a source CTP project without any references expanded for the sync:
