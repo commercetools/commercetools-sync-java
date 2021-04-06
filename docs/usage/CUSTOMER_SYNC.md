@@ -91,7 +91,7 @@ final List<Customer> customers =
 In order to transform and map the customer, 
 Initialize [`CustomerReferenceTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/customers/service/CustomerReferenceTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
 For cache implementation, you can refer an example class in the library - which implements the cache using caffeine library with an LRU (Last Recently Used) based cache eviction strategy[`InMemoryReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/InMemoryReferenceIdToKeyCache.java).
-Then call the transformCustomerReferences method with the `customers` parameter as shown below:
+Then call the `transformCustomerReferences` method with the `customers` parameter as shown below:
 
 ````java
 // Fetch(Id to key values for references) into the cache and map from Customer to CustomerDraft using cache with considering reference resolution.
