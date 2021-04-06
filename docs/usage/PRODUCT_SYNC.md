@@ -81,7 +81,7 @@ resource on the target commercetools project and the library will issue an updat
 ##### Syncing from a commercetools project
 
 When syncing from a source commercetools project, you can use [`transformProductReferences`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/products/service/ProductReferenceTransformService.html#transformProductReferences-java.util.List-)
-the method that transforms(resolves by querying and caching key values for Ids) and maps from a `Product` to `ProductDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
+ method that transforms(resolves by querying and caching key-id pairs) and maps from a `Product` to `ProductDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
 // Build a ProductQuery for fetching products from a source CTP project without any references expanded for the sync:
