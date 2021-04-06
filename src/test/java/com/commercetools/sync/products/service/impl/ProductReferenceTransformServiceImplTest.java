@@ -2,6 +2,7 @@ package com.commercetools.sync.products.service.impl;
 
 import static com.commercetools.sync.services.impl.BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
+import static io.sphere.sdk.products.ProductProjectionType.STAGED;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,6 +25,7 @@ import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import java.util.HashMap;
@@ -45,8 +47,8 @@ class ProductReferenceTransformServiceImplTest {
     final Map<String, String> cacheMap = new HashMap<>();
     final ProductReferenceTransformService productReferenceTransformService =
         new ProductReferenceTransformServiceImpl(sourceClient, cacheMap);
-    final List<Product> productPage =
-        asList(readObjectFromResource("product-key-4.json", Product.class));
+    final List<ProductProjection> productPage =
+        asList(readObjectFromResource("product-key-4.json", Product.class).toProjection(STAGED));
 
     String jsonStringProducts =
         "{\"results\":[{\"id\":\"53c4a8b4-754f-4b95-b6f2-3e1e70e3d0d2\",\"key\":\"prod1\"},"
@@ -140,8 +142,10 @@ class ProductReferenceTransformServiceImplTest {
     final Map<String, String> cacheMap = new HashMap<>();
     final ProductReferenceTransformService productReferenceTransformService =
         new ProductReferenceTransformServiceImpl(sourceClient, cacheMap);
-    final List<Product> productPage =
-        asList(readObjectFromResource("product-with-unresolved-references.json", Product.class));
+    final List<ProductProjection> productPage =
+        asList(
+            readObjectFromResource("product-with-unresolved-references.json", Product.class)
+                .toProjection(STAGED));
 
     String jsonStringProductTypes =
         "{\"results\":[{\"id\":\"cda0dbf7-b42e-40bf-8453-241d5b587f93\","
@@ -197,10 +201,10 @@ class ProductReferenceTransformServiceImplTest {
     final Map<String, String> cacheMap = new HashMap<>();
     final ProductReferenceTransformService productReferenceTransformService =
         new ProductReferenceTransformServiceImpl(sourceClient, cacheMap);
-    final List<Product> productPage =
+    final List<ProductProjection> productPage =
         asList(
-            readObjectFromResource("product-key-5.json", Product.class),
-            readObjectFromResource("product-key-6.json", Product.class));
+            readObjectFromResource("product-key-5.json", Product.class).toProjection(STAGED),
+            readObjectFromResource("product-key-6.json", Product.class).toProjection(STAGED));
 
     String jsonStringProducts =
         "{\"results\":[{\"id\":\"53c4a8b4-754f-4b95-b6f2-3e1e70e3d0c1\"," + "\"key\":\"prod1\"}]}";
@@ -271,8 +275,10 @@ class ProductReferenceTransformServiceImplTest {
     final Map<String, String> cacheMap = new HashMap<>();
     final ProductReferenceTransformService productReferenceTransformService =
         new ProductReferenceTransformServiceImpl(sourceClient, cacheMap);
-    final List<Product> productPage =
-        asList(readObjectFromResource("product-with-unresolved-references.json", Product.class));
+    final List<ProductProjection> productPage =
+        asList(
+            readObjectFromResource("product-with-unresolved-references.json", Product.class)
+                .toProjection(STAGED));
 
     String jsonStringProductTypes =
         "{\"results\":[{\"id\":\"cda0dbf7-b42e-40bf-8453-241d5b587f93\","
@@ -373,8 +379,10 @@ class ProductReferenceTransformServiceImplTest {
     final Map<String, String> cacheMap = new HashMap<>();
     final ProductReferenceTransformService productReferenceTransformService =
         new ProductReferenceTransformServiceImpl(sourceClient, cacheMap);
-    final List<Product> productPage =
-        asList(readObjectFromResource("product-with-unresolved-references.json", Product.class));
+    final List<ProductProjection> productPage =
+        asList(
+            readObjectFromResource("product-with-unresolved-references.json", Product.class)
+                .toProjection(STAGED));
 
     String jsonStringProductTypes =
         "{\"results\":[{\"id\":\"cda0dbf7-b42e-40bf-8453-241d5b587f93\","
@@ -419,8 +427,10 @@ class ProductReferenceTransformServiceImplTest {
     cacheMap.put("cda0dbf7-b42e-40bf-8453-241d5b587f93", KEY_IS_NOT_SET_PLACE_HOLDER);
     final ProductReferenceTransformService productReferenceTransformService =
         new ProductReferenceTransformServiceImpl(sourceClient, cacheMap);
-    final List<Product> productPage =
-        asList(readObjectFromResource("product-with-unresolved-references.json", Product.class));
+    final List<ProductProjection> productPage =
+        asList(
+            readObjectFromResource("product-with-unresolved-references.json", Product.class)
+                .toProjection(STAGED));
 
     String jsonStringProductTypes =
         "{\"results\":[{\"id\":\"cda0dbf7-b42e-40bf-8453-241d5b587f93\","
@@ -460,10 +470,10 @@ class ProductReferenceTransformServiceImplTest {
     final Map<String, String> cacheMap = new HashMap<>();
     final ProductReferenceTransformService productReferenceTransformService =
         new ProductReferenceTransformServiceImpl(sourceClient, cacheMap);
-    final List<Product> productPage =
+    final List<ProductProjection> productPage =
         asList(
-            readObjectFromResource("product-key-5.json", Product.class),
-            readObjectFromResource("product-key-6.json", Product.class));
+            readObjectFromResource("product-key-5.json", Product.class).toProjection(STAGED),
+            readObjectFromResource("product-key-6.json", Product.class).toProjection(STAGED));
 
     final BadGatewayException badGatewayException =
         new BadGatewayException("Failed Graphql request");

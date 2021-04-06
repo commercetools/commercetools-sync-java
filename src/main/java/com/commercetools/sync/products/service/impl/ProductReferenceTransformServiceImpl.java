@@ -26,6 +26,7 @@ import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductLike;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.producttypes.ProductType;
@@ -59,7 +60,7 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
   @Nonnull
   @Override
   public CompletableFuture<List<ProductDraft>> transformProductReferences(
-      @Nonnull final List<Product> products) {
+      @Nonnull final List<ProductProjection> products) {
 
     return replaceAttributeReferenceIdsWithKeys(products)
         .handle(
@@ -78,7 +79,7 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
 
   @Nonnull
   private CompletionStage<List<ProductDraft>> transformReferencesAndMapToProductDrafts(
-      @Nonnull final List<Product> products) {
+      @Nonnull final List<ProductProjection> products) {
 
     final List<CompletableFuture<Void>> transformReferencesToRunParallel = new ArrayList<>();
     transformReferencesToRunParallel.add(this.transformProductTypeReference(products));
@@ -96,7 +97,7 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
 
   @Nonnull
   private CompletableFuture<Void> transformProductTypeReference(
-      @Nonnull final List<Product> products) {
+      @Nonnull final List<ProductProjection> products) {
 
     final Set<String> productTypeIds =
         products.stream().map(ProductLike::getProductType).map(Reference::getId).collect(toSet());
@@ -106,7 +107,7 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
 
   @Nonnull
   private CompletableFuture<Void> transformTaxCategoryReference(
-      @Nonnull final List<Product> products) {
+      @Nonnull final List<ProductProjection> products) {
 
     final Set<String> taxCategoryIds =
         products.stream()
@@ -119,11 +120,12 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
   }
 
   @Nonnull
-  private CompletableFuture<Void> transformStateReference(@Nonnull final List<Product> products) {
+  private CompletableFuture<Void> transformStateReference(
+      @Nonnull final List<ProductProjection> products) {
 
     final Set<String> stateIds =
         products.stream()
-            .map(Product::getState)
+            .map(ProductProjection::getState)
             .filter(Objects::nonNull)
             .map(Reference::getId)
             .collect(toSet());
@@ -133,11 +135,11 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
 
   @Nonnull
   private CompletableFuture<Void> transformCategoryReference(
-      @Nonnull final List<Product> products) {
+      @Nonnull final List<ProductProjection> products) {
 
     final Set<String> categoryIds =
         products.stream()
-            .map(product -> product.getMasterData().getStaged().getCategories())
+            .map(product -> product.getCategories())
             .filter(Objects::nonNull)
             .map(
                 categories ->
@@ -150,11 +152,11 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
 
   @Nonnull
   private CompletableFuture<Void> transformPricesChannelReference(
-      @Nonnull final List<Product> products) {
+      @Nonnull final List<ProductProjection> products) {
 
     final Set<String> channelIds =
         products.stream()
-            .map(product -> product.getMasterData().getStaged().getAllVariants())
+            .map(product -> product.getAllVariants())
             .map(
                 productVariants ->
                     productVariants.stream()
@@ -176,7 +178,7 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
 
   @Nonnull
   private CompletableFuture<Void> transformCustomTypeReference(
-      @Nonnull final List<Product> products) {
+      @Nonnull final List<ProductProjection> products) {
 
     final Set<String> setOfTypeIds = new HashSet<>();
     setOfTypeIds.addAll(collectPriceCustomTypeIds(products));
@@ -185,9 +187,9 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
     return fetchAndFillReferenceIdToKeyCache(setOfTypeIds, GraphQlQueryResources.TYPES);
   }
 
-  private Set<String> collectPriceCustomTypeIds(@Nonnull List<Product> products) {
+  private Set<String> collectPriceCustomTypeIds(@Nonnull List<ProductProjection> products) {
     return products.stream()
-        .map(product -> product.getMasterData().getStaged().getAllVariants())
+        .map(product -> product.getAllVariants())
         .map(
             productVariants ->
                 productVariants.stream()
@@ -206,9 +208,9 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
         .collect(toSet());
   }
 
-  private Set<String> collectAssetCustomTypeIds(@Nonnull List<Product> products) {
+  private Set<String> collectAssetCustomTypeIds(@Nonnull List<ProductProjection> products) {
     return products.stream()
-        .map(product -> product.getMasterData().getStaged().getAllVariants())
+        .map(product -> product.getAllVariants())
         .map(
             productVariants ->
                 productVariants.stream()
@@ -229,11 +231,11 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
 
   @Nonnull
   private CompletableFuture<Void> transformPricesCustomerGroupReference(
-      @Nonnull final List<Product> products) {
+      @Nonnull final List<ProductProjection> products) {
 
     final Set<String> customerGroupIds =
         products.stream()
-            .map(product -> product.getMasterData().getStaged().getAllVariants())
+            .map(product -> product.getAllVariants())
             .map(
                 productVariants ->
                     productVariants.stream()
@@ -265,8 +267,8 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
    *     resolvable and already replaced with keys.
    */
   @Nonnull
-  public CompletionStage<List<Product>> replaceAttributeReferenceIdsWithKeys(
-      @Nonnull final List<Product> products) {
+  public CompletionStage<List<ProductProjection>> replaceAttributeReferenceIdsWithKeys(
+      @Nonnull final List<ProductProjection> products) {
 
     final List<JsonNode> allAttributeReferences = getAllReferences(products);
 
@@ -289,7 +291,7 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
             getIds(allCustomObjectReferences))
         .thenApply(
             idToKey -> {
-              final List<Product> validProducts =
+              final List<ProductProjection> validProducts =
                   filterOutWithIrresolvableReferences(products, idToKey);
               replaceReferences(getAllReferences(validProducts), idToKey);
               return validProducts;
@@ -297,7 +299,7 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
   }
 
   @Nonnull
-  private List<JsonNode> getAllReferences(@Nonnull final List<Product> products) {
+  private List<JsonNode> getAllReferences(@Nonnull final List<ProductProjection> products) {
     return products.stream()
         .map(this::getAllReferences)
         .flatMap(Collection::stream)
@@ -305,8 +307,8 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
   }
 
   @Nonnull
-  private List<JsonNode> getAllReferences(@Nonnull final Product product) {
-    final List<ProductVariant> allVariants = product.getMasterData().getStaged().getAllVariants();
+  private List<JsonNode> getAllReferences(@Nonnull final ProductProjection product) {
+    final List<ProductVariant> allVariants = product.getAllVariants();
     return getAttributeReferences(allVariants);
   }
 
@@ -347,8 +349,8 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
   }
 
   @Nonnull
-  private List<Product> filterOutWithIrresolvableReferences(
-      @Nonnull final List<Product> products, @Nonnull final Map<String, String> idToKey) {
+  private List<ProductProjection> filterOutWithIrresolvableReferences(
+      @Nonnull final List<ProductProjection> products, @Nonnull final Map<String, String> idToKey) {
 
     return products.stream()
         .filter(
@@ -361,7 +363,7 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
   }
 
   private Set<JsonNode> getIrresolvableReferences(
-      @Nonnull final Product product, @Nonnull final Map<String, String> idToKey) {
+      @Nonnull final ProductProjection product, @Nonnull final Map<String, String> idToKey) {
 
     return getAllReferences(product).stream()
         .filter(

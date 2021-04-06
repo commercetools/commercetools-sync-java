@@ -45,13 +45,13 @@ import io.sphere.sdk.models.TextInputHint;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
-import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
-import io.sphere.sdk.products.queries.ProductQuery;
+import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
@@ -93,7 +93,7 @@ class ProductSyncWithUnexpandedReferencesIT {
 
   private static final String RESOURCE_KEY = "foo";
   private static final String TYPE_KEY = "typeKey";
-  private static ProductQuery productQuery;
+  private static ProductProjectionQuery productQuery;
 
   private ProductSync productSync;
   private List<String> errorCallBackMessages;
@@ -286,7 +286,7 @@ class ProductSyncWithUnexpandedReferencesIT {
 
   @Test
   void run_WithSyncAsArgumentWithProductsArg_ShouldResolveReferencesAndExecuteProductSyncer() {
-    final List<Product> products =
+    final List<ProductProjection> products =
         CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts =

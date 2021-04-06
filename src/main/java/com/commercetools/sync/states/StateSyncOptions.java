@@ -15,7 +15,7 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class StateSyncOptions extends BaseSyncOptions<State, StateDraft> {
+public final class StateSyncOptions extends BaseSyncOptions<State, StateDraft, State> {
 
   StateSyncOptions(
       @Nonnull final SphereClient ctpClient,

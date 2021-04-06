@@ -16,7 +16,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public final class CartDiscountSyncOptions
-    extends BaseSyncOptions<CartDiscount, CartDiscountDraft> {
+    extends BaseSyncOptions<CartDiscount, CartDiscountDraft, CartDiscount> {
 
   CartDiscountSyncOptions(
       @Nonnull final SphereClient ctpClient,

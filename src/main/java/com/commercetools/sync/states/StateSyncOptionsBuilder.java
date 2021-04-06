@@ -7,7 +7,8 @@ import io.sphere.sdk.states.StateDraft;
 import javax.annotation.Nonnull;
 
 public final class StateSyncOptionsBuilder
-    extends BaseSyncOptionsBuilder<StateSyncOptionsBuilder, StateSyncOptions, State, StateDraft> {
+    extends BaseSyncOptionsBuilder<
+        StateSyncOptionsBuilder, StateSyncOptions, State, StateDraft, State> {
 
   public static final int BATCH_SIZE_DEFAULT = 50;
 

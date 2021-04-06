@@ -11,6 +11,8 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
+import io.sphere.sdk.products.ProductProjectionType;
 import io.sphere.sdk.products.commands.updateactions.SetCategoryOrderHint;
 import java.util.HashMap;
 import java.util.List;
@@ -19,8 +21,9 @@ import javax.annotation.Nonnull;
 import org.junit.jupiter.api.Test;
 
 class BuildSetCategoryOrderHintUpdateActionsTest {
-  private static final Product MOCK_OLD_PUBLISHED_PRODUCT =
-      readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
+  private static final ProductProjection MOCK_OLD_PUBLISHED_PRODUCT =
+      readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class)
+          .toProjection(ProductProjectionType.STAGED);
 
   @Test
   void buildSetCategoryOrderHintUpdateActions_WithDifferentStagedValues_ShouldBuildUpdateAction() {
@@ -58,7 +61,7 @@ class BuildSetCategoryOrderHintUpdateActionsTest {
   }
 
   private List<UpdateAction<Product>> getSetCategoryOrderHintUpdateActions(
-      @Nonnull final Product oldProduct,
+      @Nonnull final ProductProjection oldProduct,
       @Nonnull final CategoryOrderHints newProductCategoryOrderHints) {
     final ProductDraft newProductDraft = mock(ProductDraft.class);
     when(newProductDraft.getCategoryOrderHints()).thenReturn(newProductCategoryOrderHints);

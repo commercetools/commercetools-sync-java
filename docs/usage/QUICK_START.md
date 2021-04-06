@@ -57,9 +57,9 @@ implementation 'com.commercetools:commercetools-sync-java:4.0.1'
  final Logger logger = LoggerFactory.getLogger(MySync.class);
  final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder
                                  .of(sphereClient)
-                                 .errorCallback((syncException, draft, product, updateActions) -> 
+                                 .errorCallback((syncException, draft, productProjection, updateActions) -> 
                                     logger.error(syncException.getMessage(), syncException))
-                                 .warningCallback((exception, oldResource, newResources) -> 
+                                 .warningCallback((exception, oldProductProjection, newResources) -> 
                                     logger.warn(exception.getMessage(), exception))
                                  .build();
  ```

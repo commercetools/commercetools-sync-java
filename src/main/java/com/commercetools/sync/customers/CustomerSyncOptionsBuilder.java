@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 
 public final class CustomerSyncOptionsBuilder
     extends BaseSyncOptionsBuilder<
-        CustomerSyncOptionsBuilder, CustomerSyncOptions, Customer, CustomerDraft> {
+        CustomerSyncOptionsBuilder, CustomerSyncOptions, Customer, CustomerDraft, Customer> {
   public static final int BATCH_SIZE_DEFAULT = 50;
 
   private CustomerSyncOptionsBuilder(@Nonnull final SphereClient ctpClient) {
