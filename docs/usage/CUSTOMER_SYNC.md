@@ -70,7 +70,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 ##### Syncing from a commercetools project
 
 When syncing from a source commercetools project, you can use [`transformCustomerReferences`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/customers/service/CustomerReferenceTransformService.html#transformCustomerReferences-java.util.List-)
-the method that transforms(resolves by querying and caching key values for Ids) and maps from a `Customer` to `CustomerDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
+ method that transforms(resolves by querying and caching key-id pairs) and maps from a `Customer` to `CustomerDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
 // Build a CustomerQuery for fetching customers from a source CTP project without any references expanded for the sync:
