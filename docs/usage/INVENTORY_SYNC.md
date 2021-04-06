@@ -68,27 +68,39 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`mapToInventoryEntryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/inventories/utils/InventoryReferenceResolutionUtils.html#mapToInventoryEntryDrafts-java.util.List-)
-the method that maps from an `InventoryEntry` to `InventoryEntryDraft` in order to make them ready for reference resolution by the sync, for example: 
+When syncing from a source commercetools project, you can use [`transformInventoryReferences`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/inventories/service/InventoryReferenceTransformService.html#transformInventoryReferences-java.util.List-)
+the method that transforms(resolves by querying and caching key values for Ids) and maps from a `InventoryEntry` to `InventoryEntryDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
-// Build an InventoryEntryQuery for fetching inventories from a source CTP project with all the needed references expanded for the sync
-final InventoryEntryQuery inventoryEntryQueryWithReferenceExpanded = InventoryReferenceResolutionUtils.buildInventoryQuery();
+// Build an InventoryEntryQuery for fetching inventories from a source CTP project without any references expanded for the sync:
+final InventoryEntryQuery inventoryEntryQueryWithReferences = InventoryReferenceResolutionUtils.buildInventoryQuery();
 
 // Query all inventories (NOTE this is just for example, please adjust your logic)
 final List<InventoryEntry> inventoryEntries =
     CtpQueryUtils
-        .queryAll(sphereClient, inventoryEntryQueryWithReferenceExpanded, Function.identity())
+        .queryAll(sphereClient, inventoryEntryQueryWithReferences, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
             .stream()
             .flatMap(List::stream)
             .collect(Collectors.toList()))
         .toCompletableFuture()
         .join();
-
-// Mapping from InventoryEntry to InventoryEntryDraft with considering reference resolution.
-final List<InventoryEntryDraft> inventoryEntryDrafts = InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts(inventoryEntries);
 ````
+
+In order to transform and map the inventoryEntry, 
+Initialize [`InventoryReferenceTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/inventories/service/InventoryReferenceTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
+For cache implementation, you can refer an example class in the library - which implements the cache using caffeine library with an LRU based cache eviction strategy[`InMemoryReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/InMemoryReferenceIdToKeyCache.java).
+Then call the transformInventoryReferences method with the `inventoryEntries` parameter as shown below:
+
+````java
+// Fetch(Id to key values for references) into the cache and map from InventoryEntry to InventoryEntryDraft using cache with considering reference resolution.
+final List<InventoryEntryDraft> inventoryEntryDrafts = InventoryReferenceTransformService.transformInventoryReferences(inventoryEntries);
+````
+
+The cache here is used for a better performance. 
+Instead of expanding the references in the query for inventoryEntry resource. `InventoryReferenceTransformService` will execute a query to fetch key values for the Ids(nonCached) and store in cache. These cached id to key values then can be used by another resource for resolving its references instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
+
+The [`InventoryReferenceResolutionUtils`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/inventories/utils/InventoryReferenceResolutionUtils.java) class now accepts the `cacheMap` and `inventoryEntries`, Then maps to `inventoryEntryDrafts` using cached id to key values.
 
 ##### Syncing from an external resource
 

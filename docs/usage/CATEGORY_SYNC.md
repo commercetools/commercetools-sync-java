@@ -135,27 +135,39 @@ As soon, as the referenced parent Category draft is supplied to the sync, the dr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`mapToCategoryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/categories/utils/CategoryReferenceResolutionUtils.html#mapToCategoryDrafts-java.util.List-)
-method that maps from a `Category` to `CategoryDraft` in order to make them ready for reference resolution by the sync, for example: 
+When syncing from a source commercetools project, you can use [`transformCategoryReferences`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/categories/service/CategoryReferenceTransformService.html#transformCategoryReferences-java.util.List-)
+the method that transforms(resolves by querying and caching key values for Ids) and maps from a `Category` to `CategoryDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
-// Build a CategoryQuery for fetching categories from a source CTP project with all the needed references expanded for the sync
-final CategoryQuery categoryQueryWithReferenceExpanded = CategoryReferenceResolutionUtils.buildCategoryQuery();
+// Build a CategoryQuery for fetching categories from a source CTP project without any references expanded for the sync:
+final CategoryQuery categoryQueryWithReferences = CategoryReferenceResolutionUtils.buildCategoryQuery();
 
 // Query all categories (NOTE this is just for example, please adjust your logic)
 final List<Category> categories =
     CtpQueryUtils
-        .queryAll(sphereClient, categoryQueryWithReferenceExpanded, Function.identity())
+        .queryAll(sphereClient, categoryQueryWithReferences, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
             .stream()
             .flatMap(List::stream)
             .collect(Collectors.toList()))
         .toCompletableFuture()
         .join();
-
-// Mapping from Category to CategoryDraft with considering reference resolution.
-final List<CategoryDraft> categoryDrafts = CategoryReferenceResolutionUtils.mapToCategoryDrafts(categories);
 ````
+
+In order to transform and map the category, 
+Initialize [`CategoryReferenceTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/categories/service/CategoryReferenceTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
+For cache implementation, you can refer an example class in the library - which implements the cache using caffeine library with an LRU based cache eviction strategy[`InMemoryReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/InMemoryReferenceIdToKeyCache.java).
+Then call the transformCategoryReferences method with the `categories` parameter as shown below:
+
+````java
+// Fetch(Id to key values for references) into the cache and map from Category to CategoryDraft using cache with considering reference resolution.
+final List<CategoryDraft> categoryDrafts = CategoryReferenceTransformService.transformCategoryReferences(categories);
+````
+
+The cache here is used for a better performance. 
+Instead of expanding the references in the query for category resource. `CategoryReferenceTransformService` will execute a query to fetch key values for the Ids(nonCached) and store in cache. These cached id to key values then can be used by another resource for resolving its references instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
+
+The [`CategoryReferenceResolutionUtils`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/categories/utils/CategoryReferenceResolutionUtils.java) class now accepts the `cacheMap` and `categories`, Then maps to `categoryDrafts` using cached id to key values.
 
 ##### Syncing from an external resource
 

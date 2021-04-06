@@ -73,27 +73,39 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`mapToShoppingListDraft`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/shoppinglists/utils/ShoppingListReferenceResolutionUtils.html#mapToShoppingListDrafts-java.util.List-)
-the method that maps from a `ShoppingList` to `ShoppingListDraft` to make them ready for reference resolution by the shopping list sync, for example: 
+When syncing from a source commercetools project, you can use [`transformShoppingListReferences`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/shoppinglists/service/ShoppingListReferenceTransformService.html#transformShoppingListReferences-java.util.List-)
+the method that transforms(resolves by querying and caching key values for Ids) and maps from a `ShoppingList` to `ShoppingListDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
-// Build a ShoppingListQuery for fetching shopping lists from a source CTP project with all the needed references expanded for the sync
-final ShoppingListQuery shoppingListQueryWithReferenceExpanded = ShoppingListReferenceResolutionUtils.buildShoppingListQuery();
+// Build an ShoppingListQuery for fetching shopping lists from a source CTP project without any references expanded for the sync:
+final ShoppingListQuery shoppingListQueryWithReferences = ShoppingListReferenceResolutionUtils.buildShoppingListQuery();
 
 // Query all shopping lists (NOTE this is just for example, please adjust your logic)
 final List<ShoppingList> shoppingLists =
     CtpQueryUtils
-        .queryAll(sphereClient, shoppingListQueryWithReferenceExpanded, Function.identity())
+        .queryAll(sphereClient, shoppingListQueryWithReferences, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
             .stream()
             .flatMap(List::stream)
             .collect(Collectors.toList()))
         .toCompletableFuture()
         .join();
-
-// Mapping from ShoppingList to ShoppingListDraft with considering reference resolution.
-final List<ShoppingListDraft> shoppingListDrafts = ShoppingListReferenceResolutionUtils.mapToShoppingListDrafts(shoppingLists);
 ````
+
+In order to transform and map the shoppingList, 
+Initialize [`ShoppingListReferenceTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/shoppinglists/service/ShoppingListReferenceTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
+For cache implementation, you can refer an example class in the library - which implements the cache using caffeine library with an LRU based cache eviction strategy[`InMemoryReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/InMemoryReferenceIdToKeyCache.java).
+Then call the transformShoppingListReferences method with the `shoppingLists` parameter as shown below:
+
+````java
+// Fetch(Id to key values for references) into the cache and map from ShoppingList to ShoppingListDraft using cache with considering reference resolution.
+final List<ShoppingListDraft> shoppingListDrafts = ShoppingListReferenceTransformService.transformShoppingListReferences(shoppingLists);
+````
+
+The cache here is used for a better performance. 
+Instead of expanding the references in the query for shoppingList resource. `ShoppingListReferenceTransformService` will execute a query to fetch key values for the Ids(nonCached) and store in cache. These cached id to key values then can be used by another resource for resolving its references instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
+
+The [`ShoppingListReferenceResolutionUtils`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/shoppinglists/utils/ShoppingListReferenceResolutionUtils.java) class now accepts the `cacheMap` and `shoppingLists`, Then maps to `shoppingListDrafts` using cached id to key values.
 
 ##### Syncing from an external resource
 

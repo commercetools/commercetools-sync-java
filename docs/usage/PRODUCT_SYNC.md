@@ -80,27 +80,41 @@ resource on the target commercetools project and the library will issue an updat
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`mapToProductDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/products/utils/ProductReferenceResolutionUtils.html#mapToProductDrafts-java.util.List-)
-the method that maps from a `Product` to `ProductDraft` in order to make them ready for reference resolution by the sync, for example: 
+When syncing from a source commercetools project, you can use [`transformProductReferences`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/products/service/ProductReferenceTransformService.html#transformProductReferences-java.util.List-)
+the method that transforms(resolves by querying and caching key values for Ids) and maps from a `Product` to `ProductDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
-// Build a ProductQuery for fetching products from a source CTP project with all the needed references expanded for the sync:
-final ProductQuery productQueryWithReferenceExpanded = ProductReferenceResolutionUtils.buildProductQuery();
+// Build a ProductQuery for fetching products from a source CTP project without any references expanded for the sync:
+final ProductQuery productQueryWithReferences = ProductReferenceResolutionUtils.buildProductQuery();
 
 // Query all products (NOTE this is only for example, please adjust your logic)
 final List<Product> products =
     CtpQueryUtils
-        .queryAll(sphereClient, productQueryWithReferenceExpanded, Function.identity())
+        .queryAll(sphereClient, productQueryWithReferences, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
             .stream()
             .flatMap(List::stream)
             .collect(Collectors.toList()))
         .toCompletableFuture()
          .join();
-
-// Mapping from Product to ProductDraft with considering reference resolution.
-final List<ProductDraft> productDrafts = ProductReferenceResolutionUtils.mapToProductDrafts(products);
 ````
+
+In order to transform and map the product, 
+Initialize [`ProductTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/products/service/ProductReferenceTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
+For cache implementation, you can refer an example class in the library - which implements the cache using caffeine library with an LRU based cache eviction strategy[`InMemoryReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/InMemoryReferenceIdToKeyCache.java).
+Then call the transformProductReferences method with the `products` parameter as shown below:
+
+````java
+
+// Fetch(Id to key values for references) into the cache and map from Product to ProductDraft using cache with considering reference resolution.
+final List<ProductDraft> productDrafts = ProductTransformService.transformProductReferences(products);
+````
+
+The cache here is used for a better performance. 
+Instead of expanding the references in the query for product resource. `ProductTransformService` will execute a query to fetch key values for the Ids(nonCached) and store in cache. These cached id to key values then can be used by another resource for resolving its references instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
+
+The [`ProductReferenceResolutionUtils`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/products/utils/ProductReferenceResolutionUtils.java) class now accepts the `cacheMap` and `products`, Then maps to `productDrafts` using cached id to key values. 
+
 ##### Syncing from an external resource
 
 - When syncing from an external resource, `ResourceIdentifier`s with their `key`s have to be supplied as following example:
