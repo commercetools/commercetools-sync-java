@@ -20,6 +20,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import java.util.Collections;
 import java.util.List;
@@ -72,7 +73,10 @@ class ProductSyncOptionsBuilderTest {
   @Test
   void beforeUpdateCallback_WithFilterAsCallback_ShouldSetCallback() {
     final TriFunction<
-            List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
+            List<UpdateAction<Product>>,
+            ProductDraft,
+            ProductProjection,
+            List<UpdateAction<Product>>>
         beforeUpdateCallback = (updateActions, newProduct, oldProduct) -> emptyList();
     productSyncOptionsBuilder.beforeUpdateCallback(beforeUpdateCallback);
 
@@ -91,7 +95,10 @@ class ProductSyncOptionsBuilderTest {
   @Test
   public void errorCallBack_WithCallBack_ShouldSetCallBack() {
     final QuadConsumer<
-            SyncException, Optional<ProductDraft>, Optional<Product>, List<UpdateAction<Product>>>
+            SyncException,
+            Optional<ProductDraft>,
+            Optional<ProductProjection>,
+            List<UpdateAction<Product>>>
         mockErrorCallback = (exception, newDraft, old, actions) -> {};
     productSyncOptionsBuilder.errorCallback(mockErrorCallback);
 
@@ -101,7 +108,7 @@ class ProductSyncOptionsBuilderTest {
 
   @Test
   public void warningCallBack_WithCallBack_ShouldSetCallBack() {
-    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>>
+    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
         mockWarningCallBack = (exception, newDraft, old) -> {};
     productSyncOptionsBuilder.warningCallback(mockWarningCallBack);
 
@@ -157,14 +164,17 @@ class ProductSyncOptionsBuilderTest {
         Collections.singletonList(ChangeName.of(ofEnglish("name")));
     final List<UpdateAction<Product>> filteredList =
         productSyncOptions.applyBeforeUpdateCallback(
-            updateActions, mock(ProductDraft.class), mock(Product.class));
+            updateActions, mock(ProductDraft.class), mock(ProductProjection.class));
     assertThat(filteredList).isSameAs(updateActions);
   }
 
   @Test
   void applyBeforeUpdateCallBack_WithNullReturnCallback_ShouldReturnEmptyList() {
     final TriFunction<
-            List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
+            List<UpdateAction<Product>>,
+            ProductDraft,
+            ProductProjection,
+            List<UpdateAction<Product>>>
         beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> null;
     final ProductSyncOptions productSyncOptions =
         ProductSyncOptionsBuilder.of(CTP_CLIENT).beforeUpdateCallback(beforeUpdateCallback).build();
@@ -174,14 +184,17 @@ class ProductSyncOptionsBuilderTest {
         Collections.singletonList(ChangeName.of(ofEnglish("name")));
     final List<UpdateAction<Product>> filteredList =
         productSyncOptions.applyBeforeUpdateCallback(
-            updateActions, mock(ProductDraft.class), mock(Product.class));
+            updateActions, mock(ProductDraft.class), mock(ProductProjection.class));
     assertThat(filteredList).isNotEqualTo(updateActions);
     assertThat(filteredList).isEmpty();
   }
 
   private interface MockTriFunction
       extends TriFunction<
-          List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>> {}
+          List<UpdateAction<Product>>,
+          ProductDraft,
+          ProductProjection,
+          List<UpdateAction<Product>>> {}
 
   @Test
   void applyBeforeUpdateCallBack_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
@@ -195,7 +208,7 @@ class ProductSyncOptionsBuilderTest {
     final List<UpdateAction<Product>> updateActions = emptyList();
     final List<UpdateAction<Product>> filteredList =
         productSyncOptions.applyBeforeUpdateCallback(
-            updateActions, mock(ProductDraft.class), mock(Product.class));
+            updateActions, mock(ProductDraft.class), mock(ProductProjection.class));
 
     assertThat(filteredList).isEmpty();
     verify(beforeUpdateCallback, never()).apply(any(), any(), any());
@@ -204,7 +217,10 @@ class ProductSyncOptionsBuilderTest {
   @Test
   void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
     final TriFunction<
-            List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
+            List<UpdateAction<Product>>,
+            ProductDraft,
+            ProductProjection,
+            List<UpdateAction<Product>>>
         beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> emptyList();
     final ProductSyncOptions productSyncOptions =
         ProductSyncOptionsBuilder.of(CTP_CLIENT).beforeUpdateCallback(beforeUpdateCallback).build();
@@ -214,7 +230,7 @@ class ProductSyncOptionsBuilderTest {
         Collections.singletonList(ChangeName.of(ofEnglish("name")));
     final List<UpdateAction<Product>> filteredList =
         productSyncOptions.applyBeforeUpdateCallback(
-            updateActions, mock(ProductDraft.class), mock(Product.class));
+            updateActions, mock(ProductDraft.class), mock(ProductProjection.class));
     assertThat(filteredList).isNotEqualTo(updateActions);
     assertThat(filteredList).isEmpty();
   }

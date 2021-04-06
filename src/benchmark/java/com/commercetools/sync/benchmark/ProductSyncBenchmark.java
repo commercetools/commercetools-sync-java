@@ -34,6 +34,7 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
@@ -83,15 +84,19 @@ class ProductSyncBenchmark {
 
   private ProductSyncOptions buildSyncOptions() {
     final QuadConsumer<
-            SyncException, Optional<ProductDraft>, Optional<Product>, List<UpdateAction<Product>>>
+            SyncException,
+            Optional<ProductDraft>,
+            Optional<ProductProjection>,
+            List<UpdateAction<Product>>>
         errorCallback =
             (exception, newResource, oldResource, updateActions) -> {
               errorCallBackMessages.add(exception.getMessage());
               errorCallBackExceptions.add(exception.getCause());
             };
-    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallback =
-        (exception, newResource, oldResource) ->
-            warningCallBackMessages.add(exception.getMessage());
+    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
+        warningCallback =
+            (exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage());
 
     return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
         .errorCallback(errorCallback)

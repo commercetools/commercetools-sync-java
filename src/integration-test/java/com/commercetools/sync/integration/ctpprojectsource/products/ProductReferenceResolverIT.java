@@ -34,10 +34,10 @@ import com.commercetools.sync.products.service.ProductReferenceTransformService;
 import com.commercetools.sync.products.service.impl.ProductReferenceTransformServiceImpl;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
-import io.sphere.sdk.products.queries.ProductQuery;
+import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateType;
@@ -57,7 +57,7 @@ class ProductReferenceResolverIT {
 
   private static TaxCategory oldTaxCategory;
   private static State oldProductState;
-  private static ProductQuery productQuery;
+  private static ProductProjectionQuery productQuery;
 
   private static List<Reference<Category>> categoryReferencesWithIds;
   private ProductSync productSync;
@@ -153,7 +153,7 @@ class ProductReferenceResolverIT {
             createRandomCategoryOrderHints(categoryReferencesWithIds));
     CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
 
-    final List<Product> products =
+    final List<ProductProjection> products =
         CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts =
@@ -183,7 +183,7 @@ class ProductReferenceResolverIT {
             createRandomCategoryOrderHints(categoryReferencesWithIds));
     CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
 
-    final List<Product> products =
+    final List<ProductProjection> products =
         CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts =

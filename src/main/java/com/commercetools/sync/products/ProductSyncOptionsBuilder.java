@@ -4,11 +4,12 @@ import com.commercetools.sync.commons.BaseSyncOptionsBuilder;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import javax.annotation.Nonnull;
 
 public final class ProductSyncOptionsBuilder
     extends BaseSyncOptionsBuilder<
-        ProductSyncOptionsBuilder, ProductSyncOptions, Product, ProductDraft> {
+        ProductSyncOptionsBuilder, ProductSyncOptions, ProductProjection, ProductDraft, Product> {
   public static final int BATCH_SIZE_DEFAULT = 30;
   private SyncFilter syncFilter;
   static final boolean ENSURE_CHANNELS_DEFAULT = false;

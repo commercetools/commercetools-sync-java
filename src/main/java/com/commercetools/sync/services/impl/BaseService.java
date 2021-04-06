@@ -60,7 +60,7 @@ abstract class BaseService<
   final S syncOptions;
   protected final Cache<String, String> keyToIdCache;
 
-  private static final int MAXIMUM_ALLOWED_UPDATE_ACTIONS = 500;
+  protected static final int MAXIMUM_ALLOWED_UPDATE_ACTIONS = 500;
   static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
   /*
    * To be more practical, considering 41 characters as an average for key and sku fields

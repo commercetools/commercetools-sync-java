@@ -270,7 +270,6 @@ public final class CategoryUpdateActionUtils {
 
     try {
       return AssetsUpdateActionUtils.buildAssetsUpdateActions(
-          oldCategory,
           newCategory,
           oldCategory.getAssets(),
           newCategory.getAssets(),

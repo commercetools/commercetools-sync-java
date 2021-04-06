@@ -41,6 +41,8 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductProjection;
+import io.sphere.sdk.products.ProductProjectionType;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.attributes.Attribute;
@@ -319,8 +321,10 @@ class VariantReferenceResolutionUtilsTest {
   @Test
   void
       replaceAttributesReferencesIdsWithKeys_WithAttributesWithNoReferences_ShouldNotChangeAttributes() {
-    final Product product = readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
-    final ProductVariant masterVariant = product.getMasterData().getStaged().getMasterVariant();
+    final ProductProjection product =
+        readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class)
+            .toProjection(ProductProjectionType.STAGED);
+    final ProductVariant masterVariant = product.getMasterVariant();
     final List<AttributeDraft> replacedDrafts =
         replaceAttributesReferencesIdsWithKeys(masterVariant, idToKeyValueMap);
     replacedDrafts.forEach(

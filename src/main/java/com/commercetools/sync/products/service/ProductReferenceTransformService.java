@@ -2,6 +2,7 @@ package com.commercetools.sync.products.service;
 
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
@@ -27,5 +28,6 @@ public interface ProductReferenceTransformService {
    *     references resolved and already replaced with keys.
    */
   @Nonnull
-  CompletableFuture<List<ProductDraft>> transformProductReferences(@Nonnull List<Product> products);
+  CompletableFuture<List<ProductDraft>> transformProductReferences(
+      @Nonnull List<ProductProjection> products);
 }

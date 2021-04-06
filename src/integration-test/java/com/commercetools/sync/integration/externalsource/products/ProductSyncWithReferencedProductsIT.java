@@ -30,6 +30,7 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.Attribute;
@@ -95,15 +96,16 @@ class ProductSyncWithReferencedProductsIT {
   }
 
   private ProductSyncOptions buildSyncOptions() {
-    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallback =
-        (syncException, productDraft, product) ->
-            warningCallBackMessages.add(syncException.getMessage());
+    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
+        warningCallback =
+            (syncException, productDraft, product) ->
+                warningCallBackMessages.add(syncException.getMessage());
 
     return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
         .errorCallback(
             (syncException, draft, product, updateActions) ->
                 collectErrors(syncException.getMessage(), syncException))
-        .beforeUpdateCallback(this::collectActions)
+        .beforeUpdateCallback((actions1, productDraft, product1) -> collectActions(actions1))
         .warningCallback(warningCallback)
         .build();
   }
@@ -115,9 +117,7 @@ class ProductSyncWithReferencedProductsIT {
   }
 
   private List<UpdateAction<Product>> collectActions(
-      @Nonnull final List<UpdateAction<Product>> actions,
-      @Nonnull final ProductDraft productDraft,
-      @Nonnull final Product product) {
+      @Nonnull final List<UpdateAction<Product>> actions) {
     this.actions.addAll(actions);
     return actions;
   }

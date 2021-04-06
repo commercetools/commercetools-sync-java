@@ -15,7 +15,7 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class CustomerSyncOptions extends BaseSyncOptions<Customer, CustomerDraft> {
+public final class CustomerSyncOptions extends BaseSyncOptions<Customer, CustomerDraft, Customer> {
 
   CustomerSyncOptions(
       @Nonnull final SphereClient ctpClient,
