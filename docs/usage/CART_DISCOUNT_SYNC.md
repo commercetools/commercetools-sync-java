@@ -89,7 +89,7 @@ final List<CartDiscount> cartDiscounts =
 In order to transform and map the cartDiscount, 
 Initialize [`CartDiscountReferenceTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/cartdiscounts/service/CartDiscountReferenceTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
 For cache implementation, you can refer an example class in the library - which implements the cache using caffeine library with an LRU based cache eviction strategy[`InMemoryReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/InMemoryReferenceIdToKeyCache.java).
-Then call the transformCartDiscountReferences method with the `cartDiscounts` parameter as shown below:
+Then call the `transformCartDiscountReferences` method with the `cartDiscounts` parameter as shown below:
 
 ````java
 // Fetch(Id to key values for references) into the cache and map from CartDiscount to CartDiscountDraft using cache with considering reference resolution.
