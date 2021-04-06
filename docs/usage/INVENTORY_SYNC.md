@@ -73,12 +73,12 @@ When syncing from a source commercetools project, you can use [`transformInvento
 
 ````java
 // Build an InventoryEntryQuery for fetching inventories from a source CTP project without any references expanded for the sync:
-final InventoryEntryQuery inventoryEntryQueryWithReferences = InventoryReferenceResolutionUtils.buildInventoryQuery();
+final InventoryEntryQuery inventoryEntryQuery = InventoryEntryQuery.of();
 
 // Query all inventories (NOTE this is just for example, please adjust your logic)
 final List<InventoryEntry> inventoryEntries =
     CtpQueryUtils
-        .queryAll(sphereClient, inventoryEntryQueryWithReferences, Function.identity())
+        .queryAll(sphereClient, inventoryEntryQuery, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
             .stream()
             .flatMap(List::stream)

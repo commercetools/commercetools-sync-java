@@ -72,12 +72,12 @@ method that transforms(resolves by querying and caching key-id pairs) and maps f
 
 ````java
 // Build a CartDiscountQuery for fetching cart discounts from a source CTP project without any references expanded for the sync:
-final CartDiscountQuery cartDiscountQueryWithReferences = CartDiscountReferenceResolutionUtils.buildCartDiscountQuery();
+final CartDiscountQuery cartDiscountQuery = CartDiscountQuery.of();
 
 // Query all cart discounts (NOTE this is just for example, please adjust your logic)
 final List<CartDiscount> cartDiscounts =
     CtpQueryUtils
-        .queryAll(sphereClient, cartDiscountQueryWithReferences, Function.identity())
+        .queryAll(sphereClient, cartDiscountQuery, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
             .stream()
             .flatMap(List::stream)

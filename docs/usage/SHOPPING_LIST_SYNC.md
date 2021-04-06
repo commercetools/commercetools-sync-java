@@ -78,12 +78,12 @@ When syncing from a source commercetools project, you can use [`transformShoppin
 
 ````java
 // Build a ShoppingListQuery for fetching shopping lists from a source CTP project without any references expanded for the sync:
-final ShoppingListQuery shoppingListQueryWithReferences = ShoppingListReferenceResolutionUtils.buildShoppingListQuery();
+final ShoppingListQuery shoppingListQuery = ShoppingListReferenceResolutionUtils.buildShoppingListQuery();
 
 // Query all shopping lists (NOTE this is just for example, please adjust your logic)
 final List<ShoppingList> shoppingLists =
     CtpQueryUtils
-        .queryAll(sphereClient, shoppingListQueryWithReferences, Function.identity())
+        .queryAll(sphereClient, shoppingListQuery, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
             .stream()
             .flatMap(List::stream)

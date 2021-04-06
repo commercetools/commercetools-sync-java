@@ -85,12 +85,12 @@ When syncing from a source commercetools project, you can use [`transformProduct
 
 ````java
 // Build a ProductQuery for fetching products from a source CTP project without any references expanded for the sync:
-final ProductQuery productQueryWithReferences = ProductReferenceResolutionUtils.buildProductQuery();
+final ProductProjectionQuery productProjectionQuery = ProductProjectionQuery.ofStaged();
 
 // Query all product projections (NOTE this is only for example, please adjust your logic)
 final List<ProductProjection> productProjections =
     CtpQueryUtils
-        .queryAll(sphereClient, productQueryWithReferences, Function.identity())
+        .queryAll(sphereClient, productProjectionQuery, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
             .stream()
             .flatMap(List::stream)

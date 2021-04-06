@@ -140,12 +140,12 @@ method that transforms(resolves by querying and caching key-id pairs) and maps f
 
 ````java
 // Build a CategoryQuery for fetching categories from a source CTP project without any references expanded for the sync:
-final CategoryQuery categoryQueryWithReferences = CategoryReferenceResolutionUtils.buildCategoryQuery();
+final CategoryQuery categoryQuery = CategoryQuery.of();
 
 // Query all categories (NOTE this is just for example, please adjust your logic)
 final List<Category> categories =
     CtpQueryUtils
-        .queryAll(sphereClient, categoryQueryWithReferences, Function.identity())
+        .queryAll(sphereClient, categoryQuery, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
             .stream()
             .flatMap(List::stream)

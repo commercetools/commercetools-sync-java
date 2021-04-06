@@ -71,12 +71,12 @@ When syncing from a source commercetools project, you can use [`transformStateRe
 
 ````java
 // Build a StateQuery for fetching shopping lists from a source CTP project without any references expanded for the sync:
-final StateQuery stateQueryWithReferences = StateReferenceResolutionUtils.buildStateQuery();
+final StateQuery stateQuery = StateQuery.of();
 
 // Query all states (NOTE this is just for example, please adjust your logic)
 final List<State> states =
     CtpQueryUtils
-        .queryAll(sphereClient, stateQueryWithReferences, Function.identity())
+        .queryAll(sphereClient, stateQuery, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
             .stream()
             .flatMap(List::stream)

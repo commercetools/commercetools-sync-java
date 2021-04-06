@@ -74,12 +74,12 @@ When syncing from a source commercetools project, you can use [`transformCustome
 
 ````java
 // Build a CustomerQuery for fetching customers from a source CTP project without any references expanded for the sync:
-final CustomerQuery customerQueryWithReferences = CustomerReferenceResolutionUtils.buildCustomerQuery();
+final CustomerQuery customerQuery = CustomerQuery.of();
 
 // Query all customers (NOTE this is just for example, please adjust your logic)
 final List<Customer> customers =
     CtpQueryUtils
-        .queryAll(sphereClient, customerQueryWithReferences, Function.identity())
+        .queryAll(sphereClient, customerQuery, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
             .stream()
             .flatMap(List::stream)
