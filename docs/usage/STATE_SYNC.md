@@ -67,7 +67,7 @@ reference should return its `key`.
 ##### Syncing from a commercetools project
 
 When syncing from a source commercetools project, you can use [`transformStateReferences`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/states/service/StateReferenceTransformService.html#transformStateReferences-java.util.List-)
-the method that transforms(resolves by querying and caching key values for Ids) and maps from a `State` to `StateDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
+ method that transforms(resolves by querying and caching key-id pairs) and maps from a `State` to `StateDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
 // Build a StateQuery for fetching shopping lists from a source CTP project without any references expanded for the sync:
