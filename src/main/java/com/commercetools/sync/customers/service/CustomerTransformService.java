@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
-public interface CustomerReferenceTransformService {
+public interface CustomerTransformService {
 
   /**
    * Transforms customers by resolving the references and map them to CustomerDrafts.
@@ -25,6 +25,5 @@ public interface CustomerReferenceTransformService {
    * @return a new list which contains customerDrafts which have all their references resolved.
    */
   @Nonnull
-  CompletableFuture<List<CustomerDraft>> transformCustomerReferences(
-      @Nonnull List<Customer> customers);
+  CompletableFuture<List<CustomerDraft>> toCustomerDrafts(@Nonnull List<Customer> customers);
 }

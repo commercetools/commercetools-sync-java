@@ -1,16 +1,16 @@
-package com.commercetools.sync.cartdiscounts.service.impl;
+package com.commercetools.sync.inventories.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.commercetools.sync.cartdiscounts.service.CartDiscountReferenceTransformService;
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
-import io.sphere.sdk.cartdiscounts.CartDiscount;
-import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
+import com.commercetools.sync.inventories.service.InventoryEntryTransformService;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.inventory.InventoryEntry;
+import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFields;
@@ -24,31 +24,31 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
 
-class CartDiscountReferenceTransformServiceImplTest {
+class InventoryEntryTransformServiceImplTest {
 
   @Test
   void
-      transform_CartDiscountReferences_ShouldResolveReferencesUsingCacheAndMapToCartDiscountDraft() {
+      transform_InventoryReferences_ShouldResolveReferencesUsingCacheAndMapToInventoryEntryDraft() {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
     final Map<String, String> cacheMap = new HashMap<>();
-    final CartDiscountReferenceTransformService cartDiscountReferenceTransformService =
-        new CartDiscountReferenceTransformServiceImpl(sourceClient, cacheMap);
+    final InventoryEntryTransformService inventoryEntryTransformService =
+        new InventoryEntryTransformServiceImpl(sourceClient, cacheMap);
 
-    final String cartDiscountKey = "cartDiscountKey";
     final String customTypeId = UUID.randomUUID().toString();
     final String customTypeKey = "customTypeKey";
+    final String inventoryEntrySku = "inventoryEntrySkuValue";
 
-    final List<CartDiscount> mockCartDiscountsPage = new ArrayList<>();
+    final List<InventoryEntry> mockInventoryEntriesPage = new ArrayList<>();
     for (int i = 0; i < 10; i++) {
-      final CartDiscount mockCartDiscount = mock(CartDiscount.class);
+      final InventoryEntry mockInventoryEntry = mock(InventoryEntry.class);
       final CustomFields mockCustomFields = mock(CustomFields.class);
       final Reference<Type> typeReference =
           Reference.ofResourceTypeIdAndId("resourceTypeId", customTypeId);
       when(mockCustomFields.getType()).thenReturn(typeReference);
-      when(mockCartDiscount.getCustom()).thenReturn(mockCustomFields);
-      when(mockCartDiscount.getKey()).thenReturn(cartDiscountKey);
-      mockCartDiscountsPage.add(mockCartDiscount);
+      when(mockInventoryEntry.getCustom()).thenReturn(mockCustomFields);
+      when(mockInventoryEntry.getSku()).thenReturn(inventoryEntrySku);
+      mockInventoryEntriesPage.add(mockInventoryEntry);
     }
 
     final String jsonStringCustomTypes =
@@ -60,22 +60,22 @@ class CartDiscountReferenceTransformServiceImplTest {
         .thenReturn(CompletableFuture.completedFuture(customTypesResult));
 
     // test
-    final List<CartDiscountDraft> cartDiscountsResolved =
-        cartDiscountReferenceTransformService
-            .transformCartDiscountReferences(mockCartDiscountsPage)
+    final List<InventoryEntryDraft> inventoryEntryDraftsResolved =
+        inventoryEntryTransformService
+            .toInventoryEntryDrafts(mockInventoryEntriesPage)
             .toCompletableFuture()
             .join();
 
     // assertions
-    final Optional<CartDiscountDraft> cartDiscountKey1 =
-        cartDiscountsResolved.stream()
-            .filter(cartDiscountDraft -> cartDiscountKey.equals(cartDiscountDraft.getKey()))
+    final Optional<InventoryEntryDraft> inventoryEntryDraft1 =
+        inventoryEntryDraftsResolved.stream()
+            .filter(inventoryEntryDraft -> inventoryEntrySku.equals(inventoryEntryDraft.getSku()))
             .findFirst();
 
-    assertThat(cartDiscountKey1)
+    assertThat(inventoryEntryDraft1)
         .hasValueSatisfying(
-            cartDiscountDraft ->
-                assertThat(cartDiscountDraft.getCustom().getType().getKey())
+            inventoryEntryDraft ->
+                assertThat(inventoryEntryDraft.getCustom().getType().getKey())
                     .isEqualTo(customTypeKey));
   }
 }

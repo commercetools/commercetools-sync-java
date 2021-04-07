@@ -4,7 +4,7 @@ import static com.commercetools.sync.customers.utils.CustomerReferenceResolution
 import static java.util.stream.Collectors.toSet;
 
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
-import com.commercetools.sync.customers.service.CustomerReferenceTransformService;
+import com.commercetools.sync.customers.service.CustomerTransformService;
 import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customers.Customer;
@@ -19,10 +19,10 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
-public class CustomerReferenceTransformServiceImpl extends BaseTransformServiceImpl
-    implements CustomerReferenceTransformService {
+public class CustomerTransformServiceImpl extends BaseTransformServiceImpl
+    implements CustomerTransformService {
 
-  public CustomerReferenceTransformServiceImpl(
+  public CustomerTransformServiceImpl(
       @Nonnull final SphereClient ctpClient,
       @Nonnull final Map<String, String> referenceIdToKeyCache) {
     super(ctpClient, referenceIdToKeyCache);
@@ -30,7 +30,7 @@ public class CustomerReferenceTransformServiceImpl extends BaseTransformServiceI
 
   @Nonnull
   @Override
-  public CompletableFuture<List<CustomerDraft>> transformCustomerReferences(
+  public CompletableFuture<List<CustomerDraft>> toCustomerDrafts(
       @Nonnull final List<Customer> customers) {
 
     final List<CompletableFuture<Void>> transformReferencesToRunParallel = new ArrayList<>();

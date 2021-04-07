@@ -11,7 +11,7 @@ import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.utils.ChunkUtils;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
-import com.commercetools.sync.products.service.ProductReferenceTransformService;
+import com.commercetools.sync.products.service.ProductTransformService;
 import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -43,15 +43,15 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
-public class ProductReferenceTransformServiceImpl extends BaseTransformServiceImpl
-    implements ProductReferenceTransformService {
+public class ProductTransformServiceImpl extends BaseTransformServiceImpl
+    implements ProductTransformService {
 
   private static final String FAILED_TO_REPLACE_REFERENCES_ON_ATTRIBUTES =
       "Failed to replace referenced resource ids with keys on the attributes of the products in "
           + "the current fetched page from the source project. This page will not be synced to the target "
           + "project.";
 
-  public ProductReferenceTransformServiceImpl(
+  public ProductTransformServiceImpl(
       @Nonnull final SphereClient ctpClient,
       @Nonnull final Map<String, String> referenceIdToKeyCache) {
     super(ctpClient, referenceIdToKeyCache);
@@ -59,7 +59,7 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
 
   @Nonnull
   @Override
-  public CompletableFuture<List<ProductDraft>> transformProductReferences(
+  public CompletableFuture<List<ProductDraft>> toProductDrafts(
       @Nonnull final List<ProductProjection> products) {
 
     return replaceAttributeReferenceIdsWithKeys(products)
@@ -320,7 +320,7 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
         .map(AttributeContainer::getAttributes)
         .flatMap(Collection::stream)
         .map(Attribute::getValueAsJsonNode)
-        .map(ProductReferenceTransformServiceImpl::getReferences)
+        .map(ProductTransformServiceImpl::getReferences)
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
   }
@@ -340,7 +340,7 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
 
   @Nonnull
   private static Set<String> getIds(@Nonnull final List<JsonNode> references) {
-    return references.stream().map(ProductReferenceTransformServiceImpl::getId).collect(toSet());
+    return references.stream().map(ProductTransformServiceImpl::getId).collect(toSet());
   }
 
   @Nonnull

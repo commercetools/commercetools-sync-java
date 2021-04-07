@@ -15,7 +15,7 @@ import static org.mockito.Mockito.when;
 import com.commercetools.sync.commons.exceptions.ReferenceTransformException;
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
-import com.commercetools.sync.products.service.ProductReferenceTransformService;
+import com.commercetools.sync.products.service.ProductTransformService;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.SphereApiConfig;
@@ -38,15 +38,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
-class ProductReferenceTransformServiceImplTest {
+class ProductTransformServiceImplTest {
 
   @Test
   void transform_WithAttributeReferences_ShouldReplaceAttributeReferenceIdsWithKeys() {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
     final Map<String, String> cacheMap = new HashMap<>();
-    final ProductReferenceTransformService productReferenceTransformService =
-        new ProductReferenceTransformServiceImpl(sourceClient, cacheMap);
+    final ProductTransformService productTransformService =
+        new ProductTransformServiceImpl(sourceClient, cacheMap);
     final List<ProductProjection> productPage =
         asList(readObjectFromResource("product-key-4.json", Product.class).toProjection(STAGED));
 
@@ -75,10 +75,7 @@ class ProductReferenceTransformServiceImplTest {
 
     // test
     final List<ProductDraft> productsResolved =
-        productReferenceTransformService
-            .transformProductReferences(productPage)
-            .toCompletableFuture()
-            .join();
+        productTransformService.toProductDrafts(productPage).toCompletableFuture().join();
 
     // assertions
 
@@ -140,8 +137,8 @@ class ProductReferenceTransformServiceImplTest {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
     final Map<String, String> cacheMap = new HashMap<>();
-    final ProductReferenceTransformService productReferenceTransformService =
-        new ProductReferenceTransformServiceImpl(sourceClient, cacheMap);
+    final ProductTransformService productTransformService =
+        new ProductTransformServiceImpl(sourceClient, cacheMap);
     final List<ProductProjection> productPage =
         asList(
             readObjectFromResource("product-with-unresolved-references.json", Product.class)
@@ -160,7 +157,7 @@ class ProductReferenceTransformServiceImplTest {
 
     // test
     final List<ProductDraft> productsResolved =
-        productReferenceTransformService.transformProductReferences(productPage).join();
+        productTransformService.toProductDrafts(productPage).join();
 
     final Optional<ProductDraft> productKey1 =
         productsResolved.stream()
@@ -199,8 +196,8 @@ class ProductReferenceTransformServiceImplTest {
     final SphereClient sourceClient = mock(SphereClient.class);
     when(sourceClient.getConfig()).thenReturn(SphereApiConfig.of("test-project"));
     final Map<String, String> cacheMap = new HashMap<>();
-    final ProductReferenceTransformService productReferenceTransformService =
-        new ProductReferenceTransformServiceImpl(sourceClient, cacheMap);
+    final ProductTransformService productTransformService =
+        new ProductTransformServiceImpl(sourceClient, cacheMap);
     final List<ProductProjection> productPage =
         asList(
             readObjectFromResource("product-key-5.json", Product.class).toProjection(STAGED),
@@ -229,10 +226,7 @@ class ProductReferenceTransformServiceImplTest {
 
     // test
     final List<ProductDraft> productsFromPageStage =
-        productReferenceTransformService
-            .transformProductReferences(productPage)
-            .toCompletableFuture()
-            .join();
+        productTransformService.toProductDrafts(productPage).toCompletableFuture().join();
 
     // assertions
     assertThat(productsFromPageStage).hasSize(1);
@@ -273,8 +267,8 @@ class ProductReferenceTransformServiceImplTest {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
     final Map<String, String> cacheMap = new HashMap<>();
-    final ProductReferenceTransformService productReferenceTransformService =
-        new ProductReferenceTransformServiceImpl(sourceClient, cacheMap);
+    final ProductTransformService productTransformService =
+        new ProductTransformServiceImpl(sourceClient, cacheMap);
     final List<ProductProjection> productPage =
         asList(
             readObjectFromResource("product-with-unresolved-references.json", Product.class)
@@ -334,10 +328,7 @@ class ProductReferenceTransformServiceImplTest {
 
     // test
     final List<ProductDraft> productsResolved =
-        productReferenceTransformService
-            .transformProductReferences(productPage)
-            .toCompletableFuture()
-            .join();
+        productTransformService.toProductDrafts(productPage).toCompletableFuture().join();
 
     // assertions
 
@@ -377,8 +368,8 @@ class ProductReferenceTransformServiceImplTest {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
     final Map<String, String> cacheMap = new HashMap<>();
-    final ProductReferenceTransformService productReferenceTransformService =
-        new ProductReferenceTransformServiceImpl(sourceClient, cacheMap);
+    final ProductTransformService productTransformService =
+        new ProductTransformServiceImpl(sourceClient, cacheMap);
     final List<ProductProjection> productPage =
         asList(
             readObjectFromResource("product-with-unresolved-references.json", Product.class)
@@ -399,10 +390,7 @@ class ProductReferenceTransformServiceImplTest {
 
     // test
     final List<ProductDraft> productsResolved =
-        productReferenceTransformService
-            .transformProductReferences(productPage)
-            .toCompletableFuture()
-            .join();
+        productTransformService.toProductDrafts(productPage).toCompletableFuture().join();
 
     // assertions
 
@@ -425,8 +413,8 @@ class ProductReferenceTransformServiceImplTest {
     final SphereClient sourceClient = mock(SphereClient.class);
     final Map<String, String> cacheMap = new HashMap<>();
     cacheMap.put("cda0dbf7-b42e-40bf-8453-241d5b587f93", KEY_IS_NOT_SET_PLACE_HOLDER);
-    final ProductReferenceTransformService productReferenceTransformService =
-        new ProductReferenceTransformServiceImpl(sourceClient, cacheMap);
+    final ProductTransformService productTransformService =
+        new ProductTransformServiceImpl(sourceClient, cacheMap);
     final List<ProductProjection> productPage =
         asList(
             readObjectFromResource("product-with-unresolved-references.json", Product.class)
@@ -445,10 +433,7 @@ class ProductReferenceTransformServiceImplTest {
 
     // test
     final List<ProductDraft> productsResolved =
-        productReferenceTransformService
-            .transformProductReferences(productPage)
-            .toCompletableFuture()
-            .join();
+        productTransformService.toProductDrafts(productPage).toCompletableFuture().join();
 
     // assertions
 
@@ -468,8 +453,8 @@ class ProductReferenceTransformServiceImplTest {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
     final Map<String, String> cacheMap = new HashMap<>();
-    final ProductReferenceTransformService productReferenceTransformService =
-        new ProductReferenceTransformServiceImpl(sourceClient, cacheMap);
+    final ProductTransformService productTransformService =
+        new ProductTransformServiceImpl(sourceClient, cacheMap);
     final List<ProductProjection> productPage =
         asList(
             readObjectFromResource("product-key-5.json", Product.class).toProjection(STAGED),
@@ -482,7 +467,7 @@ class ProductReferenceTransformServiceImplTest {
 
     // test
     final CompletionStage<List<ProductDraft>> productDraftsFromPageStage =
-        productReferenceTransformService.transformProductReferences(productPage);
+        productTransformService.toProductDrafts(productPage);
 
     // assertions
     assertThat(productDraftsFromPageStage)

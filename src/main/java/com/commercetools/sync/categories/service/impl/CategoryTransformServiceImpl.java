@@ -3,7 +3,7 @@ package com.commercetools.sync.categories.service.impl;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-import com.commercetools.sync.categories.service.CategoryReferenceTransformService;
+import com.commercetools.sync.categories.service.CategoryTransformService;
 import com.commercetools.sync.categories.utils.CategoryReferenceResolutionUtils;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
@@ -23,10 +23,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
-public class CategoryReferenceTransformServiceImpl extends BaseTransformServiceImpl
-    implements CategoryReferenceTransformService {
+public class CategoryTransformServiceImpl extends BaseTransformServiceImpl
+    implements CategoryTransformService {
 
-  public CategoryReferenceTransformServiceImpl(
+  public CategoryTransformServiceImpl(
       @Nonnull final SphereClient ctpClient,
       @Nonnull final Map<String, String> referenceIdToKeyCache) {
     super(ctpClient, referenceIdToKeyCache);
@@ -34,7 +34,7 @@ public class CategoryReferenceTransformServiceImpl extends BaseTransformServiceI
 
   @Nonnull
   @Override
-  public CompletableFuture<List<CategoryDraft>> transformCategoryReferences(
+  public CompletableFuture<List<CategoryDraft>> toCategoryDrafts(
       @Nonnull final List<Category> categories) {
 
     /*

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
-public interface CategoryReferenceTransformService {
+public interface CategoryTransformService {
 
   /**
    * Transforms categories by resolving the references and map them to CategoryDrafts.
@@ -26,6 +26,5 @@ public interface CategoryReferenceTransformService {
    *     already replaced with keys.
    */
   @Nonnull
-  CompletableFuture<List<CategoryDraft>> transformCategoryReferences(
-      @Nonnull List<Category> categories);
+  CompletableFuture<List<CategoryDraft>> toCategoryDrafts(@Nonnull List<Category> categories);
 }

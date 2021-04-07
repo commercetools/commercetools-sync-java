@@ -17,8 +17,8 @@ import com.commercetools.sync.customers.CustomerSync;
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
 import com.commercetools.sync.customers.helpers.CustomerSyncStatistics;
-import com.commercetools.sync.customers.service.CustomerReferenceTransformService;
-import com.commercetools.sync.customers.service.impl.CustomerReferenceTransformServiceImpl;
+import com.commercetools.sync.customers.service.CustomerTransformService;
+import com.commercetools.sync.customers.service.impl.CustomerTransformServiceImpl;
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
@@ -42,7 +42,7 @@ class CustomerSyncIT {
   private List<Throwable> exceptions;
   private CustomerSync customerSync;
   private Map<String, String> idToKeyCache;
-  private CustomerReferenceTransformService customerReferenceTransformService;
+  private CustomerTransformService customerTransformService;
 
   @BeforeEach
   void setup() {
@@ -79,8 +79,7 @@ class CustomerSyncIT {
             .build();
     customerSync = new CustomerSync(customerSyncOptions);
     idToKeyCache = new HashMap<>();
-    customerReferenceTransformService =
-        new CustomerReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
+    customerTransformService = new CustomerTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
   }
 
   @Test
@@ -90,7 +89,7 @@ class CustomerSyncIT {
         CTP_SOURCE_CLIENT.execute(buildCustomerQuery()).toCompletableFuture().join().getResults();
 
     final List<CustomerDraft> customerDrafts =
-        customerReferenceTransformService.transformCustomerReferences(customers).join();
+        customerTransformService.toCustomerDrafts(customers).join();
 
     final CustomerSyncStatistics customerSyncStatistics =
         customerSync.sync(customerDrafts).toCompletableFuture().join();
@@ -129,7 +128,7 @@ class CustomerSyncIT {
     final Store storeCologne = createStore(CTP_TARGET_CLIENT, "store-cologne");
 
     final List<CustomerDraft> customerDrafts =
-        customerReferenceTransformService.transformCustomerReferences(customers).join();
+        customerTransformService.toCustomerDrafts(customers).join();
 
     return customerDrafts.stream()
         .map(

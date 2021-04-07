@@ -17,8 +17,8 @@ import com.commercetools.sync.cartdiscounts.CartDiscountSync;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
-import com.commercetools.sync.cartdiscounts.service.CartDiscountReferenceTransformService;
-import com.commercetools.sync.cartdiscounts.service.impl.CartDiscountReferenceTransformServiceImpl;
+import com.commercetools.sync.cartdiscounts.service.CartDiscountTransformService;
+import com.commercetools.sync.cartdiscounts.service.impl.CartDiscountTransformServiceImpl;
 import io.sphere.sdk.cartdiscounts.AbsoluteCartDiscountValue;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
@@ -48,7 +48,7 @@ import org.junit.jupiter.api.Test;
 class CartDiscountSyncIT {
 
   private final Map<String, String> idToKeyCache = new HashMap<>();
-  private CartDiscountReferenceTransformService cartDiscountReferenceTransformService;
+  private CartDiscountTransformService cartDiscountTransformService;
 
   @BeforeEach
   void setup() {
@@ -56,8 +56,8 @@ class CartDiscountSyncIT {
     deleteTypesFromTargetAndSource();
     populateSourceProject();
     populateTargetProject();
-    cartDiscountReferenceTransformService =
-        new CartDiscountReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
+    cartDiscountTransformService =
+        new CartDiscountTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
   }
 
   @AfterAll
@@ -77,7 +77,7 @@ class CartDiscountSyncIT {
             .getResults();
 
     final List<CartDiscountDraft> cartDiscountDrafts =
-        cartDiscountReferenceTransformService.transformCartDiscountReferences(cartDiscounts).join();
+        cartDiscountTransformService.toCartDiscountDrafts(cartDiscounts).join();
 
     final List<String> errorMessages = new ArrayList<>();
     final List<Throwable> exceptions = new ArrayList<>();
@@ -122,7 +122,7 @@ class CartDiscountSyncIT {
         createCartDiscountCustomType(newTypeKey, Locale.ENGLISH, newTypeKey, CTP_TARGET_CLIENT);
 
     final List<CartDiscountDraft> cartDiscountDrafts =
-        cartDiscountReferenceTransformService.transformCartDiscountReferences(cartDiscounts).join();
+        cartDiscountTransformService.toCartDiscountDrafts(cartDiscounts).join();
 
     // Apply some changes
     final List<CartDiscountDraft> updatedCartDiscountDrafts =

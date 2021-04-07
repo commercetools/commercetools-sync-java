@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
-import com.commercetools.sync.customers.service.CustomerReferenceTransformService;
+import com.commercetools.sync.customers.service.CustomerTransformService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.customers.Customer;
@@ -25,15 +25,15 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
 
-class CustomerReferenceTransformServiceImplTest {
+class CustomerTransformServiceImplTest {
 
   @Test
   void transform_CustomerReferences_ShouldResolveReferencesUsingCacheAndMapToCustomerDraft() {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
     final Map<String, String> cacheMap = new HashMap<>();
-    final CustomerReferenceTransformService CustomerReferenceTransformService =
-        new CustomerReferenceTransformServiceImpl(sourceClient, cacheMap);
+    final CustomerTransformService CustomerTransformService =
+        new CustomerTransformServiceImpl(sourceClient, cacheMap);
 
     final String customerKey = "customerKey";
     final String customTypeId = UUID.randomUUID().toString();
@@ -77,9 +77,7 @@ class CustomerReferenceTransformServiceImplTest {
 
     // test
     final List<CustomerDraft> customersResolved =
-        CustomerReferenceTransformService.transformCustomerReferences(mockCustomersPage)
-            .toCompletableFuture()
-            .join();
+        CustomerTransformService.toCustomerDrafts(mockCustomersPage).toCompletableFuture().join();
 
     // assertions
     final Optional<CustomerDraft> customerKey1 =

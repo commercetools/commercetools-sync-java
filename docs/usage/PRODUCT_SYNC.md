@@ -80,7 +80,7 @@ resource on the target commercetools project and the library will issue an updat
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`transformProductReferences`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/products/service/ProductReferenceTransformService.html#transformProductReferences-java.util.List-)
+When syncing from a source commercetools project, you can use [`toProductDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/products/service/ProductTransformService.html#toProductDrafts-java.util.List-)
  method that transforms(resolves by querying and caching key-id pairs) and maps from a `Product` to `ProductDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
@@ -100,13 +100,13 @@ final List<ProductProjection> productProjections =
 ````
 
 In order to transform and map the product, 
-Initialize [`ProductTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/products/service/ProductReferenceTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
+Initialize [`ProductTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/products/service/ProductTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
 For cache implementation, you can refer an example class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`InMemoryReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/InMemoryReferenceIdToKeyCache.java).
-Then call the `transformProductReferences` method with the `products` parameter as shown below:
+Then call the `toProductDrafts` method with the `products` parameter as shown below:
 
 ````java
 // Fetch(Id to key values for references) into the cache and map from Product to ProductDraft using cache with considering reference resolution.
-final List<ProductDraft> productDrafts = ProductTransformService.transformProductReferences(products);
+CompletableFuture<List<ProductDraft>> productDrafts = ProductTransformService.toProductDrafts(products);
 ````
 
 The cache here is used for a better performance. 

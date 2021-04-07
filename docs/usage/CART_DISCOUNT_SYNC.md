@@ -67,7 +67,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`transformCartDiscountReferences`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/cartdiscounts/service/CartDiscountReferenceTransformService.html#transformCartDiscountReferences-java.util.List-)
+When syncing from a source commercetools project, you can use [`toCartDiscountDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/cartdiscounts/service/CartDiscountTransformService.html#toCartDiscountDrafts-java.util.List-)
 method that transforms(resolves by querying and caching key-id pairs) and maps from a `CartDiscount` to `CartDiscountDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
@@ -87,17 +87,17 @@ final List<CartDiscount> cartDiscounts =
 ````
 
 In order to transform and map the cartDiscount, 
-Initialize [`CartDiscountReferenceTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/cartdiscounts/service/CartDiscountReferenceTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
+Initialize [`CartDiscountTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/cartdiscounts/service/CartDiscountTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
 For cache implementation, you can refer an example class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`InMemoryReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/InMemoryReferenceIdToKeyCache.java).
-Then call the `transformCartDiscountReferences` method with the `cartDiscounts` parameter as shown below:
+Then call the `toCartDiscountDrafts` method with the `cartDiscounts` parameter as shown below:
 
 ````java
 // Fetch(Id to key values for references) into the cache and map from CartDiscount to CartDiscountDraft using cache with considering reference resolution.
-final List<CartDiscountDraft> cartDiscountDrafts = CartDiscountReferenceTransformService.transformCartDiscountReferences(cartDiscounts);
+CompletableFuture<List<CartDiscountDraft>> cartDiscountDrafts = CartDiscountTransformService.toCartDiscountDrafts(cartDiscounts);
 ````
 
 The cache here is used for a better performance. 
-Instead of expanding the references in the query for cartDiscount resource. `CartDiscountReferenceTransformService` will execute a query to fetch key-id pairs and store in cache. These cached id to key values then can be used by another resource for resolving its references instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
+Instead of expanding the references in the query for cartDiscount resource. `CartDiscountTransformService` will execute a query to fetch key-id pairs and store in cache. These cached id to key values then can be used by another resource for resolving its references instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
 
 The [`CartDiscountReferenceResolutionUtils`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountReferenceResolutionUtils.java) class now accepts the `cacheMap` and `cartDiscounts`, Then maps to `cartDiscountDrafts` using cached id to key values.
 

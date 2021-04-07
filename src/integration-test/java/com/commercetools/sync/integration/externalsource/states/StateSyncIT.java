@@ -33,8 +33,8 @@ import com.commercetools.sync.states.StateSyncOptions;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
 import com.commercetools.sync.states.helpers.StateReferenceResolver;
 import com.commercetools.sync.states.helpers.StateSyncStatistics;
-import com.commercetools.sync.states.service.StateReferenceTransformService;
-import com.commercetools.sync.states.service.impl.StateReferenceTransformServiceImpl;
+import com.commercetools.sync.states.service.StateTransformService;
+import com.commercetools.sync.states.service.impl.StateTransformServiceImpl;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.ConcurrentModificationException;
@@ -79,9 +79,8 @@ class StateSyncIT {
   List<String> warningCallBackMessages;
   List<Throwable> errorCallBackExceptions;
   String key = "";
-  private final StateReferenceTransformService stateReferenceTransformService =
-      new StateReferenceTransformServiceImpl(
-          CTP_SOURCE_CLIENT, InMemoryReferenceIdToKeyCache.getInstance());
+  private final StateTransformService stateTransformService =
+      new StateTransformServiceImpl(CTP_SOURCE_CLIENT, InMemoryReferenceIdToKeyCache.getInstance());
 
   @AfterAll
   static void tearDown() {
@@ -561,8 +560,8 @@ class StateSyncIT {
     final State stateB = createStateInSource(stateBDraft);
 
     StateDraft[] draftsWithReplacesKeys =
-        stateReferenceTransformService
-            .transformStateReferences(asList(stateB, stateC))
+        stateTransformService
+            .toStateDrafts(asList(stateB, stateC))
             .join()
             .toArray(new StateDraft[2]);
     final StateDraft stateADraft =
@@ -619,9 +618,7 @@ class StateSyncIT {
 
     final StateSync stateSync = new StateSync(stateSyncOptions);
     final List<StateDraft> stateDrafts =
-        stateReferenceTransformService
-            .transformStateReferences(Arrays.asList(stateA, stateB, stateC))
-            .join();
+        stateTransformService.toStateDrafts(Arrays.asList(stateA, stateB, stateC)).join();
     // test
     final StateSyncStatistics stateSyncStatistics =
         stateSync.sync(stateDrafts).toCompletableFuture().join();
@@ -680,9 +677,7 @@ class StateSyncIT {
 
     final StateSync stateSync = new StateSync(stateSyncOptions);
     final List<StateDraft> stateDrafts =
-        stateReferenceTransformService
-            .transformStateReferences(Arrays.asList(stateA, stateB, stateC))
-            .join();
+        stateTransformService.toStateDrafts(Arrays.asList(stateA, stateB, stateC)).join();
     // test
     final StateSyncStatistics stateSyncStatistics =
         stateSync.sync(stateDrafts).toCompletableFuture().join();
@@ -746,9 +741,7 @@ class StateSyncIT {
 
     final StateSync stateSync = new StateSync(stateSyncOptions);
     final List<StateDraft> stateDrafts =
-        stateReferenceTransformService
-            .transformStateReferences(Arrays.asList(stateA, stateB, stateC))
-            .join();
+        stateTransformService.toStateDrafts(Arrays.asList(stateA, stateB, stateC)).join();
     // test
     final StateSyncStatistics stateSyncStatistics =
         stateSync.sync(stateDrafts).toCompletableFuture().join();
@@ -798,9 +791,7 @@ class StateSyncIT {
 
     final StateSync stateSync = new StateSync(stateSyncOptions);
     final List<StateDraft> stateDrafts =
-        stateReferenceTransformService
-            .transformStateReferences(Arrays.asList(stateB, stateC))
-            .join();
+        stateTransformService.toStateDrafts(Arrays.asList(stateB, stateC)).join();
     // test
     final StateSyncStatistics stateSyncStatistics =
         stateSync.sync(stateDrafts).toCompletableFuture().join();
@@ -838,9 +829,7 @@ class StateSyncIT {
 
     final StateSync stateSync = new StateSync(stateSyncOptions);
     final List<StateDraft> stateDrafts =
-        stateReferenceTransformService
-            .transformStateReferences(Arrays.asList(stateA, stateB, stateC))
-            .join();
+        stateTransformService.toStateDrafts(Arrays.asList(stateA, stateB, stateC)).join();
     // test
     final StateSyncStatistics stateSyncStatistics =
         stateSync.sync(stateDrafts).toCompletableFuture().join();
@@ -888,9 +877,7 @@ class StateSyncIT {
 
     final StateSync stateSync = new StateSync(stateSyncOptions);
     final List<StateDraft> stateDrafts =
-        stateReferenceTransformService
-            .transformStateReferences(Arrays.asList(stateA, stateB, stateC))
-            .join();
+        stateTransformService.toStateDrafts(Arrays.asList(stateA, stateB, stateC)).join();
     // test
     final StateSyncStatistics stateSyncStatistics =
         stateSync.sync(stateDrafts).toCompletableFuture().join();
@@ -990,9 +977,7 @@ class StateSyncIT {
             .build();
     final StateSync stateSync = new StateSync(stateSyncOptions);
     final List<StateDraft> stateDrafts =
-        stateReferenceTransformService
-            .transformStateReferences(Arrays.asList(stateA, stateB, stateC))
-            .join();
+        stateTransformService.toStateDrafts(Arrays.asList(stateA, stateB, stateC)).join();
     // test
     final StateSyncStatistics stateSyncStatistics =
         stateSync.sync(stateDrafts).toCompletableFuture().join();
@@ -1056,9 +1041,7 @@ class StateSyncIT {
             .build();
 
     final List<StateDraft> stateDrafts =
-        stateReferenceTransformService
-            .transformStateReferences(Arrays.asList(stateA, stateB, stateC))
-            .join();
+        stateTransformService.toStateDrafts(Arrays.asList(stateA, stateB, stateC)).join();
     // test
     final StateSyncStatistics stateSyncStatistics =
         new StateSync(stateSyncOptions).sync(stateDrafts).toCompletableFuture().join();

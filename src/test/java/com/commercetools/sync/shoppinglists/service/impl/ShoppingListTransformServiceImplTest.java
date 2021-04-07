@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
-import com.commercetools.sync.shoppinglists.service.ShoppingListReferenceTransformService;
+import com.commercetools.sync.shoppinglists.service.ShoppingListTransformService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.models.LocalizedString;
@@ -32,7 +32,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
 
-class ShoppingListReferenceTransformServiceImplTest {
+class ShoppingListTransformServiceImplTest {
 
   @Test
   void
@@ -40,8 +40,8 @@ class ShoppingListReferenceTransformServiceImplTest {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
     final Map<String, String> cacheMap = new HashMap<>();
-    final ShoppingListReferenceTransformService shoppingListReferenceTransformService =
-        new ShoppingListReferenceTransformServiceImpl(sourceClient, cacheMap);
+    final ShoppingListTransformService shoppingListTransformService =
+        new ShoppingListTransformServiceImpl(sourceClient, cacheMap);
 
     final String customTypeId = UUID.randomUUID().toString();
     final String lineItemCustomTypeId = UUID.randomUUID().toString();
@@ -117,8 +117,8 @@ class ShoppingListReferenceTransformServiceImplTest {
 
     // test
     final List<ShoppingListDraft> shoppingListDrafts =
-        shoppingListReferenceTransformService
-            .transformShoppingListReferences(mockShoppingListPage)
+        shoppingListTransformService
+            .toShoppingListDrafts(mockShoppingListPage)
             .toCompletableFuture()
             .join();
 

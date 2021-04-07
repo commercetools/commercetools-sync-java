@@ -69,7 +69,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`transformCustomerReferences`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/customers/service/CustomerReferenceTransformService.html#transformCustomerReferences-java.util.List-)
+When syncing from a source commercetools project, you can use [`toCustomerDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/customers/service/CustomerTransformService.html#toCustomerDrafts-java.util.List-)
  method that transforms(resolves by querying and caching key-id pairs) and maps from a `Customer` to `CustomerDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
@@ -89,17 +89,17 @@ final List<Customer> customers =
 ````
 
 In order to transform and map the customer, 
-Initialize [`CustomerReferenceTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/customers/service/CustomerReferenceTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
+Initialize [`CustomerTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/customers/service/CustomerTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
 For cache implementation, you can refer an example class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`InMemoryReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/InMemoryReferenceIdToKeyCache.java).
-Then call the `transformCustomerReferences` method with the `customers` parameter as shown below:
+Then call the `toCustomerDrafts` method with the `customers` parameter as shown below:
 
 ````java
 // Fetch(Id to key values for references) into the cache and map from Customer to CustomerDraft using cache with considering reference resolution.
-final List<CustomerDraft> customerDrafts = CustomerReferenceTransformService.transformCustomerReferences(customers);
+CompletableFuture<List<CustomerDraft>> customerDrafts = CustomerTransformService.toCustomerDrafts(customers);
 ````
 
 The cache here is used for a better performance. 
-Instead of expanding the references in the query for customer resource. `CategoryReferenceTransformService` will execute a query to fetch key-id pairs and store in cache. These cached id to key values then can be used by another resource for resolving its references instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
+Instead of expanding the references in the query for customer resource. `CategoryTransformService` will execute a query to fetch key-id pairs and store in cache. These cached id to key values then can be used by another resource for resolving its references instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
 
 The [`CustomerReferenceResolutionUtils`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/customers/utils/CustomerReferenceResolutionUtils.java) class now accepts the `cacheMap` and `customers`, Then maps to `customerDrafts` using cached id to key values.
 

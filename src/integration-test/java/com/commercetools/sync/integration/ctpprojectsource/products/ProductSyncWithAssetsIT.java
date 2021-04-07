@@ -24,8 +24,8 @@ import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
-import com.commercetools.sync.products.service.ProductReferenceTransformService;
-import com.commercetools.sync.products.service.impl.ProductReferenceTransformServiceImpl;
+import com.commercetools.sync.products.service.ProductTransformService;
+import com.commercetools.sync.products.service.impl.ProductTransformServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.commands.UpdateAction;
@@ -72,7 +72,7 @@ class ProductSyncWithAssetsIT {
   private List<String> warningCallBackMessages;
   private List<UpdateAction<Product>> updateActions;
   private List<Throwable> errorCallBackExceptions;
-  private ProductReferenceTransformService productReferenceTransformService;
+  private ProductTransformService productTransformService;
 
   /**
    * Delete all product related test data from target and source projects. Then creates for both CTP
@@ -104,8 +104,8 @@ class ProductSyncWithAssetsIT {
     deleteAllProducts(CTP_TARGET_CLIENT);
     deleteAllProducts(CTP_SOURCE_CLIENT);
     productSync = new ProductSync(buildSyncOptions());
-    productReferenceTransformService =
-        new ProductReferenceTransformServiceImpl(
+    productTransformService =
+        new ProductTransformServiceImpl(
             CTP_SOURCE_CLIENT, InMemoryReferenceIdToKeyCache.getInstance());
   }
 
@@ -185,7 +185,7 @@ class ProductSyncWithAssetsIT {
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts =
-        productReferenceTransformService.transformProductReferences(products).join();
+        productTransformService.toProductDrafts(products).join();
 
     final ProductSyncStatistics syncStatistics =
         productSync.sync(productDrafts).toCompletableFuture().join();
@@ -260,7 +260,7 @@ class ProductSyncWithAssetsIT {
         CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts =
-        productReferenceTransformService.transformProductReferences(products).join();
+        productTransformService.toProductDrafts(products).join();
 
     final ProductSyncStatistics syncStatistics =
         productSync.sync(productDrafts).toCompletableFuture().join();

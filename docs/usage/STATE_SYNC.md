@@ -66,7 +66,7 @@ reference should return its `key`.
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`transformStateReferences`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/states/service/StateReferenceTransformService.html#transformStateReferences-java.util.List-)
+When syncing from a source commercetools project, you can use [`toStateDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/states/service/StateTransformService.html#toStateDrafts-java.util.List-)
  method that transforms(resolves by querying and caching key-id pairs) and maps from a `State` to `StateDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
@@ -86,17 +86,17 @@ final List<State> states =
 ````
 
 In order to transform and map the state, 
-Initialize [`StateReferenceTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/states/service/StateReferenceTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
+Initialize [`StateTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/states/service/StateTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
 For cache implementation, you can refer an example class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`InMemoryReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/InMemoryReferenceIdToKeyCache.java).
-Then call the `transformStateReferences` method with the `states` parameter as shown below:
+Then call the `toStateDrafts` method with the `states` parameter as shown below:
 
 ````java
 // Fetch(Id to key values for references) into the cache and map from State to StateDraft using cache with considering reference resolution.
-final List<StateDraft> stateDrafts = StateReferenceTransformService.transformStateReferences(states);
+CompletableFuture<List<StateDraft>> stateDrafts = StateTransformService.toStateDrafts(states);
 ````
 
 The cache here is used for a better performance. 
-Instead of expanding the references in the query for state resource. `StateReferenceTransformService` will execute a query to fetch key-id pairs and store in cache. These cached id to key values then can be used by another resource for resolving its references instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
+Instead of expanding the references in the query for state resource. `StateTransformService` will execute a query to fetch key-id pairs and store in cache. These cached id to key values then can be used by another resource for resolving its references instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
 
 The [`StateReferenceResolutionUtils`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/states/utils/StateReferenceResolutionUtils.java) class now accepts the `cacheMap` and `states`, Then maps to `stateDrafts` using cached id to key values.
 

@@ -135,7 +135,7 @@ As soon, as the referenced parent Category draft is supplied to the sync, the dr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`transformCategoryReferences`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/categories/service/CategoryReferenceTransformService.html#transformCategoryReferences-java.util.List-)
+When syncing from a source commercetools project, you can use [`toCategoryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/categories/service/CategoryTransformService.html#toCategoryDrafts-java.util.List-)
 method that transforms(resolves by querying and caching key-id pairs) and maps from a `Category` to `CategoryDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
@@ -155,17 +155,17 @@ final List<Category> categories =
 ````
 
 In order to transform and map the category, 
-Initialize [`CategoryReferenceTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/categories/service/CategoryReferenceTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
+Initialize [`CategoryTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/categories/service/CategoryTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
 For cache implementation, you can refer an example class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`InMemoryReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/InMemoryReferenceIdToKeyCache.java).
-Then call the `transformCategoryReferences` method with the `categories` parameter as shown below:
+Then call the `toCategoryDrafts` method with the `categories` parameter as shown below:
 
 ````java
 // Fetch(Id to key values for references) into the cache and map from Category to CategoryDraft using cache with considering reference resolution.
-final List<CategoryDraft> categoryDrafts = CategoryReferenceTransformService.transformCategoryReferences(categories);
+CompletableFuture<List<CategoryDraft>> categoryDrafts = CategoryTransformService.toCategoryDrafts(categories);
 ````
 
 The cache here is used for a better performance. 
-Instead of expanding the references in the query for category resource. `CategoryReferenceTransformService` will execute a query to fetch key-id pairs and store in cache. These cached id to key values then can be used by another resource for resolving its references instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
+Instead of expanding the references in the query for category resource. `CategoryTransformService` will execute a query to fetch key-id pairs and store in cache. These cached id to key values then can be used by another resource for resolving its references instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
 
 The [`CategoryReferenceResolutionUtils`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/categories/utils/CategoryReferenceResolutionUtils.java) class now accepts the `cacheMap` and `categories`, Then maps to `categoryDrafts` using cached id to key values.
 

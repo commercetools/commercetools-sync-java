@@ -73,7 +73,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`transformShoppingListReferences`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/shoppinglists/service/ShoppingListReferenceTransformService.html#transformShoppingListReferences-java.util.List-)
+When syncing from a source commercetools project, you can use [`toShoppingListDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/shoppinglists/service/ShoppingListTransformService.html#toShoppingListDrafts-java.util.List-)
  method that transforms(resolves by querying and caching key-id pairs) and maps from a `ShoppingList` to `ShoppingListDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
@@ -93,17 +93,17 @@ final List<ShoppingList> shoppingLists =
 ````
 
 In order to transform and map the shoppingList, 
-Initialize [`ShoppingListReferenceTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/shoppinglists/service/ShoppingListReferenceTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
+Initialize [`ShoppingListTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/shoppinglists/service/ShoppingListTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
 For cache implementation, you can refer an example class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`InMemoryReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/InMemoryReferenceIdToKeyCache.java).
-Then call the `transformShoppingListReferences` method with the `shoppingLists` parameter as shown below:
+Then call the `toShoppingListDrafts` method with the `shoppingLists` parameter as shown below:
 
 ````java
 // Fetch(Id to key values for references) into the cache and map from ShoppingList to ShoppingListDraft using cache with considering reference resolution.
-final List<ShoppingListDraft> shoppingListDrafts = ShoppingListReferenceTransformService.transformShoppingListReferences(shoppingLists);
+CompletableFuture<List<ShoppingListDraft>> shoppingListDrafts = ShoppingListTransformService.toShoppingListDrafts(shoppingLists);
 ````
 
 The cache here is used for a better performance. 
-Instead of expanding the references in the query for shoppingList resource. `ShoppingListReferenceTransformService` will execute a query to fetch key-id pairs and store in cache. These cached id to key values then can be used by another resource for resolving its references instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
+Instead of expanding the references in the query for shoppingList resource. `ShoppingListTransformService` will execute a query to fetch key-id pairs and store in cache. These cached id to key values then can be used by another resource for resolving its references instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
 
 The [`ShoppingListReferenceResolutionUtils`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/shoppinglists/utils/ShoppingListReferenceResolutionUtils.java) class now accepts the `cacheMap` and `shoppingLists`, Then maps to `shoppingListDrafts` using cached id to key values.
 

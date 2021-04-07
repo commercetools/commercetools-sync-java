@@ -3,7 +3,7 @@ package com.commercetools.sync.cartdiscounts.service.impl;
 import static com.commercetools.sync.cartdiscounts.utils.CartDiscountReferenceResolutionUtils.mapToCartDiscountDrafts;
 import static java.util.stream.Collectors.toSet;
 
-import com.commercetools.sync.cartdiscounts.service.CartDiscountReferenceTransformService;
+import com.commercetools.sync.cartdiscounts.service.CartDiscountTransformService;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
@@ -18,10 +18,10 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
-public class CartDiscountReferenceTransformServiceImpl extends BaseTransformServiceImpl
-    implements CartDiscountReferenceTransformService {
+public class CartDiscountTransformServiceImpl extends BaseTransformServiceImpl
+    implements CartDiscountTransformService {
 
-  public CartDiscountReferenceTransformServiceImpl(
+  public CartDiscountTransformServiceImpl(
       @Nonnull final SphereClient ctpClient,
       @Nonnull final Map<String, String> referenceIdToKeyCache) {
     super(ctpClient, referenceIdToKeyCache);
@@ -29,7 +29,7 @@ public class CartDiscountReferenceTransformServiceImpl extends BaseTransformServ
 
   @Nonnull
   @Override
-  public CompletableFuture<List<CartDiscountDraft>> transformCartDiscountReferences(
+  public CompletableFuture<List<CartDiscountDraft>> toCartDiscountDrafts(
       @Nonnull final List<CartDiscount> cartDiscounts) {
 
     return transformCustomTypeReference(cartDiscounts)

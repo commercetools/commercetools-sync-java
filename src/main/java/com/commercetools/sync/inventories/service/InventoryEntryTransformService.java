@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
-public interface InventoryReferenceTransformService {
+public interface InventoryEntryTransformService {
 
   /**
    * Transforms InventoryEntries by resolving the references and map them to InventoryEntryDrafts.
@@ -26,6 +26,6 @@ public interface InventoryReferenceTransformService {
    *     resolved.
    */
   @Nonnull
-  CompletableFuture<List<InventoryEntryDraft>> transformInventoryReferences(
+  CompletableFuture<List<InventoryEntryDraft>> toInventoryEntryDrafts(
       @Nonnull List<InventoryEntry> inventoryEntries);
 }

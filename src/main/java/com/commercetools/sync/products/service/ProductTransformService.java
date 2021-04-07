@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
-public interface ProductReferenceTransformService {
+public interface ProductTransformService {
 
   /**
    * Transforms products by resolving the references and map them to ProductDrafts.
@@ -28,6 +28,5 @@ public interface ProductReferenceTransformService {
    *     references resolved and already replaced with keys.
    */
   @Nonnull
-  CompletableFuture<List<ProductDraft>> transformProductReferences(
-      @Nonnull List<ProductProjection> products);
+  CompletableFuture<List<ProductDraft>> toProductDrafts(@Nonnull List<ProductProjection> products);
 }

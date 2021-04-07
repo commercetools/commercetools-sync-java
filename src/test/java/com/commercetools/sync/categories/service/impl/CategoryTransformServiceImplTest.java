@@ -8,7 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.commercetools.sync.categories.service.CategoryReferenceTransformService;
+import com.commercetools.sync.categories.service.CategoryTransformService;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -22,15 +22,15 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
-public class CategoryReferenceTransformServiceImplTest {
+public class CategoryTransformServiceImplTest {
 
   @Test
   void transform_ShouldReplaceCategoryReferenceIdsWithKeys() {
     // preparation
     Map<String, String> idToKeyValueMap = new HashMap<>();
     final SphereClient sourceClient = mock(SphereClient.class);
-    CategoryReferenceTransformService categoryReferenceTransformService =
-        new CategoryReferenceTransformServiceImpl(sourceClient, idToKeyValueMap);
+    CategoryTransformService categoryTransformService =
+        new CategoryTransformServiceImpl(sourceClient, idToKeyValueMap);
     final List<Category> categoryPage =
         asList(
             readObjectFromResource("category-key-1.json", Category.class),
@@ -51,7 +51,7 @@ public class CategoryReferenceTransformServiceImplTest {
 
     // test
     final CompletionStage<List<CategoryDraft>> draftsFromPageStage =
-        categoryReferenceTransformService.transformCategoryReferences(categoryPage);
+        categoryTransformService.toCategoryDrafts(categoryPage);
 
     // assertions
     final List<CategoryDraft> expectedResult = mapToCategoryDrafts(categoryPage, idToKeyValueMap);

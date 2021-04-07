@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
-public interface CartDiscountReferenceTransformService {
+public interface CartDiscountTransformService {
 
   /**
    * Transforms cartDiscounts by resolving the references and map them to CartDiscountDrafts.
@@ -25,6 +25,6 @@ public interface CartDiscountReferenceTransformService {
    * @return a new list which contains cartDiscountDrafts which have all their references resolved.
    */
   @Nonnull
-  CompletableFuture<List<CartDiscountDraft>> transformCartDiscountReferences(
+  CompletableFuture<List<CartDiscountDraft>> toCartDiscountDrafts(
       @Nonnull List<CartDiscount> cartDiscounts);
 }

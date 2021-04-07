@@ -19,8 +19,8 @@ import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
 import com.commercetools.sync.shoppinglists.commands.updateactions.AddLineItemWithSku;
 import com.commercetools.sync.shoppinglists.commands.updateactions.AddTextLineItemWithAddedAt;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics;
-import com.commercetools.sync.shoppinglists.service.ShoppingListReferenceTransformService;
-import com.commercetools.sync.shoppinglists.service.impl.ShoppingListReferenceTransformServiceImpl;
+import com.commercetools.sync.shoppinglists.service.ShoppingListTransformService;
+import com.commercetools.sync.shoppinglists.service.impl.ShoppingListTransformServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.commands.UpdateAction;
@@ -77,12 +77,12 @@ class ShoppingListSyncIT {
   private ShoppingListDraft shoppingListDraftSampleCarrotCake;
   private ShoppingListSync shoppingListSync;
   private final Map<String, String> idToKeyCache = new HashMap<>();
-  private ShoppingListReferenceTransformService shoppingListReferenceTransformService;
+  private ShoppingListTransformService shoppingListTransformService;
 
   @BeforeEach
   void setup() {
-    shoppingListReferenceTransformService =
-        new ShoppingListReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
+    shoppingListTransformService =
+        new ShoppingListTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
     deleteShoppingListTestData(CTP_TARGET_CLIENT);
     setUpShoppingListSync();
 
@@ -359,7 +359,7 @@ class ShoppingListSyncIT {
     prepareCache(shoppingLists);
 
     final List<ShoppingListDraft> shoppingListDrafts =
-        shoppingListReferenceTransformService.transformShoppingListReferences(shoppingLists).join();
+        shoppingListTransformService.toShoppingListDrafts(shoppingLists).join();
 
     assertThat(
             ShoppingListDraftBuilder.of(shoppingListDrafts.get(0))

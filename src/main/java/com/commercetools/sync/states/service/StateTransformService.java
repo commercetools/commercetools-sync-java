@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
-public interface StateReferenceTransformService {
+public interface StateTransformService {
 
   /**
    * Transforms States by resolving the references and map them to StateDrafts.
@@ -25,5 +25,5 @@ public interface StateReferenceTransformService {
    * @return a new list which contains StateDrafts which have all their references resolved.
    */
   @Nonnull
-  CompletableFuture<List<StateDraft>> transformStateReferences(@Nonnull List<State> states);
+  CompletableFuture<List<StateDraft>> toStateDrafts(@Nonnull List<State> states);
 }

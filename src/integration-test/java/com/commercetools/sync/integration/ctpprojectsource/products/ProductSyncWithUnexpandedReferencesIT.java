@@ -21,8 +21,8 @@ import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
-import com.commercetools.sync.products.service.ProductReferenceTransformService;
-import com.commercetools.sync.products.service.impl.ProductReferenceTransformServiceImpl;
+import com.commercetools.sync.products.service.ProductTransformService;
+import com.commercetools.sync.products.service.impl.ProductTransformServiceImpl;
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
@@ -99,8 +99,8 @@ class ProductSyncWithUnexpandedReferencesIT {
   private List<String> errorCallBackMessages;
   private List<String> warningCallBackMessages;
   private List<Throwable> errorCallBackExceptions;
-  private final ProductReferenceTransformService productReferenceTransformService =
-      new ProductReferenceTransformServiceImpl(
+  private final ProductTransformService productTransformService =
+      new ProductTransformServiceImpl(
           CTP_SOURCE_CLIENT, InMemoryReferenceIdToKeyCache.getInstance());
 
   @BeforeAll
@@ -290,7 +290,7 @@ class ProductSyncWithUnexpandedReferencesIT {
         CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts =
-        productReferenceTransformService.transformProductReferences(products).join();
+        productTransformService.toProductDrafts(products).join();
 
     // test
     final ProductSyncStatistics syncStatistics =
