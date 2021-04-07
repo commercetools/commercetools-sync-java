@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
 import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
 import com.commercetools.sync.shoppinglists.service.ShoppingListTransformService;
 import io.sphere.sdk.client.SphereClient;
@@ -18,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -29,8 +29,8 @@ public class ShoppingListTransformServiceImpl extends BaseTransformServiceImpl
 
   public ShoppingListTransformServiceImpl(
       @Nonnull final SphereClient ctpClient,
-      @Nonnull final Map<String, String> referenceIdToKeyCache) {
-    super(ctpClient, referenceIdToKeyCache);
+      @Nonnull final InMemoryReferenceIdToKeyCache inMemoryReferenceIdToKeyCache) {
+    super(ctpClient, inMemoryReferenceIdToKeyCache);
   }
 
   @Nonnull
@@ -44,7 +44,9 @@ public class ShoppingListTransformServiceImpl extends BaseTransformServiceImpl
 
     return CompletableFuture.allOf(
             transformReferencesToRunParallel.stream().toArray(CompletableFuture[]::new))
-        .thenApply(ignore -> mapToShoppingListDrafts(shoppingLists, referenceIdToKeyCache));
+        .thenApply(
+            ignore ->
+                mapToShoppingListDrafts(shoppingLists, inMemoryReferenceIdToKeyCache.getMap()));
   }
 
   @Nonnull

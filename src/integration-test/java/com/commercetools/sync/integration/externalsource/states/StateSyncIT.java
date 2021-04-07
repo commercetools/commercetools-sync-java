@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.commercetools.sync.services.impl.StateServiceImpl;
 import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
@@ -80,7 +80,7 @@ class StateSyncIT {
   List<Throwable> errorCallBackExceptions;
   String key = "";
   private final StateTransformService stateTransformService =
-      new StateTransformServiceImpl(CTP_SOURCE_CLIENT, InMemoryReferenceIdToKeyCache.getInstance());
+      new StateTransformServiceImpl(CTP_SOURCE_CLIENT, new InMemoryReferenceIdToKeyCacheImpl());
 
   @AfterAll
   static void tearDown() {

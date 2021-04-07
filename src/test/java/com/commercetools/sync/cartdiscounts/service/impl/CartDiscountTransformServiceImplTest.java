@@ -8,6 +8,8 @@ import static org.mockito.Mockito.when;
 import com.commercetools.sync.cartdiscounts.service.CartDiscountTransformService;
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCacheImpl;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
 import io.sphere.sdk.client.SphereClient;
@@ -16,9 +18,7 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -31,9 +31,10 @@ class CartDiscountTransformServiceImplTest {
       transform_CartDiscountReferences_ShouldResolveReferencesUsingCacheAndMapToCartDiscountDraft() {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
-    final Map<String, String> cacheMap = new HashMap<>();
+    final InMemoryReferenceIdToKeyCache inMemoryReferenceIdToKeyCache =
+        new InMemoryReferenceIdToKeyCacheImpl();
     final CartDiscountTransformService cartDiscountTransformService =
-        new CartDiscountTransformServiceImpl(sourceClient, cacheMap);
+        new CartDiscountTransformServiceImpl(sourceClient, inMemoryReferenceIdToKeyCache);
 
     final String cartDiscountKey = "cartDiscountKey";
     final String customTypeId = UUID.randomUUID().toString();

@@ -19,7 +19,7 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -105,8 +105,7 @@ class ProductSyncWithAssetsIT {
     deleteAllProducts(CTP_SOURCE_CLIENT);
     productSync = new ProductSync(buildSyncOptions());
     productTransformService =
-        new ProductTransformServiceImpl(
-            CTP_SOURCE_CLIENT, InMemoryReferenceIdToKeyCache.getInstance());
+        new ProductTransformServiceImpl(CTP_SOURCE_CLIENT, new InMemoryReferenceIdToKeyCacheImpl());
   }
 
   private void clearSyncTestCollections() {

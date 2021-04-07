@@ -13,6 +13,8 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.shoppinglists.ShoppingListSync;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
@@ -76,13 +78,14 @@ class ShoppingListSyncIT {
   private ShoppingList shoppingListSampleCarrotCake;
   private ShoppingListDraft shoppingListDraftSampleCarrotCake;
   private ShoppingListSync shoppingListSync;
-  private final Map<String, String> idToKeyCache = new HashMap<>();
+  private InMemoryReferenceIdToKeyCache inMemoryReferenceIdToKeyCache;
   private ShoppingListTransformService shoppingListTransformService;
 
   @BeforeEach
   void setup() {
+    inMemoryReferenceIdToKeyCache = new InMemoryReferenceIdToKeyCacheImpl();
     shoppingListTransformService =
-        new ShoppingListTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
+        new ShoppingListTransformServiceImpl(CTP_SOURCE_CLIENT, inMemoryReferenceIdToKeyCache);
     deleteShoppingListTestData(CTP_TARGET_CLIENT);
     setUpShoppingListSync();
 
@@ -386,7 +389,8 @@ class ShoppingListSyncIT {
             .filter(Objects::nonNull)
             .map(customFields -> customFields.getType().getId())
             .collect(Collectors.toSet());
-    customTypeIds.stream().forEach(id -> idToKeyCache.put(id, "custom-type-shopping-list"));
+    customTypeIds.stream()
+        .forEach(id -> inMemoryReferenceIdToKeyCache.add(id, "custom-type-shopping-list"));
 
     Set<String> lineItemsCustomTypeIds =
         shoppingLists.stream()
@@ -404,7 +408,8 @@ class ShoppingListSyncIT {
             .flatMap(Collection::stream)
             .collect(toSet());
 
-    lineItemsCustomTypeIds.stream().forEach(id -> idToKeyCache.put(id, "custom-type-line-items"));
+    lineItemsCustomTypeIds.stream()
+        .forEach(id -> inMemoryReferenceIdToKeyCache.add(id, "custom-type-line-items"));
 
     Set<String> textLineItemsCustomTypeIds =
         shoppingLists.stream()
@@ -423,7 +428,7 @@ class ShoppingListSyncIT {
             .collect(toSet());
 
     textLineItemsCustomTypeIds.stream()
-        .forEach(id -> idToKeyCache.put(id, "custom-type-text-line-items"));
+        .forEach(id -> inMemoryReferenceIdToKeyCache.add(id, "custom-type-text-line-items"));
   }
 
   @Nonnull

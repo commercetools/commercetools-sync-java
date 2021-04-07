@@ -13,6 +13,8 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.customers.CustomerSync;
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
@@ -28,9 +30,7 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.stores.Store;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.junit.jupiter.api.AfterAll;
@@ -41,7 +41,7 @@ class CustomerSyncIT {
   private List<String> errorMessages;
   private List<Throwable> exceptions;
   private CustomerSync customerSync;
-  private Map<String, String> idToKeyCache;
+  private InMemoryReferenceIdToKeyCache inMemoryReferenceIdToKeyCache;
   private CustomerTransformService customerTransformService;
 
   @BeforeEach
@@ -78,8 +78,9 @@ class CustomerSyncIT {
                 })
             .build();
     customerSync = new CustomerSync(customerSyncOptions);
-    idToKeyCache = new HashMap<>();
-    customerTransformService = new CustomerTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
+    inMemoryReferenceIdToKeyCache = new InMemoryReferenceIdToKeyCacheImpl();
+    customerTransformService =
+        new CustomerTransformServiceImpl(CTP_SOURCE_CLIENT, inMemoryReferenceIdToKeyCache);
   }
 
   @Test

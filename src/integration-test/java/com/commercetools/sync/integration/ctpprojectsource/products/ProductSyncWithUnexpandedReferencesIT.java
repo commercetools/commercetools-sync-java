@@ -16,7 +16,7 @@ import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -100,8 +100,7 @@ class ProductSyncWithUnexpandedReferencesIT {
   private List<String> warningCallBackMessages;
   private List<Throwable> errorCallBackExceptions;
   private final ProductTransformService productTransformService =
-      new ProductTransformServiceImpl(
-          CTP_SOURCE_CLIENT, InMemoryReferenceIdToKeyCache.getInstance());
+      new ProductTransformServiceImpl(CTP_SOURCE_CLIENT, new InMemoryReferenceIdToKeyCacheImpl());
 
   @BeforeAll
   static void setupSourceProjectData() {

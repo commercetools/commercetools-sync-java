@@ -19,6 +19,8 @@ import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
 import com.commercetools.sync.cartdiscounts.service.CartDiscountTransformService;
 import com.commercetools.sync.cartdiscounts.service.impl.CartDiscountTransformServiceImpl;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCacheImpl;
 import io.sphere.sdk.cartdiscounts.AbsoluteCartDiscountValue;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
@@ -36,10 +38,8 @@ import io.sphere.sdk.types.Type;
 import io.sphere.sdk.utils.MoneyImpl;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +47,7 @@ import org.junit.jupiter.api.Test;
 
 class CartDiscountSyncIT {
 
-  private final Map<String, String> idToKeyCache = new HashMap<>();
+  private InMemoryReferenceIdToKeyCache inMemoryReferenceIdToKeyCache;
   private CartDiscountTransformService cartDiscountTransformService;
 
   @BeforeEach
@@ -56,8 +56,9 @@ class CartDiscountSyncIT {
     deleteTypesFromTargetAndSource();
     populateSourceProject();
     populateTargetProject();
+    inMemoryReferenceIdToKeyCache = new InMemoryReferenceIdToKeyCacheImpl();
     cartDiscountTransformService =
-        new CartDiscountTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
+        new CartDiscountTransformServiceImpl(CTP_SOURCE_CLIENT, inMemoryReferenceIdToKeyCache);
   }
 
   @AfterAll

@@ -23,6 +23,8 @@ import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.categories.service.CategoryTransformService;
 import com.commercetools.sync.categories.service.impl.CategoryTransformServiceImpl;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCacheImpl;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
@@ -34,10 +36,8 @@ import io.sphere.sdk.models.errors.DuplicateFieldError;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -50,9 +50,10 @@ class CategorySyncIT {
   private List<String> callBackErrorResponses = new ArrayList<>();
   private List<Throwable> callBackExceptions = new ArrayList<>();
   private List<String> callBackWarningResponses = new ArrayList<>();
-  private final Map<String, String> idToKeyCache = new HashMap<>();
+  private final InMemoryReferenceIdToKeyCache inMemoryReferenceIdToKeyCache =
+      new InMemoryReferenceIdToKeyCacheImpl();
   private final CategoryTransformService categoryTransformService =
-      new CategoryTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
+      new CategoryTransformServiceImpl(CTP_SOURCE_CLIENT, inMemoryReferenceIdToKeyCache);
 
   /**
    * Delete all categories and types from source and target project. Then create custom types for

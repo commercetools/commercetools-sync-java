@@ -10,6 +10,7 @@ import com.commercetools.sync.commons.exceptions.ReferenceTransformException;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.utils.ChunkUtils;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.products.service.ProductTransformService;
 import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
@@ -53,8 +54,8 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
 
   public ProductTransformServiceImpl(
       @Nonnull final SphereClient ctpClient,
-      @Nonnull final Map<String, String> referenceIdToKeyCache) {
-    super(ctpClient, referenceIdToKeyCache);
+      @Nonnull final InMemoryReferenceIdToKeyCache inMemoryReferenceIdToKeyCache) {
+    super(ctpClient, inMemoryReferenceIdToKeyCache);
   }
 
   @Nonnull
@@ -92,7 +93,7 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
 
     return CompletableFuture.allOf(
             transformReferencesToRunParallel.stream().toArray(CompletableFuture[]::new))
-        .thenApply(ignore -> mapToProductDrafts(products, referenceIdToKeyCache));
+        .thenApply(ignore -> mapToProductDrafts(products, inMemoryReferenceIdToKeyCache.getMap()));
   }
 
   @Nonnull
@@ -370,7 +371,7 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
             reference -> {
               String id = getId(reference);
               return (!idToKey.containsKey(id)
-                  || KEY_IS_NOT_SET_PLACE_HOLDER.equals(referenceIdToKeyCache.get(id)));
+                  || KEY_IS_NOT_SET_PLACE_HOLDER.equals(idToKey.get(id)));
             })
         .collect(toSet());
   }
@@ -439,7 +440,7 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
         .thenApply(
             results -> {
               cacheResourceReferenceKeys(results);
-              return referenceIdToKeyCache;
+              return inMemoryReferenceIdToKeyCache.getMap();
             })
         .thenCompose(ignored -> fetchCustomObjectKeys(nonCachedCustomObjectIds));
   }
@@ -449,7 +450,7 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
       @Nonnull final Set<String> nonCachedCustomObjectIds) {
 
     if (nonCachedCustomObjectIds.isEmpty()) {
-      return CompletableFuture.completedFuture(referenceIdToKeyCache);
+      return CompletableFuture.completedFuture(inMemoryReferenceIdToKeyCache.getMap());
     }
 
     final List<List<String>> chunkedIds = ChunkUtils.chunk(nonCachedCustomObjectIds, CHUNK_SIZE);
@@ -470,11 +471,11 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
             customObjects -> {
               customObjects.forEach(
                   customObject -> {
-                    referenceIdToKeyCache.put(
+                    inMemoryReferenceIdToKeyCache.add(
                         customObject.getId(),
                         CustomObjectCompositeIdentifier.of(customObject).toString());
                   });
-              return referenceIdToKeyCache;
+              return inMemoryReferenceIdToKeyCache.getMap();
             });
   }
 }

@@ -11,6 +11,8 @@ import static com.commercetools.sync.shoppinglists.utils.ShoppingListReferenceRe
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.shoppinglists.ShoppingListSync;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
@@ -29,9 +31,7 @@ import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetAnonymousId;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetCustomer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterAll;
@@ -44,13 +44,14 @@ class ShoppingListSyncIT {
   private List<Throwable> exceptions;
   private List<UpdateAction<ShoppingList>> updateActionList;
   private ShoppingListSync shoppingListSync;
-  private final Map<String, String> idToKeyCache = new HashMap<>();
+  private InMemoryReferenceIdToKeyCache inMemoryReferenceIdToKeyCache;
   private ShoppingListTransformService shoppingListTransformService;
 
   @BeforeEach
   void setup() {
+    inMemoryReferenceIdToKeyCache = new InMemoryReferenceIdToKeyCacheImpl();
     shoppingListTransformService =
-        new ShoppingListTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
+        new ShoppingListTransformServiceImpl(CTP_SOURCE_CLIENT, inMemoryReferenceIdToKeyCache);
     deleteShoppingListSyncTestDataFromProjects();
 
     createSampleShoppingListCarrotCake(CTP_SOURCE_CLIENT);
