@@ -10,8 +10,8 @@ import static org.mockito.Mockito.when;
 
 import com.commercetools.sync.categories.service.CategoryTransformService;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.client.SphereClient;
@@ -27,11 +27,10 @@ public class CategoryTransformServiceImplTest {
   @Test
   void transform_ShouldReplaceCategoryReferenceIdsWithKeys() {
     // preparation
-    final InMemoryReferenceIdToKeyCache inMemoryReferenceIdToKeyCache =
-        new InMemoryReferenceIdToKeyCacheImpl();
+    final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
     final SphereClient sourceClient = mock(SphereClient.class);
-    CategoryTransformService categoryTransformService =
-        new CategoryTransformServiceImpl(sourceClient, inMemoryReferenceIdToKeyCache);
+    final CategoryTransformService categoryTransformService =
+        new CategoryTransformServiceImpl(sourceClient, referenceIdToKeyCache);
     final List<Category> categoryPage =
         asList(
             readObjectFromResource("category-key-1.json", Category.class),
@@ -56,7 +55,7 @@ public class CategoryTransformServiceImplTest {
 
     // assertions
     final List<CategoryDraft> expectedResult =
-        mapToCategoryDrafts(categoryPage, inMemoryReferenceIdToKeyCache.getMap());
+        mapToCategoryDrafts(categoryPage, referenceIdToKeyCache);
     final List<String> referenceKeys =
         expectedResult.stream()
             .filter(category -> category.getCustom() != null)

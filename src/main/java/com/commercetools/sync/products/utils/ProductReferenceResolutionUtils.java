@@ -4,6 +4,7 @@ import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifi
 import static java.util.stream.Collectors.toList;
 
 import com.commercetools.sync.commons.helpers.CategoryReferencePair;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.customergroups.CustomerGroup;
@@ -18,8 +19,6 @@ import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.Attribute;
-import io.sphere.sdk.products.queries.ProductProjectionQuery;
-import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
@@ -110,14 +109,14 @@ public final class ProductReferenceResolutionUtils {
    * reference resolution.
    *
    * @param products the productprojection (staged) without expansion of references.
-   * @param referenceIdToKeyMap the map containing the cached id to key values.
+   * @param referenceIdToKeyCache the instance that manages cache.
    * @return a {@link List} of {@link ProductDraft} built from the supplied {@link List} of {@link
    *     Product}.
    */
   @Nonnull
   public static List<ProductDraft> mapToProductDrafts(
       @Nonnull final List<ProductProjection> products,
-      @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return products.stream()
         .filter(Objects::nonNull)
         .map(
@@ -125,7 +124,7 @@ public final class ProductReferenceResolutionUtils {
               final ProductDraft productDraft = getDraftBuilderFromStagedProduct(product).build();
 
               final CategoryReferencePair categoryReferencePair =
-                  mapToCategoryReferencePair(product, referenceIdToKeyMap);
+                  mapToCategoryReferencePair(product, referenceIdToKeyCache);
               final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers =
                   categoryReferencePair.getCategoryResourceIdentifiers();
               final CategoryOrderHints categoryOrderHintsWithKeys =
@@ -134,7 +133,7 @@ public final class ProductReferenceResolutionUtils {
               final List<ProductVariant> allVariants = product.getAllVariants();
               final List<ProductVariantDraft> variantDraftsWithKeys =
                   VariantReferenceResolutionUtils.mapToProductVariantDrafts(
-                      allVariants, referenceIdToKeyMap);
+                      allVariants, referenceIdToKeyCache);
               final ProductVariantDraft masterVariantDraftWithKeys =
                   variantDraftsWithKeys.remove(0);
 
@@ -142,12 +141,12 @@ public final class ProductReferenceResolutionUtils {
                   .masterVariant(masterVariantDraftWithKeys)
                   .variants(variantDraftsWithKeys)
                   .productType(
-                      getResourceIdentifierWithKey(product.getProductType(), referenceIdToKeyMap))
+                      getResourceIdentifierWithKey(product.getProductType(), referenceIdToKeyCache))
                   .categories(categoryResourceIdentifiers)
                   .categoryOrderHints(categoryOrderHintsWithKeys)
                   .taxCategory(
-                      getResourceIdentifierWithKey(product.getTaxCategory(), referenceIdToKeyMap))
-                  .state(getResourceIdentifierWithKey(product.getState(), referenceIdToKeyMap))
+                      getResourceIdentifierWithKey(product.getTaxCategory(), referenceIdToKeyCache))
+                  .state(getResourceIdentifierWithKey(product.getState(), referenceIdToKeyCache))
                   .build();
             })
         .collect(Collectors.toList());
@@ -190,7 +189,7 @@ public final class ProductReferenceResolutionUtils {
   @Nonnull
   static CategoryReferencePair mapToCategoryReferencePair(
       @Nonnull final ProductProjection product,
-      @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     final Set<Reference<Category>> categoryReferences = product.getCategories();
     final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = new HashSet<>();
 
@@ -201,8 +200,8 @@ public final class ProductReferenceResolutionUtils {
         categoryReference -> {
           if (categoryReference != null) {
             final String categoryId = categoryReference.getId();
-            if (referenceIdToKeyMap.containsKey(categoryId)) {
-              final String categoryKey = referenceIdToKeyMap.get(categoryId);
+            if (referenceIdToKeyCache.containsKey(categoryId)) {
+              final String categoryKey = referenceIdToKeyCache.get(categoryId);
 
               if (categoryOrderHints != null) {
                 final String categoryOrderHintValue = categoryOrderHints.get(categoryId);
@@ -222,16 +221,6 @@ public final class ProductReferenceResolutionUtils {
             ? categoryOrderHints
             : CategoryOrderHints.of(categoryOrderHintsMapWithKeys);
     return CategoryReferencePair.of(categoryResourceIdentifiers, categoryOrderHintsWithKeys);
-  }
-
-  /**
-   * Builds a {@link ProductQuery} for fetching products from a source CTP project.
-   *
-   * @return the query for fetching products from the source CTP project.
-   */
-  @Nonnull
-  public static ProductProjectionQuery buildProductQuery() {
-    return ProductProjectionQuery.ofStaged();
   }
 
   private ProductReferenceResolutionUtils() {}

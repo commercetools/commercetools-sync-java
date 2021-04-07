@@ -9,6 +9,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.commercetools.sync.commons.helpers.CategoryReferencePair;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
@@ -16,7 +18,6 @@ import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -31,11 +32,12 @@ import org.junit.jupiter.api.Test;
 
 class ProductReferenceResolutionUtilsTest {
 
-  Map<String, String> idToKeyValueMap = new HashMap<>();
+  private final ReferenceIdToKeyCache referenceIdToKeyCache =
+      new CaffeineReferenceIdToKeyCacheImpl();
 
   @AfterEach
   void setup() {
-    idToKeyValueMap.clear();
+    referenceIdToKeyCache.clearCache();
   }
 
   @Test
@@ -46,17 +48,17 @@ class ProductReferenceResolutionUtilsTest {
             readObjectFromResource("product-with-unresolved-references.json", Product.class)
                 .toProjection(STAGED));
 
-    idToKeyValueMap.put("cda0dbf7-b42e-40bf-8453-241d5b587f93", "productTypeKey");
-    idToKeyValueMap.put("1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f", "categoryKey1");
-    idToKeyValueMap.put("2dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f", "categoryKey2");
-    idToKeyValueMap.put("cdcf8bea-48f2-54bc-b3c2-cdc94bf94f2c", "channelKey");
-    idToKeyValueMap.put("d1229e6f-2b79-441e-b419-180311e52754", "customerGroupKey");
-    idToKeyValueMap.put("ebbe95fb-2282-4f9a-8747-fbe440e02dc0", "taxCategoryKey");
-    idToKeyValueMap.put("ste95fb-2282-4f9a-8747-fbe440e02dcs0", "stateKey");
-    idToKeyValueMap.put("custom_type_id", "typeKey");
+    referenceIdToKeyCache.add("cda0dbf7-b42e-40bf-8453-241d5b587f93", "productTypeKey");
+    referenceIdToKeyCache.add("1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f", "categoryKey1");
+    referenceIdToKeyCache.add("2dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f", "categoryKey2");
+    referenceIdToKeyCache.add("cdcf8bea-48f2-54bc-b3c2-cdc94bf94f2c", "channelKey");
+    referenceIdToKeyCache.add("d1229e6f-2b79-441e-b419-180311e52754", "customerGroupKey");
+    referenceIdToKeyCache.add("ebbe95fb-2282-4f9a-8747-fbe440e02dc0", "taxCategoryKey");
+    referenceIdToKeyCache.add("ste95fb-2282-4f9a-8747-fbe440e02dcs0", "stateKey");
+    referenceIdToKeyCache.add("custom_type_id", "typeKey");
 
     final List<ProductDraft> productDraftsWithKeysOnReferences =
-        ProductReferenceResolutionUtils.mapToProductDrafts(products, idToKeyValueMap);
+        ProductReferenceResolutionUtils.mapToProductDrafts(products, referenceIdToKeyCache);
 
     // assertions
 
@@ -93,12 +95,6 @@ class ProductReferenceResolutionUtilsTest {
   }
 
   @Test
-  void buildProductQuery_Always_ShouldReturnQueryWithNoneReferencesExpanded() {
-    final ProductProjectionQuery productQuery = ProductReferenceResolutionUtils.buildProductQuery();
-    assertThat(productQuery.expansionPaths()).isEmpty();
-  }
-
-  @Test
   void
       mapToCategoryReferencePair_WithReferencesNotInCache_ShouldReturnReferencesWithoutReplacedKeys() {
     final String categoryId = UUID.randomUUID().toString();
@@ -109,7 +105,7 @@ class ProductReferenceResolutionUtilsTest {
     final ProductProjection product = getProductMock(categoryReferences, categoryOrderHints);
 
     final CategoryReferencePair categoryReferencePair =
-        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, idToKeyValueMap);
+        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, referenceIdToKeyCache);
 
     assertThat(categoryReferencePair).isNotNull();
 
@@ -133,7 +129,7 @@ class ProductReferenceResolutionUtilsTest {
     final ProductProjection product = getProductMock(categoryReferences, null);
 
     final CategoryReferencePair categoryReferencePair =
-        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, idToKeyValueMap);
+        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, referenceIdToKeyCache);
 
     assertThat(categoryReferencePair).isNotNull();
 
@@ -153,7 +149,7 @@ class ProductReferenceResolutionUtilsTest {
     final ProductProjection product = getProductMock(Collections.emptySet(), null);
 
     final CategoryReferencePair categoryReferencePair =
-        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, idToKeyValueMap);
+        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, referenceIdToKeyCache);
 
     assertThat(categoryReferencePair).isNotNull();
 
@@ -170,7 +166,7 @@ class ProductReferenceResolutionUtilsTest {
     final ProductProjection product = getProductMock(singleton(null), null);
 
     final CategoryReferencePair categoryReferencePair =
-        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, idToKeyValueMap);
+        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, referenceIdToKeyCache);
 
     assertThat(categoryReferencePair).isNotNull();
 

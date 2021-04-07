@@ -20,12 +20,11 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
-import static com.commercetools.sync.products.utils.ProductReferenceResolutionUtils.buildProductQuery;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -65,7 +64,7 @@ class ProductReferenceResolverIT {
   private List<String> warningCallBackMessages;
   private List<Throwable> errorCallBackExceptions;
   private final ProductTransformService productTransformService =
-      new ProductTransformServiceImpl(CTP_SOURCE_CLIENT, new InMemoryReferenceIdToKeyCacheImpl());
+      new ProductTransformServiceImpl(CTP_SOURCE_CLIENT, new CaffeineReferenceIdToKeyCacheImpl());
 
   /**
    * Delete all product related test data from target and source projects. Then creates custom types
@@ -103,7 +102,7 @@ class ProductReferenceResolverIT {
     createTaxCategory(CTP_TARGET_CLIENT);
     createState(CTP_TARGET_CLIENT, StateType.PRODUCT_STATE);
 
-    productQuery = buildProductQuery();
+    productQuery = ProductProjectionQuery.ofStaged();
   }
 
   /**

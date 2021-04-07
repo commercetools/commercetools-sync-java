@@ -7,7 +7,6 @@ import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.AssetDraftBuilder;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nonnull;
 
 /**
@@ -25,17 +24,18 @@ public final class AssetReferenceResolutionUtils {
    * replaced by the key.
    *
    * @param assets the list of assets to replace their custom ids with keys.
-   * @param referenceIdToKeyMap the cache contains reference Id to Keys.
+   * @param referenceIdToKeyCache the instance that manages cache.
    * @return a {@link List} of {@link AssetDraft} that has all channel references with keys.
    */
   @Nonnull
   public static List<AssetDraft> mapToAssetDrafts(
-      @Nonnull final List<Asset> assets, @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final List<Asset> assets,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return assets.stream()
         .map(
             asset ->
                 AssetDraftBuilder.of(asset)
-                    .custom(mapToCustomFieldsDraft(asset, referenceIdToKeyMap))
+                    .custom(mapToCustomFieldsDraft(asset, referenceIdToKeyCache))
                     .build())
         .collect(toList());
   }

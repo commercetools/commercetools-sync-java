@@ -8,8 +8,8 @@ import static org.mockito.Mockito.when;
 
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.shoppinglists.service.ShoppingListTransformService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.json.SphereJsonUtils;
@@ -39,10 +39,9 @@ class ShoppingListTransformServiceImplTest {
       transform_ShoppingListReferences_ShouldResolveReferencesUsingCacheAndMapToShoppingListDraft() {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
-    final InMemoryReferenceIdToKeyCache inMemoryReferenceIdToKeyCache =
-        new InMemoryReferenceIdToKeyCacheImpl();
+    final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
     final ShoppingListTransformService shoppingListTransformService =
-        new ShoppingListTransformServiceImpl(sourceClient, inMemoryReferenceIdToKeyCache);
+        new ShoppingListTransformServiceImpl(sourceClient, referenceIdToKeyCache);
 
     final String customTypeId = UUID.randomUUID().toString();
     final String lineItemCustomTypeId = UUID.randomUUID().toString();

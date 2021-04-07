@@ -16,6 +16,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
@@ -47,10 +49,8 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -75,7 +75,8 @@ class TextLineItemListUpdateActionUtilsTest {
   private static final TextLineItemReferenceResolver textLineItemReferenceResolver =
       new TextLineItemReferenceResolver(SYNC_OPTIONS, getMockTypeService());
 
-  private static final Map<String, String> idToKeyValueMap = new HashMap<>();
+  private static final ReferenceIdToKeyCache referenceIdToKeyCache =
+      new CaffeineReferenceIdToKeyCacheImpl();
 
   @Test
   void
@@ -474,7 +475,7 @@ class TextLineItemListUpdateActionUtilsTest {
 
     final ShoppingListDraft template =
         ShoppingListReferenceResolutionUtils.mapToShoppingListDraft(
-            readObjectFromResource(resourcePath, ShoppingList.class), idToKeyValueMap);
+            readObjectFromResource(resourcePath, ShoppingList.class), referenceIdToKeyCache);
 
     final ShoppingListDraftBuilder builder = ShoppingListDraftBuilder.of(template);
 

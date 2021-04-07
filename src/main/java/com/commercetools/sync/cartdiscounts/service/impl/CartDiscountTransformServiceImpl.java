@@ -5,7 +5,7 @@ import static java.util.stream.Collectors.toSet;
 
 import com.commercetools.sync.cartdiscounts.service.CartDiscountTransformService;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
@@ -23,8 +23,8 @@ public class CartDiscountTransformServiceImpl extends BaseTransformServiceImpl
 
   public CartDiscountTransformServiceImpl(
       @Nonnull final SphereClient ctpClient,
-      @Nonnull final InMemoryReferenceIdToKeyCache inMemoryReferenceIdToKeyCache) {
-    super(ctpClient, inMemoryReferenceIdToKeyCache);
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
+    super(ctpClient, referenceIdToKeyCache);
   }
 
   @Nonnull
@@ -33,9 +33,7 @@ public class CartDiscountTransformServiceImpl extends BaseTransformServiceImpl
       @Nonnull final List<CartDiscount> cartDiscounts) {
 
     return transformCustomTypeReference(cartDiscounts)
-        .thenApply(
-            ignore ->
-                mapToCartDiscountDrafts(cartDiscounts, inMemoryReferenceIdToKeyCache.getMap()));
+        .thenApply(ignore -> mapToCartDiscountDrafts(cartDiscounts, referenceIdToKeyCache));
   }
 
   @Nonnull

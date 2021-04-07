@@ -7,7 +7,7 @@ import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyId;
 import com.commercetools.sync.commons.utils.ChunkUtils;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.models.WithKey;
@@ -28,15 +28,15 @@ public abstract class BaseTransformServiceImpl {
    */
   public static final int CHUNK_SIZE = 300;
   public static final String KEY_IS_NOT_SET_PLACE_HOLDER = "KEY_IS_NOT_SET";
-  protected final InMemoryReferenceIdToKeyCache inMemoryReferenceIdToKeyCache;
+  protected final ReferenceIdToKeyCache referenceIdToKeyCache;
 
   private final SphereClient ctpClient;
 
   protected BaseTransformServiceImpl(
       @Nonnull final SphereClient ctpClient,
-      @Nonnull final InMemoryReferenceIdToKeyCache inMemoryReferenceIdToKeyCache) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     this.ctpClient = ctpClient;
-    this.inMemoryReferenceIdToKeyCache = inMemoryReferenceIdToKeyCache;
+    this.referenceIdToKeyCache = referenceIdToKeyCache;
   }
 
   protected SphereClient getCtpClient() {
@@ -79,8 +79,8 @@ public abstract class BaseTransformServiceImpl {
     return referenceIds.stream()
         .filter(
             id ->
-                (!inMemoryReferenceIdToKeyCache.containsKey(id)
-                    || KEY_IS_NOT_SET_PLACE_HOLDER.equals(inMemoryReferenceIdToKeyCache.get(id))))
+                (!referenceIdToKeyCache.containsKey(id)
+                    || KEY_IS_NOT_SET_PLACE_HOLDER.equals(referenceIdToKeyCache.get(id))))
         .collect(toSet());
   }
 
@@ -101,6 +101,6 @@ public abstract class BaseTransformServiceImpl {
 
   private void fillReferenceIdToKeyCache(String id, String key) {
     final String keyValue = StringUtils.isBlank(key) ? KEY_IS_NOT_SET_PLACE_HOLDER : key;
-    inMemoryReferenceIdToKeyCache.add(id, keyValue);
+    referenceIdToKeyCache.add(id, keyValue);
   }
 }

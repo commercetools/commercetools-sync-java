@@ -11,8 +11,8 @@ import static com.commercetools.sync.shoppinglists.utils.ShoppingListReferenceRe
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.shoppinglists.ShoppingListSync;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
@@ -44,14 +44,14 @@ class ShoppingListSyncIT {
   private List<Throwable> exceptions;
   private List<UpdateAction<ShoppingList>> updateActionList;
   private ShoppingListSync shoppingListSync;
-  private InMemoryReferenceIdToKeyCache inMemoryReferenceIdToKeyCache;
+  private ReferenceIdToKeyCache referenceIdToKeyCache;
   private ShoppingListTransformService shoppingListTransformService;
 
   @BeforeEach
   void setup() {
-    inMemoryReferenceIdToKeyCache = new InMemoryReferenceIdToKeyCacheImpl();
+    referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
     shoppingListTransformService =
-        new ShoppingListTransformServiceImpl(CTP_SOURCE_CLIENT, inMemoryReferenceIdToKeyCache);
+        new ShoppingListTransformServiceImpl(CTP_SOURCE_CLIENT, referenceIdToKeyCache);
     deleteShoppingListSyncTestDataFromProjects();
 
     createSampleShoppingListCarrotCake(CTP_SOURCE_CLIENT);

@@ -7,8 +7,8 @@ import static org.mockito.Mockito.when;
 
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.customers.service.CustomerTransformService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customergroups.CustomerGroup;
@@ -31,10 +31,9 @@ class CustomerTransformServiceImplTest {
   void transform_CustomerReferences_ShouldResolveReferencesUsingCacheAndMapToCustomerDraft() {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
-    final InMemoryReferenceIdToKeyCache inMemoryReferenceIdToKeyCache =
-        new InMemoryReferenceIdToKeyCacheImpl();
+    final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
     final CustomerTransformService CustomerTransformService =
-        new CustomerTransformServiceImpl(sourceClient, inMemoryReferenceIdToKeyCache);
+        new CustomerTransformServiceImpl(sourceClient, referenceIdToKeyCache);
 
     final String customerKey = "customerKey";
     final String customTypeId = UUID.randomUUID().toString();

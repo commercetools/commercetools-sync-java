@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -26,11 +25,12 @@ import org.junit.jupiter.api.Test;
 
 class SyncUtilsTest {
 
-  Map<String, String> idToKeyValueMap = new HashMap<>();
+  private final ReferenceIdToKeyCache referenceIdToKeyCache =
+      new CaffeineReferenceIdToKeyCacheImpl();
 
   @AfterEach
   void clearCache() {
-    idToKeyValueMap.clear();
+    referenceIdToKeyCache.clearCache();
   }
 
   @Test
@@ -130,7 +130,7 @@ class SyncUtilsTest {
   void getReferenceWithKeyReplaced_WithNullReference_ShouldReturnNullReference() {
     final Reference<Object> keyReplacedReference =
         getReferenceWithKeyReplaced(
-            null, () -> Reference.of(Category.referenceTypeId(), "id"), idToKeyValueMap);
+            null, () -> Reference.of(Category.referenceTypeId(), "id"), referenceIdToKeyCache);
     assertThat(keyReplacedReference).isNull();
   }
 
@@ -140,7 +140,7 @@ class SyncUtilsTest {
     final String categoryKey = "categoryKey";
     final String categoryId = UUID.randomUUID().toString();
 
-    idToKeyValueMap.put(categoryId, categoryKey);
+    referenceIdToKeyCache.add(categoryId, categoryKey);
 
     final Reference<Category> categoryReference =
         Reference.ofResourceTypeIdAndId(Category.referenceTypeId(), categoryId);
@@ -148,8 +148,8 @@ class SyncUtilsTest {
     final Reference<Category> keyReplacedReference =
         getReferenceWithKeyReplaced(
             categoryReference,
-            () -> Category.referenceOfId(idToKeyValueMap.get(categoryReference.getId())),
-            idToKeyValueMap);
+            () -> Category.referenceOfId(referenceIdToKeyCache.get(categoryReference.getId())),
+            referenceIdToKeyCache);
 
     assertThat(keyReplacedReference).isNotNull();
     assertThat(keyReplacedReference.getId()).isEqualTo(categoryKey);
@@ -161,13 +161,13 @@ class SyncUtilsTest {
     final String categoryKey = "categoryKey";
     final String categoryId = UUID.randomUUID().toString();
 
-    idToKeyValueMap.put(categoryId, categoryKey);
+    referenceIdToKeyCache.add(categoryId, categoryKey);
 
     final Reference<Category> categoryReference =
         Reference.ofResourceTypeIdAndId(Category.referenceTypeId(), categoryId);
 
     final ResourceIdentifier<Category> resourceIdentifier =
-        getResourceIdentifierWithKey(categoryReference, idToKeyValueMap);
+        getResourceIdentifierWithKey(categoryReference, referenceIdToKeyCache);
 
     assertThat(resourceIdentifier).isNotNull();
     assertThat(resourceIdentifier.getKey()).isEqualTo(categoryKey);
@@ -182,8 +182,8 @@ class SyncUtilsTest {
     final Reference<Category> keyReplacedReference =
         getReferenceWithKeyReplaced(
             categoryReference,
-            () -> Category.referenceOfId(idToKeyValueMap.get(categoryReference.getId())),
-            idToKeyValueMap);
+            () -> Category.referenceOfId(referenceIdToKeyCache.get(categoryReference.getId())),
+            referenceIdToKeyCache);
 
     assertThat(keyReplacedReference).isNotNull();
     assertThat(keyReplacedReference.getId()).isEqualTo(categoryUuid);
@@ -196,7 +196,7 @@ class SyncUtilsTest {
         Reference.ofResourceTypeIdAndId(Category.referenceTypeId(), categoryUuid);
 
     final ResourceIdentifier<Category> resourceIdentifier =
-        getResourceIdentifierWithKey(categoryReference, idToKeyValueMap);
+        getResourceIdentifierWithKey(categoryReference, referenceIdToKeyCache);
 
     assertThat(resourceIdentifier).isNotNull();
     assertThat(resourceIdentifier.getId()).isEqualTo(categoryUuid);
@@ -205,7 +205,7 @@ class SyncUtilsTest {
   @Test
   void getResourceIdentifierWithKey_WithNullReference_ShouldReturnNull() {
     final ResourceIdentifier<Category> resourceIdentifier =
-        getResourceIdentifierWithKey(null, idToKeyValueMap);
+        getResourceIdentifierWithKey(null, referenceIdToKeyCache);
     assertThat(resourceIdentifier).isNull();
   }
 }

@@ -33,6 +33,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.models.Asset;
@@ -51,10 +53,8 @@ import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -63,11 +63,12 @@ import org.junit.jupiter.api.Test;
 
 class VariantReferenceResolutionUtilsTest {
 
-  Map<String, String> idToKeyValueMap = new HashMap<>();
+  private final ReferenceIdToKeyCache referenceIdToKeyCache =
+      new CaffeineReferenceIdToKeyCacheImpl();
 
   @AfterEach
   void clearCache() {
-    idToKeyValueMap.clear();
+    referenceIdToKeyCache.clearCache();
   }
 
   @Test
@@ -76,11 +77,11 @@ class VariantReferenceResolutionUtilsTest {
 
     final String customTypeId = UUID.randomUUID().toString();
     final String customTypeKey = "customTypeKey";
-    idToKeyValueMap.put(customTypeId, customTypeKey);
+    referenceIdToKeyCache.add(customTypeId, customTypeKey);
 
     final String channelKey = "channelKey";
     final String channelId = UUID.randomUUID().toString();
-    idToKeyValueMap.put(channelId, channelKey);
+    referenceIdToKeyCache.add(channelId, channelKey);
 
     final Reference<Channel> channelReference = Reference.of(Channel.referenceTypeId(), channelId);
 
@@ -89,7 +90,7 @@ class VariantReferenceResolutionUtilsTest {
 
     final String customerGroupId = "customer-group-id";
     final String customerGroupKey = "customer-group-key";
-    idToKeyValueMap.put(customerGroupId, customerGroupKey);
+    referenceIdToKeyCache.add(customerGroupId, customerGroupKey);
 
     final Reference<CustomerGroup> customerGroupReference =
         Reference.of(CustomerGroup.referenceTypeId(), customerGroupId);
@@ -105,7 +106,7 @@ class VariantReferenceResolutionUtilsTest {
         getProductVariantMock(singletonList(price), singletonList(asset));
 
     final List<ProductVariantDraft> variantDrafts =
-        mapToProductVariantDrafts(singletonList(productVariant), idToKeyValueMap);
+        mapToProductVariantDrafts(singletonList(productVariant), referenceIdToKeyCache);
 
     assertThat(variantDrafts).hasSize(1);
     assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
@@ -143,7 +144,7 @@ class VariantReferenceResolutionUtilsTest {
         getProductVariantMock(singletonList(price), singletonList(asset2));
 
     final List<ProductVariantDraft> variantDrafts =
-        mapToProductVariantDrafts(singletonList(productVariant), idToKeyValueMap);
+        mapToProductVariantDrafts(singletonList(productVariant), referenceIdToKeyCache);
 
     assertThat(variantDrafts).hasSize(1);
     assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
@@ -177,7 +178,7 @@ class VariantReferenceResolutionUtilsTest {
     final Price price = getPriceMockWithReferences(channelReference, typeReference, null);
     final ProductVariant productVariant = getProductVariantMock(singletonList(price));
 
-    final List<PriceDraft> priceDrafts = mapToPriceDrafts(productVariant, idToKeyValueMap);
+    final List<PriceDraft> priceDrafts = mapToPriceDrafts(productVariant, referenceIdToKeyCache);
 
     assertThat(priceDrafts).hasSize(1);
     final PriceDraft priceDraftAfterReplacement = priceDrafts.get(0);
@@ -201,15 +202,15 @@ class VariantReferenceResolutionUtilsTest {
   void mapToPriceDraft_WithReferenceIdToKeyValuesCached_ShouldReplaceIds() {
     final String customTypeId = UUID.randomUUID().toString();
     final String customTypeKey = "customTypeKey";
-    idToKeyValueMap.put(customTypeId, customTypeKey);
+    referenceIdToKeyCache.add(customTypeId, customTypeKey);
 
     final String channel1Key = "channel1Key";
     final String channel1Id = UUID.randomUUID().toString();
-    idToKeyValueMap.put(channel1Id, channel1Key);
+    referenceIdToKeyCache.add(channel1Id, channel1Key);
 
     final String channel2Key = "channel2Key";
     final String channel2Id = UUID.randomUUID().toString();
-    idToKeyValueMap.put(channel2Id, channel2Key);
+    referenceIdToKeyCache.add(channel2Id, channel2Key);
 
     final Reference<Channel> channelReference1 =
         Reference.of(Channel.referenceTypeId(), channel1Id);
@@ -222,7 +223,7 @@ class VariantReferenceResolutionUtilsTest {
 
     final ProductVariant productVariant = getProductVariantMock(asList(price1, price2));
 
-    final List<PriceDraft> priceDrafts = mapToPriceDrafts(productVariant, idToKeyValueMap);
+    final List<PriceDraft> priceDrafts = mapToPriceDrafts(productVariant, referenceIdToKeyCache);
 
     assertThat(priceDrafts).hasSize(2);
 
@@ -255,7 +256,7 @@ class VariantReferenceResolutionUtilsTest {
   void replaceAttributeReferenceIdWithKey_WithTextAttribute_ShouldReturnEmptyOptional() {
     final Attribute attribute = Attribute.of("attrName", AttributeAccess.ofText(), "value");
     final Optional<Reference<Product>> attributeReferenceIdWithKey =
-        replaceAttributeReferenceIdWithKey(attribute, idToKeyValueMap);
+        replaceAttributeReferenceIdWithKey(attribute, referenceIdToKeyCache);
 
     assertThat(attributeReferenceIdWithKey).isEmpty();
   }
@@ -266,7 +267,7 @@ class VariantReferenceResolutionUtilsTest {
     final Attribute attribute =
         Attribute.of("attrName", AttributeAccess.ofProductReferenceSet(), new HashSet<>());
     final Optional<Reference<Product>> attributeReferenceIdWithKey =
-        replaceAttributeReferenceIdWithKey(attribute, idToKeyValueMap);
+        replaceAttributeReferenceIdWithKey(attribute, referenceIdToKeyCache);
 
     assertThat(attributeReferenceIdWithKey).isEmpty();
   }
@@ -278,7 +279,7 @@ class VariantReferenceResolutionUtilsTest {
     final Attribute attribute =
         Attribute.of("attrName", AttributeAccess.ofProductReference(), unexpandedReference);
     final Optional<Reference<Product>> attributeReferenceIdWithKey =
-        replaceAttributeReferenceIdWithKey(attribute, idToKeyValueMap);
+        replaceAttributeReferenceIdWithKey(attribute, referenceIdToKeyCache);
 
     assertThat(attributeReferenceIdWithKey).contains(unexpandedReference);
   }
@@ -291,12 +292,12 @@ class VariantReferenceResolutionUtilsTest {
     final Reference<Product> unexpandedReference =
         Reference.ofResourceTypeIdAndId(Product.referenceTypeId(), productAttributeId);
 
-    idToKeyValueMap.put(productAttributeId, productAttributeKey);
+    referenceIdToKeyCache.add(productAttributeId, productAttributeKey);
 
     final Attribute attribute =
         Attribute.of("attrName", AttributeAccess.ofProductReference(), unexpandedReference);
     final Optional<Reference<Product>> attributeReferenceIdWithKey =
-        replaceAttributeReferenceIdWithKey(attribute, idToKeyValueMap);
+        replaceAttributeReferenceIdWithKey(attribute, referenceIdToKeyCache);
     assertThat(attributeReferenceIdWithKey).contains(Product.referenceOfId(productAttributeKey));
   }
 
@@ -304,7 +305,7 @@ class VariantReferenceResolutionUtilsTest {
   void replaceAttributeReferenceSetIdsWithKeys_WithTextAttribute_ShouldReturnEmptyOptional() {
     final Attribute attribute = Attribute.of("attrName", AttributeAccess.ofText(), "value");
     final Optional<Set<Reference<Product>>> attributeReferenceSetIdsWithKeys =
-        replaceAttributeReferenceSetIdsWithKeys(attribute, idToKeyValueMap);
+        replaceAttributeReferenceSetIdsWithKeys(attribute, referenceIdToKeyCache);
 
     assertThat(attributeReferenceSetIdsWithKeys).isEmpty();
   }
@@ -314,7 +315,7 @@ class VariantReferenceResolutionUtilsTest {
     final ProductVariant variant = mock(ProductVariant.class);
     when(variant.getAttributes()).thenReturn(new ArrayList<>());
     final List<AttributeDraft> replacedDrafts =
-        replaceAttributesReferencesIdsWithKeys(variant, idToKeyValueMap);
+        replaceAttributesReferencesIdsWithKeys(variant, referenceIdToKeyCache);
     assertThat(replacedDrafts).isEmpty();
   }
 
@@ -326,7 +327,7 @@ class VariantReferenceResolutionUtilsTest {
             .toProjection(ProductProjectionType.STAGED);
     final ProductVariant masterVariant = product.getMasterVariant();
     final List<AttributeDraft> replacedDrafts =
-        replaceAttributesReferencesIdsWithKeys(masterVariant, idToKeyValueMap);
+        replaceAttributesReferencesIdsWithKeys(masterVariant, referenceIdToKeyCache);
     replacedDrafts.forEach(
         attributeDraft -> {
           final String name = attributeDraft.getName();

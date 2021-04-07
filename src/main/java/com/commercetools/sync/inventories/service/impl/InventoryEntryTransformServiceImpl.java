@@ -4,7 +4,7 @@ import static com.commercetools.sync.inventories.utils.InventoryReferenceResolut
 import static java.util.stream.Collectors.toSet;
 
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.inventories.service.InventoryEntryTransformService;
 import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
 import io.sphere.sdk.client.SphereClient;
@@ -24,8 +24,8 @@ public class InventoryEntryTransformServiceImpl extends BaseTransformServiceImpl
 
   public InventoryEntryTransformServiceImpl(
       @Nonnull final SphereClient ctpClient,
-      @Nonnull final InMemoryReferenceIdToKeyCache inMemoryReferenceIdToKeyCache) {
-    super(ctpClient, inMemoryReferenceIdToKeyCache);
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
+    super(ctpClient, referenceIdToKeyCache);
   }
 
   @Nonnull
@@ -39,10 +39,7 @@ public class InventoryEntryTransformServiceImpl extends BaseTransformServiceImpl
 
     return CompletableFuture.allOf(
             transformReferencesToRunParallel.stream().toArray(CompletableFuture[]::new))
-        .thenApply(
-            ignore ->
-                mapToInventoryEntryDrafts(
-                    inventoryEntries, inMemoryReferenceIdToKeyCache.getMap()));
+        .thenApply(ignore -> mapToInventoryEntryDrafts(inventoryEntries, referenceIdToKeyCache));
   }
 
   @Nonnull

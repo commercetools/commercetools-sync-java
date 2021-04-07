@@ -6,11 +6,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
-import io.sphere.sdk.customers.queries.CustomerQuery;
 import io.sphere.sdk.models.Address;
 import io.sphere.sdk.models.KeyReference;
 import io.sphere.sdk.models.Reference;
@@ -18,20 +19,19 @@ import io.sphere.sdk.stores.Store;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class CustomerReferenceResolutionUtilsTest {
 
-  private final Map<String, String> idToKeyValueMap = new HashMap<>();
+  private final ReferenceIdToKeyCache referenceIdToKeyCache =
+      new CaffeineReferenceIdToKeyCacheImpl();
 
   @AfterEach
   void clearCache() {
-    idToKeyValueMap.clear();
+    referenceIdToKeyCache.clearCache();
   }
 
   @Test
@@ -45,8 +45,8 @@ class CustomerReferenceResolutionUtilsTest {
     final String storeKey2 = "storeKey2";
 
     // Cache key values with ids.
-    idToKeyValueMap.put(customTypeId, customTypeKey);
-    idToKeyValueMap.put(customerGroupId, customerGroupKey);
+    referenceIdToKeyCache.add(customTypeId, customTypeKey);
+    referenceIdToKeyCache.add(customerGroupId, customerGroupKey);
 
     final List<Customer> mockCustomers = new ArrayList<>();
     for (int i = 0; i < 3; i++) {
@@ -74,7 +74,7 @@ class CustomerReferenceResolutionUtilsTest {
     }
 
     final List<CustomerDraft> referenceReplacedDrafts =
-        CustomerReferenceResolutionUtils.mapToCustomerDrafts(mockCustomers, idToKeyValueMap);
+        CustomerReferenceResolutionUtils.mapToCustomerDrafts(mockCustomers, referenceIdToKeyCache);
 
     referenceReplacedDrafts.forEach(
         draft -> {
@@ -112,7 +112,7 @@ class CustomerReferenceResolutionUtilsTest {
     }
 
     final List<CustomerDraft> referenceReplacedDrafts =
-        CustomerReferenceResolutionUtils.mapToCustomerDrafts(mockCustomers, idToKeyValueMap);
+        CustomerReferenceResolutionUtils.mapToCustomerDrafts(mockCustomers, referenceIdToKeyCache);
 
     referenceReplacedDrafts.forEach(
         draft -> {
@@ -140,7 +140,7 @@ class CustomerReferenceResolutionUtilsTest {
 
     final List<CustomerDraft> referenceReplacedDrafts =
         CustomerReferenceResolutionUtils.mapToCustomerDrafts(
-            singletonList(mockCustomer), idToKeyValueMap);
+            singletonList(mockCustomer), referenceIdToKeyCache);
 
     final CustomerDraft customerDraft = referenceReplacedDrafts.get(0);
 
@@ -169,7 +169,7 @@ class CustomerReferenceResolutionUtilsTest {
 
     final List<CustomerDraft> referenceReplacedDrafts =
         CustomerReferenceResolutionUtils.mapToCustomerDrafts(
-            singletonList(mockCustomer), idToKeyValueMap);
+            singletonList(mockCustomer), referenceIdToKeyCache);
 
     final CustomerDraft customerDraft = referenceReplacedDrafts.get(0);
 
@@ -198,7 +198,7 @@ class CustomerReferenceResolutionUtilsTest {
 
     final List<CustomerDraft> referenceReplacedDrafts =
         CustomerReferenceResolutionUtils.mapToCustomerDrafts(
-            singletonList(mockCustomer), idToKeyValueMap);
+            singletonList(mockCustomer), referenceIdToKeyCache);
 
     final CustomerDraft customerDraft = referenceReplacedDrafts.get(0);
 
@@ -207,11 +207,5 @@ class CustomerReferenceResolutionUtilsTest {
     assertThat(customerDraft.getDefaultShippingAddress()).isNull();
     assertThat(customerDraft.getBillingAddresses()).isEqualTo(asList(0, 2));
     assertThat(customerDraft.getShippingAddresses()).isNull();
-  }
-
-  @Test
-  void buildCustomerQuery_Always_ShouldReturnQueryWithoutAnyReferencesExpanded() {
-    final CustomerQuery customerQuery = CustomerReferenceResolutionUtils.buildCustomerQuery();
-    assertThat(customerQuery.expansionPaths()).isEmpty();
   }
 }

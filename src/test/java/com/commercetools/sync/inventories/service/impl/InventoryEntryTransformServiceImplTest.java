@@ -7,8 +7,8 @@ import static org.mockito.Mockito.when;
 
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.inventories.service.InventoryEntryTransformService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.inventory.InventoryEntry;
@@ -31,10 +31,9 @@ class InventoryEntryTransformServiceImplTest {
       transform_InventoryReferences_ShouldResolveReferencesUsingCacheAndMapToInventoryEntryDraft() {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
-    final InMemoryReferenceIdToKeyCache inMemoryReferenceIdToKeyCache =
-        new InMemoryReferenceIdToKeyCacheImpl();
+    final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
     final InventoryEntryTransformService inventoryEntryTransformService =
-        new InventoryEntryTransformServiceImpl(sourceClient, inMemoryReferenceIdToKeyCache);
+        new InventoryEntryTransformServiceImpl(sourceClient, referenceIdToKeyCache);
 
     final String customTypeId = UUID.randomUUID().toString();
     final String customTypeKey = "customTypeKey";

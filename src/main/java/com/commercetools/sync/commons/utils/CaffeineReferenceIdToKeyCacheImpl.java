@@ -7,29 +7,20 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.Map;
 
 /**
- * A thread safe hash map to store reference id to key pairs.
+ * A Caffeine cache to store reference id to key pairs.
  *
  * <p>Designed to be used as an reference in memory cache as a part of {@link
  * BaseTransformServiceImpl} instances, such as {@link ProductTransformService}.
  *
- * <p>The map is implemented by the caffeine library which implements a LRU based cache eviction
+ * <p>The cache is implemented by the caffeine library which implements a LRU based cache eviction
  * strategy. It means unused id to key pairs will be evicted, also it stores max 10000 pairs to
  * ensure the minimum memory consumption.
  */
-public final class InMemoryReferenceIdToKeyCacheImpl implements InMemoryReferenceIdToKeyCache {
+public class CaffeineReferenceIdToKeyCacheImpl implements ReferenceIdToKeyCache {
   private static final Cache<String, String> referenceIdToKeyCache =
       Caffeine.newBuilder().maximumSize(10_000).executor(Runnable::run).build();
 
-  public InMemoryReferenceIdToKeyCacheImpl() {}
-
-  /**
-   * Note that modifications made to the map directly affect the cache.
-   *
-   * @return a view of the entries stored in this cache as a thread-safe map.
-   */
-  public static Map<String, String> getInstance() {
-    return referenceIdToKeyCache.asMap();
-  }
+  public CaffeineReferenceIdToKeyCacheImpl() {}
 
   @Override
   public void add(String key, String value) {
@@ -54,11 +45,6 @@ public final class InMemoryReferenceIdToKeyCacheImpl implements InMemoryReferenc
   @Override
   public String get(String key) {
     return referenceIdToKeyCache.getIfPresent(key);
-  }
-
-  @Override
-  public Map<String, String> getMap() {
-    return referenceIdToKeyCache.asMap();
   }
 
   @Override

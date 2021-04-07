@@ -5,7 +5,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
 import com.commercetools.sync.states.service.StateTransformService;
 import io.sphere.sdk.client.SphereClient;
@@ -24,8 +24,8 @@ public class StateTransformServiceImpl extends BaseTransformServiceImpl
 
   public StateTransformServiceImpl(
       @Nonnull final SphereClient ctpClient,
-      @Nonnull final InMemoryReferenceIdToKeyCache inMemoryReferenceIdToKeyCache) {
-    super(ctpClient, inMemoryReferenceIdToKeyCache);
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
+    super(ctpClient, referenceIdToKeyCache);
   }
 
   @Nonnull
@@ -33,7 +33,7 @@ public class StateTransformServiceImpl extends BaseTransformServiceImpl
   public CompletableFuture<List<StateDraft>> toStateDrafts(@Nonnull final List<State> states) {
 
     return transformTransitionReference(states)
-        .thenApply(ignore -> mapToStateDrafts(states, inMemoryReferenceIdToKeyCache.getMap()));
+        .thenApply(ignore -> mapToStateDrafts(states, referenceIdToKeyCache));
   }
 
   @Nonnull

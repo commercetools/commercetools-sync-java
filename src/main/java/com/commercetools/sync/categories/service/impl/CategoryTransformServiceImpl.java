@@ -6,7 +6,7 @@ import static java.util.stream.Collectors.toSet;
 import com.commercetools.sync.categories.service.CategoryTransformService;
 import com.commercetools.sync.categories.utils.CategoryReferenceResolutionUtils;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -28,8 +28,8 @@ public class CategoryTransformServiceImpl extends BaseTransformServiceImpl
 
   public CategoryTransformServiceImpl(
       @Nonnull final SphereClient ctpClient,
-      @Nonnull final InMemoryReferenceIdToKeyCache inMemoryReferenceIdToKeyCache) {
-    super(ctpClient, inMemoryReferenceIdToKeyCache);
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
+    super(ctpClient, referenceIdToKeyCache);
   }
 
   @Nonnull
@@ -60,7 +60,7 @@ public class CategoryTransformServiceImpl extends BaseTransformServiceImpl
         .thenApply(
             ignore ->
                 CategoryReferenceResolutionUtils.mapToCategoryDrafts(
-                    categories, inMemoryReferenceIdToKeyCache.getMap()));
+                    categories, referenceIdToKeyCache));
   }
 
   @Nonnull

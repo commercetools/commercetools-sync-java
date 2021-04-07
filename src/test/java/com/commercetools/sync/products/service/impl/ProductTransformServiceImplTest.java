@@ -15,8 +15,8 @@ import static org.mockito.Mockito.when;
 import com.commercetools.sync.commons.exceptions.ReferenceTransformException;
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.products.service.ProductTransformService;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.client.BadGatewayException;
@@ -41,12 +41,11 @@ import org.junit.jupiter.api.Test;
 
 class ProductTransformServiceImplTest {
 
-  final InMemoryReferenceIdToKeyCache inMemoryReferenceIdToKeyCache =
-      new InMemoryReferenceIdToKeyCacheImpl();
+  final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
 
   @AfterEach
   void clearCache() {
-    inMemoryReferenceIdToKeyCache.clearCache();
+    referenceIdToKeyCache.clearCache();
   }
 
   @Test
@@ -54,7 +53,7 @@ class ProductTransformServiceImplTest {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
     final ProductTransformService productTransformService =
-        new ProductTransformServiceImpl(sourceClient, inMemoryReferenceIdToKeyCache);
+        new ProductTransformServiceImpl(sourceClient, referenceIdToKeyCache);
     final List<ProductProjection> productPage =
         asList(readObjectFromResource("product-key-4.json", Product.class).toProjection(STAGED));
 
@@ -145,7 +144,7 @@ class ProductTransformServiceImplTest {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
     final ProductTransformService productTransformService =
-        new ProductTransformServiceImpl(sourceClient, inMemoryReferenceIdToKeyCache);
+        new ProductTransformServiceImpl(sourceClient, referenceIdToKeyCache);
     final List<ProductProjection> productPage =
         asList(
             readObjectFromResource("product-with-unresolved-references.json", Product.class)
@@ -203,7 +202,7 @@ class ProductTransformServiceImplTest {
     final SphereClient sourceClient = mock(SphereClient.class);
     when(sourceClient.getConfig()).thenReturn(SphereApiConfig.of("test-project"));
     final ProductTransformService productTransformService =
-        new ProductTransformServiceImpl(sourceClient, inMemoryReferenceIdToKeyCache);
+        new ProductTransformServiceImpl(sourceClient, referenceIdToKeyCache);
     final List<ProductProjection> productPage =
         asList(
             readObjectFromResource("product-key-5.json", Product.class).toProjection(STAGED),
@@ -273,7 +272,7 @@ class ProductTransformServiceImplTest {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
     final ProductTransformService productTransformService =
-        new ProductTransformServiceImpl(sourceClient, inMemoryReferenceIdToKeyCache);
+        new ProductTransformServiceImpl(sourceClient, referenceIdToKeyCache);
     final List<ProductProjection> productPage =
         asList(
             readObjectFromResource("product-with-unresolved-references.json", Product.class)
@@ -373,7 +372,7 @@ class ProductTransformServiceImplTest {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
     final ProductTransformService productTransformService =
-        new ProductTransformServiceImpl(sourceClient, inMemoryReferenceIdToKeyCache);
+        new ProductTransformServiceImpl(sourceClient, referenceIdToKeyCache);
     final List<ProductProjection> productPage =
         asList(
             readObjectFromResource("product-with-unresolved-references.json", Product.class)
@@ -415,10 +414,9 @@ class ProductTransformServiceImplTest {
       transform_ProductWithProductTypeReferencesWithNullKeyAlreadyInCache_ShouldFetchAndReplaceReferencesKeyValue() {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
-    inMemoryReferenceIdToKeyCache.add(
-        "cda0dbf7-b42e-40bf-8453-241d5b587f93", KEY_IS_NOT_SET_PLACE_HOLDER);
+    referenceIdToKeyCache.add("cda0dbf7-b42e-40bf-8453-241d5b587f93", KEY_IS_NOT_SET_PLACE_HOLDER);
     final ProductTransformService productTransformService =
-        new ProductTransformServiceImpl(sourceClient, inMemoryReferenceIdToKeyCache);
+        new ProductTransformServiceImpl(sourceClient, referenceIdToKeyCache);
     final List<ProductProjection> productPage =
         asList(
             readObjectFromResource("product-with-unresolved-references.json", Product.class)
@@ -457,7 +455,7 @@ class ProductTransformServiceImplTest {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
     final ProductTransformService productTransformService =
-        new ProductTransformServiceImpl(sourceClient, inMemoryReferenceIdToKeyCache);
+        new ProductTransformServiceImpl(sourceClient, referenceIdToKeyCache);
     final List<ProductProjection> productPage =
         asList(
             readObjectFromResource("product-key-5.json", Product.class).toProjection(STAGED),
