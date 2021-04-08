@@ -48,8 +48,8 @@ public class ProductTypeReferenceTransformServiceImpl extends BaseTransformServi
   private CompletableFuture<Void> transformNestedProductTypeReference(
       @Nonnull final List<ProductType> productTypes) {
 
-    final Set<String> setOfTypeIds = new HashSet<>();
-    setOfTypeIds.addAll(collectNestedProductTypeReferenceIds(productTypes));
+    final Set<String> setOfTypeIds =
+        new HashSet<>(collectNestedProductTypeReferenceIds(productTypes));
 
     return fetchAndFillReferenceIdToKeyCache(setOfTypeIds, GraphQlQueryResources.PRODUCT_TYPES);
   }

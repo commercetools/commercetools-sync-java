@@ -62,24 +62,19 @@ public final class ProductTypeReferenceResolutionUtils {
       @Nonnull final List<ProductType> productTypes,
       @Nonnull final Map<String, String> referenceIdToKeyMap) {
 
-    final List<ProductTypeDraft> referenceReplacedDrafts =
-        productTypes.stream()
-            .filter(Objects::nonNull)
-            .map(
-                productType -> {
-                  final List<AttributeDefinitionDraft> referenceReplacedAttributeDefinitions;
-                  referenceReplacedAttributeDefinitions =
-                      replaceAttributeDefinitionsReferenceIdsWithKeys(
-                          productType, referenceIdToKeyMap);
+    return productTypes.stream()
+        .filter(Objects::nonNull)
+        .map(
+            productType -> {
+              final List<AttributeDefinitionDraft> referenceReplacedAttributeDefinitions;
+              referenceReplacedAttributeDefinitions =
+                  replaceAttributeDefinitionsReferenceIdsWithKeys(productType, referenceIdToKeyMap);
 
-                  return ProductTypeDraftBuilder.of(productType)
-                      .attributes(referenceReplacedAttributeDefinitions)
-                      .build();
-                })
-            .filter(Objects::nonNull)
-            .collect(toList());
-
-    return referenceReplacedDrafts;
+              return ProductTypeDraftBuilder.of(productType)
+                  .attributes(referenceReplacedAttributeDefinitions)
+                  .build();
+            })
+        .collect(toList());
   }
 
   @Nonnull
@@ -87,21 +82,18 @@ public final class ProductTypeReferenceResolutionUtils {
       @Nonnull final ProductType productType,
       @Nonnull final Map<String, String> referenceIdToKeyMap) {
 
-    final List<AttributeDefinitionDraft> referenceReplacedAttributeDefinitions =
-        productType.getAttributes().stream()
-            .map(
-                attributeDefinition -> {
-                  final AttributeType attributeType = attributeDefinition.getAttributeType();
-                  final AttributeType referenceReplacedType =
-                      replaceProductTypeReferenceIdWithKey(attributeType, referenceIdToKeyMap);
-                  return AttributeDefinitionDraftBuilder.of(attributeDefinition)
-                      .attributeType(referenceReplacedType)
-                      .build();
-                })
-            .filter(Objects::nonNull)
-            .collect(toList());
-
-    return referenceReplacedAttributeDefinitions;
+    return productType.getAttributes().stream()
+        .map(
+            attributeDefinition -> {
+              final AttributeType attributeType = attributeDefinition.getAttributeType();
+              final AttributeType referenceReplacedType =
+                  replaceProductTypeReferenceIdWithKey(attributeType, referenceIdToKeyMap);
+              return AttributeDefinitionDraftBuilder.of(attributeDefinition)
+                  .attributeType(referenceReplacedType)
+                  .build();
+            })
+        .filter(Objects::nonNull)
+        .collect(toList());
   }
 
   @Nonnull
