@@ -36,55 +36,33 @@ public final class SyncUtils {
   }
 
   /**
-   * Given a reference to a resource of type {@code T}, this method checks if the reference is
-   * expanded. If it is, then it executes the {@code keyInReferenceSupplier} and returns it's
-   * result. Otherwise, it returns the supplied reference as is. Since, the reference could be
-   * {@code null}, this method could also return null if the reference was not expanded.
+   * Given a reference to a resource of type {@code T}, this method checks if the reference id is
+   * cached in the map. If it is, then it executes the {@code keyInReferenceSupplier} and returns
+   * it's result. Otherwise, it returns the supplied reference as is. Since, the reference could be
+   * {@code null}, this method could also return null if the reference id is not in the map.
    *
    * <p>This method expects the passed supplier to either
    *
-   * @param reference the reference of the resource to check if it's expanded.
+   * @param reference the reference of the resource to check if it's cached.
    * @param <T> the type of the resource.
    * @param keyInReferenceSupplier the supplier to execute and return its result if the {@code
    *     reference} was expanded.
-   * @return returns the result of the {@code keyInReferenceSupplier} if the {@code reference} was
-   *     expanded. Otherwise, it returns the supplied reference as is.
+   * @return returns the result of the {@code keyInReferenceSupplier} if the {@code reference} id
+   *     was in cache. Otherwise, it returns the supplied reference as is.
    */
   @Nullable
   public static <T> Reference<T> getReferenceWithKeyReplaced(
       @Nullable final Reference<T> reference,
-      @Nonnull final Supplier<Reference<T>> keyInReferenceSupplier) {
-
-    if (reference != null && reference.getObj() != null) {
-      return keyInReferenceSupplier.get();
-    }
-    return reference;
-  }
-
-  /**
-   * Given a reference to a resource of type {@code T}, this method checks if the reference is
-   * expanded. If it is, then it return the resource identifier with key. Otherwise, it returns the
-   * resource identifier with id. Since, the reference could be {@code null}, this method could also
-   * return null if the reference was not expanded.
-   *
-   * @param reference the reference of the resource to check if it's expanded.
-   * @param <T> the type of the resource.
-   * @return returns the resource identifier with key if the {@code reference} was expanded.
-   *     Otherwise, it returns the resource identifier with id. TODO: Should Remove this method when
-   *     all the resources adapts reference resolution with Cache(CTPI-443).
-   */
-  @Nullable
-  public static <T extends WithKey> ResourceIdentifier<T> getResourceIdentifierWithKey(
-      @Nullable final Reference<T> reference) {
+      @Nonnull final Supplier<Reference<T>> keyInReferenceSupplier,
+      @Nonnull final Map<String, String> referenceIdToKeyMap) {
 
     if (reference != null) {
-      if (reference.getObj() != null) {
-        return ResourceIdentifier.ofKey(reference.getObj().getKey());
+      final String id = reference.getId();
+      if (referenceIdToKeyMap.containsKey(id)) {
+        return keyInReferenceSupplier.get();
       }
-      return ResourceIdentifier.ofId(reference.getId());
     }
-
-    return null;
+    return reference;
   }
 
   /**

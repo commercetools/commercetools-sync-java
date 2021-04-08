@@ -25,6 +25,7 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -33,19 +34,17 @@ import com.commercetools.sync.products.service.ProductReferenceTransformService;
 import com.commercetools.sync.products.service.impl.ProductReferenceTransformServiceImpl;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
-import io.sphere.sdk.products.queries.ProductQuery;
+import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -58,16 +57,16 @@ class ProductReferenceResolverIT {
 
   private static TaxCategory oldTaxCategory;
   private static State oldProductState;
-  private static ProductQuery productQuery;
+  private static ProductProjectionQuery productQuery;
 
   private static List<Reference<Category>> categoryReferencesWithIds;
   private ProductSync productSync;
   private List<String> errorCallBackMessages;
   private List<String> warningCallBackMessages;
   private List<Throwable> errorCallBackExceptions;
-  private final Map<String, String> idToKeyCache = new HashMap<>();
-  ProductReferenceTransformService productReferenceTransformService =
-      new ProductReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
+  private final ProductReferenceTransformService productReferenceTransformService =
+      new ProductReferenceTransformServiceImpl(
+          CTP_SOURCE_CLIENT, InMemoryReferenceIdToKeyCache.getInstance());
 
   /**
    * Delete all product related test data from target and source projects. Then creates custom types
@@ -154,7 +153,7 @@ class ProductReferenceResolverIT {
             createRandomCategoryOrderHints(categoryReferencesWithIds));
     CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
 
-    final List<Product> products =
+    final List<ProductProjection> products =
         CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts =
@@ -184,7 +183,7 @@ class ProductReferenceResolverIT {
             createRandomCategoryOrderHints(categoryReferencesWithIds));
     CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
 
-    final List<Product> products =
+    final List<ProductProjection> products =
         CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts =

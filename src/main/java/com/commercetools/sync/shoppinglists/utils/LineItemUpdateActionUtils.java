@@ -262,7 +262,6 @@ public final class LineItemUpdateActionUtils {
       @Nonnull final ShoppingListSyncOptions syncOptions) {
 
     return CustomUpdateActionUtils.buildCustomUpdateActions(
-        oldShoppingList,
         newShoppingList,
         oldLineItem::getCustom,
         newLineItem::getCustom,

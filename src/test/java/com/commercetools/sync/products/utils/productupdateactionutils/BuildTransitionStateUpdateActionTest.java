@@ -6,8 +6,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.commands.updateactions.TransitionState;
 import io.sphere.sdk.states.State;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class BuildTransitionStateUpdateActionTest {
 
-  @Mock private Product oldProduct;
+  @Mock private ProductProjection oldProduct;
 
   @Mock private ProductDraft newProduct;
 

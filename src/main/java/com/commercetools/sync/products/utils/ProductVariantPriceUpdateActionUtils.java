@@ -29,7 +29,6 @@ public final class ProductVariantPriceUpdateActionUtils {
    * {@link PriceDraft} have identical fields, then no update action is needed and hence an empty
    * {@link List} is returned.
    *
-   * @param oldProduct old Product, whose prices should be updated.
    * @param newProduct new product draft, which provides the prices to update.
    * @param variantId the variantId needed for building the update action.
    * @param oldPrice the price which should be updated.
@@ -40,7 +39,6 @@ public final class ProductVariantPriceUpdateActionUtils {
    */
   @Nonnull
   public static List<UpdateAction<Product>> buildActions(
-      @Nonnull final Product oldProduct,
       @Nonnull final ProductDraft newProduct,
       @Nonnull final Integer variantId,
       @Nonnull final Price oldPrice,
@@ -51,8 +49,7 @@ public final class ProductVariantPriceUpdateActionUtils {
 
     buildChangePriceUpdateAction(oldPrice, newPrice, syncOptions).ifPresent(updateActions::add);
     updateActions.addAll(
-        buildCustomUpdateActions(
-            oldProduct, newProduct, variantId, oldPrice, newPrice, syncOptions));
+        buildCustomUpdateActions(newProduct, variantId, oldPrice, newPrice, syncOptions));
 
     return updateActions;
   }
@@ -116,7 +113,6 @@ public final class ProductVariantPriceUpdateActionUtils {
    * Price} and the {@link PriceDraft} have identical custom fields and types, then no update action
    * is needed and hence an empty {@link List} is returned.
    *
-   * @param oldProduct old Product, whose prices should be updated.
    * @param newProduct new product draft, which provides the prices to update.
    * @param variantId the variantId needed for building the update action.
    * @param oldPrice the price which should be updated.
@@ -128,7 +124,6 @@ public final class ProductVariantPriceUpdateActionUtils {
    */
   @Nonnull
   public static List<UpdateAction<Product>> buildCustomUpdateActions(
-      @Nonnull final Product oldProduct,
       @Nonnull final ProductDraft newProduct,
       @Nonnull final Integer variantId,
       @Nonnull final Price oldPrice,
@@ -136,7 +131,6 @@ public final class ProductVariantPriceUpdateActionUtils {
       @Nonnull final ProductSyncOptions syncOptions) {
 
     return CustomUpdateActionUtils.buildCustomUpdateActions(
-        oldProduct,
         newProduct,
         oldPrice,
         newPrice,

@@ -16,56 +16,6 @@ import javax.annotation.Nullable;
  * commercetools project to a target one.
  */
 public final class CustomTypeReferenceResolutionUtils {
-  /**
-   * Given a resource of type {@code T} that extends {@link Custom} (i.e. it has {@link
-   * CustomFields}, this method checks if the custom fields are existing (not null) and they are
-   * reference expanded. If they are then it returns a {@link CustomFieldsDraft} instance with the
-   * custom type key in place of the key of the reference. Otherwise, if it's not reference expanded
-   * it returns a {@link CustomFieldsDraft} without the key. If the resource has null {@link
-   * Custom}, then it returns {@code null}.
-   *
-   * @param resource the resource to replace its custom type key, if possible.
-   * @param <T> the type of the resource.
-   * @return an instance of {@link CustomFieldsDraft} instance with the custom type key, if the
-   *     custom type reference was existing and reference expanded on the resource. Otherwise, if
-   *     its not reference expanded it returns a {@link CustomFieldsDraft} without a key. If the
-   *     resource has no or null {@link Custom}, then it returns {@code null}. TODO: Should Remove
-   *     this method when all the resources adapts reference resolution with Cache(CTPI-443).
-   */
-  @Nullable
-  public static <T extends Custom> CustomFieldsDraft mapToCustomFieldsDraft(
-      @Nonnull final T resource) {
-    final CustomFields custom = resource.getCustom();
-    return mapToCustomFieldsDraft(custom);
-  }
-
-  /**
-   * Given a custom {@link CustomFields}, this method provides checking to certain resources which
-   * do not extends {@link Custom}, such as {@link ShoppingList}, {@link LineItem} and {@link
-   * TextLineItem}. If the custom fields are existing (not null) and they are reference expanded. If
-   * they are then it returns a {@link CustomFieldsDraft} instance with the custom type key in place
-   * of the key of the reference. Otherwise, if it's not reference expanded it returns a {@link
-   * CustomFieldsDraft} without the key. If the resource has null {@link Custom}, then it returns
-   * {@code null}.
-   *
-   * @param custom the resource to replace its custom type key, if possible.
-   * @return an instance of {@link CustomFieldsDraft} instance with the custom type key, if the
-   *     custom type reference was existing and reference expanded on the resource. Otherwise, if
-   *     its not reference expanded it returns a {@link CustomFieldsDraft} without a key. If the
-   *     resource has no or null {@link Custom}, then it returns {@code null}. TODO: Should Remove
-   *     this method when all the resources adapts reference resolution with Cache(CTPI-443).
-   */
-  @Nullable
-  public static CustomFieldsDraft mapToCustomFieldsDraft(@Nullable final CustomFields custom) {
-    if (custom != null) {
-      if (custom.getType().getObj() != null) {
-        return CustomFieldsDraft.ofTypeKeyAndJson(
-            custom.getType().getObj().getKey(), custom.getFieldsJsonMap());
-      }
-      return CustomFieldsDraftBuilder.of(custom).build();
-    }
-    return null;
-  }
 
   /**
    * Given a resource of type {@code T} that extends {@link Custom} (i.e. it has {@link
@@ -110,9 +60,10 @@ public final class CustomTypeReferenceResolutionUtils {
   public static CustomFieldsDraft mapToCustomFieldsDraft(
       @Nullable final CustomFields custom, @Nonnull final Map<String, String> referenceIdToKeyMap) {
     if (custom != null) {
-      if (referenceIdToKeyMap.containsKey(custom.getType().getId())) {
+      final String typeId = custom.getType().getId();
+      if (referenceIdToKeyMap.containsKey(typeId)) {
         return CustomFieldsDraft.ofTypeKeyAndJson(
-            referenceIdToKeyMap.get(custom.getType().getId()), custom.getFieldsJsonMap());
+            referenceIdToKeyMap.get(typeId), custom.getFieldsJsonMap());
       }
       return CustomFieldsDraftBuilder.of(custom).build();
     }

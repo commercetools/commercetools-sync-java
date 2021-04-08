@@ -49,7 +49,6 @@ public final class AssetsUpdateActionUtils {
    * @param <T> the type of the resource the asset update actions are built for.
    * @param <D> the type of the draft, which contains the changes the asset update actions are built
    *     for.
-   * @param oldResource resource from a target project, whose asset should be updated.
    * @param newResource resource draft from a source project, which contains the asset to update.
    * @param oldAssets the old list of assets.
    * @param newAssetDrafts the new list of asset drafts.
@@ -62,7 +61,6 @@ public final class AssetsUpdateActionUtils {
    */
   @Nonnull
   public static <T extends Resource, D> List<UpdateAction<T>> buildAssetsUpdateActions(
-      @Nonnull final T oldResource,
       @Nonnull final D newResource,
       @Nonnull final List<Asset> oldAssets,
       @Nullable final List<AssetDraft> newAssetDrafts,
@@ -72,7 +70,7 @@ public final class AssetsUpdateActionUtils {
 
     if (newAssetDrafts != null) {
       return buildAssetsUpdateActionsWithNewAssetDrafts(
-          oldResource, newResource, oldAssets, newAssetDrafts, assetActionFactory, syncOptions);
+          newResource, oldAssets, newAssetDrafts, assetActionFactory, syncOptions);
     } else {
       return oldAssets.stream()
           .map(Asset::getKey)
@@ -100,7 +98,6 @@ public final class AssetsUpdateActionUtils {
   @Nonnull
   private static <T extends Resource, D>
       List<UpdateAction<T>> buildAssetsUpdateActionsWithNewAssetDrafts(
-          @Nonnull final T oldResource,
           @Nonnull final D newResource,
           @Nonnull final List<Asset> oldAssets,
           @Nonnull final List<AssetDraft> newAssetDrafts,
@@ -162,12 +159,7 @@ public final class AssetsUpdateActionUtils {
     // 1. Remove or compare if matching.
     final List<UpdateAction<T>> updateActions =
         buildRemoveAssetOrAssetUpdateActions(
-            oldResource,
-            newResource,
-            oldAssets,
-            removedAssetKeys,
-            newAssetDraftsKeyMap,
-            assetActionFactory);
+            newResource, oldAssets, removedAssetKeys, newAssetDraftsKeyMap, assetActionFactory);
 
     // 2. Compare ordering of assets and add a ChangeAssetOrder action if needed.
     buildChangeAssetOrderUpdateAction(
@@ -200,7 +192,6 @@ public final class AssetsUpdateActionUtils {
    */
   @Nonnull
   private static <T extends Resource, D> List<UpdateAction<T>> buildRemoveAssetOrAssetUpdateActions(
-      @Nonnull final T oldResource,
       @Nonnull final D newResource,
       @Nonnull final List<Asset> oldAssets,
       @Nonnull final Set<String> removedAssetKeys,
@@ -221,8 +212,7 @@ public final class AssetsUpdateActionUtils {
               return ofNullable(matchingNewAssetDraft)
                   .map(
                       assetDraft -> // If asset exists, compare the two assets.
-                      assetActionFactory.buildAssetActions(
-                              oldResource, newResource, oldAsset, assetDraft))
+                      assetActionFactory.buildAssetActions(newResource, oldAsset, assetDraft))
                   .orElseGet(
                       () -> { // If asset doesn't exist, remove asset.
                         removedAssetKeys.add(oldAssetKey);

@@ -9,9 +9,9 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.LocalizedStringEntry;
 import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductData;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
 import io.sphere.sdk.products.commands.updateactions.SetDescription;
@@ -43,7 +43,7 @@ public final class SyncSingleLocale {
   public static List<UpdateAction<Product>> syncFrenchDataOnly(
       @Nonnull final List<UpdateAction<Product>> updateActions,
       @Nonnull final ProductDraft newProductDraft,
-      @Nonnull final Product oldProduct) {
+      @Nonnull final ProductProjection oldProduct) {
 
     final List<Optional<UpdateAction<Product>>> optionalActions =
         updateActions.stream()
@@ -89,7 +89,7 @@ public final class SyncSingleLocale {
   private static Optional<UpdateAction<Product>> filterSingleLocalization(
       @Nonnull final UpdateAction<Product> updateAction,
       @Nonnull final ProductDraft newProductDraft,
-      @Nonnull final Product oldProduct,
+      @Nonnull final ProductProjection oldProduct,
       @Nonnull final Locale locale) {
 
     if (updateAction instanceof ChangeName) {
@@ -98,7 +98,7 @@ public final class SyncSingleLocale {
           oldProduct,
           locale,
           ProductDraft::getName,
-          ProductData::getName,
+          (p) -> oldProduct.getName(),
           ChangeName::of);
     }
     if (updateAction instanceof SetDescription) {
@@ -107,7 +107,7 @@ public final class SyncSingleLocale {
           oldProduct,
           locale,
           ProductDraft::getDescription,
-          ProductData::getDescription,
+          ProductProjection::getDescription,
           SetDescription::of);
     }
     if (updateAction instanceof ChangeSlug) {
@@ -116,7 +116,7 @@ public final class SyncSingleLocale {
           oldProduct,
           locale,
           ProductDraft::getSlug,
-          ProductData::getSlug,
+          ProductProjection::getSlug,
           ChangeSlug::of);
     }
     if (updateAction instanceof SetMetaTitle) {
@@ -125,7 +125,7 @@ public final class SyncSingleLocale {
           oldProduct,
           locale,
           ProductDraft::getMetaTitle,
-          ProductData::getMetaTitle,
+          ProductProjection::getMetaTitle,
           SetMetaTitle::of);
     }
     if (updateAction instanceof SetMetaDescription) {
@@ -134,7 +134,7 @@ public final class SyncSingleLocale {
           oldProduct,
           locale,
           ProductDraft::getMetaDescription,
-          ProductData::getMetaDescription,
+          ProductProjection::getMetaDescription,
           SetMetaDescription::of);
     }
     if (updateAction instanceof SetMetaKeywords) {
@@ -143,7 +143,7 @@ public final class SyncSingleLocale {
           oldProduct,
           locale,
           ProductDraft::getMetaKeywords,
-          ProductData::getMetaKeywords,
+          ProductProjection::getMetaKeywords,
           SetMetaKeywords::of);
     }
     return Optional.of(updateAction);
@@ -170,14 +170,13 @@ public final class SyncSingleLocale {
   @Nonnull
   private static Optional<UpdateAction<Product>> filterLocalizedField(
       @Nonnull final ProductDraft newDraft,
-      @Nonnull final Product oldProduct,
+      @Nonnull final ProductProjection oldProduct,
       @Nonnull final Locale locale,
       @Nonnull final Function<ProductDraft, LocalizedString> newLocalizedFieldMapper,
-      @Nonnull final Function<ProductData, LocalizedString> oldLocalizedFieldMapper,
+      @Nonnull final Function<ProductProjection, LocalizedString> oldLocalizedFieldMapper,
       @Nonnull final Function<LocalizedString, UpdateAction<Product>> updateActionMapper) {
     final LocalizedString newLocalizedField = newLocalizedFieldMapper.apply(newDraft);
-    final LocalizedString oldLocalizedField =
-        oldLocalizedFieldMapper.apply(oldProduct.getMasterData().getStaged());
+    final LocalizedString oldLocalizedField = oldLocalizedFieldMapper.apply(oldProduct);
     if (oldLocalizedField != null && newLocalizedField != null) {
       // if both old and new localized fields are set, only update if the locale values are not
       // equal.

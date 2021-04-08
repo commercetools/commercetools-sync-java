@@ -1,7 +1,6 @@
 package com.commercetools.sync.integration.ctpprojectsource.categories;
 
 import static com.commercetools.sync.categories.utils.CategoryReferenceResolutionUtils.buildCategoryQuery;
-import static com.commercetools.sync.categories.utils.CategoryReferenceResolutionUtils.mapToCategoryDrafts;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
@@ -22,6 +21,8 @@ import com.commercetools.sync.categories.CategorySync;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
+import com.commercetools.sync.categories.service.CategoryReferenceTransformService;
+import com.commercetools.sync.categories.service.impl.CategoryReferenceTransformServiceImpl;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
@@ -33,8 +34,10 @@ import io.sphere.sdk.models.errors.DuplicateFieldError;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -47,6 +50,9 @@ class CategorySyncIT {
   private List<String> callBackErrorResponses = new ArrayList<>();
   private List<Throwable> callBackExceptions = new ArrayList<>();
   private List<String> callBackWarningResponses = new ArrayList<>();
+  private final Map<String, String> idToKeyCache = new HashMap<>();
+  private final CategoryReferenceTransformService categoryReferenceTransformService =
+      new CategoryReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
 
   /**
    * Delete all categories and types from source and target project. Then create custom types for
@@ -110,7 +116,8 @@ class CategorySyncIT {
     final List<Category> categories =
         CTP_SOURCE_CLIENT.execute(buildCategoryQuery()).toCompletableFuture().join().getResults();
 
-    final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
+    final List<CategoryDraft> categoryDrafts =
+        categoryReferenceTransformService.transformCategoryReferences(categories).join();
 
     final CategorySyncStatistics syncStatistics =
         categorySync.sync(categoryDrafts).toCompletableFuture().join();
@@ -129,7 +136,8 @@ class CategorySyncIT {
     final List<Category> categories =
         CTP_SOURCE_CLIENT.execute(buildCategoryQuery()).toCompletableFuture().join().getResults();
 
-    final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
+    final List<CategoryDraft> categoryDrafts =
+        categoryReferenceTransformService.transformCategoryReferences(categories).join();
 
     final CategorySyncStatistics syncStatistics =
         categorySync.sync(categoryDrafts).toCompletableFuture().join();
@@ -162,7 +170,8 @@ class CategorySyncIT {
     final List<Category> categories =
         CTP_SOURCE_CLIENT.execute(buildCategoryQuery()).toCompletableFuture().join().getResults();
 
-    final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
+    final List<CategoryDraft> categoryDrafts =
+        categoryReferenceTransformService.transformCategoryReferences(categories).join();
 
     // Make sure there is no hierarchical order
     Collections.shuffle(categoryDrafts);
@@ -214,7 +223,8 @@ class CategorySyncIT {
     final List<Category> categories =
         CTP_SOURCE_CLIENT.execute(buildCategoryQuery()).toCompletableFuture().join().getResults();
 
-    final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
+    final List<CategoryDraft> categoryDrafts =
+        categoryReferenceTransformService.transformCategoryReferences(categories).join();
     Collections.shuffle(categoryDrafts);
 
     CategorySync categorySyncWith13BatcheSize = new CategorySync(buildCategorySyncOptions(13));
@@ -252,7 +262,8 @@ class CategorySyncIT {
     final List<Category> categories =
         CTP_SOURCE_CLIENT.execute(buildCategoryQuery()).toCompletableFuture().join().getResults();
 
-    final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
+    final List<CategoryDraft> categoryDrafts =
+        categoryReferenceTransformService.transformCategoryReferences(categories).join();
     Collections.shuffle(categoryDrafts);
 
     CategorySync categorySyncWith1BatchSize = new CategorySync(buildCategorySyncOptions(1));
@@ -336,7 +347,8 @@ class CategorySyncIT {
             .join()
             .getResults();
 
-    final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
+    final List<CategoryDraft> categoryDrafts =
+        categoryReferenceTransformService.transformCategoryReferences(categories).join();
 
     // To simulate the new parent coming in a later draft
     Collections.reverse(categoryDrafts);
@@ -405,7 +417,8 @@ class CategorySyncIT {
     final List<Category> categories =
         CTP_SOURCE_CLIENT.execute(buildCategoryQuery()).toCompletableFuture().join().getResults();
 
-    final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
+    final List<CategoryDraft> categoryDrafts =
+        categoryReferenceTransformService.transformCategoryReferences(categories).join();
 
     final CategorySyncStatistics syncStatistics =
         categorySync.sync(categoryDrafts).toCompletableFuture().join();

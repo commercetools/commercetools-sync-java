@@ -11,13 +11,14 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductData;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.Attribute;
+import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
@@ -41,7 +42,8 @@ public final class ProductReferenceResolutionUtils {
 
   /**
    * Returns an {@link List}&lt;{@link ProductDraft}&gt; consisting of the results of applying the
-   * mapping from {@link Product} to {@link ProductDraft} with considering reference resolution.
+   * mapping from the staged version of a {@link ProductProjection} to {@link ProductDraft} with
+   * considering reference resolution.
    *
    * <table>
    *   <caption>Mapping of Reference fields for the reference resolution</caption>
@@ -103,17 +105,18 @@ public final class ProductReferenceResolutionUtils {
    *
    * <p><b>Note:</b> The aforementioned references should contain Id in the map(cache) with a key
    * value. Any reference that is not available in the map will have its id in place and not
-   * replaced by the key will be considered as existing resources on the target commercetools
-   * project and the library will issues an update/create API request without reference resolution.
+   * replaced by the key. This reference will be considered as existing resources on the target
+   * commercetools project and the library will issues an update/create API request without
+   * reference resolution.
    *
-   * @param products the products without expansion of references.
+   * @param products the productprojection (staged) without expansion of references.
    * @param referenceIdToKeyMap the map containing the cached id to key values.
    * @return a {@link List} of {@link ProductDraft} built from the supplied {@link List} of {@link
    *     Product}.
    */
   @Nonnull
   public static List<ProductDraft> mapToProductDrafts(
-      @Nonnull final List<Product> products,
+      @Nonnull final List<ProductProjection> products,
       @Nonnull final Map<String, String> referenceIdToKeyMap) {
     return products.stream()
         .filter(Objects::nonNull)
@@ -128,8 +131,7 @@ public final class ProductReferenceResolutionUtils {
               final CategoryOrderHints categoryOrderHintsWithKeys =
                   categoryReferencePair.getCategoryOrderHints();
 
-              final List<ProductVariant> allVariants =
-                  product.getMasterData().getStaged().getAllVariants();
+              final List<ProductVariant> allVariants = product.getAllVariants();
               final List<ProductVariantDraft> variantDraftsWithKeys =
                   VariantReferenceResolutionUtils.mapToProductVariantDrafts(
                       allVariants, referenceIdToKeyMap);
@@ -161,41 +163,38 @@ public final class ProductReferenceResolutionUtils {
    */
   @Nonnull
   public static ProductDraftBuilder getDraftBuilderFromStagedProduct(
-      @Nonnull final Product product) {
-    final ProductData productData = product.getMasterData().getStaged();
+      @Nonnull final ProductProjection product) {
     final List<ProductVariantDraft> allVariants =
-        productData.getAllVariants().stream()
+        product.getAllVariants().stream()
             .map(productVariant -> ProductVariantDraftBuilder.of(productVariant).build())
             .collect(toList());
     final ProductVariantDraft masterVariant =
-        ProductVariantDraftBuilder.of(product.getMasterData().getStaged().getMasterVariant())
-            .build();
+        ProductVariantDraftBuilder.of(product.getMasterVariant()).build();
 
     return ProductDraftBuilder.of(
-            product.getProductType(), productData.getName(), productData.getSlug(), allVariants)
+            product.getProductType(), product.getName(), product.getSlug(), allVariants)
         .masterVariant(masterVariant)
-        .metaDescription(productData.getMetaDescription())
-        .metaKeywords(productData.getMetaKeywords())
-        .metaTitle(productData.getMetaTitle())
-        .description(productData.getDescription())
-        .searchKeywords(productData.getSearchKeywords())
+        .metaDescription(product.getMetaDescription())
+        .metaKeywords(product.getMetaKeywords())
+        .metaTitle(product.getMetaTitle())
+        .description(product.getDescription())
+        .searchKeywords(product.getSearchKeywords())
         .taxCategory(product.getTaxCategory())
         .state(product.getState())
         .key(product.getKey())
-        .publish(product.getMasterData().isPublished())
-        .categories(new ArrayList<>(productData.getCategories()))
-        .categoryOrderHints(productData.getCategoryOrderHints());
+        .publish(product.isPublished())
+        .categories(new ArrayList<>(product.getCategories()))
+        .categoryOrderHints(product.getCategoryOrderHints());
   }
 
   @Nonnull
   static CategoryReferencePair mapToCategoryReferencePair(
-      @Nonnull final Product product, @Nonnull final Map<String, String> referenceIdToKeyMap) {
-    final Set<Reference<Category>> categoryReferences =
-        product.getMasterData().getStaged().getCategories();
+      @Nonnull final ProductProjection product,
+      @Nonnull final Map<String, String> referenceIdToKeyMap) {
+    final Set<Reference<Category>> categoryReferences = product.getCategories();
     final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = new HashSet<>();
 
-    final CategoryOrderHints categoryOrderHints =
-        product.getMasterData().getStaged().getCategoryOrderHints();
+    final CategoryOrderHints categoryOrderHints = product.getCategoryOrderHints();
     final Map<String, String> categoryOrderHintsMapWithKeys = new HashMap<>();
 
     categoryReferences.forEach(
@@ -231,8 +230,8 @@ public final class ProductReferenceResolutionUtils {
    * @return the query for fetching products from the source CTP project.
    */
   @Nonnull
-  public static ProductQuery buildProductQuery() {
-    return ProductQuery.of();
+  public static ProductProjectionQuery buildProductQuery() {
+    return ProductProjectionQuery.ofStaged();
   }
 
   private ProductReferenceResolutionUtils() {}

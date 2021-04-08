@@ -1,7 +1,5 @@
 package com.commercetools.sync.customers.utils;
 
-import static com.commercetools.sync.commons.MockUtils.getTypeMock;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroup;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,7 +11,6 @@ import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.customers.queries.CustomerQuery;
-import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.Address;
 import io.sphere.sdk.models.KeyReference;
 import io.sphere.sdk.models.Reference;
@@ -21,19 +18,35 @@ import io.sphere.sdk.stores.Store;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class CustomerReferenceResolutionUtilsTest {
 
+  private final Map<String, String> idToKeyValueMap = new HashMap<>();
+
+  @AfterEach
+  void clearCache() {
+    idToKeyValueMap.clear();
+  }
+
   @Test
-  void mapToCustomerDrafts_WithExpandedReferences_ShouldReturnResourceIdentifiersWithKeys() {
-    final Type mockCustomType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
-    final CustomerGroup mockCustomerGroup =
-        getMockCustomerGroup(UUID.randomUUID().toString(), "customerGroupKey");
+  void
+      mapToCustomerDrafts_WithNonExpandedReferencesAndIdsCached_ShouldReturnResourceIdentifiersWithKeys() {
+    final String customTypeId = UUID.randomUUID().toString();
+    final String customTypeKey = "customTypeKey";
+    final String customerGroupId = UUID.randomUUID().toString();
+    final String customerGroupKey = "customerGroupKey";
     final String storeKey1 = "storeKey1";
     final String storeKey2 = "storeKey2";
+
+    // Cache key values with ids.
+    idToKeyValueMap.put(customTypeId, customTypeKey);
+    idToKeyValueMap.put(customerGroupId, customerGroupKey);
 
     final List<Customer> mockCustomers = new ArrayList<>();
     for (int i = 0; i < 3; i++) {
@@ -41,12 +54,12 @@ class CustomerReferenceResolutionUtilsTest {
 
       final CustomFields mockCustomFields = mock(CustomFields.class);
       final Reference<Type> typeReference =
-          Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), mockCustomType);
+          Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), customTypeId);
       when(mockCustomFields.getType()).thenReturn(typeReference);
       when(mockCustomer.getCustom()).thenReturn(mockCustomFields);
 
       final Reference<CustomerGroup> customerGroupReference =
-          Reference.ofResourceTypeIdAndObj(CustomerGroup.referenceTypeId(), mockCustomerGroup);
+          Reference.ofResourceTypeIdAndId(CustomerGroup.referenceTypeId(), customerGroupId);
       when(mockCustomer.getCustomerGroup()).thenReturn(customerGroupReference);
 
       List<KeyReference<Store>> keyReferences =
@@ -61,19 +74,20 @@ class CustomerReferenceResolutionUtilsTest {
     }
 
     final List<CustomerDraft> referenceReplacedDrafts =
-        CustomerReferenceResolutionUtils.mapToCustomerDrafts(mockCustomers);
+        CustomerReferenceResolutionUtils.mapToCustomerDrafts(mockCustomers, idToKeyValueMap);
 
     referenceReplacedDrafts.forEach(
         draft -> {
-          assertThat(draft.getCustom().getType().getKey()).isEqualTo(mockCustomType.getKey());
-          assertThat(draft.getCustomerGroup().getKey()).isEqualTo(mockCustomerGroup.getKey());
+          assertThat(draft.getCustom().getType().getKey()).isEqualTo(customTypeKey);
+          assertThat(draft.getCustomerGroup().getKey()).isEqualTo(customerGroupKey);
           assertThat(draft.getStores().get(0).getKey()).isEqualTo(storeKey1);
           assertThat(draft.getStores().get(1).getKey()).isEqualTo(storeKey2);
         });
   }
 
   @Test
-  void mapToCustomerDrafts_WithNonExpandedReferences_ShouldReturnResourceIdentifiersWithoutKeys() {
+  void
+      mapToCustomerDrafts_WithNonExpandedReferencesAndIdsNotCached_ShouldReturnResourceIdentifiersWithoutKeys() {
     final String customTypeId = UUID.randomUUID().toString();
     final String customerGroupId = UUID.randomUUID().toString();
 
@@ -98,7 +112,7 @@ class CustomerReferenceResolutionUtilsTest {
     }
 
     final List<CustomerDraft> referenceReplacedDrafts =
-        CustomerReferenceResolutionUtils.mapToCustomerDrafts(mockCustomers);
+        CustomerReferenceResolutionUtils.mapToCustomerDrafts(mockCustomers, idToKeyValueMap);
 
     referenceReplacedDrafts.forEach(
         draft -> {
@@ -125,7 +139,8 @@ class CustomerReferenceResolutionUtilsTest {
     when(mockCustomer.getShippingAddressIds()).thenReturn(asList("address-id2", "address-id3"));
 
     final List<CustomerDraft> referenceReplacedDrafts =
-        CustomerReferenceResolutionUtils.mapToCustomerDrafts(singletonList(mockCustomer));
+        CustomerReferenceResolutionUtils.mapToCustomerDrafts(
+            singletonList(mockCustomer), idToKeyValueMap);
 
     final CustomerDraft customerDraft = referenceReplacedDrafts.get(0);
 
@@ -153,7 +168,8 @@ class CustomerReferenceResolutionUtilsTest {
     when(mockCustomer.getShippingAddressIds()).thenReturn(asList(" ", "address-id3", null));
 
     final List<CustomerDraft> referenceReplacedDrafts =
-        CustomerReferenceResolutionUtils.mapToCustomerDrafts(singletonList(mockCustomer));
+        CustomerReferenceResolutionUtils.mapToCustomerDrafts(
+            singletonList(mockCustomer), idToKeyValueMap);
 
     final CustomerDraft customerDraft = referenceReplacedDrafts.get(0);
 
@@ -181,7 +197,8 @@ class CustomerReferenceResolutionUtilsTest {
     when(mockCustomer.getShippingAddressIds()).thenReturn(null);
 
     final List<CustomerDraft> referenceReplacedDrafts =
-        CustomerReferenceResolutionUtils.mapToCustomerDrafts(singletonList(mockCustomer));
+        CustomerReferenceResolutionUtils.mapToCustomerDrafts(
+            singletonList(mockCustomer), idToKeyValueMap);
 
     final CustomerDraft customerDraft = referenceReplacedDrafts.get(0);
 
@@ -193,9 +210,8 @@ class CustomerReferenceResolutionUtilsTest {
   }
 
   @Test
-  void buildCustomerQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
+  void buildCustomerQuery_Always_ShouldReturnQueryWithoutAnyReferencesExpanded() {
     final CustomerQuery customerQuery = CustomerReferenceResolutionUtils.buildCustomerQuery();
-    assertThat(customerQuery.expansionPaths())
-        .containsExactly(ExpansionPath.of("customerGroup"), ExpansionPath.of("custom.type"));
+    assertThat(customerQuery.expansionPaths()).isEmpty();
   }
 }

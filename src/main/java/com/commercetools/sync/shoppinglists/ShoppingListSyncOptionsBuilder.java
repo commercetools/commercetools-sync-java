@@ -8,7 +8,11 @@ import javax.annotation.Nonnull;
 
 public final class ShoppingListSyncOptionsBuilder
     extends BaseSyncOptionsBuilder<
-        ShoppingListSyncOptionsBuilder, ShoppingListSyncOptions, ShoppingList, ShoppingListDraft> {
+        ShoppingListSyncOptionsBuilder,
+        ShoppingListSyncOptions,
+        ShoppingList,
+        ShoppingListDraft,
+        ShoppingList> {
 
   public static final int BATCH_SIZE_DEFAULT = 50;
 

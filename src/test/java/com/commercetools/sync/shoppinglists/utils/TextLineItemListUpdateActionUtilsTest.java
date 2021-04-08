@@ -47,8 +47,10 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -72,6 +74,8 @@ class TextLineItemListUpdateActionUtilsTest {
 
   private static final TextLineItemReferenceResolver textLineItemReferenceResolver =
       new TextLineItemReferenceResolver(SYNC_OPTIONS, getMockTypeService());
+
+  private static final Map<String, String> idToKeyValueMap = new HashMap<>();
 
   @Test
   void
@@ -470,7 +474,7 @@ class TextLineItemListUpdateActionUtilsTest {
 
     final ShoppingListDraft template =
         ShoppingListReferenceResolutionUtils.mapToShoppingListDraft(
-            readObjectFromResource(resourcePath, ShoppingList.class));
+            readObjectFromResource(resourcePath, ShoppingList.class), idToKeyValueMap);
 
     final ShoppingListDraftBuilder builder = ShoppingListDraftBuilder.of(template);
 

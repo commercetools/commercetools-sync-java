@@ -16,6 +16,7 @@ import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -44,13 +45,13 @@ import io.sphere.sdk.models.TextInputHint;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
-import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
-import io.sphere.sdk.products.queries.ProductQuery;
+import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
@@ -79,9 +80,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.money.CurrencyUnit;
@@ -94,15 +93,15 @@ class ProductSyncWithUnexpandedReferencesIT {
 
   private static final String RESOURCE_KEY = "foo";
   private static final String TYPE_KEY = "typeKey";
-  private static ProductQuery productQuery;
+  private static ProductProjectionQuery productQuery;
 
   private ProductSync productSync;
   private List<String> errorCallBackMessages;
   private List<String> warningCallBackMessages;
   private List<Throwable> errorCallBackExceptions;
-  private final Map<String, String> idToKeyCache = new HashMap<>();
-  ProductReferenceTransformService productReferenceTransformService =
-      new ProductReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
+  private final ProductReferenceTransformService productReferenceTransformService =
+      new ProductReferenceTransformServiceImpl(
+          CTP_SOURCE_CLIENT, InMemoryReferenceIdToKeyCache.getInstance());
 
   @BeforeAll
   static void setupSourceProjectData() {
@@ -287,7 +286,7 @@ class ProductSyncWithUnexpandedReferencesIT {
 
   @Test
   void run_WithSyncAsArgumentWithProductsArg_ShouldResolveReferencesAndExecuteProductSyncer() {
-    final List<Product> products =
+    final List<ProductProjection> products =
         CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts =

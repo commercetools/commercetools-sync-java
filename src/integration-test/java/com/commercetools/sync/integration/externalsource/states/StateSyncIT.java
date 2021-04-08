@@ -7,7 +7,6 @@ import static com.commercetools.sync.integration.commons.utils.StateITUtils.dele
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.deleteStatesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.getStateByKey;
 import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY;
-import static com.commercetools.sync.states.utils.StateReferenceResolutionUtils.mapToStateDrafts;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static io.sphere.sdk.states.State.referenceOfId;
@@ -25,6 +24,7 @@ import static org.mockito.Mockito.when;
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
+import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
 import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.commercetools.sync.services.impl.StateServiceImpl;
 import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
@@ -33,6 +33,8 @@ import com.commercetools.sync.states.StateSyncOptions;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
 import com.commercetools.sync.states.helpers.StateReferenceResolver;
 import com.commercetools.sync.states.helpers.StateSyncStatistics;
+import com.commercetools.sync.states.service.StateReferenceTransformService;
+import com.commercetools.sync.states.service.impl.StateReferenceTransformServiceImpl;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.ConcurrentModificationException;
@@ -48,7 +50,6 @@ import io.sphere.sdk.states.StateRole;
 import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.states.commands.StateCreateCommand;
 import io.sphere.sdk.states.commands.StateUpdateCommand;
-import io.sphere.sdk.states.expansion.StateExpansionModel;
 import io.sphere.sdk.states.queries.StateQuery;
 import io.sphere.sdk.states.queries.StateQueryBuilder;
 import java.util.ArrayList;
@@ -78,6 +79,9 @@ class StateSyncIT {
   List<String> warningCallBackMessages;
   List<Throwable> errorCallBackExceptions;
   String key = "";
+  private final StateReferenceTransformService stateReferenceTransformService =
+      new StateReferenceTransformServiceImpl(
+          CTP_SOURCE_CLIENT, InMemoryReferenceIdToKeyCache.getInstance());
 
   @AfterAll
   static void tearDown() {
@@ -557,7 +561,10 @@ class StateSyncIT {
     final State stateB = createStateInSource(stateBDraft);
 
     StateDraft[] draftsWithReplacesKeys =
-        mapToStateDrafts(asList(stateB, stateC)).toArray(new StateDraft[2]);
+        stateReferenceTransformService
+            .transformStateReferences(asList(stateB, stateC))
+            .join()
+            .toArray(new StateDraft[2]);
     final StateDraft stateADraft =
         createStateDraftReferencingStateDrafts(keyA, draftsWithReplacesKeys);
     final List<StateDraft> stateDrafts = asList(stateADraft);
@@ -611,7 +618,10 @@ class StateSyncIT {
         StateSyncOptionsBuilder.of(CTP_TARGET_CLIENT).batchSize(3).build();
 
     final StateSync stateSync = new StateSync(stateSyncOptions);
-    final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateA, stateB, stateC));
+    final List<StateDraft> stateDrafts =
+        stateReferenceTransformService
+            .transformStateReferences(Arrays.asList(stateA, stateB, stateC))
+            .join();
     // test
     final StateSyncStatistics stateSyncStatistics =
         stateSync.sync(stateDrafts).toCompletableFuture().join();
@@ -669,7 +679,10 @@ class StateSyncIT {
             .build();
 
     final StateSync stateSync = new StateSync(stateSyncOptions);
-    final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateA, stateB, stateC));
+    final List<StateDraft> stateDrafts =
+        stateReferenceTransformService
+            .transformStateReferences(Arrays.asList(stateA, stateB, stateC))
+            .join();
     // test
     final StateSyncStatistics stateSyncStatistics =
         stateSync.sync(stateDrafts).toCompletableFuture().join();
@@ -725,13 +738,17 @@ class StateSyncIT {
     final State stateA = createStateInSource(stateADraft);
     final StateDraft tagetStateADraft = createStateDraft(keyA, targetStateB);
     final State targetStateA = createStateInTarget(tagetStateADraft);
+
     Assertions.assertThat(targetStateB.getTransitions().size()).isEqualTo(1);
     Assertions.assertThat(targetStateA.getTransitions().size()).isEqualTo(1);
     final StateSyncOptions stateSyncOptions =
         StateSyncOptionsBuilder.of(CTP_TARGET_CLIENT).batchSize(3).build();
 
     final StateSync stateSync = new StateSync(stateSyncOptions);
-    final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateA, stateB, stateC));
+    final List<StateDraft> stateDrafts =
+        stateReferenceTransformService
+            .transformStateReferences(Arrays.asList(stateA, stateB, stateC))
+            .join();
     // test
     final StateSyncStatistics stateSyncStatistics =
         stateSync.sync(stateDrafts).toCompletableFuture().join();
@@ -780,7 +797,10 @@ class StateSyncIT {
             .build();
 
     final StateSync stateSync = new StateSync(stateSyncOptions);
-    final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateB, stateC));
+    final List<StateDraft> stateDrafts =
+        stateReferenceTransformService
+            .transformStateReferences(Arrays.asList(stateB, stateC))
+            .join();
     // test
     final StateSyncStatistics stateSyncStatistics =
         stateSync.sync(stateDrafts).toCompletableFuture().join();
@@ -810,13 +830,17 @@ class StateSyncIT {
     final State stateA = createStateInSource(stateADraft);
     final StateDraft tagetStateADraft = createStateDraft(keyA, targetStateB, targetStateC);
     final State targetStateA = createStateInTarget(tagetStateADraft);
+
     Assertions.assertThat(targetStateB.getTransitions().size()).isEqualTo(1);
     Assertions.assertThat(targetStateA.getTransitions().size()).isEqualTo(2);
     final StateSyncOptions stateSyncOptions =
         StateSyncOptionsBuilder.of(CTP_TARGET_CLIENT).batchSize(3).build();
 
     final StateSync stateSync = new StateSync(stateSyncOptions);
-    final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateA, stateB, stateC));
+    final List<StateDraft> stateDrafts =
+        stateReferenceTransformService
+            .transformStateReferences(Arrays.asList(stateA, stateB, stateC))
+            .join();
     // test
     final StateSyncStatistics stateSyncStatistics =
         stateSync.sync(stateDrafts).toCompletableFuture().join();
@@ -856,13 +880,17 @@ class StateSyncIT {
     final State stateA = createStateInSource(stateADraft);
     final StateDraft tagetStateADraft = createStateDraft(keyA, targetStateB, targetStateC);
     final State targetStateA = createStateInTarget(tagetStateADraft);
+
     Assertions.assertThat(targetStateB.getTransitions().size()).isEqualTo(1);
     Assertions.assertThat(targetStateA.getTransitions().size()).isEqualTo(2);
     final StateSyncOptions stateSyncOptions =
         StateSyncOptionsBuilder.of(CTP_TARGET_CLIENT).batchSize(3).build();
 
     final StateSync stateSync = new StateSync(stateSyncOptions);
-    final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateA, stateB, stateC));
+    final List<StateDraft> stateDrafts =
+        stateReferenceTransformService
+            .transformStateReferences(Arrays.asList(stateA, stateB, stateC))
+            .join();
     // test
     final StateSyncStatistics stateSyncStatistics =
         stateSync.sync(stateDrafts).toCompletableFuture().join();
@@ -936,6 +964,7 @@ class StateSyncIT {
     final State stateA = createStateInSource(stateADraft);
     final StateDraft tagetStateADraft = createStateDraft(keyA, targetStateB);
     final State targetStateA = createStateInTarget(tagetStateADraft);
+
     Assertions.assertThat(targetStateB.getTransitions().size()).isEqualTo(1);
     Assertions.assertThat(targetStateA.getTransitions().size()).isEqualTo(1);
 
@@ -960,7 +989,10 @@ class StateSyncIT {
                     warningCallBackMessages.add(exception.getMessage()))
             .build();
     final StateSync stateSync = new StateSync(stateSyncOptions);
-    final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateA, stateB, stateC));
+    final List<StateDraft> stateDrafts =
+        stateReferenceTransformService
+            .transformStateReferences(Arrays.asList(stateA, stateB, stateC))
+            .join();
     // test
     final StateSyncStatistics stateSyncStatistics =
         stateSync.sync(stateDrafts).toCompletableFuture().join();
@@ -1023,7 +1055,10 @@ class StateSyncIT {
                     warningCallBackMessages.add(exception.getMessage()))
             .build();
 
-    final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateA, stateB, stateC));
+    final List<StateDraft> stateDrafts =
+        stateReferenceTransformService
+            .transformStateReferences(Arrays.asList(stateA, stateB, stateC))
+            .join();
     // test
     final StateSyncStatistics stateSyncStatistics =
         new StateSync(stateSyncOptions).sync(stateDrafts).toCompletableFuture().join();
@@ -1112,15 +1147,11 @@ class StateSyncIT {
   }
 
   private State createStateInSource(final StateDraft draft) {
-    return executeBlocking(
-        CTP_SOURCE_CLIENT.execute(
-            StateCreateCommand.of(draft).withExpansionPaths(StateExpansionModel::transitions)));
+    return executeBlocking(CTP_SOURCE_CLIENT.execute(StateCreateCommand.of(draft)));
   }
 
   private State createStateInTarget(final StateDraft draft) {
-    return executeBlocking(
-        CTP_TARGET_CLIENT.execute(
-            StateCreateCommand.of(draft).withExpansionPaths(StateExpansionModel::transitions)));
+    return executeBlocking(CTP_TARGET_CLIENT.execute(StateCreateCommand.of(draft)));
   }
 
   private StateDraft createStateDraftReferencingStateDrafts(

@@ -8,7 +8,11 @@ import javax.annotation.Nonnull;
 
 public final class TaxCategorySyncOptionsBuilder
     extends BaseSyncOptionsBuilder<
-        TaxCategorySyncOptionsBuilder, TaxCategorySyncOptions, TaxCategory, TaxCategoryDraft> {
+        TaxCategorySyncOptionsBuilder,
+        TaxCategorySyncOptions,
+        TaxCategory,
+        TaxCategoryDraft,
+        TaxCategory> {
 
   public static final int BATCH_SIZE_DEFAULT = 50;
 

@@ -161,18 +161,25 @@ class ProductSyncWithPricesIT {
 
   private ProductSyncOptions buildSyncOptions() {
     final QuadConsumer<
-            SyncException, Optional<ProductDraft>, Optional<Product>, List<UpdateAction<Product>>>
+            SyncException,
+            Optional<ProductDraft>,
+            Optional<ProductProjection>,
+            List<UpdateAction<Product>>>
         errorCallBack =
             (exception, newResource, oldResource, updateActions) -> {
               errorCallBackMessages.add(exception.getMessage());
               errorCallBackExceptions.add(exception.getCause());
             };
-    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallBack =
-        (exception, newResource, oldResource) ->
-            warningCallBackMessages.add(exception.getMessage());
+    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
+        warningCallBack =
+            (exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage());
 
     final TriFunction<
-            List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
+            List<UpdateAction<Product>>,
+            ProductDraft,
+            ProductProjection,
+            List<UpdateAction<Product>>>
         actionsCallBack =
             (updateActions, newDraft, oldProduct) -> {
               updateActionsFromSync.addAll(updateActions);

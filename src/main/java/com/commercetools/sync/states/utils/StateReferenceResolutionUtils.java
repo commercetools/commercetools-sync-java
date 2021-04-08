@@ -6,10 +6,10 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
 import io.sphere.sdk.states.StateDraftBuilder;
-import io.sphere.sdk.states.expansion.StateExpansionModel;
 import io.sphere.sdk.states.queries.StateQuery;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -43,22 +43,25 @@ public final class StateReferenceResolutionUtils {
    *   </tbody>
    * </table>
    *
-   * <p><b>Note:</b> The transition references should be expanded with a key. Any reference that is
-   * not expanded will have its id in place and not replaced by the key will be considered as
-   * existing resources on the target commercetools project and the library will issues an
-   * update/create API request without reference resolution.
+   * <p><b>Note:</b> The transition references should be cached(idToKey value fetched and stored in
+   * a map). Any reference, which have its id in place and not replaced by the key, it would not be
+   * found in the map. In this case, this reference will be considered as existing resources on the
+   * target commercetools project and the library will issues an update/create API request without
+   * reference resolution..
    *
-   * @param states the states with expanded references.
+   * @param states the states without expansion of references.
    * @return a {@link List} of {@link StateDraft} built from the supplied {@link List} of {@link
    *     State}.
    */
   @Nonnull
-  public static List<StateDraft> mapToStateDrafts(@Nonnull final List<State> states) {
+  public static List<StateDraft> mapToStateDrafts(
+      @Nonnull final List<State> states, @Nonnull final Map<String, String> referenceIdToKeyMap) {
     return states.stream()
         .filter(Objects::nonNull)
         .map(
             state -> {
-              final Set<Reference<State>> newTransitions = replaceTransitionIdsWithKeys(state);
+              final Set<Reference<State>> newTransitions =
+                  replaceTransitionIdsWithKeys(state, referenceIdToKeyMap);
               return StateDraftBuilder.of(state.getKey(), state.getType())
                   .name(state.getName())
                   .description(state.getDescription())
@@ -70,7 +73,8 @@ public final class StateReferenceResolutionUtils {
         .collect(Collectors.toList());
   }
 
-  private static Set<Reference<State>> replaceTransitionIdsWithKeys(@Nonnull final State state) {
+  private static Set<Reference<State>> replaceTransitionIdsWithKeys(
+      @Nonnull final State state, @Nonnull final Map<String, String> referenceIdToKeyMap) {
     final Set<Reference<State>> transitions = state.getTransitions();
     final Set<Reference<State>> newTransitions = new HashSet<>();
     if (transitions != null && !transitions.isEmpty()) {
@@ -78,30 +82,22 @@ public final class StateReferenceResolutionUtils {
           transition -> {
             newTransitions.add(
                 getReferenceWithKeyReplaced(
-                    transition, () -> State.referenceOfId(transition.getObj().getKey())));
+                    transition,
+                    () -> State.referenceOfId(referenceIdToKeyMap.get(transition.getId())),
+                    referenceIdToKeyMap));
           });
     }
     return newTransitions;
   }
 
   /**
-   * Builds a {@link StateQuery} for fetching states from a source CTP project with all the needed
-   * references expanded for the sync:
+   * Builds a {@link StateQuery} for fetching states from a source CTP project.
    *
-   * <ul>
-   *   <li>Transition States
-   * </ul>
-   *
-   * <p>Note: Please only use this util if you desire to sync all the aforementioned references from
-   * a source commercetools project. Otherwise, it is more efficient to build the query without
-   * expansions, if they are not needed, to avoid unnecessarily bigger payloads fetched from the
-   * source project.
-   *
-   * @return the query for fetching states from the source CTP project with all the aforementioned
-   *     references expanded.
+   * @return the query for fetching states from the source CTP project without any references
+   *     expanded.
    */
   public static StateQuery buildStateQuery() {
-    return StateQuery.of().withExpansionPaths(StateExpansionModel::transitions);
+    return StateQuery.of();
   }
 
   private StateReferenceResolutionUtils() {}

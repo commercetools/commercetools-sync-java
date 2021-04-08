@@ -7,7 +7,7 @@ import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.helpers.GenericCustomActionBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Resource;
+import io.sphere.sdk.models.ResourceView;
 import io.sphere.sdk.types.Custom;
 import java.util.Map;
 import java.util.Optional;
@@ -41,7 +41,7 @@ final class GenericUpdateActionUtils {
    *     empty optional if the {@code customTypeId} is blank.
    */
   @Nonnull
-  static <T extends Custom, U extends Resource<U>>
+  static <T extends Custom, U extends ResourceView>
       Optional<UpdateAction<U>> buildTypedSetCustomTypeUpdateAction(
           @Nullable final String customTypeId,
           @Nullable final Map<String, JsonNode> customFieldsJsonMap,

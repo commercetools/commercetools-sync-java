@@ -19,6 +19,7 @@ import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.commands.updateactions.AddPrice;
@@ -33,7 +34,7 @@ import org.junit.jupiter.api.Test;
 
 class BuildProductVariantPricesUpdateActionsTest {
 
-  private final Product oldProduct = mock(Product.class);
+  private final ProductProjection oldProduct = mock(ProductProjection.class);
   private final ProductDraft newProductDraft = mock(ProductDraft.class);
   private final ProductVariant oldProductVariant = mock(ProductVariant.class);
   private final ProductVariantDraft newProductVariant = mock(ProductVariantDraft.class);

@@ -18,9 +18,9 @@ import static com.commercetools.sync.integration.inventories.utils.InventoryITUt
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteInventoryEntriesFromTargetAndSource;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.getChannelByKey;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.getInventoryEntryBySkuAndSupplyChannel;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.inventoryReferenceTransformService;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.populateSourceProject;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.populateTargetProject;
-import static com.commercetools.sync.inventories.utils.InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -327,7 +327,8 @@ class InventorySyncIT {
             .join()
             .getResults();
 
-    final List<InventoryEntryDraft> newInventories = mapToInventoryEntryDrafts(inventoryEntries);
+    final List<InventoryEntryDraft> newInventories =
+        inventoryReferenceTransformService.transformInventoryReferences(inventoryEntries).join();
 
     // Prepare sync options and perform sync of draft to target project.
     final InventorySyncOptions inventorySyncOptions =
@@ -351,7 +352,8 @@ class InventorySyncIT {
             .join()
             .getResults();
 
-    final List<InventoryEntryDraft> newInventories = mapToInventoryEntryDrafts(inventoryEntries);
+    final List<InventoryEntryDraft> newInventories =
+        inventoryReferenceTransformService.transformInventoryReferences(inventoryEntries).join();
 
     // Prepare sync options and perform sync of draft to target project.
     final InventorySyncOptions inventorySyncOptions =
@@ -413,7 +415,8 @@ class InventorySyncIT {
             .join()
             .getResults();
 
-    final List<InventoryEntryDraft> newInventories = mapToInventoryEntryDrafts(inventoryEntries);
+    final List<InventoryEntryDraft> newInventories =
+        inventoryReferenceTransformService.transformInventoryReferences(inventoryEntries).join();
 
     // Prepare sync options and perform sync of draft to target project.
     final InventorySyncOptions inventorySyncOptions =
@@ -438,7 +441,8 @@ class InventorySyncIT {
             .join()
             .getResults();
 
-    final List<InventoryEntryDraft> newInventories = mapToInventoryEntryDrafts(inventoryEntries);
+    final List<InventoryEntryDraft> newInventories =
+        inventoryReferenceTransformService.transformInventoryReferences(inventoryEntries).join();
 
     // Prepare sync options and perform sync of draft to target project.
     final AtomicInteger invocationCounter = new AtomicInteger(0);

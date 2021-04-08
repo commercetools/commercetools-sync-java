@@ -13,6 +13,8 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
+import io.sphere.sdk.products.ProductProjectionType;
 import io.sphere.sdk.products.commands.updateactions.AddToCategory;
 import java.util.Collections;
 import java.util.HashSet;
@@ -22,8 +24,9 @@ import javax.annotation.Nonnull;
 import org.junit.jupiter.api.Test;
 
 class BuildAddToCategoryUpdateActionsTest {
-  private static final Product MOCK_OLD_PUBLISHED_PRODUCT =
-      readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
+  private static final ProductProjection MOCK_OLD_PUBLISHED_PRODUCT =
+      readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class)
+          .toProjection(ProductProjectionType.STAGED);
 
   @Test
   void buildAddToCategoryUpdateActions_WithDifferentStagedValues_ShouldBuildUpdateAction() {
@@ -49,7 +52,7 @@ class BuildAddToCategoryUpdateActionsTest {
   }
 
   private List<UpdateAction<Product>> getAddToCategoryUpdateActions(
-      @Nonnull final Product oldProduct,
+      @Nonnull final ProductProjection oldProduct,
       @Nonnull final Set<ResourceIdentifier<Category>> newProductCategories) {
     final ProductDraft newProductDraft = mock(ProductDraft.class);
     when(newProductDraft.getCategories()).thenReturn(newProductCategories);
