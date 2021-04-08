@@ -171,8 +171,11 @@ class CategorySyncIT {
 
     // Fetch categories from source project
     final List<Category> categories =
-        CTP_SOURCE_CLIENT.execute(CategoryQuery.of().withLimit(
-            QueryExecutionUtils.DEFAULT_PAGE_SIZE)).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT
+            .execute(CategoryQuery.of().withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE))
+            .toCompletableFuture()
+            .join()
+            .getResults();
 
     final List<CategoryDraft> categoryDrafts =
         categoryTransformService.toCategoryDrafts(categories).join();
@@ -225,8 +228,11 @@ class CategorySyncIT {
 
     // Fetch categories from source project
     final List<Category> categories =
-        CTP_SOURCE_CLIENT.execute(CategoryQuery.of().withLimit(
-            QueryExecutionUtils.DEFAULT_PAGE_SIZE)).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT
+            .execute(CategoryQuery.of().withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE))
+            .toCompletableFuture()
+            .join()
+            .getResults();
 
     final List<CategoryDraft> categoryDrafts =
         categoryTransformService.toCategoryDrafts(categories).join();
