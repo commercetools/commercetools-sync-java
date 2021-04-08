@@ -135,7 +135,7 @@ As soon, as the referenced parent Category draft is supplied to the sync, the dr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`toCategoryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/categories/service/CategoryTransformService.html#toCategoryDrafts-java.util.List-)
+When syncing from a source commercetools project, you can use [`toCategoryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/categories/utils/CategoryTransformUtils.html#toCategoryDrafts-java.util.List-)
 method that transforms(resolves by querying and caching key-id pairs) and maps from a `Category` to `CategoryDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
@@ -154,20 +154,18 @@ final List<Category> categories =
         .join();
 ````
 
-In order to transform and map the category, 
-Initialize [`CategoryTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/categories/service/CategoryTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
-For cache implementation, you can refer an example class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`InMemoryReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/InMemoryReferenceIdToKeyCache.java).
-Then call the `toCategoryDrafts` method with the `categories` parameter as shown below:
+In order to transform and map the `Category` to `CategoryDraft`, 
+Utils method `toCategoryDrafts` requires `sphereClient`, implementation of [`ReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java) and `categories` as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java).
+Example as shown below:
 
 ````java
-// Fetch(Id to key values for references) into the cache and map from Category to CategoryDraft using cache with considering reference resolution.
-CompletableFuture<List<CategoryDraft>> categoryDrafts = CategoryTransformService.toCategoryDrafts(categories);
+//Implement the cache using library class.
+final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
+
+//For every reference fetch its key using id, cache it and map from Category to CategoryDraft. With help of the cache same reference keys can be reused.
+CompletableFuture<List<CategoryDraft>> categoryDrafts = CategoryTransformUtils.toCategoryDrafts(client, referenceIdToKeyCache, categories);
 ````
-
-The cache here is used for a better performance. 
-Instead of expanding the references in the query for category resource. `CategoryTransformService` will execute a query to fetch key-id pairs and store in cache. These cached id to key values then can be used by another resource for resolving its references instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
-
-The [`CategoryReferenceResolutionUtils`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/categories/utils/CategoryReferenceResolutionUtils.java) class now accepts the `cacheMap` and `categories`, Then maps to `categoryDrafts` using cached id to key values.
 
 ##### Syncing from an external resource
 

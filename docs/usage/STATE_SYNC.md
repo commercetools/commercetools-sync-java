@@ -66,7 +66,7 @@ reference should return its `key`.
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`toStateDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/states/service/StateTransformService.html#toStateDrafts-java.util.List-)
+When syncing from a source commercetools project, you can use [`toStateDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/states/utils/StateTransformUtils.html#toStateDrafts-java.util.List-)
  method that transforms(resolves by querying and caching key-id pairs) and maps from a `State` to `StateDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
@@ -85,20 +85,18 @@ final List<State> states =
         .join();
 ````
 
-In order to transform and map the state, 
-Initialize [`StateTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/states/service/StateTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
-For cache implementation, you can refer an example class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`InMemoryReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/InMemoryReferenceIdToKeyCache.java).
-Then call the `toStateDrafts` method with the `states` parameter as shown below:
+In order to transform and map the `State` to `StateDraft`, 
+Utils method `toStateDrafts` requires `sphereClient`, implementation of [`ReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java) and `states` as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java).
+Example as shown below:
 
 ````java
-// Fetch(Id to key values for references) into the cache and map from State to StateDraft using cache with considering reference resolution.
-CompletableFuture<List<StateDraft>> stateDrafts = StateTransformService.toStateDrafts(states);
+//Implement the cache using library class.
+final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
+
+//For every reference fetch its key using id, cache it and map from State to StateDraft. With help of the cache same reference keys can be reused.
+CompletableFuture<List<StateDraft>> stateDrafts = StateTransformUtils.toStateDrafts(client, referenceIdToKeyCache, states);
 ````
-
-The cache here is used for a better performance. 
-Instead of expanding the references in the query for state resource. `StateTransformService` will execute a query to fetch key-id pairs and store in cache. These cached id to key values then can be used by another resource for resolving its references instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
-
-The [`StateReferenceResolutionUtils`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/states/utils/StateReferenceResolutionUtils.java) class now accepts the `cacheMap` and `states`, Then maps to `stateDrafts` using cached id to key values.
 
 ##### Syncing from an external resource
 

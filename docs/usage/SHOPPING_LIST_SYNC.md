@@ -73,7 +73,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`toShoppingListDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/shoppinglists/service/ShoppingListTransformService.html#toShoppingListDrafts-java.util.List-)
+When syncing from a source commercetools project, you can use [`toShoppingListDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/shoppinglists/utils/ShoppingListTransformUtils.html#toShoppingListDrafts-java.util.List-)
  method that transforms(resolves by querying and caching key-id pairs) and maps from a `ShoppingList` to `ShoppingListDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
@@ -92,20 +92,18 @@ final List<ShoppingList> shoppingLists =
         .join();
 ````
 
-In order to transform and map the shoppingList, 
-Initialize [`ShoppingListTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/shoppinglists/service/ShoppingListTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
-For cache implementation, you can refer an example class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`InMemoryReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/InMemoryReferenceIdToKeyCache.java).
-Then call the `toShoppingListDrafts` method with the `shoppingLists` parameter as shown below:
+In order to transform and map the `ShoppingList` to `ShoppingListDraft`, 
+Utils method `toShoppingListDrafts` requires `sphereClient`, implementation of [`ReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java) and `shoppingLists` as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java).
+Example as shown below:
 
 ````java
-// Fetch(Id to key values for references) into the cache and map from ShoppingList to ShoppingListDraft using cache with considering reference resolution.
-CompletableFuture<List<ShoppingListDraft>> shoppingListDrafts = ShoppingListTransformService.toShoppingListDrafts(shoppingLists);
+//Implement the cache using library class.
+final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
+
+//For every reference fetch its key using id, cache it and map from ShoppingList to ShoppingListDraft. With help of the cache same reference keys can be reused.
+CompletableFuture<List<ShoppingListDraft>> shoppingListDrafts = ShoppingListTransformUtils.toShoppingListDrafts(client, referenceIdToKeyCache, shoppingLists);
 ````
-
-The cache here is used for a better performance. 
-Instead of expanding the references in the query for shoppingList resource. `ShoppingListTransformService` will execute a query to fetch key-id pairs and store in cache. These cached id to key values then can be used by another resource for resolving its references instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
-
-The [`ShoppingListReferenceResolutionUtils`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/shoppinglists/utils/ShoppingListReferenceResolutionUtils.java) class now accepts the `cacheMap` and `shoppingLists`, Then maps to `shoppingListDrafts` using cached id to key values.
 
 ##### Syncing from an external resource
 

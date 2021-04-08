@@ -67,7 +67,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`toCartDiscountDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/cartdiscounts/service/CartDiscountTransformService.html#toCartDiscountDrafts-java.util.List-)
+When syncing from a source commercetools project, you can use [`toCartDiscountDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/cartdiscounts/utils/CartDiscountTransformUtils.html#toCartDiscountDrafts-java.util.List-)
 method that transforms(resolves by querying and caching key-id pairs) and maps from a `CartDiscount` to `CartDiscountDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
@@ -86,20 +86,18 @@ final List<CartDiscount> cartDiscounts =
         .join();
 ````
 
-In order to transform and map the cartDiscount, 
-Initialize [`CartDiscountTransformService`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/cartdiscounts/service/CartDiscountTransformService.java) with `sphereClient` and cache(You can use your own cache implementation and pass the map).
-For cache implementation, you can refer an example class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`InMemoryReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/InMemoryReferenceIdToKeyCache.java).
-Then call the `toCartDiscountDrafts` method with the `cartDiscounts` parameter as shown below:
+In order to transform and map the `CartDiscount` to `CartDiscountDraft`, 
+Utils method `toCartDiscountDrafts` requires `sphereClient`, implementation of [`ReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java) and `cartDiscounts` as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java).
+Example as shown below:
 
 ````java
-// Fetch(Id to key values for references) into the cache and map from CartDiscount to CartDiscountDraft using cache with considering reference resolution.
-CompletableFuture<List<CartDiscountDraft>> cartDiscountDrafts = CartDiscountTransformService.toCartDiscountDrafts(cartDiscounts);
+//Implement the cache using library class.
+final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
+
+//For every reference fetch its key using id, cache it and map from CartDiscount to CartDiscountDraft. With help of the cache same reference keys can be reused.
+CompletableFuture<List<CartDiscountDraft>> cartDiscountDrafts = CartDiscountTransformUtils.toCartDiscountDrafts(client, referenceIdToKeyCache, cartDiscounts);
 ````
-
-The cache here is used for a better performance. 
-Instead of expanding the references in the query for cartDiscount resource. `CartDiscountTransformService` will execute a query to fetch key-id pairs and store in cache. These cached id to key values then can be used by another resource for resolving its references instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
-
-The [`CartDiscountReferenceResolutionUtils`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountReferenceResolutionUtils.java) class now accepts the `cacheMap` and `cartDiscounts`, Then maps to `cartDiscountDrafts` using cached id to key values.
 
 ##### Syncing from an external resource
 
