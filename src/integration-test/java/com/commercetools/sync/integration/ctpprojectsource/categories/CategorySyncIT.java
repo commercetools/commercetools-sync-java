@@ -33,6 +33,7 @@ import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.errors.DuplicateFieldError;
+import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,10 +51,8 @@ class CategorySyncIT {
   private List<String> callBackErrorResponses = new ArrayList<>();
   private List<Throwable> callBackExceptions = new ArrayList<>();
   private List<String> callBackWarningResponses = new ArrayList<>();
-  private final ReferenceIdToKeyCache referenceIdToKeyCache =
-      new CaffeineReferenceIdToKeyCacheImpl();
-  private final CategoryTransformService categoryTransformService =
-      new CategoryTransformServiceImpl(CTP_SOURCE_CLIENT, referenceIdToKeyCache);
+  private ReferenceIdToKeyCache referenceIdToKeyCache;
+  private CategoryTransformService categoryTransformService;
 
   /**
    * Delete all categories and types from source and target project. Then create custom types for
@@ -85,6 +84,9 @@ class CategorySyncIT {
     callBackExceptions = new ArrayList<>();
     callBackWarningResponses = new ArrayList<>();
     categorySync = new CategorySync(buildCategorySyncOptions(50));
+    referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
+    categoryTransformService =
+        new CategoryTransformServiceImpl(CTP_SOURCE_CLIENT, referenceIdToKeyCache);
   }
 
   private CategorySyncOptions buildCategorySyncOptions(final int batchSize) {
@@ -169,7 +171,8 @@ class CategorySyncIT {
 
     // Fetch categories from source project
     final List<Category> categories =
-        CTP_SOURCE_CLIENT.execute(CategoryQuery.of()).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT.execute(CategoryQuery.of().withLimit(
+            QueryExecutionUtils.DEFAULT_PAGE_SIZE)).toCompletableFuture().join().getResults();
 
     final List<CategoryDraft> categoryDrafts =
         categoryTransformService.toCategoryDrafts(categories).join();
@@ -222,7 +225,8 @@ class CategorySyncIT {
 
     // Fetch categories from source project
     final List<Category> categories =
-        CTP_SOURCE_CLIENT.execute(CategoryQuery.of()).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT.execute(CategoryQuery.of().withLimit(
+            QueryExecutionUtils.DEFAULT_PAGE_SIZE)).toCompletableFuture().join().getResults();
 
     final List<CategoryDraft> categoryDrafts =
         categoryTransformService.toCategoryDrafts(categories).join();
