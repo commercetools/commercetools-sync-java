@@ -27,6 +27,7 @@ public class CustomObjectServiceImpl
     extends BaseService<
         CustomObjectDraft<JsonNode>,
         CustomObject<JsonNode>,
+        CustomObject<JsonNode>,
         CustomObjectSyncOptions,
         CustomObjectQuery<JsonNode>,
         CustomObjectQueryModel<CustomObject<JsonNode>>,

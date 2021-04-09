@@ -41,6 +41,8 @@ import org.apache.commons.lang3.StringUtils;
  *     io.sphere.sdk.categories.CategoryDraft}, etc..
  * @param <U> Resource (e.g. {@link io.sphere.sdk.products.Product}, {@link
  *     io.sphere.sdk.categories.Category}, etc..
+ * @param <UQ> Resource to be used on queries (e.g. {@link
+ *     io.sphere.sdk.products.ProductProjection})
  * @param <S> Subclass of {@link BaseSyncOptions}
  * @param <Q> Query (e.g. {@link io.sphere.sdk.products.queries.ProductQuery}, {@link
  *     io.sphere.sdk.categories.queries.CategoryQuery}, etc.. )
@@ -52,8 +54,9 @@ import org.apache.commons.lang3.StringUtils;
 abstract class BaseService<
     T,
     U extends ResourceView<U, U>,
+    UQ extends ResourceView<UQ, U>,
     S extends BaseSyncOptions,
-    Q extends MetaModelQueryDsl<U, Q, M, E>,
+    Q extends MetaModelQueryDsl<UQ, Q, M, E>,
     M,
     E> {
 
@@ -203,7 +206,7 @@ abstract class BaseService<
   @Nonnull
   CompletionStage<Optional<String>> fetchCachedResourceId(
       @Nullable final String key,
-      @Nonnull final Function<U, String> keyMapper,
+      @Nonnull final Function<UQ, String> keyMapper,
       @Nonnull final Supplier<Q> querySupplier) {
 
     if (isBlank(key)) {
@@ -219,10 +222,10 @@ abstract class BaseService<
 
   private CompletionStage<Optional<String>> fetchAndCache(
       @Nullable final String key,
-      @Nonnull final Function<U, String> keyMapper,
+      @Nonnull final Function<UQ, String> keyMapper,
       @Nonnull final Supplier<Q> querySupplier) {
 
-    final Consumer<List<U>> pageConsumer =
+    final Consumer<List<UQ>> pageConsumer =
         page ->
             page.forEach(resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
 
@@ -243,7 +246,7 @@ abstract class BaseService<
   @Nonnull
   CompletionStage<Map<String, String>> cacheKeysToIds(
       @Nonnull final Set<String> keys,
-      @Nonnull final Function<U, String> keyMapper,
+      @Nonnull final Function<UQ, String> keyMapper,
       @Nonnull final Function<Set<String>, Q> keysQueryMapper) {
 
     final Set<String> keysNotCached = getKeysNotCached(keys);
@@ -261,7 +264,7 @@ abstract class BaseService<
             });
   }
 
-  private CompletableFuture<List<U>> fetchWithChunks(
+  private CompletableFuture<List<UQ>> fetchWithChunks(
       @Nonnull final Function<Set<String>, Q> keysQueryMapper,
       @Nonnull final Set<String> keysNotCached) {
 
@@ -347,9 +350,9 @@ abstract class BaseService<
    *     completion contains a {@link Set} of all matching resources.
    */
   @Nonnull
-  CompletionStage<Set<U>> fetchMatchingResources(
+  CompletionStage<Set<UQ>> fetchMatchingResources(
       @Nonnull final Set<String> keys,
-      @Nonnull final Function<U, String> keyMapper,
+      @Nonnull final Function<UQ, String> keyMapper,
       @Nonnull final Function<Set<String>, Q> keysQueryMapper) {
 
     if (keys.isEmpty()) {
@@ -378,7 +381,7 @@ abstract class BaseService<
    *     empty.
    */
   @Nonnull
-  CompletionStage<Optional<U>> fetchResource(
+  CompletionStage<Optional<UQ>> fetchResource(
       @Nullable final String key, @Nonnull final Supplier<Q> querySupplier) {
 
     if (isBlank(key)) {

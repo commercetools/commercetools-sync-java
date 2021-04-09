@@ -23,6 +23,7 @@ public final class ChannelServiceImpl
     extends BaseServiceWithKey<
         ChannelDraft,
         Channel,
+        Channel,
         BaseSyncOptions,
         ChannelQuery,
         ChannelQueryModel,

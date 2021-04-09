@@ -28,6 +28,7 @@ public final class CategoryServiceImpl
     extends BaseServiceWithKey<
         CategoryDraft,
         Category,
+        Category,
         CategorySyncOptions,
         CategoryQuery,
         CategoryQueryModel,

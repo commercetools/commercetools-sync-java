@@ -22,6 +22,7 @@ public class CartDiscountServiceImpl
     extends BaseServiceWithKey<
         CartDiscountDraft,
         CartDiscount,
+        CartDiscount,
         CartDiscountSyncOptions,
         CartDiscountQuery,
         CartDiscountQueryModel,
