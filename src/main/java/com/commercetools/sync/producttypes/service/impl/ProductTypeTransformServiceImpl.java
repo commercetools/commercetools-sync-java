@@ -51,7 +51,7 @@ public class ProductTypeTransformServiceImpl extends BaseTransformServiceImpl
     final Set<String> setOfTypeIds =
         new HashSet<>(collectNestedProductTypeReferenceIds(productTypes));
 
-    return fetchAndFillReferenceIdToKeyCache(setOfTypeIds, GraphQlQueryResources.PRODUCT_TYPES);
+    return super.fetchAndFillReferenceIdToKeyCache(setOfTypeIds, GraphQlQueryResources.PRODUCT_TYPES);
   }
 
   private Set<String> collectNestedProductTypeReferenceIds(
