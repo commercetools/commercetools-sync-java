@@ -65,8 +65,7 @@ public final class ProductTypeReferenceResolutionUtils {
         .filter(Objects::nonNull)
         .map(
             productType -> {
-              final List<AttributeDefinitionDraft> referenceReplacedAttributeDefinitions;
-              referenceReplacedAttributeDefinitions =
+              final List<AttributeDefinitionDraft> referenceReplacedAttributeDefinitions =
                   replaceAttributeDefinitionsReferenceIdsWithKeys(
                       productType, referenceIdToKeyCache);
 
