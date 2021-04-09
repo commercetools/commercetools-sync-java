@@ -5,8 +5,9 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
-import com.commercetools.sync.shoppinglists.service.ShoppingListReferenceTransformService;
+import com.commercetools.sync.shoppinglists.service.ShoppingListTransformService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.shoppinglists.LineItem;
@@ -18,24 +19,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
-public class ShoppingListReferenceTransformServiceImpl extends BaseTransformServiceImpl
-    implements ShoppingListReferenceTransformService {
+public class ShoppingListTransformServiceImpl extends BaseTransformServiceImpl
+    implements ShoppingListTransformService {
 
-  public ShoppingListReferenceTransformServiceImpl(
+  public ShoppingListTransformServiceImpl(
       @Nonnull final SphereClient ctpClient,
-      @Nonnull final Map<String, String> referenceIdToKeyCache) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     super(ctpClient, referenceIdToKeyCache);
   }
 
   @Nonnull
   @Override
-  public CompletableFuture<List<ShoppingListDraft>> transformShoppingListReferences(
+  public CompletableFuture<List<ShoppingListDraft>> toShoppingListDrafts(
       @Nonnull final List<ShoppingList> shoppingLists) {
 
     final List<CompletableFuture<Void>> transformReferencesToRunParallel = new ArrayList<>();

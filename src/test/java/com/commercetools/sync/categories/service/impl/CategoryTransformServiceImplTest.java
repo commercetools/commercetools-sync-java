@@ -8,29 +8,29 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.commercetools.sync.categories.service.CategoryReferenceTransformService;
+import com.commercetools.sync.categories.service.CategoryTransformService;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.json.SphereJsonUtils;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
-public class CategoryReferenceTransformServiceImplTest {
+public class CategoryTransformServiceImplTest {
 
   @Test
   void transform_ShouldReplaceCategoryReferenceIdsWithKeys() {
     // preparation
-    Map<String, String> idToKeyValueMap = new HashMap<>();
+    final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
     final SphereClient sourceClient = mock(SphereClient.class);
-    CategoryReferenceTransformService categoryReferenceTransformService =
-        new CategoryReferenceTransformServiceImpl(sourceClient, idToKeyValueMap);
+    final CategoryTransformService categoryTransformService =
+        new CategoryTransformServiceImpl(sourceClient, referenceIdToKeyCache);
     final List<Category> categoryPage =
         asList(
             readObjectFromResource("category-key-1.json", Category.class),
@@ -51,10 +51,11 @@ public class CategoryReferenceTransformServiceImplTest {
 
     // test
     final CompletionStage<List<CategoryDraft>> draftsFromPageStage =
-        categoryReferenceTransformService.transformCategoryReferences(categoryPage);
+        categoryTransformService.toCategoryDrafts(categoryPage);
 
     // assertions
-    final List<CategoryDraft> expectedResult = mapToCategoryDrafts(categoryPage, idToKeyValueMap);
+    final List<CategoryDraft> expectedResult =
+        mapToCategoryDrafts(categoryPage, referenceIdToKeyCache);
     final List<String> referenceKeys =
         expectedResult.stream()
             .filter(category -> category.getCustom() != null)

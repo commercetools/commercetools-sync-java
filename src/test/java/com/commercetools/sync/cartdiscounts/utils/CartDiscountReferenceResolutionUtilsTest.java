@@ -4,27 +4,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
-import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class CartDiscountReferenceResolutionUtilsTest {
 
-  Map<String, String> idToKeyValueMap = new HashMap<>();
+  private final ReferenceIdToKeyCache referenceIdToKeyCache =
+      new CaffeineReferenceIdToKeyCacheImpl();
 
   @AfterEach
   void clearCache() {
-    idToKeyValueMap.clear();
+    referenceIdToKeyCache.clearCache();
   }
 
   @Test
@@ -45,11 +45,11 @@ class CartDiscountReferenceResolutionUtilsTest {
     }
 
     // Cache customTypeId and customTypeKey Value
-    idToKeyValueMap.put(customTypeId, customTypeKey);
+    referenceIdToKeyCache.add(customTypeId, customTypeKey);
 
     final List<CartDiscountDraft> referenceReplacedDrafts =
         CartDiscountReferenceResolutionUtils.mapToCartDiscountDrafts(
-            mockCartDiscounts, idToKeyValueMap);
+            mockCartDiscounts, referenceIdToKeyCache);
 
     referenceReplacedDrafts.forEach(
         draft -> {
@@ -78,19 +78,12 @@ class CartDiscountReferenceResolutionUtilsTest {
 
     final List<CartDiscountDraft> referenceReplacedDrafts =
         CartDiscountReferenceResolutionUtils.mapToCartDiscountDrafts(
-            mockCartDiscounts, idToKeyValueMap);
+            mockCartDiscounts, referenceIdToKeyCache);
 
     referenceReplacedDrafts.forEach(
         draft -> {
           assertThat(draft.getCustom().getType().getId()).isEqualTo(customTypeId);
           assertThat(draft.getCustom().getType().getKey()).isNull();
         });
-  }
-
-  @Test
-  void buildCartDiscountQuery_Always_ShouldReturnQueryWithoutReferencesExpanded() {
-    final CartDiscountQuery cartDiscountQuery =
-        CartDiscountReferenceResolutionUtils.buildCartDiscountQuery();
-    assertThat(cartDiscountQuery.expansionPaths()).isEmpty();
   }
 }

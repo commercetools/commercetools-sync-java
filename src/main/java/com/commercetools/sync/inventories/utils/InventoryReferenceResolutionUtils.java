@@ -4,17 +4,15 @@ import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolution
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
 
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
-import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.Type;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nonnull;
 
 /**
@@ -58,39 +56,29 @@ public final class InventoryReferenceResolutionUtils {
    * update/create API request without reference resolution.
    *
    * @param inventoryEntries the inventory entries without expansion of references.
-   * @param referenceIdToKeyMap the map containing the cached id to key values.
+   * @param referenceIdToKeyCache the instance that manages cache.
    * @return a {@link List} of {@link InventoryEntryDraft} built from the supplied {@link List} of
    *     {@link InventoryEntry}.
    */
   @Nonnull
   public static List<InventoryEntryDraft> mapToInventoryEntryDrafts(
       @Nonnull final List<InventoryEntry> inventoryEntries,
-      @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
     return inventoryEntries.stream()
-        .map(inventoryEntry -> mapToInventoryEntryDraft(inventoryEntry, referenceIdToKeyMap))
+        .map(inventoryEntry -> mapToInventoryEntryDraft(inventoryEntry, referenceIdToKeyCache))
         .collect(toList());
   }
 
   @Nonnull
   private static InventoryEntryDraft mapToInventoryEntryDraft(
       @Nonnull final InventoryEntry inventoryEntry,
-      @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return InventoryEntryDraftBuilder.of(inventoryEntry)
-        .custom(mapToCustomFieldsDraft(inventoryEntry, referenceIdToKeyMap))
+        .custom(mapToCustomFieldsDraft(inventoryEntry, referenceIdToKeyCache))
         .supplyChannel(
-            getResourceIdentifierWithKey(inventoryEntry.getSupplyChannel(), referenceIdToKeyMap))
+            getResourceIdentifierWithKey(inventoryEntry.getSupplyChannel(), referenceIdToKeyCache))
         .build();
-  }
-
-  /**
-   * Builds a {@link InventoryEntryQuery} for fetching inventories from a source CTP project.
-   *
-   * @return the query for fetching inventories from the source CTP project without any references
-   *     expanded.
-   */
-  public static InventoryEntryQuery buildInventoryQuery() {
-    return InventoryEntryQuery.of().withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE);
   }
 
   private InventoryReferenceResolutionUtils() {}

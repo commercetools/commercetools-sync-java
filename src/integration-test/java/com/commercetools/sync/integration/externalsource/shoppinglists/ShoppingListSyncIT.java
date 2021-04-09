@@ -13,14 +13,15 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.shoppinglists.ShoppingListSync;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
 import com.commercetools.sync.shoppinglists.commands.updateactions.AddLineItemWithSku;
 import com.commercetools.sync.shoppinglists.commands.updateactions.AddTextLineItemWithAddedAt;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics;
-import com.commercetools.sync.shoppinglists.service.ShoppingListReferenceTransformService;
-import com.commercetools.sync.shoppinglists.service.impl.ShoppingListReferenceTransformServiceImpl;
+import com.commercetools.sync.shoppinglists.utils.ShoppingListTransformUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.commands.UpdateAction;
@@ -76,13 +77,11 @@ class ShoppingListSyncIT {
   private ShoppingList shoppingListSampleCarrotCake;
   private ShoppingListDraft shoppingListDraftSampleCarrotCake;
   private ShoppingListSync shoppingListSync;
-  private final Map<String, String> idToKeyCache = new HashMap<>();
-  private ShoppingListReferenceTransformService shoppingListReferenceTransformService;
+  private ReferenceIdToKeyCache referenceIdToKeyCache;
 
   @BeforeEach
   void setup() {
-    shoppingListReferenceTransformService =
-        new ShoppingListReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
+    referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
     deleteShoppingListTestData(CTP_TARGET_CLIENT);
     setUpShoppingListSync();
 
@@ -359,7 +358,9 @@ class ShoppingListSyncIT {
     prepareCache(shoppingLists);
 
     final List<ShoppingListDraft> shoppingListDrafts =
-        shoppingListReferenceTransformService.transformShoppingListReferences(shoppingLists).join();
+        ShoppingListTransformUtils.toShoppingListDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, shoppingLists)
+            .join();
 
     assertThat(
             ShoppingListDraftBuilder.of(shoppingListDrafts.get(0))
@@ -386,7 +387,8 @@ class ShoppingListSyncIT {
             .filter(Objects::nonNull)
             .map(customFields -> customFields.getType().getId())
             .collect(Collectors.toSet());
-    customTypeIds.stream().forEach(id -> idToKeyCache.put(id, "custom-type-shopping-list"));
+    customTypeIds.stream()
+        .forEach(id -> referenceIdToKeyCache.add(id, "custom-type-shopping-list"));
 
     Set<String> lineItemsCustomTypeIds =
         shoppingLists.stream()
@@ -404,7 +406,8 @@ class ShoppingListSyncIT {
             .flatMap(Collection::stream)
             .collect(toSet());
 
-    lineItemsCustomTypeIds.stream().forEach(id -> idToKeyCache.put(id, "custom-type-line-items"));
+    lineItemsCustomTypeIds.stream()
+        .forEach(id -> referenceIdToKeyCache.add(id, "custom-type-line-items"));
 
     Set<String> textLineItemsCustomTypeIds =
         shoppingLists.stream()
@@ -423,7 +426,7 @@ class ShoppingListSyncIT {
             .collect(toSet());
 
     textLineItemsCustomTypeIds.stream()
-        .forEach(id -> idToKeyCache.put(id, "custom-type-text-line-items"));
+        .forEach(id -> referenceIdToKeyCache.add(id, "custom-type-text-line-items"));
   }
 
   @Nonnull

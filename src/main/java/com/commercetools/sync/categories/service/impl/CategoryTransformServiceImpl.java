@@ -3,9 +3,10 @@ package com.commercetools.sync.categories.service.impl;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-import com.commercetools.sync.categories.service.CategoryReferenceTransformService;
+import com.commercetools.sync.categories.service.CategoryTransformService;
 import com.commercetools.sync.categories.utils.CategoryReferenceResolutionUtils;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -16,25 +17,24 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
-public class CategoryReferenceTransformServiceImpl extends BaseTransformServiceImpl
-    implements CategoryReferenceTransformService {
+public class CategoryTransformServiceImpl extends BaseTransformServiceImpl
+    implements CategoryTransformService {
 
-  public CategoryReferenceTransformServiceImpl(
+  public CategoryTransformServiceImpl(
       @Nonnull final SphereClient ctpClient,
-      @Nonnull final Map<String, String> referenceIdToKeyCache) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     super(ctpClient, referenceIdToKeyCache);
   }
 
   @Nonnull
   @Override
-  public CompletableFuture<List<CategoryDraft>> transformCategoryReferences(
+  public CompletableFuture<List<CategoryDraft>> toCategoryDrafts(
       @Nonnull final List<Category> categories) {
 
     /*

@@ -1,28 +1,27 @@
 package com.commercetools.sync.states.utils;
 
-import static com.commercetools.sync.states.utils.StateReferenceResolutionUtils.buildStateQuery;
 import static com.commercetools.sync.states.utils.StateReferenceResolutionUtils.mapToStateDrafts;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
-import io.sphere.sdk.states.queries.StateQuery;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import org.junit.jupiter.api.Test;
 
 class StateReferenceResolutionUtilsTest {
 
-  Map<String, String> idToKeyValueMap = new HashMap<>();
+  private final ReferenceIdToKeyCache referenceIdToKeyCache =
+      new CaffeineReferenceIdToKeyCacheImpl();
 
   @Test
   void mapToStateDrafts_WithAllUnexpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
@@ -38,13 +37,14 @@ class StateReferenceResolutionUtilsTest {
       final Reference<State> unexpandedStateReference =
           Reference.ofResourceTypeIdAndId(State.referenceTypeId(), stateId);
       when(mockState.getTransitions()).thenReturn(Collections.singleton(unexpandedStateReference));
-      idToKeyValueMap.put(stateId, stateReferenceKey);
+      referenceIdToKeyCache.add(stateId, stateReferenceKey);
 
       mockStates.add(mockState);
     }
 
     // test
-    final List<StateDraft> referenceReplacedDrafts = mapToStateDrafts(mockStates, idToKeyValueMap);
+    final List<StateDraft> referenceReplacedDrafts =
+        mapToStateDrafts(mockStates, referenceIdToKeyCache);
 
     // assertion
     referenceReplacedDrafts.forEach(
@@ -76,7 +76,8 @@ class StateReferenceResolutionUtilsTest {
     }
 
     // test
-    final List<StateDraft> referenceReplacedDrafts = mapToStateDrafts(mockStates, idToKeyValueMap);
+    final List<StateDraft> referenceReplacedDrafts =
+        mapToStateDrafts(mockStates, referenceIdToKeyCache);
 
     // assertion
     referenceReplacedDrafts.forEach(
@@ -101,16 +102,10 @@ class StateReferenceResolutionUtilsTest {
 
     // test
     final List<StateDraft> referenceReplacedDrafts =
-        mapToStateDrafts(Arrays.asList(mockState1, mockState2), idToKeyValueMap);
+        mapToStateDrafts(Arrays.asList(mockState1, mockState2), referenceIdToKeyCache);
 
     assertThat(referenceReplacedDrafts.get(0).getTransitions()).isEqualTo(Collections.emptySet());
     assertThat(referenceReplacedDrafts.get(1).getTransitions()).isEqualTo(Collections.emptySet());
-  }
-
-  @Test
-  void buildStateQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
-    final StateQuery stateQuery = buildStateQuery();
-    assertThat(stateQuery.expansionPaths()).isEmpty();
   }
 
   @Nonnull

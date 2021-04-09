@@ -4,6 +4,7 @@ import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolution
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
 
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.Reference;
@@ -20,7 +21,6 @@ import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
 import io.sphere.sdk.shoppinglists.queries.ShoppingListQuery;
 import io.sphere.sdk.types.Type;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -77,18 +77,18 @@ public final class ShoppingListReferenceResolutionUtils {
    * reference resolution.
    *
    * @param shoppingLists the shopping lists without expansion of references.
-   * @param referenceIdToKeyMap the map containing the cached id to key values.
+   * @param referenceIdToKeyCache the instance that manages cache.
    * @return a {@link List} of {@link ShoppingListDraft} built from the supplied {@link List} of
    *     {@link ShoppingList}.
    */
   @Nonnull
   public static List<ShoppingListDraft> mapToShoppingListDrafts(
       @Nonnull final List<ShoppingList> shoppingLists,
-      @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
     return shoppingLists.stream()
         .filter(Objects::nonNull)
-        .map(shoppingList -> mapToShoppingListDraft(shoppingList, referenceIdToKeyMap))
+        .map(shoppingList -> mapToShoppingListDraft(shoppingList, referenceIdToKeyCache))
         .collect(toList());
   }
 
@@ -136,23 +136,23 @@ public final class ShoppingListReferenceResolutionUtils {
    * reference resolution.
    *
    * @param shoppingList the shopping list without expansion of references.
-   * @param referenceIdToKeyMap the map containing the cached id to key values.
+   * @param referenceIdToKeyCache the instance that manages cache.
    * @return a {@link ShoppingListDraft} built from the supplied {@link ShoppingList}.
    */
   @Nonnull
   public static ShoppingListDraft mapToShoppingListDraft(
       @Nonnull final ShoppingList shoppingList,
-      @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
     return ShoppingListDraftBuilder.of(shoppingList.getName())
         .description(shoppingList.getDescription())
         .key(shoppingList.getKey())
-        .customer(getResourceIdentifierWithKey(shoppingList.getCustomer(), referenceIdToKeyMap))
+        .customer(getResourceIdentifierWithKey(shoppingList.getCustomer(), referenceIdToKeyCache))
         .slug(shoppingList.getSlug())
-        .lineItems(mapToLineItemDrafts(shoppingList.getLineItems(), referenceIdToKeyMap))
+        .lineItems(mapToLineItemDrafts(shoppingList.getLineItems(), referenceIdToKeyCache))
         .textLineItems(
-            mapToTextLineItemDrafts(shoppingList.getTextLineItems(), referenceIdToKeyMap))
-        .custom(mapToCustomFieldsDraft(shoppingList, referenceIdToKeyMap))
+            mapToTextLineItemDrafts(shoppingList.getTextLineItems(), referenceIdToKeyCache))
+        .custom(mapToCustomFieldsDraft(shoppingList, referenceIdToKeyCache))
         .deleteDaysAfterLastModification(shoppingList.getDeleteDaysAfterLastModification())
         .anonymousId(shoppingList.getAnonymousId())
         .build();
@@ -161,7 +161,7 @@ public final class ShoppingListReferenceResolutionUtils {
   @Nullable
   private static List<LineItemDraft> mapToLineItemDrafts(
       @Nullable final List<LineItem> lineItems,
-      @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
     if (lineItems == null) {
       return null;
@@ -169,19 +169,20 @@ public final class ShoppingListReferenceResolutionUtils {
 
     return lineItems.stream()
         .filter(Objects::nonNull)
-        .map(lineItem -> mapToLineItemDraft(lineItem, referenceIdToKeyMap))
+        .map(lineItem -> mapToLineItemDraft(lineItem, referenceIdToKeyCache))
         .filter(Objects::nonNull)
         .collect(toList());
   }
 
   @Nullable
   private static LineItemDraft mapToLineItemDraft(
-      @Nonnull final LineItem lineItem, @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final LineItem lineItem,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
     if (lineItem.getVariant() != null) {
       return LineItemDraftBuilder.ofSku(lineItem.getVariant().getSku(), lineItem.getQuantity())
           .addedAt(lineItem.getAddedAt())
-          .custom(mapToCustomFieldsDraft(lineItem.getCustom(), referenceIdToKeyMap))
+          .custom(mapToCustomFieldsDraft(lineItem.getCustom(), referenceIdToKeyCache))
           .build();
     }
 
@@ -191,7 +192,7 @@ public final class ShoppingListReferenceResolutionUtils {
   @Nullable
   private static List<TextLineItemDraft> mapToTextLineItemDrafts(
       @Nullable final List<TextLineItem> textLineItems,
-      @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
     if (textLineItems == null) {
       return null;
@@ -199,19 +200,19 @@ public final class ShoppingListReferenceResolutionUtils {
 
     return textLineItems.stream()
         .filter(Objects::nonNull)
-        .map(textLineItem -> mapToTextLineItemDraft(textLineItem, referenceIdToKeyMap))
+        .map(textLineItem -> mapToTextLineItemDraft(textLineItem, referenceIdToKeyCache))
         .collect(toList());
   }
 
   @Nonnull
   private static TextLineItemDraft mapToTextLineItemDraft(
       @Nonnull final TextLineItem textLineItem,
-      @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
     return TextLineItemDraftBuilder.of(textLineItem.getName(), textLineItem.getQuantity())
         .description(textLineItem.getDescription())
         .addedAt(textLineItem.getAddedAt())
-        .custom(mapToCustomFieldsDraft(textLineItem.getCustom(), referenceIdToKeyMap))
+        .custom(mapToCustomFieldsDraft(textLineItem.getCustom(), referenceIdToKeyCache))
         .build();
   }
 

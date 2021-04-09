@@ -11,12 +11,13 @@ import static com.commercetools.sync.shoppinglists.utils.ShoppingListReferenceRe
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.shoppinglists.ShoppingListSync;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics;
-import com.commercetools.sync.shoppinglists.service.ShoppingListReferenceTransformService;
-import com.commercetools.sync.shoppinglists.service.impl.ShoppingListReferenceTransformServiceImpl;
+import com.commercetools.sync.shoppinglists.utils.ShoppingListTransformUtils;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.LocalizedString;
@@ -29,9 +30,7 @@ import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetAnonymousId;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetCustomer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterAll;
@@ -44,13 +43,11 @@ class ShoppingListSyncIT {
   private List<Throwable> exceptions;
   private List<UpdateAction<ShoppingList>> updateActionList;
   private ShoppingListSync shoppingListSync;
-  private final Map<String, String> idToKeyCache = new HashMap<>();
-  private ShoppingListReferenceTransformService shoppingListReferenceTransformService;
+  private ReferenceIdToKeyCache referenceIdToKeyCache;
 
   @BeforeEach
   void setup() {
-    shoppingListReferenceTransformService =
-        new ShoppingListReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
+    referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
     deleteShoppingListSyncTestDataFromProjects();
 
     createSampleShoppingListCarrotCake(CTP_SOURCE_CLIENT);
@@ -108,7 +105,9 @@ class ShoppingListSyncIT {
             .getResults();
 
     final List<ShoppingListDraft> shoppingListDrafts =
-        shoppingListReferenceTransformService.transformShoppingListReferences(shoppingLists).join();
+        ShoppingListTransformUtils.toShoppingListDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, shoppingLists)
+            .join();
 
     final ShoppingListSyncStatistics shoppingListSyncStatistics =
         shoppingListSync.sync(shoppingListDrafts).toCompletableFuture().join();
@@ -138,8 +137,9 @@ class ShoppingListSyncIT {
     final Customer sampleCustomerJaneDoe = createSampleCustomerJaneDoe(CTP_TARGET_CLIENT);
 
     final List<ShoppingListDraft> updatedShoppingListDrafts =
-        shoppingListReferenceTransformService.transformShoppingListReferences(shoppingLists).join()
-            .stream()
+        ShoppingListTransformUtils.toShoppingListDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, shoppingLists)
+            .join().stream()
             .map(
                 shoppingListDraft ->
                     ShoppingListDraftBuilder.of(shoppingListDraft)

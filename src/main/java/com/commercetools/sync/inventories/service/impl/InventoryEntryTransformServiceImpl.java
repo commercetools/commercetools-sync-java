@@ -4,7 +4,8 @@ import static com.commercetools.sync.inventories.utils.InventoryReferenceResolut
 import static java.util.stream.Collectors.toSet;
 
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
-import com.commercetools.sync.inventories.service.InventoryReferenceTransformService;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
+import com.commercetools.sync.inventories.service.InventoryEntryTransformService;
 import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.inventory.InventoryEntry;
@@ -13,24 +14,23 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFields;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
-public class InventoryReferenceTransformServiceImpl extends BaseTransformServiceImpl
-    implements InventoryReferenceTransformService {
+public class InventoryEntryTransformServiceImpl extends BaseTransformServiceImpl
+    implements InventoryEntryTransformService {
 
-  public InventoryReferenceTransformServiceImpl(
+  public InventoryEntryTransformServiceImpl(
       @Nonnull final SphereClient ctpClient,
-      @Nonnull final Map<String, String> referenceIdToKeyCache) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     super(ctpClient, referenceIdToKeyCache);
   }
 
   @Nonnull
   @Override
-  public CompletableFuture<List<InventoryEntryDraft>> transformInventoryReferences(
+  public CompletableFuture<List<InventoryEntryDraft>> toInventoryEntryDrafts(
       @Nonnull final List<InventoryEntry> inventoryEntries) {
 
     final List<CompletableFuture<Void>> transformReferencesToRunParallel = new ArrayList<>();

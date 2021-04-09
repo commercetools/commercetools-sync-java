@@ -8,7 +8,9 @@ import static org.mockito.Mockito.when;
 
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
-import com.commercetools.sync.shoppinglists.service.ShoppingListReferenceTransformService;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
+import com.commercetools.sync.shoppinglists.service.ShoppingListTransformService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.models.LocalizedString;
@@ -25,23 +27,21 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
 
-class ShoppingListReferenceTransformServiceImplTest {
+class ShoppingListTransformServiceImplTest {
 
   @Test
   void
       transform_ShoppingListReferences_ShouldResolveReferencesUsingCacheAndMapToShoppingListDraft() {
     // preparation
     final SphereClient sourceClient = mock(SphereClient.class);
-    final Map<String, String> cacheMap = new HashMap<>();
-    final ShoppingListReferenceTransformService shoppingListReferenceTransformService =
-        new ShoppingListReferenceTransformServiceImpl(sourceClient, cacheMap);
+    final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
+    final ShoppingListTransformService shoppingListTransformService =
+        new ShoppingListTransformServiceImpl(sourceClient, referenceIdToKeyCache);
 
     final String customTypeId = UUID.randomUUID().toString();
     final String lineItemCustomTypeId = UUID.randomUUID().toString();
@@ -117,8 +117,8 @@ class ShoppingListReferenceTransformServiceImplTest {
 
     // test
     final List<ShoppingListDraft> shoppingListDrafts =
-        shoppingListReferenceTransformService
-            .transformShoppingListReferences(mockShoppingListPage)
+        shoppingListTransformService
+            .toShoppingListDrafts(mockShoppingListPage)
             .toCompletableFuture()
             .join();
 

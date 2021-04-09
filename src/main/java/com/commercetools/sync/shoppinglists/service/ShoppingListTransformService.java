@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
-public interface ShoppingListReferenceTransformService {
+public interface ShoppingListTransformService {
 
   /**
    * Transforms ShoppingLists by resolving the references and map them to ShoppingListDrafts.
@@ -25,6 +25,6 @@ public interface ShoppingListReferenceTransformService {
    * @return a new list which contains ShoppingListDrafts which have all their references resolved.
    */
   @Nonnull
-  CompletableFuture<List<ShoppingListDraft>> transformShoppingListReferences(
+  CompletableFuture<List<ShoppingListDraft>> toShoppingListDrafts(
       @Nonnull List<ShoppingList> shoppingLists);
 }

@@ -5,33 +5,32 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
-import com.commercetools.sync.states.service.StateReferenceTransformService;
+import com.commercetools.sync.states.service.StateTransformService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
-public class StateReferenceTransformServiceImpl extends BaseTransformServiceImpl
-    implements StateReferenceTransformService {
+public class StateTransformServiceImpl extends BaseTransformServiceImpl
+    implements StateTransformService {
 
-  public StateReferenceTransformServiceImpl(
+  public StateTransformServiceImpl(
       @Nonnull final SphereClient ctpClient,
-      @Nonnull final Map<String, String> referenceIdToKeyCache) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     super(ctpClient, referenceIdToKeyCache);
   }
 
   @Nonnull
   @Override
-  public CompletableFuture<List<StateDraft>> transformStateReferences(
-      @Nonnull final List<State> states) {
+  public CompletableFuture<List<StateDraft>> toStateDrafts(@Nonnull final List<State> states) {
 
     return transformTransitionReference(states)
         .thenApply(ignore -> mapToStateDrafts(states, referenceIdToKeyCache));
