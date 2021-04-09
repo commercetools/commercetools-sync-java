@@ -7,9 +7,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
@@ -25,11 +26,12 @@ import org.junit.jupiter.api.Test;
 
 class CategoryReferenceResolutionUtilsTest {
 
-  Map<String, String> idToKeyValueMap = new HashMap<>();
+  private final ReferenceIdToKeyCache referenceIdToKeyCache =
+      new CaffeineReferenceIdToKeyCacheImpl();
 
   @AfterEach
   void clearCache() {
-    idToKeyValueMap.clear();
+    referenceIdToKeyCache.clearCache();
   }
 
   @Test
@@ -65,9 +67,13 @@ class CategoryReferenceResolutionUtilsTest {
       mockCategories.add(mockCategory);
     }
 
+    final Map<String, String> idToKeyValueMap = new HashMap<>();
+
     idToKeyValueMap.put(parentId, parentKey);
     idToKeyValueMap.put(assetCustomTypeId, assetCustomTypeKey);
     idToKeyValueMap.put(customTypeId, customTypeKey);
+
+    referenceIdToKeyCache.addAll(idToKeyValueMap);
 
     for (final Category category : mockCategories) {
       assertThat(category.getParent().getId()).isEqualTo(parentId);
@@ -75,7 +81,7 @@ class CategoryReferenceResolutionUtilsTest {
     }
 
     final List<CategoryDraft> referenceReplacedDrafts =
-        CategoryReferenceResolutionUtils.mapToCategoryDrafts(mockCategories, idToKeyValueMap);
+        CategoryReferenceResolutionUtils.mapToCategoryDrafts(mockCategories, referenceIdToKeyCache);
 
     for (CategoryDraft referenceReplacedDraft : referenceReplacedDrafts) {
       assertThat(referenceReplacedDraft.getParent().getKey()).isEqualTo(parentKey);
@@ -100,17 +106,11 @@ class CategoryReferenceResolutionUtilsTest {
       mockCategories.add(mockCategory);
     }
     final List<CategoryDraft> referenceReplacedDrafts =
-        CategoryReferenceResolutionUtils.mapToCategoryDrafts(mockCategories, idToKeyValueMap);
+        CategoryReferenceResolutionUtils.mapToCategoryDrafts(mockCategories, referenceIdToKeyCache);
     for (CategoryDraft referenceReplacedDraft : referenceReplacedDrafts) {
       assertThat(referenceReplacedDraft.getParent()).isNull();
       assertThat(referenceReplacedDraft.getCustom()).isNull();
       assertThat(referenceReplacedDraft.getAssets()).isEmpty();
     }
-  }
-
-  @Test
-  void buildCategoryQuery_Always_ShouldReturnQueryWithoutReferencesExpanded() {
-    final CategoryQuery categoryQuery = CategoryReferenceResolutionUtils.buildCategoryQuery();
-    assertThat(categoryQuery.expansionPaths()).isEmpty();
   }
 }

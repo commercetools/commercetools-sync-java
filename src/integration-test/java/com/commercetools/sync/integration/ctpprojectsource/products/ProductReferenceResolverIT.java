@@ -20,18 +20,17 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
-import static com.commercetools.sync.products.utils.ProductReferenceResolutionUtils.buildProductQuery;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
-import com.commercetools.sync.products.service.ProductReferenceTransformService;
-import com.commercetools.sync.products.service.impl.ProductReferenceTransformServiceImpl;
+import com.commercetools.sync.products.service.ProductTransformService;
+import com.commercetools.sync.products.service.impl.ProductTransformServiceImpl;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.ProductDraft;
@@ -64,9 +63,8 @@ class ProductReferenceResolverIT {
   private List<String> errorCallBackMessages;
   private List<String> warningCallBackMessages;
   private List<Throwable> errorCallBackExceptions;
-  private final ProductReferenceTransformService productReferenceTransformService =
-      new ProductReferenceTransformServiceImpl(
-          CTP_SOURCE_CLIENT, InMemoryReferenceIdToKeyCache.getInstance());
+  private final ProductTransformService productTransformService =
+      new ProductTransformServiceImpl(CTP_SOURCE_CLIENT, new CaffeineReferenceIdToKeyCacheImpl());
 
   /**
    * Delete all product related test data from target and source projects. Then creates custom types
@@ -104,7 +102,7 @@ class ProductReferenceResolverIT {
     createTaxCategory(CTP_TARGET_CLIENT);
     createState(CTP_TARGET_CLIENT, StateType.PRODUCT_STATE);
 
-    productQuery = buildProductQuery();
+    productQuery = ProductProjectionQuery.ofStaged();
   }
 
   /**
@@ -157,7 +155,7 @@ class ProductReferenceResolverIT {
         CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts =
-        productReferenceTransformService.transformProductReferences(products).join();
+        productTransformService.toProductDrafts(products).join();
 
     // test
     final ProductSyncStatistics syncStatistics =
@@ -187,7 +185,7 @@ class ProductReferenceResolverIT {
         CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts =
-        productReferenceTransformService.transformProductReferences(products).join();
+        productTransformService.toProductDrafts(products).join();
 
     // test
     final ProductSyncStatistics syncStatistics =

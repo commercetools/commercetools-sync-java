@@ -3,7 +3,6 @@ package com.commercetools.sync.integration.ctpprojectsource.products;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.products.utils.ProductReferenceResolutionUtils.buildProductQuery;
 import static com.neovisionaries.i18n.CountryCode.DE;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
@@ -16,13 +15,13 @@ import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
-import com.commercetools.sync.products.service.ProductReferenceTransformService;
-import com.commercetools.sync.products.service.impl.ProductReferenceTransformServiceImpl;
+import com.commercetools.sync.products.service.ProductTransformService;
+import com.commercetools.sync.products.service.impl.ProductTransformServiceImpl;
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
@@ -99,9 +98,8 @@ class ProductSyncWithUnexpandedReferencesIT {
   private List<String> errorCallBackMessages;
   private List<String> warningCallBackMessages;
   private List<Throwable> errorCallBackExceptions;
-  private final ProductReferenceTransformService productReferenceTransformService =
-      new ProductReferenceTransformServiceImpl(
-          CTP_SOURCE_CLIENT, InMemoryReferenceIdToKeyCache.getInstance());
+  private final ProductTransformService productTransformService =
+      new ProductTransformServiceImpl(CTP_SOURCE_CLIENT, new CaffeineReferenceIdToKeyCacheImpl());
 
   @BeforeAll
   static void setupSourceProjectData() {
@@ -255,7 +253,7 @@ class ProductSyncWithUnexpandedReferencesIT {
             .build();
 
     CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
-    productQuery = buildProductQuery();
+    productQuery = ProductProjectionQuery.ofStaged();
   }
 
   @BeforeEach
@@ -290,7 +288,7 @@ class ProductSyncWithUnexpandedReferencesIT {
         CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts =
-        productReferenceTransformService.transformProductReferences(products).join();
+        productTransformService.toProductDrafts(products).join();
 
     // test
     final ProductSyncStatistics syncStatistics =

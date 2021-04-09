@@ -13,19 +13,18 @@ import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtil
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
-import static com.commercetools.sync.products.utils.ProductReferenceResolutionUtils.buildProductQuery;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.commercetools.sync.commons.utils.InMemoryReferenceIdToKeyCache;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
-import com.commercetools.sync.products.service.ProductReferenceTransformService;
-import com.commercetools.sync.products.service.impl.ProductReferenceTransformServiceImpl;
+import com.commercetools.sync.products.service.ProductTransformService;
+import com.commercetools.sync.products.service.impl.ProductTransformServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.commands.UpdateAction;
@@ -45,6 +44,7 @@ import io.sphere.sdk.products.commands.updateactions.RemoveAsset;
 import io.sphere.sdk.products.commands.updateactions.SetAssetCustomField;
 import io.sphere.sdk.products.commands.updateactions.SetAssetCustomType;
 import io.sphere.sdk.products.queries.ProductProjectionByKeyGet;
+import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
@@ -72,7 +72,7 @@ class ProductSyncWithAssetsIT {
   private List<String> warningCallBackMessages;
   private List<UpdateAction<Product>> updateActions;
   private List<Throwable> errorCallBackExceptions;
-  private ProductReferenceTransformService productReferenceTransformService;
+  private ProductTransformService productTransformService;
 
   /**
    * Delete all product related test data from target and source projects. Then creates for both CTP
@@ -104,9 +104,8 @@ class ProductSyncWithAssetsIT {
     deleteAllProducts(CTP_TARGET_CLIENT);
     deleteAllProducts(CTP_SOURCE_CLIENT);
     productSync = new ProductSync(buildSyncOptions());
-    productReferenceTransformService =
-        new ProductReferenceTransformServiceImpl(
-            CTP_SOURCE_CLIENT, InMemoryReferenceIdToKeyCache.getInstance());
+    productTransformService =
+        new ProductTransformServiceImpl(CTP_SOURCE_CLIENT, new CaffeineReferenceIdToKeyCacheImpl());
   }
 
   private void clearSyncTestCollections() {
@@ -182,10 +181,14 @@ class ProductSyncWithAssetsIT {
         .join();
 
     final List<ProductProjection> products =
-        CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT
+            .execute(ProductProjectionQuery.ofStaged())
+            .toCompletableFuture()
+            .join()
+            .getResults();
 
     final List<ProductDraft> productDrafts =
-        productReferenceTransformService.transformProductReferences(products).join();
+        productTransformService.toProductDrafts(products).join();
 
     final ProductSyncStatistics syncStatistics =
         productSync.sync(productDrafts).toCompletableFuture().join();
@@ -257,10 +260,14 @@ class ProductSyncWithAssetsIT {
         .join();
 
     final List<ProductProjection> products =
-        CTP_SOURCE_CLIENT.execute(buildProductQuery()).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT
+            .execute(ProductProjectionQuery.ofStaged())
+            .toCompletableFuture()
+            .join()
+            .getResults();
 
     final List<ProductDraft> productDrafts =
-        productReferenceTransformService.transformProductReferences(products).join();
+        productTransformService.toProductDrafts(products).join();
 
     final ProductSyncStatistics syncStatistics =
         productSync.sync(productDrafts).toCompletableFuture().join();

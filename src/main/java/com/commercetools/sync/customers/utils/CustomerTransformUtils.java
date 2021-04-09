@@ -1,12 +1,16 @@
-package com.commercetools.sync.customers.service;
+package com.commercetools.sync.customers.utils;
 
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
+import com.commercetools.sync.customers.service.CustomerTransformService;
+import com.commercetools.sync.customers.service.impl.CustomerTransformServiceImpl;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
-public interface CustomerReferenceTransformService {
+public final class CustomerTransformUtils {
 
   /**
    * Transforms customers by resolving the references and map them to CustomerDrafts.
@@ -21,10 +25,20 @@ public interface CustomerReferenceTransformService {
    * <p>Then maps the Customer to CustomerDraft by performing reference resolution considering
    * idToKey value from the cache.
    *
+   * @param client commercetools client.
+   * @param referenceIdToKeyCache the instance that manages cache.
    * @param customers the customers to resolve the references.
    * @return a new list which contains customerDrafts which have all their references resolved.
+   *     <p>TODO: Move the implementation from service class to this util class.
    */
   @Nonnull
-  CompletableFuture<List<CustomerDraft>> transformCustomerReferences(
-      @Nonnull List<Customer> customers);
+  public static CompletableFuture<List<CustomerDraft>> toCustomerDrafts(
+      @Nonnull final SphereClient client,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache,
+      @Nonnull final List<Customer> customers) {
+
+    final CustomerTransformService customerTransformService =
+        new CustomerTransformServiceImpl(client, referenceIdToKeyCache);
+    return customerTransformService.toCustomerDrafts(customers);
+  }
 }

@@ -5,11 +5,11 @@ import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifi
 import static java.util.stream.Collectors.toList;
 import static org.apache.http.util.TextUtils.isBlank;
 
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.customers.CustomerDraftBuilder;
-import io.sphere.sdk.customers.queries.CustomerQuery;
 import io.sphere.sdk.models.Address;
 import io.sphere.sdk.models.KeyReference;
 import io.sphere.sdk.models.Reference;
@@ -18,7 +18,6 @@ import io.sphere.sdk.stores.Store;
 import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -68,21 +67,23 @@ public final class CustomerReferenceResolutionUtils {
    * update/create API request without reference resolution.
    *
    * @param customers the customers without expansion of references.
+   * @param referenceIdToKeyCache the instance that manages cache.
    * @return a {@link List} of {@link CustomerDraft} built from the supplied {@link List} of {@link
    *     Customer}.
    */
   @Nonnull
   public static List<CustomerDraft> mapToCustomerDrafts(
       @Nonnull final List<Customer> customers,
-      @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return customers.stream()
-        .map(customer -> mapToCustomerDraft(customer, referenceIdToKeyMap))
+        .map(customer -> mapToCustomerDraft(customer, referenceIdToKeyCache))
         .collect(toList());
   }
 
   @Nonnull
   private static CustomerDraft mapToCustomerDraft(
-      @Nonnull final Customer customer, @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final Customer customer,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return CustomerDraftBuilder.of(customer.getEmail(), customer.getPassword())
         .customerNumber(customer.getCustomerNumber())
         .key(customer.getKey())
@@ -93,7 +94,7 @@ public final class CustomerReferenceResolutionUtils {
         .externalId(customer.getExternalId())
         .companyName(customer.getCompanyName())
         .customerGroup(
-            getResourceIdentifierWithKey(customer.getCustomerGroup(), referenceIdToKeyMap))
+            getResourceIdentifierWithKey(customer.getCustomerGroup(), referenceIdToKeyCache))
         .dateOfBirth(customer.getDateOfBirth())
         .isEmailVerified(customer.isEmailVerified())
         .vatId(customer.getVatId())
@@ -106,7 +107,7 @@ public final class CustomerReferenceResolutionUtils {
             getAddressIndex(customer.getAddresses(), customer.getDefaultShippingAddressId()))
         .shippingAddresses(
             getAddressIndexList(customer.getAddresses(), customer.getShippingAddressIds()))
-        .custom(mapToCustomFieldsDraft(customer, referenceIdToKeyMap))
+        .custom(mapToCustomFieldsDraft(customer, referenceIdToKeyCache))
         .locale(customer.getLocale())
         .salutation(customer.getSalutation())
         .stores(mapToStores(customer))
@@ -154,16 +155,6 @@ public final class CustomerReferenceResolutionUtils {
           .collect(toList());
     }
     return null;
-  }
-
-  /**
-   * Builds a {@link CustomerQuery} for fetching customers from a source CTP project.
-   *
-   * @return the query for fetching customers from the source CTP project without expanding
-   *     references.
-   */
-  public static CustomerQuery buildCustomerQuery() {
-    return CustomerQuery.of();
   }
 
   private CustomerReferenceResolutionUtils() {}

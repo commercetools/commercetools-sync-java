@@ -80,27 +80,36 @@ resource on the target commercetools project and the library will issue an updat
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`mapToProductDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/products/utils/ProductReferenceResolutionUtils.html#mapToProductDrafts-java.util.List-)
-the method that maps from a `ProductProjection` to `ProductDraft` in order to make them ready for reference resolution by the sync, for example: 
+When syncing from a source commercetools project, you can use [`toProductDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/products/utils/ProductTransformUtils.html#toProductDrafts-java.util.List-)
+ method that transforms(resolves by querying and caching key-id pairs) and maps from a `Product` to `ProductDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
-// Build a ProductQuery for fetching product projections from a source CTP project with all the needed references
- expanded for the sync:
-final ProductProjectionQuery productQuery = ProductReferenceResolutionUtils.buildProductQuery();
+// Build a ProductQuery for fetching products from a source CTP project without any references expanded for the sync:
+final ProductProjectionQuery productProjectionQuery = ProductProjectionQuery.ofStaged();
 
 // Query all product projections (NOTE this is only for example, please adjust your logic)
 final List<ProductProjection> productProjections =
     CtpQueryUtils
-        .queryAll(sphereClient, productQueryWithReferenceExpanded, Function.identity())
+        .queryAll(sphereClient, productProjectionQuery, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
             .stream()
             .flatMap(List::stream)
             .collect(Collectors.toList()))
         .toCompletableFuture()
          .join();
+````
 
-// Mapping from ProductProjection to ProductDraft with considering reference resolution.
-final List<ProductDraft> productDrafts = ProductReferenceResolutionUtils.mapToProductDrafts(productProjections);
+In order to transform and map the `Product` to `ProductDraft`, 
+Utils method `toProductDrafts` requires `sphereClient`, implementation of [`ReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java) and `products` as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java).
+Example as shown below:
+
+````java
+//Implement the cache using library class.
+final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
+
+//For every reference fetch its key using id, cache it and map from Product to ProductDraft. With help of the cache same reference keys can be reused.
+CompletableFuture<List<ProductDraft>> productDrafts = ProductTransformUtils.toProductDrafts(client, referenceIdToKeyCache, products);
 ````
 ##### Syncing from an external resource
 

@@ -10,8 +10,9 @@ import com.commercetools.sync.commons.exceptions.ReferenceTransformException;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.utils.ChunkUtils;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
-import com.commercetools.sync.products.service.ProductReferenceTransformService;
+import com.commercetools.sync.products.service.ProductTransformService;
 import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -35,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -43,23 +43,23 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
-public class ProductReferenceTransformServiceImpl extends BaseTransformServiceImpl
-    implements ProductReferenceTransformService {
+public class ProductTransformServiceImpl extends BaseTransformServiceImpl
+    implements ProductTransformService {
 
   private static final String FAILED_TO_REPLACE_REFERENCES_ON_ATTRIBUTES =
       "Failed to replace referenced resource ids with keys on the attributes of the products in "
           + "the current fetched page from the source project. This page will not be synced to the target "
           + "project.";
 
-  public ProductReferenceTransformServiceImpl(
+  public ProductTransformServiceImpl(
       @Nonnull final SphereClient ctpClient,
-      @Nonnull final Map<String, String> referenceIdToKeyCache) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     super(ctpClient, referenceIdToKeyCache);
   }
 
   @Nonnull
   @Override
-  public CompletableFuture<List<ProductDraft>> transformProductReferences(
+  public CompletableFuture<List<ProductDraft>> toProductDrafts(
       @Nonnull final List<ProductProjection> products) {
 
     return replaceAttributeReferenceIdsWithKeys(products)
@@ -290,10 +290,10 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
             getIds(allProductTypeReferences),
             getIds(allCustomObjectReferences))
         .thenApply(
-            idToKey -> {
+            referenceIdToKeyCache -> {
               final List<ProductProjection> validProducts =
-                  filterOutWithIrresolvableReferences(products, idToKey);
-              replaceReferences(getAllReferences(validProducts), idToKey);
+                  filterOutWithIrresolvableReferences(products, referenceIdToKeyCache);
+              replaceReferences(getAllReferences(validProducts), referenceIdToKeyCache);
               return validProducts;
             });
   }
@@ -320,7 +320,7 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
         .map(AttributeContainer::getAttributes)
         .flatMap(Collection::stream)
         .map(Attribute::getValueAsJsonNode)
-        .map(ProductReferenceTransformServiceImpl::getReferences)
+        .map(ProductTransformServiceImpl::getReferences)
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
   }
@@ -340,7 +340,7 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
 
   @Nonnull
   private static Set<String> getIds(@Nonnull final List<JsonNode> references) {
-    return references.stream().map(ProductReferenceTransformServiceImpl::getId).collect(toSet());
+    return references.stream().map(ProductTransformServiceImpl::getId).collect(toSet());
   }
 
   @Nonnull
@@ -350,38 +350,41 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
 
   @Nonnull
   private List<ProductProjection> filterOutWithIrresolvableReferences(
-      @Nonnull final List<ProductProjection> products, @Nonnull final Map<String, String> idToKey) {
+      @Nonnull final List<ProductProjection> products,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
     return products.stream()
         .filter(
             product -> {
               final Set<JsonNode> irresolvableReferences =
-                  getIrresolvableReferences(product, idToKey);
+                  getIrresolvableReferences(product, referenceIdToKeyCache);
               return irresolvableReferences.isEmpty();
             })
         .collect(Collectors.toList());
   }
 
   private Set<JsonNode> getIrresolvableReferences(
-      @Nonnull final ProductProjection product, @Nonnull final Map<String, String> idToKey) {
+      @Nonnull final ProductProjection product,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
     return getAllReferences(product).stream()
         .filter(
             reference -> {
               String id = getId(reference);
-              return (!idToKey.containsKey(id)
+              return (!referenceIdToKeyCache.containsKey(id)
                   || KEY_IS_NOT_SET_PLACE_HOLDER.equals(referenceIdToKeyCache.get(id)));
             })
         .collect(toSet());
   }
 
   private static void replaceReferences(
-      @Nonnull final List<JsonNode> references, @Nonnull final Map<String, String> idToKey) {
+      @Nonnull final List<JsonNode> references,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
     references.forEach(
         reference -> {
           final String id = reference.get(REFERENCE_ID_FIELD).asText();
-          final String key = idToKey.get(id);
+          final String key = referenceIdToKeyCache.get(id);
           ((ObjectNode) reference).put(REFERENCE_ID_FIELD, key);
         });
   }
@@ -400,11 +403,12 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
    * @param categoryIds the category ids to find a key mapping for.
    * @param productTypeIds the productType ids to find a key mapping for.
    * @param customObjectIds the custom object ids to find a key mapping for.
-   * @return a map of id to key representing products, categories, productTypes and customObjects in
-   *     the CTP project defined by the injected {@code ctpClient}.
+   * @return a ReferenceIdToKeyCache instance that manages cache of id to key representing products,
+   *     categories, productTypes and customObjects in the CTP project defined by the injected
+   *     {@code ctpClient}.
    */
   @Nonnull
-  CompletableFuture<Map<String, String>> getIdToKeys(
+  CompletableFuture<ReferenceIdToKeyCache> getIdToKeys(
       @Nonnull final Set<String> productIds,
       @Nonnull final Set<String> categoryIds,
       @Nonnull final Set<String> productTypeIds,
@@ -445,7 +449,7 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
   }
 
   @Nonnull
-  private CompletableFuture<Map<String, String>> fetchCustomObjectKeys(
+  private CompletableFuture<ReferenceIdToKeyCache> fetchCustomObjectKeys(
       @Nonnull final Set<String> nonCachedCustomObjectIds) {
 
     if (nonCachedCustomObjectIds.isEmpty()) {
@@ -470,7 +474,7 @@ public class ProductReferenceTransformServiceImpl extends BaseTransformServiceIm
             customObjects -> {
               customObjects.forEach(
                   customObject -> {
-                    referenceIdToKeyCache.put(
+                    referenceIdToKeyCache.add(
                         customObject.getId(),
                         CustomObjectCompositeIdentifier.of(customObject).toString());
                   });

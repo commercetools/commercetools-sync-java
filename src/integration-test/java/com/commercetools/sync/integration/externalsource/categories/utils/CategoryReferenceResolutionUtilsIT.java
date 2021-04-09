@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.externalsource.categories.utils;
 
-import static com.commercetools.sync.categories.utils.CategoryReferenceResolutionUtils.buildCategoryQuery;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
@@ -19,6 +18,7 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
+import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.types.Type;
@@ -71,7 +71,7 @@ class CategoryReferenceResolutionUtilsIT {
     executeBlocking(CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(categoryDraft)));
 
     final List<Category> categories =
-        executeBlocking(CTP_TARGET_CLIENT.execute(buildCategoryQuery().bySlug(ENGLISH, "slug")))
+        executeBlocking(CTP_TARGET_CLIENT.execute(CategoryQuery.of().bySlug(ENGLISH, "slug")))
             .getResults();
 
     assertThat(categories).hasSize(1);

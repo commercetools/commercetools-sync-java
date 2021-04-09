@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.ctpprojectsource.categories;
 
-import static com.commercetools.sync.categories.utils.CategoryReferenceResolutionUtils.buildCategoryQuery;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
@@ -21,23 +20,25 @@ import com.commercetools.sync.categories.CategorySync;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
-import com.commercetools.sync.categories.service.CategoryReferenceTransformService;
-import com.commercetools.sync.categories.service.impl.CategoryReferenceTransformServiceImpl;
+import com.commercetools.sync.categories.service.CategoryTransformService;
+import com.commercetools.sync.categories.service.impl.CategoryTransformServiceImpl;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
+import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.errors.DuplicateFieldError;
+import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -50,9 +51,8 @@ class CategorySyncIT {
   private List<String> callBackErrorResponses = new ArrayList<>();
   private List<Throwable> callBackExceptions = new ArrayList<>();
   private List<String> callBackWarningResponses = new ArrayList<>();
-  private final Map<String, String> idToKeyCache = new HashMap<>();
-  private final CategoryReferenceTransformService categoryReferenceTransformService =
-      new CategoryReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
+  private ReferenceIdToKeyCache referenceIdToKeyCache;
+  private CategoryTransformService categoryTransformService;
 
   /**
    * Delete all categories and types from source and target project. Then create custom types for
@@ -84,6 +84,9 @@ class CategorySyncIT {
     callBackExceptions = new ArrayList<>();
     callBackWarningResponses = new ArrayList<>();
     categorySync = new CategorySync(buildCategorySyncOptions(50));
+    referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
+    categoryTransformService =
+        new CategoryTransformServiceImpl(CTP_SOURCE_CLIENT, referenceIdToKeyCache);
   }
 
   private CategorySyncOptions buildCategorySyncOptions(final int batchSize) {
@@ -114,10 +117,10 @@ class CategorySyncIT {
         CTP_SOURCE_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new", null, 2));
 
     final List<Category> categories =
-        CTP_SOURCE_CLIENT.execute(buildCategoryQuery()).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT.execute(CategoryQuery.of()).toCompletableFuture().join().getResults();
 
     final List<CategoryDraft> categoryDrafts =
-        categoryReferenceTransformService.transformCategoryReferences(categories).join();
+        categoryTransformService.toCategoryDrafts(categories).join();
 
     final CategorySyncStatistics syncStatistics =
         categorySync.sync(categoryDrafts).toCompletableFuture().join();
@@ -134,10 +137,10 @@ class CategorySyncIT {
         CTP_SOURCE_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new", null, 3));
 
     final List<Category> categories =
-        CTP_SOURCE_CLIENT.execute(buildCategoryQuery()).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT.execute(CategoryQuery.of()).toCompletableFuture().join().getResults();
 
     final List<CategoryDraft> categoryDrafts =
-        categoryReferenceTransformService.transformCategoryReferences(categories).join();
+        categoryTransformService.toCategoryDrafts(categories).join();
 
     final CategorySyncStatistics syncStatistics =
         categorySync.sync(categoryDrafts).toCompletableFuture().join();
@@ -168,10 +171,14 @@ class CategorySyncIT {
 
     // Fetch categories from source project
     final List<Category> categories =
-        CTP_SOURCE_CLIENT.execute(buildCategoryQuery()).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT
+            .execute(CategoryQuery.of().withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE))
+            .toCompletableFuture()
+            .join()
+            .getResults();
 
     final List<CategoryDraft> categoryDrafts =
-        categoryReferenceTransformService.transformCategoryReferences(categories).join();
+        categoryTransformService.toCategoryDrafts(categories).join();
 
     // Make sure there is no hierarchical order
     Collections.shuffle(categoryDrafts);
@@ -221,10 +228,14 @@ class CategorySyncIT {
 
     // Fetch categories from source project
     final List<Category> categories =
-        CTP_SOURCE_CLIENT.execute(buildCategoryQuery()).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT
+            .execute(CategoryQuery.of().withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE))
+            .toCompletableFuture()
+            .join()
+            .getResults();
 
     final List<CategoryDraft> categoryDrafts =
-        categoryReferenceTransformService.transformCategoryReferences(categories).join();
+        categoryTransformService.toCategoryDrafts(categories).join();
     Collections.shuffle(categoryDrafts);
 
     CategorySync categorySyncWith13BatcheSize = new CategorySync(buildCategorySyncOptions(13));
@@ -260,10 +271,10 @@ class CategorySyncIT {
 
     // Fetch categories from source project
     final List<Category> categories =
-        CTP_SOURCE_CLIENT.execute(buildCategoryQuery()).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT.execute(CategoryQuery.of()).toCompletableFuture().join().getResults();
 
     final List<CategoryDraft> categoryDrafts =
-        categoryReferenceTransformService.transformCategoryReferences(categories).join();
+        categoryTransformService.toCategoryDrafts(categories).join();
     Collections.shuffle(categoryDrafts);
 
     CategorySync categorySyncWith1BatchSize = new CategorySync(buildCategorySyncOptions(1));
@@ -342,13 +353,13 @@ class CategorySyncIT {
     // Fetch categories from source project
     final List<Category> categories =
         CTP_SOURCE_CLIENT
-            .execute(buildCategoryQuery().withSort(sorting -> sorting.createdAt().sort().asc()))
+            .execute(CategoryQuery.of().withSort(sorting -> sorting.createdAt().sort().asc()))
             .toCompletableFuture()
             .join()
             .getResults();
 
     final List<CategoryDraft> categoryDrafts =
-        categoryReferenceTransformService.transformCategoryReferences(categories).join();
+        categoryTransformService.toCategoryDrafts(categories).join();
 
     // To simulate the new parent coming in a later draft
     Collections.reverse(categoryDrafts);
@@ -415,10 +426,10 @@ class CategorySyncIT {
     // ---------
 
     final List<Category> categories =
-        CTP_SOURCE_CLIENT.execute(buildCategoryQuery()).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT.execute(CategoryQuery.of()).toCompletableFuture().join().getResults();
 
     final List<CategoryDraft> categoryDrafts =
-        categoryReferenceTransformService.transformCategoryReferences(categories).join();
+        categoryTransformService.toCategoryDrafts(categories).join();
 
     final CategorySyncStatistics syncStatistics =
         categorySync.sync(categoryDrafts).toCompletableFuture().join();

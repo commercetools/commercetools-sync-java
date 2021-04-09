@@ -2,14 +2,13 @@ package com.commercetools.sync.states.utils;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
 
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
 import io.sphere.sdk.states.StateDraftBuilder;
-import io.sphere.sdk.states.queries.StateQuery;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -50,18 +49,20 @@ public final class StateReferenceResolutionUtils {
    * reference resolution..
    *
    * @param states the states without expansion of references.
+   * @param referenceIdToKeyCache the instance that manages cache.
    * @return a {@link List} of {@link StateDraft} built from the supplied {@link List} of {@link
    *     State}.
    */
   @Nonnull
   public static List<StateDraft> mapToStateDrafts(
-      @Nonnull final List<State> states, @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final List<State> states,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return states.stream()
         .filter(Objects::nonNull)
         .map(
             state -> {
               final Set<Reference<State>> newTransitions =
-                  replaceTransitionIdsWithKeys(state, referenceIdToKeyMap);
+                  replaceTransitionIdsWithKeys(state, referenceIdToKeyCache);
               return StateDraftBuilder.of(state.getKey(), state.getType())
                   .name(state.getName())
                   .description(state.getDescription())
@@ -74,7 +75,7 @@ public final class StateReferenceResolutionUtils {
   }
 
   private static Set<Reference<State>> replaceTransitionIdsWithKeys(
-      @Nonnull final State state, @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final State state, @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     final Set<Reference<State>> transitions = state.getTransitions();
     final Set<Reference<State>> newTransitions = new HashSet<>();
     if (transitions != null && !transitions.isEmpty()) {
@@ -83,21 +84,11 @@ public final class StateReferenceResolutionUtils {
             newTransitions.add(
                 getReferenceWithKeyReplaced(
                     transition,
-                    () -> State.referenceOfId(referenceIdToKeyMap.get(transition.getId())),
-                    referenceIdToKeyMap));
+                    () -> State.referenceOfId(referenceIdToKeyCache.get(transition.getId())),
+                    referenceIdToKeyCache));
           });
     }
     return newTransitions;
-  }
-
-  /**
-   * Builds a {@link StateQuery} for fetching states from a source CTP project.
-   *
-   * @return the query for fetching states from the source CTP project without any references
-   *     expanded.
-   */
-  public static StateQuery buildStateQuery() {
-    return StateQuery.of();
   }
 
   private StateReferenceResolutionUtils() {}

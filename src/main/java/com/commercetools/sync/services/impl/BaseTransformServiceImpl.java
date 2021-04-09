@@ -7,13 +7,13 @@ import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyId;
 import com.commercetools.sync.commons.utils.ChunkUtils;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.models.WithKey;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -28,13 +28,13 @@ public abstract class BaseTransformServiceImpl {
    */
   public static final int CHUNK_SIZE = 300;
   public static final String KEY_IS_NOT_SET_PLACE_HOLDER = "KEY_IS_NOT_SET";
-  protected final Map<String, String> referenceIdToKeyCache;
+  protected final ReferenceIdToKeyCache referenceIdToKeyCache;
 
   private final SphereClient ctpClient;
 
   protected BaseTransformServiceImpl(
       @Nonnull final SphereClient ctpClient,
-      @Nonnull final Map<String, String> referenceIdToKeyCache) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     this.ctpClient = ctpClient;
     this.referenceIdToKeyCache = referenceIdToKeyCache;
   }
@@ -101,6 +101,6 @@ public abstract class BaseTransformServiceImpl {
 
   private void fillReferenceIdToKeyCache(String id, String key) {
     final String keyValue = StringUtils.isBlank(key) ? KEY_IS_NOT_SET_PLACE_HOLDER : key;
-    referenceIdToKeyCache.put(id, keyValue);
+    referenceIdToKeyCache.add(id, keyValue);
   }
 }

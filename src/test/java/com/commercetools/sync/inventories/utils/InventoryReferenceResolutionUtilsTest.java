@@ -1,34 +1,33 @@
 package com.commercetools.sync.inventories.utils;
 
-import static com.commercetools.sync.inventories.utils.InventoryReferenceResolutionUtils.buildInventoryQuery;
 import static com.commercetools.sync.inventories.utils.InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
-import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class InventoryReferenceResolutionUtilsTest {
 
-  Map<String, String> idToKeyValueMap = new HashMap<>();
+  private final ReferenceIdToKeyCache referenceIdToKeyCache =
+      new CaffeineReferenceIdToKeyCacheImpl();
 
   @AfterEach
   void clearCache() {
-    idToKeyValueMap.clear();
+    referenceIdToKeyCache.clearCache();
   }
 
   @Test
@@ -43,8 +42,8 @@ class InventoryReferenceResolutionUtilsTest {
     final String channelId = UUID.randomUUID().toString();
     final String channelKey = "channelKey";
 
-    idToKeyValueMap.put(customTypeId, customTypeKey);
-    idToKeyValueMap.put(channelId, channelKey);
+    referenceIdToKeyCache.add(customTypeId, customTypeKey);
+    referenceIdToKeyCache.add(channelId, channelKey);
 
     for (int i = 0; i < 2; i++) {
       final InventoryEntry mockInventoryEntry = mock(InventoryEntry.class);
@@ -63,7 +62,7 @@ class InventoryReferenceResolutionUtilsTest {
 
     // test
     final List<InventoryEntryDraft> referenceReplacedDrafts =
-        mapToInventoryEntryDrafts(mockInventoryEntries, idToKeyValueMap);
+        mapToInventoryEntryDrafts(mockInventoryEntries, referenceIdToKeyCache);
 
     // assertion
     for (InventoryEntryDraft referenceReplacedDraft : referenceReplacedDrafts) {
@@ -96,7 +95,7 @@ class InventoryReferenceResolutionUtilsTest {
 
     // test
     final List<InventoryEntryDraft> referenceReplacedDrafts =
-        mapToInventoryEntryDrafts(mockInventoryEntries, idToKeyValueMap);
+        mapToInventoryEntryDrafts(mockInventoryEntries, referenceIdToKeyCache);
 
     // assertion
     for (InventoryEntryDraft referenceReplacedDraft : referenceReplacedDrafts) {
@@ -110,18 +109,12 @@ class InventoryReferenceResolutionUtilsTest {
     // test
     final List<InventoryEntryDraft> referenceReplacedDrafts =
         mapToInventoryEntryDrafts(
-            Collections.singletonList(mock(InventoryEntry.class)), idToKeyValueMap);
+            Collections.singletonList(mock(InventoryEntry.class)), referenceIdToKeyCache);
 
     // assertion
     for (InventoryEntryDraft referenceReplacedDraft : referenceReplacedDrafts) {
       assertThat(referenceReplacedDraft.getCustom()).isNull();
       assertThat(referenceReplacedDraft.getSupplyChannel()).isNull();
     }
-  }
-
-  @Test
-  void buildInventoryQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
-    final InventoryEntryQuery inventoryEntryQuery = buildInventoryQuery();
-    assertThat(inventoryEntryQuery.expansionPaths()).isEmpty();
   }
 }

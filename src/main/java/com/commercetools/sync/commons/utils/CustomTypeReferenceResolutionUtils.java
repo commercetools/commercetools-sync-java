@@ -7,7 +7,6 @@ import io.sphere.sdk.types.Custom;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
-import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -27,7 +26,7 @@ public final class CustomTypeReferenceResolutionUtils {
    *
    * @param resource the resource to replace its custom type key, if possible.
    * @param <T> the type of the resource.
-   * @param referenceIdToKeyMap the map containing the cached id to key values.
+   * @param referenceIdToKeyCache the instance that manages cache.
    * @return an instance of {@link CustomFieldsDraft} instance with the custom type key, if the
    *     custom type reference was existing and reference cached on the resource. Otherwise, if its
    *     not reference cached it returns a {@link CustomFieldsDraft} without a key. If the resource
@@ -35,9 +34,9 @@ public final class CustomTypeReferenceResolutionUtils {
    */
   @Nullable
   public static <T extends Custom> CustomFieldsDraft mapToCustomFieldsDraft(
-      @Nonnull final T resource, @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final T resource, @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     final CustomFields custom = resource.getCustom();
-    return mapToCustomFieldsDraft(custom, referenceIdToKeyMap);
+    return mapToCustomFieldsDraft(custom, referenceIdToKeyCache);
   }
 
   /**
@@ -50,7 +49,7 @@ public final class CustomTypeReferenceResolutionUtils {
    * If the resource has null {@link Custom}, then it returns {@code null}.
    *
    * @param custom the resource to replace its custom type key, if possible.
-   * @param referenceIdToKeyMap the map containing the cached id to key values.
+   * @param referenceIdToKeyCache the instance that manages cache.
    * @return an instance of {@link CustomFieldsDraft} instance with the custom type key, if the
    *     custom type reference was existing and reference cached on the resource. Otherwise, if its
    *     not reference cached it returns a {@link CustomFieldsDraft} without a key. If the resource
@@ -58,12 +57,13 @@ public final class CustomTypeReferenceResolutionUtils {
    */
   @Nullable
   public static CustomFieldsDraft mapToCustomFieldsDraft(
-      @Nullable final CustomFields custom, @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nullable final CustomFields custom,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     if (custom != null) {
       final String typeId = custom.getType().getId();
-      if (referenceIdToKeyMap.containsKey(typeId)) {
+      if (referenceIdToKeyCache.containsKey(typeId)) {
         return CustomFieldsDraft.ofTypeKeyAndJson(
-            referenceIdToKeyMap.get(typeId), custom.getFieldsJsonMap());
+            referenceIdToKeyCache.get(typeId), custom.getFieldsJsonMap());
       }
       return CustomFieldsDraftBuilder.of(custom).build();
     }

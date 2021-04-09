@@ -10,20 +10,19 @@ import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.Type;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class AssetReferenceResolutionUtilsTest {
 
-  Map<String, String> idToKeyValueMap = new HashMap<>();
+  private final ReferenceIdToKeyCache referenceIdToKeyCache =
+      new CaffeineReferenceIdToKeyCacheImpl();
 
   @AfterEach
   void setup() {
-    idToKeyValueMap.clear();
+    referenceIdToKeyCache.clearCache();
   }
 
   @Test
@@ -33,7 +32,7 @@ class AssetReferenceResolutionUtilsTest {
     final String customTypeKey = "customTypeKey";
 
     // cache reference Id to key value
-    idToKeyValueMap.put(customTypeId, customTypeKey);
+    referenceIdToKeyCache.add(customTypeId, customTypeKey);
 
     final Asset asset =
         getAssetMockWithCustomFields(
@@ -41,7 +40,7 @@ class AssetReferenceResolutionUtilsTest {
 
     // test
     final List<AssetDraft> referenceReplacedDrafts =
-        mapToAssetDrafts(singletonList(asset), idToKeyValueMap);
+        mapToAssetDrafts(singletonList(asset), referenceIdToKeyCache);
 
     // assertion
     referenceReplacedDrafts.forEach(
@@ -59,7 +58,7 @@ class AssetReferenceResolutionUtilsTest {
     final String customTypeKey = "customTypeKey";
 
     // cache reference Id to key value
-    idToKeyValueMap.put(customTypeId, customTypeKey);
+    referenceIdToKeyCache.add(customTypeId, customTypeKey);
 
     final Asset asset1 =
         getAssetMockWithCustomFields(
@@ -70,7 +69,7 @@ class AssetReferenceResolutionUtilsTest {
 
     // test
     final List<AssetDraft> referenceReplacedDrafts =
-        mapToAssetDrafts(asList(asset1, asset2), idToKeyValueMap);
+        mapToAssetDrafts(asList(asset1, asset2), referenceIdToKeyCache);
 
     // assertion
     assertThat(referenceReplacedDrafts).hasSize(2);
@@ -94,7 +93,7 @@ class AssetReferenceResolutionUtilsTest {
 
     // test
     final List<AssetDraft> referenceReplacedDrafts =
-        mapToAssetDrafts(singletonList(asset), idToKeyValueMap);
+        mapToAssetDrafts(singletonList(asset), referenceIdToKeyCache);
 
     // assertion
     referenceReplacedDrafts.forEach(

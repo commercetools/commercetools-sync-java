@@ -10,21 +10,20 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class CustomTypeReferenceResolutionUtilsTest {
 
-  Map<String, String> idToKeyValueMap = new HashMap<>();
+  private final ReferenceIdToKeyCache referenceIdToKeyCache =
+      new CaffeineReferenceIdToKeyCacheImpl();
 
   @Test
   void mapToCustomFieldsDraft_WithNullCustomType_ShouldReturnNullCustomFields() {
     final Category mockCategory = mock(Category.class);
 
     final CustomFieldsDraft customFieldsDraft =
-        mapToCustomFieldsDraft(mockCategory, idToKeyValueMap);
+        mapToCustomFieldsDraft(mockCategory, referenceIdToKeyCache);
 
     assertThat(customFieldsDraft).isNull();
   }
@@ -43,11 +42,11 @@ class CustomTypeReferenceResolutionUtilsTest {
     when(mockCategory.getCustom()).thenReturn(mockCustomFields);
 
     // Cache typeKey Value with typeId
-    idToKeyValueMap.put(typeId, typeKey);
+    referenceIdToKeyCache.add(typeId, typeKey);
 
     // test
     final CustomFieldsDraft customFieldsDraft =
-        mapToCustomFieldsDraft(mockCategory, idToKeyValueMap);
+        mapToCustomFieldsDraft(mockCategory, referenceIdToKeyCache);
 
     // assertion
     assertThat(customFieldsDraft).isNotNull();
@@ -69,7 +68,7 @@ class CustomTypeReferenceResolutionUtilsTest {
 
     // test
     final CustomFieldsDraft customFieldsDraft =
-        mapToCustomFieldsDraft(mockCategory, idToKeyValueMap);
+        mapToCustomFieldsDraft(mockCategory, referenceIdToKeyCache);
 
     // assertion
     assertThat(customFieldsDraft).isNotNull();

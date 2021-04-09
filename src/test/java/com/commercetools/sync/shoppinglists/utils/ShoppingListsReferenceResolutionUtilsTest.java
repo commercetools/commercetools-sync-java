@@ -9,6 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.LocalizedString;
@@ -34,11 +36,12 @@ import org.junit.jupiter.api.Test;
 
 class ShoppingListsReferenceResolutionUtilsTest {
 
-  private final Map<String, String> idToKeyValueMap = new HashMap<>();
+  private final ReferenceIdToKeyCache referenceIdToKeyCache =
+      new CaffeineReferenceIdToKeyCacheImpl();
 
   @AfterEach
   void clearCache() {
-    idToKeyValueMap.clear();
+    referenceIdToKeyCache.clearCache();
   }
 
   @Test
@@ -49,8 +52,12 @@ class ShoppingListsReferenceResolutionUtilsTest {
     final String customerId = UUID.randomUUID().toString();
     final String customerKey = "customerKey";
 
+    final Map<String, String> idToKeyValueMap = new HashMap<>();
+
     idToKeyValueMap.put(customTypeId, customTypeKey);
     idToKeyValueMap.put(customerId, customerKey);
+
+    referenceIdToKeyCache.addAll(idToKeyValueMap);
 
     final ProductVariant mockProductVariant = mock(ProductVariant.class);
     when(mockProductVariant.getSku()).thenReturn("variant-sku");
@@ -89,7 +96,7 @@ class ShoppingListsReferenceResolutionUtilsTest {
     }
 
     final List<ShoppingListDraft> shoppingListDrafts =
-        mapToShoppingListDrafts(mockShoppingLists, idToKeyValueMap);
+        mapToShoppingListDrafts(mockShoppingLists, referenceIdToKeyCache);
 
     assertThat(shoppingListDrafts).hasSize(3);
     shoppingListDrafts.forEach(
@@ -148,7 +155,7 @@ class ShoppingListsReferenceResolutionUtilsTest {
     }
 
     final List<ShoppingListDraft> shoppingListDrafts =
-        mapToShoppingListDrafts(mockShoppingLists, idToKeyValueMap);
+        mapToShoppingListDrafts(mockShoppingLists, referenceIdToKeyCache);
 
     assertThat(shoppingListDrafts).hasSize(3);
     shoppingListDrafts.forEach(
@@ -183,7 +190,7 @@ class ShoppingListsReferenceResolutionUtilsTest {
     when(mockShoppingList.getTextLineItems()).thenReturn(null);
 
     final List<ShoppingListDraft> shoppingListDrafts =
-        mapToShoppingListDrafts(singletonList(mockShoppingList), idToKeyValueMap);
+        mapToShoppingListDrafts(singletonList(mockShoppingList), referenceIdToKeyCache);
 
     assertThat(shoppingListDrafts)
         .containsExactly(

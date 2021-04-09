@@ -2,15 +2,14 @@ package com.commercetools.sync.cartdiscounts.utils;
 
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
 
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
-import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.types.Type;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
@@ -50,23 +49,23 @@ public final class CartDiscountReferenceResolutionUtils {
    * reference resolution.
    *
    * @param cartDiscounts the cart discounts without expansion of references.
-   * @param referenceIdToKeyMap the map containing the cached id to key values.
+   * @param referenceIdToKeyCache the instance that manages cache.
    * @return a {@link List} of {@link CartDiscountDraft} built from the supplied {@link List} of
    *     {@link CartDiscount}.
    */
   @Nonnull
   public static List<CartDiscountDraft> mapToCartDiscountDrafts(
       @Nonnull final List<CartDiscount> cartDiscounts,
-      @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return cartDiscounts.stream()
-        .map(cartDiscount -> mapToCartDiscountDraft(cartDiscount, referenceIdToKeyMap))
+        .map(cartDiscount -> mapToCartDiscountDraft(cartDiscount, referenceIdToKeyCache))
         .collect(Collectors.toList());
   }
 
   @Nonnull
   private static CartDiscountDraft mapToCartDiscountDraft(
       @Nonnull final CartDiscount cartDiscount,
-      @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return CartDiscountDraftBuilder.of(
             cartDiscount.getCartPredicate(),
             cartDiscount.getName(),
@@ -80,18 +79,8 @@ public final class CartDiscountReferenceResolutionUtils {
         .validFrom(cartDiscount.getValidFrom())
         .validUntil(cartDiscount.getValidUntil())
         .stackingMode(cartDiscount.getStackingMode())
-        .custom(mapToCustomFieldsDraft(cartDiscount, referenceIdToKeyMap))
+        .custom(mapToCustomFieldsDraft(cartDiscount, referenceIdToKeyCache))
         .build();
-  }
-
-  /**
-   * Builds a {@link CartDiscountQuery} for fetching cart discounts from a source CTP project.
-   *
-   * @return the query for fetching cart discounts from the source CTP project without any
-   *     references expanded.
-   */
-  public static CartDiscountQuery buildCartDiscountQuery() {
-    return CartDiscountQuery.of();
   }
 
   private CartDiscountReferenceResolutionUtils() {}
