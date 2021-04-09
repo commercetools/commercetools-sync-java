@@ -17,7 +17,7 @@ public interface ProductTypeTransformService {
    *
    * <p>If the reference ids are already cached, key values are pulled from the cache, otherwise it
    * executes the query to fetch the key value for the reference id and store
-   * pair in the cache for reuse.
+   * in the cache.
    *
    * <p>Then maps the ProductType to ProductTypeDraft by performing reference resolution considering
    * idToKey value from the cache.
