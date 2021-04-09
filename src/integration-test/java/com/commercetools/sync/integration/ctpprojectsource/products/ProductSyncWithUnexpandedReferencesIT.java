@@ -16,12 +16,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
-import com.commercetools.sync.products.service.ProductTransformService;
-import com.commercetools.sync.products.service.impl.ProductTransformServiceImpl;
+import com.commercetools.sync.products.utils.ProductTransformUtils;
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
@@ -98,8 +98,7 @@ class ProductSyncWithUnexpandedReferencesIT {
   private List<String> errorCallBackMessages;
   private List<String> warningCallBackMessages;
   private List<Throwable> errorCallBackExceptions;
-  private final ProductTransformService productTransformService =
-      new ProductTransformServiceImpl(CTP_SOURCE_CLIENT, new CaffeineReferenceIdToKeyCacheImpl());
+  private ReferenceIdToKeyCache referenceIdToKeyCache;
 
   @BeforeAll
   static void setupSourceProjectData() {
@@ -274,6 +273,7 @@ class ProductSyncWithUnexpandedReferencesIT {
                     warningCallBackMessages.add(exception.getMessage()))
             .build();
     productSync = new ProductSync(syncOptions);
+    referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
   }
 
   @AfterAll
@@ -288,7 +288,8 @@ class ProductSyncWithUnexpandedReferencesIT {
         CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
 
     final List<ProductDraft> productDrafts =
-        productTransformService.toProductDrafts(products).join();
+        ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+            .join();
 
     // test
     final ProductSyncStatistics syncStatistics =

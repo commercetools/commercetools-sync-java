@@ -17,8 +17,7 @@ import com.commercetools.sync.shoppinglists.ShoppingListSync;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics;
-import com.commercetools.sync.shoppinglists.service.ShoppingListTransformService;
-import com.commercetools.sync.shoppinglists.service.impl.ShoppingListTransformServiceImpl;
+import com.commercetools.sync.shoppinglists.utils.ShoppingListTransformUtils;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.LocalizedString;
@@ -45,13 +44,10 @@ class ShoppingListSyncIT {
   private List<UpdateAction<ShoppingList>> updateActionList;
   private ShoppingListSync shoppingListSync;
   private ReferenceIdToKeyCache referenceIdToKeyCache;
-  private ShoppingListTransformService shoppingListTransformService;
 
   @BeforeEach
   void setup() {
     referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
-    shoppingListTransformService =
-        new ShoppingListTransformServiceImpl(CTP_SOURCE_CLIENT, referenceIdToKeyCache);
     deleteShoppingListSyncTestDataFromProjects();
 
     createSampleShoppingListCarrotCake(CTP_SOURCE_CLIENT);
@@ -109,7 +105,9 @@ class ShoppingListSyncIT {
             .getResults();
 
     final List<ShoppingListDraft> shoppingListDrafts =
-        shoppingListTransformService.toShoppingListDrafts(shoppingLists).join();
+        ShoppingListTransformUtils.toShoppingListDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, shoppingLists)
+            .join();
 
     final ShoppingListSyncStatistics shoppingListSyncStatistics =
         shoppingListSync.sync(shoppingListDrafts).toCompletableFuture().join();
@@ -139,7 +137,9 @@ class ShoppingListSyncIT {
     final Customer sampleCustomerJaneDoe = createSampleCustomerJaneDoe(CTP_TARGET_CLIENT);
 
     final List<ShoppingListDraft> updatedShoppingListDrafts =
-        shoppingListTransformService.toShoppingListDrafts(shoppingLists).join().stream()
+        ShoppingListTransformUtils.toShoppingListDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, shoppingLists)
+            .join().stream()
             .map(
                 shoppingListDraft ->
                     ShoppingListDraftBuilder.of(shoppingListDraft)

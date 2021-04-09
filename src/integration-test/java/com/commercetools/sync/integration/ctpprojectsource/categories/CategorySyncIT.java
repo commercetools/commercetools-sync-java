@@ -20,8 +20,7 @@ import com.commercetools.sync.categories.CategorySync;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
-import com.commercetools.sync.categories.service.CategoryTransformService;
-import com.commercetools.sync.categories.service.impl.CategoryTransformServiceImpl;
+import com.commercetools.sync.categories.utils.CategoryTransformUtils;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.categories.Category;
@@ -52,7 +51,6 @@ class CategorySyncIT {
   private List<Throwable> callBackExceptions = new ArrayList<>();
   private List<String> callBackWarningResponses = new ArrayList<>();
   private ReferenceIdToKeyCache referenceIdToKeyCache;
-  private CategoryTransformService categoryTransformService;
 
   /**
    * Delete all categories and types from source and target project. Then create custom types for
@@ -85,8 +83,6 @@ class CategorySyncIT {
     callBackWarningResponses = new ArrayList<>();
     categorySync = new CategorySync(buildCategorySyncOptions(50));
     referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
-    categoryTransformService =
-        new CategoryTransformServiceImpl(CTP_SOURCE_CLIENT, referenceIdToKeyCache);
   }
 
   private CategorySyncOptions buildCategorySyncOptions(final int batchSize) {
@@ -120,7 +116,9 @@ class CategorySyncIT {
         CTP_SOURCE_CLIENT.execute(CategoryQuery.of()).toCompletableFuture().join().getResults();
 
     final List<CategoryDraft> categoryDrafts =
-        categoryTransformService.toCategoryDrafts(categories).join();
+        CategoryTransformUtils.toCategoryDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
+            .join();
 
     final CategorySyncStatistics syncStatistics =
         categorySync.sync(categoryDrafts).toCompletableFuture().join();
@@ -140,7 +138,9 @@ class CategorySyncIT {
         CTP_SOURCE_CLIENT.execute(CategoryQuery.of()).toCompletableFuture().join().getResults();
 
     final List<CategoryDraft> categoryDrafts =
-        categoryTransformService.toCategoryDrafts(categories).join();
+        CategoryTransformUtils.toCategoryDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
+            .join();
 
     final CategorySyncStatistics syncStatistics =
         categorySync.sync(categoryDrafts).toCompletableFuture().join();
@@ -178,7 +178,9 @@ class CategorySyncIT {
             .getResults();
 
     final List<CategoryDraft> categoryDrafts =
-        categoryTransformService.toCategoryDrafts(categories).join();
+        CategoryTransformUtils.toCategoryDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
+            .join();
 
     // Make sure there is no hierarchical order
     Collections.shuffle(categoryDrafts);
@@ -235,7 +237,9 @@ class CategorySyncIT {
             .getResults();
 
     final List<CategoryDraft> categoryDrafts =
-        categoryTransformService.toCategoryDrafts(categories).join();
+        CategoryTransformUtils.toCategoryDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
+            .join();
     Collections.shuffle(categoryDrafts);
 
     CategorySync categorySyncWith13BatcheSize = new CategorySync(buildCategorySyncOptions(13));
@@ -274,7 +278,9 @@ class CategorySyncIT {
         CTP_SOURCE_CLIENT.execute(CategoryQuery.of()).toCompletableFuture().join().getResults();
 
     final List<CategoryDraft> categoryDrafts =
-        categoryTransformService.toCategoryDrafts(categories).join();
+        CategoryTransformUtils.toCategoryDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
+            .join();
     Collections.shuffle(categoryDrafts);
 
     CategorySync categorySyncWith1BatchSize = new CategorySync(buildCategorySyncOptions(1));
@@ -359,7 +365,9 @@ class CategorySyncIT {
             .getResults();
 
     final List<CategoryDraft> categoryDrafts =
-        categoryTransformService.toCategoryDrafts(categories).join();
+        CategoryTransformUtils.toCategoryDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
+            .join();
 
     // To simulate the new parent coming in a later draft
     Collections.reverse(categoryDrafts);
@@ -429,7 +437,9 @@ class CategorySyncIT {
         CTP_SOURCE_CLIENT.execute(CategoryQuery.of()).toCompletableFuture().join().getResults();
 
     final List<CategoryDraft> categoryDrafts =
-        categoryTransformService.toCategoryDrafts(categories).join();
+        CategoryTransformUtils.toCategoryDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
+            .join();
 
     final CategorySyncStatistics syncStatistics =
         categorySync.sync(categoryDrafts).toCompletableFuture().join();

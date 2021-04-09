@@ -18,8 +18,7 @@ import com.commercetools.sync.customers.CustomerSync;
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
 import com.commercetools.sync.customers.helpers.CustomerSyncStatistics;
-import com.commercetools.sync.customers.service.CustomerTransformService;
-import com.commercetools.sync.customers.service.impl.CustomerTransformServiceImpl;
+import com.commercetools.sync.customers.utils.CustomerTransformUtils;
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
@@ -42,7 +41,6 @@ class CustomerSyncIT {
   private List<Throwable> exceptions;
   private CustomerSync customerSync;
   private ReferenceIdToKeyCache referenceIdToKeyCache;
-  private CustomerTransformService customerTransformService;
 
   @BeforeEach
   void setup() {
@@ -79,8 +77,6 @@ class CustomerSyncIT {
             .build();
     customerSync = new CustomerSync(customerSyncOptions);
     referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
-    customerTransformService =
-        new CustomerTransformServiceImpl(CTP_SOURCE_CLIENT, referenceIdToKeyCache);
   }
 
   @Test
@@ -90,7 +86,8 @@ class CustomerSyncIT {
         CTP_SOURCE_CLIENT.execute(CustomerQuery.of()).toCompletableFuture().join().getResults();
 
     final List<CustomerDraft> customerDrafts =
-        customerTransformService.toCustomerDrafts(customers).join();
+        CustomerTransformUtils.toCustomerDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, customers)
+            .join();
 
     final CustomerSyncStatistics customerSyncStatistics =
         customerSync.sync(customerDrafts).toCompletableFuture().join();
@@ -129,7 +126,8 @@ class CustomerSyncIT {
     final Store storeCologne = createStore(CTP_TARGET_CLIENT, "store-cologne");
 
     final List<CustomerDraft> customerDrafts =
-        customerTransformService.toCustomerDrafts(customers).join();
+        CustomerTransformUtils.toCustomerDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, customers)
+            .join();
 
     return customerDrafts.stream()
         .map(
