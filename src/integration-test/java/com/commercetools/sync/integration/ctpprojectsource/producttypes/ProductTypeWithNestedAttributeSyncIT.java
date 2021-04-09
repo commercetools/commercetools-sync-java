@@ -6,7 +6,6 @@ import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtil
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.removeAttributeReferencesAndDeleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.producttypes.utils.ProductTypeReferenceResolutionUtils.buildProductTypeQuery;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,6 +23,7 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeDefinitionLabel;
+import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -88,11 +88,7 @@ class ProductTypeWithNestedAttributeSyncIT {
   void sync_WithEmptyTargetProject_ShouldReturnProperStatistics() {
     // preparation
     final List<ProductType> productTypes =
-        CTP_SOURCE_CLIENT
-            .execute(buildProductTypeQuery())
-            .toCompletableFuture()
-            .join()
-            .getResults();
+        CTP_SOURCE_CLIENT.execute(ProductTypeQuery.of()).toCompletableFuture().join().getResults();
 
     final List<ProductTypeDraft> productTypeDrafts =
         productTypeReferenceTransformService.transformProductTypeReferences(productTypes).join();
@@ -119,11 +115,7 @@ class ProductTypeWithNestedAttributeSyncIT {
   void sync_WithOneDraftPerBatchOnEmptyProject_ShouldReturnProperStatistics() {
     // preparation
     final List<ProductType> productTypes =
-        CTP_SOURCE_CLIENT
-            .execute(buildProductTypeQuery())
-            .toCompletableFuture()
-            .join()
-            .getResults();
+        CTP_SOURCE_CLIENT.execute(ProductTypeQuery.of()).toCompletableFuture().join().getResults();
 
     final List<ProductTypeDraft> productTypeDrafts =
         productTypeReferenceTransformService.transformProductTypeReferences(productTypes).join();
@@ -166,11 +158,7 @@ class ProductTypeWithNestedAttributeSyncIT {
     // preparation
     populateTargetProjectWithNestedAttributes();
     final List<ProductType> productTypes =
-        CTP_SOURCE_CLIENT
-            .execute(buildProductTypeQuery())
-            .toCompletableFuture()
-            .join()
-            .getResults();
+        CTP_SOURCE_CLIENT.execute(ProductTypeQuery.of()).toCompletableFuture().join().getResults();
 
     final List<ProductTypeDraft> productTypeDrafts =
         productTypeReferenceTransformService.transformProductTypeReferences(productTypes).join();
@@ -198,11 +186,7 @@ class ProductTypeWithNestedAttributeSyncIT {
     // preparation
     populateTargetProjectWithNestedAttributes();
     final List<ProductType> productTypes =
-        CTP_SOURCE_CLIENT
-            .execute(buildProductTypeQuery())
-            .toCompletableFuture()
-            .join()
-            .getResults();
+        CTP_SOURCE_CLIENT.execute(ProductTypeQuery.of()).toCompletableFuture().join().getResults();
 
     // only update the nested types
     final List<ProductTypeDraft> productTypeDrafts =

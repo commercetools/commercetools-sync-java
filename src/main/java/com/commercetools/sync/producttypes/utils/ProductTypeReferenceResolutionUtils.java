@@ -12,7 +12,6 @@ import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
-import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -96,7 +95,6 @@ public final class ProductTypeReferenceResolutionUtils {
         .collect(toList());
   }
 
-  @Nonnull
   private static AttributeType replaceProductTypeReferenceIdWithKey(
       @Nonnull final AttributeType attributeType,
       @Nonnull final Map<String, String> referenceIdToKeyMap) {
@@ -127,20 +125,11 @@ public final class ProductTypeReferenceResolutionUtils {
 
     final Reference<ProductType> productTypeReference = nestedAttributeType.getTypeReference();
     final String productTypeId = productTypeReference.getId();
-    final String productTypeKey = referenceIdToKeyMap.get(productTypeId);
-    return ProductType.referenceOfId(productTypeKey);
-  }
-
-  /**
-   * Builds a {@link ProductTypeQuery} for fetching products from a source CTP project without any
-   * expansion to the {@link ProductType}
-   *
-   * @return the query for fetching products from the source CTP project without any expansion to
-   *     the {@link ProductType}.
-   */
-  @Nonnull
-  public static ProductTypeQuery buildProductTypeQuery() {
-    return ProductTypeQuery.of();
+    if (referenceIdToKeyMap.containsKey(productTypeId)) {
+      final String productTypeKey = referenceIdToKeyMap.get(productTypeId);
+      return ProductType.referenceOfId(productTypeKey);
+    }
+    return productTypeReference;
   }
 
   private ProductTypeReferenceResolutionUtils() {}
