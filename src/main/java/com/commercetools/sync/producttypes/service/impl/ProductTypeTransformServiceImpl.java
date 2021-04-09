@@ -40,18 +40,19 @@ public class ProductTypeTransformServiceImpl extends BaseTransformServiceImpl
   public CompletableFuture<List<ProductTypeDraft>> toProductTypeDrafts(
       @Nonnull final List<ProductType> productTypes) throws ReferenceReplacementException {
 
-    return transformNestedProductTypeReference(productTypes)
+    return loadNestedProductTypeReferenceKeys(productTypes)
         .thenApply(ignore -> mapToProductTypeDrafts(productTypes, referenceIdToKeyCache));
   }
 
   @Nonnull
-  private CompletableFuture<Void> transformNestedProductTypeReference(
+  private CompletableFuture<Void> loadNestedProductTypeReferenceKeys(
       @Nonnull final List<ProductType> productTypes) {
 
     final Set<String> setOfTypeIds =
         new HashSet<>(collectNestedProductTypeReferenceIds(productTypes));
 
-    return super.fetchAndFillReferenceIdToKeyCache(setOfTypeIds, GraphQlQueryResources.PRODUCT_TYPES);
+    return super.fetchAndFillReferenceIdToKeyCache(
+        setOfTypeIds, GraphQlQueryResources.PRODUCT_TYPES);
   }
 
   private Set<String> collectNestedProductTypeReferenceIds(

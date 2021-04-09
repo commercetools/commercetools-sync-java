@@ -12,12 +12,11 @@ public interface ProductTypeTransformService {
    * Transforms productTypes by resolving the references and map them to ProductTypeDrafts.
    *
    * <p>This method replaces the ids on attribute references with keys. It resolves(fetch key value
-   * for the reference id) the non-null unexpanded references in the productType{@link
-   * ProductType} by using a cache.
+   * for the reference id) the non-null unexpanded references in the productType{@link ProductType}
+   * by using a cache.
    *
    * <p>If the reference ids are already cached, key values are pulled from the cache, otherwise it
-   * executes the query to fetch the key value for the reference id and store
-   * in the cache.
+   * executes the query to fetch the key value for the reference id and store in the cache.
    *
    * <p>Then maps the ProductType to ProductTypeDraft by performing reference resolution considering
    * idToKey value from the cache.
