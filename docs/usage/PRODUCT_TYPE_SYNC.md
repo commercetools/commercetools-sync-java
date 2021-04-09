@@ -95,7 +95,7 @@ Example as shown below:
 final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
 
 //For every reference fetch its key using id, cache it and map from ProductType to ProductTypeDraft. With help of the cache same reference keys can be reused.
-CompletableFuture<List<ProductTypeDraft>> productTypeDrafts = ProductTransformUtils.toProductTypeDrafts(client, referenceIdToKeyCache, productTypes);
+CompletionStage<List<ProductTypeDraft>> productTypeDrafts = ProductTransformUtils.toProductTypeDrafts(client, referenceIdToKeyCache, productTypes);
 ````
 
 ##### Syncing from an external resource
