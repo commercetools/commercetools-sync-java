@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.models.Asset;
@@ -288,12 +289,16 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
     final List<JsonNode> allStateReferences =
         getReferencesByTypeId(allAttributeReferences, State.referenceTypeId());
 
+    final List<JsonNode> allCustomerReferences =
+        getReferencesByTypeId(allAttributeReferences, Customer.referenceTypeId());
+
     return getIdToKeys(
             getIds(allProductReferences),
             getIds(allCategoryReferences),
             getIds(allProductTypeReferences),
             getIds(allCustomObjectReferences),
-            getIds(allStateReferences))
+            getIds(allStateReferences),
+            getIds(allCustomerReferences))
         .thenApply(
             referenceIdToKeyCache -> {
               final List<ProductProjection> validProducts =
@@ -418,18 +423,21 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
       @Nonnull final Set<String> categoryIds,
       @Nonnull final Set<String> productTypeIds,
       @Nonnull final Set<String> customObjectIds,
-      @Nonnull final Set<String> stateIds) {
+      @Nonnull final Set<String> stateIds,
+      @Nonnull final Set<String> customerIds) {
 
     final Set<String> nonCachedProductIds = getNonCachedReferenceIds(productIds);
     final Set<String> nonCachedCategoryIds = getNonCachedReferenceIds(categoryIds);
     final Set<String> nonCachedProductTypeIds = getNonCachedReferenceIds(productTypeIds);
     final Set<String> nonCachedCustomObjectIds = getNonCachedReferenceIds(customObjectIds);
     final Set<String> nonCachedStateIds = getNonCachedReferenceIds(stateIds);
+    final Set<String> nonCachedCustomerIds = getNonCachedReferenceIds(customerIds);
 
     if (nonCachedProductIds.isEmpty()
         && nonCachedCategoryIds.isEmpty()
         && nonCachedProductTypeIds.isEmpty()
-        && nonCachedStateIds.isEmpty()) {
+        && nonCachedStateIds.isEmpty()
+        && nonCachedCustomerIds.isEmpty()) {
       return fetchCustomObjectKeys(nonCachedCustomObjectIds);
     }
 
@@ -437,6 +445,7 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
     List<List<String>> categoryIdsChunk = ChunkUtils.chunk(nonCachedCategoryIds, CHUNK_SIZE);
     List<List<String>> productTypeIdsChunk = ChunkUtils.chunk(nonCachedProductTypeIds, CHUNK_SIZE);
     List<List<String>> stateIdsChunk = ChunkUtils.chunk(nonCachedStateIds, CHUNK_SIZE);
+    List<List<String>> customerIdsChunk = ChunkUtils.chunk(nonCachedCustomerIds, CHUNK_SIZE);
 
     List<ResourceIdsGraphQlRequest> collectedRequests = new ArrayList<>();
 
@@ -448,6 +457,8 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
         createResourceIdsGraphQlRequests(productTypeIdsChunk, GraphQlQueryResources.PRODUCT_TYPES));
     collectedRequests.addAll(
         createResourceIdsGraphQlRequests(stateIdsChunk, GraphQlQueryResources.STATES));
+    collectedRequests.addAll(
+        createResourceIdsGraphQlRequests(customerIdsChunk, GraphQlQueryResources.CUSTOMERS));
 
     return ChunkUtils.executeChunks(getCtpClient(), collectedRequests)
         .thenApply(ChunkUtils::flattenGraphQLBaseResults)

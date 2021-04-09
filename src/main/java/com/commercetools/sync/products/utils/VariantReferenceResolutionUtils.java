@@ -2,9 +2,6 @@ package com.commercetools.sync.products.utils;
 
 import static com.commercetools.sync.commons.utils.AssetReferenceResolutionUtils.mapToAssetDrafts;
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_KEY_FIELD;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_OBJECT_FIELD;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
@@ -14,8 +11,6 @@ import static java.util.stream.Collectors.toSet;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.models.Reference;
@@ -31,7 +26,6 @@ import io.sphere.sdk.products.attributes.AttributeAccess;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.types.Type;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -174,55 +168,10 @@ public final class VariantReferenceResolutionUtils {
                                     productReferenceSet ->
                                         AttributeDraft.of(attribute.getName(), productReferenceSet))
                                 .orElseGet(
-                                    () -> {
-                                      final JsonNode attributeValueAsJsonNode =
-                                          attribute.getValueAsJsonNode();
-                                      if (isReferenceSetAttribute(attributeValueAsJsonNode)) {
-                                        return AttributeDraft.of(
-                                            attribute.getName(),
-                                            getReferenceSetAttributeAsJsonObject(
-                                                attributeValueAsJsonNode));
-                                      } else if (isReferenceTypeAttribute(
-                                          attributeValueAsJsonNode)) {
-                                        return AttributeDraft.of(
-                                            attribute.getName(),
-                                            getReferenceTypeAttributeAsJsonObject(
-                                                attributeValueAsJsonNode));
-                                      } else {
-                                        return AttributeDraft.of(
-                                            attribute.getName(), attribute.getValueAsJsonNode());
-                                      }
-                                    })))
+                                    () ->
+                                        AttributeDraft.of(
+                                            attribute.getName(), attribute.getValueAsJsonNode()))))
         .collect(toList());
-  }
-
-  private static Set<JsonNode> getReferenceSetAttributeAsJsonObject(
-      @Nonnull final JsonNode attributeValueAsJsonNode) {
-    final Iterator<JsonNode> attributeValueElements = attributeValueAsJsonNode.elements();
-    final Set<JsonNode> attributeValueAsJsonNodeSet = new HashSet<>();
-    while (attributeValueElements.hasNext()) {
-      JsonNode item = attributeValueElements.next();
-      item = getReferenceTypeAttributeAsJsonObject(item);
-      attributeValueAsJsonNodeSet.add(item);
-    }
-    return attributeValueAsJsonNodeSet;
-  }
-
-  private static JsonNode getReferenceTypeAttributeAsJsonObject(
-      @Nonnull final JsonNode attributeValueAsJsonNode) {
-    final String typeId = attributeValueAsJsonNode.get(REFERENCE_TYPE_ID_FIELD).asText();
-    final Optional<JsonNode> attributeValueObjectFieldAsJsonNode =
-        Optional.ofNullable(attributeValueAsJsonNode.get(REFERENCE_OBJECT_FIELD));
-
-    final String id =
-        attributeValueObjectFieldAsJsonNode
-            .map(objectField -> objectField.get(REFERENCE_KEY_FIELD).textValue())
-            .orElse("");
-
-    final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
-    attributeValue.put(REFERENCE_TYPE_ID_FIELD, typeId);
-    attributeValue.put(REFERENCE_ID_FIELD, id);
-    return attributeValue;
   }
 
   @SuppressWarnings(
