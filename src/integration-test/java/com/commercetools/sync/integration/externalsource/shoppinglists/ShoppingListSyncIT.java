@@ -14,7 +14,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.commercetools.sync.shoppinglists.ShoppingListSync;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
-import com.commercetools.sync.shoppinglists.commands.updateactions.AddLineItemWithSku;
 import com.commercetools.sync.shoppinglists.commands.updateactions.AddTextLineItemWithAddedAt;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics;
 import com.commercetools.sync.shoppinglists.utils.ShoppingListReferenceResolutionUtils;
@@ -30,6 +29,7 @@ import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
 import io.sphere.sdk.shoppinglists.TextLineItemDraftDsl;
+import io.sphere.sdk.shoppinglists.commands.updateactions.AddLineItem;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeLineItemQuantity;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeTextLineItemName;
@@ -277,14 +277,14 @@ class ShoppingListSyncIT {
                 JsonNodeFactory.instance.textNode("nuts"),
                 lineItemId_Sku5BakingPowder),
             RemoveLineItem.of(lineItemId_Sku6Cinnamon),
-            AddLineItemWithSku.of(
+            AddLineItem.of(
                 LineItemDraftBuilder.ofSku("SKU-5", 1L)
                     .custom(
                         CustomFieldsDraft.ofTypeIdAndJson(
                             lineItemTypeId,
                             buildIngredientCustomType("baking powder", "1 tsp").getFields()))
                     .build()),
-            AddLineItemWithSku.of(
+            AddLineItem.of(
                 LineItemDraftBuilder.ofSku("SKU-6", 1L)
                     .custom(
                         CustomFieldsDraft.ofTypeIdAndJson(
