@@ -55,6 +55,8 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CompletionException;
 import javax.annotation.Nonnull;
+
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -143,6 +145,12 @@ class ProductReferenceResolverIT {
                     warningCallBackMessages.add(exception.getMessage()))
             .build();
     productSync = new ProductSync(syncOptions);
+  }
+
+  @AfterAll
+  static void tearDown() {
+    deleteProductSyncTestData(CTP_TARGET_CLIENT);
+    deleteProductSyncTestData(CTP_SOURCE_CLIENT);
   }
 
   @Test
