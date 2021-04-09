@@ -31,7 +31,8 @@ public final class ProductTypeTransformUtils {
    * @param productTypes the productTypes to replace the references and attributes id's with keys.
    * @return a new list which contains productTypeDrafts which have all their references and
    *     attributes references resolved and already replaced with keys.
-   *     <p>TODO: Move the implementation from service class to this util class.
+   *     <p>TODO: Move the implementation from ProductTransformServiceImpl{@link
+   *     ProductTypeTransformServiceImpl} class to this util class and remove the Service.
    */
   @Nonnull
   public static CompletableFuture<List<ProductTypeDraft>> toProductTypeDrafts(
