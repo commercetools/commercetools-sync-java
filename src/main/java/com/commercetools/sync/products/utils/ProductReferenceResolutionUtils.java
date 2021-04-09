@@ -4,10 +4,10 @@ import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifi
 import static java.util.stream.Collectors.toList;
 
 import com.commercetools.sync.commons.helpers.CategoryReferencePair;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.customergroups.CustomerGroup;
-import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
@@ -19,11 +19,7 @@ import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.Attribute;
-import io.sphere.sdk.products.expansion.ProductProjectionExpansionModel;
-import io.sphere.sdk.products.queries.ProductProjectionQuery;
-import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.types.Type;
@@ -76,7 +72,7 @@ public final class ProductReferenceResolutionUtils {
    *     <tr>
    *        <td>variants.prices.customerGroup *</td>
    *        <td>{@link Reference}&lt;{@link CustomerGroup}&gt;</td>
-   *        <td>{@link Reference}&lt;{@link CustomerGroup}&gt; (with key replaced with id field)</td>
+   *        <td>{@link ResourceIdentifier}&lt;{@link CustomerGroup}&gt;</td>
    *     </tr>
    *     <tr>
    *        <td>variants.prices.custom.type</td>
@@ -106,18 +102,21 @@ public final class ProductReferenceResolutionUtils {
    *   </tbody>
    * </table>
    *
-   * <p><b>Note:</b> The aforementioned references should be expanded with a key. Any reference that
-   * is not expanded will have its id in place and not replaced by the key will be considered as
-   * existing resources on the target commercetools project and the library will issues an
-   * update/create API request without reference resolution.
+   * <p><b>Note:</b> The aforementioned references should contain Id in the map(cache) with a key
+   * value. Any reference that is not available in the map will have its id in place and not
+   * replaced by the key. This reference will be considered as existing resources on the target
+   * commercetools project and the library will issues an update/create API request without
+   * reference resolution.
    *
-   * @param products the productprojection (staged) with expanded references.
+   * @param products the productprojection (staged) without expansion of references.
+   * @param referenceIdToKeyCache the instance that manages cache.
    * @return a {@link List} of {@link ProductDraft} built from the supplied {@link List} of {@link
    *     Product}.
    */
   @Nonnull
   public static List<ProductDraft> mapToProductDrafts(
-      @Nonnull final List<ProductProjection> products) {
+      @Nonnull final List<ProductProjection> products,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return products.stream()
         .filter(Objects::nonNull)
         .map(
@@ -125,7 +124,7 @@ public final class ProductReferenceResolutionUtils {
               final ProductDraft productDraft = getDraftBuilderFromStagedProduct(product).build();
 
               final CategoryReferencePair categoryReferencePair =
-                  mapToCategoryReferencePair(product);
+                  mapToCategoryReferencePair(product, referenceIdToKeyCache);
               final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers =
                   categoryReferencePair.getCategoryResourceIdentifiers();
               final CategoryOrderHints categoryOrderHintsWithKeys =
@@ -133,18 +132,21 @@ public final class ProductReferenceResolutionUtils {
 
               final List<ProductVariant> allVariants = product.getAllVariants();
               final List<ProductVariantDraft> variantDraftsWithKeys =
-                  VariantReferenceResolutionUtils.mapToProductVariantDrafts(allVariants);
+                  VariantReferenceResolutionUtils.mapToProductVariantDrafts(
+                      allVariants, referenceIdToKeyCache);
               final ProductVariantDraft masterVariantDraftWithKeys =
                   variantDraftsWithKeys.remove(0);
 
               return ProductDraftBuilder.of(productDraft)
                   .masterVariant(masterVariantDraftWithKeys)
                   .variants(variantDraftsWithKeys)
-                  .productType(getResourceIdentifierWithKey(product.getProductType()))
+                  .productType(
+                      getResourceIdentifierWithKey(product.getProductType(), referenceIdToKeyCache))
                   .categories(categoryResourceIdentifiers)
                   .categoryOrderHints(categoryOrderHintsWithKeys)
-                  .taxCategory(getResourceIdentifierWithKey(product.getTaxCategory()))
-                  .state(getResourceIdentifierWithKey(product.getState()))
+                  .taxCategory(
+                      getResourceIdentifierWithKey(product.getTaxCategory(), referenceIdToKeyCache))
+                  .state(getResourceIdentifierWithKey(product.getState(), referenceIdToKeyCache))
                   .build();
             })
         .collect(Collectors.toList());
@@ -186,7 +188,8 @@ public final class ProductReferenceResolutionUtils {
 
   @Nonnull
   static CategoryReferencePair mapToCategoryReferencePair(
-      @Nonnull final ProductProjection product) {
+      @Nonnull final ProductProjection product,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     final Set<Reference<Category>> categoryReferences = product.getCategories();
     final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = new HashSet<>();
 
@@ -196,9 +199,9 @@ public final class ProductReferenceResolutionUtils {
     categoryReferences.forEach(
         categoryReference -> {
           if (categoryReference != null) {
-            if (categoryReference.getObj() != null) {
-              final String categoryId = categoryReference.getId();
-              final String categoryKey = categoryReference.getObj().getKey();
+            final String categoryId = categoryReference.getId();
+            if (referenceIdToKeyCache.containsKey(categoryId)) {
+              final String categoryKey = referenceIdToKeyCache.get(categoryId);
 
               if (categoryOrderHints != null) {
                 final String categoryOrderHintValue = categoryOrderHints.get(categoryId);
@@ -218,49 +221,6 @@ public final class ProductReferenceResolutionUtils {
             ? categoryOrderHints
             : CategoryOrderHints.of(categoryOrderHintsMapWithKeys);
     return CategoryReferencePair.of(categoryResourceIdentifiers, categoryOrderHintsWithKeys);
-  }
-
-  /**
-   * Builds a {@link ProductQuery} for fetching products from a source CTP project with all the
-   * needed references expanded for the sync:
-   *
-   * <ul>
-   *   <li>Product Type
-   *   <li>Tax Category
-   *   <li>Product State
-   *   <li>Staged Assets' Custom Types
-   *   <li>Staged Product Categories
-   *   <li>Staged Prices' Channels
-   *   <li>Staged Prices' Customer Groups
-   *   <li>Staged Prices' Custom Types
-   *   <li>Reference Attributes
-   *   <li>Reference Set Attributes
-   * </ul>
-   *
-   * <p>Note: Please only use this util if you desire to sync all the aforementioned references from
-   * a source commercetools project. Otherwise, it is more efficient to build the query without
-   * expansions, if they are not needed, to avoid unnecessarily bigger payloads fetched from the
-   * source project.
-   *
-   * @return the query for fetching products from the source CTP project with all the aforementioned
-   *     references expanded.
-   */
-  @Nonnull
-  public static ProductProjectionQuery buildProductQuery() {
-    return ProductProjectionQuery.ofStaged()
-        .withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE)
-        .withExpansionPaths(ProductProjectionExpansionModel::productType)
-        .plusExpansionPaths(ProductProjectionExpansionModel::taxCategory)
-        .plusExpansionPaths(ExpansionPath.of("state"))
-        .plusExpansionPaths(expansionModel -> expansionModel.categories())
-        .plusExpansionPaths(expansionModel -> expansionModel.allVariants().prices().channel())
-        .plusExpansionPaths(expansionModel -> expansionModel.allVariants().prices().customerGroup())
-        .plusExpansionPaths(ExpansionPath.of("masterVariant.prices[*].custom.type"))
-        .plusExpansionPaths(ExpansionPath.of("variants[*].prices[*].custom.type"))
-        .plusExpansionPaths(expansionModel -> expansionModel.allVariants().attributes().value())
-        .plusExpansionPaths(expansionModel -> expansionModel.allVariants().attributes().valueSet())
-        .plusExpansionPaths(ExpansionPath.of("masterVariant.assets[*].custom.type"))
-        .plusExpansionPaths(ExpansionPath.of("variants[*].assets[*].custom.type"));
   }
 
   private ProductReferenceResolutionUtils() {}

@@ -29,7 +29,6 @@ public final class ProductVariantPriceUpdateActionUtils {
    * {@link PriceDraft} have identical fields, then no update action is needed and hence an empty
    * {@link List} is returned.
    *
-   * @param oldProduct old Product, whose prices should be updated.
    * @param newProduct new product draft, which provides the prices to update.
    * @param variantId the variantId needed for building the update action.
    * @param oldPrice the price which should be updated.
@@ -114,7 +113,6 @@ public final class ProductVariantPriceUpdateActionUtils {
    * Price} and the {@link PriceDraft} have identical custom fields and types, then no update action
    * is needed and hence an empty {@link List} is returned.
    *
-   * @param oldProduct old Product, whose prices should be updated.
    * @param newProduct new product draft, which provides the prices to update.
    * @param variantId the variantId needed for building the update action.
    * @param oldPrice the price which should be updated.

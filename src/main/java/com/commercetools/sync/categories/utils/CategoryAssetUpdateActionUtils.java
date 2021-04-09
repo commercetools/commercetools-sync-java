@@ -28,7 +28,6 @@ public final class CategoryAssetUpdateActionUtils {
    * {@link List} is returned.
    *
    * @param <D> Type of the mainresource draft
-   * @param oldResource mainresource, whose asset should be updated.
    * @param newResource new mainresource draft, which contains the asset to update.
    * @param oldAsset the asset which should be updated.
    * @param newAsset the asset draft where we get the new fields.
@@ -141,7 +140,6 @@ public final class CategoryAssetUpdateActionUtils {
    * is needed and hence an empty {@link List} is returned.
    *
    * @param <D> Type of the mainresource draft
-   * @param oldCategory category in a target project, whose asset should be updated.
    * @param newCategory category in a source project, which contains the updated asset.
    * @param oldAsset the asset which should be updated.
    * @param newAsset the asset draft where we get the new custom fields and types.

@@ -1,283 +1,102 @@
 package com.commercetools.sync.products.utils;
 
-import static com.commercetools.sync.commons.MockUtils.getAssetMockWithCustomFields;
-import static com.commercetools.sync.commons.MockUtils.getTypeMock;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getChannelMock;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getPriceMockWithReferences;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getProductVariantMock;
+import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
+import static io.sphere.sdk.products.ProductProjectionType.STAGED;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.data.MapEntry.entry;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.commercetools.sync.commons.helpers.CategoryReferencePair;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.expansion.ExpansionPath;
-import io.sphere.sdk.models.Asset;
-import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
-import io.sphere.sdk.products.Price;
-import io.sphere.sdk.products.PriceDraft;
+import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.ProductVariant;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.queries.ProductProjectionQuery;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.taxcategories.TaxCategory;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.Type;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class ProductReferenceResolutionUtilsTest {
 
+  private final ReferenceIdToKeyCache referenceIdToKeyCache =
+      new CaffeineReferenceIdToKeyCacheImpl();
+
+  @AfterEach
+  void setup() {
+    referenceIdToKeyCache.clearCache();
+  }
+
   @Test
-  void mapToProductDrafts_WithSomeExpandedReferences_ShouldReplaceReferencesWhereExpanded() {
-    final String resourceKey = "key";
-    final ProductType productType = getProductTypeMock(resourceKey);
-    final Reference<ProductType> productTypeReference =
-        Reference.ofResourceTypeIdAndIdAndObj(
-            ProductType.referenceTypeId(), productType.getId(), productType);
-    final Reference<ProductType> nonExpandedProductTypeReference =
-        ProductType.referenceOfId(productType.getId());
-
-    final TaxCategory taxCategory = getTaxCategoryMock(resourceKey);
-    final Reference<TaxCategory> taxCategoryReference =
-        Reference.ofResourceTypeIdAndIdAndObj(
-            TaxCategory.referenceTypeId(), taxCategory.getId(), taxCategory);
-    final Reference<TaxCategory> nonExpandedTaxCategoryReference =
-        TaxCategory.referenceOfId(taxCategory.getId());
-
-    final State state = getStateMock(resourceKey);
-    final Reference<State> stateReference =
-        Reference.ofResourceTypeIdAndIdAndObj(State.referenceTypeId(), state.getId(), state);
-    final Reference<State> nonExpandedStateReference = State.referenceOfId(state.getId());
-
-    final Channel channel = getChannelMock(resourceKey);
-
-    final Reference<Channel> channelReference =
-        Reference.ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel.getId(), channel);
-    final Price price = getPriceMockWithReferences(channelReference, null, null);
-
-    final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
-    final Asset asset1 =
-        getAssetMockWithCustomFields(
-            Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType));
-    final Asset asset2 =
-        getAssetMockWithCustomFields(
-            Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), UUID.randomUUID().toString()));
-
-    final ProductVariant productVariant =
-        getProductVariantMock(singletonList(price), asList(asset1, asset2));
-
-    final ProductProjection productWithNonExpandedProductType =
-        getProductMock(singletonList(productVariant));
-
-    when(productWithNonExpandedProductType.getProductType())
-        .thenReturn(nonExpandedProductTypeReference);
-    when(productWithNonExpandedProductType.getTaxCategory()).thenReturn(taxCategoryReference);
-    when(productWithNonExpandedProductType.getState()).thenReturn(stateReference);
-
-    final ProductProjection productWithNonExpandedTaxCategory =
-        getProductMock(singletonList(productVariant));
-
-    when(productWithNonExpandedTaxCategory.getProductType()).thenReturn(productTypeReference);
-    when(productWithNonExpandedTaxCategory.getTaxCategory())
-        .thenReturn(nonExpandedTaxCategoryReference);
-    when(productWithNonExpandedTaxCategory.getState()).thenReturn(stateReference);
-
-    final ProductProjection productWithNonExpandedSate =
-        getProductMock(singletonList(productVariant));
-
-    when(productWithNonExpandedSate.getProductType()).thenReturn(productTypeReference);
-    when(productWithNonExpandedSate.getTaxCategory()).thenReturn(taxCategoryReference);
-    when(productWithNonExpandedSate.getState()).thenReturn(nonExpandedStateReference);
+  void mapToProductDrafts_WithNonExpandedReferences_ShouldUseCacheAndReplaceReferences() {
 
     final List<ProductProjection> products =
         asList(
-            productWithNonExpandedProductType,
-            productWithNonExpandedTaxCategory,
-            productWithNonExpandedSate);
+            readObjectFromResource("product-with-unresolved-references.json", Product.class)
+                .toProjection(STAGED));
+
+    referenceIdToKeyCache.add("cda0dbf7-b42e-40bf-8453-241d5b587f93", "productTypeKey");
+    referenceIdToKeyCache.add("1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f", "categoryKey1");
+    referenceIdToKeyCache.add("2dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f", "categoryKey2");
+    referenceIdToKeyCache.add("cdcf8bea-48f2-54bc-b3c2-cdc94bf94f2c", "channelKey");
+    referenceIdToKeyCache.add("d1229e6f-2b79-441e-b419-180311e52754", "customerGroupKey");
+    referenceIdToKeyCache.add("ebbe95fb-2282-4f9a-8747-fbe440e02dc0", "taxCategoryKey");
+    referenceIdToKeyCache.add("ste95fb-2282-4f9a-8747-fbe440e02dcs0", "stateKey");
+    referenceIdToKeyCache.add("custom_type_id", "typeKey");
 
     final List<ProductDraft> productDraftsWithKeysOnReferences =
-        ProductReferenceResolutionUtils.mapToProductDrafts(products);
+        ProductReferenceResolutionUtils.mapToProductDrafts(products, referenceIdToKeyCache);
 
-    assertThat(productDraftsWithKeysOnReferences)
-        .extracting(ProductDraft::getProductType)
-        .asList()
-        .containsExactly(
-            ResourceIdentifier.ofId(productType.getId()),
-            ResourceIdentifier.ofKey(productType.getKey()),
-            ResourceIdentifier.ofKey(productType.getKey()));
+    // assertions
 
-    assertThat(productDraftsWithKeysOnReferences)
-        .extracting(ProductDraft::getTaxCategory)
-        .asList()
-        .containsExactly(
-            ResourceIdentifier.ofKey(taxCategory.getKey()),
-            ResourceIdentifier.ofId(taxCategory.getId()),
-            ResourceIdentifier.ofKey(taxCategory.getKey()));
+    final Optional<ProductDraft> productKey1 =
+        productDraftsWithKeysOnReferences.stream()
+            .filter(productDraft -> "productKeyResolved".equals(productDraft.getKey()))
+            .findFirst();
 
-    assertThat(productDraftsWithKeysOnReferences)
-        .extracting(ProductDraft::getState)
-        .asList()
-        .containsExactly(
-            ResourceIdentifier.ofKey(state.getKey()),
-            ResourceIdentifier.ofKey(state.getKey()),
-            ResourceIdentifier.ofId(state.getId()));
+    assertThat(productKey1)
+        .hasValueSatisfying(
+            productDraft ->
+                assertThat(productDraft.getMasterVariant().getPrices())
+                    .anySatisfy(
+                        priceDraft -> {
+                          assertThat(priceDraft.getChannel().getKey()).isEqualTo("channelKey");
+                          assertThat(priceDraft.getCustomerGroup().getKey())
+                              .isEqualTo("customerGroupKey");
+                          assertThat(priceDraft.getCustom().getType().getKey())
+                              .isEqualTo("typeKey");
+                        }));
 
-    final String asset2CustomTypeId = asset2.getCustom().getType().getId();
-    final String assetCustomTypeKey = customType.getKey();
-
-    assertThat(productDraftsWithKeysOnReferences)
-        .extracting(ProductDraft::getMasterVariant)
-        .flatExtracting(ProductVariantDraft::getAssets)
-        .extracting(AssetDraft::getCustom)
-        .extracting(CustomFieldsDraft::getType)
-        .extracting(type -> StringUtils.isEmpty(type.getId()) ? type.getKey() : type.getId())
-        .containsExactly(
-            assetCustomTypeKey,
-            asset2CustomTypeId,
-            assetCustomTypeKey,
-            asset2CustomTypeId,
-            assetCustomTypeKey,
-            asset2CustomTypeId);
-  }
-
-  @Test
-  void mapToProductDrafts_WithNullProducts_ShouldSkipNullProducts() {
-    final String resourceKey = "key";
-    final ProductType productType = getProductTypeMock(resourceKey);
-    final Reference<ProductType> productTypeReference =
-        Reference.ofResourceTypeIdAndIdAndObj(
-            ProductType.referenceTypeId(), productType.getId(), productType);
-    final Reference<ProductType> nonExpandedProductTypeReference =
-        ProductType.referenceOfId(productType.getId());
-
-    final TaxCategory taxCategory = getTaxCategoryMock(resourceKey);
-    final Reference<TaxCategory> taxCategoryReference =
-        Reference.ofResourceTypeIdAndIdAndObj(
-            TaxCategory.referenceTypeId(), taxCategory.getId(), taxCategory);
-    final Reference<TaxCategory> nonExpandedTaxCategoryReference =
-        TaxCategory.referenceOfId(taxCategory.getId());
-
-    final State state = getStateMock(resourceKey);
-    final Reference<State> stateReference =
-        Reference.ofResourceTypeIdAndIdAndObj(State.referenceTypeId(), state.getId(), state);
-    final Reference<State> nonExpandedStateReference = State.referenceOfId(state.getId());
-
-    final Channel channel = getChannelMock(resourceKey);
-
-    final Reference<Channel> channelReference =
-        Reference.ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel.getId(), channel);
-    final Price price = getPriceMockWithReferences(channelReference, null, null);
-    final ProductVariant productVariant = getProductVariantMock(singletonList(price));
-
-    final Category category = getCategoryMock(resourceKey);
-    final Reference<Category> categoryReference =
-        Reference.ofResourceTypeIdAndIdAndObj(
-            Category.referenceTypeId(), category.getId(), category);
-
-    final ProductProjection productWithNonExpandedProductType =
-        getProductMock(singleton(categoryReference), null, singletonList(productVariant));
-
-    when(productWithNonExpandedProductType.getProductType())
-        .thenReturn(nonExpandedProductTypeReference);
-    when(productWithNonExpandedProductType.getTaxCategory()).thenReturn(taxCategoryReference);
-    when(productWithNonExpandedProductType.getState()).thenReturn(stateReference);
-
-    final ProductProjection productWithNonExpandedTaxCategoryAndState =
-        getProductMock(singletonList(productVariant));
-
-    when(productWithNonExpandedTaxCategoryAndState.getProductType())
-        .thenReturn(productTypeReference);
-    when(productWithNonExpandedTaxCategoryAndState.getTaxCategory())
-        .thenReturn(nonExpandedTaxCategoryReference);
-    when(productWithNonExpandedTaxCategoryAndState.getState())
-        .thenReturn(nonExpandedStateReference);
-
-    final List<ProductProjection> products =
-        asList(productWithNonExpandedProductType, productWithNonExpandedTaxCategoryAndState, null);
-
-    final List<ProductDraft> productDraftsWithKeysOnReferences =
-        ProductReferenceResolutionUtils.mapToProductDrafts(products);
-
-    assertThat(productDraftsWithKeysOnReferences)
-        .extracting(ProductDraft::getProductType)
-        .asList()
-        .containsExactly(
-            ResourceIdentifier.ofId(productType.getId()),
-            ResourceIdentifier.ofKey(productType.getKey()));
-
-    assertThat(productDraftsWithKeysOnReferences)
-        .flatExtracting(ProductDraft::getCategories)
-        .extracting(ResourceIdentifier::getKey)
-        .containsExactly(category.getKey());
-
-    assertThat(productDraftsWithKeysOnReferences)
-        .extracting(ProductDraft::getTaxCategory)
-        .asList()
-        .containsExactly(
-            ResourceIdentifier.ofKey(taxCategory.getKey()),
-            ResourceIdentifier.ofId(taxCategory.getId()));
-
-    assertThat(productDraftsWithKeysOnReferences)
-        .extracting(ProductDraft::getState)
-        .asList()
-        .containsExactly(
-            ResourceIdentifier.ofKey(state.getKey()), ResourceIdentifier.ofId(state.getId()));
-
-    assertThat(productDraftsWithKeysOnReferences)
-        .extracting(ProductDraft::getMasterVariant)
-        .flatExtracting(ProductVariantDraft::getPrices)
-        .extracting(PriceDraft::getChannel)
-        .extracting(ResourceIdentifier::getKey)
-        .containsExactly(channel.getKey(), channel.getKey());
-  }
-
-  @Test
-  void buildProductQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
-    final ProductProjectionQuery productQuery = ProductReferenceResolutionUtils.buildProductQuery();
-    assertThat(productQuery.expansionPaths())
-        .containsExactly(
-            ExpansionPath.of("productType"),
-            ExpansionPath.of("taxCategory"),
-            ExpansionPath.of("state"),
-            ExpansionPath.of("categories[*]"),
-            ExpansionPath.of("masterVariant.prices[*].channel"),
-            ExpansionPath.of("variants[*].prices[*].channel"),
-            ExpansionPath.of("masterVariant.prices[*].customerGroup"),
-            ExpansionPath.of("variants[*].prices[*].customerGroup"),
-            ExpansionPath.of("masterVariant.prices[*].custom.type"),
-            ExpansionPath.of("variants[*].prices[*].custom.type"),
-            ExpansionPath.of("masterVariant.attributes[*].value"),
-            ExpansionPath.of("variants[*].attributes[*].value"),
-            ExpansionPath.of("masterVariant.attributes[*].value[*]"),
-            ExpansionPath.of("variants[*].attributes[*].value[*]"),
-            ExpansionPath.of("masterVariant.assets[*].custom.type"),
-            ExpansionPath.of("variants[*].assets[*].custom.type"));
+    assertThat(productKey1)
+        .hasValueSatisfying(
+            productDraft -> {
+              assertThat(productDraft.getProductType().getKey()).isEqualTo("productTypeKey");
+              assertThat(productDraft.getState().getKey()).isEqualTo("stateKey");
+              assertThat(productDraft.getTaxCategory().getKey()).isEqualTo("taxCategoryKey");
+              assertThat(productDraft.getCategories())
+                  .anySatisfy(
+                      categoryDraft -> {
+                        assertThat(categoryDraft.getKey()).isEqualTo("categoryKey1");
+                      });
+            });
   }
 
   @Test
   void
-      mapToCategoryReferencePair_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
+      mapToCategoryReferencePair_WithReferencesNotInCache_ShouldReturnReferencesWithoutReplacedKeys() {
     final String categoryId = UUID.randomUUID().toString();
     final Set<Reference<Category>> categoryReferences =
         singleton(Category.referenceOfId(categoryId));
@@ -286,7 +105,7 @@ class ProductReferenceResolutionUtilsTest {
     final ProductProjection product = getProductMock(categoryReferences, categoryOrderHints);
 
     final CategoryReferencePair categoryReferencePair =
-        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
+        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, referenceIdToKeyCache);
 
     assertThat(categoryReferencePair).isNotNull();
 
@@ -303,14 +122,14 @@ class ProductReferenceResolutionUtilsTest {
 
   @Test
   void
-      mapToCategoryReferencePair_WithNonExpandedReferencesAndNoCategoryOrderHints_ShouldNotReplaceIds() {
+      mapToCategoryReferencePair_WithReferencesNotInCacheAndNoCategoryOrderHints_ShouldNotReplaceIds() {
     final String categoryId = UUID.randomUUID().toString();
     final Set<Reference<Category>> categoryReferences =
         singleton(Category.referenceOfId(categoryId));
     final ProductProjection product = getProductMock(categoryReferences, null);
 
     final CategoryReferencePair categoryReferencePair =
-        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
+        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, referenceIdToKeyCache);
 
     assertThat(categoryReferencePair).isNotNull();
 
@@ -323,108 +142,6 @@ class ProductReferenceResolutionUtilsTest {
         .extracting(ResourceIdentifier::getId)
         .containsExactlyInAnyOrder(categoryId);
     assertThat(categoryOrderHintsWithKeys).isEqualTo(product.getCategoryOrderHints());
-  }
-
-  @Test
-  void mapToCategoryReferencePair_WithExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
-    final String categoryKey = "categoryKey";
-    final Category category = getCategoryMock(categoryKey);
-    final Reference<Category> categoryReference =
-        Reference.ofResourceTypeIdAndIdAndObj(
-            Category.referenceTypeId(), category.getId(), category);
-
-    final Set<Reference<Category>> categoryReferences = singleton(categoryReference);
-    final CategoryOrderHints categoryOrderHints = getCategoryOrderHintsMock(categoryReferences);
-
-    final ProductProjection product = getProductMock(categoryReferences, categoryOrderHints);
-
-    final CategoryReferencePair categoryReferencePair =
-        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
-
-    assertThat(categoryReferencePair).isNotNull();
-
-    final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
-        categoryReferencePair.getCategoryResourceIdentifiers();
-    final CategoryOrderHints categoryOrderHintsWithKeys =
-        categoryReferencePair.getCategoryOrderHints();
-
-    assertThat(categoryReferencesWithKeys)
-        .containsExactlyInAnyOrderElementsOf(singleton(ResourceIdentifier.ofKey(categoryKey)));
-
-    assertThat(categoryOrderHintsWithKeys).isNotNull();
-    assertThat(categoryOrderHintsWithKeys.getAsMap())
-        .containsOnly(
-            entry(categoryKey, product.getCategoryOrderHints().getAsMap().get(category.getId())));
-  }
-
-  @Test
-  void mapToCategoryReferencePair_WithExpandedReferencesAndNoCategoryOrderHints_ShouldReplaceIds() {
-    final String categoryKey = "categoryKey";
-    final Category category = getCategoryMock(categoryKey);
-    final Reference<Category> categoryReference =
-        Reference.ofResourceTypeIdAndIdAndObj(
-            Category.referenceTypeId(), category.getId(), category);
-    final ProductProjection product = getProductMock(singleton(categoryReference), null);
-
-    final CategoryReferencePair categoryReferencePair =
-        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
-
-    assertThat(categoryReferencePair).isNotNull();
-
-    final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
-        categoryReferencePair.getCategoryResourceIdentifiers();
-    final CategoryOrderHints categoryOrderHintsWithKeys =
-        categoryReferencePair.getCategoryOrderHints();
-
-    assertThat(categoryReferencesWithKeys)
-        .extracting(ResourceIdentifier::getKey)
-        .containsExactlyInAnyOrder(categoryKey);
-    assertThat(categoryOrderHintsWithKeys).isNull();
-  }
-
-  @Test
-  void
-      mapToCategoryReferencePair_WithExpandedReferencesAndSomeCategoryOrderHintsSet_ShouldReplaceIds() {
-    final String categoryKey1 = "categoryKey1";
-    final String categoryKey2 = "categoryKey2";
-
-    final Category category1 = getCategoryMock(categoryKey1);
-    final Category category2 = getCategoryMock(categoryKey2);
-
-    final Reference<Category> categoryReference1 =
-        Reference.ofResourceTypeIdAndIdAndObj(
-            Category.referenceTypeId(), category1.getId(), category1);
-    final Reference<Category> categoryReference2 =
-        Reference.ofResourceTypeIdAndIdAndObj(
-            Category.referenceTypeId(), category2.getId(), category2);
-
-    final Set<Reference<Category>> categoryReferences = new HashSet<>();
-    categoryReferences.add(categoryReference1);
-    categoryReferences.add(categoryReference2);
-
-    final CategoryOrderHints categoryOrderHints =
-        getCategoryOrderHintsMock(singleton(categoryReference1));
-
-    final ProductProjection product = getProductMock(categoryReferences, categoryOrderHints);
-
-    final CategoryReferencePair categoryReferencePair =
-        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
-
-    assertThat(categoryReferencePair).isNotNull();
-
-    final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
-        categoryReferencePair.getCategoryResourceIdentifiers();
-    final CategoryOrderHints categoryOrderHintsWithKeys =
-        categoryReferencePair.getCategoryOrderHints();
-
-    assertThat(categoryReferencesWithKeys)
-        .extracting(ResourceIdentifier::getKey)
-        .containsExactlyInAnyOrder(categoryKey1, categoryKey2);
-
-    assertThat(categoryOrderHintsWithKeys).isNotNull();
-    assertThat(categoryOrderHintsWithKeys.getAsMap())
-        .containsOnly(
-            entry(categoryKey1, product.getCategoryOrderHints().getAsMap().get(category1.getId())));
   }
 
   @Test
@@ -432,7 +149,7 @@ class ProductReferenceResolutionUtilsTest {
     final ProductProjection product = getProductMock(Collections.emptySet(), null);
 
     final CategoryReferencePair categoryReferencePair =
-        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
+        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, referenceIdToKeyCache);
 
     assertThat(categoryReferencePair).isNotNull();
 
@@ -449,7 +166,7 @@ class ProductReferenceResolutionUtilsTest {
     final ProductProjection product = getProductMock(singleton(null), null);
 
     final CategoryReferencePair categoryReferencePair =
-        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
+        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, referenceIdToKeyCache);
 
     assertThat(categoryReferencePair).isNotNull();
 
@@ -464,50 +181,18 @@ class ProductReferenceResolutionUtilsTest {
   @Nonnull
   private static ProductProjection getProductMock(
       @Nonnull final Set<Reference<Category>> references,
-      @Nullable final CategoryOrderHints categoryOrderHints,
-      @Nonnull final List<ProductVariant> productVariants) {
-    final ProductProjection product = mock(ProductProjection.class);
-    mockproductCategories(references, categoryOrderHints, product);
-    mockproductVariants(productVariants, product);
-    return product;
-  }
-
-  @Nonnull
-  private static ProductProjection getProductMock(
-      @Nonnull final Set<Reference<Category>> references,
       @Nullable final CategoryOrderHints categoryOrderHints) {
     final ProductProjection product = mock(ProductProjection.class);
-    mockproductCategories(references, categoryOrderHints, product);
+    mockProductCategories(references, categoryOrderHints, product);
     return product;
   }
 
-  @Nonnull
-  private static ProductProjection getProductMock(
-      @Nonnull final List<ProductVariant> productVariants) {
-    final ProductProjection product = mock(ProductProjection.class);
-    mockproductVariants(productVariants, product);
-    return product;
-  }
-
-  private static void mockproductCategories(
+  private static void mockProductCategories(
       @Nonnull final Set<Reference<Category>> references,
       @Nullable final CategoryOrderHints categoryOrderHints,
       @Nonnull final ProductProjection product) {
     when(product.getCategories()).thenReturn(references);
     when(product.getCategoryOrderHints()).thenReturn(categoryOrderHints);
-  }
-
-  private static void mockproductVariants(
-      @Nonnull final List<ProductVariant> productVariants,
-      @Nonnull final ProductProjection product) {
-    if (!productVariants.isEmpty()) {
-      final ProductVariant masterVariant = productVariants.get(0);
-      final List<ProductVariant> variants = productVariants.subList(1, productVariants.size());
-
-      when(product.getMasterVariant()).thenReturn(masterVariant);
-      when(product.getVariants()).thenReturn(variants);
-      when(product.getAllVariants()).thenReturn(productVariants);
-    }
   }
 
   @Nonnull
@@ -517,37 +202,5 @@ class ProductReferenceResolutionUtilsTest {
     references.forEach(
         categoryReference -> categoryOrderHintMap.put(categoryReference.getId(), "0.1"));
     return CategoryOrderHints.of(categoryOrderHintMap);
-  }
-
-  @Nonnull
-  private static Category getCategoryMock(@Nonnull final String key) {
-    final Category category = mock(Category.class);
-    when(category.getKey()).thenReturn(key);
-    when(category.getId()).thenReturn(UUID.randomUUID().toString());
-    return category;
-  }
-
-  @Nonnull
-  private static ProductType getProductTypeMock(@Nonnull final String key) {
-    final ProductType productType = mock(ProductType.class);
-    when(productType.getKey()).thenReturn(key);
-    when(productType.getId()).thenReturn(UUID.randomUUID().toString());
-    return productType;
-  }
-
-  @Nonnull
-  private static TaxCategory getTaxCategoryMock(@Nonnull final String key) {
-    final TaxCategory taxCategory = mock(TaxCategory.class);
-    when(taxCategory.getKey()).thenReturn(key);
-    when(taxCategory.getId()).thenReturn(UUID.randomUUID().toString());
-    return taxCategory;
-  }
-
-  @Nonnull
-  private static State getStateMock(@Nonnull final String key) {
-    final State state = mock(State.class);
-    when(state.getKey()).thenReturn(key);
-    when(state.getId()).thenReturn(UUID.randomUUID().toString());
-    return state;
   }
 }
