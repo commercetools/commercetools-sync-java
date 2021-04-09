@@ -14,5 +14,14 @@
   "parent": {
     "id": "53c4a8b4-754f-4b95-b6f2-3e1e70e3d0c3",
     "typeId": "category"
+  },
+  "custom": {
+    "type": {
+      "typeId": "type",
+      "id": "53c4a8b4-754f-4b95-b6f2-3e1e70e3d0c3"
+    },
+    "fields": {
+      "color": "Test"
+    }
   }
 }

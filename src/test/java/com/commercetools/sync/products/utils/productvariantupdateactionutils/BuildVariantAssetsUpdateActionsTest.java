@@ -4,6 +4,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWit
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static io.sphere.sdk.products.ProductProjectionType.STAGED;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
@@ -22,6 +23,7 @@ import io.sphere.sdk.models.AssetDraftBuilder;
 import io.sphere.sdk.models.AssetSourceBuilder;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
@@ -72,10 +74,10 @@ class BuildVariantAssetsUpdateActionsTest {
   @Test
   void
       buildProductVariantAssetsUpdateActions_WithNullNewAssetsAndExistingAssets_ShouldBuild3RemoveActions() {
-    final Product oldProduct = readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class);
+    final ProductProjection oldProduct =
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
 
-    final ProductVariant oldMasterVariant =
-        oldProduct.getMasterData().getStaged().getMasterVariant();
+    final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     ProductVariantDraft variant = ProductVariantDraftBuilder.of().build();
     final ProductDraft newProduct =
         getBuilderWithProductTypeRefKey("productTypeKey").plusVariants(variant).build();
@@ -97,7 +99,8 @@ class BuildVariantAssetsUpdateActionsTest {
   @Test
   void
       buildProductVariantAssetsUpdateActions_WithNullNewAssetsAndNoOldAssets_ShouldNotBuildActions() {
-    final Product oldProduct = readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class);
+    final ProductProjection oldProduct =
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductVariant productVariant = mock(ProductVariant.class);
     when(productVariant.getAssets()).thenReturn(emptyList());
     ProductVariantDraft variant = ProductVariantDraftBuilder.of().build();
@@ -116,8 +119,9 @@ class BuildVariantAssetsUpdateActionsTest {
 
   @Test
   void buildProductVariantAssetsUpdateActions_WithNewAssetsAndNoOldAssets_ShouldBuild3AddActions() {
-    final Product oldProduct = readObjectFromResource(PRODUCT_WITHOUT_ASSETS, Product.class);
-    final ProductVariant productVariant = oldProduct.getMasterData().getStaged().getMasterVariant();
+    final ProductProjection oldProduct =
+        readObjectFromResource(PRODUCT_WITHOUT_ASSETS, Product.class).toProjection(STAGED);
+    final ProductVariant productVariant = oldProduct.getMasterVariant();
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ABC, ProductDraft.class);
 
@@ -165,12 +169,12 @@ class BuildVariantAssetsUpdateActionsTest {
 
   @Test
   void buildProductVariantAssetsUpdateActions_WithIdenticalAssets_ShouldNotBuildUpdateActions() {
-    final Product oldProduct = readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class);
+    final ProductProjection oldProduct =
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ABC, ProductDraft.class);
 
-    final ProductVariant oldMasterVariant =
-        oldProduct.getMasterData().getStaged().getMasterVariant();
+    final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
     final List<UpdateAction<Product>> updateActions =
@@ -183,12 +187,12 @@ class BuildVariantAssetsUpdateActionsTest {
   @Test
   void
       buildProductVariantAssetsUpdateActions_WithDuplicateAssetKeys_ShouldNotBuildActionsAndTriggerErrorCb() {
-    final Product oldProduct = readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class);
+    final ProductProjection oldProduct =
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ABB, ProductDraft.class);
 
-    final ProductVariant oldMasterVariant =
-        oldProduct.getMasterData().getStaged().getMasterVariant();
+    final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
     final List<String> errorMessages = new ArrayList<>();
@@ -212,26 +216,28 @@ class BuildVariantAssetsUpdateActionsTest {
         .matches(
             "Failed to build update actions for the assets of the product "
                 + "variant with the sku 'mv-sku'. Reason: .*DuplicateKeyException: Supplied asset drafts have "
-                + "duplicate keys. Asset keys are expected to be unique inside their container \\(a product variant or a "
+                + "duplicate keys. Asset keys are expected to be unique inside their container \\(a product"
+                + " variant or a "
                 + "category\\).");
     assertThat(exceptions).hasSize(1);
     assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     assertThat(exceptions.get(0).getMessage())
         .contains(
             "Supplied asset drafts have duplicate "
-                + "keys. Asset keys are expected to be unique inside their container (a product variant or a category).");
+                + "keys. Asset keys are expected to be unique inside their container (a product variant or a "
+                + "category).");
     assertThat(exceptions.get(0).getCause()).isExactlyInstanceOf(DuplicateKeyException.class);
   }
 
   @Test
   void
       buildProductVariantAssetsUpdateActions_WithSameAssetPositionButChangesWithin_ShouldBuildUpdateActions() {
-    final Product oldProduct = readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class);
+    final ProductProjection oldProduct =
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ABC_WITH_CHANGES, ProductDraft.class);
 
-    final ProductVariant oldMasterVariant =
-        oldProduct.getMasterData().getStaged().getMasterVariant();
+    final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
     final List<UpdateAction<Product>> updateActions =
@@ -267,12 +273,12 @@ class BuildVariantAssetsUpdateActionsTest {
 
   @Test
   void buildProductVariantAssetsUpdateActions_WithOneMissingAsset_ShouldBuildRemoveAssetAction() {
-    final Product oldProduct = readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class);
+    final ProductProjection oldProduct =
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_AB, ProductDraft.class);
 
-    final ProductVariant oldMasterVariant =
-        oldProduct.getMasterData().getStaged().getMasterVariant();
+    final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
     final List<UpdateAction<Product>> updateActions =
@@ -285,12 +291,12 @@ class BuildVariantAssetsUpdateActionsTest {
 
   @Test
   void buildProductVariantAssetsUpdateActions_WithOneExtraAsset_ShouldBuildAddAssetAction() {
-    final Product oldProduct = readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class);
+    final ProductProjection oldProduct =
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ABCD, ProductDraft.class);
 
-    final ProductVariant oldMasterVariant =
-        oldProduct.getMasterData().getStaged().getMasterVariant();
+    final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
     final List<UpdateAction<Product>> updateActions =
@@ -314,12 +320,12 @@ class BuildVariantAssetsUpdateActionsTest {
   @Test
   void
       buildProductVariantAssetsUpdateActions_WithOneAssetSwitch_ShouldBuildRemoveAndAddAssetActions() {
-    final Product oldProduct = readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class);
+    final ProductProjection oldProduct =
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ABD, ProductDraft.class);
 
-    final ProductVariant oldMasterVariant =
-        oldProduct.getMasterData().getStaged().getMasterVariant();
+    final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
     final List<UpdateAction<Product>> updateActions =
@@ -343,12 +349,12 @@ class BuildVariantAssetsUpdateActionsTest {
 
   @Test
   void buildProductVariantAssetsUpdateActions_WithDifferent_ShouldBuildChangeAssetOrderAction() {
-    final Product oldProduct = readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class);
+    final ProductProjection oldProduct =
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_CAB, ProductDraft.class);
 
-    final ProductVariant oldMasterVariant =
-        oldProduct.getMasterData().getStaged().getMasterVariant();
+    final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
     final List<UpdateAction<Product>> updateActions =
@@ -363,12 +369,12 @@ class BuildVariantAssetsUpdateActionsTest {
   @Test
   void
       buildProductVariantAssetsUpdateActions_WithRemovedAndDifferentOrder_ShouldBuildChangeOrderAndRemoveActions() {
-    final Product oldProduct = readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class);
+    final ProductProjection oldProduct =
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_CB, ProductDraft.class);
 
-    final ProductVariant oldMasterVariant =
-        oldProduct.getMasterData().getStaged().getMasterVariant();
+    final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
     final List<UpdateAction<Product>> updateActions =
@@ -384,12 +390,12 @@ class BuildVariantAssetsUpdateActionsTest {
   @Test
   void
       buildProductVariantAssetsUpdateActions_WithAddedAndDifferentOrder_ShouldBuildChangeOrderAndAddActions() {
-    final Product oldProduct = readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class);
+    final ProductProjection oldProduct =
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ACBD, ProductDraft.class);
 
-    final ProductVariant oldMasterVariant =
-        oldProduct.getMasterData().getStaged().getMasterVariant();
+    final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
     final List<UpdateAction<Product>> updateActions =
@@ -414,12 +420,12 @@ class BuildVariantAssetsUpdateActionsTest {
   @Test
   void
       buildProductVariantAssetsUpdateActions_WithAddedAssetInBetween_ShouldBuildAddWithCorrectPositionActions() {
-    final Product oldProduct = readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class);
+    final ProductProjection oldProduct =
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ADBC, ProductDraft.class);
 
-    final ProductVariant oldMasterVariant =
-        oldProduct.getMasterData().getStaged().getMasterVariant();
+    final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
     final List<UpdateAction<Product>> updateActions =
@@ -443,12 +449,12 @@ class BuildVariantAssetsUpdateActionsTest {
   @Test
   void
       buildProductVariantAssetsUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAllThreeMoveAssetActions() {
-    final Product oldProduct = readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class);
+    final ProductProjection oldProduct =
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_CBD, ProductDraft.class);
 
-    final ProductVariant oldMasterVariant =
-        oldProduct.getMasterData().getStaged().getMasterVariant();
+    final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
     final List<UpdateAction<Product>> updateActions =
@@ -474,12 +480,12 @@ class BuildVariantAssetsUpdateActionsTest {
   @Test
   void
       buildProductVariantAssetsUpdateActions_WithAddedRemovedAndDifOrderAndNewName_ShouldBuildAllDiffAssetActions() {
-    final Product oldProduct = readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class);
+    final ProductProjection oldProduct =
+        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
     final ProductDraft newProductDraft =
         readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_CBD_WITH_CHANGES, ProductDraft.class);
 
-    final ProductVariant oldMasterVariant =
-        oldProduct.getMasterData().getStaged().getMasterVariant();
+    final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
     final List<UpdateAction<Product>> updateActions =

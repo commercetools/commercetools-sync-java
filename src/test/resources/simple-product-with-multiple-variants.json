@@ -9,90 +9,90 @@
   "catalogs": [],
   "masterData": {
     "staged": {
-      "name": {
-        "en": "Rehrücken ohne Knochen"
+  "name": {
+    "en": "Rehrücken ohne Knochen"
+  },
+  "description": {
+    "en": "Die Rückenstücke des Rehs gelten als wahres Geschmackserlebnis und beherbergen die edelsten Teile des Rehs. Aus dem Rücken können Sie feine Filets herausschneiden, die sich hervorragend zum Kurzbraten oder Grillen eignen. Da der Knochen von uns bereits schonend entfernt wurde, können Sie sich voll und ganz auf den einzigartigen Geschmack konzentrieren."
+  },
+  "categories": [
+  ],
+  "categoryOrderHints": {},
+  "slug": {
+    "en": "1ehruecken-o-kn"
+  },
+  "masterVariant": {
+    "id": 1,
+    "key": "v4",
+    "sku": "1065833",
+    "prices": [
+    ],
+    "images": [
+      {
+        "url": "https://53346cfbf3c7e017ed3d-6de74c3efa80f1c837c6a988b57abe66.ssl.cf3.rackcdn.com/16.11.11_rehruecken--O9hsZFH4.png",
+        "dimensions": {
+          "w": 0,
+          "h": 0
+        }
+      }
+    ],
+    "attributes": [
+      {
+        "name": "priceInfo",
+        "value": "74,90/kg"
       },
-      "description": {
-        "en": "Die Rückenstücke des Rehs gelten als wahres Geschmackserlebnis und beherbergen die edelsten Teile des Rehs. Aus dem Rücken können Sie feine Filets herausschneiden, die sich hervorragend zum Kurzbraten oder Grillen eignen. Da der Knochen von uns bereits schonend entfernt wurde, können Sie sich voll und ganz auf den einzigartigen Geschmack konzentrieren."
-      },
-      "categories": [
+      {
+        "name": "size",
+        "value": "ca. 1 x 1200 g"
+      }
+    ],
+    "assets": []
+  },
+  "variants": [
+    {
+      "id": 2,
+      "key": "v3",
+      "sku": "1065834",
+      "prices": [
       ],
-      "categoryOrderHints": {},
-      "slug": {
-        "en": "1ehruecken-o-kn"
-      },
-      "masterVariant": {
-        "id": 1,
-        "key": "v4",
-        "sku": "1065833",
-        "prices": [
-        ],
-        "images": [
-          {
-            "url": "https://53346cfbf3c7e017ed3d-6de74c3efa80f1c837c6a988b57abe66.ssl.cf3.rackcdn.com/16.11.11_rehruecken--O9hsZFH4.png",
-            "dimensions": {
-              "w": 0,
-              "h": 0
-            }
-          }
-        ],
-        "attributes": [
-          {
-            "name": "priceInfo",
-            "value": "74,90/kg"
-          },
-          {
-            "name": "size",
-            "value": "ca. 1 x 1200 g"
-          }
-        ],
-        "assets": []
-      },
-      "variants": [
+      "images": [
+      ],
+      "attributes": [
         {
-          "id": 2,
-          "key": "v3",
-          "sku": "1065834",
-          "prices": [
-          ],
-          "images": [
-          ],
-          "attributes": [
-            {
-              "name": "priceInfo",
-              "value": "74,90/kg"
-            },
-            {
-              "name": "size",
-              "value": "ca. 1 x 1000 g"
-            }
-          ],
-          "assets": []
+          "name": "priceInfo",
+          "value": "74,90/kg"
         },
         {
-          "id": 5,
-          "key": "v5",
-          "sku": "1065834",
-          "prices": [
-          ],
-          "images": [
-          ],
-          "attributes": [
-            {
-              "name": "priceInfo",
-              "value": "74,90/kg"
-            },
-            {
-              "name": "size",
-              "value": "ca. 1 x 1000 g"
-            }
-          ],
-          "assets": []
+          "name": "size",
+          "value": "ca. 1 x 1000 g"
         }
       ],
+      "assets": []
+    },
+    {
+      "id": 5,
+      "key": "v5",
+      "sku": "1065834",
+      "prices": [
+      ],
+      "images": [
+      ],
+      "attributes": [
+        {
+          "name": "priceInfo",
+          "value": "74,90/kg"
+        },
+        {
+          "name": "size",
+          "value": "ca. 1 x 1000 g"
+        }
+      ],
+      "assets": []
+    }
+  ],
       "searchKeywords": {}
     },
-    "published": true,
+  "published": true,
     "hasStagedChanges": false
   },
   "catalogData": {},

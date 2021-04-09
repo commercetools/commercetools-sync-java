@@ -1,8 +1,6 @@
 package com.commercetools.sync.integration.ctpprojectsource.customers;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.customers.utils.CustomerReferenceResolutionUtils.buildCustomerQuery;
-import static com.commercetools.sync.customers.utils.CustomerReferenceResolutionUtils.mapToCustomerDrafts;
 import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.createSampleCustomerJaneDoe;
 import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.createSampleCustomerJohnDoe;
 import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.deleteCustomerSyncTestData;
@@ -14,14 +12,18 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.customers.CustomerSync;
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
 import com.commercetools.sync.customers.helpers.CustomerSyncStatistics;
+import com.commercetools.sync.customers.utils.CustomerTransformUtils;
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.customers.CustomerDraftBuilder;
+import io.sphere.sdk.customers.queries.CustomerQuery;
 import io.sphere.sdk.models.Address;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.stores.Store;
@@ -38,6 +40,7 @@ class CustomerSyncIT {
   private List<String> errorMessages;
   private List<Throwable> exceptions;
   private CustomerSync customerSync;
+  private ReferenceIdToKeyCache referenceIdToKeyCache;
 
   @BeforeEach
   void setup() {
@@ -73,15 +76,18 @@ class CustomerSyncIT {
                 })
             .build();
     customerSync = new CustomerSync(customerSyncOptions);
+    referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
   }
 
   @Test
   void sync_WithoutUpdates_ShouldReturnProperStatistics() {
 
     final List<Customer> customers =
-        CTP_SOURCE_CLIENT.execute(buildCustomerQuery()).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT.execute(CustomerQuery.of()).toCompletableFuture().join().getResults();
 
-    final List<CustomerDraft> customerDrafts = mapToCustomerDrafts(customers);
+    final List<CustomerDraft> customerDrafts =
+        CustomerTransformUtils.toCustomerDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, customers)
+            .join();
 
     final CustomerSyncStatistics customerSyncStatistics =
         customerSync.sync(customerDrafts).toCompletableFuture().join();
@@ -99,7 +105,7 @@ class CustomerSyncIT {
   void sync_WithUpdates_ShouldReturnProperStatistics() {
 
     final List<Customer> customers =
-        CTP_SOURCE_CLIENT.execute(buildCustomerQuery()).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT.execute(CustomerQuery.of()).toCompletableFuture().join().getResults();
 
     final List<CustomerDraft> updatedCustomerDrafts = prepareUpdatedCustomerDrafts(customers);
     final CustomerSyncStatistics customerSyncStatistics =
@@ -119,7 +125,11 @@ class CustomerSyncIT {
 
     final Store storeCologne = createStore(CTP_TARGET_CLIENT, "store-cologne");
 
-    return mapToCustomerDrafts(customers).stream()
+    final List<CustomerDraft> customerDrafts =
+        CustomerTransformUtils.toCustomerDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, customers)
+            .join();
+
+    return customerDrafts.stream()
         .map(
             customerDraft ->
                 CustomerDraftBuilder.of(customerDraft)

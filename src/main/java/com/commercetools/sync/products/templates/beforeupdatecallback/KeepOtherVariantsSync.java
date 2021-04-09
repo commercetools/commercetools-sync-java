@@ -18,15 +18,11 @@ public class KeepOtherVariantsSync {
    *
    * @param updateActions the update action built from comparing {@code newProductDraft} and {@code
    *     oldProduct}.
-   * @param newProductDraft the new {@link ProductDraft} being synced.
-   * @param oldProduct the old existing {@link Product}.
    * @return the same list of supplied {@code updateActions} without {@link RemoveVariant} update
    *     actions.
    */
   public static List<UpdateAction<Product>> keepOtherVariants(
-      @Nonnull final List<UpdateAction<Product>> updateActions,
-      @Nonnull final ProductDraft newProductDraft,
-      @Nonnull final Product oldProduct) {
+      @Nonnull final List<UpdateAction<Product>> updateActions) {
     return updateActions.stream()
         .filter(updateAction -> !(updateAction instanceof RemoveVariant))
         .collect(Collectors.toList());

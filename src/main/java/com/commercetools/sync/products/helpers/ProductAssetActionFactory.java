@@ -26,17 +26,11 @@ public final class ProductAssetActionFactory extends AssetActionFactory<Product,
 
   @Override
   public List<UpdateAction<Product>> buildAssetActions(
-      @Nonnull final Product oldResource,
       @Nonnull final ProductDraft newResource,
       @Nonnull final Asset oldAsset,
       @Nonnull final AssetDraft newAssetDraft) {
     return buildActions(
-        oldResource,
-        newResource,
-        variantId,
-        oldAsset,
-        newAssetDraft,
-        (ProductSyncOptions) syncOptions);
+        newResource, variantId, oldAsset, newAssetDraft, (ProductSyncOptions) syncOptions);
   }
 
   @Override

@@ -33,6 +33,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.producttypes.ProductType;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -77,7 +78,10 @@ class ProductReferenceResolverIT {
 
   private ProductSyncOptions getProductSyncOptions() {
     final QuadConsumer<
-            SyncException, Optional<ProductDraft>, Optional<Product>, List<UpdateAction<Product>>>
+            SyncException,
+            Optional<ProductDraft>,
+            Optional<ProductProjection>,
+            List<UpdateAction<Product>>>
         errorCallBack =
             (exception, newResource, oldResource, updateActions) -> {
               errorCallBackExceptions.add(exception.getCause());

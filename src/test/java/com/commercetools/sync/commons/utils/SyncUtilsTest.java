@@ -6,8 +6,6 @@ import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKey
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -22,9 +20,18 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class SyncUtilsTest {
+
+  private final ReferenceIdToKeyCache referenceIdToKeyCache =
+      new CaffeineReferenceIdToKeyCacheImpl();
+
+  @AfterEach
+  void clearCache() {
+    referenceIdToKeyCache.clearCache();
+  }
 
   @Test
   void batchElements_WithValidSize_ShouldReturnCorrectBatches() {
@@ -122,23 +129,27 @@ class SyncUtilsTest {
   @Test
   void getReferenceWithKeyReplaced_WithNullReference_ShouldReturnNullReference() {
     final Reference<Object> keyReplacedReference =
-        getReferenceWithKeyReplaced(null, () -> Reference.of(Category.referenceTypeId(), "id"));
+        getReferenceWithKeyReplaced(
+            null, () -> Reference.of(Category.referenceTypeId(), "id"), referenceIdToKeyCache);
     assertThat(keyReplacedReference).isNull();
   }
 
   @Test
   void
-      getReferenceWithKeyReplaced_WithExpandedCategoryReference_ShouldReturnCategoryReferenceWithKey() {
+      getReferenceWithKeyReplaced_WithCachedCategoryReference_ShouldReturnCategoryReferenceWithKey() {
     final String categoryKey = "categoryKey";
-    final Category mockCategory = mock(Category.class);
-    when(mockCategory.getKey()).thenReturn(categoryKey);
+    final String categoryId = UUID.randomUUID().toString();
+
+    referenceIdToKeyCache.add(categoryId, categoryKey);
 
     final Reference<Category> categoryReference =
-        Reference.ofResourceTypeIdAndObj(Category.referenceTypeId(), mockCategory);
+        Reference.ofResourceTypeIdAndId(Category.referenceTypeId(), categoryId);
 
     final Reference<Category> keyReplacedReference =
         getReferenceWithKeyReplaced(
-            categoryReference, () -> Category.referenceOfId(categoryReference.getObj().getKey()));
+            categoryReference,
+            () -> Category.referenceOfId(referenceIdToKeyCache.get(categoryReference.getId())),
+            referenceIdToKeyCache);
 
     assertThat(keyReplacedReference).isNotNull();
     assertThat(keyReplacedReference.getId()).isEqualTo(categoryKey);
@@ -146,16 +157,17 @@ class SyncUtilsTest {
 
   @Test
   void
-      getResourceIdentifierWithKey_WithExpandedReference_ShouldReturnCategoryResourceIdentifierWithKey() {
+      getResourceIdentifierWithKey_WithCachedReference_ShouldReturnCategoryResourceIdentifierWithKey() {
     final String categoryKey = "categoryKey";
-    final Category mockCategory = mock(Category.class);
-    when(mockCategory.getKey()).thenReturn(categoryKey);
+    final String categoryId = UUID.randomUUID().toString();
+
+    referenceIdToKeyCache.add(categoryId, categoryKey);
 
     final Reference<Category> categoryReference =
-        Reference.ofResourceTypeIdAndObj(Category.referenceTypeId(), mockCategory);
+        Reference.ofResourceTypeIdAndId(Category.referenceTypeId(), categoryId);
 
     final ResourceIdentifier<Category> resourceIdentifier =
-        getResourceIdentifierWithKey(categoryReference);
+        getResourceIdentifierWithKey(categoryReference, referenceIdToKeyCache);
 
     assertThat(resourceIdentifier).isNotNull();
     assertThat(resourceIdentifier.getKey()).isEqualTo(categoryKey);
@@ -169,7 +181,9 @@ class SyncUtilsTest {
 
     final Reference<Category> keyReplacedReference =
         getReferenceWithKeyReplaced(
-            categoryReference, () -> Category.referenceOfId(categoryReference.getObj().getKey()));
+            categoryReference,
+            () -> Category.referenceOfId(referenceIdToKeyCache.get(categoryReference.getId())),
+            referenceIdToKeyCache);
 
     assertThat(keyReplacedReference).isNotNull();
     assertThat(keyReplacedReference.getId()).isEqualTo(categoryUuid);
@@ -182,7 +196,7 @@ class SyncUtilsTest {
         Reference.ofResourceTypeIdAndId(Category.referenceTypeId(), categoryUuid);
 
     final ResourceIdentifier<Category> resourceIdentifier =
-        getResourceIdentifierWithKey(categoryReference);
+        getResourceIdentifierWithKey(categoryReference, referenceIdToKeyCache);
 
     assertThat(resourceIdentifier).isNotNull();
     assertThat(resourceIdentifier.getId()).isEqualTo(categoryUuid);
@@ -190,7 +204,8 @@ class SyncUtilsTest {
 
   @Test
   void getResourceIdentifierWithKey_WithNullReference_ShouldReturnNull() {
-    final ResourceIdentifier<Category> resourceIdentifier = getResourceIdentifierWithKey(null);
+    final ResourceIdentifier<Category> resourceIdentifier =
+        getResourceIdentifierWithKey(null, referenceIdToKeyCache);
     assertThat(resourceIdentifier).isNull();
   }
 }

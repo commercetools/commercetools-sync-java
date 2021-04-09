@@ -6,6 +6,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_2
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static io.sphere.sdk.products.ProductProjectionType.STAGED;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
@@ -33,7 +34,8 @@ import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.queries.ProductQuery;
+import io.sphere.sdk.products.ProductProjection;
+import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -162,7 +164,7 @@ class ProductSyncTest {
             .build();
 
     final SphereClient mockClient = mock(SphereClient.class);
-    when(mockClient.execute(any(ProductQuery.class)))
+    when(mockClient.execute(any(ProductProjectionQuery.class)))
         .thenReturn(
             supplyAsync(
                 () -> {
@@ -291,8 +293,9 @@ class ProductSyncTest {
             .state(null)
             .build();
 
-    final Product mockedExistingProduct =
-        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class);
+    final ProductProjection mockedExistingProduct =
+        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class)
+            .toProjection(STAGED);
 
     final ProductSyncOptions productSyncOptions =
         ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
@@ -351,8 +354,9 @@ class ProductSyncTest {
             .state(null)
             .build();
 
-    final Product mockedExistingProduct =
-        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class);
+    final ProductProjection mockedExistingProduct =
+        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class)
+            .toProjection(STAGED);
     final List<String> errorMessages = new ArrayList<>();
     final List<Throwable> exceptions = new ArrayList<>();
 
