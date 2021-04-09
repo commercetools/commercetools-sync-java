@@ -87,7 +87,7 @@ public final class ProductTypeReferenceResolutionUtils {
             attributeDefinition -> {
               final AttributeType attributeType = attributeDefinition.getAttributeType();
               final AttributeType referenceReplacedType =
-                  replaceProductTypeReferenceIdWithKey(attributeType, referenceIdToKeyCache);
+                  replaceNestedProductTypeReferenceIdWithKey(attributeType, referenceIdToKeyCache);
               return AttributeDefinitionDraftBuilder.of(attributeDefinition)
                   .attributeType(referenceReplacedType)
                   .build();
@@ -97,14 +97,14 @@ public final class ProductTypeReferenceResolutionUtils {
   }
 
   @Nonnull
-  private static AttributeType replaceProductTypeReferenceIdWithKey(
+  private static AttributeType replaceNestedProductTypeReferenceIdWithKey(
       @Nonnull final AttributeType attributeType,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
     if (attributeType instanceof NestedAttributeType) {
 
       final Reference<ProductType> referenceReplacedNestedType =
-          replaceProductTypeReferenceIdWithKey(
+          replaceNestedProductTypeReferenceIdWithKey(
               (NestedAttributeType) attributeType, referenceIdToKeyCache);
       return NestedAttributeType.of(referenceReplacedNestedType);
 
@@ -113,7 +113,7 @@ public final class ProductTypeReferenceResolutionUtils {
       final SetAttributeType setAttributeType = (SetAttributeType) attributeType;
       final AttributeType elementType = setAttributeType.getElementType();
       final AttributeType referenceReplacedElementType =
-          replaceProductTypeReferenceIdWithKey(elementType, referenceIdToKeyCache);
+          replaceNestedProductTypeReferenceIdWithKey(elementType, referenceIdToKeyCache);
       return SetAttributeType.of(referenceReplacedElementType);
     }
 
@@ -121,7 +121,7 @@ public final class ProductTypeReferenceResolutionUtils {
   }
 
   @Nonnull
-  private static Reference<ProductType> replaceProductTypeReferenceIdWithKey(
+  private static Reference<ProductType> replaceNestedProductTypeReferenceIdWithKey(
       @Nonnull final NestedAttributeType nestedAttributeType,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
