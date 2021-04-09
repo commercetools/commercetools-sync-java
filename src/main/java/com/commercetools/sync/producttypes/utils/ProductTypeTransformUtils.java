@@ -1,12 +1,16 @@
-package com.commercetools.sync.producttypes.service;
+package com.commercetools.sync.producttypes.utils;
 
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
+import com.commercetools.sync.producttypes.service.ProductTypeTransformService;
+import com.commercetools.sync.producttypes.service.impl.ProductTypeTransformServiceImpl;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
-public interface ProductTypeReferenceTransformService {
+public final class ProductTypeTransformUtils {
 
   /**
    * Transforms productTypes by resolving the references and map them to ProductTypeDrafts.
@@ -22,11 +26,21 @@ public interface ProductTypeReferenceTransformService {
    * <p>Then maps the ProductType to ProductTypeDraft by performing reference resolution considering
    * idToKey value from the cache.
    *
+   * @param client commercetools client.
+   * @param referenceIdToKeyCache the instance that manages cache.
    * @param productTypes the productTypes to replace the references and attributes id's with keys.
    * @return a new list which contains productTypeDrafts which have all their references and
    *     attributes references resolved and already replaced with keys.
+   *     <p>TODO: Move the implementation from service class to this util class.
    */
   @Nonnull
-  CompletableFuture<List<ProductTypeDraft>> transformProductTypeReferences(
-      @Nonnull List<ProductType> productTypes);
+  public static CompletableFuture<List<ProductTypeDraft>> toProductTypeDrafts(
+      @Nonnull final SphereClient client,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache,
+      @Nonnull final List<ProductType> productTypes) {
+
+    final ProductTypeTransformService productTypeTransformService =
+        new ProductTypeTransformServiceImpl(client, referenceIdToKeyCache);
+    return productTypeTransformService.toProductTypeDrafts(productTypes);
+  }
 }

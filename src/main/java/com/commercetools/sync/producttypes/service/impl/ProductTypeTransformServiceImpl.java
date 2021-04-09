@@ -6,7 +6,8 @@ import static java.util.stream.Collectors.toSet;
 
 import com.commercetools.sync.commons.exceptions.ReferenceReplacementException;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
-import com.commercetools.sync.producttypes.service.ProductTypeReferenceTransformService;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
+import com.commercetools.sync.producttypes.service.ProductTypeTransformService;
 import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.Reference;
@@ -19,25 +20,24 @@ import io.sphere.sdk.producttypes.ProductTypeDraft;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 
-public class ProductTypeReferenceTransformServiceImpl extends BaseTransformServiceImpl
-    implements ProductTypeReferenceTransformService {
+public class ProductTypeTransformServiceImpl extends BaseTransformServiceImpl
+    implements ProductTypeTransformService {
 
-  public ProductTypeReferenceTransformServiceImpl(
+  public ProductTypeTransformServiceImpl(
       @Nonnull final SphereClient ctpClient,
-      @Nonnull final Map<String, String> referenceIdToKeyCache) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     super(ctpClient, referenceIdToKeyCache);
   }
 
   @Nonnull
   @Override
-  public CompletableFuture<List<ProductTypeDraft>> transformProductTypeReferences(
+  public CompletableFuture<List<ProductTypeDraft>> toProductTypeDrafts(
       @Nonnull final List<ProductType> productTypes) throws ReferenceReplacementException {
 
     return transformNestedProductTypeReference(productTypes)

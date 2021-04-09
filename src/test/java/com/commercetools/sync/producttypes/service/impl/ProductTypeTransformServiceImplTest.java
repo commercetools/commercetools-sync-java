@@ -12,7 +12,9 @@ import static org.mockito.Mockito.when;
 
 import com.commercetools.sync.commons.models.ResourceIdsGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
-import com.commercetools.sync.producttypes.service.ProductTypeReferenceTransformService;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
+import com.commercetools.sync.producttypes.service.ProductTypeTransformService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.models.Reference;
@@ -25,22 +27,27 @@ import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-public class ProductTypeReferenceTransformServiceImplTest {
+public class ProductTypeTransformServiceImplTest {
+
+  final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
+
+  @AfterEach
+  void setup() {
+    referenceIdToKeyCache.clearCache();
+  }
 
   @Test
   void mapToProductDrafts_WithProductTypeWithNoAttributeDefs_ShouldReturnProductType() {
     // preparation
-    Map<String, String> idToKeyValueMap = new HashMap<>();
     final SphereClient sourceClient = mock(SphereClient.class);
-    ProductTypeReferenceTransformService productTypeReferenceTransformService =
-        new ProductTypeReferenceTransformServiceImpl(sourceClient, idToKeyValueMap);
+    final ProductTypeTransformService productTypeTransformService =
+        new ProductTypeTransformServiceImpl(sourceClient, referenceIdToKeyCache);
 
     final ProductType productTypeFoo = mock(ProductType.class);
     when(productTypeFoo.getKey()).thenReturn("foo");
@@ -49,8 +56,8 @@ public class ProductTypeReferenceTransformServiceImplTest {
     final List<ProductType> productTypes = singletonList(productTypeFoo);
 
     // test
-    List<ProductTypeDraft> productTypeDrafts =
-        productTypeReferenceTransformService.transformProductTypeReferences(productTypes).join();
+    final List<ProductTypeDraft> productTypeDrafts =
+        productTypeTransformService.toProductTypeDrafts(productTypes).join();
 
     // assertion
     assertThat(productTypeDrafts)
@@ -59,10 +66,9 @@ public class ProductTypeReferenceTransformServiceImplTest {
 
   @Test
   void mapToProductDrafts_WithNoReferences_ShouldReturnCorrectProductTypeDrafts() {
-    Map<String, String> idToKeyValueMap = new HashMap<>();
     final SphereClient sourceClient = mock(SphereClient.class);
-    ProductTypeReferenceTransformService productTypeReferenceTransformService =
-        new ProductTypeReferenceTransformServiceImpl(sourceClient, idToKeyValueMap);
+    final ProductTypeTransformService productTypeTransformService =
+        new ProductTypeTransformServiceImpl(sourceClient, referenceIdToKeyCache);
 
     final AttributeDefinition stringAttr =
         AttributeDefinitionBuilder.of("a", ofEnglish("a"), StringAttributeType.of()).build();
@@ -81,8 +87,8 @@ public class ProductTypeReferenceTransformServiceImplTest {
     final List<ProductType> productTypes = asList(productTypeFoo, productTypeBar);
 
     // test
-    List<ProductTypeDraft> productTypeDrafts =
-        productTypeReferenceTransformService.transformProductTypeReferences(productTypes).join();
+    final List<ProductTypeDraft> productTypeDrafts =
+        productTypeTransformService.toProductTypeDrafts(productTypes).join();
 
     // assertion
     assertThat(productTypeDrafts)
@@ -94,10 +100,9 @@ public class ProductTypeReferenceTransformServiceImplTest {
   @Test
   void transform_ShouldReplaceProductTypeNestedAttributeReferenceIdsWithKeys() {
     // preparation
-    Map<String, String> idToKeyValueMap = new HashMap<>();
     final SphereClient sourceClient = mock(SphereClient.class);
-    ProductTypeReferenceTransformService productTypeReferenceTransformService =
-        new ProductTypeReferenceTransformServiceImpl(sourceClient, idToKeyValueMap);
+    final ProductTypeTransformService productTypeTransformService =
+        new ProductTypeTransformServiceImpl(sourceClient, referenceIdToKeyCache);
 
     final String referencedProductTypeId = UUID.randomUUID().toString();
     final String referencedProductTypeKey = "referencedProductTypeKey";
@@ -136,8 +141,8 @@ public class ProductTypeReferenceTransformServiceImplTest {
         .thenReturn(CompletableFuture.completedFuture(productTypesResult));
 
     // test
-    List<ProductTypeDraft> productTypeDrafts =
-        productTypeReferenceTransformService.transformProductTypeReferences(productTypes).join();
+    final List<ProductTypeDraft> productTypeDrafts =
+        productTypeTransformService.toProductTypeDrafts(productTypes).join();
 
     // assertion
     assertThat(productTypeDrafts)

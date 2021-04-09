@@ -9,12 +9,13 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.producttypes.ProductTypeSync;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
 import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
-import com.commercetools.sync.producttypes.service.ProductTypeReferenceTransformService;
-import com.commercetools.sync.producttypes.service.impl.ProductTypeReferenceTransformServiceImpl;
+import com.commercetools.sync.producttypes.utils.ProductTypeTransformUtils;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
@@ -25,9 +26,7 @@ import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeDefinitionLabel;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,8 +37,7 @@ class ProductTypeWithNestedAttributeSyncIT {
   private List<UpdateAction<ProductType>> builtUpdateActions;
   private List<String> errorMessages;
   private List<Throwable> exceptions;
-  private Map<String, String> idToKeyCache;
-  private ProductTypeReferenceTransformService productTypeReferenceTransformService;
+  private ReferenceIdToKeyCache referenceIdToKeyCache;
 
   /**
    * Deletes product types from source and target CTP projects. Populates source and target CTP
@@ -69,9 +67,7 @@ class ProductTypeWithNestedAttributeSyncIT {
                 })
             .build();
 
-    idToKeyCache = new HashMap<>();
-    productTypeReferenceTransformService =
-        new ProductTypeReferenceTransformServiceImpl(CTP_SOURCE_CLIENT, idToKeyCache);
+    referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
   }
 
   /**
@@ -91,7 +87,9 @@ class ProductTypeWithNestedAttributeSyncIT {
         CTP_SOURCE_CLIENT.execute(ProductTypeQuery.of()).toCompletableFuture().join().getResults();
 
     final List<ProductTypeDraft> productTypeDrafts =
-        productTypeReferenceTransformService.transformProductTypeReferences(productTypes).join();
+        ProductTypeTransformUtils.toProductTypeDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, productTypes)
+            .join();
 
     final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
 
@@ -118,7 +116,9 @@ class ProductTypeWithNestedAttributeSyncIT {
         CTP_SOURCE_CLIENT.execute(ProductTypeQuery.of()).toCompletableFuture().join().getResults();
 
     final List<ProductTypeDraft> productTypeDrafts =
-        productTypeReferenceTransformService.transformProductTypeReferences(productTypes).join();
+        ProductTypeTransformUtils.toProductTypeDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, productTypes)
+            .join();
 
     productTypeSyncOptions =
         ProductTypeSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -161,7 +161,9 @@ class ProductTypeWithNestedAttributeSyncIT {
         CTP_SOURCE_CLIENT.execute(ProductTypeQuery.of()).toCompletableFuture().join().getResults();
 
     final List<ProductTypeDraft> productTypeDrafts =
-        productTypeReferenceTransformService.transformProductTypeReferences(productTypes).join();
+        ProductTypeTransformUtils.toProductTypeDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, productTypes)
+            .join();
 
     final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
 
@@ -190,8 +192,9 @@ class ProductTypeWithNestedAttributeSyncIT {
 
     // only update the nested types
     final List<ProductTypeDraft> productTypeDrafts =
-        productTypeReferenceTransformService.transformProductTypeReferences(productTypes).join()
-            .stream()
+        ProductTypeTransformUtils.toProductTypeDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, productTypes)
+            .join().stream()
             .map(
                 productType -> {
                   final List<AttributeDefinitionDraft> attributeDefinitionDrafts =

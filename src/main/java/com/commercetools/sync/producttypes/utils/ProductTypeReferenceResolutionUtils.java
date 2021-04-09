@@ -3,6 +3,7 @@ package com.commercetools.sync.producttypes.utils;
 import static java.util.stream.Collectors.toList;
 
 import com.commercetools.sync.commons.exceptions.ReferenceReplacementException;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
@@ -13,7 +14,6 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -52,14 +52,14 @@ public final class ProductTypeReferenceResolutionUtils {
    * exceptions that occurred in any of the supplied {@code productTypes}.
    *
    * @param productTypes the product types with expanded references.
-   * @param referenceIdToKeyMap the map containing the cached id to key values.
+   * @param referenceIdToKeyCache the instance that manages cache.
    * @return a {@link List} of {@link ProductTypeDraft} built from the supplied {@link List} of
    *     {@link ProductType}.
    */
   @Nonnull
   public static List<ProductTypeDraft> mapToProductTypeDrafts(
       @Nonnull final List<ProductType> productTypes,
-      @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
     return productTypes.stream()
         .filter(Objects::nonNull)
@@ -67,7 +67,8 @@ public final class ProductTypeReferenceResolutionUtils {
             productType -> {
               final List<AttributeDefinitionDraft> referenceReplacedAttributeDefinitions;
               referenceReplacedAttributeDefinitions =
-                  replaceAttributeDefinitionsReferenceIdsWithKeys(productType, referenceIdToKeyMap);
+                  replaceAttributeDefinitionsReferenceIdsWithKeys(
+                      productType, referenceIdToKeyCache);
 
               return ProductTypeDraftBuilder.of(productType)
                   .attributes(referenceReplacedAttributeDefinitions)
@@ -79,14 +80,14 @@ public final class ProductTypeReferenceResolutionUtils {
   @Nonnull
   private static List<AttributeDefinitionDraft> replaceAttributeDefinitionsReferenceIdsWithKeys(
       @Nonnull final ProductType productType,
-      @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
     return productType.getAttributes().stream()
         .map(
             attributeDefinition -> {
               final AttributeType attributeType = attributeDefinition.getAttributeType();
               final AttributeType referenceReplacedType =
-                  replaceProductTypeReferenceIdWithKey(attributeType, referenceIdToKeyMap);
+                  replaceProductTypeReferenceIdWithKey(attributeType, referenceIdToKeyCache);
               return AttributeDefinitionDraftBuilder.of(attributeDefinition)
                   .attributeType(referenceReplacedType)
                   .build();
@@ -98,13 +99,13 @@ public final class ProductTypeReferenceResolutionUtils {
   @Nonnull
   private static AttributeType replaceProductTypeReferenceIdWithKey(
       @Nonnull final AttributeType attributeType,
-      @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
     if (attributeType instanceof NestedAttributeType) {
 
       final Reference<ProductType> referenceReplacedNestedType =
           replaceProductTypeReferenceIdWithKey(
-              (NestedAttributeType) attributeType, referenceIdToKeyMap);
+              (NestedAttributeType) attributeType, referenceIdToKeyCache);
       return NestedAttributeType.of(referenceReplacedNestedType);
 
     } else if (attributeType instanceof SetAttributeType) {
@@ -112,7 +113,7 @@ public final class ProductTypeReferenceResolutionUtils {
       final SetAttributeType setAttributeType = (SetAttributeType) attributeType;
       final AttributeType elementType = setAttributeType.getElementType();
       final AttributeType referenceReplacedElementType =
-          replaceProductTypeReferenceIdWithKey(elementType, referenceIdToKeyMap);
+          replaceProductTypeReferenceIdWithKey(elementType, referenceIdToKeyCache);
       return SetAttributeType.of(referenceReplacedElementType);
     }
 
@@ -122,12 +123,12 @@ public final class ProductTypeReferenceResolutionUtils {
   @Nonnull
   private static Reference<ProductType> replaceProductTypeReferenceIdWithKey(
       @Nonnull final NestedAttributeType nestedAttributeType,
-      @Nonnull final Map<String, String> referenceIdToKeyMap) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
     final Reference<ProductType> productTypeReference = nestedAttributeType.getTypeReference();
     final String productTypeId = productTypeReference.getId();
-    if (referenceIdToKeyMap.containsKey(productTypeId)) {
-      final String productTypeKey = referenceIdToKeyMap.get(productTypeId);
+    if (referenceIdToKeyCache.containsKey(productTypeId)) {
+      final String productTypeKey = referenceIdToKeyCache.get(productTypeId);
       return ProductType.referenceOfId(productTypeKey);
     }
     return productTypeReference;

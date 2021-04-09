@@ -10,6 +10,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
@@ -20,20 +22,18 @@ import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class ProductTypeReferenceResolutionUtilsTest {
 
-  final Map<String, String> idToKeyValueMap = new HashMap<>();
+  final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
 
   @AfterEach
   void setup() {
-    idToKeyValueMap.clear();
+    referenceIdToKeyCache.clearCache();
   }
 
   @Test
@@ -43,7 +43,7 @@ class ProductTypeReferenceResolutionUtilsTest {
 
     // test
     final List<ProductTypeDraft> productTypeDrafts =
-        mapToProductTypeDrafts(productTypes, idToKeyValueMap);
+        mapToProductTypeDrafts(productTypes, referenceIdToKeyCache);
 
     // assertion
     assertThat(productTypeDrafts).isEmpty();
@@ -56,7 +56,7 @@ class ProductTypeReferenceResolutionUtilsTest {
 
     // test
     final List<ProductTypeDraft> productTypeDrafts =
-        mapToProductTypeDrafts(productTypes, idToKeyValueMap);
+        mapToProductTypeDrafts(productTypes, referenceIdToKeyCache);
 
     // assertion
     assertThat(productTypeDrafts).isEmpty();
@@ -73,7 +73,7 @@ class ProductTypeReferenceResolutionUtilsTest {
 
     // test
     final List<ProductTypeDraft> productTypeDrafts =
-        mapToProductTypeDrafts(productTypes, idToKeyValueMap);
+        mapToProductTypeDrafts(productTypes, referenceIdToKeyCache);
 
     // assertion
     assertThat(productTypeDrafts)
@@ -100,7 +100,7 @@ class ProductTypeReferenceResolutionUtilsTest {
 
     // test
     final List<ProductTypeDraft> productTypeDrafts =
-        mapToProductTypeDrafts(productTypes, idToKeyValueMap);
+        mapToProductTypeDrafts(productTypes, referenceIdToKeyCache);
 
     // assertion
     assertThat(productTypeDrafts)
@@ -133,10 +133,10 @@ class ProductTypeReferenceResolutionUtilsTest {
 
     final List<ProductType> productTypes = singletonList(productType);
 
-    idToKeyValueMap.put(referencedProductTypeId, referencedProductTypeKey);
+    referenceIdToKeyCache.add(referencedProductTypeId, referencedProductTypeKey);
     // test
     final List<ProductTypeDraft> productTypeDrafts =
-        mapToProductTypeDrafts(productTypes, idToKeyValueMap);
+        mapToProductTypeDrafts(productTypes, referenceIdToKeyCache);
 
     // assertion
     assertThat(productTypeDrafts)
@@ -154,9 +154,11 @@ class ProductTypeReferenceResolutionUtilsTest {
   void mapToProductDrafts_WithProductTypeWithNonCachedRefNestedType_ShouldNotReplaceRef() {
     // preparation
     final ProductType referencedProductType = mock(ProductType.class);
+    final String referencedProductTypeId = UUID.randomUUID().toString();
 
     final Reference<ProductType> productTypeReference =
         spy(ProductType.reference(referencedProductType));
+    when(productTypeReference.getId()).thenReturn(referencedProductTypeId);
 
     final AttributeDefinition nestedTypeAttr =
         AttributeDefinitionBuilder.of(
@@ -173,7 +175,7 @@ class ProductTypeReferenceResolutionUtilsTest {
 
     // test
     final List<ProductTypeDraft> productTypeDrafts =
-        mapToProductTypeDrafts(productTypes, idToKeyValueMap);
+        mapToProductTypeDrafts(productTypes, referenceIdToKeyCache);
 
     // assertion
     assertThat(productTypeDrafts)
@@ -185,7 +187,7 @@ class ProductTypeReferenceResolutionUtilsTest {
               final NestedAttributeType nestedAttributeType =
                   (NestedAttributeType) setAttributeType.getElementType();
               assertThat(nestedAttributeType.getTypeReference().getId())
-                  .isEqualTo(referencedProductType.getId());
+                  .isEqualTo(referencedProductTypeId);
             });
   }
 
@@ -215,10 +217,10 @@ class ProductTypeReferenceResolutionUtilsTest {
 
     final List<ProductType> productTypes = singletonList(productType);
 
-    idToKeyValueMap.put(referencedProductTypeId, referencedProductTypeKey);
+    referenceIdToKeyCache.add(referencedProductTypeId, referencedProductTypeKey);
     // test
     final List<ProductTypeDraft> productTypeDrafts =
-        mapToProductTypeDrafts(productTypes, idToKeyValueMap);
+        mapToProductTypeDrafts(productTypes, referenceIdToKeyCache);
 
     // assertion
     assertThat(productTypeDrafts)
@@ -261,10 +263,10 @@ class ProductTypeReferenceResolutionUtilsTest {
 
     final List<ProductType> productTypes = singletonList(productType);
 
-    idToKeyValueMap.put(referencedProductTypeId, referencedProductTypeKey);
+    referenceIdToKeyCache.add(referencedProductTypeId, referencedProductTypeKey);
     // test
     final List<ProductTypeDraft> productTypeDrafts =
-        mapToProductTypeDrafts(productTypes, idToKeyValueMap);
+        mapToProductTypeDrafts(productTypes, referenceIdToKeyCache);
 
     // assertion
     assertThat(productTypeDrafts)
@@ -310,10 +312,10 @@ class ProductTypeReferenceResolutionUtilsTest {
 
     final List<ProductType> productTypes = singletonList(productType);
 
-    idToKeyValueMap.put(referencedProductTypeId, referencedProductTypeKey);
+    referenceIdToKeyCache.add(referencedProductTypeId, referencedProductTypeKey);
     // test
     final List<ProductTypeDraft> productTypeDrafts =
-        mapToProductTypeDrafts(productTypes, idToKeyValueMap);
+        mapToProductTypeDrafts(productTypes, referenceIdToKeyCache);
 
     // assertion
     assertThat(productTypeDrafts)
