@@ -21,8 +21,7 @@ import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
 import com.commercetools.sync.shoppinglists.commands.updateactions.AddLineItemWithSku;
 import com.commercetools.sync.shoppinglists.commands.updateactions.AddTextLineItemWithAddedAt;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics;
-import com.commercetools.sync.shoppinglists.service.ShoppingListTransformService;
-import com.commercetools.sync.shoppinglists.service.impl.ShoppingListTransformServiceImpl;
+import com.commercetools.sync.shoppinglists.utils.ShoppingListTransformUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.commands.UpdateAction;
@@ -79,13 +78,10 @@ class ShoppingListSyncIT {
   private ShoppingListDraft shoppingListDraftSampleCarrotCake;
   private ShoppingListSync shoppingListSync;
   private ReferenceIdToKeyCache referenceIdToKeyCache;
-  private ShoppingListTransformService shoppingListTransformService;
 
   @BeforeEach
   void setup() {
     referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
-    shoppingListTransformService =
-        new ShoppingListTransformServiceImpl(CTP_SOURCE_CLIENT, referenceIdToKeyCache);
     deleteShoppingListTestData(CTP_TARGET_CLIENT);
     setUpShoppingListSync();
 
@@ -362,7 +358,9 @@ class ShoppingListSyncIT {
     prepareCache(shoppingLists);
 
     final List<ShoppingListDraft> shoppingListDrafts =
-        shoppingListTransformService.toShoppingListDrafts(shoppingLists).join();
+        ShoppingListTransformUtils.toShoppingListDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, shoppingLists)
+            .join();
 
     assertThat(
             ShoppingListDraftBuilder.of(shoppingListDrafts.get(0))

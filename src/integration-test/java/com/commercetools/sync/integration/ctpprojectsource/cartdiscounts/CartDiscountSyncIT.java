@@ -16,8 +16,7 @@ import com.commercetools.sync.cartdiscounts.CartDiscountSync;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
-import com.commercetools.sync.cartdiscounts.service.CartDiscountTransformService;
-import com.commercetools.sync.cartdiscounts.service.impl.CartDiscountTransformServiceImpl;
+import com.commercetools.sync.cartdiscounts.utils.CartDiscountTransformUtils;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.cartdiscounts.AbsoluteCartDiscountValue;
@@ -48,7 +47,6 @@ import org.junit.jupiter.api.Test;
 class CartDiscountSyncIT {
 
   private ReferenceIdToKeyCache referenceIdToKeyCache;
-  private CartDiscountTransformService cartDiscountTransformService;
 
   @BeforeEach
   void setup() {
@@ -57,8 +55,6 @@ class CartDiscountSyncIT {
     populateSourceProject();
     populateTargetProject();
     referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
-    cartDiscountTransformService =
-        new CartDiscountTransformServiceImpl(CTP_SOURCE_CLIENT, referenceIdToKeyCache);
   }
 
   @AfterAll
@@ -74,7 +70,9 @@ class CartDiscountSyncIT {
         CTP_SOURCE_CLIENT.execute(CartDiscountQuery.of()).toCompletableFuture().join().getResults();
 
     final List<CartDiscountDraft> cartDiscountDrafts =
-        cartDiscountTransformService.toCartDiscountDrafts(cartDiscounts).join();
+        CartDiscountTransformUtils.toCartDiscountDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, cartDiscounts)
+            .join();
 
     final List<String> errorMessages = new ArrayList<>();
     final List<Throwable> exceptions = new ArrayList<>();
@@ -115,7 +113,9 @@ class CartDiscountSyncIT {
         createCartDiscountCustomType(newTypeKey, Locale.ENGLISH, newTypeKey, CTP_TARGET_CLIENT);
 
     final List<CartDiscountDraft> cartDiscountDrafts =
-        cartDiscountTransformService.toCartDiscountDrafts(cartDiscounts).join();
+        CartDiscountTransformUtils.toCartDiscountDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, cartDiscounts)
+            .join();
 
     // Apply some changes
     final List<CartDiscountDraft> updatedCartDiscountDrafts =

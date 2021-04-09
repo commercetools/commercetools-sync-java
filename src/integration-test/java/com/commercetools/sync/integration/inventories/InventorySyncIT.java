@@ -7,9 +7,9 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.EXPECTED_DELIVERY_1;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.EXPECTED_DELIVERY_2;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.INVENTORY_ENTRY_TRANSFORM_SERVICE;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.QUANTITY_ON_STOCK_1;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.QUANTITY_ON_STOCK_2;
+import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.REFERENCE_ID_TO_KEY_CACHE;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.RESTOCKABLE_IN_DAYS_1;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.RESTOCKABLE_IN_DAYS_2;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SKU_1;
@@ -31,6 +31,7 @@ import com.commercetools.sync.inventories.InventorySync;
 import com.commercetools.sync.inventories.InventorySyncOptions;
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
+import com.commercetools.sync.inventories.utils.InventoryTransformUtils;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.channels.queries.ChannelQuery;
@@ -328,7 +329,9 @@ class InventorySyncIT {
             .getResults();
 
     final List<InventoryEntryDraft> newInventories =
-        INVENTORY_ENTRY_TRANSFORM_SERVICE.toInventoryEntryDrafts(inventoryEntries).join();
+        InventoryTransformUtils.toInventoryEntryDrafts(
+                CTP_SOURCE_CLIENT, REFERENCE_ID_TO_KEY_CACHE, inventoryEntries)
+            .join();
 
     // Prepare sync options and perform sync of draft to target project.
     final InventorySyncOptions inventorySyncOptions =
@@ -353,7 +356,9 @@ class InventorySyncIT {
             .getResults();
 
     final List<InventoryEntryDraft> newInventories =
-        INVENTORY_ENTRY_TRANSFORM_SERVICE.toInventoryEntryDrafts(inventoryEntries).join();
+        InventoryTransformUtils.toInventoryEntryDrafts(
+                CTP_SOURCE_CLIENT, REFERENCE_ID_TO_KEY_CACHE, inventoryEntries)
+            .join();
 
     // Prepare sync options and perform sync of draft to target project.
     final InventorySyncOptions inventorySyncOptions =
@@ -416,7 +421,9 @@ class InventorySyncIT {
             .getResults();
 
     final List<InventoryEntryDraft> newInventories =
-        INVENTORY_ENTRY_TRANSFORM_SERVICE.toInventoryEntryDrafts(inventoryEntries).join();
+        InventoryTransformUtils.toInventoryEntryDrafts(
+                CTP_SOURCE_CLIENT, REFERENCE_ID_TO_KEY_CACHE, inventoryEntries)
+            .join();
 
     // Prepare sync options and perform sync of draft to target project.
     final InventorySyncOptions inventorySyncOptions =
@@ -442,7 +449,9 @@ class InventorySyncIT {
             .getResults();
 
     final List<InventoryEntryDraft> newInventories =
-        INVENTORY_ENTRY_TRANSFORM_SERVICE.toInventoryEntryDrafts(inventoryEntries).join();
+        InventoryTransformUtils.toInventoryEntryDrafts(
+                CTP_SOURCE_CLIENT, REFERENCE_ID_TO_KEY_CACHE, inventoryEntries)
+            .join();
 
     // Prepare sync options and perform sync of draft to target project.
     final AtomicInteger invocationCounter = new AtomicInteger(0);
