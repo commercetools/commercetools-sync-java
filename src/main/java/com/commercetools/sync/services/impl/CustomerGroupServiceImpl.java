@@ -21,6 +21,7 @@ public final class CustomerGroupServiceImpl
     extends BaseServiceWithKey<
         CustomerGroupDraft,
         CustomerGroup,
+        CustomerGroup,
         BaseSyncOptions,
         CustomerGroupQuery,
         CustomerGroupQueryModel,

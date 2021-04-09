@@ -30,6 +30,7 @@ public final class CustomerServiceImpl
     extends BaseServiceWithKey<
         CustomerDraft,
         Customer,
+        Customer,
         CustomerSyncOptions,
         CustomerQuery,
         CustomerQueryModel,

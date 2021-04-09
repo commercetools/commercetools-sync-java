@@ -27,6 +27,7 @@ public final class TaxCategoryServiceImpl
     extends BaseServiceWithKey<
         TaxCategoryDraft,
         TaxCategory,
+        TaxCategory,
         TaxCategorySyncOptions,
         TaxCategoryQuery,
         TaxCategoryQueryModel,
