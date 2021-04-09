@@ -30,6 +30,7 @@ import io.sphere.sdk.products.attributes.AttributeAccess;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.types.Type;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -161,11 +162,19 @@ public final class VariantReferenceResolutionUtils {
                                         AttributeDraft.of(attribute.getName(), productReferenceSet))
                                 .orElseGet(
                                     () -> {
-                                      if (isReferenceTypeSetAttribute(attribute)
-                                          || isReferenceTypeAttribute(attribute)) {
+                                      final JsonNode attributeValueAsJsonNode =
+                                          attribute.getValueAsJsonNode();
+                                      if (isReferenceSetAttribute(attributeValueAsJsonNode)) {
                                         return AttributeDraft.of(
                                             attribute.getName(),
-                                            getReferenceTypeAttributeAsJsonObject(attribute));
+                                            getReferenceSetAttributeAsJsonObject(
+                                                attributeValueAsJsonNode));
+                                      } else if (isReferenceTypeAttribute(
+                                          attributeValueAsJsonNode)) {
+                                        return AttributeDraft.of(
+                                            attribute.getName(),
+                                            getReferenceTypeAttributeAsJsonObject(
+                                                attributeValueAsJsonNode));
                                       } else {
                                         return AttributeDraft.of(
                                             attribute.getName(), attribute.getValueAsJsonNode());
@@ -174,24 +183,27 @@ public final class VariantReferenceResolutionUtils {
         .collect(toList());
   }
 
-  private static JsonNode getReferenceTypeAttributeAsJsonObject(Attribute attribute) {
-    final Optional<JsonNode> attributeValueAsJsonNode =
-        Optional.ofNullable(attribute.getValueAsJsonNode());
+  private static Set<JsonNode> getReferenceSetAttributeAsJsonObject(
+      @Nonnull final JsonNode attributeValueAsJsonNode) {
+    final Iterator<JsonNode> attributeValueElements = attributeValueAsJsonNode.elements();
+    final Set<JsonNode> attributeValueAsJsonNodeSet = new HashSet<>();
+    while (attributeValueElements.hasNext()) {
+      JsonNode item = attributeValueElements.next();
+      item = getReferenceTypeAttributeAsJsonObject(item);
+      attributeValueAsJsonNodeSet.add(item);
+    }
+    return attributeValueAsJsonNodeSet;
+  }
 
-    final String typeId =
-        attributeValueAsJsonNode
-            .map(attributeValue -> attributeValue.get(REFERENCE_TYPE_ID_FIELD).textValue())
-            .orElse("");
+  private static JsonNode getReferenceTypeAttributeAsJsonObject(
+      @Nonnull final JsonNode attributeValueAsJsonNode) {
+    final String typeId = attributeValueAsJsonNode.get(REFERENCE_TYPE_ID_FIELD).asText();
+    final Optional<JsonNode> attributeValueObjectFieldAsJsonNode =
+        Optional.ofNullable(attributeValueAsJsonNode.get(REFERENCE_OBJECT_FIELD));
 
     final String id =
-        attributeValueAsJsonNode
-            .map(
-                attributeValue ->
-                    Optional.ofNullable(attributeValue.get(REFERENCE_OBJECT_FIELD))
-                        .map(
-                            attributeObjValue ->
-                                attributeObjValue.get(REFERENCE_KEY_FIELD).textValue())
-                        .orElse(""))
+        attributeValueObjectFieldAsJsonNode
+            .map(objectField -> objectField.get(REFERENCE_KEY_FIELD).textValue())
             .orElse("");
 
     final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
@@ -273,15 +285,14 @@ public final class VariantReferenceResolutionUtils {
     return false;
   }
 
-  private static boolean isReferenceTypeSetAttribute(@Nonnull final Attribute attribute) {
-    final JsonNode valueAsJsonNode = attribute.getValueAsJsonNode();
-    return (valueAsJsonNode instanceof ArrayNode);
+  private static boolean isReferenceSetAttribute(@Nonnull final JsonNode attributeValueAsJsonNode) {
+    return (attributeValueAsJsonNode instanceof ArrayNode);
   }
 
-  private static boolean isReferenceTypeAttribute(@Nonnull final Attribute attribute) {
-    final JsonNode valueAsJsonNode = attribute.getValueAsJsonNode();
-    if (valueAsJsonNode.isContainerNode()) {
-      final JsonNode typeIdNode = valueAsJsonNode.get(REFERENCE_TYPE_ID_FIELD);
+  private static boolean isReferenceTypeAttribute(
+      @Nonnull final JsonNode attributeValueAsJsonNode) {
+    if (attributeValueAsJsonNode.isContainerNode()) {
+      final JsonNode typeIdNode = attributeValueAsJsonNode.get(REFERENCE_TYPE_ID_FIELD);
       return typeIdNode != null;
     }
     return false;

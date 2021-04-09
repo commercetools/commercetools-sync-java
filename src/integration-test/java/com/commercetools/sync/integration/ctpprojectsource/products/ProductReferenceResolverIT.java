@@ -49,11 +49,12 @@ import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.CompletionException;
 import javax.annotation.Nonnull;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -144,12 +145,6 @@ class ProductReferenceResolverIT {
     productSync = new ProductSync(syncOptions);
   }
 
-  @AfterAll
-  static void tearDown() {
-    deleteProductSyncTestData(CTP_TARGET_CLIENT);
-    deleteProductSyncTestData(CTP_SOURCE_CLIENT);
-  }
-
   @Test
   void sync_withNewProductWithExistingCategoryAndProductTypeReferences_ShouldCreateProduct() {
     // preparation
@@ -221,9 +216,9 @@ class ProductReferenceResolverIT {
   }
 
   @Test
-  void sync_withNewProductWithStateReferenceTypeVariantAttribute_ShouldCreateProduct() {
+  void sync_withNewProductWithStateReferenceVariantAttribute_ShouldCreateProduct() {
 
-    createProductWithReferenceTypeAttribute("state", oldProductState.getId(), "state-reference");
+    createProductWithReferenceVariantAttribute("state", oldProductState.getId(), "state-reference");
 
     productQuery = buildProductQuery();
     final List<Product> products =
@@ -240,7 +235,29 @@ class ProductReferenceResolverIT {
     assertThat(warningCallBackMessages).isEmpty();
   }
 
-  private void createProductWithReferenceTypeAttribute(
+  @Test
+  void sync_withNewProductWithStateReferenceSetVariantAttribute_ShouldCreateProduct() {
+    final List<String> stateIdList = new ArrayList<>();
+    stateIdList.add(oldProductState.getId());
+
+    createProductWithReferenceSetVariantAttribute("state", stateIdList, "state-reference-set");
+
+    productQuery = buildProductQuery();
+    final List<Product> products =
+        CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
+
+    final List<ProductDraft> productDrafts = mapToProductDrafts(products);
+
+    final ProductSyncStatistics syncStatistics =
+        productSync.sync(productDrafts).toCompletableFuture().join();
+
+    assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+    assertThat(errorCallBackMessages).isEmpty();
+    assertThat(errorCallBackExceptions).isEmpty();
+    assertThat(warningCallBackMessages).isEmpty();
+  }
+
+  private void createProductWithReferenceVariantAttribute(
       @Nonnull final String typeId, @Nonnull final String id, @Nonnull final String attributeName) {
 
     ProductDraft productDraft =
@@ -255,6 +272,40 @@ class ProductReferenceResolverIT {
     attributeValue.put("typeId", typeId);
     attributeValue.put("id", id);
     AttributeDraft attributeDraft = AttributeDraft.of(attributeName, attributeValue);
+
+    ProductVariantDraft productVariantDraft = productDraft.getMasterVariant();
+    productVariantDraft =
+        ProductVariantDraftBuilder.of(productVariantDraft).plusAttribute(attributeDraft).build();
+
+    productDraft = ProductDraftBuilder.of(productDraft).masterVariant(productVariantDraft).build();
+    CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
+  }
+
+  private void createProductWithReferenceSetVariantAttribute(
+      @Nonnull final String typeId,
+      @Nonnull final List<String> idList,
+      @Nonnull final String attributeName) {
+
+    ProductDraft productDraft =
+        createProductDraft(
+            PRODUCT_KEY_1_NO_ATTRIBUTES_RESOURCE_PATH,
+            productTypeSourceWithReferenceTypeVariantAttribute.toReference(),
+            oldTaxCategory.toReference(),
+            oldProductState.toReference(),
+            categoryReferencesWithIds,
+            createRandomCategoryOrderHints(categoryReferencesWithIds));
+
+    Set<ObjectNode> attributeValueSet = new HashSet<>();
+
+    idList.forEach(
+        id -> {
+          ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
+          attributeValue.put("typeId", typeId);
+          attributeValue.put("id", id);
+          attributeValueSet.add(attributeValue);
+        });
+
+    AttributeDraft attributeDraft = AttributeDraft.of(attributeName, attributeValueSet);
 
     ProductVariantDraft productVariantDraft = productDraft.getMasterVariant();
     productVariantDraft =
