@@ -21,11 +21,11 @@ public interface ProductTypeTransformService {
    * <p>Then maps the ProductType to ProductTypeDraft by performing reference resolution considering
    * idToKey value from the cache.
    *
-   * @param productTypes the productTypes to replace the references and attributes id's with keys.
+   * @param productTypes the productTypes to replace the references and attributes ids with keys.
    * @return a new list which contains productTypeDrafts which have all their references and
    *     attributes references resolved and already replaced with keys.
    */
   @Nonnull
-  CompletableFuture<List<ProductTypeDraft>> toProductTypeDrafts(
+  CompletionStage<List<ProductTypeDraft>> toProductTypeDrafts(
       @Nonnull List<ProductType> productTypes);
 }
