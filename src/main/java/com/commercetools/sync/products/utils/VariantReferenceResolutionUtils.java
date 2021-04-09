@@ -2,6 +2,9 @@ package com.commercetools.sync.products.utils;
 
 import static com.commercetools.sync.commons.utils.AssetReferenceResolutionUtils.mapToAssetDrafts;
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_KEY_FIELD;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_OBJECT_FIELD;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
@@ -10,6 +13,8 @@ import static java.util.stream.Collectors.toSet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.models.Reference;
@@ -155,10 +160,44 @@ public final class VariantReferenceResolutionUtils {
                                     productReferenceSet ->
                                         AttributeDraft.of(attribute.getName(), productReferenceSet))
                                 .orElseGet(
-                                    () ->
-                                        AttributeDraft.of(
-                                            attribute.getName(), attribute.getValueAsJsonNode()))))
+                                    () -> {
+                                      if (isReferenceTypeSetAttribute(attribute)
+                                          || isReferenceTypeAttribute(attribute)) {
+                                        return AttributeDraft.of(
+                                            attribute.getName(),
+                                            getReferenceTypeAttributeAsJsonObject(attribute));
+                                      } else {
+                                        return AttributeDraft.of(
+                                            attribute.getName(), attribute.getValueAsJsonNode());
+                                      }
+                                    })))
         .collect(toList());
+  }
+
+  private static JsonNode getReferenceTypeAttributeAsJsonObject(Attribute attribute) {
+    final Optional<JsonNode> attributeValueAsJsonNode =
+        Optional.ofNullable(attribute.getValueAsJsonNode());
+
+    final String typeId =
+        attributeValueAsJsonNode
+            .map(attributeValue -> attributeValue.get(REFERENCE_TYPE_ID_FIELD).textValue())
+            .orElse("");
+
+    final String id =
+        attributeValueAsJsonNode
+            .map(
+                attributeValue ->
+                    Optional.ofNullable(attributeValue.get(REFERENCE_OBJECT_FIELD))
+                        .map(
+                            attributeObjValue ->
+                                attributeObjValue.get(REFERENCE_KEY_FIELD).textValue())
+                        .orElse(""))
+            .orElse("");
+
+    final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
+    attributeValue.put(REFERENCE_TYPE_ID_FIELD, typeId);
+    attributeValue.put(REFERENCE_ID_FIELD, id);
+    return attributeValue;
   }
 
   @SuppressWarnings(
@@ -230,6 +269,20 @@ public final class VariantReferenceResolutionUtils {
     if (valueAsJsonNode.isContainerNode()) {
       final JsonNode typeIdNode = valueAsJsonNode.get(REFERENCE_TYPE_ID_FIELD);
       return typeIdNode != null && Product.referenceTypeId().equals(typeIdNode.asText());
+    }
+    return false;
+  }
+
+  private static boolean isReferenceTypeSetAttribute(@Nonnull final Attribute attribute) {
+    final JsonNode valueAsJsonNode = attribute.getValueAsJsonNode();
+    return (valueAsJsonNode instanceof ArrayNode);
+  }
+
+  private static boolean isReferenceTypeAttribute(@Nonnull final Attribute attribute) {
+    final JsonNode valueAsJsonNode = attribute.getValueAsJsonNode();
+    if (valueAsJsonNode.isContainerNode()) {
+      final JsonNode typeIdNode = valueAsJsonNode.get(REFERENCE_TYPE_ID_FIELD);
+      return typeIdNode != null;
     }
     return false;
   }

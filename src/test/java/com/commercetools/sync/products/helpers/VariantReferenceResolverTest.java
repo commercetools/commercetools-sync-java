@@ -22,6 +22,7 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomerGroupService;
+import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -81,7 +82,8 @@ class VariantReferenceResolverTest {
             getMockProductService(PRODUCT_ID),
             getMockProductTypeService(PRODUCT_TYPE_ID),
             getMockCategoryService(CATEGORY_ID),
-            getMockCustomObjectService(CUSTOM_OBJECT_ID));
+            getMockCustomObjectService(CUSTOM_OBJECT_ID),
+            mock(StateService.class));
   }
 
   @Test

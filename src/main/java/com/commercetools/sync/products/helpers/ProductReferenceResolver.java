@@ -118,7 +118,8 @@ public final class ProductReferenceResolver
             productService,
             productTypeService,
             categoryService,
-            customObjectService);
+            customObjectService,
+            stateService);
   }
 
   /**

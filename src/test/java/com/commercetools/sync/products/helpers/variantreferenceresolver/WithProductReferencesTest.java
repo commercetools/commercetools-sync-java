@@ -14,13 +14,7 @@ import static org.mockito.Mockito.when;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.VariantReferenceResolver;
-import com.commercetools.sync.services.CategoryService;
-import com.commercetools.sync.services.ChannelService;
-import com.commercetools.sync.services.CustomObjectService;
-import com.commercetools.sync.services.CustomerGroupService;
-import com.commercetools.sync.services.ProductService;
-import com.commercetools.sync.services.ProductTypeService;
-import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -59,7 +53,8 @@ class WithProductReferencesTest {
             productService,
             mock(ProductTypeService.class),
             mock(CategoryService.class),
-            mock(CustomObjectService.class));
+            mock(CustomObjectService.class),
+            mock(StateService.class));
   }
 
   @Test

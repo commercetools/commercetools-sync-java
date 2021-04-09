@@ -19,6 +19,7 @@ import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
+import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
@@ -32,6 +33,7 @@ import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.producttypes.ProductType;
+import io.sphere.sdk.states.State;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -48,6 +50,7 @@ public final class VariantReferenceResolver
   private final ProductTypeService productTypeService;
   private final CategoryService categoryService;
   private final CustomObjectService customObjectService;
+  private final StateService stateService;
 
   /**
    * Instantiates a {@link VariantReferenceResolver} instance that could be used to resolve the
@@ -72,7 +75,8 @@ public final class VariantReferenceResolver
       @Nonnull final ProductService productService,
       @Nonnull final ProductTypeService productTypeService,
       @Nonnull final CategoryService categoryService,
-      @Nonnull final CustomObjectService customObjectService) {
+      @Nonnull final CustomObjectService customObjectService,
+      @Nonnull final StateService stateService) {
     super(productSyncOptions);
     this.priceReferenceResolver =
         new PriceReferenceResolver(
@@ -82,6 +86,7 @@ public final class VariantReferenceResolver
     this.categoryService = categoryService;
     this.productTypeService = productTypeService;
     this.customObjectService = customObjectService;
+    this.stateService = stateService;
   }
 
   /**
@@ -202,6 +207,10 @@ public final class VariantReferenceResolver
 
     if (isReferenceOfType(referenceValue, CustomObject.referenceTypeId())) {
       return getResolvedIdFromKeyInReference(referenceValue, this::resolveCustomObjectReference);
+    }
+
+    if (isReferenceOfType(referenceValue, State.referenceTypeId())) {
+      return getResolvedIdFromKeyInReference(referenceValue, stateService::fetchCachedStateId);
     }
 
     return CompletableFuture.completedFuture(Optional.empty());

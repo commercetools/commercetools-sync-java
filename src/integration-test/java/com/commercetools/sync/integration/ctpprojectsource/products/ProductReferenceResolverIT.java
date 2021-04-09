@@ -15,9 +15,11 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.createState;
 import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.createTaxCategory;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_NO_ATTRIBUTES_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_NO_KEY_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_WITH_REFERENCES_FOR_VARIANT_ATTRIBUTES_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
 import static com.commercetools.sync.products.utils.ProductReferenceResolutionUtils.buildProductQuery;
@@ -30,10 +32,16 @@ import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductVariantDraft;
+import io.sphere.sdk.products.ProductVariantDraftBuilder;
+import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
@@ -44,6 +52,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletionException;
+import javax.annotation.Nonnull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,6 +61,7 @@ import org.junit.jupiter.api.Test;
 class ProductReferenceResolverIT {
   private static ProductType productTypeSource;
   private static ProductType noKeyProductTypeSource;
+  private static ProductType productTypeSourceWithReferenceTypeVariantAttribute;
 
   private static TaxCategory oldTaxCategory;
   private static State oldProductState;
@@ -89,6 +99,11 @@ class ProductReferenceResolverIT {
 
     createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     createProductType(PRODUCT_TYPE_NO_KEY_RESOURCE_PATH, CTP_TARGET_CLIENT);
+    createProductType(
+        PRODUCT_TYPE_WITH_REFERENCES_FOR_VARIANT_ATTRIBUTES_RESOURCE_PATH, CTP_TARGET_CLIENT);
+    productTypeSourceWithReferenceTypeVariantAttribute =
+        createProductType(
+            PRODUCT_TYPE_WITH_REFERENCES_FOR_VARIANT_ATTRIBUTES_RESOURCE_PATH, CTP_SOURCE_CLIENT);
 
     productTypeSource = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_SOURCE_CLIENT);
     noKeyProductTypeSource =
@@ -203,5 +218,49 @@ class ProductReferenceResolverIT {
     assertThat(errorCallBackExceptions).hasSize(1);
     assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
     assertThat(warningCallBackMessages).isEmpty();
+  }
+
+  @Test
+  void sync_withNewProductWithStateReferenceTypeVariantAttribute_ShouldCreateProduct() {
+
+    createProductWithReferenceTypeAttribute("state", oldProductState.getId(), "state-reference");
+
+    productQuery = buildProductQuery();
+    final List<Product> products =
+        CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
+
+    final List<ProductDraft> productDrafts = mapToProductDrafts(products);
+
+    final ProductSyncStatistics syncStatistics =
+        productSync.sync(productDrafts).toCompletableFuture().join();
+
+    assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+    assertThat(errorCallBackMessages).isEmpty();
+    assertThat(errorCallBackExceptions).isEmpty();
+    assertThat(warningCallBackMessages).isEmpty();
+  }
+
+  private void createProductWithReferenceTypeAttribute(
+      @Nonnull final String typeId, @Nonnull final String id, @Nonnull final String attributeName) {
+
+    ProductDraft productDraft =
+        createProductDraft(
+            PRODUCT_KEY_1_NO_ATTRIBUTES_RESOURCE_PATH,
+            productTypeSourceWithReferenceTypeVariantAttribute.toReference(),
+            oldTaxCategory.toReference(),
+            oldProductState.toReference(),
+            categoryReferencesWithIds,
+            createRandomCategoryOrderHints(categoryReferencesWithIds));
+    ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
+    attributeValue.put("typeId", typeId);
+    attributeValue.put("id", id);
+    AttributeDraft attributeDraft = AttributeDraft.of(attributeName, attributeValue);
+
+    ProductVariantDraft productVariantDraft = productDraft.getMasterVariant();
+    productVariantDraft =
+        ProductVariantDraftBuilder.of(productVariantDraft).plusAttribute(attributeDraft).build();
+
+    productDraft = ProductDraftBuilder.of(productDraft).masterVariant(productVariantDraft).build();
+    CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
   }
 }

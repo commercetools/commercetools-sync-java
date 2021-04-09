@@ -7,13 +7,7 @@ import static org.mockito.Mockito.mock;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.VariantReferenceResolver;
-import com.commercetools.sync.services.CategoryService;
-import com.commercetools.sync.services.ChannelService;
-import com.commercetools.sync.services.CustomObjectService;
-import com.commercetools.sync.services.CustomerGroupService;
-import com.commercetools.sync.services.ProductService;
-import com.commercetools.sync.services.ProductTypeService;
-import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.*;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.products.ProductVariantDraft;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,7 +37,8 @@ class WithNoReferencesTest {
             mock(ProductService.class),
             mock(ProductTypeService.class),
             mock(CategoryService.class),
-            mock(CustomObjectService.class));
+            mock(CustomObjectService.class),
+            mock(StateService.class));
   }
 
   @Test
