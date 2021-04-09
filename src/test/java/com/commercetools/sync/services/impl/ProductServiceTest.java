@@ -122,21 +122,21 @@ class ProductServiceTest {
 
   @Test
   void updateProduct_WithMockCtpResponse_ShouldReturnMock() {
-    final ProductProjection mock = mock(ProductProjection.class);
-    when(mock.getKey()).thenReturn("anyKey");
+    final ProductProjection productProjectionMock = mock(ProductProjection.class);
+    when(productProjectionMock.getKey()).thenReturn("anyKey");
     final Product product = mock(Product.class);
-    when(product.toProjection(any())).thenReturn(mock);
+    when(product.toProjection(any())).thenReturn(productProjectionMock);
 
     when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(product));
 
     final List<UpdateAction<Product>> updateActions =
         singletonList(ChangeName.of(LocalizedString.of(ENGLISH, "new name")));
     final ProductProjection productProjection =
-        service.updateProduct(mock, updateActions).toCompletableFuture().join();
+        service.updateProduct(productProjectionMock, updateActions).toCompletableFuture().join();
 
-    assertThat(productProjection).isSameAs(mock);
+    assertThat(productProjection).isSameAs(productProjectionMock);
     verify(productSyncOptions.getCtpClient())
-        .execute(eq(ProductUpdateCommand.ofKey(mock.getKey(), mock.getVersion(), updateActions)));
+        .execute(eq(ProductUpdateCommand.of(productProjectionMock, updateActions)));
   }
 
   @Test
