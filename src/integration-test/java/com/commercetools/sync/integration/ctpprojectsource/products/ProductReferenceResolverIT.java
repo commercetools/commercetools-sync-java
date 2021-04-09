@@ -8,6 +8,7 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.c
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getReferencesWithIds;
+import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.createSampleCustomerJaneDoe;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
@@ -35,6 +36,7 @@ import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -68,6 +70,7 @@ class ProductReferenceResolverIT {
   private static TaxCategory oldTaxCategory;
   private static State oldProductState;
   private static ProductQuery productQuery;
+  private static Customer oldCustomer;
 
   private static List<Reference<Category>> categoryReferencesWithIds;
   private ProductSync productSync;
@@ -115,7 +118,8 @@ class ProductReferenceResolverIT {
     oldProductState = createState(CTP_SOURCE_CLIENT, StateType.PRODUCT_STATE);
     createTaxCategory(CTP_TARGET_CLIENT);
     createState(CTP_TARGET_CLIENT, StateType.PRODUCT_STATE);
-
+    oldCustomer = createSampleCustomerJaneDoe(CTP_SOURCE_CLIENT);
+    createSampleCustomerJaneDoe(CTP_TARGET_CLIENT);
     productQuery = buildProductQuery();
   }
 
@@ -247,6 +251,48 @@ class ProductReferenceResolverIT {
     stateIdList.add(oldProductState.getId());
 
     createProductWithReferenceSetVariantAttribute("state", stateIdList, "state-reference-set");
+
+    final List<Product> products =
+        CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
+
+    final List<ProductDraft> productDrafts = mapToProductDrafts(products);
+
+    final ProductSyncStatistics syncStatistics =
+        productSync.sync(productDrafts).toCompletableFuture().join();
+
+    assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+    assertThat(errorCallBackMessages).isEmpty();
+    assertThat(errorCallBackExceptions).isEmpty();
+    assertThat(warningCallBackMessages).isEmpty();
+  }
+
+  @Test
+  void sync_withNewProductWithCustomerReferenceVariantAttribute_ShouldCreateProduct() {
+
+    createProductWithReferenceVariantAttribute(
+        "customer", oldCustomer.getId(), "customer-reference");
+
+    final List<Product> products =
+        CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
+
+    final List<ProductDraft> productDrafts = mapToProductDrafts(products);
+
+    final ProductSyncStatistics syncStatistics =
+        productSync.sync(productDrafts).toCompletableFuture().join();
+
+    assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+    assertThat(errorCallBackMessages).isEmpty();
+    assertThat(errorCallBackExceptions).isEmpty();
+    assertThat(warningCallBackMessages).isEmpty();
+  }
+
+  @Test
+  void sync_withNewProductWithCustomerReferenceSetVariantAttribute_ShouldCreateProduct() {
+    final List<String> customerIdList = new ArrayList<>();
+    customerIdList.add(oldCustomer.getId());
+
+    createProductWithReferenceSetVariantAttribute(
+        "customer", customerIdList, "customer-reference-set");
 
     final List<Product> products =
         CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
