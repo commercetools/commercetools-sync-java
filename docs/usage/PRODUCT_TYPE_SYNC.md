@@ -67,7 +67,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 ##### Syncing from a commercetools project
 
 When syncing from a source commercetools project, you can use [`toProductTypeDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/producttypes/utils/ProductTypeTransformUtils.html#toProductTypeDrafts-java.util.List-)
- method that transforms(resolves by querying and caching key-id pairs) and maps from a `ProductType` to `ProductTypeDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
+ method that transforms(resolves by querying and caching key-id pairs) and maps from a `ProductType` to `ProductTypeDraft`. It can be configured to use a cache that will speed up the reference resolution performed during the sync, for example: 
 
 ````java
 // Build a ProductTypeQuery for fetching product types from a source CTP project without any references expanded for the sync.
