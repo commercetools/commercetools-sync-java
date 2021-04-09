@@ -13,8 +13,6 @@ import javax.annotation.Nullable;
 public final class ResourceIdentifierUtils {
   public static final String REFERENCE_TYPE_ID_FIELD = "typeId";
   public static final String REFERENCE_ID_FIELD = "id";
-  public static final String REFERENCE_OBJECT_FIELD = "obj";
-  public static final String REFERENCE_KEY_FIELD = "key";
 
   /**
    * Given a {@link Referenceable} {@code resource} of the type {@code T}, if it is not null, this
