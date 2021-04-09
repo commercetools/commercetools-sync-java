@@ -127,8 +127,8 @@ public final class ProductTypeReferenceResolutionUtils {
 
     final Reference<ProductType> productTypeReference = nestedAttributeType.getTypeReference();
     final String productTypeId = productTypeReference.getId();
-    if (referenceIdToKeyCache.containsKey(productTypeId)) {
-      final String productTypeKey = referenceIdToKeyCache.get(productTypeId);
+    final String productTypeKey = referenceIdToKeyCache.get(productTypeId);
+    if (null != productTypeKey) {
       return ProductType.referenceOfId(productTypeKey);
     }
     return productTypeReference;
