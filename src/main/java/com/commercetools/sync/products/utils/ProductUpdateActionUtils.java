@@ -47,7 +47,6 @@ import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.commands.updateactions.AddAsset;
 import io.sphere.sdk.products.commands.updateactions.AddToCategory;
 import io.sphere.sdk.products.commands.updateactions.AddVariant;
 import io.sphere.sdk.products.commands.updateactions.ChangeMasterVariant;
@@ -886,8 +885,6 @@ public final class ProductUpdateActionUtils {
 
   /**
    * Factory method to create {@link AddVariant} action from {@link ProductVariantDraft} instance.
-   * If the supplied {@link ProductVariantDraft} contains assets, this method will append an {@link
-   * AddAsset} action for each new asset.
    *
    * <p>The {@link AddVariant} will include:
    *
@@ -897,11 +894,12 @@ public final class ProductUpdateActionUtils {
    *   <li>attributes
    *   <li>prices
    *   <li>images
+   *   <li>assets
    * </ul>
    *
    * @param draft {@link ProductVariantDraft} which to add.
    * @return a list of actions which contains an {@link AddVariant} update action with properties
-   *     from {@code draft}, and {@link AddAsset} actions for each asset in the new variant.
+   *     from {@code draft}.
    */
   @Nonnull
   static List<UpdateAction<Product>> buildAddVariantUpdateActionFromDraft(
@@ -912,21 +910,10 @@ public final class ProductUpdateActionUtils {
     final UpdateAction<Product> addVariant =
         AddVariant.of(draft.getAttributes(), draft.getPrices(), draft.getSku(), true)
             .withKey(draft.getKey())
-            .withImages(draft.getImages());
+            .withImages(draft.getImages())
+            .withAssetDrafts(draft.getAssets());
 
     actions.add(addVariant);
-
-    ofNullable(draft.getAssets())
-        .map(
-            assetDrafts ->
-                assetDrafts.stream()
-                    .map(
-                        assetDraft ->
-                            (UpdateAction<Product>)
-                                AddAsset.ofSku(draft.getSku(), assetDraft).withStaged(true))
-                    .collect(toList()))
-        .ifPresent(actions::addAll);
-
     return actions;
   }
 
