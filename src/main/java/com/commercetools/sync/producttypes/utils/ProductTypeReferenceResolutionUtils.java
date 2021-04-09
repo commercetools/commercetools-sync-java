@@ -95,6 +95,7 @@ public final class ProductTypeReferenceResolutionUtils {
         .collect(toList());
   }
 
+  @Nonnull
   private static AttributeType replaceProductTypeReferenceIdWithKey(
       @Nonnull final AttributeType attributeType,
       @Nonnull final Map<String, String> referenceIdToKeyMap) {
