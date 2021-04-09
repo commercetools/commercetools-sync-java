@@ -13,7 +13,7 @@ public interface ProductTypeTransformService {
    *
    * <p>This method replaces the ids on attribute references with keys. It resolves(fetch key value
    * for the reference id) the non-null unexpanded references in the productType{@link
-   * ProductType} by using cache.
+   * ProductType} by using a cache.
    *
    * <p>If the reference ids are already cached, key values are pulled from the cache, otherwise it
    * executes the query to fetch the key value for the reference id's and store the idToKey value
