@@ -220,7 +220,6 @@ class ProductReferenceResolverIT {
 
     createProductWithReferenceVariantAttribute("state", oldProductState.getId(), "state-reference");
 
-    productQuery = buildProductQuery();
     final List<Product> products =
         CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
 
@@ -242,7 +241,6 @@ class ProductReferenceResolverIT {
 
     createProductWithReferenceSetVariantAttribute("state", stateIdList, "state-reference-set");
 
-    productQuery = buildProductQuery();
     final List<Product> products =
         CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
 
