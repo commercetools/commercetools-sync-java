@@ -5,13 +5,11 @@ import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifi
 import static java.util.stream.Collectors.toList;
 import static org.apache.http.util.TextUtils.isBlank;
 
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.customers.CustomerDraftBuilder;
-import io.sphere.sdk.customers.expansion.CustomerExpansionModel;
-import io.sphere.sdk.customers.queries.CustomerQuery;
-import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.Address;
 import io.sphere.sdk.models.KeyReference;
 import io.sphere.sdk.models.Reference;
@@ -62,24 +60,30 @@ public final class CustomerReferenceResolutionUtils {
    *   </tbody>
    * </table>
    *
-   * <p><b>Note:</b> The {@link CustomerGroup} and {@link Type} references should be expanded with a
-   * key. Any reference that is not expanded will have its id in place and not replaced by the key
-   * will be considered as existing resources on the target commercetools project and the library
-   * will issues an update/create API request without reference resolution.
+   * <p><b>Note:</b> The {@link CustomerGroup} and {@link Type} references should contain Id in the
+   * map(cache) with a key value. Any reference, which have its id in place and not replaced by the
+   * key, it would not be found in the map. In this case, this reference will be considered as
+   * existing resources on the target commercetools project and the library will issues an
+   * update/create API request without reference resolution.
    *
-   * @param customers the customers with expanded references.
+   * @param customers the customers without expansion of references.
+   * @param referenceIdToKeyCache the instance that manages cache.
    * @return a {@link List} of {@link CustomerDraft} built from the supplied {@link List} of {@link
    *     Customer}.
    */
   @Nonnull
-  public static List<CustomerDraft> mapToCustomerDrafts(@Nonnull final List<Customer> customers) {
+  public static List<CustomerDraft> mapToCustomerDrafts(
+      @Nonnull final List<Customer> customers,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return customers.stream()
-        .map(CustomerReferenceResolutionUtils::mapToCustomerDraft)
+        .map(customer -> mapToCustomerDraft(customer, referenceIdToKeyCache))
         .collect(toList());
   }
 
   @Nonnull
-  private static CustomerDraft mapToCustomerDraft(@Nonnull final Customer customer) {
+  private static CustomerDraft mapToCustomerDraft(
+      @Nonnull final Customer customer,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return CustomerDraftBuilder.of(customer.getEmail(), customer.getPassword())
         .customerNumber(customer.getCustomerNumber())
         .key(customer.getKey())
@@ -89,7 +93,8 @@ public final class CustomerReferenceResolutionUtils {
         .title(customer.getTitle())
         .externalId(customer.getExternalId())
         .companyName(customer.getCompanyName())
-        .customerGroup(getResourceIdentifierWithKey(customer.getCustomerGroup()))
+        .customerGroup(
+            getResourceIdentifierWithKey(customer.getCustomerGroup(), referenceIdToKeyCache))
         .dateOfBirth(customer.getDateOfBirth())
         .isEmailVerified(customer.isEmailVerified())
         .vatId(customer.getVatId())
@@ -102,7 +107,7 @@ public final class CustomerReferenceResolutionUtils {
             getAddressIndex(customer.getAddresses(), customer.getDefaultShippingAddressId()))
         .shippingAddresses(
             getAddressIndexList(customer.getAddresses(), customer.getShippingAddressIds()))
-        .custom(mapToCustomFieldsDraft(customer))
+        .custom(mapToCustomFieldsDraft(customer, referenceIdToKeyCache))
         .locale(customer.getLocale())
         .salutation(customer.getSalutation())
         .stores(mapToStores(customer))
@@ -150,29 +155,6 @@ public final class CustomerReferenceResolutionUtils {
           .collect(toList());
     }
     return null;
-  }
-
-  /**
-   * Builds a {@link CustomerQuery} for fetching customers from a source CTP project with all the
-   * needed references expanded for the sync:
-   *
-   * <ul>
-   *   <li>Custom Type
-   *   <li>CustomerGroup
-   * </ul>
-   *
-   * <p>Note: Please only use this util if you desire to sync all the aforementioned references from
-   * a source commercetools project. Otherwise, it is more efficient to build the query without
-   * expansions, if they are not needed, to avoid unnecessarily bigger payloads fetched from the
-   * source project.
-   *
-   * @return the query for fetching customers from the source CTP project with all the
-   *     aforementioned references expanded.
-   */
-  public static CustomerQuery buildCustomerQuery() {
-    return CustomerQuery.of()
-        .withExpansionPaths(CustomerExpansionModel::customerGroup)
-        .plusExpansionPaths(ExpansionPath.of("custom.type"));
   }
 
   private CustomerReferenceResolutionUtils() {}

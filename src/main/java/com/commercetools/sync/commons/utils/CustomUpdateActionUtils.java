@@ -39,8 +39,8 @@ public final class CustomUpdateActionUtils {
       "New resource's custom type id is blank (empty/null).";
 
   /**
-   * This method is a syntactic sugar for the method {@link #buildCustomUpdateActions(Resource,
-   * Object, Custom, CustomDraft, GenericCustomActionBuilder, Integer, Function, Function, Function,
+   * This method is a syntactic sugar for the method {@link #buildCustomUpdateActions(Custom,
+   * CustomDraft, GenericCustomActionBuilder, Integer, Function, Function, Function,
    * BaseSyncOptions)} but this one is only for primary resources (i.e resources which have their
    * own endpoints for example channels, categories, inventory entries. For more details of the
    * inner logic and different scenarios, check the Javadoc of the other method.
@@ -54,8 +54,8 @@ public final class CustomUpdateActionUtils {
    * @param syncOptions responsible for supplying the sync options to the sync utility method.
    * @return a list that contains all the update actions needed, otherwise an empty list if no
    *     update actions are needed.
-   * @see #buildCustomUpdateActions(Resource, Object, Custom, CustomDraft,
-   *     GenericCustomActionBuilder, Integer, Function, Function, Function, BaseSyncOptions) )
+   * @see #buildCustomUpdateActions(Custom, CustomDraft, GenericCustomActionBuilder, Integer,
+   *     Function, Function, Function, BaseSyncOptions) )
    */
   @Nonnull
   public static <T extends Custom & Resource<T>, S extends CustomDraft>

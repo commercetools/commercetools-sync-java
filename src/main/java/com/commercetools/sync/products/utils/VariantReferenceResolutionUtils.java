@@ -8,6 +8,7 @@ import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifi
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.sphere.sdk.channels.Channel;
@@ -61,7 +62,7 @@ public final class VariantReferenceResolutionUtils {
    *     <tr>
    *        <td>variants.prices.customerGroup *</td>
    *        <td>{@link Reference}&lt;{@link CustomerGroup}&gt;</td>
-   *        <td>{@link Reference}&lt;{@link CustomerGroup}&gt; (with key replaced with id field)</td>
+   *        <td>{@link ResourceIdentifier}&lt;{@link CustomerGroup}&gt;</td>
    *     </tr>
    *     <tr>
    *        <td>variants.prices.custom.type</td>
@@ -81,76 +82,88 @@ public final class VariantReferenceResolutionUtils {
    *   </tbody>
    * </table>
    *
-   * <p><b>Note:</b> The aforementioned references should be expanded with a key. Any reference that
-   * is not expanded will have its id in place and not replaced by the key will be considered as
-   * existing resources on the target commercetools project and the library will issues an
-   * update/create API request without reference resolution.
+   * <p><b>Note:</b> The aforementioned references should be cached(idToKey value fetched and stored
+   * in a map). Any reference that is not cached will have its id in place and not replaced by the
+   * key will be considered as existing resources on the target commercetools project and the
+   * library will issues an update/create API request without reference resolution.
    *
-   * @param productVariants the product variants with expanded references.
+   * @param productVariants the product variants without expansion of references.
+   * @param referenceIdToKeyCache the instance that manages cache.
    * @return a {@link List} of {@link ProductVariantDraft} built from the supplied {@link List} of
    *     {@link ProductVariant}.
    */
   @Nonnull
   public static List<ProductVariantDraft> mapToProductVariantDrafts(
-      @Nonnull final List<ProductVariant> productVariants) {
+      @Nonnull final List<ProductVariant> productVariants,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
     return productVariants.stream()
         .filter(Objects::nonNull)
-        .map(VariantReferenceResolutionUtils::mapToProductVariantDraft)
+        .map(variants -> mapToProductVariantDraft(variants, referenceIdToKeyCache))
         .collect(toList());
   }
 
   @Nonnull
   private static ProductVariantDraft mapToProductVariantDraft(
-      @Nonnull final ProductVariant productVariant) {
+      @Nonnull final ProductVariant productVariant,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return ProductVariantDraftBuilder.of(productVariant)
-        .prices(mapToPriceDrafts(productVariant))
-        .attributes(replaceAttributesReferencesIdsWithKeys(productVariant))
-        .assets(mapToAssetDrafts(productVariant.getAssets()))
+        .prices(mapToPriceDrafts(productVariant, referenceIdToKeyCache))
+        .attributes(replaceAttributesReferencesIdsWithKeys(productVariant, referenceIdToKeyCache))
+        .assets(mapToAssetDrafts(productVariant.getAssets(), referenceIdToKeyCache))
         .build();
   }
 
   @Nonnull
-  static List<PriceDraft> mapToPriceDrafts(@Nonnull final ProductVariant productVariant) {
+  static List<PriceDraft> mapToPriceDrafts(
+      @Nonnull final ProductVariant productVariant,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
     return productVariant.getPrices().stream()
         .map(
             price ->
                 PriceDraftBuilder.of(price)
-                    .custom(mapToCustomFieldsDraft(price))
-                    .channel(getResourceIdentifierWithKey(price.getChannel()))
-                    .customerGroup(getResourceIdentifierWithKey(price.getCustomerGroup()))
+                    .custom(mapToCustomFieldsDraft(price, referenceIdToKeyCache))
+                    .channel(
+                        getResourceIdentifierWithKey(price.getChannel(), referenceIdToKeyCache))
+                    .customerGroup(
+                        getResourceIdentifierWithKey(
+                            price.getCustomerGroup(), referenceIdToKeyCache))
                     .build())
         .collect(toList());
   }
 
   /**
    * Takes a product variant that is supposed to have all its attribute product references and
-   * product set references expanded in order to be able to fetch the keys and replace the reference
-   * ids with the corresponding keys for the references. This method returns as a result a {@link
-   * List} of {@link AttributeDraft} that has all product references with keys replacing the ids.
+   * product set references id's cached(fetch and store key value for the reference id) in order to
+   * be able to replace the reference ids with the corresponding keys for the references. This
+   * method returns as a result a {@link List} of {@link AttributeDraft} that has all product
+   * references with keys replacing the ids.
    *
-   * <p>Any product reference that is not expanded will have it's id in place and not replaced by
-   * the key.
+   * <p>Any product reference that is not cached(reference id is not present in the map) will have
+   * it's id in place and not replaced by the key.
    *
    * @param productVariant the product variant to replace its attribute product references ids with
    *     keys.
+   * @param referenceIdToKeyCache the instance that manages cache.
    * @return a {@link List} of {@link AttributeDraft} that has all product references with keys
    *     replacing the ids.
    */
   @Nonnull
   static List<AttributeDraft> replaceAttributesReferencesIdsWithKeys(
-      @Nonnull final ProductVariant productVariant) {
+      @Nonnull final ProductVariant productVariant,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return productVariant.getAttributes().stream()
         .map(
             attribute ->
-                replaceAttributeReferenceIdWithKey(attribute)
+                replaceAttributeReferenceIdWithKey(attribute, referenceIdToKeyCache)
                     .map(
                         productReference ->
                             AttributeDraft.of(attribute.getName(), productReference))
                     .orElseGet(
                         () ->
-                            replaceAttributeReferenceSetIdsWithKeys(attribute)
+                            replaceAttributeReferenceSetIdsWithKeys(
+                                    attribute, referenceIdToKeyCache)
                                 .map(
                                     productReferenceSet ->
                                         AttributeDraft.of(attribute.getName(), productReferenceSet))
@@ -164,13 +177,16 @@ public final class VariantReferenceResolutionUtils {
   @SuppressWarnings(
       "ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
   static Optional<Reference<Product>> replaceAttributeReferenceIdWithKey(
-      @Nonnull final Attribute attribute) {
+      @Nonnull final Attribute attribute,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return getProductReference(attribute)
         .map(
             productReference ->
                 getReferenceWithKeyReplaced(
                     productReference,
-                    () -> Product.referenceOfId(productReference.getObj().getKey())));
+                    () ->
+                        Product.referenceOfId(referenceIdToKeyCache.get(productReference.getId())),
+                    referenceIdToKeyCache));
   }
 
   private static Optional<Reference<Product>> getProductReference(
@@ -182,10 +198,9 @@ public final class VariantReferenceResolutionUtils {
                 productReferenceAttribute.getValue(AttributeAccess.ofProductReference()));
   }
 
-  @SuppressWarnings(
-      "ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
   static Optional<Set<Reference<Product>>> replaceAttributeReferenceSetIdsWithKeys(
-      @Nonnull final Attribute attribute) {
+      @Nonnull final Attribute attribute,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return getProductReferenceSet(attribute)
         .map(
             productReferenceSet ->
@@ -194,7 +209,10 @@ public final class VariantReferenceResolutionUtils {
                         productReference ->
                             getReferenceWithKeyReplaced(
                                 productReference,
-                                () -> Product.referenceOfId(productReference.getObj().getKey())))
+                                () ->
+                                    Product.referenceOfId(
+                                        referenceIdToKeyCache.get(productReference.getId())),
+                                referenceIdToKeyCache))
                     .collect(toSet()));
   }
 

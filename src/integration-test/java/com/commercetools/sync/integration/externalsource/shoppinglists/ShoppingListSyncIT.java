@@ -5,26 +5,33 @@ import static com.commercetools.sync.integration.commons.utils.ShoppingListITUti
 import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.buildUtensilsCustomType;
 import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.createSampleShoppingListCarrotCake;
 import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.deleteShoppingListTestData;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.shoppinglists.utils.ShoppingListReferenceResolutionUtils.buildShoppingListQuery;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.shoppinglists.ShoppingListSync;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics;
-import com.commercetools.sync.shoppinglists.utils.ShoppingListReferenceResolutionUtils;
+import com.commercetools.sync.shoppinglists.utils.ShoppingListTransformUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.shoppinglists.LineItem;
 import io.sphere.sdk.shoppinglists.LineItemDraft;
 import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
+import io.sphere.sdk.shoppinglists.TextLineItem;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
 import io.sphere.sdk.shoppinglists.TextLineItemDraftDsl;
@@ -43,13 +50,17 @@ import io.sphere.sdk.shoppinglists.commands.updateactions.SetLineItemCustomField
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetSlug;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetTextLineItemCustomField;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetTextLineItemDescription;
+import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterAll;
@@ -66,9 +77,11 @@ class ShoppingListSyncIT {
   private ShoppingList shoppingListSampleCarrotCake;
   private ShoppingListDraft shoppingListDraftSampleCarrotCake;
   private ShoppingListSync shoppingListSync;
+  private ReferenceIdToKeyCache referenceIdToKeyCache;
 
   @BeforeEach
   void setup() {
+    referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
     deleteShoppingListTestData(CTP_TARGET_CLIENT);
     setUpShoppingListSync();
 
@@ -339,8 +352,14 @@ class ShoppingListSyncIT {
             .join()
             .getResults();
 
+    // We are using updated draft for the sync without creating the types in project,
+    // So manually adding the types into cache.
+    prepareCache(shoppingLists);
+
     final List<ShoppingListDraft> shoppingListDrafts =
-        ShoppingListReferenceResolutionUtils.mapToShoppingListDrafts(shoppingLists);
+        ShoppingListTransformUtils.toShoppingListDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, shoppingLists)
+            .join();
 
     assertThat(
             ShoppingListDraftBuilder.of(shoppingListDrafts.get(0))
@@ -358,6 +377,55 @@ class ShoppingListSyncIT {
                     setNullToAddedAtValuesForTextLineItems(
                         expectedShoppingListDraft.getTextLineItems()))
                 .build());
+  }
+
+  private void prepareCache(List<ShoppingList> shoppingLists) {
+    Set<String> customTypeIds =
+        shoppingLists.stream()
+            .map(ShoppingList::getCustom)
+            .filter(Objects::nonNull)
+            .map(customFields -> customFields.getType().getId())
+            .collect(Collectors.toSet());
+    customTypeIds.stream()
+        .forEach(id -> referenceIdToKeyCache.add(id, "custom-type-shopping-list"));
+
+    Set<String> lineItemsCustomTypeIds =
+        shoppingLists.stream()
+            .map(ShoppingList::getLineItems)
+            .filter(Objects::nonNull)
+            .map(
+                lineItems ->
+                    lineItems.stream()
+                        .filter(Objects::nonNull)
+                        .map(LineItem::getCustom)
+                        .filter(Objects::nonNull)
+                        .map(CustomFields::getType)
+                        .map(Reference::getId)
+                        .collect(toList()))
+            .flatMap(Collection::stream)
+            .collect(toSet());
+
+    lineItemsCustomTypeIds.stream()
+        .forEach(id -> referenceIdToKeyCache.add(id, "custom-type-line-items"));
+
+    Set<String> textLineItemsCustomTypeIds =
+        shoppingLists.stream()
+            .map(ShoppingList::getTextLineItems)
+            .filter(Objects::nonNull)
+            .map(
+                textLineItems ->
+                    textLineItems.stream()
+                        .filter(Objects::nonNull)
+                        .map(TextLineItem::getCustom)
+                        .filter(Objects::nonNull)
+                        .map(CustomFields::getType)
+                        .map(Reference::getId)
+                        .collect(toList()))
+            .flatMap(Collection::stream)
+            .collect(toSet());
+
+    textLineItemsCustomTypeIds.stream()
+        .forEach(id -> referenceIdToKeyCache.add(id, "custom-type-text-line-items"));
   }
 
   @Nonnull

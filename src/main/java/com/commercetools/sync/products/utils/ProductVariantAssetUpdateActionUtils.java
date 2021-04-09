@@ -28,7 +28,6 @@ public final class ProductVariantAssetUpdateActionUtils {
    * {@link List} is returned.
    *
    * @param <D> Type of the mainresource draft
-   * @param oldResource mainresource, whose asset should be updated.
    * @param newResource new mainresource draft, which contains the asset to update.
    * @param variantId the variantId needed for building the update action.
    * @param oldAsset the asset which should be updated.
@@ -164,7 +163,6 @@ public final class ProductVariantAssetUpdateActionUtils {
    * is needed and hence an empty {@link List} is returned.
    *
    * @param <D> Type of the mainresource draft
-   * @param oldResource mainresource, whose asset should be updated.
    * @param newResource new mainresource draft, which contains the asset to update.
    * @param variantId the variantId needed for building the update action.
    * @param oldAsset the asset which should be updated.

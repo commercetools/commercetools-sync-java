@@ -4,15 +4,12 @@ import static com.commercetools.sync.commons.utils.AssetReferenceResolutionUtils
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
-import io.sphere.sdk.categories.expansion.CategoryExpansionModel;
-import io.sphere.sdk.categories.queries.CategoryQuery;
-import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.Type;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -58,54 +55,34 @@ public final class CategoryReferenceResolutionUtils {
    *   </tbody>
    * </table>
    *
-   * <p><b>Note:</b> The {@link Category} and {@link Type} references should be expanded with a key.
-   * Any reference that is not expanded will have its id in place and not replaced by the key will
-   * be considered as existing resources on the target commercetools project and the library will
-   * issues an update/create API request without reference resolution.
+   * <p><b>Note:</b> The {@link Category} and {@link Type} references should contain Id in the
+   * map(cache) with a key value. Any reference that is not available in the map will have its id in
+   * place and not replaced by the key. This reference will be considered as existing resources on
+   * the target commercetools project and the library will issues an update/create API request
+   * without reference resolution.
    *
-   * @param categories the categories with expanded references.
+   * @param categories the categories without expansion of references.
+   * @param referenceIdToKeyCache the instance that manages cache.
    * @return a {@link List} of {@link CategoryDraft} built from the supplied {@link List} of {@link
    *     Category}.
    */
   @Nonnull
-  public static List<CategoryDraft> mapToCategoryDrafts(@Nonnull final List<Category> categories) {
+  public static List<CategoryDraft> mapToCategoryDrafts(
+      @Nonnull final List<Category> categories,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return categories.stream()
-        .map(CategoryReferenceResolutionUtils::mapToCategoryDraft)
+        .map(category -> mapToCategoryDraft(category, referenceIdToKeyCache))
         .collect(Collectors.toList());
   }
 
   @Nonnull
-  private static CategoryDraft mapToCategoryDraft(@Nonnull final Category category) {
+  private static CategoryDraft mapToCategoryDraft(
+      @Nonnull final Category category,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return CategoryDraftBuilder.of(category)
-        .custom(mapToCustomFieldsDraft(category))
-        .assets(mapToAssetDrafts(category.getAssets()))
-        .parent(getResourceIdentifierWithKey(category.getParent()))
+        .custom(mapToCustomFieldsDraft(category, referenceIdToKeyCache))
+        .assets(mapToAssetDrafts(category.getAssets(), referenceIdToKeyCache))
+        .parent(getResourceIdentifierWithKey(category.getParent(), referenceIdToKeyCache))
         .build();
-  }
-
-  /**
-   * Builds a {@link CategoryQuery} for fetching categories from a source CTP project with all the
-   * needed references expanded for the sync:
-   *
-   * <ul>
-   *   <li>Custom Type
-   *   <li>Assets Custom Types
-   *   <li>Parent Category
-   * </ul>
-   *
-   * <p>Note: Please only use this util if you desire to sync all the aforementioned references from
-   * a source commercetools project. Otherwise, it is more efficient to build the query without
-   * expansions, if they are not needed, to avoid unnecessarily bigger payloads fetched from the
-   * source project.
-   *
-   * @return the query for fetching categories from the source CTP project with all the
-   *     aforementioned references expanded.
-   */
-  public static CategoryQuery buildCategoryQuery() {
-    return CategoryQuery.of()
-        .withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE)
-        .withExpansionPaths(ExpansionPath.of("custom.type"))
-        .plusExpansionPaths(ExpansionPath.of("assets[*].custom.type"))
-        .plusExpansionPaths(CategoryExpansionModel::parent);
   }
 }

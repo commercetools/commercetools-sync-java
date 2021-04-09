@@ -15,6 +15,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
@@ -85,6 +87,9 @@ class LineItemListUpdateActionUtilsTest {
 
   private static final LineItemReferenceResolver lineItemReferenceResolver =
       new LineItemReferenceResolver(SYNC_OPTIONS, getMockTypeService());
+
+  private static final ReferenceIdToKeyCache referenceIdToKeyCache =
+      new CaffeineReferenceIdToKeyCacheImpl();
 
   @Test
   void buildLineItemsUpdateActions_WithoutNewAndWithNullOldLineItems_ShouldNotBuildActions() {
@@ -648,7 +653,7 @@ class LineItemListUpdateActionUtilsTest {
 
     final ShoppingListDraft template =
         ShoppingListReferenceResolutionUtils.mapToShoppingListDraft(
-            readObjectFromResource(resourcePath, ShoppingList.class));
+            readObjectFromResource(resourcePath, ShoppingList.class), referenceIdToKeyCache);
 
     final ShoppingListDraftBuilder builder = ShoppingListDraftBuilder.of(template);
 

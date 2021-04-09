@@ -49,7 +49,6 @@ public final class AssetsUpdateActionUtils {
    * @param <T> the type of the resource the asset update actions are built for.
    * @param <D> the type of the draft, which contains the changes the asset update actions are built
    *     for.
-   * @param oldResource resource from a target project, whose asset should be updated.
    * @param newResource resource draft from a source project, which contains the asset to update.
    * @param oldAssets the old list of assets.
    * @param newAssetDrafts the new list of asset drafts.
