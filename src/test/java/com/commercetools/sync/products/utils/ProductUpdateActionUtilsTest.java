@@ -38,7 +38,6 @@ import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.AttributeConstraint;
 import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
 import io.sphere.sdk.products.attributes.AttributeDraft;
-import io.sphere.sdk.products.commands.updateactions.AddAsset;
 import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
 import io.sphere.sdk.products.commands.updateactions.AddVariant;
 import io.sphere.sdk.products.commands.updateactions.ChangeMasterVariant;
@@ -133,17 +132,8 @@ class ProductUpdateActionUtilsTest {
                 .withImages(draft6.getImages()),
             AddVariant.of(draft7.getAttributes(), draft7.getPrices(), draft7.getSku(), true)
                 .withKey(draft7.getKey())
-                .withImages(draft7.getImages()));
-
-    // Check add asset actions of new variants
-    assertThat(updateActions)
-        .containsAll(
-            draft7.getAssets().stream()
-                .map(
-                    assetDraft ->
-                        (UpdateAction<Product>)
-                            AddAsset.ofSku(draft7.getSku(), assetDraft).withStaged(true))
-                .collect(toList()));
+                .withImages(draft7.getImages())
+                .withAssetDrafts(draft7.getAssets()));
 
     // variant 4 sku change
     assertThat(updateActions).containsOnlyOnce(SetSku.of(4, "var-44-sku", true));
@@ -401,7 +391,7 @@ class ProductUpdateActionUtilsTest {
   }
 
   @Test
-  void buildAddVariantUpdateActionFromDraft_WithNoAssets_BuildsNoAddAssets() {
+  void buildAddVariantUpdateActionFromDraft_WithNoAssets_BuildsAddVariantActionWithoutAssets() {
     // preparation
     final ProductVariantDraft productVariantDraft =
         ProductVariantDraftBuilder.of().sku("foo").build();
@@ -415,7 +405,7 @@ class ProductUpdateActionUtilsTest {
   }
 
   @Test
-  void buildAddVariantUpdateActionFromDraft_WithMultipleAssets_BuildsMultipleAddAssetsActions() {
+  void buildAddVariantUpdateActionFromDraft_WithMultipleAssets_BuildsAddVariantActionWithAssets() {
     // preparation
     final List<AssetDraft> assetDrafts =
         IntStream.range(1, 4)
@@ -437,13 +427,8 @@ class ProductUpdateActionUtilsTest {
 
     // assertion
     final ArrayList<UpdateAction<Product>> expectedActions =
-        new ArrayList<>(singletonList(AddVariant.of(null, null, "foo", true)));
-    expectedActions.addAll(
-        assetDrafts.stream()
-            .map(
-                assetDraft ->
-                    AddAsset.ofSku(productVariantDraft.getSku(), assetDraft).withStaged(true))
-            .collect(toList()));
+        new ArrayList<>(
+            singletonList(AddVariant.of(null, null, "foo", true).withAssetDrafts(assetDrafts)));
 
     assertThat(result).containsExactlyElementsOf(expectedActions);
   }
