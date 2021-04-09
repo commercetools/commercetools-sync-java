@@ -26,6 +26,6 @@ public interface ProductTypeTransformService {
    *     attributes references resolved and already replaced with keys.
    */
   @Nonnull
-  CompletionStage<List<ProductTypeDraft>> toProductTypeDrafts(
+  CompletableFuture<List<ProductTypeDraft>> toProductTypeDrafts(
       @Nonnull List<ProductType> productTypes);
 }
