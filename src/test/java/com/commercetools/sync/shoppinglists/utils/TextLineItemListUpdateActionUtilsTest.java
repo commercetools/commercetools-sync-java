@@ -19,7 +19,6 @@ import static org.mockito.Mockito.when;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
-import com.commercetools.sync.shoppinglists.commands.updateactions.AddTextLineItemWithAddedAt;
 import com.commercetools.sync.shoppinglists.helpers.TextLineItemReferenceResolver;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.client.SphereClient;
@@ -31,6 +30,7 @@ import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
+import io.sphere.sdk.shoppinglists.commands.updateactions.AddTextLineItem;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeTextLineItemName;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeTextLineItemQuantity;
@@ -170,9 +170,9 @@ class TextLineItemListUpdateActionUtilsTest {
     assertThat(newShoppingList.getTextLineItems()).isNotNull();
     assertThat(updateActions)
         .containsExactly(
-            AddTextLineItemWithAddedAt.of(newShoppingList.getTextLineItems().get(0)),
-            AddTextLineItemWithAddedAt.of(newShoppingList.getTextLineItems().get(1)),
-            AddTextLineItemWithAddedAt.of(newShoppingList.getTextLineItems().get(2)));
+            mapToAddTextLineItemAction(newShoppingList.getTextLineItems().get(0)),
+            mapToAddTextLineItemAction(newShoppingList.getTextLineItems().get(1)),
+            mapToAddTextLineItemAction(newShoppingList.getTextLineItems().get(2)));
   }
 
   @Test
@@ -293,7 +293,7 @@ class TextLineItemListUpdateActionUtilsTest {
             .addedAt(ZonedDateTime.parse("2020-11-06T10:00:00.000Z"))
             .build();
 
-    assertThat(updateActions).containsExactly(AddTextLineItemWithAddedAt.of(expectedLineItemDraft));
+    assertThat(updateActions).containsExactly(mapToAddTextLineItemAction(expectedLineItemDraft));
   }
 
   @Test
@@ -490,5 +490,16 @@ class TextLineItemListUpdateActionUtilsTest {
     when(typeService.fetchCachedTypeId(anyString()))
         .thenReturn(completedFuture(Optional.of("custom_type_id")));
     return typeService;
+  }
+
+  @Nonnull
+  private static AddTextLineItem mapToAddTextLineItemAction(
+      @Nonnull final TextLineItemDraft textLineItemDraft) {
+
+    return AddTextLineItem.of(textLineItemDraft.getName())
+        .withDescription(textLineItemDraft.getDescription())
+        .withQuantity(textLineItemDraft.getQuantity())
+        .withAddedAt(textLineItemDraft.getAddedAt())
+        .withCustom(textLineItemDraft.getCustom());
   }
 }
