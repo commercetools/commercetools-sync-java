@@ -17,6 +17,7 @@ import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.CustomerGroupService;
+import com.commercetools.sync.services.CustomerService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
@@ -25,6 +26,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.products.PriceDraft;
@@ -51,6 +53,7 @@ public final class VariantReferenceResolver
   private final CategoryService categoryService;
   private final CustomObjectService customObjectService;
   private final StateService stateService;
+  private final CustomerService customerService;
 
   /**
    * Instantiates a {@link VariantReferenceResolver} instance that could be used to resolve the
@@ -66,6 +69,8 @@ public final class VariantReferenceResolver
    * @param productTypeService the service to fetch the productTypes for reference resolution.
    * @param categoryService the service to fetch the categories for reference resolution.
    * @param customObjectService the service to fetch the custom objects for reference resolution.
+   * @param stateService the service to fetch the states for reference resolution.
+   * @param customerService the service to fetch the customers for reference resolution.
    */
   public VariantReferenceResolver(
       @Nonnull final ProductSyncOptions productSyncOptions,
@@ -76,7 +81,8 @@ public final class VariantReferenceResolver
       @Nonnull final ProductTypeService productTypeService,
       @Nonnull final CategoryService categoryService,
       @Nonnull final CustomObjectService customObjectService,
-      @Nonnull final StateService stateService) {
+      @Nonnull final StateService stateService,
+      @Nonnull final CustomerService customerService) {
     super(productSyncOptions);
     this.priceReferenceResolver =
         new PriceReferenceResolver(
@@ -87,6 +93,7 @@ public final class VariantReferenceResolver
     this.productTypeService = productTypeService;
     this.customObjectService = customObjectService;
     this.stateService = stateService;
+    this.customerService = customerService;
   }
 
   /**
@@ -211,6 +218,11 @@ public final class VariantReferenceResolver
 
     if (isReferenceOfType(referenceValue, State.referenceTypeId())) {
       return getResolvedIdFromKeyInReference(referenceValue, stateService::fetchCachedStateId);
+    }
+
+    if (isReferenceOfType(referenceValue, Customer.referenceTypeId())) {
+      return getResolvedIdFromKeyInReference(
+          referenceValue, customerService::fetchCachedCustomerId);
     }
 
     return CompletableFuture.completedFuture(Optional.empty());

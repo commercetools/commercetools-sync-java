@@ -6,12 +6,7 @@ import static com.commercetools.sync.commons.MockUtils.mockCategoryService;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithRandomProductType;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomObjectService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockStateService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockTaxCategoryService;
+import static com.commercetools.sync.products.ProductSyncMockUtils.*;
 import static com.commercetools.sync.products.helpers.ProductReferenceResolver.CATEGORIES_DO_NOT_EXIST;
 import static com.commercetools.sync.products.helpers.ProductReferenceResolver.FAILED_TO_RESOLVE_REFERENCE;
 import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
@@ -56,6 +51,7 @@ class CategoryReferenceResolverTest {
   private static final String STATE_ID = "stateId";
   private static final String PRODUCT_ID = "productId";
   private static final String CUSTOM_OBJECT_ID = "customObjectId";
+  private static final String CUSTOMER_ID = "customerId";
 
   @Test
   void resolveCategoryReferences_WithCategoryKeysAndCategoryOrderHints_ShouldResolveReferences() {
@@ -383,6 +379,7 @@ class CategoryReferenceResolverTest {
         getMockTaxCategoryService(TAX_CATEGORY_ID),
         getMockStateService(STATE_ID),
         getMockProductService(PRODUCT_ID),
-        getMockCustomObjectService(CUSTOM_OBJECT_ID));
+        getMockCustomObjectService(CUSTOM_OBJECT_ID),
+        getMockCustomerService(CUSTOMER_ID));
   }
 }

@@ -58,7 +58,8 @@ class WithCategoryReferencesTest {
             mock(ProductTypeService.class),
             categoryService,
             mock(CustomObjectService.class),
-            mock(StateService.class));
+            mock(StateService.class),
+            mock(CustomerService.class));
   }
 
   @Test

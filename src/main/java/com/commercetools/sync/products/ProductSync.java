@@ -14,30 +14,13 @@ import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
+import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductBatchValidator;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
-import com.commercetools.sync.services.CategoryService;
-import com.commercetools.sync.services.ChannelService;
-import com.commercetools.sync.services.CustomObjectService;
-import com.commercetools.sync.services.CustomerGroupService;
-import com.commercetools.sync.services.ProductService;
-import com.commercetools.sync.services.ProductTypeService;
-import com.commercetools.sync.services.StateService;
-import com.commercetools.sync.services.TaxCategoryService;
-import com.commercetools.sync.services.TypeService;
-import com.commercetools.sync.services.UnresolvedReferencesService;
-import com.commercetools.sync.services.impl.CategoryServiceImpl;
-import com.commercetools.sync.services.impl.ChannelServiceImpl;
-import com.commercetools.sync.services.impl.CustomObjectServiceImpl;
-import com.commercetools.sync.services.impl.CustomerGroupServiceImpl;
-import com.commercetools.sync.services.impl.ProductServiceImpl;
-import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
-import com.commercetools.sync.services.impl.StateServiceImpl;
-import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
-import com.commercetools.sync.services.impl.TypeServiceImpl;
-import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
+import com.commercetools.sync.services.*;
+import com.commercetools.sync.services.impl.*;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptionsBuilder;
 import io.sphere.sdk.channels.ChannelRole;
@@ -105,7 +88,9 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         new StateServiceImpl(StateSyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()),
         new UnresolvedReferencesServiceImpl<>(productSyncOptions),
         new CustomObjectServiceImpl(
-            CustomObjectSyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()));
+            CustomObjectSyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()),
+        new CustomerServiceImpl(
+            CustomerSyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()));
   }
 
   ProductSync(
@@ -121,7 +106,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
       @Nonnull
           final UnresolvedReferencesService<WaitingToBeResolvedProducts>
               unresolvedReferencesService,
-      @Nonnull final CustomObjectService customObjectService) {
+      @Nonnull final CustomObjectService customObjectService,
+      @Nonnull final CustomerService customerService) {
     super(new ProductSyncStatistics(), productSyncOptions);
     this.productService = productService;
     this.productTypeService = productTypeService;
@@ -136,7 +122,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             taxCategoryService,
             stateService,
             productService,
-            customObjectService);
+            customObjectService,
+            customerService);
     this.unresolvedReferencesService = unresolvedReferencesService;
     this.batchValidator = new ProductBatchValidator(getSyncOptions(), getStatistics());
   }

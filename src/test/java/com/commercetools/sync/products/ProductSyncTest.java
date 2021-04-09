@@ -25,16 +25,7 @@ import static org.mockito.Mockito.when;
 
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
-import com.commercetools.sync.services.CategoryService;
-import com.commercetools.sync.services.ChannelService;
-import com.commercetools.sync.services.CustomObjectService;
-import com.commercetools.sync.services.CustomerGroupService;
-import com.commercetools.sync.services.ProductService;
-import com.commercetools.sync.services.ProductTypeService;
-import com.commercetools.sync.services.StateService;
-import com.commercetools.sync.services.TaxCategoryService;
-import com.commercetools.sync.services.TypeService;
-import com.commercetools.sync.services.UnresolvedReferencesService;
+import com.commercetools.sync.services.*;
 import com.commercetools.sync.services.impl.ProductServiceImpl;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.ResourceIdentifier;
@@ -73,7 +64,8 @@ class ProductSyncTest {
             mock(TaxCategoryService.class),
             mock(StateService.class),
             mock(UnresolvedReferencesService.class),
-            mock(CustomObjectService.class));
+            mock(CustomObjectService.class),
+            mock(CustomerService.class));
 
     final ProductDraft productDraftWithoutKey =
         ProductDraftBuilder.of(
@@ -135,7 +127,8 @@ class ProductSyncTest {
             mock(TaxCategoryService.class),
             mock(StateService.class),
             mock(UnresolvedReferencesService.class),
-            mock(CustomObjectService.class));
+            mock(CustomObjectService.class),
+            mock(CustomerService.class));
 
     // test
     final ProductSyncStatistics productSyncStatistics =
@@ -212,7 +205,8 @@ class ProductSyncTest {
             mock(TaxCategoryService.class),
             mock(StateService.class),
             mock(UnresolvedReferencesService.class),
-            mock(CustomObjectService.class));
+            mock(CustomObjectService.class),
+            mock(CustomerService.class));
 
     // test
     final ProductSyncStatistics productSyncStatistics =
@@ -276,7 +270,8 @@ class ProductSyncTest {
             mock(TaxCategoryService.class),
             mock(StateService.class),
             mock(UnresolvedReferencesService.class),
-            mock(CustomObjectService.class));
+            mock(CustomObjectService.class),
+            mock(CustomerService.class));
 
     // test
     productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
@@ -335,7 +330,8 @@ class ProductSyncTest {
             mock(TaxCategoryService.class),
             mock(StateService.class),
             mock(UnresolvedReferencesService.class),
-            mock(CustomObjectService.class));
+            mock(CustomObjectService.class),
+            mock(CustomerService.class));
 
     // test
     productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
@@ -402,7 +398,8 @@ class ProductSyncTest {
             mock(TaxCategoryService.class),
             mock(StateService.class),
             mock(UnresolvedReferencesService.class),
-            mock(CustomObjectService.class));
+            mock(CustomObjectService.class),
+            mock(CustomerService.class));
 
     // test
     ProductSyncStatistics productSyncStatistics =

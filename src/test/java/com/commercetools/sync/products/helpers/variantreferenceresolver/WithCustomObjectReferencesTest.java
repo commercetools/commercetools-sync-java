@@ -54,7 +54,8 @@ class WithCustomObjectReferencesTest {
             mock(ProductTypeService.class),
             mock(CategoryService.class),
             customObjectService,
-            mock(StateService.class));
+            mock(StateService.class),
+            mock(CustomerService.class));
   }
 
   @Test

@@ -5,13 +5,7 @@ import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFER
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
-import static com.commercetools.sync.products.ProductSyncMockUtils.createReferenceObject;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCategoryService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomObjectService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithRandomId;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getReferenceSetAttributeDraft;
+import static com.commercetools.sync.products.ProductSyncMockUtils.*;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -22,7 +16,6 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomerGroupService;
-import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -63,7 +56,8 @@ class VariantReferenceResolverTest {
   private static final String PRODUCT_TYPE_ID = UUID.randomUUID().toString();
   private static final String CATEGORY_ID = UUID.randomUUID().toString();
   private static final String CUSTOM_OBJECT_ID = UUID.randomUUID().toString();
-
+  private static final String STATE_ID = UUID.randomUUID().toString();
+  private static final String CUSTOMER_ID = UUID.randomUUID().toString();
   private VariantReferenceResolver referenceResolver;
 
   @BeforeEach
@@ -83,7 +77,8 @@ class VariantReferenceResolverTest {
             getMockProductTypeService(PRODUCT_TYPE_ID),
             getMockCategoryService(CATEGORY_ID),
             getMockCustomObjectService(CUSTOM_OBJECT_ID),
-            mock(StateService.class));
+            getMockStateService(STATE_ID),
+            getMockCustomerService(CUSTOMER_ID));
   }
 
   @Test
@@ -319,8 +314,8 @@ class VariantReferenceResolverTest {
         resolvedCustomerReferenceAttribute.getValue();
     assertThat(resolvedCustomerReferenceAttributeValue).isNotNull();
 
-    assertThat(resolvedCustomerReferenceAttributeValue.get(REFERENCE_ID_FIELD))
-        .isEqualTo(customerReference.get(REFERENCE_ID_FIELD));
+    assertThat(resolvedCustomerReferenceAttributeValue.get(REFERENCE_ID_FIELD).asText())
+        .isEqualTo(CUSTOMER_ID);
     assertThat(resolvedCustomerReferenceAttributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
         .isEqualTo(Customer.referenceTypeId());
 

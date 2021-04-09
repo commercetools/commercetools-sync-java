@@ -11,13 +11,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.commercetools.sync.services.CategoryService;
-import com.commercetools.sync.services.CustomObjectService;
-import com.commercetools.sync.services.CustomerGroupService;
-import com.commercetools.sync.services.ProductService;
-import com.commercetools.sync.services.ProductTypeService;
-import com.commercetools.sync.services.StateService;
-import com.commercetools.sync.services.TaxCategoryService;
+import com.commercetools.sync.services.*;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -548,5 +542,23 @@ public class ProductSyncMockUtils {
     when(customObjectService.fetchCachedCustomObjectId(any()))
         .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
     return customObjectService;
+  }
+
+  /**
+   * Creates a mock {@link CustomerService} that returns a completed {@link CompletableFuture}
+   * containing an {@link Optional} containing the id of the supplied value whenever the following
+   * method is called on the service:
+   *
+   * <ul>
+   *   <li>{@link CustomerService#fetchCachedCustomerId(String)}
+   * </ul>
+   *
+   * @return the created mock of the {@link CustomerService}.
+   */
+  public static CustomerService getMockCustomerService(@Nonnull final String id) {
+    final CustomerService customerService = mock(CustomerService.class);
+    when(customerService.fetchCachedCustomerId(anyString()))
+        .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
+    return customerService;
   }
 }
