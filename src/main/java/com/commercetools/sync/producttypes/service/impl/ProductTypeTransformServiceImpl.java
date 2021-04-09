@@ -62,24 +62,24 @@ public class ProductTypeTransformServiceImpl extends BaseTransformServiceImpl
                 productType.getAttributes().stream()
                     .filter(Objects::nonNull)
                     .map(AttributeDefinition::getAttributeType)
-                    .map(this::getNestedAttributeIds)
+                    .map(this::getNestedAttributeId)
                     .filter(StringUtils::isNotBlank)
                     .collect(toList()))
         .flatMap(Collection::stream)
         .collect(toSet());
   }
 
-  private String getNestedAttributeIds(AttributeType attributeType) {
+  private String getNestedAttributeId(AttributeType attributeType) {
     if (attributeType instanceof NestedAttributeType) {
-      final Reference<ProductType> referenceReplacedNestedType =
+      final Reference<ProductType> NestedTypeReference =
           ((NestedAttributeType) attributeType).getTypeReference();
-      if (referenceReplacedNestedType != null) {
-        return referenceReplacedNestedType.getId();
+      if (NestedTypeReference != null) {
+        return NestedTypeReference.getId();
       }
     } else if (attributeType instanceof SetAttributeType) {
       final AttributeType elementType = ((SetAttributeType) attributeType).getElementType();
       if (elementType != null) {
-        return getNestedAttributeIds(elementType);
+        return getNestedAttributeId(elementType);
       }
     }
     return null;
