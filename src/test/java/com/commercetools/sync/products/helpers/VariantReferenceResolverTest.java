@@ -5,7 +5,15 @@ import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFER
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
-import static com.commercetools.sync.products.ProductSyncMockUtils.*;
+import static com.commercetools.sync.products.ProductSyncMockUtils.createReferenceObject;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCategoryService;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomObjectService;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerService;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getMockStateService;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithRandomId;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getReferenceSetAttributeDraft;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
