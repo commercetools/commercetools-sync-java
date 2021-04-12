@@ -374,20 +374,16 @@ class ProductUpdateActionUtilsTest {
             .build();
 
     // test
-    final List<UpdateAction<Product>> result = buildAddVariantUpdateActionFromDraft(draft);
+    final UpdateAction<Product> action = buildAddVariantUpdateActionFromDraft(draft);
 
     // assertion
-    assertThat(result)
-        .hasOnlyOneElementSatisfying(
-            action -> {
-              assertThat(action).isInstanceOf(AddVariant.class);
-              final AddVariant addVariant = (AddVariant) action;
-              assertThat(addVariant.getAttributes()).isSameAs(attributeList);
-              assertThat(addVariant.getPrices()).isSameAs(priceList);
-              assertThat(addVariant.getSku()).isEqualTo("testSKU");
-              assertThat(addVariant.getKey()).isEqualTo("testKey");
-              assertThat(addVariant.getImages()).isSameAs(imageList);
-            });
+    assertThat(action).isInstanceOf(AddVariant.class);
+    final AddVariant addVariant = (AddVariant) action;
+    assertThat(addVariant.getAttributes()).isSameAs(attributeList);
+    assertThat(addVariant.getPrices()).isSameAs(priceList);
+    assertThat(addVariant.getSku()).isEqualTo("testSKU");
+    assertThat(addVariant.getKey()).isEqualTo("testKey");
+    assertThat(addVariant.getImages()).isSameAs(imageList);
   }
 
   @Test
@@ -397,11 +393,10 @@ class ProductUpdateActionUtilsTest {
         ProductVariantDraftBuilder.of().sku("foo").build();
 
     // test
-    final List<UpdateAction<Product>> result =
-        buildAddVariantUpdateActionFromDraft(productVariantDraft);
+    final UpdateAction<Product> action = buildAddVariantUpdateActionFromDraft(productVariantDraft);
 
     // assertion
-    assertThat(result).containsExactlyInAnyOrder(AddVariant.of(null, null, "foo", true));
+    assertThat(action).isEqualTo(AddVariant.of(null, null, "foo", true));
   }
 
   @Test
@@ -422,15 +417,11 @@ class ProductUpdateActionUtilsTest {
         ProductVariantDraftBuilder.of().sku("foo").assets(assetDrafts).build();
 
     // test
-    final List<UpdateAction<Product>> result =
-        buildAddVariantUpdateActionFromDraft(productVariantDraft);
+    final UpdateAction<Product> action = buildAddVariantUpdateActionFromDraft(productVariantDraft);
 
     // assertion
-    final ArrayList<UpdateAction<Product>> expectedActions =
-        new ArrayList<>(
-            singletonList(AddVariant.of(null, null, "foo", true).withAssetDrafts(assetDrafts)));
-
-    assertThat(result).containsExactlyElementsOf(expectedActions);
+    assertThat(action)
+        .isEqualTo(AddVariant.of(null, null, "foo", true).withAssetDrafts(assetDrafts));
   }
 
   @Test

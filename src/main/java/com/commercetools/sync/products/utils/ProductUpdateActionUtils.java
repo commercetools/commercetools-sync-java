@@ -21,6 +21,7 @@ import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUt
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
@@ -466,7 +467,10 @@ public final class ProductUpdateActionUtils {
                                       newProductVariant,
                                       attributesMetaData,
                                       syncOptions))
-                          .orElseGet(() -> buildAddVariantUpdateActionFromDraft(newProductVariant));
+                          .orElseGet(
+                              () ->
+                                  singletonList(
+                                      buildAddVariantUpdateActionFromDraft(newProductVariant)));
                   updateActions.addAll(updateOrAddVariant);
                 }
               }
@@ -898,23 +902,16 @@ public final class ProductUpdateActionUtils {
    * </ul>
    *
    * @param draft {@link ProductVariantDraft} which to add.
-   * @return a list of actions which contains an {@link AddVariant} update action with properties
-   *     from {@code draft}.
+   * @return an {@link AddVariant} update action with properties from {@code draft}.
    */
   @Nonnull
-  static List<UpdateAction<Product>> buildAddVariantUpdateActionFromDraft(
+  static UpdateAction<Product> buildAddVariantUpdateActionFromDraft(
       @Nonnull final ProductVariantDraft draft) {
 
-    final ArrayList<UpdateAction<Product>> actions = new ArrayList<>();
-
-    final UpdateAction<Product> addVariant =
-        AddVariant.of(draft.getAttributes(), draft.getPrices(), draft.getSku(), true)
-            .withKey(draft.getKey())
-            .withImages(draft.getImages())
-            .withAssetDrafts(draft.getAssets());
-
-    actions.add(addVariant);
-    return actions;
+    return AddVariant.of(draft.getAttributes(), draft.getPrices(), draft.getSku(), true)
+        .withKey(draft.getKey())
+        .withImages(draft.getImages())
+        .withAssetDrafts(draft.getAssets());
   }
 
   /**
