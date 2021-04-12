@@ -27,6 +27,7 @@ public final class ShoppingListServiceImpl
     extends BaseService<
         ShoppingListDraft,
         ShoppingList,
+        ShoppingList,
         ShoppingListSyncOptions,
         ShoppingListQuery,
         ShoppingListQueryModel,

@@ -55,6 +55,7 @@ import io.sphere.sdk.products.queries.ProductProjectionByKeyGet;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -129,17 +130,24 @@ class ProductSyncWithAssetsIT {
 
   private ProductSyncOptions buildSyncOptions() {
     final QuadConsumer<
-            SyncException, Optional<ProductDraft>, Optional<Product>, List<UpdateAction<Product>>>
+            SyncException,
+            Optional<ProductDraft>,
+            Optional<ProductProjection>,
+            List<UpdateAction<Product>>>
         errorCallBack =
             (exception, newResource, oldResource, updateActions) -> {
               errorCallBackMessages.add(exception.getMessage());
               errorCallBackExceptions.add(exception.getCause());
             };
-    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallBack =
-        (exception, newResource, oldResource) ->
-            warningCallBackMessages.add(exception.getMessage());
+    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
+        warningCallBack =
+            (exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage());
     final TriFunction<
-            List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
+            List<UpdateAction<Product>>,
+            ProductDraft,
+            ProductProjection,
+            List<UpdateAction<Product>>>
         actionsCallBack =
             (updateActions, newDraft, oldProduct) -> {
               updateActionsFromSync.addAll(updateActions);
@@ -350,15 +358,14 @@ class ProductSyncWithAssetsIT {
 
     assertThat(updateActionsFromSync)
         .containsExactly(
-            AddVariant.of(null, null, "v2", true).withKey("v2"),
-            AddAsset.ofSku("v2", createAssetDraft("4", ofEnglish("4"), assetsCustomType.getId()))
-                .withStaged(true),
-            AddAsset.ofSku(
-                    "v2",
-                    createAssetDraft(
-                        "3", ofEnglish("3"), assetsCustomType.getId(), customFieldsJsonMap))
-                .withStaged(true),
-            AddAsset.ofSku("v2", createAssetDraft("2", ofEnglish("new name"))).withStaged(true),
+            AddVariant.of(null, null, "v2", true)
+                .withKey("v2")
+                .withAssetDrafts(
+                    Arrays.asList(
+                        createAssetDraft("4", ofEnglish("4"), assetsCustomType.getId()),
+                        createAssetDraft(
+                            "3", ofEnglish("3"), assetsCustomType.getId(), customFieldsJsonMap),
+                        createAssetDraft("2", ofEnglish("new name")))),
             RemoveAsset.ofVariantIdWithKey(1, "1", true),
             ChangeAssetName.ofAssetKeyAndVariantId(1, "2", ofEnglish("new name"), true),
             SetAssetCustomType.ofVariantIdAndAssetKey(1, "2", null, true),

@@ -4,6 +4,7 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.d
 import static com.commercetools.sync.integration.commons.utils.ChannelITUtils.deleteChannels;
 import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects;
 import static com.commercetools.sync.integration.commons.utils.CustomerGroupITUtils.deleteCustomerGroups;
+import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.deleteCustomers;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndCompose;
@@ -59,6 +60,7 @@ public final class ProductITUtils {
     deleteStates(ctpClient, empty());
     deleteTaxCategories(ctpClient);
     deleteCustomerGroups(ctpClient);
+    deleteCustomers(ctpClient);
     deleteWaitingToBeResolvedCustomObjects(
         ctpClient, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolvedProducts.class);
   }

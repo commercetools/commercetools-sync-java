@@ -1,5 +1,7 @@
 package com.commercetools.sync.services.impl;
 
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+import static io.sphere.sdk.products.ProductProjectionType.STAGED;
 import static java.lang.String.format;
 import static java.util.Collections.singleton;
 
@@ -10,16 +12,19 @@ import com.commercetools.sync.services.ProductService;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductLike;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
-import io.sphere.sdk.products.expansion.ProductExpansionModel;
-import io.sphere.sdk.products.queries.ProductQuery;
-import io.sphere.sdk.products.queries.ProductQueryModel;
+import io.sphere.sdk.products.expansion.ProductProjectionExpansionModel;
+import io.sphere.sdk.products.queries.ProductProjectionQuery;
+import io.sphere.sdk.products.queries.ProductProjectionQueryModel;
 import io.sphere.sdk.queries.QueryPredicate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -30,10 +35,11 @@ public final class ProductServiceImpl
     extends BaseServiceWithKey<
         ProductDraft,
         Product,
+        ProductProjection,
         ProductSyncOptions,
-        ProductQuery,
-        ProductQueryModel,
-        ProductExpansionModel<Product>>
+        ProductProjectionQuery,
+        ProductProjectionQueryModel,
+        ProductProjectionExpansionModel<ProductProjection>>
     implements ProductService {
 
   public ProductServiceImpl(@Nonnull final ProductSyncOptions syncOptions) {
@@ -46,7 +52,10 @@ public final class ProductServiceImpl
 
     return fetchCachedResourceId(
         key,
-        () -> ProductQuery.of().withPredicates(buildProductKeysQueryPredicate(singleton(key))));
+        ProductLike::getKey,
+        () ->
+            ProductProjectionQuery.ofStaged()
+                .withPredicates(buildProductKeysQueryPredicate(singleton(key))));
   }
 
   @Nonnull
@@ -60,7 +69,8 @@ public final class ProductServiceImpl
             new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.PRODUCTS));
   }
 
-  QueryPredicate<Product> buildProductKeysQueryPredicate(@Nonnull final Set<String> productKeys) {
+  QueryPredicate<ProductProjection> buildProductKeysQueryPredicate(
+      @Nonnull final Set<String> productKeys) {
     final List<String> keysSurroundedWithDoubleQuotes =
         productKeys.stream()
             .filter(StringUtils::isNotBlank)
@@ -74,35 +84,66 @@ public final class ProductServiceImpl
 
   @Nonnull
   @Override
-  public CompletionStage<Set<Product>> fetchMatchingProductsByKeys(
+  public CompletionStage<Set<ProductProjection>> fetchMatchingProductsByKeys(
       @Nonnull final Set<String> productKeys) {
 
     return fetchMatchingResources(
         productKeys,
+        ProductProjection::getKey,
         (keysNotCached) ->
-            ProductQuery.of().withPredicates(buildProductKeysQueryPredicate(keysNotCached)));
+            ProductProjectionQuery.ofStaged()
+                .withPredicates(buildProductKeysQueryPredicate(keysNotCached)));
   }
 
   @Nonnull
   @Override
-  public CompletionStage<Optional<Product>> fetchProduct(@Nullable final String key) {
+  public CompletionStage<Optional<ProductProjection>> fetchProduct(@Nullable final String key) {
 
     return fetchResource(
         key,
-        () -> ProductQuery.of().withPredicates(buildProductKeysQueryPredicate(singleton(key))));
+        () ->
+            ProductProjectionQuery.ofStaged()
+                .withPredicates(buildProductKeysQueryPredicate(singleton(key))));
   }
 
   @Nonnull
   @Override
-  public CompletionStage<Optional<Product>> createProduct(
+  public CompletionStage<Optional<ProductProjection>> createProduct(
       @Nonnull final ProductDraft productDraft) {
-    return createResource(productDraft, ProductCreateCommand::of);
+
+    return createResource(productDraft, ProductCreateCommand::of)
+        .thenApply(product -> product.map(opt -> opt.toProjection(STAGED)));
   }
 
   @Nonnull
   @Override
-  public CompletionStage<Product> updateProduct(
-      @Nonnull final Product product, @Nonnull final List<UpdateAction<Product>> updateActions) {
-    return updateResource(product, ProductUpdateCommand::of, updateActions);
+  public CompletionStage<ProductProjection> updateProduct(
+      @Nonnull final ProductProjection productProjection,
+      @Nonnull final List<UpdateAction<Product>> updateActions) {
+
+    return updateProductAndMapToProductProjection(productProjection, updateActions);
+  }
+
+  @Nonnull
+  private CompletionStage<ProductProjection> updateProductAndMapToProductProjection(
+      @Nonnull final ProductProjection productProjection,
+      @Nonnull final List<UpdateAction<Product>> updateActions) {
+
+    final List<List<UpdateAction<Product>>> batches =
+        batchElements(updateActions, MAXIMUM_ALLOWED_UPDATE_ACTIONS);
+
+    CompletionStage<ProductProjection> resultStage =
+        CompletableFuture.completedFuture(productProjection);
+
+    for (final List<UpdateAction<Product>> batch : batches) {
+      resultStage =
+          resultStage.thenCompose(
+              updatedProductProjection ->
+                  syncOptions
+                      .getCtpClient()
+                      .execute(ProductUpdateCommand.of(updatedProductProjection, batch))
+                      .thenApply(p -> p.toProjection(STAGED)));
+    }
+    return resultStage;
   }
 }

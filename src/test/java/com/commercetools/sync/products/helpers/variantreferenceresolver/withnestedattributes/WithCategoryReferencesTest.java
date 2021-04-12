@@ -17,8 +17,10 @@ import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.CustomerGroupService;
+import com.commercetools.sync.services.CustomerService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
+import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -63,7 +65,9 @@ class WithCategoryReferencesTest {
             mock(ProductService.class),
             mock(ProductTypeService.class),
             categoryService,
-            mock(CustomObjectService.class));
+            mock(CustomObjectService.class),
+            mock(StateService.class),
+            mock(CustomerService.class));
   }
 
   @Test

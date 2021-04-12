@@ -36,7 +36,7 @@ against a [InventoryEntryDraft](https://docs.commercetools.com/http-api-projects
 
 #### SphereClient
 
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/4.0.1/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/5.0.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
@@ -68,26 +68,36 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`mapToInventoryEntryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/inventories/utils/InventoryReferenceResolutionUtils.html#mapToInventoryEntryDrafts-java.util.List-)
-the method that maps from an `InventoryEntry` to `InventoryEntryDraft` in order to make them ready for reference resolution by the sync, for example: 
+When syncing from a source commercetools project, you can use [`toInventoryEntryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/5.0.0/com/commercetools/sync/inventories/utils/InventoryTransformUtils.html#toInventoryEntryDrafts-java.util.List-)
+ method that transforms(resolves by querying and caching key-id pairs) and maps from a `InventoryEntry` to `InventoryEntryDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
-// Build an InventoryEntryQuery for fetching inventories from a source CTP project with all the needed references expanded for the sync
-final InventoryEntryQuery inventoryEntryQueryWithReferenceExpanded = InventoryReferenceResolutionUtils.buildInventoryQuery();
+// Build an InventoryEntryQuery for fetching inventories from a source CTP project without any references expanded for the sync:
+final InventoryEntryQuery inventoryEntryQuery = InventoryEntryQuery.of();
 
 // Query all inventories (NOTE this is just for example, please adjust your logic)
 final List<InventoryEntry> inventoryEntries =
     CtpQueryUtils
-        .queryAll(sphereClient, inventoryEntryQueryWithReferenceExpanded, Function.identity())
+        .queryAll(sphereClient, inventoryEntryQuery, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
             .stream()
             .flatMap(List::stream)
             .collect(Collectors.toList()))
         .toCompletableFuture()
         .join();
+````
 
-// Mapping from InventoryEntry to InventoryEntryDraft with considering reference resolution.
-final List<InventoryEntryDraft> inventoryEntryDrafts = InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts(inventoryEntries);
+In order to transform and map the `InventoryEntry` to `InventoryEntryDraft`, 
+Utils method `toInventoryEntryDrafts` requires `sphereClient`, implementation of [`ReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java) and `inventoryEntries` as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java).
+Example as shown below:
+
+````java
+//Implement the cache using library class.
+final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
+
+//For every reference fetch its key using id, cache it and map from InventoryEntry to InventoryEntryDraft. With help of the cache same reference keys can be reused.
+CompletableFuture<List<InventoryEntryDraft>> inventoryEntryDrafts = InventoryTransformUtils.toInventoryEntryDrafts(client, referenceIdToKeyCache, inventoryEntries);
 ````
 
 ##### Syncing from an external resource

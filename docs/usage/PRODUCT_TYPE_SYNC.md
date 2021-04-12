@@ -36,7 +36,7 @@ against a [ProductTypeDraft](https://docs.commercetools.com/http-api-projects-pr
 ### Prerequisites
 #### SphereClient
 
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/4.0.1/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/5.0.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
@@ -66,26 +66,36 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`mapToProductTypeDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/producttypes/utils/ProductTypeReferenceResolutionUtils.html#mapToProductTypeDrafts-java.util.List-) 
-method that maps from a `ProductType` to `ProductTypeDraft` to make them ready for reference resolution by the sync, for example:
+When syncing from a source commercetools project, you can use [`toProductTypeDrafts`](https://commercetools.github.io/commercetools-sync-java/v/5.0.0/com/commercetools/sync/producttypes/utils/ProductTypeTransformUtils.html#toProductTypeDrafts-java.util.List-)
+ method that transforms(resolves by querying and caching key-id pairs) and maps from a `ProductType` to `ProductTypeDraft`. It can be configured to use a cache that will speed up the reference resolution performed during the sync, for example: 
 
 ````java
-// Build a ProductTypeQuery for fetching product types from a source CTP project with all the needed references expanded for the sync
-final ProductTypeQuery productTypeQueryWithReferenceExpanded = ProductTypeReferenceResolutionUtils.buildProductTypeQuery(1);
+// Build a ProductTypeQuery for fetching product types from a source CTP project without any references expanded for the sync.
+final ProductTypeQuery productTypeQuery = ProductTypeQuery.of();
 
 // Query all productTypes (NOTE this is just for example, please adjust your logic)
 final List<ProductType> productTypes =
     CtpQueryUtils
-        .queryAll(sphereClient, productTypeQueryWithReferenceExpanded, Function.identity())
+        .queryAll(sphereClient, productTypeQuery, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
             .stream()
             .flatMap(List::stream)
             .collect(Collectors.toList()))
         .toCompletableFuture()
         .join();
+````
 
-// Mapping from ProductType to ProductType with considering reference resolution.
-final List<ProductTypeDraft> productTypeDrafts = ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts(productTypes);
+In order to transform and map the `ProductType` to `ProductTypeDraft`, 
+Utils method `toProductTypeDrafts` requires `sphereClient`, implementation of [`ReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java) and `productTypes` as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java).
+Example as shown below:
+
+````java
+//Implement the cache using library class.
+final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
+
+//For every reference fetch its key using id, cache it and map from ProductType to ProductTypeDraft. With help of the cache same reference keys can be reused.
+CompletableFuture<List<ProductTypeDraft>> productTypeDrafts = ProductTransformUtils.toProductTypeDrafts(client, referenceIdToKeyCache, productTypes);
 ````
 
 ##### Syncing from an external resource

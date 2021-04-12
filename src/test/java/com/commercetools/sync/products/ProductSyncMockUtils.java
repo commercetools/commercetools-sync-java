@@ -3,6 +3,7 @@ package com.commercetools.sync.products;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
+import static io.sphere.sdk.products.ProductProjectionType.STAGED;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
@@ -14,6 +15,7 @@ import static org.mockito.Mockito.when;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.CustomerGroupService;
+import com.commercetools.sync.services.CustomerService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
@@ -32,9 +34,9 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductData;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
@@ -62,6 +64,8 @@ import javax.annotation.Nullable;
 
 public class ProductSyncMockUtils {
   public static final String PRODUCT_KEY_1_RESOURCE_PATH = "product-key-1.json";
+  public static final String PRODUCT_KEY_1_NO_ATTRIBUTES_RESOURCE_PATH =
+      "product-key-1-no-attributes.json";
   public static final String PRODUCT_KEY_SPECIAL_CHARS_RESOURCE_PATH =
       "product-key-with-special-character.json";
   public static final String PRODUCT_KEY_1_CHANGED_RESOURCE_PATH = "product-key-1-changed.json";
@@ -78,6 +82,8 @@ public class ProductSyncMockUtils {
   public static final String PRODUCT_TYPE_WITH_REFERENCES_RESOURCE_PATH =
       "product-type-with-references.json";
   public static final String PRODUCT_TYPE_NO_KEY_RESOURCE_PATH = "product-type-no-key.json";
+  public static final String PRODUCT_TYPE_WITH_REFERENCES_FOR_VARIANT_ATTRIBUTES_RESOURCE_PATH =
+      "product-type-with-references-for-variant-attributes.json";
   public static final String CATEGORY_KEY_1_RESOURCE_PATH = "category-key-1.json";
   public static final String SIMPLE_PRODUCT_WITH_MASTER_VARIANT_RESOURCE_PATH =
       "simple-product-with-master-variant.json";
@@ -119,31 +125,31 @@ public class ProductSyncMockUtils {
   public static ProductDraftBuilder createProductDraftBuilder(
       @Nonnull final String jsonResourcePath,
       @Nonnull final ResourceIdentifiable<ProductType> productTypeReference) {
-    final Product productFromJson = readObjectFromResource(jsonResourcePath, Product.class);
-    final ProductData productData = productFromJson.getMasterData().getStaged();
+    final ProductProjection productFromJson =
+        readObjectFromResource(jsonResourcePath, Product.class).toProjection(STAGED);
 
     @SuppressWarnings("ConstantConditions")
     final List<ProductVariantDraft> allVariants =
-        productData.getAllVariants().stream()
+        productFromJson.getAllVariants().stream()
             .map(productVariant -> ProductVariantDraftBuilder.of(productVariant).build())
             .collect(toList());
 
     return ProductDraftBuilder.of(
-            productTypeReference, productData.getName(), productData.getSlug(), allVariants)
-        .metaDescription(productData.getMetaDescription())
-        .metaKeywords(productData.getMetaKeywords())
-        .metaTitle(productData.getMetaTitle())
-        .description(productData.getDescription())
-        .searchKeywords(productData.getSearchKeywords())
+            productTypeReference, productFromJson.getName(), productFromJson.getSlug(), allVariants)
+        .metaDescription(productFromJson.getMetaDescription())
+        .metaKeywords(productFromJson.getMetaKeywords())
+        .metaTitle(productFromJson.getMetaTitle())
+        .description(productFromJson.getDescription())
+        .searchKeywords(productFromJson.getSearchKeywords())
         .taxCategory(productFromJson.getTaxCategory())
         .state(productFromJson.getState())
         .key(productFromJson.getKey())
         .categories(
-            productData.getCategories().stream()
+            productFromJson.getCategories().stream()
                 .map(Reference::toResourceIdentifier)
                 .collect(Collectors.toSet()))
-        .categoryOrderHints(productData.getCategoryOrderHints())
-        .publish(productFromJson.getMasterData().isPublished());
+        .categoryOrderHints(productFromJson.getCategoryOrderHints())
+        .publish(productFromJson.isPublished());
   }
 
   /**
@@ -244,8 +250,8 @@ public class ProductSyncMockUtils {
         .build();
   }
 
-  public static Product createProductFromJson(@Nonnull final String jsonResourcePath) {
-    return readObjectFromResource(jsonResourcePath, Product.class);
+  public static ProductProjection createProductFromJson(@Nonnull final String jsonResourcePath) {
+    return readObjectFromResource(jsonResourcePath, Product.class).toProjection(STAGED);
   }
 
   public static ProductDraft createProductDraftFromJson(@Nonnull final String jsonResourcePath) {
@@ -544,5 +550,23 @@ public class ProductSyncMockUtils {
     when(customObjectService.fetchCachedCustomObjectId(any()))
         .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
     return customObjectService;
+  }
+
+  /**
+   * Creates a mock {@link CustomerService} that returns a completed {@link CompletableFuture}
+   * containing an {@link Optional} containing the id of the supplied value whenever the following
+   * method is called on the service:
+   *
+   * <ul>
+   *   <li>{@link CustomerService#fetchCachedCustomerId(String)}
+   * </ul>
+   *
+   * @return the created mock of the {@link CustomerService}.
+   */
+  public static CustomerService getMockCustomerService(@Nonnull final String id) {
+    final CustomerService customerService = mock(CustomerService.class);
+    when(customerService.fetchCachedCustomerId(anyString()))
+        .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
+    return customerService;
   }
 }

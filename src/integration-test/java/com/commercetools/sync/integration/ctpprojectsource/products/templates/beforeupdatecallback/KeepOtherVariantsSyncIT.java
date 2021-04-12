@@ -26,6 +26,7 @@ import com.commercetools.sync.products.templates.beforeupdatecallback.KeepOtherV
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
@@ -82,21 +83,27 @@ class KeepOtherVariantsSyncIT {
 
   private ProductSyncOptions getProductSyncOptions() {
     final QuadConsumer<
-            SyncException, Optional<ProductDraft>, Optional<Product>, List<UpdateAction<Product>>>
+            SyncException,
+            Optional<ProductDraft>,
+            Optional<ProductProjection>,
+            List<UpdateAction<Product>>>
         errorCallBack =
             (exception, newResource, oldResource, updateActions) -> {
               errorCallBackMessages.add(exception.getMessage());
               errorCallBackExceptions.add(exception.getCause());
             };
 
-    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallBack =
-        (exception, newResource, oldResource) ->
-            warningCallBackMessages.add(exception.getMessage());
+    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
+        warningCallBack =
+            (exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage());
 
     return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
         .errorCallback(errorCallBack)
         .warningCallback(warningCallBack)
-        .beforeUpdateCallback(KeepOtherVariantsSync::keepOtherVariants)
+        .beforeUpdateCallback(
+            (updateActions, newProductDraft, oldProduct1) ->
+                KeepOtherVariantsSync.keepOtherVariants(updateActions))
         .build();
   }
 

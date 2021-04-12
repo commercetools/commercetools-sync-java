@@ -11,6 +11,8 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
+import io.sphere.sdk.products.ProductProjectionType;
 import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
 import java.util.Locale;
 import java.util.Optional;
@@ -18,8 +20,9 @@ import javax.annotation.Nonnull;
 import org.junit.jupiter.api.Test;
 
 class BuildChangeSlugUpdateActionTest {
-  private static final Product MOCK_OLD_PUBLISHED_PRODUCT =
-      readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
+  private static final ProductProjection MOCK_OLD_PUBLISHED_PRODUCT =
+      readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class)
+          .toProjection(ProductProjectionType.STAGED);
 
   @Test
   void buildChangeSlugUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
@@ -43,7 +46,8 @@ class BuildChangeSlugUpdateActionTest {
   }
 
   private Optional<UpdateAction<Product>> getChangeSlugUpdateAction(
-      @Nonnull final Product oldProduct, @Nonnull final LocalizedString newProductDescription) {
+      @Nonnull final ProductProjection oldProduct,
+      @Nonnull final LocalizedString newProductDescription) {
     final ProductDraft newProductDraft = mock(ProductDraft.class);
     when(newProductDraft.getSlug()).thenReturn(newProductDescription);
     return buildChangeSlugUpdateAction(oldProduct, newProductDraft);

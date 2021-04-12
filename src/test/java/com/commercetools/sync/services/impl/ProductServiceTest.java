@@ -18,6 +18,8 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
+import io.sphere.sdk.products.ProductProjectionType;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
@@ -54,19 +56,22 @@ class ProductServiceTest {
 
   @Test
   void createProduct_WithSuccessfulMockCtpResponse_ShouldReturnMock() {
-    final Product mock = mock(Product.class);
-    when(mock.getId()).thenReturn("productId");
-    when(mock.getKey()).thenReturn("productKey");
+    final Product product = mock(Product.class);
+    final ProductProjection mockProductProjection = mock(ProductProjection.class);
 
-    when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
+    when(product.toProjection(any())).thenReturn(mockProductProjection);
+    when(product.getId()).thenReturn("productId");
+    when(product.getKey()).thenReturn("productKey");
+
+    when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(product));
 
     final ProductDraft draft = mock(ProductDraft.class);
     when(draft.getKey()).thenReturn("productKey");
-    final Optional<Product> productOptional =
+    final Optional<ProductProjection> productOptional =
         service.createProduct(draft).toCompletableFuture().join();
 
     assertThat(productOptional).isNotEmpty();
-    assertThat(productOptional).containsSame(mock);
+    assertThat(productOptional).containsSame(product.toProjection(ProductProjectionType.STAGED));
     verify(productSyncOptions.getCtpClient()).execute(eq(ProductCreateCommand.of(draft)));
   }
 
@@ -83,7 +88,7 @@ class ProductServiceTest {
     when(draft.getKey()).thenReturn("productKey");
 
     // test
-    final Optional<Product> productOptional =
+    final Optional<ProductProjection> productOptional =
         service.createProduct(draft).toCompletableFuture().join();
 
     // assertion
@@ -105,7 +110,7 @@ class ProductServiceTest {
   @Test
   void createProduct_WithDraftWithoutKey_ShouldNotCreateProduct() {
     final ProductDraft draft = mock(ProductDraft.class);
-    final Optional<Product> productOptional =
+    final Optional<ProductProjection> productOptional =
         service.createProduct(draft).toCompletableFuture().join();
 
     assertThat(productOptional).isEmpty();
@@ -117,21 +122,26 @@ class ProductServiceTest {
 
   @Test
   void updateProduct_WithMockCtpResponse_ShouldReturnMock() {
-    final Product mock = mock(Product.class);
-    when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
+    final ProductProjection productProjectionMock = mock(ProductProjection.class);
+    when(productProjectionMock.getKey()).thenReturn("anyKey");
+    final Product product = mock(Product.class);
+    when(product.toProjection(any())).thenReturn(productProjectionMock);
+
+    when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(product));
 
     final List<UpdateAction<Product>> updateActions =
         singletonList(ChangeName.of(LocalizedString.of(ENGLISH, "new name")));
-    final Product product = service.updateProduct(mock, updateActions).toCompletableFuture().join();
+    final ProductProjection productProjection =
+        service.updateProduct(productProjectionMock, updateActions).toCompletableFuture().join();
 
-    assertThat(product).isSameAs(mock);
+    assertThat(productProjection).isSameAs(productProjectionMock);
     verify(productSyncOptions.getCtpClient())
-        .execute(eq(ProductUpdateCommand.of(mock, updateActions)));
+        .execute(eq(ProductUpdateCommand.of(productProjectionMock, updateActions)));
   }
 
   @Test
   void buildProductKeysQueryPredicate_WithEmptyProductKeysSet_ShouldBuildCorrectQuery() {
-    final QueryPredicate<Product> queryPredicate =
+    final QueryPredicate<ProductProjection> queryPredicate =
         service.buildProductKeysQueryPredicate(new HashSet<>());
     assertThat(queryPredicate.toSphereQuery()).isEqualTo("key in ()");
   }
@@ -141,7 +151,7 @@ class ProductServiceTest {
     final HashSet<String> productKeys = new HashSet<>();
     productKeys.add("key1");
     productKeys.add("key2");
-    final QueryPredicate<Product> queryPredicate =
+    final QueryPredicate<ProductProjection> queryPredicate =
         service.buildProductKeysQueryPredicate(productKeys);
     assertThat(queryPredicate.toSphereQuery()).isEqualTo("key in (\"key1\", \"key2\")");
   }
@@ -153,7 +163,7 @@ class ProductServiceTest {
     productKeys.add("key2");
     productKeys.add("");
     productKeys.add(null);
-    final QueryPredicate<Product> queryPredicate =
+    final QueryPredicate<ProductProjection> queryPredicate =
         service.buildProductKeysQueryPredicate(productKeys);
     assertThat(queryPredicate.toSphereQuery()).isEqualTo("key in (\"key1\", \"key2\")");
   }

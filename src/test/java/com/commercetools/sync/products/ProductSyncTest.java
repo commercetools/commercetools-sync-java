@@ -6,6 +6,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_2
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static io.sphere.sdk.products.ProductProjectionType.STAGED;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
@@ -25,16 +26,7 @@ import static org.mockito.Mockito.when;
 
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
-import com.commercetools.sync.services.CategoryService;
-import com.commercetools.sync.services.ChannelService;
-import com.commercetools.sync.services.CustomObjectService;
-import com.commercetools.sync.services.CustomerGroupService;
-import com.commercetools.sync.services.ProductService;
-import com.commercetools.sync.services.ProductTypeService;
-import com.commercetools.sync.services.StateService;
-import com.commercetools.sync.services.TaxCategoryService;
-import com.commercetools.sync.services.TypeService;
-import com.commercetools.sync.services.UnresolvedReferencesService;
+import com.commercetools.sync.services.*;
 import com.commercetools.sync.services.impl.ProductServiceImpl;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.ResourceIdentifier;
@@ -42,7 +34,8 @@ import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.queries.ProductQuery;
+import io.sphere.sdk.products.ProductProjection;
+import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,7 +66,8 @@ class ProductSyncTest {
             mock(TaxCategoryService.class),
             mock(StateService.class),
             mock(UnresolvedReferencesService.class),
-            mock(CustomObjectService.class));
+            mock(CustomObjectService.class),
+            mock(CustomerService.class));
 
     final ProductDraft productDraftWithoutKey =
         ProductDraftBuilder.of(
@@ -135,7 +129,8 @@ class ProductSyncTest {
             mock(TaxCategoryService.class),
             mock(StateService.class),
             mock(UnresolvedReferencesService.class),
-            mock(CustomObjectService.class));
+            mock(CustomObjectService.class),
+            mock(CustomerService.class));
 
     // test
     final ProductSyncStatistics productSyncStatistics =
@@ -169,7 +164,7 @@ class ProductSyncTest {
             .build();
 
     final SphereClient mockClient = mock(SphereClient.class);
-    when(mockClient.execute(any(ProductQuery.class)))
+    when(mockClient.execute(any(ProductProjectionQuery.class)))
         .thenReturn(
             supplyAsync(
                 () -> {
@@ -212,7 +207,8 @@ class ProductSyncTest {
             mock(TaxCategoryService.class),
             mock(StateService.class),
             mock(UnresolvedReferencesService.class),
-            mock(CustomObjectService.class));
+            mock(CustomObjectService.class),
+            mock(CustomerService.class));
 
     // test
     final ProductSyncStatistics productSyncStatistics =
@@ -276,7 +272,8 @@ class ProductSyncTest {
             mock(TaxCategoryService.class),
             mock(StateService.class),
             mock(UnresolvedReferencesService.class),
-            mock(CustomObjectService.class));
+            mock(CustomObjectService.class),
+            mock(CustomerService.class));
 
     // test
     productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
@@ -296,8 +293,9 @@ class ProductSyncTest {
             .state(null)
             .build();
 
-    final Product mockedExistingProduct =
-        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class);
+    final ProductProjection mockedExistingProduct =
+        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class)
+            .toProjection(STAGED);
 
     final ProductSyncOptions productSyncOptions =
         ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
@@ -335,7 +333,8 @@ class ProductSyncTest {
             mock(TaxCategoryService.class),
             mock(StateService.class),
             mock(UnresolvedReferencesService.class),
-            mock(CustomObjectService.class));
+            mock(CustomObjectService.class),
+            mock(CustomerService.class));
 
     // test
     productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
@@ -355,8 +354,9 @@ class ProductSyncTest {
             .state(null)
             .build();
 
-    final Product mockedExistingProduct =
-        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class);
+    final ProductProjection mockedExistingProduct =
+        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class)
+            .toProjection(STAGED);
     final List<String> errorMessages = new ArrayList<>();
     final List<Throwable> exceptions = new ArrayList<>();
 
@@ -402,7 +402,8 @@ class ProductSyncTest {
             mock(TaxCategoryService.class),
             mock(StateService.class),
             mock(UnresolvedReferencesService.class),
-            mock(CustomObjectService.class));
+            mock(CustomObjectService.class),
+            mock(CustomerService.class));
 
     // test
     ProductSyncStatistics productSyncStatistics =

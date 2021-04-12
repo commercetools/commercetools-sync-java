@@ -35,7 +35,7 @@ against a [StateDraft](https://docs.commercetools.com/http-api-projects-states#s
 #### Prerequisites
 #### SphereClient
 
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/4.0.1/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/5.0.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
@@ -66,27 +66,38 @@ reference should return its `key`.
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use this utility which this library provides:  [`mapToStateDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/states/utils/StateReferenceResolutionUtils.html#mapToStateDrafts-java.util.List-)
-that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
+When syncing from a source commercetools project, you can use [`toStateDrafts`](https://commercetools.github.io/commercetools-sync-java/v/5.0.0/com/commercetools/sync/states/utils/StateTransformUtils.html#toStateDrafts-java.util.List-)
+ method that transforms(resolves by querying and caching key-id pairs) and maps from a `State` to `StateDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
-// Build a StateQuery for fetching states from a source CTP project with all the needed references expanded for the sync
-final StateQuery stateQueryWithReferenceExpanded = StateReferenceResolutionUtils.buildStateQuery();
+// Build a StateQuery for fetching shopping lists from a source CTP project without any references expanded for the sync:
+final StateQuery stateQuery = StateQuery.of();
 
 // Query all states (NOTE this is just for example, please adjust your logic)
 final List<State> states =
     CtpQueryUtils
-        .queryAll(sphereClient, stateQueryWithReferenceExpanded, Function.identity())
+        .queryAll(sphereClient, stateQuery, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
             .stream()
             .flatMap(List::stream)
             .collect(Collectors.toList()))
         .toCompletableFuture()
         .join();
-
-// Mapping from State to StateDraft with considering reference resolution.
-final List<StateDraft> stateDrafts = StateReferenceResolutionUtils.mapToStateDrafts(states);
 ````
+
+In order to transform and map the `State` to `StateDraft`, 
+Utils method `toStateDrafts` requires `sphereClient`, implementation of [`ReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java) and `states` as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java).
+Example as shown below:
+
+````java
+//Implement the cache using library class.
+final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
+
+//For every reference fetch its key using id, cache it and map from State to StateDraft. With help of the cache same reference keys can be reused.
+CompletableFuture<List<StateDraft>> stateDrafts = StateTransformUtils.toStateDrafts(client, referenceIdToKeyCache, states);
+````
+
 ##### Syncing from an external resource
 
 ````java

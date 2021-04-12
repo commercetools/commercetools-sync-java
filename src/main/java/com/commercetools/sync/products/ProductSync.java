@@ -14,6 +14,7 @@ import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
+import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductBatchValidator;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
@@ -22,6 +23,7 @@ import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.CustomerGroupService;
+import com.commercetools.sync.services.CustomerService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
@@ -32,6 +34,7 @@ import com.commercetools.sync.services.impl.CategoryServiceImpl;
 import com.commercetools.sync.services.impl.ChannelServiceImpl;
 import com.commercetools.sync.services.impl.CustomObjectServiceImpl;
 import com.commercetools.sync.services.impl.CustomerGroupServiceImpl;
+import com.commercetools.sync.services.impl.CustomerServiceImpl;
 import com.commercetools.sync.services.impl.ProductServiceImpl;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
 import com.commercetools.sync.services.impl.StateServiceImpl;
@@ -44,6 +47,7 @@ import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -83,8 +87,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
   /**
    * Takes a {@link ProductSyncOptions} instance to instantiate a new {@link ProductSync} instance
-   * that could be used to sync product drafts with the given products in the CTP project specified
-   * in the injected {@link ProductSyncOptions} instance.
+   * that could be used to sync ProductProjection drafts with the given products in the CTP project
+   * specified in the injected {@link ProductSyncOptions} instance.
    *
    * @param productSyncOptions the container of all the options of the sync process including the
    *     CTP project client and/or configuration and other sync-specific options.
@@ -105,7 +109,9 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         new StateServiceImpl(StateSyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()),
         new UnresolvedReferencesServiceImpl<>(productSyncOptions),
         new CustomObjectServiceImpl(
-            CustomObjectSyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()));
+            CustomObjectSyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()),
+        new CustomerServiceImpl(
+            CustomerSyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()));
   }
 
   ProductSync(
@@ -121,7 +127,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
       @Nonnull
           final UnresolvedReferencesService<WaitingToBeResolvedProducts>
               unresolvedReferencesService,
-      @Nonnull final CustomObjectService customObjectService) {
+      @Nonnull final CustomObjectService customObjectService,
+      @Nonnull final CustomerService customerService) {
     super(new ProductSyncStatistics(), productSyncOptions);
     this.productService = productService;
     this.productTypeService = productTypeService;
@@ -136,7 +143,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             taxCategoryService,
             stateService,
             productService,
-            customObjectService);
+            customObjectService,
+            customerService);
     this.unresolvedReferencesService = unresolvedReferencesService;
     this.batchValidator = new ProductBatchValidator(getSyncOptions(), getStatistics());
   }
@@ -211,7 +219,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                     new SyncException(errorMessage, fetchException), productDraftKeys.size());
                 return CompletableFuture.completedFuture(null);
               } else {
-                final Set<Product> matchingProducts = fetchResponse.getKey();
+                final Set<ProductProjection> matchingProducts = fetchResponse.getKey();
                 return syncOrKeepTrack(productDrafts, matchingProducts, keyToIdCache)
                     .thenCompose(aVoid -> resolveNowReadyReferences(keyToIdCache));
               }
@@ -219,18 +227,18 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
   }
 
   /**
-   * Given a set of product drafts, for each new draft: if it doesn't have any product references
-   * which are missing, it syncs the new draft. However, if it does have missing references, it
-   * keeps track of it by persisting it.
+   * Given a set of ProductProjection drafts, for each new draft: if it doesn't have any
+   * ProductProjection references which are missing, it syncs the new draft. However, if it does
+   * have missing references, it keeps track of it by persisting it.
    *
-   * @param oldProducts old product types.
+   * @param oldProducts old ProductProjection types.
    * @param newProducts drafts that need to be synced.
    * @return a {@link CompletionStage} which contains an empty result after execution of the update
    */
   @Nonnull
   private CompletionStage<Void> syncOrKeepTrack(
       @Nonnull final Set<ProductDraft> newProducts,
-      @Nonnull final Set<Product> oldProducts,
+      @Nonnull final Set<ProductProjection> oldProducts,
       @Nonnull final Map<String, String> keyToIdCache) {
 
     return allOf(
@@ -368,20 +376,22 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
   @Nonnull
   private CompletionStage<Void> syncDraft(
-      @Nonnull final Set<Product> oldProducts, @Nonnull final ProductDraft newProductDraft) {
+      @Nonnull final Set<ProductProjection> oldProducts,
+      @Nonnull final ProductDraft newProductDraft) {
 
-    final Map<String, Product> oldProductMap =
-        oldProducts.stream().collect(toMap(Product::getKey, identity()));
+    final Map<String, ProductProjection> oldProductMap =
+        oldProducts.stream().collect(toMap(ProductProjection::getKey, identity()));
 
     return productReferenceResolver
         .resolveReferences(newProductDraft)
         .thenCompose(
             resolvedDraft -> {
-              final Product oldProduct = oldProductMap.get(newProductDraft.getKey());
+              final ProductProjection oldProduct = oldProductMap.get(newProductDraft.getKey());
 
               return ofNullable(oldProduct)
                   .map(
-                      product -> fetchProductAttributesMetadataAndUpdate(oldProduct, resolvedDraft))
+                      ProductProjection ->
+                          fetchProductAttributesMetadataAndUpdate(oldProduct, resolvedDraft))
                   .orElseGet(() -> applyCallbackAndCreate(resolvedDraft));
             })
         .exceptionally(
@@ -398,7 +408,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
   @Nonnull
   private CompletionStage<Void> fetchProductAttributesMetadataAndUpdate(
-      @Nonnull final Product oldProduct, @Nonnull final ProductDraft newProduct) {
+      @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
 
     return productTypeService
         .fetchCachedProductAttributeMetaDataMap(oldProduct.getProductType().getId())
@@ -434,7 +444,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
   @Nonnull
   private CompletionStage<Void> updateProduct(
-      @Nonnull final Product oldProduct,
+      @Nonnull final ProductProjection oldProduct,
       @Nonnull final ProductDraft newProduct,
       @Nonnull final List<UpdateAction<Product>> updateActions) {
 
@@ -472,12 +482,12 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
    * made to CTP to update the existing one, otherwise it doesn't issue a request.
    *
    * @param oldProduct the product which could be updated.
-   * @param newProduct the product draft where we get the new data.
+   * @param newProduct the ProductProjection draft where we get the new data.
    * @return a future which contains an empty result after execution of the update.
    */
   @Nonnull
   private CompletionStage<Void> fetchAndUpdate(
-      @Nonnull final Product oldProduct, @Nonnull final ProductDraft newProduct) {
+      @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
 
     final String key = oldProduct.getKey();
     return productService
@@ -485,7 +495,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         .handle(ImmutablePair::new)
         .thenCompose(
             fetchResponse -> {
-              final Optional<Product> fetchedProductOptional = fetchResponse.getKey();
+              final Optional<ProductProjection> fetchedProductOptional = fetchResponse.getKey();
               final Throwable exception = fetchResponse.getValue();
 
               if (exception != null) {
@@ -546,7 +556,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
    */
   private void handleError(
       @Nonnull final String errorMessage,
-      @Nullable final Product oldResource,
+      @Nullable final ProductProjection oldResource,
       @Nullable final ProductDraft newResource) {
     handleError(errorMessage, null, oldResource, newResource, null);
   }
@@ -558,14 +568,14 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
    *
    * @param errorMessage The error message describing the reason(s) of failure.
    * @param exception The exception that called caused the failure, if any.
-   * @param oldProduct the product which could be updated.
-   * @param newProduct the product draft where we get the new data.
+   * @param oldProduct the ProductProjection which could be updated.
+   * @param newProduct the ProductProjection draft where we get the new data.
    * @param updateActions the update actions to update the {@link Product} with.
    */
   private void handleError(
       @Nonnull final String errorMessage,
       @Nullable final Throwable exception,
-      @Nullable final Product oldProduct,
+      @Nullable final ProductProjection oldProduct,
       @Nullable final ProductDraft newProduct,
       @Nullable final List<UpdateAction<Product>> updateActions) {
     SyncException syncException =
@@ -579,8 +589,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
   /**
    * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this
    * method calls the optional error callback specified in the {@code syncOptions} and updates the
-   * {@code statistics} instance by incrementing the total number of failed product to sync with the
-   * supplied {@code failedTimes}.
+   * {@code statistics} instance by incrementing the total number of failed ProductProjection to
+   * sync with the supplied {@code failedTimes}.
    *
    * @param syncException The exception that caused the failure.
    * @param failedTimes The number of times that the failed products counter is incremented.

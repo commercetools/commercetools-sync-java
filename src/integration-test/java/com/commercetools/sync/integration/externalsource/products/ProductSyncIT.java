@@ -63,6 +63,7 @@ import io.sphere.sdk.products.PriceDraftDsl;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.ProductVariantDraftDsl;
@@ -75,6 +76,7 @@ import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.commands.updateactions.SetTaxCategory;
 import io.sphere.sdk.products.queries.ProductByKeyGet;
+import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.queries.PagedQueryResult;
@@ -169,9 +171,10 @@ class ProductSyncIT {
   }
 
   private ProductSyncOptions buildSyncOptions() {
-    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallBack =
-        (exception, newResource, oldResource) ->
-            warningCallBackMessages.add(exception.getMessage());
+    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
+        warningCallBack =
+            (exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage());
 
     return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
         .errorCallback(
@@ -228,9 +231,10 @@ class ProductSyncIT {
             .state(null)
             .build();
 
-    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallBack =
-        (exception, newResource, oldResource) ->
-            warningCallBackMessages.add(exception.getMessage());
+    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
+        warningCallBack =
+            (exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage());
 
     ProductSyncOptions syncOptions =
         ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -523,7 +527,7 @@ class ProductSyncIT {
                 new ConcurrentModificationException()))
         .thenCallRealMethod();
 
-    final ProductQuery anyProductQuery = any(ProductQuery.class);
+    final ProductProjectionQuery anyProductQuery = any(ProductProjectionQuery.class);
     when(spyClient.execute(anyProductQuery))
         .thenCallRealMethod() // Call real fetch on fetching matching products
         .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
@@ -586,7 +590,7 @@ class ProductSyncIT {
                 new ConcurrentModificationException()))
         .thenCallRealMethod();
 
-    final ProductQuery anyProductQuery = any(ProductQuery.class);
+    final ProductProjectionQuery anyProductQuery = any(ProductProjectionQuery.class);
 
     when(spyClient.execute(anyProductQuery))
         .thenCallRealMethod() // Call real fetch on fetching matching products
@@ -986,9 +990,10 @@ class ProductSyncIT {
   void sync_withProductContainingAttributeChanges_shouldSyncProductCorrectly() {
     // preparation
     final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallBack =
-        (exception, newResource, oldResource) ->
-            warningCallBackMessages.add(exception.getMessage());
+    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
+        warningCallBack =
+            (exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage());
 
     final ProductSyncOptions customOptions =
         ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)

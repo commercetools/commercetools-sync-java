@@ -9,12 +9,12 @@ import static java.util.stream.Collectors.toList;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.CustomUpdateActionUtils;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
-import com.commercetools.sync.shoppinglists.commands.updateactions.AddLineItemWithSku;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.shoppinglists.LineItem;
 import io.sphere.sdk.shoppinglists.LineItemDraft;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
+import io.sphere.sdk.shoppinglists.commands.updateactions.AddLineItem;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeLineItemQuantity;
 import io.sphere.sdk.shoppinglists.commands.updateactions.RemoveLineItem;
 import java.util.ArrayList;
@@ -69,7 +69,7 @@ public final class LineItemUpdateActionUtils {
       return newShoppingList.getLineItems().stream()
           .filter(Objects::nonNull)
           .filter(LineItemUpdateActionUtils::hasQuantity)
-          .map(AddLineItemWithSku::of)
+          .map(AddLineItem::of)
           .collect(toList());
     }
 
@@ -169,7 +169,7 @@ public final class LineItemUpdateActionUtils {
 
     for (int i = indexOfFirstDifference; i < newlineItems.size(); i++) {
       if (hasQuantity(newlineItems.get(i))) {
-        updateActions.add(AddLineItemWithSku.of(newlineItems.get(i)));
+        updateActions.add(AddLineItem.of(newlineItems.get(i)));
       }
     }
 
@@ -262,7 +262,6 @@ public final class LineItemUpdateActionUtils {
       @Nonnull final ShoppingListSyncOptions syncOptions) {
 
     return CustomUpdateActionUtils.buildCustomUpdateActions(
-        oldShoppingList,
         newShoppingList,
         oldLineItem::getCustom,
         newLineItem::getCustom,

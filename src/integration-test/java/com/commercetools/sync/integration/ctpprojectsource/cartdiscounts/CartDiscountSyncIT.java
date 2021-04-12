@@ -1,7 +1,5 @@
 package com.commercetools.sync.integration.ctpprojectsource.cartdiscounts;
 
-import static com.commercetools.sync.cartdiscounts.utils.CartDiscountReferenceResolutionUtils.buildCartDiscountQuery;
-import static com.commercetools.sync.cartdiscounts.utils.CartDiscountReferenceResolutionUtils.mapToCartDiscountDrafts;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.createCartDiscountCustomType;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.deleteCartDiscountsFromTargetAndSource;
@@ -18,6 +16,9 @@ import com.commercetools.sync.cartdiscounts.CartDiscountSync;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
+import com.commercetools.sync.cartdiscounts.utils.CartDiscountTransformUtils;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.cartdiscounts.AbsoluteCartDiscountValue;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
@@ -29,6 +30,7 @@ import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeCartPredicate;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeTarget;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeValue;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.SetCustomType;
+import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
@@ -44,12 +46,15 @@ import org.junit.jupiter.api.Test;
 
 class CartDiscountSyncIT {
 
+  private ReferenceIdToKeyCache referenceIdToKeyCache;
+
   @BeforeEach
   void setup() {
     deleteCartDiscountsFromTargetAndSource();
     deleteTypesFromTargetAndSource();
     populateSourceProject();
     populateTargetProject();
+    referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
   }
 
   @AfterAll
@@ -62,13 +67,12 @@ class CartDiscountSyncIT {
   void sync_WithoutUpdates_ShouldReturnProperStatistics() {
     // preparation
     final List<CartDiscount> cartDiscounts =
-        CTP_SOURCE_CLIENT
-            .execute(buildCartDiscountQuery())
-            .toCompletableFuture()
-            .join()
-            .getResults();
+        CTP_SOURCE_CLIENT.execute(CartDiscountQuery.of()).toCompletableFuture().join().getResults();
 
-    final List<CartDiscountDraft> cartDiscountDrafts = mapToCartDiscountDrafts(cartDiscounts);
+    final List<CartDiscountDraft> cartDiscountDrafts =
+        CartDiscountTransformUtils.toCartDiscountDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, cartDiscounts)
+            .join();
 
     final List<String> errorMessages = new ArrayList<>();
     final List<Throwable> exceptions = new ArrayList<>();
@@ -102,17 +106,16 @@ class CartDiscountSyncIT {
   void sync_WithUpdates_ShouldReturnProperStatistics() {
     // preparation
     final List<CartDiscount> cartDiscounts =
-        CTP_SOURCE_CLIENT
-            .execute(buildCartDiscountQuery())
-            .toCompletableFuture()
-            .join()
-            .getResults();
+        CTP_SOURCE_CLIENT.execute(CartDiscountQuery.of()).toCompletableFuture().join().getResults();
     final String newTypeKey = "new-type";
     createCartDiscountCustomType(newTypeKey, Locale.ENGLISH, newTypeKey, CTP_SOURCE_CLIENT);
     final Type newTargetCustomType =
         createCartDiscountCustomType(newTypeKey, Locale.ENGLISH, newTypeKey, CTP_TARGET_CLIENT);
 
-    final List<CartDiscountDraft> cartDiscountDrafts = mapToCartDiscountDrafts(cartDiscounts);
+    final List<CartDiscountDraft> cartDiscountDrafts =
+        CartDiscountTransformUtils.toCartDiscountDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, cartDiscounts)
+            .join();
 
     // Apply some changes
     final List<CartDiscountDraft> updatedCartDiscountDrafts =

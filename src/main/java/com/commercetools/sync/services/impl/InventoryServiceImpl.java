@@ -22,6 +22,7 @@ public final class InventoryServiceImpl
     extends BaseService<
         InventoryEntryDraft,
         InventoryEntry,
+        InventoryEntry,
         InventorySyncOptions,
         InventoryEntryQuery,
         InventoryEntryQueryModel,

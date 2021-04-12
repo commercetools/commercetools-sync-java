@@ -15,7 +15,6 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.Resource;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -29,7 +28,6 @@ public final class CategoryAssetUpdateActionUtils {
    * {@link List} is returned.
    *
    * @param <D> Type of the mainresource draft
-   * @param oldResource mainresource, whose asset should be updated.
    * @param newResource new mainresource draft, which contains the asset to update.
    * @param oldAsset the asset which should be updated.
    * @param newAsset the asset draft where we get the new fields.
@@ -39,7 +37,6 @@ public final class CategoryAssetUpdateActionUtils {
    */
   @Nonnull
   public static <D> List<UpdateAction<Category>> buildActions(
-      @Nonnull final Resource oldResource,
       @Nonnull final D newResource,
       @Nonnull final Asset oldAsset,
       @Nonnull final AssetDraft newAsset,
@@ -52,8 +49,7 @@ public final class CategoryAssetUpdateActionUtils {
             buildSetAssetTagsUpdateAction(oldAsset, newAsset),
             buildSetAssetSourcesUpdateAction(oldAsset, newAsset));
 
-    updateActions.addAll(
-        buildCustomUpdateActions(oldResource, newResource, oldAsset, newAsset, syncOptions));
+    updateActions.addAll(buildCustomUpdateActions(newResource, oldAsset, newAsset, syncOptions));
     return updateActions;
   }
 
@@ -144,7 +140,6 @@ public final class CategoryAssetUpdateActionUtils {
    * is needed and hence an empty {@link List} is returned.
    *
    * @param <D> Type of the mainresource draft
-   * @param oldCategory category in a target project, whose asset should be updated.
    * @param newCategory category in a source project, which contains the updated asset.
    * @param oldAsset the asset which should be updated.
    * @param newAsset the asset draft where we get the new custom fields and types.
@@ -155,14 +150,12 @@ public final class CategoryAssetUpdateActionUtils {
    */
   @Nonnull
   public static <D> List<UpdateAction<Category>> buildCustomUpdateActions(
-      @Nonnull final Resource oldCategory,
       @Nonnull final D newCategory,
       @Nonnull final Asset oldAsset,
       @Nonnull final AssetDraft newAsset,
       @Nonnull final CategorySyncOptions syncOptions) {
 
     return CustomUpdateActionUtils.buildCustomUpdateActions(
-        oldCategory,
         newCategory,
         oldAsset,
         newAsset,

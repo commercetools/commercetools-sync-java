@@ -9,13 +9,13 @@ import static java.util.stream.Collectors.toList;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.CustomUpdateActionUtils;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
-import com.commercetools.sync.shoppinglists.commands.updateactions.AddTextLineItemWithAddedAt;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.TextLineItem;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
+import io.sphere.sdk.shoppinglists.commands.updateactions.AddTextLineItem;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeTextLineItemName;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeTextLineItemQuantity;
 import io.sphere.sdk.shoppinglists.commands.updateactions.RemoveTextLineItem;
@@ -74,7 +74,7 @@ public final class TextLineItemUpdateActionUtils {
       return newShoppingList.getTextLineItems().stream()
           .filter(Objects::nonNull)
           .filter(TextLineItemUpdateActionUtils::hasQuantity)
-          .map(AddTextLineItemWithAddedAt::of)
+          .map(TextLineItemUpdateActionUtils::mapToAddTextLineItemAction)
           .collect(toList());
     }
 
@@ -149,11 +149,22 @@ public final class TextLineItemUpdateActionUtils {
 
     for (int i = minSize; i < newTextLineItems.size(); i++) {
       if (hasQuantity(newTextLineItems.get(i))) {
-        updateActions.add(AddTextLineItemWithAddedAt.of(newTextLineItems.get(i)));
+        updateActions.add(mapToAddTextLineItemAction(newTextLineItems.get(i)));
       }
     }
 
     return updateActions;
+  }
+
+  @Nonnull
+  private static AddTextLineItem mapToAddTextLineItemAction(
+      @Nonnull final TextLineItemDraft textLineItemDraft) {
+
+    return AddTextLineItem.of(textLineItemDraft.getName())
+        .withDescription(textLineItemDraft.getDescription())
+        .withQuantity(textLineItemDraft.getQuantity())
+        .withAddedAt(textLineItemDraft.getAddedAt())
+        .withCustom(textLineItemDraft.getCustom());
   }
 
   /**
@@ -298,7 +309,6 @@ public final class TextLineItemUpdateActionUtils {
       @Nonnull final ShoppingListSyncOptions syncOptions) {
 
     return CustomUpdateActionUtils.buildCustomUpdateActions(
-        oldShoppingList,
         newShoppingList,
         oldTextLineItem::getCustom,
         newTextLineItem::getCustom,

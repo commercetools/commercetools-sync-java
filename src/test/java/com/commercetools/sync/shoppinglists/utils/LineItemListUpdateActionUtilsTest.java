@@ -15,10 +15,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
-import com.commercetools.sync.shoppinglists.commands.updateactions.AddLineItemWithSku;
 import com.commercetools.sync.shoppinglists.helpers.LineItemReferenceResolver;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.client.SphereClient;
@@ -32,6 +33,7 @@ import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
+import io.sphere.sdk.shoppinglists.commands.updateactions.AddLineItem;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeLineItemQuantity;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
 import io.sphere.sdk.shoppinglists.commands.updateactions.RemoveLineItem;
@@ -85,6 +87,9 @@ class LineItemListUpdateActionUtilsTest {
 
   private static final LineItemReferenceResolver lineItemReferenceResolver =
       new LineItemReferenceResolver(SYNC_OPTIONS, getMockTypeService());
+
+  private static final ReferenceIdToKeyCache referenceIdToKeyCache =
+      new CaffeineReferenceIdToKeyCacheImpl();
 
   @Test
   void buildLineItemsUpdateActions_WithoutNewAndWithNullOldLineItems_ShouldNotBuildActions() {
@@ -187,9 +192,9 @@ class LineItemListUpdateActionUtilsTest {
 
     assertThat(updateActions)
         .containsExactly(
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(0)),
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(1)),
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(2)));
+            AddLineItem.of(newShoppingList.getLineItems().get(0)),
+            AddLineItem.of(newShoppingList.getLineItems().get(1)),
+            AddLineItem.of(newShoppingList.getLineItems().get(2)));
   }
 
   @Test
@@ -288,7 +293,7 @@ class LineItemListUpdateActionUtilsTest {
             .addedAt(ZonedDateTime.parse("2020-11-05T10:00:00.000Z"))
             .build();
 
-    assertThat(updateActions).containsExactly(AddLineItemWithSku.of(expectedLineItemDraft));
+    assertThat(updateActions).containsExactly(AddLineItem.of(expectedLineItemDraft));
   }
 
   @Test
@@ -313,7 +318,7 @@ class LineItemListUpdateActionUtilsTest {
 
     assertThat(updateActions)
         .containsExactly(
-            RemoveLineItem.of("line_item_id_3"), AddLineItemWithSku.of(expectedLineItemDraft));
+            RemoveLineItem.of("line_item_id_3"), AddLineItem.of(expectedLineItemDraft));
   }
 
   @Test
@@ -332,9 +337,9 @@ class LineItemListUpdateActionUtilsTest {
             RemoveLineItem.of("line_item_id_1"),
             RemoveLineItem.of("line_item_id_2"),
             RemoveLineItem.of("line_item_id_3"),
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(0)), // SKU-3
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(1)), // SKU-1
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(2)) // SKU-2
+            AddLineItem.of(newShoppingList.getLineItems().get(0)), // SKU-3
+            AddLineItem.of(newShoppingList.getLineItems().get(1)), // SKU-1
+            AddLineItem.of(newShoppingList.getLineItems().get(2)) // SKU-2
             );
   }
 
@@ -355,8 +360,8 @@ class LineItemListUpdateActionUtilsTest {
             RemoveLineItem.of("line_item_id_1"),
             RemoveLineItem.of("line_item_id_2"),
             RemoveLineItem.of("line_item_id_3"),
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(0)), // SKU-3
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(1)) // SKU-2
+            AddLineItem.of(newShoppingList.getLineItems().get(0)), // SKU-3
+            AddLineItem.of(newShoppingList.getLineItems().get(1)) // SKU-2
             );
   }
 
@@ -377,9 +382,9 @@ class LineItemListUpdateActionUtilsTest {
         .containsExactly(
             RemoveLineItem.of("line_item_id_2"),
             RemoveLineItem.of("line_item_id_3"),
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(1)), // SKU-3
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(2)), // SKU-2
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(3)) // SKU-4
+            AddLineItem.of(newShoppingList.getLineItems().get(1)), // SKU-3
+            AddLineItem.of(newShoppingList.getLineItems().get(2)), // SKU-2
+            AddLineItem.of(newShoppingList.getLineItems().get(3)) // SKU-4
             );
   }
 
@@ -400,9 +405,9 @@ class LineItemListUpdateActionUtilsTest {
         .containsExactly(
             RemoveLineItem.of("line_item_id_2"),
             RemoveLineItem.of("line_item_id_3"),
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(1)), // SKU-4
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(2)), // SKU-2
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(3)) // SKU-3
+            AddLineItem.of(newShoppingList.getLineItems().get(1)), // SKU-4
+            AddLineItem.of(newShoppingList.getLineItems().get(2)), // SKU-2
+            AddLineItem.of(newShoppingList.getLineItems().get(3)) // SKU-3
             );
   }
 
@@ -423,9 +428,9 @@ class LineItemListUpdateActionUtilsTest {
             RemoveLineItem.of("line_item_id_1"),
             RemoveLineItem.of("line_item_id_2"),
             RemoveLineItem.of("line_item_id_3"),
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(0)), // SKU-3
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(1)), // SKU-2
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(2)) // SKU-4
+            AddLineItem.of(newShoppingList.getLineItems().get(0)), // SKU-3
+            AddLineItem.of(newShoppingList.getLineItems().get(1)), // SKU-2
+            AddLineItem.of(newShoppingList.getLineItems().get(2)) // SKU-4
             );
   }
 
@@ -449,8 +454,8 @@ class LineItemListUpdateActionUtilsTest {
                 "textField", JsonNodeFactory.instance.textNode("newText1"), "line_item_id_1"),
             RemoveLineItem.of("line_item_id_2"),
             RemoveLineItem.of("line_item_id_3"),
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(1)), // SKU-3
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(2)) // SKU-2
+            AddLineItem.of(newShoppingList.getLineItems().get(1)), // SKU-3
+            AddLineItem.of(newShoppingList.getLineItems().get(2)) // SKU-2
             );
   }
 
@@ -622,7 +627,7 @@ class LineItemListUpdateActionUtilsTest {
                 "textField", JsonNodeFactory.instance.textNode("newText1"), "line_item_id_1"),
             RemoveLineItem.of("line_item_id_2"),
             RemoveLineItem.of("line_item_id_3"),
-            AddLineItemWithSku.of(
+            AddLineItem.of(
                 LineItemDraftBuilder.ofSku("SKU-3", 6L)
                     .custom(
                         CustomFieldsDraft.ofTypeIdAndJson(
@@ -631,7 +636,7 @@ class LineItemListUpdateActionUtilsTest {
                                 "textField", JsonNodeFactory.instance.textNode("newText3"))))
                     .addedAt(ZonedDateTime.parse("2020-11-04T10:00:00.000Z"))
                     .build()),
-            AddLineItemWithSku.of(
+            AddLineItem.of(
                 LineItemDraftBuilder.ofSku("SKU-2", 4L)
                     .custom(
                         CustomFieldsDraft.ofTypeIdAndJson(
@@ -648,7 +653,7 @@ class LineItemListUpdateActionUtilsTest {
 
     final ShoppingListDraft template =
         ShoppingListReferenceResolutionUtils.mapToShoppingListDraft(
-            readObjectFromResource(resourcePath, ShoppingList.class));
+            readObjectFromResource(resourcePath, ShoppingList.class), referenceIdToKeyCache);
 
     final ShoppingListDraftBuilder builder = ShoppingListDraftBuilder.of(template);
 

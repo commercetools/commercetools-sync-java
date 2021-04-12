@@ -37,7 +37,7 @@
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>4.0.1</version>
+  <version>5.0.0</version>
 </dependency>
 ````
 - For Gradle users:
@@ -48,7 +48,7 @@ implementation 'com.commercetools.sdk.jvm.core:commercetools-java-client-ahc-2_5
 implementation 'com.commercetools.sdk.jvm.core:commercetools-convenience:1.60.0'
 
 // Add commercetools-sync-java dependency.
-implementation 'com.commercetools:commercetools-sync-java:4.0.1'
+implementation 'com.commercetools:commercetools-sync-java:5.0.0'
 ````
 
 ### 2. Setup Syncing Options
@@ -57,9 +57,9 @@ implementation 'com.commercetools:commercetools-sync-java:4.0.1'
  final Logger logger = LoggerFactory.getLogger(MySync.class);
  final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder
                                  .of(sphereClient)
-                                 .errorCallback((syncException, draft, product, updateActions) -> 
+                                 .errorCallback((syncException, draft, productProjection, updateActions) -> 
                                     logger.error(syncException.getMessage(), syncException))
-                                 .warningCallback((exception, oldResource, newResources) -> 
+                                 .warningCallback((exception, oldProductProjection, newResources) -> 
                                     logger.warn(exception.getMessage(), exception))
                                  .build();
  ```

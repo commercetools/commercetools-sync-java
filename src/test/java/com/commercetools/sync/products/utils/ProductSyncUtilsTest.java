@@ -8,6 +8,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.createProduct
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static io.sphere.sdk.products.ProductProjectionType.STAGED;
 import static io.sphere.sdk.utils.MoneyImpl.createCurrencyByCode;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -33,6 +34,7 @@ import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
@@ -75,7 +77,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ProductSyncUtilsTest {
-  private Product oldProduct;
+  private ProductProjection oldProduct;
   private ProductSyncOptions productSyncOptions;
 
   /** Initializes an instance of {@link ProductSyncOptions} and {@link Product}. */
@@ -83,7 +85,9 @@ class ProductSyncUtilsTest {
   void setup() {
     productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
 
-    oldProduct = readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class);
+    oldProduct =
+        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class)
+            .toProjection(STAGED);
   }
 
   @Test
@@ -316,7 +320,7 @@ class ProductSyncUtilsTest {
   @Test
   void buildActions_FromDraftsWithSameForAllAttribute_ShouldBuildUpdateActions() {
 
-    final ProductVariant masterVariant = oldProduct.getMasterData().getStaged().getMasterVariant();
+    final ProductVariant masterVariant = oldProduct.getMasterVariant();
     final AttributeDraft brandNameAttribute = AttributeDraft.of("brandName", "sameForAllBrand");
     final ProductVariantDraft newMasterVariant =
         ProductVariantDraftBuilder.of(masterVariant).plusAttribute(brandNameAttribute).build();
@@ -371,7 +375,8 @@ class ProductSyncUtilsTest {
   void buildActions_FromDraftsWithDifferentAttributes_ShouldBuildUpdateActions() {
     // Reloading the oldProduct object with a specific file for this test
     oldProduct =
-        readObjectFromResource(SIMPLE_PRODUCT_WITH_MULTIPLE_VARIANTS_RESOURCE_PATH, Product.class);
+        readObjectFromResource(SIMPLE_PRODUCT_WITH_MULTIPLE_VARIANTS_RESOURCE_PATH, Product.class)
+            .toProjection(STAGED);
     final AttributeDraft brandNameAttribute = AttributeDraft.of("brandName", "myBrand");
     final AttributeDraft orderLimitAttribute = AttributeDraft.of("orderLimit", "5");
     final AttributeDraft priceInfoAttribute = AttributeDraft.of("priceInfo", "80,20/kg");
@@ -422,7 +427,8 @@ class ProductSyncUtilsTest {
                     "1065833",
                     true)
                 .withKey("v2")
-                .withImages(Collections.emptyList()),
+                .withImages(Collections.emptyList())
+                .withAssetDrafts(Collections.emptyList()),
             ChangeMasterVariant.ofSku("1065833", true),
             RemoveVariant.ofVariantId(1),
             SetAttribute.of(2, AttributeDraft.of("size", null), true),

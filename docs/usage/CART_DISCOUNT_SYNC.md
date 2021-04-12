@@ -36,7 +36,7 @@ against a [CartDiscountDraft](https://docs.commercetools.com/http-api-projects-c
 
 #### SphereClient
 
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/4.0.1/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/5.0.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
@@ -67,26 +67,36 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`mapToCartDiscountDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/cartdiscounts/utils/CartDiscountReferenceResolutionUtils.html#mapToCartDiscountDrafts-java.util.List-)
-method that maps from a `CartDiscount` to `CartDiscountDraft` in order to make them ready for reference resolution by the sync, for example: 
+When syncing from a source commercetools project, you can use [`toCartDiscountDrafts`](https://commercetools.github.io/commercetools-sync-java/v/5.0.0/com/commercetools/sync/cartdiscounts/utils/CartDiscountTransformUtils.html#toCartDiscountDrafts-java.util.List-)
+method that transforms(resolves by querying and caching key-id pairs) and maps from a `CartDiscount` to `CartDiscountDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
-// Build a CartDiscountQuery for fetching cart discounts from a source CTP project with all the needed references expanded for the sync
-final CartDiscountQuery cartDiscountQueryWithReferenceExpanded = CartDiscountReferenceResolutionUtils.buildCartDiscountQuery();
+// Build a CartDiscountQuery for fetching cart discounts from a source CTP project without any references expanded for the sync:
+final CartDiscountQuery cartDiscountQuery = CartDiscountQuery.of();
 
 // Query all cart discounts (NOTE this is just for example, please adjust your logic)
 final List<CartDiscount> cartDiscounts =
     CtpQueryUtils
-        .queryAll(sphereClient, cartDiscountQueryWithReferenceExpanded, Function.identity())
+        .queryAll(sphereClient, cartDiscountQuery, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
             .stream()
             .flatMap(List::stream)
             .collect(Collectors.toList()))
         .toCompletableFuture()
         .join();
+````
 
-// Mapping from CartDiscount to CartDiscountDraft with considering reference resolution.
-final List<CartDiscountDraft> cartDiscountDrafts = CartDiscountReferenceResolutionUtils.mapToCartDiscountDrafts(cartDiscounts);
+In order to transform and map the `CartDiscount` to `CartDiscountDraft`, 
+Utils method `toCartDiscountDrafts` requires `sphereClient`, implementation of [`ReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java) and `cartDiscounts` as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java).
+Example as shown below:
+
+````java
+//Implement the cache using library class.
+final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
+
+//For every reference fetch its key using id, cache it and map from CartDiscount to CartDiscountDraft. With help of the cache same reference keys can be reused.
+CompletableFuture<List<CartDiscountDraft>> cartDiscountDrafts = CartDiscountTransformUtils.toCartDiscountDrafts(client, referenceIdToKeyCache, cartDiscounts);
 ````
 
 ##### Syncing from an external resource

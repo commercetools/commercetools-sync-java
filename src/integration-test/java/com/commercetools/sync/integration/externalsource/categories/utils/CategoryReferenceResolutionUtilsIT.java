@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.externalsource.categories.utils;
 
-import static com.commercetools.sync.categories.utils.CategoryReferenceResolutionUtils.buildCategoryQuery;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
@@ -19,6 +18,7 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
+import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.types.Type;
@@ -47,7 +47,7 @@ class CategoryReferenceResolutionUtilsIT {
   }
 
   @Test
-  void buildCategoryQuery_Always_ShouldFetchProductWithAllExpandedReferences() {
+  void buildCategoryQuery_Always_ShouldFetchProductWithoutExpansionOnReferences() {
     final CategoryDraft parentDraft =
         CategoryDraftBuilder.of(ofEnglish("parent"), ofEnglish("parent")).build();
     final Category parentCategory =
@@ -71,24 +71,24 @@ class CategoryReferenceResolutionUtilsIT {
     executeBlocking(CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(categoryDraft)));
 
     final List<Category> categories =
-        executeBlocking(CTP_TARGET_CLIENT.execute(buildCategoryQuery().bySlug(ENGLISH, "slug")))
+        executeBlocking(CTP_TARGET_CLIENT.execute(CategoryQuery.of().bySlug(ENGLISH, "slug")))
             .getResults();
 
     assertThat(categories).hasSize(1);
     final Category fetchedCategory = categories.get(0);
 
-    // Assert category parent references are expanded.
+    // Assert category parent references are not expanded.
     assertThat(fetchedCategory.getParent()).isNotNull();
-    assertThat(fetchedCategory.getParent().getObj()).isNotNull();
+    assertThat(fetchedCategory.getParent().getObj()).isNull();
 
-    // Assert category custom type references are expanded.
+    // Assert category custom type references are not expanded.
     assertThat(fetchedCategory.getCustom()).isNotNull();
-    assertThat(fetchedCategory.getCustom().getType().getObj()).isNotNull();
+    assertThat(fetchedCategory.getCustom().getType().getObj()).isNull();
 
-    // Assert category assets custom type references are expanded.
+    // Assert category assets custom type references are not expanded.
     assertThat(fetchedCategory.getAssets()).hasSize(1);
     final Asset masterVariantAsset = fetchedCategory.getAssets().get(0);
     assertThat(masterVariantAsset.getCustom()).isNotNull();
-    assertThat(masterVariantAsset.getCustom().getType().getObj()).isNotNull();
+    assertThat(masterVariantAsset.getCustom().getType().getObj()).isNull();
   }
 }

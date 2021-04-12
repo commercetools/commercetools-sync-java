@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
 
 public final class TypeServiceImpl
     extends BaseServiceWithKey<
-        TypeDraft, Type, BaseSyncOptions, TypeQuery, TypeQueryModel, TypeExpansionModel<Type>>
+        TypeDraft, Type, Type, BaseSyncOptions, TypeQuery, TypeQueryModel, TypeExpansionModel<Type>>
     implements TypeService {
 
   public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {

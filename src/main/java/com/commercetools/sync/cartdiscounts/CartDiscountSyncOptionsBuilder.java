@@ -8,7 +8,11 @@ import javax.annotation.Nonnull;
 
 public final class CartDiscountSyncOptionsBuilder
     extends BaseSyncOptionsBuilder<
-        CartDiscountSyncOptionsBuilder, CartDiscountSyncOptions, CartDiscount, CartDiscountDraft> {
+        CartDiscountSyncOptionsBuilder,
+        CartDiscountSyncOptions,
+        CartDiscount,
+        CartDiscountDraft,
+        CartDiscount> {
 
   public static final int BATCH_SIZE_DEFAULT = 50;
 

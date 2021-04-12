@@ -1,7 +1,7 @@
 # Product Sync
 
 The module used for importing/syncing Products into a commercetools project. 
-It also provides utilities for generating update actions based on the comparison of a [Product](https://docs.commercetools.com/http-api-projects-products.html#product) 
+It also provides utilities for generating update actions based on the comparison of a [ProductProjection](https://docs.commercetools.com/api/projects/productProjections#productprojection) 
 against a [ProductDraft](https://docs.commercetools.com/http-api-projects-products.html#productdraft).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -39,7 +39,7 @@ against a [ProductDraft](https://docs.commercetools.com/http-api-projects-produc
 
 #### SphereClient
 
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/4.0.1/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/5.0.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
@@ -80,26 +80,36 @@ resource on the target commercetools project and the library will issue an updat
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`mapToProductDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/products/utils/ProductReferenceResolutionUtils.html#mapToProductDrafts-java.util.List-)
-the method that maps from a `Product` to `ProductDraft` in order to make them ready for reference resolution by the sync, for example: 
+When syncing from a source commercetools project, you can use [`toProductDrafts`](https://commercetools.github.io/commercetools-sync-java/v/5.0.0/com/commercetools/sync/products/utils/ProductTransformUtils.html#toProductDrafts-java.util.List-)
+ method that transforms(resolves by querying and caching key-id pairs) and maps from a `Product` to `ProductDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
-// Build a ProductQuery for fetching products from a source CTP project with all the needed references expanded for the sync:
-final ProductQuery productQueryWithReferenceExpanded = ProductReferenceResolutionUtils.buildProductQuery();
+// Build a ProductQuery for fetching products from a source CTP project without any references expanded for the sync:
+final ProductProjectionQuery productProjectionQuery = ProductProjectionQuery.ofStaged();
 
-// Query all products (NOTE this is only for example, please adjust your logic)
-final List<Product> products =
+// Query all product projections (NOTE this is only for example, please adjust your logic)
+final List<ProductProjection> productProjections =
     CtpQueryUtils
-        .queryAll(sphereClient, productQueryWithReferenceExpanded, Function.identity())
+        .queryAll(sphereClient, productProjectionQuery, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
             .stream()
             .flatMap(List::stream)
             .collect(Collectors.toList()))
         .toCompletableFuture()
          .join();
+````
 
-// Mapping from Product to ProductDraft with considering reference resolution.
-final List<ProductDraft> productDrafts = ProductReferenceResolutionUtils.mapToProductDrafts(products);
+In order to transform and map the `Product` to `ProductDraft`, 
+Utils method `toProductDrafts` requires 'sphereClient', implementation of [`ReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java) and `products` as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java).
+Example as shown below:
+
+````java
+//Implement the cache using library class.
+final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
+
+//For every reference fetch its key using id, cache it and map from Product to ProductDraft. With help of the cache same reference keys can be reused.
+CompletableFuture<List<ProductDraft>> productDrafts = ProductTransformUtils.toProductDrafts(client, referenceIdToKeyCache, products);
 ````
 ##### Syncing from an external resource
 
@@ -126,8 +136,8 @@ final ProductDraft productDraft =
     .build();
 ````
 
--  The product variant attributes with a type `ReferenceType` do not support the `ResourceIdentifier` yet, for those 
-references you have to provide the `key`  value on the `id` field of the reference. This means that calling `getId()` on the reference should return its `key`.
+-  The product projection variant attributes with a type `ReferenceType` do not support the `ResourceIdentifier` yet, for
+ those references you have to provide the `key`  value on the `id` field of the reference. This means that calling `getId()` on the reference should return its `key`.
 
 ````java
 final ObjectNode productReference = JsonNodeFactory.instance.objectNode();
@@ -169,14 +179,14 @@ following context about the error-event:
 
 * sync exception
 * product draft from the source
-* product of the target project (only provided if an existing product could be found)
-* the update-actions, which failed (only provided if an existing product could be found)
+* product projection of the target project (only provided if an existing product projection could be found)
+* the update-actions, which failed (only provided if an existing product projection could be found)
 
 ````java
  final Logger logger = LoggerFactory.getLogger(ProductSync.class);
  final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder
          .of(sphereClient)
-         .errorCallback((syncException, draft, product, updateActions) -> 
+         .errorCallback((syncException, draft, productProjection, updateActions) -> 
             logger.error(new SyncException("My customized message"), syncException)).build();
 ````
     
@@ -187,28 +197,29 @@ following context about the warning message:
 
 * sync exception
 * product draft from the source 
-* product of the target project (only provided if an existing product could be found)
+* product projection of the target project (only provided if an existing product projection could be found)
 
 ````java
  final Logger logger = LoggerFactory.getLogger(ProductSync.class);
  final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder
          .of(sphereClient)
-         .warningCallback((syncException, draft, product, updateActions) -> 
+         .warningCallback((syncException, draft, productProjection, updateActions) -> 
             logger.warn(new SyncException("My customized message"), syncException)).build();
 ````
 
 ##### beforeUpdateCallback
-During the sync process, if a target product and a product draft are matched, this callback can be used to intercept 
-the **_update_** request just before it is sent to the commercetools platform. This allows the user to modify the update 
+During the sync process, if a target product projection and a product draft are matched, this callback can be used to
+intercept the **_update_** request just before it is sent to the commercetools platform. This allows the user to modify the update 
 actions array with custom actions or discard unwanted actions. The callback provides the following information :
  
  * product draft from the source
- * product from the target project
+ * product projection from the target project
  * update actions that were calculated after comparing both
 
 ````java
 final TriFunction<
-        List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>> beforeUpdateProductCallback =
+        List<UpdateAction<Product>>, ProductDraft, ProductProjection, List<UpdateAction<Product
+>>> beforeUpdateProductCallback =
             (updateActions, newProductDraft, oldProduct) ->  updateActions.stream()
                     .filter(updateAction -> !(updateAction instanceof RemoveVariant))
                     .collect(Collectors.toList());
@@ -239,8 +250,11 @@ final ProductSyncOptions productSyncOptions =
 ````
 
 ##### batchSize
-A number that could be used to set the batch size with which products are fetched and processed,
-as products are obtained from the target project on commercetools platform in batches for better performance. The algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding products from the target project on the commecetools platform in a single request. Playing with this option can slightly improve or reduce processing speed. If it is not set, the default batch size is 30 for product sync.
+A number that could be used to set the batch size with which product projections are fetched and processed,
+as product projections are obtained from the target project on commercetools platform in batches for better performance.
+ The algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding product
+projections from the target project on the commecetools platform in a single request. Playing with this option can
+slightly improve or reduce processing speed. If it is not set, the default batch size is 30 for product sync.
 
 ````java                         
 final ProductSyncOptions productSyncOptions = 
@@ -262,28 +276,29 @@ final ProductSyncOptions productSyncOptions =
 ##### syncFilter
 It represents either a blacklist or a whitelist for filtering certain update action groups. 
   
-  - __Blacklisting__ an update action group means that everything in products will be synced except for any group in the blacklist. A typical use case is to blacklist prices when syncing products. In other words, syncing everything 
-  in products except for prices.
+  - __Blacklisting__ an update action group means that everything in products will be synced except for any group in
+   the blacklist. A typical use case is to blacklist prices when syncing product projections. In other words, syncing
+    everything in product projections except for prices.
   
     ````java                         
     final ProductSyncOptions syncOptions = syncOptionsBuilder.syncFilter(ofBlackList(ActionGroup.PRICES)).build();
     ````
   
   - __Whitelisting__ an update action group means that the groups in this whitelist will be the *only* group synced in products. One use case could be to whitelist prices when syncing products. In other words, syncing prices only in 
-  products and nothing else.
+ product projections and nothing else.
   
     ````java                         
     final ProductSyncOptions syncOptions = syncOptionsBuilder.syncFilter(ofWhiteList(ActionGroup.PRICES)).build();
     ````
   
-  - The list of action groups allowed to be blacklisted or whitelisted on products can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/products/ActionGroup.java). 
+  - The list of action groups allowed to be blacklisted or whitelisted on product projections can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/products/ActionGroup.java). 
 
 ##### ensureChannels
 A flag to indicate whether the sync process should create a price channel of the given key when it doesn't exist in a 
 target project yet.
-- If `ensureChannels` is set to `false` this product won't be synced and the `errorCallback` will be triggered.
+- If `ensureChannels` is set to `false` this products won't be synced and the `errorCallback` will be triggered.
 - If `ensureChannels` is set to `true` the sync will attempt to create the missing channel with the given key. 
-If it fails to create the price channel, the product won't sync and `errorCallback` will be triggered.
+If it fails to create the price channel, the products won't sync and `errorCallback` will be triggered.
 - If not provided, it is set to `false` by default.
 
 ````java                         
@@ -401,10 +416,13 @@ Keeping the old custom objects around forever can negatively influence the perfo
 
 ### Build all update actions
 
-A utility method provided by the library to compare a Product with a new ProductDraft and results in a list of product
+A utility method provided by the library to compare a ProductProjection with a new ProductDraft and results in a
+ list of
+t
  update actions. 
 ```java
-List<UpdateAction<Product>> updateActions = ProductSyncUtils.buildActions(product, productDraft, productSyncOptions, attributesMetaData);
+List<UpdateAction<Product>> updateActions = ProductSyncUtils.buildActions(productProjection, productDraft
+, productSyncOptions, attributesMetaData);
 ```
 
 Examples of its usage can be found in the tests 
@@ -412,11 +430,11 @@ Examples of its usage can be found in the tests
 
 ### Build particular update action(s)
 
-Utility methods provided by the library to compare the specific fields of a Product and a new ProductDraft, and in turn, build
- the update action. One example is the `buildChangeNameUpdateAction` which compares names:
+Utility methods provided by the library to compare the specific fields of a ProductProjection and a new ProductDraft,
+ build the update action. One example is the `buildChangeNameUpdateAction` which compares names:
   
 ````java
-Optional<UpdateAction<Product>> updateAction = buildChangeNameUpdateAction(oldProduct, productDraft);
+Optional<UpdateAction<Product>> updateAction = buildChangeNameUpdateAction(oldProductProjection, productDraft);
 ````
 More examples of those utils for different fields can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/products/utils).
 
@@ -433,13 +451,13 @@ attributes.
     | `“cart”` | ❌ |
     | `“category”`  | ✅ |
     | `“channel”`  | ❌ |
-    | `“customer”`  | ❌ |
+    | `“customer”`  | ✅ |
     | `“key-value-document”`  | ✅ |
     | `“order”`  | ❌ |
     | `“product”` | ✅ |
     | `“product-type”` | ✅ |
     | `“review”`  | ❌ |
-    | `“state”`  | ❌ |
+    | `“state”`  | ✅ |
     | `“shipping-method”`  | ❌ |
     | `“zone”`  | ❌ |
 

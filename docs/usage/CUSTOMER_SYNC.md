@@ -35,7 +35,7 @@ against a [CustomerDraft](https://docs.commercetools.com/api/projects/customers#
 ### Prerequisites
 #### SphereClient
 
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/4.0.1/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/5.0.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
@@ -69,26 +69,36 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`mapToCustomerDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/customers/utils/CustomerReferenceResolutionUtils.html#mapToCustomerDrafts-java.util.List-)
-a method that maps from a `Customer` to `CustomerDraft` to make them ready for reference resolution by the sync, for example:
+When syncing from a source commercetools project, you can use [`toCustomerDrafts`](https://commercetools.github.io/commercetools-sync-java/v/5.0.0/com/commercetools/sync/customers/utils/CustomerTransformUtils.html#toCustomerDrafts-java.util.List-)
+ method that transforms(resolves by querying and caching key-id pairs) and maps from a `Customer` to `CustomerDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
-// Build a CustomerQuery for fetching customers from a source CTP project with all the needed references expanded for the sync
-final CustomerQuery customerQueryWithReferenceExpanded = CustomerReferenceResolutionUtils.buildCustomerQuery();
+// Build a CustomerQuery for fetching customers from a source CTP project without any references expanded for the sync:
+final CustomerQuery customerQuery = CustomerQuery.of();
 
 // Query all customers (NOTE this is just for example, please adjust your logic)
 final List<Customer> customers =
     CtpQueryUtils
-        .queryAll(sphereClient, customerQueryWithReferenceExpanded, Function.identity())
+        .queryAll(sphereClient, customerQuery, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
             .stream()
             .flatMap(List::stream)
             .collect(Collectors.toList()))
         .toCompletableFuture()
         .join();
+````
 
-// Mapping from Customer to CustomerDraft with considering reference resolution.
-final List<CustomerDraft> customerDrafts = CustomerReferenceResolutionUtils.mapToCustomerDrafts(customers);
+In order to transform and map the `Customer` to `CustomerDraft`, 
+Utils method `toCustomerDrafts` requires `sphereClient`, implementation of [`ReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java) and `customers` as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java).
+Example as shown below:
+
+````java
+//Implement the cache using library class.
+final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
+
+//For every reference fetch its key using id, cache it and map from Customer to CustomerDraft. With help of the cache same reference keys can be reused.
+CompletableFuture<List<CustomerDraft>> customerDrafts = CustomerTransformUtils.toCustomerDrafts(client, referenceIdToKeyCache, customers);
 ````
 
 ##### Syncing from an external resource

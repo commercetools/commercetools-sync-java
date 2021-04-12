@@ -26,6 +26,50 @@
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
+### 5.0.0 - Apr 12, 2021
+
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/4.0.1...5.0.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/5.0.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/5.0.0)
+
+- 🚧 **Breaking Changes** (2)
+    - For mapping a `resource` (Product, Category, CartDiscount, ShoppingList, State, InventoryEntry, ProductType, Customer) to `resourceDraft` 
+    the new util method should be called.
+       
+    Example for **Product Sync**: For mapping from `Product` to `ProductDraft` the util method `ProductTransformUtils.toProductDrafts` 
+    should be called along with `sphereClient`, cache implementation(`ReferenceIdToKeyCache`) and `productTypes` parameters.
+    
+    - **Product Sync**: The `productProjections` endpoint is used instead of `products` endpoint to improve the
+         performance of the `product Sync`. 
+        
+    - Changes:
+        - The `callbacks` of the `product Sync` will now work with `productProjections` instead of `products` 
+        - The update action (`buildCustomUpdateActions`,`buildAssetsUpdateActions`,`buildAssetActions`) doesn't
+          require the "old Resource" as parameter anymore.
+        - All update actions of products now working with `ProductProjections` instead of `Products`  
+        - The method `syncFrenchDataOnly` has a new signature `public static List<UpdateAction<Product>> syncFrenchDataOnly(@Nonnull final List<UpdateAction<Product>> updateActions, @Nonnull final ProductDraft newProductDraft,  @Nonnull final ProductProjection oldProduct)`  
+        - The method `keepOtherVariants` has a new signature `List<UpdateAction<Product>> keepOtherVariants( @Nonnull final List<UpdateAction<Product>> updateActions)`
+        - The method `mapToProductDrafts` has a new signature `public static List<ProductDraft> mapToProductDrafts(Nonnull final List<ProductProjection> products)`
+        - The method `getDraftBuilderFromStagedProduct` has a new signature `public static
+         ProductDraftBuildergetDraft BuilderFromStagedProduct(@Nonnull final ProductProjection product)`
+        - The method `buildProductQuery` has a new signature `public static ProductProjectionQuery buildProductQuery()`
+        - The method `buildCategoryActions` has a new signature `public static List<UpdateAction<Product>> buildCategoryActions(@Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct)`
+        - The class `BaseSyncOptions` has a new generics `<A>`, which indicate the resource type to update
+        - The class `BaseSyncOptionsBuilder` has a new generics `<A>`, which indicate the resource type to update
+        
+- ✨ **Enhancements** (2)
+    -  To improve performance of the library, We are not expanding any references in the query for the resources, Instead library fetches key-id pairs and stores in a cache to reuse them.
+    Example for ProductSync: 
+    The util class method `ProductTransformUtils.toProductDrafts` will fetch key-id pairs and stores in a cache. This cache has been used to build the `productDraft` by resolving references.
+    For detailed documentation refer - [syncing-from-a-commercetools-project](https://github.com/commercetools/commercetools-sync-java/blob/master/docs/usage/PRODUCT_SYNC.md#syncing-from-a-commercetools-project)
+    
+    - **Product Sync** 
+        - Use the new `addVariant` which supports the adding assets of the new variant. [#714](https://github.com/commercetools/commercetools-sync-java/pull/714)
+        - Support synchronization of `state` and `customer` references in product variant attributes. [#715](https://github.com/commercetools/commercetools-sync-java/pull/715)
+
+- 🛠️ **Dependency Updates** (1)
+ commercetools-jvm-sdk 1.60.0 -> [1.62.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_62_0)
+ 
 ### 4.0.1 - Mar 19, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/4.0.0...4.0.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/) | 

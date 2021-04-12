@@ -77,10 +77,9 @@ class CategoryAssetActionFactoryTest {
     when(asset.getKey()).thenReturn("assetKey");
     when(asset.getName()).thenReturn(ofEnglish("assetName"));
     final AssetDraft assetDraft = AssetDraftBuilder.of(asset).tags(newTags).build();
-    Category category = mock(Category.class);
     CategoryDraft categoryDraft = mock(CategoryDraft.class);
     final List<UpdateAction<Category>> updateActions =
-        categoryAssetActionFactory.buildAssetActions(category, categoryDraft, asset, assetDraft);
+        categoryAssetActionFactory.buildAssetActions(categoryDraft, asset, assetDraft);
 
     assertThat(updateActions).isNotNull();
     assertThat(updateActions).containsExactly(SetAssetTags.ofKey(asset.getKey(), newTags));

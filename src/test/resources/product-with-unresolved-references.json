@@ -1,0 +1,135 @@
+{
+  "id": "ba81a6da-cf83-435b-a89e-2afab579846f",
+  "version": 10,
+  "key": "productKeyResolved",
+  "productType": {
+    "typeId": "product-type",
+    "id": "cda0dbf7-b42e-40bf-8453-241d5b587f93"
+  },
+  "catalogs": [],
+  "masterData": {
+    "staged": {
+      "name": {
+        "en": "english name"
+      },
+      "description": {
+        "en": "english description."
+      },
+      "categories": [
+        {
+          "typeId": "category",
+          "id": "1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+        },
+        {
+          "typeId": "category",
+          "id": "2dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"
+        }
+      ],
+      "categoryOrderHints": {
+        "1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f": "0.43",
+        "2dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f": "0.53"
+      },
+      "slug": {
+        "en": "english-slug"
+      },
+      "masterVariant": {
+        "id": 1,
+        "key": "v1",
+        "sku": "3065833",
+        "images": [
+          {
+            "url": "https://53346cfbf3c7e017ed3d-6de74c3efa80f1c837c6a988b57abe66.ssl.cf3.rackcdn.com/old-image.png",
+            "dimensions": {
+              "w": 0,
+              "h": 0
+            }
+          }
+        ],
+        "attributes": [
+          {
+            "name": "customObjectReference",
+            "value": {
+              "id": "customObjectId1",
+              "typeId": "key-value-document"
+            }
+          }
+        ],
+        "assets": [
+        ],
+        "prices": [
+          {
+            "id": "4dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f",
+            "value": {
+              "currencyCode": "EUR",
+              "centAmount": 108
+            },
+            "channel": {
+              "typeId": "channel",
+              "id": "cdcf8bea-48f2-54bc-b3c2-cdc94bf94f2c"
+            },
+            "customerGroup": {
+              "typeId": "customer-group",
+              "id": "d1229e6f-2b79-441e-b419-180311e52754"
+            },
+            "custom": {
+              "type": {
+                "typeId": "type",
+                "id": "custom_type_id"
+              },
+              "fields": {
+                "textField": "text4"
+              }
+            }
+          }
+        ]
+      },
+      "variants": [
+        {
+          "id": 1,
+          "key": "variant1",
+          "sku": "1065834",
+          "prices": [
+            {
+              "id": "4dfc8bea-84f2-45bc-b3c2-r9e7wv99vfb",
+              "value": {
+                "currencyCode": "EGP",
+                "centAmount": 10
+              }
+            }
+          ],
+          "images": [
+          ],
+          "attributes": [],
+          "assets": []
+        },
+        {
+          "id": 2,
+          "key": "variant2",
+          "sku": "1065834",
+          "prices": [
+          ],
+          "images": [
+          ],
+          "attributes": [],
+          "assets": []
+        }
+      ],
+      "searchKeywords": {}
+    },
+    "published": true,
+    "hasStagedChanges": true
+  },
+  "catalogData": {},
+  "taxCategory": {
+    "typeId": "tax-category",
+    "id": "ebbe95fb-2282-4f9a-8747-fbe440e02dc0"
+  },
+  "state": {
+    "typeId": "state1",
+    "id": "ste95fb-2282-4f9a-8747-fbe440e02dcs0"
+  },
+  "lastVariantId": 1,
+  "createdAt": "2016-11-21T09:32:41.261Z",
+  "lastModifiedAt": "2016-12-05T16:09:03.307Z",
+  "lastMessageSequenceNumber": 3
+}

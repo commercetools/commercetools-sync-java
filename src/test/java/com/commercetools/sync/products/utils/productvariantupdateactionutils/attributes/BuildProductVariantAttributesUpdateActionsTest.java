@@ -25,6 +25,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.attributes.Attribute;
@@ -46,7 +47,7 @@ import org.junit.jupiter.api.Test;
 
 class BuildProductVariantAttributesUpdateActionsTest {
 
-  private final Product oldProduct = mock(Product.class);
+  private final ProductProjection oldProduct = mock(ProductProjection.class);
   private final ProductDraft newProductDraft = mock(ProductDraft.class);
   private final ProductVariant oldProductVariant = mock(ProductVariant.class);
   private final ProductVariantDraft newProductVariant = mock(ProductVariantDraft.class);

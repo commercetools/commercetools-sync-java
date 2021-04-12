@@ -37,7 +37,7 @@ against a [ShoppingListDraft](https://docs.commercetools.com/api/projects/shoppi
 ### Prerequisites
 #### SphereClient
 
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/4.0.1/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/5.0.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
@@ -73,26 +73,36 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`mapToShoppingListDraft`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/shoppinglists/utils/ShoppingListReferenceResolutionUtils.html#mapToShoppingListDrafts-java.util.List-)
-the method that maps from a `ShoppingList` to `ShoppingListDraft` to make them ready for reference resolution by the shopping list sync, for example: 
+When syncing from a source commercetools project, you can use [`toShoppingListDrafts`](https://commercetools.github.io/commercetools-sync-java/v/5.0.0/com/commercetools/sync/shoppinglists/utils/ShoppingListTransformUtils.html#toShoppingListDrafts-java.util.List-)
+ method that transforms(resolves by querying and caching key-id pairs) and maps from a `ShoppingList` to `ShoppingListDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
-// Build a ShoppingListQuery for fetching shopping lists from a source CTP project with all the needed references expanded for the sync
-final ShoppingListQuery shoppingListQueryWithReferenceExpanded = ShoppingListReferenceResolutionUtils.buildShoppingListQuery();
+// Build a ShoppingListQuery for fetching shopping lists from a source CTP project without any references expanded for the sync:
+final ShoppingListQuery shoppingListQuery = ShoppingListReferenceResolutionUtils.buildShoppingListQuery();
 
 // Query all shopping lists (NOTE this is just for example, please adjust your logic)
 final List<ShoppingList> shoppingLists =
     CtpQueryUtils
-        .queryAll(sphereClient, shoppingListQueryWithReferenceExpanded, Function.identity())
+        .queryAll(sphereClient, shoppingListQuery, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
             .stream()
             .flatMap(List::stream)
             .collect(Collectors.toList()))
         .toCompletableFuture()
         .join();
+````
 
-// Mapping from ShoppingList to ShoppingListDraft with considering reference resolution.
-final List<ShoppingListDraft> shoppingListDrafts = ShoppingListReferenceResolutionUtils.mapToShoppingListDrafts(shoppingLists);
+In order to transform and map the `ShoppingList` to `ShoppingListDraft`, 
+Utils method `toShoppingListDrafts` requires `sphereClient`, implementation of [`ReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java) and `shoppingLists` as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java).
+Example as shown below:
+
+````java
+//Implement the cache using library class.
+final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
+
+//For every reference fetch its key using id, cache it and map from ShoppingList to ShoppingListDraft. With help of the cache same reference keys can be reused.
+CompletableFuture<List<ShoppingListDraft>> shoppingListDrafts = ShoppingListTransformUtils.toShoppingListDrafts(client, referenceIdToKeyCache, shoppingLists);
 ````
 
 ##### Syncing from an external resource

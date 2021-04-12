@@ -36,7 +36,7 @@ against a [CategoryDraft](https://docs.commercetools.com/http-api-projects-categ
 
 #### SphereClient
 
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/4.0.1/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/5.0.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
@@ -135,26 +135,36 @@ As soon, as the referenced parent Category draft is supplied to the sync, the dr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`mapToCategoryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/categories/utils/CategoryReferenceResolutionUtils.html#mapToCategoryDrafts-java.util.List-)
-method that maps from a `Category` to `CategoryDraft` in order to make them ready for reference resolution by the sync, for example: 
+When syncing from a source commercetools project, you can use [`toCategoryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/5.0.0/com/commercetools/sync/categories/utils/CategoryTransformUtils.html#toCategoryDrafts-java.util.List-)
+method that transforms(resolves by querying and caching key-id pairs) and maps from a `Category` to `CategoryDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
-// Build a CategoryQuery for fetching categories from a source CTP project with all the needed references expanded for the sync
-final CategoryQuery categoryQueryWithReferenceExpanded = CategoryReferenceResolutionUtils.buildCategoryQuery();
+// Build a CategoryQuery for fetching categories from a source CTP project without any references expanded for the sync:
+final CategoryQuery categoryQuery = CategoryQuery.of();
 
 // Query all categories (NOTE this is just for example, please adjust your logic)
 final List<Category> categories =
     CtpQueryUtils
-        .queryAll(sphereClient, categoryQueryWithReferenceExpanded, Function.identity())
+        .queryAll(sphereClient, categoryQuery, Function.identity())
         .thenApply(fetchedResources -> fetchedResources
             .stream()
             .flatMap(List::stream)
             .collect(Collectors.toList()))
         .toCompletableFuture()
         .join();
+````
 
-// Mapping from Category to CategoryDraft with considering reference resolution.
-final List<CategoryDraft> categoryDrafts = CategoryReferenceResolutionUtils.mapToCategoryDrafts(categories);
+In order to transform and map the `Category` to `CategoryDraft`, 
+Utils method `toCategoryDrafts` requires `sphereClient`, implementation of [`ReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java) and `categories` as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java).
+Example as shown below:
+
+````java
+//Implement the cache using library class.
+final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
+
+//For every reference fetch its key using id, cache it and map from Category to CategoryDraft. With help of the cache same reference keys can be reused.
+CompletableFuture<List<CategoryDraft>> categoryDrafts = CategoryTransformUtils.toCategoryDrafts(client, referenceIdToKeyCache, categories);
 ````
 
 ##### Syncing from an external resource
