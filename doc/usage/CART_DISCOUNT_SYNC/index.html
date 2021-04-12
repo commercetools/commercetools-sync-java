@@ -651,7 +651,7 @@
   
   
     <li class="md-nav__item">
-      <a href="https://commercetools.github.io/commercetools-sync-java/v/4.0.1/" class="md-nav__link">
+      <a href="https://commercetools.github.io/commercetools-sync-java/v/5.0.0/" class="md-nav__link">
         Javadoc
       </a>
     </li>
@@ -959,7 +959,7 @@ against a <a href="https://docs.commercetools.com/http-api-projects-cartDiscount
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
 <h4 id="sphereclient">SphereClient<a class="headerlink" href="#sphereclient" title="Permanent link">&para;</a></h4>
-<p>Use the <a href="https://github.com/commercetools/commercetools-sync-java/blob/4.0.1/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45">ClientConfigurationUtils</a> which apply the best practices for <code>SphereClient</code> creation.
+<p>Use the <a href="https://github.com/commercetools/commercetools-sync-java/blob/5.0.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45">ClientConfigurationUtils</a> which apply the best practices for <code>SphereClient</code> creation.
 If you have custom requirements for the sphere client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span> <span class="n">SphereClientConfig</span> <span class="n">clientConfig</span> <span class="o">=</span> <span class="n">SphereClientConfig</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;project-key&quot;</span><span class="p">,</span> <span class="s">&quot;client-id&quot;</span><span class="p">,</span> <span class="s">&quot;client-secret&quot;</span><span class="p">);</span>
 
@@ -1005,24 +1005,31 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 <p>Note that a reference without the key field will be considered as an existing resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.</p>
 </blockquote>
 <h5 id="syncing-from-a-commercetools-project">Syncing from a commercetools project<a class="headerlink" href="#syncing-from-a-commercetools-project" title="Permanent link">&para;</a></h5>
-<p>When syncing from a source commercetools project, you can use <a href="https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/cartdiscounts/utils/CartDiscountReferenceResolutionUtils.html#mapToCartDiscountDrafts-java.util.List-"><code>mapToCartDiscountDrafts</code></a>
-method that maps from a <code>CartDiscount</code> to <code>CartDiscountDraft</code> in order to make them ready for reference resolution by the sync, for example: </p>
-<div class="highlight"><pre><span></span><code><span class="c1">// Build a CartDiscountQuery for fetching cart discounts from a source CTP project with all the needed references expanded for the sync</span>
-<span class="kd">final</span> <span class="n">CartDiscountQuery</span> <span class="n">cartDiscountQueryWithReferenceExpanded</span> <span class="o">=</span> <span class="n">CartDiscountReferenceResolutionUtils</span><span class="p">.</span><span class="na">buildCartDiscountQuery</span><span class="p">();</span>
+<p>When syncing from a source commercetools project, you can use <a href="https://commercetools.github.io/commercetools-sync-java/v/5.0.0/com/commercetools/sync/cartdiscounts/utils/CartDiscountTransformUtils.html#toCartDiscountDrafts-java.util.List-"><code>toCartDiscountDrafts</code></a>
+method that transforms(resolves by querying and caching key-id pairs) and maps from a <code>CartDiscount</code> to <code>CartDiscountDraft</code> using cache in order to make them ready for reference resolution by the sync, for example: </p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Build a CartDiscountQuery for fetching cart discounts from a source CTP project without any references expanded for the sync:</span>
+<span class="kd">final</span> <span class="n">CartDiscountQuery</span> <span class="n">cartDiscountQuery</span> <span class="o">=</span> <span class="n">CartDiscountQuery</span><span class="p">.</span><span class="na">of</span><span class="p">();</span>
 
 <span class="c1">// Query all cart discounts (NOTE this is just for example, please adjust your logic)</span>
 <span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">CartDiscount</span><span class="o">&gt;</span> <span class="n">cartDiscounts</span> <span class="o">=</span>
     <span class="n">CtpQueryUtils</span>
-        <span class="p">.</span><span class="na">queryAll</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">,</span> <span class="n">cartDiscountQueryWithReferenceExpanded</span><span class="p">,</span> <span class="n">Function</span><span class="p">.</span><span class="na">identity</span><span class="p">())</span>
+        <span class="p">.</span><span class="na">queryAll</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">,</span> <span class="n">cartDiscountQuery</span><span class="p">,</span> <span class="n">Function</span><span class="p">.</span><span class="na">identity</span><span class="p">())</span>
         <span class="p">.</span><span class="na">thenApply</span><span class="p">(</span><span class="n">fetchedResources</span> <span class="o">-&gt;</span> <span class="n">fetchedResources</span>
             <span class="p">.</span><span class="na">stream</span><span class="p">()</span>
             <span class="p">.</span><span class="na">flatMap</span><span class="p">(</span><span class="n">List</span><span class="p">::</span><span class="n">stream</span><span class="p">)</span>
             <span class="p">.</span><span class="na">collect</span><span class="p">(</span><span class="n">Collectors</span><span class="p">.</span><span class="na">toList</span><span class="p">()))</span>
         <span class="p">.</span><span class="na">toCompletableFuture</span><span class="p">()</span>
         <span class="p">.</span><span class="na">join</span><span class="p">();</span>
+</code></pre></div>
+<p>In order to transform and map the <code>CartDiscount</code> to <code>CartDiscountDraft</code>, 
+Utils method <code>toCartDiscountDrafts</code> requires <code>sphereClient</code>, implementation of <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java"><code>ReferenceIdToKeyCache</code></a> and <code>cartDiscounts</code> as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy<a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java"><code>CaffeineReferenceIdToKeyCacheImpl</code></a>.
+Example as shown below:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">//Implement the cache using library class.</span>
+<span class="kd">final</span> <span class="n">ReferenceIdToKeyCache</span> <span class="n">referenceIdToKeyCache</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CaffeineReferenceIdToKeyCacheImpl</span><span class="p">();</span>
 
-<span class="c1">// Mapping from CartDiscount to CartDiscountDraft with considering reference resolution.</span>
-<span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">CartDiscountDraft</span><span class="o">&gt;</span> <span class="n">cartDiscountDrafts</span> <span class="o">=</span> <span class="n">CartDiscountReferenceResolutionUtils</span><span class="p">.</span><span class="na">mapToCartDiscountDrafts</span><span class="p">(</span><span class="n">cartDiscounts</span><span class="p">);</span>
+<span class="c1">//For every reference fetch its key using id, cache it and map from CartDiscount to CartDiscountDraft. With help of the cache same reference keys can be reused.</span>
+<span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">CartDiscountDraft</span><span class="o">&gt;&gt;</span> <span class="n">cartDiscountDrafts</span> <span class="o">=</span> <span class="n">CartDiscountTransformUtils</span><span class="p">.</span><span class="na">toCartDiscountDrafts</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">referenceIdToKeyCache</span><span class="p">,</span> <span class="n">cartDiscounts</span><span class="p">);</span>
 </code></pre></div>
 <h5 id="syncing-from-an-external-resource">Syncing from an external resource<a class="headerlink" href="#syncing-from-an-external-resource" title="Permanent link">&para;</a></h5>
 <ul>

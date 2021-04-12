@@ -455,7 +455,7 @@
   
   
     <li class="md-nav__item">
-      <a href="https://commercetools.github.io/commercetools-sync-java/v/4.0.1/" class="md-nav__link">
+      <a href="https://commercetools.github.io/commercetools-sync-java/v/5.0.0/" class="md-nav__link">
         Javadoc
       </a>
     </li>
@@ -499,6 +499,13 @@
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#500-apr-12-2021" class="md-nav__link">
+    5.0.0 - Apr 12, 2021
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#401-mar-19-2021" class="md-nav__link">
@@ -899,6 +906,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#500-apr-12-2021" class="md-nav__link">
+    5.0.0 - Apr 12, 2021
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#401-mar-19-2021" class="md-nav__link">
     4.0.1 - Mar 19, 2021
   </a>
@@ -1263,6 +1277,67 @@
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
+<h3 id="500-apr-12-2021">5.0.0 - Apr 12, 2021<a class="headerlink" href="#500-apr-12-2021" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/commercetools/commercetools-sync-java/compare/4.0.1...5.0.0">Commits</a> |
+<a href="https://commercetools.github.io/commercetools-sync-java/v/5.0.0/">Javadoc</a> | 
+<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/5.0.0">Jar</a></p>
+<ul>
+<li>
+<p>🚧 <strong>Breaking Changes</strong> (2)</p>
+<ul>
+<li>For mapping a <code>resource</code> (Product, Category, CartDiscount, ShoppingList, State, InventoryEntry, ProductType, Customer) to <code>resourceDraft</code> 
+the new util method should be called.</li>
+</ul>
+<p>Example for <strong>Product Sync</strong>: For mapping from <code>Product</code> to <code>ProductDraft</code> the util method <code>ProductTransformUtils.toProductDrafts</code> 
+should be called along with <code>sphereClient</code>, cache implementation(<code>ReferenceIdToKeyCache</code>) and <code>productTypes</code> parameters.</p>
+<ul>
+<li>
+<p><strong>Product Sync</strong>: The <code>productProjections</code> endpoint is used instead of <code>products</code> endpoint to improve the
+     performance of the <code>product Sync</code>. </p>
+</li>
+<li>
+<p>Changes:</p>
+<ul>
+<li>The <code>callbacks</code> of the <code>product Sync</code> will now work with <code>productProjections</code> instead of <code>products</code> </li>
+<li>The update action (<code>buildCustomUpdateActions</code>,<code>buildAssetsUpdateActions</code>,<code>buildAssetActions</code>) doesn't
+  require the "old Resource" as parameter anymore.</li>
+<li>All update actions of products now working with <code>ProductProjections</code> instead of <code>Products</code>  </li>
+<li>The method <code>syncFrenchDataOnly</code> has a new signature <code>public static List&lt;UpdateAction&lt;Product&gt;&gt; syncFrenchDataOnly(@Nonnull final List&lt;UpdateAction&lt;Product&gt;&gt; updateActions, @Nonnull final ProductDraft newProductDraft,  @Nonnull final ProductProjection oldProduct)</code>  </li>
+<li>The method <code>keepOtherVariants</code> has a new signature <code>List&lt;UpdateAction&lt;Product&gt;&gt; keepOtherVariants( @Nonnull final List&lt;UpdateAction&lt;Product&gt;&gt; updateActions)</code></li>
+<li>The method <code>mapToProductDrafts</code> has a new signature <code>public static List&lt;ProductDraft&gt; mapToProductDrafts(Nonnull final List&lt;ProductProjection&gt; products)</code></li>
+<li>The method <code>getDraftBuilderFromStagedProduct</code> has a new signature <code>public static
+ ProductDraftBuildergetDraft BuilderFromStagedProduct(@Nonnull final ProductProjection product)</code></li>
+<li>The method <code>buildProductQuery</code> has a new signature <code>public static ProductProjectionQuery buildProductQuery()</code></li>
+<li>The method <code>buildCategoryActions</code> has a new signature <code>public static List&lt;UpdateAction&lt;Product&gt;&gt; buildCategoryActions(@Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct)</code></li>
+<li>The class <code>BaseSyncOptions</code> has a new generics <code>&lt;A&gt;</code>, which indicate the resource type to update</li>
+<li>The class <code>BaseSyncOptionsBuilder</code> has a new generics <code>&lt;A&gt;</code>, which indicate the resource type to update</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>✨ <strong>Enhancements</strong> (2)</p>
+<ul>
+<li>
+<p>To improve performance of the library, We are not expanding any references in the query for the resources, Instead library fetches key-id pairs and stores in a cache to reuse them.
+Example for ProductSync: 
+The util class method <code>ProductTransformUtils.toProductDrafts</code> will fetch key-id pairs and stores in a cache. This cache has been used to build the <code>productDraft</code> by resolving references.
+For detailed documentation refer - <a href="https://github.com/commercetools/commercetools-sync-java/blob/master/docs/usage/PRODUCT_SYNC.md#syncing-from-a-commercetools-project">syncing-from-a-commercetools-project</a></p>
+</li>
+<li>
+<p><strong>Product Sync</strong> </p>
+<ul>
+<li>Use the new <code>addVariant</code> which supports the adding assets of the new variant. <a href="https://github.com/commercetools/commercetools-sync-java/pull/714">#714</a></li>
+<li>Support synchronization of <code>state</code> and <code>customer</code> references in product variant attributes. <a href="https://github.com/commercetools/commercetools-sync-java/pull/715">#715</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>🛠️ <strong>Dependency Updates</strong> (1)
+ commercetools-jvm-sdk 1.60.0 -&gt; <a href="http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_62_0">1.62.0</a></p>
+</li>
+</ul>
 <h3 id="401-mar-19-2021">4.0.1 - Mar 19, 2021<a class="headerlink" href="#401-mar-19-2021" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/4.0.0...4.0.1">Commits</a> |
 <a href="https://commercetools.github.io/commercetools-sync-java/v/4.0.1/">Javadoc</a> | 
