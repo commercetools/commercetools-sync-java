@@ -41,7 +41,7 @@ import org.apache.commons.lang3.StringUtils;
  *     io.sphere.sdk.categories.CategoryDraft}, etc..
  * @param <U> Resource (e.g. {@link io.sphere.sdk.products.Product}, {@link
  *     io.sphere.sdk.categories.Category}, etc..
- * @param <UQ> Resource returned by the query <Q> (e.g. {@link
+ * @param <UQ> Resource returned by the query Q (e.g. {@link
  *     io.sphere.sdk.products.ProductProjection})
  * @param <S> Subclass of {@link BaseSyncOptions}
  * @param <Q> Query (e.g. {@link io.sphere.sdk.products.queries.ProductQuery}, {@link
