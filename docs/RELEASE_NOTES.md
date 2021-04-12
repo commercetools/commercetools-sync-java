@@ -63,7 +63,9 @@
     The util class method `ProductTransformUtils.toProductDrafts` will fetch key-id pairs and stores in a cache. This cache has been used to build the `productDraft` by resolving references.
     For detailed documentation refer - [syncing-from-a-commercetools-project](https://github.com/commercetools/commercetools-sync-java/blob/master/docs/usage/PRODUCT_SYNC.md#syncing-from-a-commercetools-project)
     
-    - **Product Sync** - Use the new `addVariant` which supports the adding assets of the new variant. [#714](https://github.com/commercetools/commercetools-sync-java/pull/714)
+    - **Product Sync** 
+        - Use the new `addVariant` which supports the adding assets of the new variant. [#714](https://github.com/commercetools/commercetools-sync-java/pull/714)
+        - Support synchronization of `state` and `customer` references in product variant attributes. [#715](https://github.com/commercetools/commercetools-sync-java/pull/715)
 
 - 🛠️ **Dependency Updates** (1)
  commercetools-jvm-sdk 1.60.0 -> [1.62.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_62_0)
