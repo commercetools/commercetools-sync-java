@@ -26,7 +26,7 @@ public interface ReferenceIdToKeyCache {
 
   /**
    * @param key key whose presence in this map is to be tested
-   * @return <tt>true</tt> if this map contains a mapping for the specified key in the cache.
+   * @return true if this map contains a mapping for the specified key in the cache.
    */
   boolean containsKey(@Nonnull final String key);
 
