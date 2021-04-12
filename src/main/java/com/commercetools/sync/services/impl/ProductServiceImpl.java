@@ -121,11 +121,11 @@ public final class ProductServiceImpl
       @Nonnull final ProductProjection productProjection,
       @Nonnull final List<UpdateAction<Product>> updateActions) {
 
-    return updateResourceAndMapToProjection(productProjection, updateActions);
+    return updateProductAndMapToProductProjection(productProjection, updateActions);
   }
 
   @Nonnull
-  CompletionStage<ProductProjection> updateResourceAndMapToProjection(
+  private CompletionStage<ProductProjection> updateProductAndMapToProductProjection(
       @Nonnull final ProductProjection productProjection,
       @Nonnull final List<UpdateAction<Product>> updateActions) {
 
