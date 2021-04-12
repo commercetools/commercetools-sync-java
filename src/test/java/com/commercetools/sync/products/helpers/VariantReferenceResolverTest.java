@@ -34,6 +34,7 @@ import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.producttypes.ProductType;
+import io.sphere.sdk.states.State;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.MoneyImpl;
 import java.math.BigDecimal;
@@ -236,6 +237,7 @@ class VariantReferenceResolverTest {
     final ObjectNode customerReference = createReferenceObject("foo", Customer.referenceTypeId());
     final ObjectNode customObjectReference =
         createReferenceObject("container|key", CustomObject.referenceTypeId());
+    final ObjectNode stateReference = createReferenceObject("foo", State.referenceTypeId());
 
     final AttributeDraft categoryReferenceAttribute =
         AttributeDraft.of("cat-ref", categoryReference);
@@ -246,6 +248,7 @@ class VariantReferenceResolverTest {
     final AttributeDraft textAttribute = AttributeDraft.of("attributeName", "textValue");
     final AttributeDraft customObjectReferenceAttribute =
         AttributeDraft.of("customObject-ref", customObjectReference);
+    final AttributeDraft stateReferenceAttribute = AttributeDraft.of("state-ref", stateReference);
 
     final List<AttributeDraft> attributeDrafts =
         Arrays.asList(
@@ -254,7 +257,8 @@ class VariantReferenceResolverTest {
             productTypeReferenceAttribute,
             customerReferenceAttribute,
             textAttribute,
-            customObjectReferenceAttribute);
+            customObjectReferenceAttribute,
+            stateReferenceAttribute);
 
     final ProductVariantDraft productVariantDraft =
         ProductVariantDraftBuilder.of().attributes(attributeDrafts).build();
@@ -265,7 +269,7 @@ class VariantReferenceResolverTest {
 
     // assertions
     final List<AttributeDraft> resolvedBuilderAttributes = resolvedBuilder.getAttributes();
-    assertThat(resolvedBuilderAttributes).hasSize(6);
+    assertThat(resolvedBuilderAttributes).hasSize(7);
     assertThat(resolvedBuilderAttributes).contains(textAttribute);
 
     final AttributeDraft resolvedProductReferenceSetAttribute = resolvedBuilderAttributes.get(0);
@@ -330,6 +334,16 @@ class VariantReferenceResolverTest {
         .isEqualTo(CUSTOM_OBJECT_ID);
     assertThat(resolvedCustomObjectAttributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
         .isEqualTo(CustomObject.referenceTypeId());
+
+    final AttributeDraft resolvedStateReferenceAttribute = resolvedBuilderAttributes.get(6);
+    assertThat(resolvedStateReferenceAttribute).isNotNull();
+
+    final JsonNode resolvedStateReferenceAttributeValue =
+        resolvedStateReferenceAttribute.getValue();
+    assertThat(resolvedStateReferenceAttributeValue.get(REFERENCE_ID_FIELD).asText())
+        .isEqualTo(STATE_ID);
+    assertThat(resolvedStateReferenceAttributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
+        .isEqualTo(State.referenceTypeId());
   }
 
   @Test
