@@ -252,18 +252,5 @@ public final class VariantReferenceResolutionUtils {
     return false;
   }
 
-  private static boolean isReferenceSetAttribute(@Nonnull final JsonNode attributeValueAsJsonNode) {
-    return (attributeValueAsJsonNode instanceof ArrayNode);
-  }
-
-  private static boolean isReferenceTypeAttribute(
-      @Nonnull final JsonNode attributeValueAsJsonNode) {
-    if (attributeValueAsJsonNode.isContainerNode()) {
-      final JsonNode typeIdNode = attributeValueAsJsonNode.get(REFERENCE_TYPE_ID_FIELD);
-      return typeIdNode != null;
-    }
-    return false;
-  }
-
   private VariantReferenceResolutionUtils() {}
 }
