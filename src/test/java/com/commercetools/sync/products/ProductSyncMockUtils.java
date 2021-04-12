@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.CustomerGroupService;
+import com.commercetools.sync.services.CustomerService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
@@ -63,6 +64,8 @@ import javax.annotation.Nullable;
 
 public class ProductSyncMockUtils {
   public static final String PRODUCT_KEY_1_RESOURCE_PATH = "product-key-1.json";
+  public static final String PRODUCT_KEY_1_NO_ATTRIBUTES_RESOURCE_PATH =
+      "product-key-1-no-attributes.json";
   public static final String PRODUCT_KEY_SPECIAL_CHARS_RESOURCE_PATH =
       "product-key-with-special-character.json";
   public static final String PRODUCT_KEY_1_CHANGED_RESOURCE_PATH = "product-key-1-changed.json";
@@ -79,6 +82,8 @@ public class ProductSyncMockUtils {
   public static final String PRODUCT_TYPE_WITH_REFERENCES_RESOURCE_PATH =
       "product-type-with-references.json";
   public static final String PRODUCT_TYPE_NO_KEY_RESOURCE_PATH = "product-type-no-key.json";
+  public static final String PRODUCT_TYPE_WITH_REFERENCES_FOR_VARIANT_ATTRIBUTES_RESOURCE_PATH =
+      "product-type-with-references-for-variant-attributes.json";
   public static final String CATEGORY_KEY_1_RESOURCE_PATH = "category-key-1.json";
   public static final String SIMPLE_PRODUCT_WITH_MASTER_VARIANT_RESOURCE_PATH =
       "simple-product-with-master-variant.json";
@@ -545,5 +550,23 @@ public class ProductSyncMockUtils {
     when(customObjectService.fetchCachedCustomObjectId(any()))
         .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
     return customObjectService;
+  }
+
+  /**
+   * Creates a mock {@link CustomerService} that returns a completed {@link CompletableFuture}
+   * containing an {@link Optional} containing the id of the supplied value whenever the following
+   * method is called on the service:
+   *
+   * <ul>
+   *   <li>{@link CustomerService#fetchCachedCustomerId(String)}
+   * </ul>
+   *
+   * @return the created mock of the {@link CustomerService}.
+   */
+  public static CustomerService getMockCustomerService(@Nonnull final String id) {
+    final CustomerService customerService = mock(CustomerService.class);
+    when(customerService.fetchCachedCustomerId(anyString()))
+        .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
+    return customerService;
   }
 }

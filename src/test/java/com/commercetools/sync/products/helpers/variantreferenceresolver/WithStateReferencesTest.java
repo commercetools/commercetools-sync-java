@@ -9,23 +9,15 @@ import static org.mockito.Mockito.mock;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.VariantReferenceResolver;
-import com.commercetools.sync.services.CategoryService;
-import com.commercetools.sync.services.ChannelService;
-import com.commercetools.sync.services.CustomObjectService;
-import com.commercetools.sync.services.CustomerGroupService;
-import com.commercetools.sync.services.CustomerService;
-import com.commercetools.sync.services.ProductService;
-import com.commercetools.sync.services.ProductTypeService;
-import com.commercetools.sync.services.StateService;
-import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.AttributeDraft;
+import io.sphere.sdk.states.State;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.UUID;
@@ -34,14 +26,14 @@ import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class WithCustomerReferencesTest {
+class WithStateReferencesTest {
   private VariantReferenceResolver referenceResolver;
-  private static final String CUSTOMER_ID = UUID.randomUUID().toString();
-  private CustomerService customerService;
+  private static final String STATE_ID = UUID.randomUUID().toString();
+  private StateService stateService;
 
   @BeforeEach
   void setup() {
-    customerService = getMockCustomerService(CUSTOMER_ID);
+    stateService = getMockStateService(STATE_ID);
     final ProductSyncOptions syncOptions =
         ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
     referenceResolver =
@@ -54,19 +46,19 @@ class WithCustomerReferencesTest {
             mock(ProductTypeService.class),
             mock(CategoryService.class),
             mock(CustomObjectService.class),
-            mock(StateService.class),
-            customerService);
+            stateService,
+            mock(CustomerService.class));
   }
 
   @Test
-  void resolveReferences_WithNullIdFieldInCustomerReferenceAttribute_ShouldNotResolveReferences() {
+  void resolveReferences_WithNullIdFieldInStateReferenceAttribute_ShouldNotResolveReferences() {
     // preparation
     final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
-    attributeValue.put(REFERENCE_TYPE_ID_FIELD, Customer.referenceTypeId());
-    final AttributeDraft customerReferenceAttribute =
+    attributeValue.put(REFERENCE_TYPE_ID_FIELD, State.referenceTypeId());
+    final AttributeDraft stateReferenceAttribute =
         AttributeDraft.of("attributeName", attributeValue);
     final ProductVariantDraft productVariantDraft =
-        ProductVariantDraftBuilder.of().attributes(customerReferenceAttribute).build();
+        ProductVariantDraftBuilder.of().attributes(stateReferenceAttribute).build();
 
     // test
     final ProductVariantDraft resolvedAttributeDraft =
@@ -76,16 +68,15 @@ class WithCustomerReferencesTest {
   }
 
   @Test
-  void
-      resolveReferences_WithNullNodeIdFieldInCustomerReferenceAttribute_ShouldNotResolveReferences() {
+  void resolveReferences_WithNullNodeIdFieldInStateReferenceAttribute_ShouldNotResolveReferences() {
     // preparation
     final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
-    attributeValue.put(REFERENCE_TYPE_ID_FIELD, Customer.referenceTypeId());
+    attributeValue.put(REFERENCE_TYPE_ID_FIELD, State.referenceTypeId());
     attributeValue.set(REFERENCE_ID_FIELD, JsonNodeFactory.instance.nullNode());
-    final AttributeDraft customerReferenceAttribute =
+    final AttributeDraft stateReferenceAttribute =
         AttributeDraft.of("attributeName", attributeValue);
     final ProductVariantDraft productVariantDraft =
-        ProductVariantDraftBuilder.of().attributes(customerReferenceAttribute).build();
+        ProductVariantDraftBuilder.of().attributes(stateReferenceAttribute).build();
 
     // test
     final ProductVariantDraft resolvedAttributeDraft =
@@ -95,15 +86,15 @@ class WithCustomerReferencesTest {
   }
 
   @Test
-  void resolveReferences_WithCustomerReferenceSetAttribute_ShouldResolveReferences() {
-    final AttributeDraft customerReferenceSetAttributeDraft =
+  void resolveReferences_WithStateReferenceSetAttribute_ShouldResolveReferences() {
+    final AttributeDraft stateReferenceSetAttributeDraft =
         getReferenceSetAttributeDraft(
             "foo",
-            createReferenceObject(UUID.randomUUID().toString(), Customer.referenceTypeId()),
-            createReferenceObject(UUID.randomUUID().toString(), Customer.referenceTypeId()));
+            createReferenceObject(UUID.randomUUID().toString(), State.referenceTypeId()),
+            createReferenceObject(UUID.randomUUID().toString(), State.referenceTypeId()));
 
     final ProductVariantDraft productVariantDraft =
-        ProductVariantDraftBuilder.of().attributes(customerReferenceSetAttributeDraft).build();
+        ProductVariantDraftBuilder.of().attributes(stateReferenceSetAttributeDraft).build();
 
     // test
     final ProductVariantDraft resolvedProductVariantDraft =
@@ -125,8 +116,8 @@ class WithCustomerReferencesTest {
         StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toList());
     assertThat(resolvedSet).isNotEmpty();
     final ObjectNode resolvedReference = JsonNodeFactory.instance.objectNode();
-    resolvedReference.put(REFERENCE_TYPE_ID_FIELD, Customer.referenceTypeId());
-    resolvedReference.put(REFERENCE_ID_FIELD, CUSTOMER_ID);
+    resolvedReference.put(REFERENCE_TYPE_ID_FIELD, State.referenceTypeId());
+    resolvedReference.put(REFERENCE_ID_FIELD, STATE_ID);
     assertThat(resolvedSet).containsExactlyInAnyOrder(resolvedReference, resolvedReference);
   }
 }

@@ -451,13 +451,13 @@ attributes.
     | `“cart”` | ❌ |
     | `“category”`  | ✅ |
     | `“channel”`  | ❌ |
-    | `“customer”`  | ❌ |
+    | `“customer”`  | ✅ |
     | `“key-value-document”`  | ✅ |
     | `“order”`  | ❌ |
     | `“product”` | ✅ |
     | `“product-type”` | ✅ |
     | `“review”`  | ❌ |
-    | `“state”`  | ❌ |
+    | `“state”`  | ✅ |
     | `“shipping-method”`  | ❌ |
     | `“zone”`  | ❌ |
 

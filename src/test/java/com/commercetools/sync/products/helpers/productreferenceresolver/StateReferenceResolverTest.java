@@ -6,6 +6,7 @@ import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockC
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithRandomProductType;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomObjectService;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockStateService;
@@ -44,6 +45,7 @@ class StateReferenceResolverTest {
   private static final String STATE_ID = "stateId";
   private static final String PRODUCT_ID = "productId";
   private static final String CUSTOM_OBJECT_ID = "customObjectId";
+  private static final String CUSTOMER_ID = "customerId";
 
   private StateService stateService;
   private ProductReferenceResolver referenceResolver;
@@ -65,7 +67,8 @@ class StateReferenceResolverTest {
             getMockTaxCategoryService(TAX_CATEGORY_ID),
             stateService,
             getMockProductService(PRODUCT_ID),
-            getMockCustomObjectService(CUSTOM_OBJECT_ID));
+            getMockCustomObjectService(CUSTOM_OBJECT_ID),
+            getMockCustomerService(CUSTOMER_ID));
   }
 
   @Test

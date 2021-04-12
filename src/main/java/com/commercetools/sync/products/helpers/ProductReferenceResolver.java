@@ -19,6 +19,7 @@ import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.CustomerGroupService;
+import com.commercetools.sync.services.CustomerService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
@@ -56,6 +57,7 @@ public final class ProductReferenceResolver
   private final ProductService productService;
   private final CustomerGroupService customerGroupService;
   private final CustomObjectService customObjectService;
+  private final CustomerService customerService;
 
   public static final String FAILED_TO_RESOLVE_REFERENCE =
       "Failed to resolve '%s' resource identifier on " + "ProductDraft with key:'%s'. Reason: %s";
@@ -87,6 +89,7 @@ public final class ProductReferenceResolver
    * @param productService the service to fetch products for product reference resolution on
    *     reference attributes.
    * @param customObjectService the service to fetch custom objects for reference resolution.
+   * @param customerService the service to fetch customers for reference resolution.
    */
   public ProductReferenceResolver(
       @Nonnull final ProductSyncOptions productSyncOptions,
@@ -98,7 +101,8 @@ public final class ProductReferenceResolver
       @Nonnull final TaxCategoryService taxCategoryService,
       @Nonnull final StateService stateService,
       @Nonnull final ProductService productService,
-      @Nonnull final CustomObjectService customObjectService) {
+      @Nonnull final CustomObjectService customObjectService,
+      @Nonnull final CustomerService customerService) {
     super(productSyncOptions);
     this.productTypeService = productTypeService;
     this.categoryService = categoryService;
@@ -109,6 +113,7 @@ public final class ProductReferenceResolver
     this.productService = productService;
     this.customerGroupService = customerGroupService;
     this.customObjectService = customObjectService;
+    this.customerService = customerService;
     this.variantReferenceResolver =
         new VariantReferenceResolver(
             productSyncOptions,
@@ -118,7 +123,9 @@ public final class ProductReferenceResolver
             productService,
             productTypeService,
             categoryService,
-            customObjectService);
+            customObjectService,
+            stateService,
+            customerService);
   }
 
   /**
