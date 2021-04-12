@@ -427,7 +427,8 @@ class ProductSyncUtilsTest {
                     "1065833",
                     true)
                 .withKey("v2")
-                .withImages(Collections.emptyList()),
+                .withImages(Collections.emptyList())
+                .withAssetDrafts(Collections.emptyList()),
             ChangeMasterVariant.ofSku("1065833", true),
             RemoveVariant.ofVariantId(1),
             SetAttribute.of(2, AttributeDraft.of("size", null), true),

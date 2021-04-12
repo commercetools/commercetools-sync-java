@@ -18,8 +18,6 @@ import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.shoppinglists.ShoppingListSync;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
-import com.commercetools.sync.shoppinglists.commands.updateactions.AddLineItemWithSku;
-import com.commercetools.sync.shoppinglists.commands.updateactions.AddTextLineItemWithAddedAt;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics;
 import com.commercetools.sync.shoppinglists.utils.ShoppingListTransformUtils;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,6 +35,8 @@ import io.sphere.sdk.shoppinglists.TextLineItem;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
 import io.sphere.sdk.shoppinglists.TextLineItemDraftDsl;
+import io.sphere.sdk.shoppinglists.commands.updateactions.AddLineItem;
+import io.sphere.sdk.shoppinglists.commands.updateactions.AddTextLineItem;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeLineItemQuantity;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeTextLineItemName;
@@ -290,14 +290,14 @@ class ShoppingListSyncIT {
                 JsonNodeFactory.instance.textNode("nuts"),
                 lineItemId_Sku5BakingPowder),
             RemoveLineItem.of(lineItemId_Sku6Cinnamon),
-            AddLineItemWithSku.of(
+            AddLineItem.of(
                 LineItemDraftBuilder.ofSku("SKU-5", 1L)
                     .custom(
                         CustomFieldsDraft.ofTypeIdAndJson(
                             lineItemTypeId,
                             buildIngredientCustomType("baking powder", "1 tsp").getFields()))
                     .build()),
-            AddLineItemWithSku.of(
+            AddLineItem.of(
                 LineItemDraftBuilder.ofSku("SKU-6", 1L)
                     .custom(
                         CustomFieldsDraft.ofTypeIdAndJson(
@@ -331,16 +331,15 @@ class ShoppingListSyncIT {
                 "utensils",
                 JsonNodeFactory.instance.textNode("Cake pan, oven"),
                 textLineItemId_Step6),
-            AddTextLineItemWithAddedAt.of(
-                TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("step 6"), 1L)
-                    .description(
-                        LocalizedString.ofEnglish("Decorate as you wish and serve, enjoy!"))
-                    .custom(
-                        CustomFieldsDraft.ofTypeIdAndJson(
-                            textLineItemId,
-                            buildUtensilsCustomType("Knife, cake plate.").getFields()))
-                    .addedAt(ZonedDateTime.parse("2020-11-06T10:00:00.000Z"))
-                    .build()));
+            AddTextLineItem.of(LocalizedString.ofEnglish("step 6"))
+                .withDescription(
+                    LocalizedString.ofEnglish("Decorate as you wish and serve, enjoy!"))
+                .withQuantity(1L)
+                .withAddedAt(ZonedDateTime.parse("2020-11-06T10:00:00.000Z"))
+                .withCustom(
+                    CustomFieldsDraft.ofTypeIdAndJson(
+                        textLineItemId,
+                        buildUtensilsCustomType("Knife, cake plate.").getFields())));
   }
 
   private void assertShoppingListUpdatedCorrectly(

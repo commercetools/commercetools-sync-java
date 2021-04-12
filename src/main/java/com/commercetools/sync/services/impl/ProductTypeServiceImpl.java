@@ -33,6 +33,7 @@ public final class ProductTypeServiceImpl
     extends BaseServiceWithKey<
         ProductTypeDraft,
         ProductType,
+        ProductType,
         BaseSyncOptions,
         ProductTypeQuery,
         ProductTypeQueryModel,

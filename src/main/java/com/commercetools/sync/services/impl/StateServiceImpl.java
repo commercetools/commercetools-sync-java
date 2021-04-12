@@ -27,6 +27,7 @@ public final class StateServiceImpl
     extends BaseServiceWithKey<
         StateDraft,
         State,
+        State,
         StateSyncOptions,
         StateQuery,
         StateQueryModel,

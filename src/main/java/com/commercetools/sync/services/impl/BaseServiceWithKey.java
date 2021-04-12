@@ -5,6 +5,7 @@ import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.DraftBasedCreateCommand;
 import io.sphere.sdk.models.Resource;
+import io.sphere.sdk.models.ResourceView;
 import io.sphere.sdk.models.WithKey;
 import io.sphere.sdk.queries.MetaModelQueryDsl;
 import java.util.Collections;
@@ -22,6 +23,8 @@ import javax.annotation.Nullable;
  *     io.sphere.sdk.categories.CategoryDraft}, etc..
  * @param <U> Resource (e.g. {@link io.sphere.sdk.products.Product}, {@link
  *     io.sphere.sdk.categories.Category}, etc..
+ * @param <UQ> Resource returned by the query <Q> (e.g. {@link
+ *     io.sphere.sdk.products.ProductProjection})
  * @param <S> Subclass of {@link BaseSyncOptions}
  * @param <Q> Query (e.g. {@link io.sphere.sdk.products.queries.ProductQuery}, {@link
  *     io.sphere.sdk.categories.queries.CategoryQuery}, etc..
@@ -33,11 +36,12 @@ import javax.annotation.Nullable;
 abstract class BaseServiceWithKey<
         T extends WithKey,
         U extends Resource<U> & WithKey,
+        UQ extends ResourceView<UQ, U> & WithKey,
         S extends BaseSyncOptions,
-        Q extends MetaModelQueryDsl<U, Q, M, E>,
+        Q extends MetaModelQueryDsl<UQ, Q, M, E>,
         M,
         E>
-    extends BaseService<T, U, S, Q, M, E> {
+    extends BaseService<T, U, UQ, S, Q, M, E> {
 
   BaseServiceWithKey(@Nonnull final S syncOptions) {
     super(syncOptions);
@@ -130,7 +134,7 @@ abstract class BaseServiceWithKey<
    *     completion contains a {@link Set} of all matching resources.
    */
   @Nonnull
-  CompletionStage<Set<U>> fetchMatchingResources(
+  CompletionStage<Set<UQ>> fetchMatchingResources(
       @Nonnull final Set<String> keys, @Nonnull final Function<Set<String>, Q> querySupplier) {
 
     // Why method reference is not used:
