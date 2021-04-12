@@ -41,9 +41,9 @@ For example, define the link to the release notes pointing to a released version
 The creation of a github release triggers a [github action](https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ACD), which will deploy the library to [Maven Central](https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java).
 
 ## Final Step
-After the release build status is **success** ensure that the new version is publicly available at [Maven Central](https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java). 
+After the release build status is **success** ensure that the new version is publicly available at [Maven Central](https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java). 
 
 ### Checklist 
 
 - Publish completed without an issue.
-- The new version is available in the (https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java)
+- The new version is available in the (https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java)
