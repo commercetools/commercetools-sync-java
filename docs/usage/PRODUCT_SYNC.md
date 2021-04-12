@@ -39,7 +39,7 @@ against a [ProductDraft](https://docs.commercetools.com/http-api-projects-produc
 
 #### SphereClient
 
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/4.0.1/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/5.0.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
@@ -80,7 +80,7 @@ resource on the target commercetools project and the library will issue an updat
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`toProductDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.1/com/commercetools/sync/products/utils/ProductTransformUtils.html#toProductDrafts-java.util.List-)
+When syncing from a source commercetools project, you can use [`toProductDrafts`](https://commercetools.github.io/commercetools-sync-java/v/5.0.0/com/commercetools/sync/products/utils/ProductTransformUtils.html#toProductDrafts-java.util.List-)
  method that transforms(resolves by querying and caching key-id pairs) and maps from a `Product` to `ProductDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
@@ -100,7 +100,7 @@ final List<ProductProjection> productProjections =
 ````
 
 In order to transform and map the `Product` to `ProductDraft`, 
-Utils method `toProductDrafts` requires `sphereClient`, implementation of [`ReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java) and `products` as parameters.
+Utils method `toProductDrafts` requires 'sphereClient', implementation of [`ReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java) and `products` as parameters.
 For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java).
 Example as shown below:
 
