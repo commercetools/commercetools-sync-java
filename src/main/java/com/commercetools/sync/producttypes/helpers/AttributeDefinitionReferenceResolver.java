@@ -17,6 +17,7 @@ import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -84,11 +85,12 @@ public class AttributeDefinitionReferenceResolver
       final SetAttributeType setAttributeType = (SetAttributeType) attributeType;
       final AttributeType elementType = setAttributeType.getElementType();
 
-      int maxDepth = 1;
+      final AtomicInteger maxDepth = new AtomicInteger();
       AttributeType nestedAttributeType = elementType;
 
       if (elementType instanceof SetAttributeType) {
-        nestedAttributeType = getNestedAttributeType((SetAttributeType) elementType, ++maxDepth);
+        maxDepth.incrementAndGet();
+        nestedAttributeType = getNestedAttributeType((SetAttributeType) elementType, maxDepth);
       }
       if (nestedAttributeType instanceof NestedAttributeType) {
         return resolveNestedAttributeTypeReferences(
@@ -101,16 +103,15 @@ public class AttributeDefinitionReferenceResolver
   @Nonnull
   private CompletionStage<AttributeDefinitionDraftBuilder> resolveNestedAttributeTypeReferences(
       @Nonnull AttributeDefinitionDraftBuilder attributeDefinitionDraftBuilder,
-      int maxDepth,
+      final AtomicInteger maxDepth,
       @Nonnull NestedAttributeType nestedAttributeType) {
 
-    final int totalMaxDepth = maxDepth;
     return resolveNestedTypeReference(nestedAttributeType)
         .thenApply(
             resolvedNestedAttributeType -> {
               SetAttributeType setAttributeTypeChain =
                   SetAttributeType.of(resolvedNestedAttributeType);
-              for (int i = 0; i < totalMaxDepth; i++) {
+              for (int i = 0; i < maxDepth.get(); i++) {
                 setAttributeTypeChain = SetAttributeType.of(setAttributeTypeChain);
               }
               return setAttributeTypeChain;
@@ -120,10 +121,11 @@ public class AttributeDefinitionReferenceResolver
 
   @Nullable
   private AttributeType getNestedAttributeType(
-      @Nonnull final SetAttributeType setAttributeType, int maxDepth) {
+      @Nonnull final SetAttributeType setAttributeType, @Nonnull final AtomicInteger maxDepth) {
     final AttributeType elementType = setAttributeType.getElementType();
     if (elementType instanceof SetAttributeType) {
-      return getNestedAttributeType((SetAttributeType) elementType, ++maxDepth);
+      maxDepth.incrementAndGet();
+      return getNestedAttributeType((SetAttributeType) elementType, maxDepth);
     } else if (elementType instanceof NestedAttributeType) {
       return elementType;
     }

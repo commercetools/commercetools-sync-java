@@ -15,7 +15,7 @@ import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtil
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_4;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.assertAttributesAreEqual;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.getProductTypeByKey;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateTargetProjectWithNestedAttributes;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateProjectWithNestedAttributes;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.removeAttributeReferencesAndDeleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
@@ -69,7 +69,7 @@ class ProductTypeWithNestedAttributeSyncIT {
   @BeforeEach
   void setup() {
     removeAttributeReferencesAndDeleteProductTypes(CTP_TARGET_CLIENT);
-    populateTargetProjectWithNestedAttributes();
+    populateProjectWithNestedAttributes(CTP_TARGET_CLIENT);
 
     builtUpdateActions = new ArrayList<>();
     errorMessages = new ArrayList<>();
