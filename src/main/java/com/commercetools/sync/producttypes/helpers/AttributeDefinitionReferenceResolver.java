@@ -18,11 +18,12 @@ import io.sphere.sdk.producttypes.ProductType;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public class AttributeDefinitionReferenceResolver
     extends BaseReferenceResolver<AttributeDefinitionDraft, ProductTypeSyncOptions> {
-  private ProductTypeService productTypeService;
+  private final ProductTypeService productTypeService;
 
   public AttributeDefinitionReferenceResolver(
       @Nonnull final ProductTypeSyncOptions options,
@@ -50,7 +51,7 @@ public class AttributeDefinitionReferenceResolver
     final AttributeDefinitionDraftBuilder draftBuilder =
         AttributeDefinitionDraftBuilder.of(attributeDefinitionDraft);
 
-    return resolveReferences(draftBuilder)
+    return resolveNestedAttributeTypeReferences(draftBuilder)
         .handle(ImmutablePair::new)
         .thenCompose(
             result -> {
@@ -70,7 +71,7 @@ public class AttributeDefinitionReferenceResolver
   }
 
   @Nonnull
-  private CompletionStage<AttributeDefinitionDraftBuilder> resolveReferences(
+  private CompletionStage<AttributeDefinitionDraftBuilder> resolveNestedAttributeTypeReferences(
       @Nonnull final AttributeDefinitionDraftBuilder attributeDefinitionDraftBuilder) {
 
     final AttributeType attributeType = attributeDefinitionDraftBuilder.getAttributeType();
@@ -87,30 +88,43 @@ public class AttributeDefinitionReferenceResolver
       AttributeType nestedAttributeType = elementType;
 
       if (elementType instanceof SetAttributeType) {
-        nestedAttributeType = findMaxDepthOfSetAttributeType((SetAttributeType) elementType, ++maxDepth);
+        nestedAttributeType = getNestedAttributeType((SetAttributeType) elementType, ++maxDepth);
       }
       if (nestedAttributeType instanceof NestedAttributeType) {
-        final int totalMaxDepth = maxDepth;
-        return resolveNestedTypeReference((NestedAttributeType) nestedAttributeType)
-            .thenApply(
-                resolvedNestedAttributeType -> {
-                  SetAttributeType setAttributeTypeChain = SetAttributeType.of(resolvedNestedAttributeType);
-                  for (int i = 0; i < totalMaxDepth; i++) {
-                    setAttributeTypeChain = SetAttributeType.of(setAttributeTypeChain);
-                  }
-                  return setAttributeTypeChain;
-                })
-            .thenApply(attributeDefinitionDraftBuilder::attributeType);
+        return resolveNestedAttributeTypeReferences(
+            attributeDefinitionDraftBuilder, maxDepth, (NestedAttributeType) nestedAttributeType);
       }
     }
     return completedFuture(attributeDefinitionDraftBuilder);
   }
 
-  private AttributeType findMaxDepthOfSetAttributeType(SetAttributeType setAttributeType, int maxDepth) {
+  @Nonnull
+  private CompletionStage<AttributeDefinitionDraftBuilder> resolveNestedAttributeTypeReferences(
+      @Nonnull AttributeDefinitionDraftBuilder attributeDefinitionDraftBuilder,
+      int maxDepth,
+      @Nonnull NestedAttributeType nestedAttributeType) {
+
+    final int totalMaxDepth = maxDepth;
+    return resolveNestedTypeReference(nestedAttributeType)
+        .thenApply(
+            resolvedNestedAttributeType -> {
+              SetAttributeType setAttributeTypeChain =
+                  SetAttributeType.of(resolvedNestedAttributeType);
+              for (int i = 0; i < totalMaxDepth; i++) {
+                setAttributeTypeChain = SetAttributeType.of(setAttributeTypeChain);
+              }
+              return setAttributeTypeChain;
+            })
+        .thenApply(attributeDefinitionDraftBuilder::attributeType);
+  }
+
+  @Nullable
+  private AttributeType getNestedAttributeType(
+      @Nonnull final SetAttributeType setAttributeType, int maxDepth) {
     final AttributeType elementType = setAttributeType.getElementType();
     if (elementType instanceof SetAttributeType) {
-      return findMaxDepthOfSetAttributeType((SetAttributeType) elementType, ++maxDepth);
-    } else if(elementType instanceof NestedAttributeType) {
+      return getNestedAttributeType((SetAttributeType) elementType, ++maxDepth);
+    } else if (elementType instanceof NestedAttributeType) {
       return elementType;
     }
 
