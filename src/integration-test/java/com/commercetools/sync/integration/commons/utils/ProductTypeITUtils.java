@@ -62,16 +62,19 @@ public final class ProductTypeITUtils {
   public static final String PRODUCT_TYPE_KEY_2 = "key_2";
   public static final String PRODUCT_TYPE_KEY_3 = "key_3";
   public static final String PRODUCT_TYPE_KEY_4 = "key_4";
+  public static final String PRODUCT_TYPE_KEY_5 = "key_5";
 
   public static final String PRODUCT_TYPE_NAME_1 = "name_1";
   public static final String PRODUCT_TYPE_NAME_2 = "name_2";
   public static final String PRODUCT_TYPE_NAME_3 = "name_3";
   public static final String PRODUCT_TYPE_NAME_4 = "name_4";
+  public static final String PRODUCT_TYPE_NAME_5 = "name_5";
 
   public static final String PRODUCT_TYPE_DESCRIPTION_1 = "description_1";
   public static final String PRODUCT_TYPE_DESCRIPTION_2 = "description_2";
   public static final String PRODUCT_TYPE_DESCRIPTION_3 = "description_3";
   public static final String PRODUCT_TYPE_DESCRIPTION_4 = "description_4";
+  public static final String PRODUCT_TYPE_DESCRIPTION_5 = "description_5";
 
   public static final AttributeDefinitionDraft ATTRIBUTE_DEFINITION_DRAFT_1 =
       AttributeDefinitionDraftBuilder.of(
