@@ -152,19 +152,6 @@ class ProductTypeWithNestedAttributeSyncIT {
             .searchable(false)
             .build();
 
-    //    final AttributeDefinitionDraft localisedSetOfEnumsAttribute =
-    //        AttributeDefinitionDraftBuilder.of(
-    //                AttributeDefinitionBuilder.of(
-    //                        "localisedSetOfEnums",
-    //                        ofEnglish("label1"),
-    //                        SetAttributeType.of(
-    //                            LocalizedEnumAttributeType.of(
-    //                                asList(
-    //                                    LocalizedEnumValue.of("a", ofEnglish("a")),
-    //                                    LocalizedEnumValue.of("b", ofEnglish("b"))))))
-    //                    .build())
-    //            .build();
-
     final ProductTypeDraft newProductTypeDraft =
         ProductTypeDraft.ofAttributeDefinitionDrafts(
             PRODUCT_TYPE_KEY_5,
