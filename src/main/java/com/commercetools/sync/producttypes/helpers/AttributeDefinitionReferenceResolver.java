@@ -106,6 +106,31 @@ public class AttributeDefinitionReferenceResolver
       final AtomicInteger maxDepth,
       @Nonnull NestedAttributeType nestedAttributeType) {
 
+    /*
+     As SDK types (e.g AttributeDefinitionDraftBuilder) are immutable,
+     whole object needs to be created to change typeReference after resolving the reference.
+
+     For instance, for an AttributeType type structure below which has 3 SetAttributeType and 1 NestedAttributeType,
+     It would create first NestedAttributeType and then wrap it with SetAttributeType and so on so forth until creating
+     the same object again.
+
+     "type": {
+        "name": "set",
+        "elementType": {
+          "name": "set",
+          "elementType": {
+            "name": "set",
+            "elementType": {
+              "name": "nested",
+              "typeReference": {
+                "typeId": "product-type",
+                "id": "36b14c6d-31e9-4bc5-9191-f35a773268ed"
+              }
+            }
+          }
+        }
+      }
+    */
     return resolveNestedTypeReference(nestedAttributeType)
         .thenApply(
             resolvedNestedAttributeType -> {
@@ -123,14 +148,13 @@ public class AttributeDefinitionReferenceResolver
   private AttributeType getNestedAttributeType(
       @Nonnull final SetAttributeType setAttributeType, @Nonnull final AtomicInteger maxDepth) {
     final AttributeType elementType = setAttributeType.getElementType();
+
     if (elementType instanceof SetAttributeType) {
       maxDepth.incrementAndGet();
       return getNestedAttributeType((SetAttributeType) elementType, maxDepth);
-    } else if (elementType instanceof NestedAttributeType) {
-      return elementType;
     }
 
-    return null;
+    return elementType;
   }
 
   @Nonnull
