@@ -29,6 +29,7 @@ import io.sphere.sdk.products.attributes.EnumAttributeType;
 import io.sphere.sdk.products.attributes.LocalizedEnumAttributeType;
 import io.sphere.sdk.products.attributes.LocalizedStringAttributeType;
 import io.sphere.sdk.products.attributes.NestedAttributeType;
+import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
@@ -61,16 +62,19 @@ public final class ProductTypeITUtils {
   public static final String PRODUCT_TYPE_KEY_2 = "key_2";
   public static final String PRODUCT_TYPE_KEY_3 = "key_3";
   public static final String PRODUCT_TYPE_KEY_4 = "key_4";
+  public static final String PRODUCT_TYPE_KEY_5 = "key_5";
 
   public static final String PRODUCT_TYPE_NAME_1 = "name_1";
   public static final String PRODUCT_TYPE_NAME_2 = "name_2";
   public static final String PRODUCT_TYPE_NAME_3 = "name_3";
   public static final String PRODUCT_TYPE_NAME_4 = "name_4";
+  public static final String PRODUCT_TYPE_NAME_5 = "name_5";
 
   public static final String PRODUCT_TYPE_DESCRIPTION_1 = "description_1";
   public static final String PRODUCT_TYPE_DESCRIPTION_2 = "description_2";
   public static final String PRODUCT_TYPE_DESCRIPTION_3 = "description_3";
   public static final String PRODUCT_TYPE_DESCRIPTION_4 = "description_4";
+  public static final String PRODUCT_TYPE_DESCRIPTION_5 = "description_5";
 
   public static final AttributeDefinitionDraft ATTRIBUTE_DEFINITION_DRAFT_1 =
       AttributeDefinitionDraftBuilder.of(
@@ -130,25 +134,32 @@ public final class ProductTypeITUtils {
         .join();
   }
 
-  public static void populateSourcesProjectWithNestedAttributes() {
+  public static void populateProjectWithNestedAttributes(@Nonnull final SphereClient ctpClient) {
     final ProductType productType1 =
-        CTP_SOURCE_CLIENT
+        ctpClient
             .execute(ProductTypeCreateCommand.of(productTypeDraft1))
             .toCompletableFuture()
             .join();
     final ProductType productType2 =
-        CTP_SOURCE_CLIENT
+        ctpClient
             .execute(ProductTypeCreateCommand.of(productTypeDraft2))
             .toCompletableFuture()
             .join();
 
-    final AttributeDefinition nestedTypeAttr1 =
-        AttributeDefinitionBuilder.of(
-                "nestedattr", ofEnglish("nestedattr"), NestedAttributeType.of(productType1))
-            .isSearchable(false)
+    final AttributeDefinitionDraft nestedTypeAttr1 =
+        AttributeDefinitionDraftBuilder.of(
+                AttributeDefinitionBuilder.of(
+                        "nestedattr",
+                        ofEnglish("nestedattr"),
+                        SetAttributeType.of(
+                            SetAttributeType.of(
+                                SetAttributeType.of(
+                                    SetAttributeType.of(NestedAttributeType.of(productType1))))))
+                    .build())
             // isSearchable=true is not supported for attribute type 'nested' and
-            // AttributeDefinitionBuilder sets
-            // it to true by default
+            // AttributeDefinitionBuilder sets it to
+            // true by default
+            .searchable(false)
             .build();
 
     final AttributeDefinition nestedTypeAttr2 =
@@ -166,10 +177,7 @@ public final class ProductTypeITUtils {
                 AttributeDefinitionDraftBuilder.of(nestedTypeAttr1).build(),
                 AttributeDefinitionDraftBuilder.of(nestedTypeAttr2).build()));
 
-    CTP_SOURCE_CLIENT
-        .execute(ProductTypeCreateCommand.of(productTypeDraft3))
-        .toCompletableFuture()
-        .join();
+    ctpClient.execute(ProductTypeCreateCommand.of(productTypeDraft3)).toCompletableFuture().join();
 
     final ProductTypeDraft productTypeDraft4 =
         ProductTypeDraft.ofAttributeDefinitionDrafts(
@@ -178,10 +186,7 @@ public final class ProductTypeITUtils {
             PRODUCT_TYPE_DESCRIPTION_4,
             singletonList(AttributeDefinitionDraftBuilder.of(nestedTypeAttr1).build()));
 
-    CTP_SOURCE_CLIENT
-        .execute(ProductTypeCreateCommand.of(productTypeDraft4))
-        .toCompletableFuture()
-        .join();
+    ctpClient.execute(ProductTypeCreateCommand.of(productTypeDraft4)).toCompletableFuture().join();
   }
 
   /**
@@ -192,49 +197,6 @@ public final class ProductTypeITUtils {
   public static void populateTargetProject() {
     CTP_TARGET_CLIENT
         .execute(ProductTypeCreateCommand.of(productTypeDraft1))
-        .toCompletableFuture()
-        .join();
-  }
-
-  public static void populateTargetProjectWithNestedAttributes() {
-    final ProductType productType1 =
-        CTP_TARGET_CLIENT
-            .execute(ProductTypeCreateCommand.of(productTypeDraft1))
-            .toCompletableFuture()
-            .join();
-
-    final ProductType productType2 =
-        CTP_TARGET_CLIENT
-            .execute(ProductTypeCreateCommand.of(productTypeDraft2))
-            .toCompletableFuture()
-            .join();
-
-    final AttributeDefinition nestedTypeAttr1 =
-        AttributeDefinitionBuilder.of(
-                "nestedattr", ofEnglish("nestedattr"), NestedAttributeType.of(productType1))
-            .isSearchable(false)
-            // isSearchable=true is not supported for attribute type 'nested' and
-            // AttributeDefinitionBuilder sets
-            // it to true by default
-            .build();
-
-    final AttributeDefinition nestedTypeAttr2 =
-        AttributeDefinitionBuilder.of(
-                "nestedattr2", ofEnglish("nestedattr2"), NestedAttributeType.of(productType2))
-            .isSearchable(false)
-            .build();
-
-    final ProductTypeDraft productTypeDraft3 =
-        ProductTypeDraft.ofAttributeDefinitionDrafts(
-            PRODUCT_TYPE_KEY_3,
-            PRODUCT_TYPE_NAME_3,
-            PRODUCT_TYPE_DESCRIPTION_3,
-            asList(
-                AttributeDefinitionDraftBuilder.of(nestedTypeAttr1).build(),
-                AttributeDefinitionDraftBuilder.of(nestedTypeAttr2).build()));
-
-    CTP_TARGET_CLIENT
-        .execute(ProductTypeCreateCommand.of(productTypeDraft3))
         .toCompletableFuture()
         .join();
   }

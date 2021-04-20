@@ -18,7 +18,7 @@ import javax.annotation.Nonnull;
 public final class ProductTypeReferenceResolver
     extends BaseReferenceResolver<ProductTypeDraft, ProductTypeSyncOptions> {
 
-  private AttributeDefinitionReferenceResolver attributeDefinitionReferenceResolver;
+  private final AttributeDefinitionReferenceResolver attributeDefinitionReferenceResolver;
 
   /**
    * Takes a {@link ProductTypeSyncOptions} instance and a {@link ProductTypeService} to instantiate

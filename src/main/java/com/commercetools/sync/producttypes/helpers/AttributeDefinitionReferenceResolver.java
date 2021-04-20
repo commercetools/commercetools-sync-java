@@ -17,12 +17,14 @@ import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public class AttributeDefinitionReferenceResolver
     extends BaseReferenceResolver<AttributeDefinitionDraft, ProductTypeSyncOptions> {
-  private ProductTypeService productTypeService;
+  private final ProductTypeService productTypeService;
 
   public AttributeDefinitionReferenceResolver(
       @Nonnull final ProductTypeSyncOptions options,
@@ -50,7 +52,7 @@ public class AttributeDefinitionReferenceResolver
     final AttributeDefinitionDraftBuilder draftBuilder =
         AttributeDefinitionDraftBuilder.of(attributeDefinitionDraft);
 
-    return resolveReferences(draftBuilder)
+    return resolveNestedAttributeTypeReferences(draftBuilder)
         .handle(ImmutablePair::new)
         .thenCompose(
             result -> {
@@ -70,7 +72,7 @@ public class AttributeDefinitionReferenceResolver
   }
 
   @Nonnull
-  private CompletionStage<AttributeDefinitionDraftBuilder> resolveReferences(
+  private CompletionStage<AttributeDefinitionDraftBuilder> resolveNestedAttributeTypeReferences(
       @Nonnull final AttributeDefinitionDraftBuilder attributeDefinitionDraftBuilder) {
 
     final AttributeType attributeType = attributeDefinitionDraftBuilder.getAttributeType();
@@ -83,14 +85,76 @@ public class AttributeDefinitionReferenceResolver
       final SetAttributeType setAttributeType = (SetAttributeType) attributeType;
       final AttributeType elementType = setAttributeType.getElementType();
 
-      if (elementType instanceof NestedAttributeType) {
+      final AtomicInteger maxDepth = new AtomicInteger();
+      AttributeType nestedAttributeType = elementType;
 
-        return resolveNestedTypeReference((NestedAttributeType) elementType)
-            .thenApply(SetAttributeType::of)
-            .thenApply(attributeDefinitionDraftBuilder::attributeType);
+      if (elementType instanceof SetAttributeType) {
+        maxDepth.incrementAndGet();
+        nestedAttributeType = getNestedAttributeType((SetAttributeType) elementType, maxDepth);
+      }
+      if (nestedAttributeType instanceof NestedAttributeType) {
+        return resolveNestedAttributeTypeReferences(
+            attributeDefinitionDraftBuilder, maxDepth, (NestedAttributeType) nestedAttributeType);
       }
     }
     return completedFuture(attributeDefinitionDraftBuilder);
+  }
+
+  @Nonnull
+  private CompletionStage<AttributeDefinitionDraftBuilder> resolveNestedAttributeTypeReferences(
+      @Nonnull AttributeDefinitionDraftBuilder attributeDefinitionDraftBuilder,
+      final AtomicInteger maxDepth,
+      @Nonnull NestedAttributeType nestedAttributeType) {
+
+    /*
+     As SDK types (e.g AttributeDefinitionDraftBuilder) are immutable,
+     whole object needs to be created to change typeReference after resolving the reference.
+
+     For instance, for an AttributeType type structure below which has 3 SetAttributeType and 1 NestedAttributeType,
+     It would create first NestedAttributeType and then wrap it with SetAttributeType and so on so forth until creating
+     the same object again.
+
+     "type": {
+        "name": "set",
+        "elementType": {
+          "name": "set",
+          "elementType": {
+            "name": "set",
+            "elementType": {
+              "name": "nested",
+              "typeReference": {
+                "typeId": "product-type",
+                "id": "36b14c6d-31e9-4bc5-9191-f35a773268ed"
+              }
+            }
+          }
+        }
+      }
+    */
+    return resolveNestedTypeReference(nestedAttributeType)
+        .thenApply(
+            resolvedNestedAttributeType -> {
+              SetAttributeType setAttributeTypeChain =
+                  SetAttributeType.of(resolvedNestedAttributeType);
+              for (int i = 0; i < maxDepth.get(); i++) {
+                setAttributeTypeChain = SetAttributeType.of(setAttributeTypeChain);
+              }
+              return setAttributeTypeChain;
+            })
+        .thenApply(attributeDefinitionDraftBuilder::attributeType);
+  }
+
+  @Nullable
+  private AttributeType getNestedAttributeType(
+      @Nonnull final SetAttributeType setAttributeType, @Nonnull final AtomicInteger maxDepth) {
+    final AttributeType elementType = setAttributeType.getElementType();
+
+    if (elementType instanceof SetAttributeType) {
+      maxDepth.incrementAndGet();
+      return getNestedAttributeType((SetAttributeType) elementType, maxDepth);
+    }
+
+    return elementType;
   }
 
   @Nonnull

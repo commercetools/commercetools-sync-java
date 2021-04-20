@@ -1,8 +1,7 @@
 package com.commercetools.sync.integration.ctpprojectsource.producttypes;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateSourcesProjectWithNestedAttributes;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateTargetProjectWithNestedAttributes;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateProjectWithNestedAttributes;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.removeAttributeReferencesAndDeleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -47,7 +46,7 @@ class ProductTypeWithNestedAttributeSyncIT {
   void setup() {
     removeAttributeReferencesAndDeleteProductTypes(CTP_SOURCE_CLIENT);
     removeAttributeReferencesAndDeleteProductTypes(CTP_TARGET_CLIENT);
-    populateSourcesProjectWithNestedAttributes();
+    populateProjectWithNestedAttributes(CTP_SOURCE_CLIENT);
 
     builtUpdateActions = new ArrayList<>();
     errorMessages = new ArrayList<>();
@@ -156,7 +155,7 @@ class ProductTypeWithNestedAttributeSyncIT {
   @Test
   void sync_WithoutUpdates_ShouldReturnProperStatistics() {
     // preparation
-    populateTargetProjectWithNestedAttributes();
+    populateProjectWithNestedAttributes(CTP_TARGET_CLIENT);
     final List<ProductType> productTypes =
         CTP_SOURCE_CLIENT.execute(ProductTypeQuery.of()).toCompletableFuture().join().getResults();
 
@@ -175,18 +174,19 @@ class ProductTypeWithNestedAttributeSyncIT {
     assertThat(errorMessages).isEmpty();
     assertThat(exceptions).isEmpty();
     assertThat(builtUpdateActions).isEmpty();
-    assertThat(productTypeSyncStatistics).hasValues(4, 1, 0, 0, 0);
+    assertThat(productTypeSyncStatistics).hasValues(4, 0, 0, 0, 0);
     assertThat(productTypeSyncStatistics.getReportMessage())
         .isEqualTo(
             "Summary: 4 product types were processed in total"
-                + " (1 created, 0 updated, 0 failed to sync and 0 product types with at least one NestedType or a Set"
+                + " (0 created, 0 updated, 0 failed to sync and 0 product types with at least one NestedType or a Set"
                 + " of NestedType attribute definition(s) referencing a missing product type).");
   }
 
   @Test
   void sync_WithUpdates_ShouldReturnProperStatistics() {
     // preparation
-    populateTargetProjectWithNestedAttributes();
+    populateProjectWithNestedAttributes(CTP_TARGET_CLIENT);
+
     final List<ProductType> productTypes =
         CTP_SOURCE_CLIENT.execute(ProductTypeQuery.of()).toCompletableFuture().join().getResults();
 
@@ -226,14 +226,12 @@ class ProductTypeWithNestedAttributeSyncIT {
     assertThat(errorMessages).isEmpty();
     assertThat(exceptions).isEmpty();
     assertThat(builtUpdateActions)
-        .containsExactly(
-            ChangeAttributeDefinitionLabel.of("nestedattr", ofEnglish("new-label")),
-            ChangeAttributeDefinitionLabel.of("nestedattr2", ofEnglish("new-label")));
-    assertThat(productTypeSyncStatistics).hasValues(4, 1, 1, 0, 0);
+        .containsExactly(ChangeAttributeDefinitionLabel.of("nestedattr2", ofEnglish("new-label")));
+    assertThat(productTypeSyncStatistics).hasValues(4, 0, 1, 0, 0);
     assertThat(productTypeSyncStatistics.getReportMessage())
         .isEqualTo(
             "Summary: 4 product types were processed in total"
-                + " (1 created, 1 updated, 0 failed to sync and 0 product types with at least one NestedType or a Set"
+                + " (0 created, 1 updated, 0 failed to sync and 0 product types with at least one NestedType or a Set"
                 + " of NestedType attribute definition(s) referencing a missing product type).");
   }
 }

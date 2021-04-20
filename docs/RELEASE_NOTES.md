@@ -26,8 +26,16 @@
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
-### 5.0.0 - Apr 12, 2021
 
+### 5.1.0 - Apr 20, 2021
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/5.0.0...5.1.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/5.1.0/) |
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/5.1.0)
+
+- 🎉 **New Features** (1)
+  - Syncing product types with an attribute of type Set of (Set of Set of..) of NestedType attribute is supported. [#720](https://github.com/commercetools/commercetools-sync-java/pull/720)
+
+### 5.0.0 - Apr 12, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/4.0.1...5.0.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/5.0.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/5.0.0)
