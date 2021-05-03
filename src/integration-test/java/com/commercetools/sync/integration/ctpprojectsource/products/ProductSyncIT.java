@@ -56,6 +56,7 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
+import io.sphere.sdk.products.ProductDraftDsl;
 import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
@@ -218,6 +219,50 @@ class ProductSyncIT {
   static void tearDown() {
     deleteProductSyncTestData(CTP_TARGET_CLIENT);
     deleteProductSyncTestData(CTP_SOURCE_CLIENT);
+  }
+
+  @Test
+  void sync_withSpecialCharacterProductKey_ShouldNotSyncProducts() {
+    // preparation
+    final ProductDraft newProductDraft =
+            createProductDraftBuilder(
+                    PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, sourceProductType.toReference())
+                    .taxCategory(sourceTaxCategory)
+                    .state(sourceProductState)
+                    .categories(sourceCategoryReferencesWithIds)
+                    .categoryOrderHints(createRandomCategoryOrderHints(sourceCategoryReferencesWithIds))
+                    .publish(true)
+                    .key("sample-\\\"product-type")
+                    .build();
+
+    CTP_SOURCE_CLIENT
+            .execute(ProductCreateCommand.of(newProductDraft))
+            .toCompletableFuture()
+            .join();
+
+    final List<ProductProjection> products =
+            CTP_SOURCE_CLIENT
+                    .execute(ProductProjectionQuery.ofStaged())
+                    .toCompletableFuture()
+                    .join()
+                    .getResults();
+
+    final List<ProductDraft> productDrafts =
+            ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+                    .join();
+    ProductDraft productDraft = productDrafts.get(0);
+    ProductDraftDsl draftWithSpecialCharacterKey = ProductDraftBuilder.of(productDraft).key("sample-\\\"product-type").build();
+    productDrafts.add(0, draftWithSpecialCharacterKey);
+
+    // test
+    final ProductSyncStatistics syncStatistics =
+            productSync.sync(productDrafts).toCompletableFuture().join();
+
+    // assertions
+    assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+    assertThat(errorCallBackMessages).isEmpty();
+    assertThat(errorCallBackExceptions).isEmpty();
+    assertThat(warningCallBackMessages).isEmpty();
   }
 
   @Test
