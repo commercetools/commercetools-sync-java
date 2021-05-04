@@ -110,7 +110,7 @@ public final class SyncUtils {
    * @param key to check if it contains special character(") and format it accordingly.
    * @return formatted key value.
    */
-  public static String formatKeyWithEscapeCharacter(@Nonnull final String key) {
+  public static String formatKeyWithEscapeCharacter(final String key) {
 
     if (key != null) {
       return key.replaceAll(DOUBLE_QUOTE, DOUBLE_QUOTE_WITH_ESCAPE_CHARACTERS);
