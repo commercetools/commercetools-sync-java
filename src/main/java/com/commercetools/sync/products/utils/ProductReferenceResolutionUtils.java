@@ -1,5 +1,6 @@
 package com.commercetools.sync.products.utils;
 
+import static com.commercetools.sync.commons.utils.SyncUtils.formatKeyWithEscapeCharacter;
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
 
@@ -180,7 +181,7 @@ public final class ProductReferenceResolutionUtils {
         .searchKeywords(product.getSearchKeywords())
         .taxCategory(product.getTaxCategory())
         .state(product.getState())
-        .key(product.getKey())
+        .key(formatKeyWithEscapeCharacter(product.getKey()))
         .publish(product.isPublished())
         .categories(new ArrayList<>(product.getCategories()))
         .categoryOrderHints(product.getCategoryOrderHints());

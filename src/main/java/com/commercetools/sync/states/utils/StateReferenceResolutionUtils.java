@@ -1,5 +1,6 @@
 package com.commercetools.sync.states.utils;
 
+import static com.commercetools.sync.commons.utils.SyncUtils.formatKeyWithEscapeCharacter;
 import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
 
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
@@ -63,7 +64,8 @@ public final class StateReferenceResolutionUtils {
             state -> {
               final Set<Reference<State>> newTransitions =
                   replaceTransitionIdsWithKeys(state, referenceIdToKeyCache);
-              return StateDraftBuilder.of(state.getKey(), state.getType())
+              return StateDraftBuilder.of(
+                  formatKeyWithEscapeCharacter(state.getKey()), state.getType())
                   .name(state.getName())
                   .description(state.getDescription())
                   .initial(state.isInitial())

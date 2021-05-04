@@ -1,6 +1,7 @@
 package com.commercetools.sync.inventories.utils;
 
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
+import static com.commercetools.sync.commons.utils.SyncUtils.formatKeyWithEscapeCharacter;
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
 
@@ -75,6 +76,7 @@ public final class InventoryReferenceResolutionUtils {
       @Nonnull final InventoryEntry inventoryEntry,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return InventoryEntryDraftBuilder.of(inventoryEntry)
+        .sku(formatKeyWithEscapeCharacter(inventoryEntry.getSku()))
         .custom(mapToCustomFieldsDraft(inventoryEntry, referenceIdToKeyCache))
         .supplyChannel(
             getResourceIdentifierWithKey(inventoryEntry.getSupplyChannel(), referenceIdToKeyCache))

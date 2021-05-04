@@ -1,6 +1,7 @@
 package com.commercetools.sync.cartdiscounts.utils;
 
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
+import static com.commercetools.sync.commons.utils.SyncUtils.formatKeyWithEscapeCharacter;
 
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
@@ -9,6 +10,7 @@ import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.types.Type;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -73,7 +75,7 @@ public final class CartDiscountReferenceResolutionUtils {
             cartDiscount.getSortOrder(),
             cartDiscount.getTarget(),
             cartDiscount.getValue())
-        .key(cartDiscount.getKey())
+        .key(formatKeyWithEscapeCharacter(cartDiscount.getKey()))
         .description(cartDiscount.getDescription())
         .active(cartDiscount.isActive())
         .validFrom(cartDiscount.getValidFrom())

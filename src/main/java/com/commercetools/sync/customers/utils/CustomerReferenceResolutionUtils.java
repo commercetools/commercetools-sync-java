@@ -1,6 +1,7 @@
 package com.commercetools.sync.customers.utils;
 
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
+import static com.commercetools.sync.commons.utils.SyncUtils.formatKeyWithEscapeCharacter;
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
 import static org.apache.http.util.TextUtils.isBlank;
@@ -86,7 +87,7 @@ public final class CustomerReferenceResolutionUtils {
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return CustomerDraftBuilder.of(customer.getEmail(), customer.getPassword())
         .customerNumber(customer.getCustomerNumber())
-        .key(customer.getKey())
+        .key(formatKeyWithEscapeCharacter(customer.getKey()))
         .firstName(customer.getFirstName())
         .lastName(customer.getLastName())
         .middleName(customer.getMiddleName())

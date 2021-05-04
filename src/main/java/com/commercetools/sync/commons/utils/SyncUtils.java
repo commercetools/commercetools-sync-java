@@ -11,6 +11,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public final class SyncUtils {
+  private static final String DOUBLE_QUOTE = "\"";
+  private static final String DOUBLE_QUOTE_WITH_ESCAPE_CHARACTERS = "\\\\\"";
   private static final String UUID_REGEX =
       "[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}";
 
@@ -102,6 +104,19 @@ public final class SyncUtils {
   public static boolean isUuid(@Nonnull final String id) {
     final Pattern regexPattern = Pattern.compile(UUID_REGEX);
     return regexPattern.matcher(id).matches();
+  }
+
+  /**
+   *
+   * @param key to check if it contains special character(") and format it accordingly.
+   * @return formatted key value.
+   */
+  public static String formatKeyWithEscapeCharacter(@Nonnull final String key) {
+
+    if (key != null) {
+      return key.replaceAll(DOUBLE_QUOTE, DOUBLE_QUOTE_WITH_ESCAPE_CHARACTERS);
+    }
+    return key;
   }
 
   private SyncUtils() {}

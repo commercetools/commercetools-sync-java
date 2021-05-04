@@ -1,6 +1,7 @@
 package com.commercetools.sync.shoppinglists.utils;
 
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
+import static com.commercetools.sync.commons.utils.SyncUtils.formatKeyWithEscapeCharacter;
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
 
@@ -146,7 +147,7 @@ public final class ShoppingListReferenceResolutionUtils {
 
     return ShoppingListDraftBuilder.of(shoppingList.getName())
         .description(shoppingList.getDescription())
-        .key(shoppingList.getKey())
+        .key(formatKeyWithEscapeCharacter(shoppingList.getKey()))
         .customer(getResourceIdentifierWithKey(shoppingList.getCustomer(), referenceIdToKeyCache))
         .slug(shoppingList.getSlug())
         .lineItems(mapToLineItemDrafts(shoppingList.getLineItems(), referenceIdToKeyCache))
