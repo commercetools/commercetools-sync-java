@@ -65,7 +65,7 @@ public final class StateReferenceResolutionUtils {
               final Set<Reference<State>> newTransitions =
                   replaceTransitionIdsWithKeys(state, referenceIdToKeyCache);
               return StateDraftBuilder.of(
-                  formatKeyWithEscapeCharacter(state.getKey()), state.getType())
+                      formatKeyWithEscapeCharacter(state.getKey()), state.getType())
                   .name(state.getName())
                   .description(state.getDescription())
                   .initial(state.isInitial())

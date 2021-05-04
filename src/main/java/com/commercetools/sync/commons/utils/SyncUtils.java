@@ -107,7 +107,6 @@ public final class SyncUtils {
   }
 
   /**
-   *
    * @param key to check if it contains special character(") and format it accordingly.
    * @return formatted key value.
    */

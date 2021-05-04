@@ -10,7 +10,6 @@ import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.types.Type;
-
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
