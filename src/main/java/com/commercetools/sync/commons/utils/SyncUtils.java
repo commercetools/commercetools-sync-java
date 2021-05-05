@@ -11,8 +11,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public final class SyncUtils {
-  private static final String DOUBLE_QUOTE = "\"";
-  private static final String DOUBLE_QUOTE_WITH_ESCAPE_CHARACTERS = "\\\\\"";
   private static final String UUID_REGEX =
       "[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}";
 
