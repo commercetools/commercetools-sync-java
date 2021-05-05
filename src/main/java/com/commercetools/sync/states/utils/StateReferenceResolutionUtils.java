@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import org.apache.commons.lang3.StringEscapeUtils;
 
 /**
  * Util class which provides utilities that can be used when syncing resources from a source
@@ -64,8 +63,7 @@ public final class StateReferenceResolutionUtils {
             state -> {
               final Set<Reference<State>> newTransitions =
                   replaceTransitionIdsWithKeys(state, referenceIdToKeyCache);
-              return StateDraftBuilder.of(
-                      StringEscapeUtils.escapeJava(state.getKey()), state.getType())
+              return StateDraftBuilder.of(state.getKey(), state.getType())
                   .name(state.getName())
                   .description(state.getDescription())
                   .initial(state.isInitial())

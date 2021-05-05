@@ -32,7 +32,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import org.apache.commons.lang3.StringEscapeUtils;
 
 /**
  * Util class which provides utilities that can be used when syncing resources from a source
@@ -181,7 +180,7 @@ public final class ProductReferenceResolutionUtils {
         .searchKeywords(product.getSearchKeywords())
         .taxCategory(product.getTaxCategory())
         .state(product.getState())
-        .key(StringEscapeUtils.escapeJava(product.getKey()))
+        .key(product.getKey())
         .publish(product.isPublished())
         .categories(new ArrayList<>(product.getCategories()))
         .categoryOrderHints(product.getCategoryOrderHints());

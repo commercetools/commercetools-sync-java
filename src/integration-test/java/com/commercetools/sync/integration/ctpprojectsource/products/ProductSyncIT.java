@@ -223,6 +223,7 @@ class ProductSyncIT {
   @Test
   void sync_withDoubleQuotationCharacterInProductKey_ShouldSyncProducts() {
     // preparation
+    final String sampleProductKey = "sample-\"product-type";
     final ProductDraft newProductDraft =
         createProductDraftBuilder(
                 PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, sourceProductType.toReference())
@@ -231,7 +232,7 @@ class ProductSyncIT {
             .categories(sourceCategoryReferencesWithIds)
             .categoryOrderHints(createRandomCategoryOrderHints(sourceCategoryReferencesWithIds))
             .publish(true)
-            .key("sample-\"product-type")
+            .key(sampleProductKey)
             .build();
 
     CTP_SOURCE_CLIENT
@@ -259,6 +260,15 @@ class ProductSyncIT {
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
+
+    final List<ProductProjection> targetProducts =
+        CTP_TARGET_CLIENT
+            .execute(ProductProjectionQuery.ofStaged())
+            .toCompletableFuture()
+            .join()
+            .getResults();
+
+    assertThat(targetProducts.get(0).getKey()).isEqualTo(sampleProductKey);
   }
 
   @Test

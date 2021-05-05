@@ -29,6 +29,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public final class ProductServiceImpl
@@ -74,7 +75,7 @@ public final class ProductServiceImpl
     final List<String> keysSurroundedWithDoubleQuotes =
         productKeys.stream()
             .filter(StringUtils::isNotBlank)
-            .map(productKey -> format("\"%s\"", productKey))
+            .map(productKey -> format("\"%s\"", StringEscapeUtils.escapeJava(productKey)))
             .collect(Collectors.toList());
     String keysQueryString = keysSurroundedWithDoubleQuotes.toString();
     // Strip square brackets from list string. For example: ["key1", "key2"] -> "key1", "key2"
