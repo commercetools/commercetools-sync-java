@@ -1,7 +1,6 @@
 package com.commercetools.sync.customers.utils;
 
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
-import static com.commercetools.sync.commons.utils.SyncUtils.formatKeyWithEscapeCharacter;
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
 import static org.apache.http.util.TextUtils.isBlank;
@@ -22,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 /**
  * Util class which provides utilities that can be used when syncing resources from a source
@@ -87,7 +87,7 @@ public final class CustomerReferenceResolutionUtils {
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return CustomerDraftBuilder.of(customer.getEmail(), customer.getPassword())
         .customerNumber(customer.getCustomerNumber())
-        .key(formatKeyWithEscapeCharacter(customer.getKey()))
+        .key(StringEscapeUtils.escapeJava(customer.getKey()))
         .firstName(customer.getFirstName())
         .lastName(customer.getLastName())
         .middleName(customer.getMiddleName())

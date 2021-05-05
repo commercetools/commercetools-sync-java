@@ -1,6 +1,5 @@
 package com.commercetools.sync.states.utils;
 
-import static com.commercetools.sync.commons.utils.SyncUtils.formatKeyWithEscapeCharacter;
 import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
 
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
@@ -14,6 +13,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 /**
  * Util class which provides utilities that can be used when syncing resources from a source
@@ -65,7 +65,7 @@ public final class StateReferenceResolutionUtils {
               final Set<Reference<State>> newTransitions =
                   replaceTransitionIdsWithKeys(state, referenceIdToKeyCache);
               return StateDraftBuilder.of(
-                      formatKeyWithEscapeCharacter(state.getKey()), state.getType())
+                      StringEscapeUtils.escapeJava(state.getKey()), state.getType())
                   .name(state.getName())
                   .description(state.getDescription())
                   .initial(state.isInitial())

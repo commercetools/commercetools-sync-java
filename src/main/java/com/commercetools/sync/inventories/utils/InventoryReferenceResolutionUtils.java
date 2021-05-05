@@ -1,7 +1,6 @@
 package com.commercetools.sync.inventories.utils;
 
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
-import static com.commercetools.sync.commons.utils.SyncUtils.formatKeyWithEscapeCharacter;
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
 
@@ -15,6 +14,7 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.types.Type;
 import java.util.List;
 import javax.annotation.Nonnull;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 /**
  * Util class which provides utilities that can be used when syncing resources from a source
@@ -76,7 +76,7 @@ public final class InventoryReferenceResolutionUtils {
       @Nonnull final InventoryEntry inventoryEntry,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return InventoryEntryDraftBuilder.of(inventoryEntry)
-        .sku(formatKeyWithEscapeCharacter(inventoryEntry.getSku()))
+        .sku(StringEscapeUtils.escapeJava(inventoryEntry.getSku()))
         .custom(mapToCustomFieldsDraft(inventoryEntry, referenceIdToKeyCache))
         .supplyChannel(
             getResourceIdentifierWithKey(inventoryEntry.getSupplyChannel(), referenceIdToKeyCache))

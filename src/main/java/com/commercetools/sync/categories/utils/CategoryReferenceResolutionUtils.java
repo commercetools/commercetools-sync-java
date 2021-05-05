@@ -2,7 +2,6 @@ package com.commercetools.sync.categories.utils;
 
 import static com.commercetools.sync.commons.utils.AssetReferenceResolutionUtils.mapToAssetDrafts;
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
-import static com.commercetools.sync.commons.utils.SyncUtils.formatKeyWithEscapeCharacter;
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
@@ -15,6 +14,7 @@ import io.sphere.sdk.types.Type;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 /**
  * Util class which provides utilities that can be used when syncing resources from a source
@@ -81,7 +81,7 @@ public final class CategoryReferenceResolutionUtils {
       @Nonnull final Category category,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return CategoryDraftBuilder.of(category)
-        .key(formatKeyWithEscapeCharacter(category.getKey()))
+        .key(StringEscapeUtils.escapeJava(category.getKey()))
         .custom(mapToCustomFieldsDraft(category, referenceIdToKeyCache))
         .assets(mapToAssetDrafts(category.getAssets(), referenceIdToKeyCache))
         .parent(getResourceIdentifierWithKey(category.getParent(), referenceIdToKeyCache))

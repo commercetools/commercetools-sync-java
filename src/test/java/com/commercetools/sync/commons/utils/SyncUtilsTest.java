@@ -2,7 +2,6 @@ package com.commercetools.sync.commons.utils;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
-import static com.commercetools.sync.commons.utils.SyncUtils.formatKeyWithEscapeCharacter;
 import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.lang.String.format;
@@ -208,22 +207,5 @@ class SyncUtilsTest {
     final ResourceIdentifier<Category> resourceIdentifier =
         getResourceIdentifierWithKey(null, referenceIdToKeyCache);
     assertThat(resourceIdentifier).isNull();
-  }
-
-  @Test
-  void formatKey_WithDoubleQuoteCharacter_ShouldReturnFormattedKeyValue() {
-    final String formattedKey = formatKeyWithEscapeCharacter("\"sample-\"KeyTest\"");
-    assertThat(formattedKey).isEqualTo("\\\"sample-\\\"KeyTest\\\"");
-  }
-
-  @Test
-  void formatKey_WithoutDoubleQuoteCharacter_ShouldReturnKeyValue() {
-    final String sampleKeyTest = "";
-    assertThat(sampleKeyTest).isEqualTo(formatKeyWithEscapeCharacter(sampleKeyTest));
-  }
-
-  @Test
-  void formatKey_WithNullValue_ShouldReturnNullValue() {
-    assertThat(formatKeyWithEscapeCharacter(null)).isNull();
   }
 }

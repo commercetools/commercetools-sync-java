@@ -1,6 +1,5 @@
 package com.commercetools.sync.products.utils;
 
-import static com.commercetools.sync.commons.utils.SyncUtils.formatKeyWithEscapeCharacter;
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
 
@@ -33,6 +32,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 /**
  * Util class which provides utilities that can be used when syncing resources from a source
@@ -181,7 +181,7 @@ public final class ProductReferenceResolutionUtils {
         .searchKeywords(product.getSearchKeywords())
         .taxCategory(product.getTaxCategory())
         .state(product.getState())
-        .key(formatKeyWithEscapeCharacter(product.getKey()))
+        .key(StringEscapeUtils.escapeJava(product.getKey()))
         .publish(product.isPublished())
         .categories(new ArrayList<>(product.getCategories()))
         .categoryOrderHints(product.getCategoryOrderHints());
