@@ -18,7 +18,6 @@ import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.ProductProjectionType;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -93,20 +92,6 @@ class ProductReferenceResolutionUtilsTest {
                         assertThat(categoryDraft.getKey()).isEqualTo("categoryKey1");
                       });
             });
-  }
-
-  @Test
-  void mapToProductDrafts_WithDoubleQuotationCharacterInProductKey_ShouldAddEscapeCharacter() {
-
-    final ProductProjection product =
-        readObjectFromResource("product-with-special-character-in-key.json", Product.class)
-            .toProjection(ProductProjectionType.STAGED);
-
-    final List<ProductDraft> productDraftsWithKeysOnReferences =
-        ProductReferenceResolutionUtils.mapToProductDrafts(asList(product), referenceIdToKeyCache);
-
-    // assertions
-    assertThat(productDraftsWithKeysOnReferences.get(0).getKey()).isEqualTo("product-\\\"Key");
   }
 
   @Test

@@ -1,5 +1,6 @@
 package com.commercetools.sync.services.impl;
 
+import static java.util.Collections.EMPTY_LIST;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
@@ -144,6 +145,25 @@ class BaseServiceImplTest {
     // assertions
     assertThat(resources).isEmpty();
     verify(client, never()).execute(any(ProductProjectionQuery.class));
+  }
+
+  @Test
+  void fetchMatchingResources_WithSpecialCharactersInKeySet_ShouldExecuteQuery() {
+    // preparation
+    final String key1 = "special-\"charTest";
+
+    final HashSet<String> resourceKeys = new HashSet<>();
+    resourceKeys.add(key1);
+
+    final PagedQueryResult result = mock(PagedQueryResult.class);
+    when(result.getResults()).thenReturn(EMPTY_LIST);
+    when(client.execute(any(ProductProjectionQuery.class))).thenReturn(completedFuture(result));
+
+    // test
+    service.fetchMatchingProductsByKeys(resourceKeys).toCompletableFuture().join();
+
+    // assertions
+    verify(client, times(1)).execute(any(ProductProjectionQuery.class));
   }
 
   @SuppressWarnings("unchecked")
