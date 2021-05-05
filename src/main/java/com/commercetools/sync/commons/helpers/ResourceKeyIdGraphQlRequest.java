@@ -13,6 +13,7 @@ import io.sphere.sdk.http.HttpResponse;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 /**
  * A SphereRequest implementation to allow {@link SphereClient} to execute graphQL queries on CTP.
@@ -71,10 +72,12 @@ public class ResourceKeyIdGraphQlRequest
     // We need 2 backslashes (4 in java) to escape the backslash in the JSON payload string.
     // We need 1 extra backslash to escape the quote in the java string
     // hence: 7 backslashes:
+    // And If any special character in the key, We will prefix escape character to it.
     final String backslashQuote = "\\\\\\\"";
     final String commaSeparatedKeys =
         keys.stream()
             .filter(key -> !isBlank(key))
+            .map(key -> StringEscapeUtils.escapeJava(key))
             .collect(
                 joining(
                     format("%s, %s", backslashQuote, backslashQuote),
