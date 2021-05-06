@@ -29,6 +29,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public final class ProductServiceImpl
@@ -69,12 +70,16 @@ public final class ProductServiceImpl
             new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.PRODUCTS));
   }
 
+  // TODO This code should be removed and we should use StringQuerySortingModel(It already handles
+  // escaping special characters) Predicate to search based on keys.
+  // The JVM-SDK issue ticket(SUPPORT-12201) has been created to add this predicate into
+  // ProductProjectionModel
   QueryPredicate<ProductProjection> buildProductKeysQueryPredicate(
       @Nonnull final Set<String> productKeys) {
     final List<String> keysSurroundedWithDoubleQuotes =
         productKeys.stream()
             .filter(StringUtils::isNotBlank)
-            .map(productKey -> format("\"%s\"", productKey))
+            .map(productKey -> format("\"%s\"", StringEscapeUtils.escapeJava(productKey)))
             .collect(Collectors.toList());
     String keysQueryString = keysSurroundedWithDoubleQuotes.toString();
     // Strip square brackets from list string. For example: ["key1", "key2"] -> "key1", "key2"

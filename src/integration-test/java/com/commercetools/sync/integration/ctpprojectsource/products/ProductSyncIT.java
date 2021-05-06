@@ -221,6 +221,57 @@ class ProductSyncIT {
   }
 
   @Test
+  void sync_withDoubleQuotationCharacterInProductKey_ShouldSyncProducts() {
+    // preparation
+    final String sampleProductKey = "sample-\"product-type";
+    final ProductDraft newProductDraft =
+        createProductDraftBuilder(
+                PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, sourceProductType.toReference())
+            .taxCategory(sourceTaxCategory)
+            .state(sourceProductState)
+            .categories(sourceCategoryReferencesWithIds)
+            .categoryOrderHints(createRandomCategoryOrderHints(sourceCategoryReferencesWithIds))
+            .publish(true)
+            .key(sampleProductKey)
+            .build();
+
+    CTP_SOURCE_CLIENT
+        .execute(ProductCreateCommand.of(newProductDraft))
+        .toCompletableFuture()
+        .join();
+
+    final List<ProductProjection> products =
+        CTP_SOURCE_CLIENT
+            .execute(ProductProjectionQuery.ofStaged())
+            .toCompletableFuture()
+            .join()
+            .getResults();
+
+    final List<ProductDraft> productDrafts =
+        ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+            .join();
+
+    // test
+    final ProductSyncStatistics syncStatistics =
+        productSync.sync(productDrafts).toCompletableFuture().join();
+
+    // assertions
+    assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+    assertThat(errorCallBackMessages).isEmpty();
+    assertThat(errorCallBackExceptions).isEmpty();
+    assertThat(warningCallBackMessages).isEmpty();
+
+    final List<ProductProjection> targetProducts =
+        CTP_TARGET_CLIENT
+            .execute(ProductProjectionQuery.ofStaged())
+            .toCompletableFuture()
+            .join()
+            .getResults();
+
+    assertThat(targetProducts.get(0).getKey()).isEqualTo(sampleProductKey);
+  }
+
+  @Test
   void sync_withChangesOnly_ShouldUpdateProducts() {
     final ProductDraft existingProductDraft =
         createProductDraft(
