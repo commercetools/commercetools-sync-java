@@ -70,6 +70,10 @@ public final class ProductServiceImpl
             new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.PRODUCTS));
   }
 
+  // TODO This code should be removed and we should use StringQuerySortingModel(It already handles
+  // escaping special characters) Predicate to search based on keys.
+  // The issue ticket has been raised to add this predicate into ProductProjectionModel -
+  // https://jira.commercetools.com/servicedesk/customer/portal/1/SUPPORT-12201
   QueryPredicate<ProductProjection> buildProductKeysQueryPredicate(
       @Nonnull final Set<String> productKeys) {
     final List<String> keysSurroundedWithDoubleQuotes =

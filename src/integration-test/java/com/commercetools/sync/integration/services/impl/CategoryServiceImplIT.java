@@ -211,24 +211,6 @@ class CategoryServiceImplIT {
     assertThat(errorCallBackMessages).isEmpty();
   }
 
-  /**
-   * This test is added to make sure the query is built properly and executed when there are special
-   * characters in the key values. This test checks the common code chunking part. So no tests
-   * required for all the resources.
-   */
-  @Test
-  void
-      fetchMatchingCategoriesByKeys_WithNonExistingAndSpecialCharactersInSetOfKeys_ShouldExecuteQueryButNotFetchCategories() {
-    final Set<String> keys = new HashSet<>();
-    keys.add("special-\"\"a");
-    keys.add("new-\"key");
-    final Set<Category> fetchedCategories =
-        categoryService.fetchMatchingCategoriesByKeys(keys).toCompletableFuture().join();
-    assertThat(fetchedCategories).isEmpty();
-    assertThat(errorCallBackExceptions).isEmpty();
-    assertThat(errorCallBackMessages).isEmpty();
-  }
-
   @Test
   void fetchCachedCategoryId_WithNonExistingCategory_ShouldNotFetchACategory() {
     final Optional<String> categoryId =
