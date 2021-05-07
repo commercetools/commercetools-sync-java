@@ -34,7 +34,6 @@
 
 - 🐞 **Bug Fixes** (1)
     - **Product Sync** - Special characters can be defined for ProductDraft key. [#269](https://github.com/commercetools/commercetools-project-sync/issues/269)
-    - Same fix also done for GraphqlQuery search based on keys.
 
 ### 5.1.0 - Apr 20, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/5.0.0...5.1.0) |
