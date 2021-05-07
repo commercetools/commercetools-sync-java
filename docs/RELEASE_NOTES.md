@@ -27,6 +27,15 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
+### 5.1.1 - May 7, 2021
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/5.1.0...5.1.1) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/5.1.1/) |
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/5.1.1)
+
+- 🐞 **Bug Fixes** (1)
+    - **Product Sync** - Fixed a bug in the `ProductSync` related to querying of productProjections based on key values, when key value contains special characters(") [#269](https://github.com/commercetools/commercetools-project-sync/issues/269)
+    - Same fix also done for GraphqlQuery search based on keys.
+
 ### 5.1.0 - Apr 20, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/5.0.0...5.1.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/5.1.0/) |
