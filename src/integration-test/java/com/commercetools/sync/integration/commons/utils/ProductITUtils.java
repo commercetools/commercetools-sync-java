@@ -18,11 +18,14 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
+import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
+import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
+import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.products.Product;
@@ -37,11 +40,14 @@ import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
 import io.sphere.sdk.types.Type;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.money.CurrencyUnit;
 
 public final class ProductITUtils {
 
@@ -227,6 +233,39 @@ public final class ProductITUtils {
 
     return createTypeIfNotAlreadyExisting(
         typeKey, locale, name, ResourceTypeIdsSetBuilder.of().addPrices(), ctpClient);
+  }
+
+  /**
+   * Builds a {@link PriceDraft} element
+   *
+   * @param amount the amount to create a price draft.
+   * @param currencyUnits the currency unit of the amount.
+   * @param customerGroupId the customer Group Id to create the reference.
+   * @param validFrom
+   * @param validUntil
+   * @param channelId the channel Id to create the reference.
+   * @param customFieldsDraft the custom fields to set on the resulting price draft.
+   * @return a {@link PriceDraft} element
+   */
+  @Nonnull
+  public static PriceDraft getPriceDraft(
+      @Nonnull final BigDecimal amount,
+      @Nonnull final CurrencyUnit currencyUnits,
+      @Nullable final CountryCode countryCode,
+      @Nullable final String customerGroupId,
+      @Nullable final ZonedDateTime validFrom,
+      @Nullable final ZonedDateTime validUntil,
+      @Nullable final String channelId,
+      @Nullable final CustomFieldsDraft customFieldsDraft) {
+    return PriceDraftBuilder.of(Price.of(amount, currencyUnits))
+        .country(countryCode)
+        .customerGroup(
+            ofNullable(customerGroupId).map(ResourceIdentifier::<CustomerGroup>ofId).orElse(null))
+        .validFrom(validFrom)
+        .validUntil(validUntil)
+        .channel(ofNullable(channelId).map(ResourceIdentifier::<Channel>ofId).orElse(null))
+        .custom(customFieldsDraft)
+        .build();
   }
 
   private ProductITUtils() {}
