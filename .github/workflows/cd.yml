@@ -56,19 +56,14 @@ jobs:
         run: echo Build is tagged. Uploading artifact ${{ steps.vars.outputs.tag }} to maven central.
       - name: Publish GitHub Pages
         run: ./gradlew --info -Dbuild.version="${{ steps.vars.outputs.tag }}" mkdocsPublish
-      - name: deploy to sonatype
-        run: ./gradlew setLibraryVersion -Dbuild.version="${{ steps.vars.outputs.tag }}" publish
+      - name: deploy to sonatype and publish to maven central
+        run: ./gradlew setLibraryVersion -Dbuild.version="${{ steps.vars.outputs.libVersion }}" publishToSonatype closeSonatypeStagingRepository
         env:
           GITHUB_TAG: ${{ steps.vars.outputs.tag }}
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
           PGP_KEY: ${{ secrets.PGP_KEY }}
           PGP_PASSWORD: ${{ secrets.PGP_PASSWORD }}
-      - name: release to maven Central
-        run: ./gradlew closeAndReleaseRepository
-        env:
-          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
       - name: Slack notification
         if: success() # only when previous step succeeds
         env:
