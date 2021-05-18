@@ -241,8 +241,8 @@ public final class ProductITUtils {
    * @param amount the amount to create a price draft.
    * @param currencyUnits the currency unit of the amount.
    * @param customerGroupId the customer Group Id to create the reference.
-   * @param validFrom
-   * @param validUntil
+   * @param validFrom the date from when it is valid.
+   * @param validUntil the date until when it is valid.
    * @param channelId the channel Id to create the reference.
    * @param customFieldsDraft the custom fields to set on the resulting price draft.
    * @return a {@link PriceDraft} element
