@@ -38,7 +38,7 @@
 
 - 🛠️ **Dependency Updates** (7)
     - `commercetools-jvm-sdk 1.62.0` -> [1.63.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_63_0)
-    - `io.codearte.nexus-staging 0.30.0` -> `io.github.gradle-nexus.publish-plugin 1.11.0` Adapt new gradle plugin for artifact publishing
+    - `io.codearte.nexus-staging 0.30.0` -> `io.github.gradle-nexus.publish-plugin 1.11.0` (Adapt new gradle plugin for artifact publishing)
     - `com.github.spotbugs 4.7.0` -> `4.7.1`
     - `com.diffplug.spotless 5.12.1` -> `5.12.5` 
     - `org.mockito:mockito-junit-jupiter 3.9.0` -> `3.10.0`
