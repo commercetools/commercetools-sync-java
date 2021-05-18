@@ -56,19 +56,14 @@ jobs:
         run: echo Build is tagged. Uploading artifact ${{ steps.vars.outputs.tag }} to maven central.
       - name: Publish GitHub Pages
         run: ./gradlew --info -Dbuild.version="${{ steps.vars.outputs.tag }}" mkdocsPublish
-      - name: deploy to sonatype
-        run: ./gradlew setLibraryVersion -Dbuild.version="${{ steps.vars.outputs.tag }}" publish
+      - name: deploy to sonatype and publish to maven central
+        run: ./gradlew setLibraryVersion -Dbuild.version="${{ steps.vars.outputs.tag }}" publishToSonatype closeAndReleaseSonatypeStagingRepository
         env:
           GITHUB_TAG: ${{ steps.vars.outputs.tag }}
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
           PGP_KEY: ${{ secrets.PGP_KEY }}
           PGP_PASSWORD: ${{ secrets.PGP_PASSWORD }}
-      - name: release to maven Central
-        run: ./gradlew closeAndReleaseRepository
-        env:
-          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
       - name: Slack notification
         if: success() # only when previous step succeeds
         env:
@@ -77,4 +72,4 @@ jobs:
           SLACK_CHANNEL: java-sync
         uses: Ilshidur/action-slack@master
         with:
-          args: 'Version: <https://github.com/commercetools/commercetools-sync-java/releases/tag/${{ steps.vars.outputs.tag }}|${{ steps.vars.outputs.tag }}> of the library is published to the  <https://oss.sonatype.org/|nexus repository manager>, check <https://github.com/commercetools/commercetools-sync-java/blob/master/docs/BUILD.md#step-3-publish-to-maven-central|here> for the next steps.'
+          args: 'Version: <https://github.com/commercetools/commercetools-sync-java/releases/tag/${{ steps.vars.outputs.tag }}|${{ steps.vars.outputs.tag }}> of the library has been published to the <https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java/|Maven Central>.'

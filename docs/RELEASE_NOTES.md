@@ -36,9 +36,18 @@
     - **Product Sync** - Special characters can be defined for ProductDraft key. [#269](https://github.com/commercetools/commercetools-project-sync/issues/269)
     - **Product Sync** - After a fix from JVM-SDK(1.63.0), Added integration tests to make sure `PriceTiers` are synched successfully. [#271](https://github.com/commercetools/commercetools-project-sync/issues/271)
 
-- 🛠️ **Dependency Updates** (1)
- commercetools-jvm-sdk 1.62.0 -> [1.63.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_63_0)
- 
+- 🛠️ **Dependency Updates** (7)
+    - `commercetools-jvm-sdk 1.62.0` -> [1.63.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_63_0)
+    - `io.codearte.nexus-staging 0.30.0` -> `io.github.gradle-nexus.publish-plugin 1.11.0` (Adapt new gradle plugin for artifact publishing)
+    - `com.github.spotbugs 4.7.0` -> `4.7.1`
+    - `com.diffplug.spotless 5.12.1` -> `5.12.5` 
+    - `org.mockito:mockito-junit-jupiter 3.9.0` -> `3.10.0`
+    - `org.junit.jupiter 5.7.0` -> `5.7.2`
+    - `netty-codec-http 4.1.63.Final` -> `4.1.64.Final`
+     
+     **Build Tools** (1)
+    - Change build script and cd.yml for new gradle publish plugin.
+     
 ### 5.1.0 - Apr 20, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/5.0.0...5.1.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/5.1.0/) |

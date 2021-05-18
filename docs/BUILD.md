@@ -38,7 +38,7 @@ For example, define the link to the release notes pointing to a released version
 
 > Additionally define important changes, breaking changes or important new features into the description.
 
-The creation of a github release triggers a [github action](https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ACD), which will deploy the library to [Maven Central](https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java).
+The creation of a github release triggers a [github action](https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ACD), which will deploy the library first to [Sonatype staging repo](https://oss.sonatype.org) and then to [Maven Central](https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java).
 
 ## Final Step
 After the release build status is **success** ensure that the new version is publicly available at [Maven Central](https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java). 
