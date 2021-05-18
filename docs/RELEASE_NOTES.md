@@ -32,8 +32,9 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/5.1.1/) |
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/5.1.1)
 
-- 🐞 **Bug Fixes** (1)
+- 🐞 **Bug Fixes** (2)
     - **Product Sync** - Special characters can be defined for ProductDraft key. [#269](https://github.com/commercetools/commercetools-project-sync/issues/269)
+    - **Product Sync** - After a fix from JVM-SDK(1.63.0), Added integration tests to make sure `PriceTiers` are synched successfully. [#271](https://github.com/commercetools/commercetools-project-sync/issues/271)
 
 - 🛠️ **Dependency Updates** (1)
  commercetools-jvm-sdk 1.62.0 -> [1.63.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_63_0)
