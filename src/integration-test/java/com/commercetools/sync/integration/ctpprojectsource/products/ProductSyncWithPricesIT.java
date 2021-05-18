@@ -95,7 +95,7 @@ class ProductSyncWithPricesIT {
   @Test
   void sync_withNewProductWithPriceTiers_shouldCreateProduct() {
 
-    createAndFetchProductType(CTP_TARGET_CLIENT);
+    createProductType(CTP_TARGET_CLIENT);
     final PriceTier priceTier = PriceTierBuilder.of(2, MoneyImpl.of(BigDecimal.TEN, EUR)).build();
 
     final List<ProductProjection> products = prepareDataWithPriceTier(priceTier, CTP_SOURCE_CLIENT);
@@ -142,7 +142,7 @@ class ProductSyncWithPricesIT {
   @Nonnull
   private List<ProductProjection> prepareDataWithPriceTier(
       @Nonnull final PriceTier priceTier, @Nonnull final SphereClient client) {
-    final ProductType productType = createAndFetchProductType(client);
+    final ProductType productType = createProductType(client);
 
     final PriceDraft priceBuilder =
         PriceDraftBuilder.of(
@@ -176,7 +176,7 @@ class ProductSyncWithPricesIT {
   }
 
   @Nonnull
-  private ProductType createAndFetchProductType(@Nonnull final SphereClient client) {
+  private ProductType createProductType(@Nonnull final SphereClient client) {
     final ProductTypeDraft productTypeDraft =
         ProductTypeDraftBuilder.of(
                 RESOURCE_KEY, "sample-product-type", "a productType for t-shirts", emptyList())
