@@ -72,4 +72,4 @@ jobs:
           SLACK_CHANNEL: java-sync
         uses: Ilshidur/action-slack@master
         with:
-          args: 'Version: <https://github.com/commercetools/commercetools-sync-java/releases/tag/${{ steps.vars.outputs.tag }}|${{ steps.vars.outputs.tag }}> of the library is published to the  <https://oss.sonatype.org/|nexus repository manager>, check <https://github.com/commercetools/commercetools-sync-java/blob/master/docs/BUILD.md#step-3-publish-to-maven-central|here> for the next steps.'
+          args: 'Version: <https://github.com/commercetools/commercetools-sync-java/releases/tag/${{ steps.vars.outputs.tag }}|${{ steps.vars.outputs.tag }}> of the library has been published to the <https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java/|Maven Central>.'
