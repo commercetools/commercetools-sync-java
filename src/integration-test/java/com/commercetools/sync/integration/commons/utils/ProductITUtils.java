@@ -25,9 +25,11 @@ import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
+import io.sphere.sdk.productdiscounts.DiscountedPrice;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
+import io.sphere.sdk.products.PriceTier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
@@ -245,6 +247,8 @@ public final class ProductITUtils {
    * @param validUntil the date until when it is valid.
    * @param channelId the channel Id to create the reference.
    * @param customFieldsDraft the custom fields to set on the resulting price draft.
+   * @param discountedPrice a {@link DiscountedPrice} to the price draft.
+   * @param priceTiers a list of {@link PriceTier}.
    * @return a {@link PriceDraft} element
    */
   @Nonnull
@@ -256,7 +260,9 @@ public final class ProductITUtils {
       @Nullable final ZonedDateTime validFrom,
       @Nullable final ZonedDateTime validUntil,
       @Nullable final String channelId,
-      @Nullable final CustomFieldsDraft customFieldsDraft) {
+      @Nullable final CustomFieldsDraft customFieldsDraft,
+      @Nullable final DiscountedPrice discountedPrice,
+      @Nullable final List<PriceTier> priceTiers) {
     return PriceDraftBuilder.of(Price.of(amount, currencyUnits))
         .country(countryCode)
         .customerGroup(
@@ -265,6 +271,8 @@ public final class ProductITUtils {
         .validUntil(validUntil)
         .channel(ofNullable(channelId).map(ResourceIdentifier::<Channel>ofId).orElse(null))
         .custom(customFieldsDraft)
+        .discounted(discountedPrice)
+        .tiers(priceTiers)
         .build();
   }
 

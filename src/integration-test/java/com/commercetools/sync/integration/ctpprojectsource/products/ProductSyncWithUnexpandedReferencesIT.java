@@ -210,6 +210,8 @@ class ProductSyncWithUnexpandedReferencesIT {
                     null,
                     null,
                     null,
+                    null,
+                    null,
                     null))
             .customerGroup(customerGroup)
             .custom(customFieldsDraft)

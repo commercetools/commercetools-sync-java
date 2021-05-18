@@ -146,8 +146,17 @@ class ProductSyncWithPricesIT {
 
     final PriceDraft priceBuilder =
         PriceDraftBuilder.of(
-                createPriceDraft(BigDecimal.valueOf(222), EUR, DE, null, null, null, null, null))
-            .tiers(asList(priceTier))
+                createPriceDraft(
+                    BigDecimal.valueOf(222),
+                    EUR,
+                    DE,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    asList(priceTier)))
             .build();
 
     final ProductVariantDraft variantDraft1 =
