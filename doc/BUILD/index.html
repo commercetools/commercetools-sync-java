@@ -632,7 +632,7 @@ describe the new release as below and publish it. </p>
 <blockquote>
 <p>Additionally define important changes, breaking changes or important new features into the description.</p>
 </blockquote>
-<p>The creation of a github release triggers a <a href="https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ACD">github action</a>, which will deploy the library to <a href="https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java">Maven Central</a>.</p>
+<p>The creation of a github release triggers a <a href="https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ACD">github action</a>, which will deploy the library first to <a href="https://oss.sonatype.org">Sonatype staging repo</a> and then to <a href="https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java">Maven Central</a>.</p>
 <h2 id="final-step">Final Step<a class="headerlink" href="#final-step" title="Permanent link">&para;</a></h2>
 <p>After the release build status is <strong>success</strong> ensure that the new version is publicly available at <a href="https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java">Maven Central</a>. </p>
 <h3 id="checklist">Checklist<a class="headerlink" href="#checklist" title="Permanent link">&para;</a></h3>
