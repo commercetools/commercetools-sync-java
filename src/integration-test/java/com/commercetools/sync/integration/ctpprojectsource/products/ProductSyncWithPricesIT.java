@@ -1,7 +1,7 @@
 package com.commercetools.sync.integration.ctpprojectsource.products;
 
+import static com.commercetools.sync.integration.commons.utils.ProductITUtils.createPriceDraft;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
-import static com.commercetools.sync.integration.commons.utils.ProductITUtils.getPriceDraft;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.neovisionaries.i18n.CountryCode.DE;
@@ -146,7 +146,7 @@ class ProductSyncWithPricesIT {
 
     final PriceDraft priceBuilder =
         PriceDraftBuilder.of(
-                getPriceDraft(BigDecimal.valueOf(222), EUR, DE, null, null, null, null, null))
+                createPriceDraft(BigDecimal.valueOf(222), EUR, DE, null, null, null, null, null))
             .tiers(asList(priceTier))
             .build();
 

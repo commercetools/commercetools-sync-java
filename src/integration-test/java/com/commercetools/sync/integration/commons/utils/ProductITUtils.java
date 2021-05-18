@@ -248,7 +248,7 @@ public final class ProductITUtils {
    * @return a {@link PriceDraft} element
    */
   @Nonnull
-  public static PriceDraft getPriceDraft(
+  public static PriceDraft createPriceDraft(
       @Nonnull final BigDecimal amount,
       @Nonnull final CurrencyUnit currencyUnits,
       @Nullable final CountryCode countryCode,
