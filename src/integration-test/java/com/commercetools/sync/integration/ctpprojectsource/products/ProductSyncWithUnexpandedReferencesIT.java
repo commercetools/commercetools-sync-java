@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.ctpprojectsource.products;
 
+import static com.commercetools.sync.integration.commons.utils.ProductITUtils.createPriceDraft;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -11,7 +12,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
-import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
@@ -26,7 +26,6 @@ import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
-import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelDraft;
 import io.sphere.sdk.channels.ChannelDraftBuilder;
 import io.sphere.sdk.channels.ChannelRole;
@@ -41,7 +40,6 @@ import io.sphere.sdk.models.AssetSourceBuilder;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.TextInputHint;
-import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.products.ProductDraft;
@@ -75,14 +73,10 @@ import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.TypeDraftBuilder;
 import io.sphere.sdk.types.commands.TypeCreateCommand;
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.money.CurrencyUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -208,11 +202,13 @@ class ProductSyncWithUnexpandedReferencesIT {
 
     final PriceDraft priceBuilder =
         PriceDraftBuilder.of(
-                getPriceDraft(
+                createPriceDraft(
                     BigDecimal.valueOf(222),
                     EUR,
                     DE,
                     customerGroup.getId(),
+                    null,
+                    null,
                     null,
                     null,
                     null,
@@ -300,26 +296,5 @@ class ProductSyncWithUnexpandedReferencesIT {
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
-  }
-
-  @Nonnull
-  public static PriceDraft getPriceDraft(
-      @Nonnull final BigDecimal value,
-      @Nonnull final CurrencyUnit currencyUnits,
-      @Nullable final CountryCode countryCode,
-      @Nullable final String customerGroupId,
-      @Nullable final ZonedDateTime validFrom,
-      @Nullable final ZonedDateTime validUntil,
-      @Nullable final String channelId,
-      @Nullable final CustomFieldsDraft customFieldsDraft) {
-    return PriceDraftBuilder.of(Price.of(value, currencyUnits))
-        .country(countryCode)
-        .customerGroup(
-            ofNullable(customerGroupId).map(ResourceIdentifier::<CustomerGroup>ofId).orElse(null))
-        .validFrom(validFrom)
-        .validUntil(validUntil)
-        .channel(ofNullable(channelId).map(ResourceIdentifier::<Channel>ofId).orElse(null))
-        .custom(customFieldsDraft)
-        .build();
   }
 }
