@@ -20,7 +20,6 @@ import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.products.service.ProductTransformService;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.client.BadGatewayException;
-import io.sphere.sdk.client.SphereApiConfig;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
@@ -193,78 +192,6 @@ class ProductTransformServiceImplTest {
     when(result.getResults()).thenReturn(asList(mockCustomObject));
     when(sourceClient.execute(any(CustomObjectQuery.class)))
         .thenReturn(CompletableFuture.completedFuture(result));
-  }
-
-  @Test
-  void
-      transform_WithIrresolvableAttributeReferences_ShouldSkipProductsWithIrresolvableReferences() {
-    // preparation
-    final SphereClient sourceClient = mock(SphereClient.class);
-    when(sourceClient.getConfig()).thenReturn(SphereApiConfig.of("test-project"));
-    final ProductTransformService productTransformService =
-        new ProductTransformServiceImpl(sourceClient, referenceIdToKeyCache);
-    final List<ProductProjection> productPage =
-        asList(
-            readObjectFromResource("product-key-5.json", Product.class).toProjection(STAGED),
-            readObjectFromResource("product-key-6.json", Product.class).toProjection(STAGED));
-
-    String jsonStringProducts =
-        "{\"results\":[{\"id\":\"53c4a8b4-754f-4b95-b6f2-3e1e70e3d0c1\"," + "\"key\":\"prod1\"}]}";
-    final ResourceKeyIdGraphQlResult productsResult =
-        SphereJsonUtils.readObject(jsonStringProducts, ResourceKeyIdGraphQlResult.class);
-
-    String jsonStringProductTypes =
-        "{\"results\":[{\"id\":\"53c4a8b4-754f-4b95-b6f2-3e1e70e3d0c2\","
-            + "\"key\":\"prodType1\"}]}";
-    final ResourceKeyIdGraphQlResult productTypesResult =
-        SphereJsonUtils.readObject(jsonStringProductTypes, ResourceKeyIdGraphQlResult.class);
-
-    String jsonStringCategories =
-        "{\"results\":[{\"id\":\"53c4a8b4-754f-4b95-b6f2-3e1e70e3d0c3\"," + "\"key\":\"cat1\"}]}";
-    final ResourceKeyIdGraphQlResult categoriesResult =
-        SphereJsonUtils.readObject(jsonStringCategories, ResourceKeyIdGraphQlResult.class);
-
-    when(sourceClient.execute(any(ResourceIdsGraphQlRequest.class)))
-        .thenReturn(CompletableFuture.completedFuture(productsResult))
-        .thenReturn(CompletableFuture.completedFuture(categoriesResult))
-        .thenReturn(CompletableFuture.completedFuture(productTypesResult));
-
-    // test
-    final List<ProductDraft> productsFromPageStage =
-        productTransformService.toProductDrafts(productPage).toCompletableFuture().join();
-
-    // assertions
-    assertThat(productsFromPageStage).hasSize(1);
-    assertThat(productsFromPageStage)
-        .anySatisfy(
-            product ->
-                assertThat(product.getMasterVariant().getAttributes())
-                    .anySatisfy(
-                        attribute -> {
-                          assertThat(attribute.getName()).isEqualTo("productReference");
-                          assertThat(attribute.getValue().get("id").asText()).isEqualTo("prod1");
-                        }));
-
-    assertThat(productsFromPageStage)
-        .anySatisfy(
-            product ->
-                assertThat(product.getMasterVariant().getAttributes())
-                    .anySatisfy(
-                        attribute -> {
-                          assertThat(attribute.getName()).isEqualTo("categoryReference");
-                          assertThat(attribute.getValue().get("id").asText()).isEqualTo("cat1");
-                        }));
-
-    assertThat(productsFromPageStage)
-        .anySatisfy(
-            product ->
-                assertThat(product.getMasterVariant().getAttributes())
-                    .anySatisfy(
-                        attribute -> {
-                          assertThat(attribute.getName()).isEqualTo("productTypeReference");
-                          assertThat(attribute.getValue().get("id").asText())
-                              .isEqualTo("prodType1");
-                        }));
   }
 
   @Test

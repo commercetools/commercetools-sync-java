@@ -259,14 +259,13 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
   }
 
   /**
-   * Replaces the ids on attribute references with keys. If a product has at least one irresolvable
-   * reference, it will be filtered out and not returned in the new list.
+   * Replaces the ids on attribute references with keys.
    *
    * <p>Note: this method mutates the products passed by changing the reference keys with ids.
    *
    * @param products the products to replace the reference attributes ids with keys on.
-   * @return a new list which contains only products which have all their attributes references
-   *     resolvable and already replaced with keys.
+   * @return products with all their attributes references resolvable and already replaced with
+   *     keys.
    */
   @Nonnull
   public CompletionStage<List<ProductProjection>> replaceAttributeReferenceIdsWithKeys(
@@ -301,10 +300,8 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
             getIds(allCustomerReferences))
         .thenApply(
             referenceIdToKeyCache -> {
-              final List<ProductProjection> validProducts =
-                  filterOutWithIrresolvableReferences(products, referenceIdToKeyCache);
-              replaceReferences(getAllReferences(validProducts), referenceIdToKeyCache);
-              return validProducts;
+              replaceReferences(getAllReferences(products), referenceIdToKeyCache);
+              return products;
             });
   }
 
@@ -356,35 +353,6 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
   @Nonnull
   private static String getId(@Nonnull final JsonNode ref) {
     return ref.get(REFERENCE_ID_FIELD).asText();
-  }
-
-  @Nonnull
-  private List<ProductProjection> filterOutWithIrresolvableReferences(
-      @Nonnull final List<ProductProjection> products,
-      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
-
-    return products.stream()
-        .filter(
-            product -> {
-              final Set<JsonNode> irresolvableReferences =
-                  getIrresolvableReferences(product, referenceIdToKeyCache);
-              return irresolvableReferences.isEmpty();
-            })
-        .collect(Collectors.toList());
-  }
-
-  private Set<JsonNode> getIrresolvableReferences(
-      @Nonnull final ProductProjection product,
-      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
-
-    return getAllReferences(product).stream()
-        .filter(
-            reference -> {
-              String id = getId(reference);
-              return (!referenceIdToKeyCache.containsKey(id)
-                  || KEY_IS_NOT_SET_PLACE_HOLDER.equals(referenceIdToKeyCache.get(id)));
-            })
-        .collect(toSet());
   }
 
   private static void replaceReferences(
