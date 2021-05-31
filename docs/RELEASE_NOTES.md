@@ -27,6 +27,19 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
+### 5.1.2 - May 31, 2021
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/5.1.1...5.1.2) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/5.1.2/) |
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/5.1.2)
+
+- 🐞 **Bug Fixes** (1)
+  - **Product Sync** - The user is now aware of unresolvable references as the transform service will not skip the products.
+
+- 🛠️ **Dependency Updates** (3)
+    - `com.github.ben-manes.versions 0.38.0` -> `0.39.0` 
+    - `caffeineVersion 2.8.5` -> `2.9.1`
+    - `netty-codec-http 4.1.64.Final` -> `4.1.65.Final`
+    
 ### 5.1.1 - May 18, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/5.1.0...5.1.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/5.1.1/) |
