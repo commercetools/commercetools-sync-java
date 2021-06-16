@@ -13,7 +13,7 @@ ext{
     commercetoolsJvmSdkVersion = '1.63.0'
     mockitoJunitJupiterVersion = '3.11.1'
     jupiterApiVersion = '5.7.2'
-    assertjVersion = '3.19.0'
+    assertjVersion = '3.20.0'
     pmdVersion = '6.14.0'
     jacocoVersion = '0.8.4'
     caffeineVersion = '2.9.1'
