@@ -16,7 +16,7 @@ ext{
     assertjVersion = '3.20.2'
     pmdVersion = '6.14.0'
     jacocoVersion = '0.8.4'
-    caffeineVersion = '2.9.1'
+    caffeineVersion = '2.9.2'
     nexusStagingPluginVersion = '0.22.0'
 }
 
