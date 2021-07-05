@@ -2,8 +2,6 @@ package com.commercetools.sync.services.impl;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static io.sphere.sdk.products.ProductProjectionType.STAGED;
-import static java.lang.String.format;
-import static java.util.Collections.singleton;
 
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
@@ -19,18 +17,14 @@ import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.expansion.ProductProjectionExpansionModel;
 import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import io.sphere.sdk.products.queries.ProductProjectionQueryModel;
-import io.sphere.sdk.queries.QueryPredicate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
 
 public final class ProductServiceImpl
     extends BaseServiceWithKey<
@@ -56,7 +50,7 @@ public final class ProductServiceImpl
         ProductLike::getKey,
         () ->
             ProductProjectionQuery.ofStaged()
-                .withPredicates(buildProductKeysQueryPredicate(singleton(key))));
+                .withPredicates(queryModel -> queryModel.key().is(key)));
   }
 
   @Nonnull
@@ -70,23 +64,6 @@ public final class ProductServiceImpl
             new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.PRODUCTS));
   }
 
-  // TODO This code should be removed and we should use StringQuerySortingModel(It already handles
-  // escaping special characters) Predicate to search based on keys.
-  // The JVM-SDK issue ticket(SUPPORT-12201) has been created to add this predicate into
-  // ProductProjectionModel
-  QueryPredicate<ProductProjection> buildProductKeysQueryPredicate(
-      @Nonnull final Set<String> productKeys) {
-    final List<String> keysSurroundedWithDoubleQuotes =
-        productKeys.stream()
-            .filter(StringUtils::isNotBlank)
-            .map(productKey -> format("\"%s\"", StringEscapeUtils.escapeJava(productKey)))
-            .collect(Collectors.toList());
-    String keysQueryString = keysSurroundedWithDoubleQuotes.toString();
-    // Strip square brackets from list string. For example: ["key1", "key2"] -> "key1", "key2"
-    keysQueryString = keysQueryString.substring(1, keysQueryString.length() - 1);
-    return QueryPredicate.of(format("key in (%s)", keysQueryString));
-  }
-
   @Nonnull
   @Override
   public CompletionStage<Set<ProductProjection>> fetchMatchingProductsByKeys(
@@ -97,7 +74,7 @@ public final class ProductServiceImpl
         ProductProjection::getKey,
         (keysNotCached) ->
             ProductProjectionQuery.ofStaged()
-                .withPredicates(buildProductKeysQueryPredicate(keysNotCached)));
+                .withPredicates(queryModel -> queryModel.key().isIn(keysNotCached)));
   }
 
   @Nonnull
@@ -108,7 +85,7 @@ public final class ProductServiceImpl
         key,
         () ->
             ProductProjectionQuery.ofStaged()
-                .withPredicates(buildProductKeysQueryPredicate(singleton(key))));
+                .withPredicates(queryModel -> queryModel.key().is(key)));
   }
 
   @Nonnull
