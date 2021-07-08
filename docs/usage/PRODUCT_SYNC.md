@@ -39,7 +39,7 @@ against a [ProductDraft](https://docs.commercetools.com/http-api-projects-produc
 
 #### SphereClient
 
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/5.1.2/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/5.1.3/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
@@ -80,7 +80,7 @@ resource on the target commercetools project and the library will issue an updat
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`toProductDrafts`](https://commercetools.github.io/commercetools-sync-java/v/5.1.2/com/commercetools/sync/products/utils/ProductTransformUtils.html#toProductDrafts-java.util.List-)
+When syncing from a source commercetools project, you can use [`toProductDrafts`](https://commercetools.github.io/commercetools-sync-java/v/5.1.3/com/commercetools/sync/products/utils/ProductTransformUtils.html#toProductDrafts-java.util.List-)
  method that transforms(resolves by querying and caching key-id pairs) and maps from a `Product` to `ProductDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
