@@ -27,13 +27,31 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
+### 5.1.3 - Jul 8, 2021
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/5.1.2...5.1.3) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/5.1.3/) |
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/5.1.3)
+
+- 🐞 **Bug Fixes** (1)
+    - **TaxCategory Sync** - TaxCategories to sync properly when we have many TaxRates with different states.
+
+- ✨ **Enhancements** (1)
+    - **Product Sync** - After a fix from JVM-SDK(1.64.0), ProductProjection search uses built in predicate to filter resources by the key to avoid issues like [#269](https://github.com/commercetools/commercetools-project-sync/issues/269).
+        
+- 🛠️ **Dependency Updates** (5)
+    - `commercetools-jvm-sdk 1.63.0` -> [1.64.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_64_0)
+    - `assertjVersion 3.19.0` -> `3.20.2` 
+    - `caffeineVersion 2.9.1` -> `2.9.2`
+    - `mockitoJunitJupiterVersion 3.10.0` -> `3.11.2`
+    - `com.diffplug.spotless 5.12.5` -> `5.14.0`
+
 ### 5.1.2 - May 31, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/5.1.1...5.1.2) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/5.1.2/) |
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/5.1.2)
 
 - 🐞 **Bug Fixes** (1)
-  - **Product Sync** - The user is now aware of unresolvable references as the transform service will not skip the products.
+    - **Product Sync** - The user is now aware of unresolvable references as the transform service will not skip the products.
 
 - 🛠️ **Dependency Updates** (3)
     - `com.github.ben-manes.versions 0.38.0` -> `0.39.0` 
