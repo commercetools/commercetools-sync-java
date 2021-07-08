@@ -32,10 +32,12 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/5.1.3/) |
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/5.1.3)
 
-- 🐞 **Bug Fixes** (2)
-    - **Product Sync** - After a fix from JVM-SDK(1.64.0), ProductProjection search uses built in predicate to filter resources by the key to avoid issues like [#269](https://github.com/commercetools/commercetools-project-sync/issues/269).
+- 🐞 **Bug Fixes** (1)
     - **TaxCategory Sync** - TaxCategories to sync properly when we have many TaxRates with different states.
 
+- ✨ **Enhancements** (1)
+    - **Product Sync** - After a fix from JVM-SDK(1.64.0), ProductProjection search uses built in predicate to filter resources by the key to avoid issues like [#269](https://github.com/commercetools/commercetools-project-sync/issues/269).
+        
 - 🛠️ **Dependency Updates** (5)
     - `commercetools-jvm-sdk 1.63.0` -> [1.64.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_64_0)
     - `assertjVersion 3.19.0` -> `3.20.2` 
