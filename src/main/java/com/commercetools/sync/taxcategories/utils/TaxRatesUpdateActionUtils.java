@@ -111,14 +111,10 @@ final class TaxRatesUpdateActionUtils {
             oldTaxRate ->
                 newTaxRatesDrafts.stream()
                     .filter(
-                        taxRateDraft ->
-                            Objects.equals(oldTaxRate.getCountry(), taxRateDraft.getCountry()))
-                    .filter(
-                        taxRateDraft ->
-                            oldTaxRate.getState() == null
-                                || (oldTaxRate.getState() != null
-                                    && taxRateDraft.getState() == null)
-                                || Objects.equals(oldTaxRate.getState(), taxRateDraft.getState()))
+                        newTaxRateDraft ->
+                            Objects.equals(oldTaxRate.getCountry(), newTaxRateDraft.getCountry())
+                                && Objects.equals(
+                                    oldTaxRate.getState(), newTaxRateDraft.getState()))
                     .findFirst()
                     .map(
                         matchedTaxRateDraft -> {

@@ -289,17 +289,7 @@ class TaxCategoryUpdateActionUtilsTest {
     when(taxCategory.getName()).thenReturn("name");
     when(taxCategory.getDescription()).thenReturn("desc");
 
-    final TaxRate taxRate1 = mock(TaxRate.class);
-    when(taxRate1.getName()).thenReturn("11% US");
-    when(taxRate1.getState()).thenReturn("state");
-    when(taxRate1.getId()).thenReturn("taxRate-1");
-    when(taxRate1.getAmount()).thenReturn(0.11);
-    when(taxRate1.getCountry()).thenReturn(CountryCode.US);
-    when(taxRate1.isIncludedInPrice()).thenReturn(false);
-
-    final SubRate oldSubRate1 = SubRate.of("subRate-1", 0.11);
-
-    when(taxRate1.getSubRates()).thenReturn(singletonList(oldSubRate1));
+    final TaxRate taxRate1 = buildTaxRate("state");
     when(taxCategory.getTaxRates()).thenReturn(singletonList(taxRate1));
 
     final SubRate subRate1 = SubRate.of("subRate-1", 0.06);
@@ -330,17 +320,7 @@ class TaxCategoryUpdateActionUtilsTest {
     when(taxCategory.getName()).thenReturn("name");
     when(taxCategory.getDescription()).thenReturn("desc");
 
-    final TaxRate taxRate1 = mock(TaxRate.class);
-    when(taxRate1.getName()).thenReturn("11% US");
-    when(taxRate1.getState()).thenReturn("state");
-    when(taxRate1.getId()).thenReturn("taxRate-1");
-    when(taxRate1.getAmount()).thenReturn(0.11);
-    when(taxRate1.getCountry()).thenReturn(CountryCode.US);
-    when(taxRate1.isIncludedInPrice()).thenReturn(false);
-
-    final SubRate oldSubRate1 = SubRate.of("subRate-1", 0.11);
-
-    when(taxRate1.getSubRates()).thenReturn(singletonList(oldSubRate1));
+    final TaxRate taxRate1 = buildTaxRate("state");
     when(taxCategory.getTaxRates()).thenReturn(singletonList(taxRate1));
 
     final SubRate subRate1 = SubRate.of("subRate-1", 0.11);
@@ -370,17 +350,7 @@ class TaxCategoryUpdateActionUtilsTest {
     when(taxCategory.getName()).thenReturn("name");
     when(taxCategory.getDescription()).thenReturn("desc");
 
-    final TaxRate taxRate1 = mock(TaxRate.class);
-    when(taxRate1.getName()).thenReturn("11% US");
-    when(taxRate1.getState()).thenReturn(null);
-    when(taxRate1.getId()).thenReturn("taxRate-1");
-    when(taxRate1.getAmount()).thenReturn(0.11);
-    when(taxRate1.getCountry()).thenReturn(CountryCode.US);
-    when(taxRate1.isIncludedInPrice()).thenReturn(false);
-
-    final SubRate oldSubRate1 = SubRate.of("subRate-1", 0.11);
-
-    when(taxRate1.getSubRates()).thenReturn(singletonList(oldSubRate1));
+    final TaxRate taxRate1 = buildTaxRate(null);
     when(taxCategory.getTaxRates()).thenReturn(singletonList(taxRate1));
 
     final SubRate subRate1 = SubRate.of("subRate-1", 0.06);
@@ -400,28 +370,19 @@ class TaxCategoryUpdateActionUtilsTest {
     final List<UpdateAction<TaxCategory>> result =
         buildTaxRateUpdateActions(taxCategory, taxCategoryDraft);
 
-    assertThat(result).isEqualTo(singletonList(ReplaceTaxRate.of("taxRate-1", taxRateDraft)));
+    assertThat(result)
+        .isEqualTo(asList(RemoveTaxRate.of("taxRate-1"), AddTaxRate.of(taxRateDraft)));
   }
 
   @Test
-  void buildTaxRatesUpdateActions_WithRemovedState_ShouldReturnOnlyReplaceAction() {
+  void buildTaxRatesUpdateActions_WithRemovedState_ShouldReturnRemoveAndAddActions() {
 
     TaxCategory taxCategory = mock(TaxCategory.class);
     when(taxCategory.getKey()).thenReturn("tax-category-key");
     when(taxCategory.getName()).thenReturn("name");
     when(taxCategory.getDescription()).thenReturn("desc");
 
-    final TaxRate taxRate1 = mock(TaxRate.class);
-    when(taxRate1.getName()).thenReturn("11% US");
-    when(taxRate1.getState()).thenReturn("state");
-    when(taxRate1.getId()).thenReturn("taxRate-1");
-    when(taxRate1.getAmount()).thenReturn(0.11);
-    when(taxRate1.getCountry()).thenReturn(CountryCode.US);
-    when(taxRate1.isIncludedInPrice()).thenReturn(false);
-
-    final SubRate oldSubRate1 = SubRate.of("subRate-1", 0.11);
-
-    when(taxRate1.getSubRates()).thenReturn(singletonList(oldSubRate1));
+    final TaxRate taxRate1 = buildTaxRate("state");
     when(taxCategory.getTaxRates()).thenReturn(singletonList(taxRate1));
 
     final SubRate subRate1 = SubRate.of("subRate-1", 0.06);
@@ -441,7 +402,34 @@ class TaxCategoryUpdateActionUtilsTest {
     final List<UpdateAction<TaxCategory>> result =
         buildTaxRateUpdateActions(taxCategory, taxCategoryDraft);
 
-    assertThat(result).isEqualTo(singletonList(ReplaceTaxRate.of("taxRate-1", taxRateDraft)));
+    assertThat(result)
+        .isEqualTo(asList(RemoveTaxRate.of("taxRate-1"), AddTaxRate.of(taxRateDraft)));
+  }
+
+  @Test
+  void WhenTaxRatesWithAndWithoutState_WithRemovedTaxRate_ShouldBuildAndReturnRemoveAction() {
+
+    TaxCategory taxCategory = mock(TaxCategory.class);
+    when(taxCategory.getKey()).thenReturn("tax-category-key");
+    when(taxCategory.getName()).thenReturn("name");
+    when(taxCategory.getDescription()).thenReturn("desc");
+
+    final TaxRate taxRate1 = buildTaxRate("state");
+    final TaxRate taxRate2 = buildTaxRate(null);
+    when(taxCategory.getTaxRates()).thenReturn(asList(taxRate1, taxRate2));
+
+    TaxRateDraft taxRateDraft = TaxRateDraftBuilder.of(taxRate2).build();
+
+    // TaxCategoryDraft with only one taxRate
+    TaxCategoryDraft taxCategoryDraft =
+        TaxCategoryDraftBuilder.of("name", singletonList(taxRateDraft), "desc")
+            .key("tax-category-key")
+            .build();
+
+    final List<UpdateAction<TaxCategory>> result =
+        buildTaxRateUpdateActions(taxCategory, taxCategoryDraft);
+
+    assertThat(result).isEqualTo(asList(RemoveTaxRate.of("taxRate-1")));
   }
 
   @Test
@@ -452,17 +440,7 @@ class TaxCategoryUpdateActionUtilsTest {
     when(taxCategory.getName()).thenReturn("name");
     when(taxCategory.getDescription()).thenReturn("desc");
 
-    final TaxRate taxRate1 = mock(TaxRate.class);
-    when(taxRate1.getName()).thenReturn("11% US");
-    when(taxRate1.getState()).thenReturn("state");
-    when(taxRate1.getId()).thenReturn("taxRate-1");
-    when(taxRate1.getAmount()).thenReturn(0.11);
-    when(taxRate1.getCountry()).thenReturn(CountryCode.US);
-    when(taxRate1.isIncludedInPrice()).thenReturn(false);
-
-    final SubRate oldSubRate1 = SubRate.of("subRate-1", 0.11);
-
-    when(taxRate1.getSubRates()).thenReturn(singletonList(oldSubRate1));
+    final TaxRate taxRate1 = buildTaxRate("state");
     when(taxCategory.getTaxRates()).thenReturn(singletonList(taxRate1));
 
     final SubRate subRate1 = SubRate.of("subRate-1", 0.06);
@@ -493,17 +471,7 @@ class TaxCategoryUpdateActionUtilsTest {
     when(taxCategory.getName()).thenReturn("name");
     when(taxCategory.getDescription()).thenReturn("desc");
 
-    final TaxRate taxRate1 = mock(TaxRate.class);
-    when(taxRate1.getName()).thenReturn("11% US");
-    when(taxRate1.getState()).thenReturn("state");
-    when(taxRate1.getId()).thenReturn("taxRate-1");
-    when(taxRate1.getAmount()).thenReturn(0.11);
-    when(taxRate1.getCountry()).thenReturn(CountryCode.US);
-    when(taxRate1.isIncludedInPrice()).thenReturn(false);
-
-    final SubRate oldSubRate1 = SubRate.of("subRate-1", 0.11);
-
-    when(taxRate1.getSubRates()).thenReturn(singletonList(oldSubRate1));
+    final TaxRate taxRate1 = buildTaxRate("state");
     when(taxCategory.getTaxRates()).thenReturn(singletonList(taxRate1));
 
     final SubRate subRate1 = SubRate.of("subRate-1", 0.06);
@@ -588,5 +556,20 @@ class TaxCategoryUpdateActionUtilsTest {
 
     assertThat(result)
         .isEqualTo(asList(RemoveTaxRate.of("taxRate-4"), AddTaxRate.of(newTaxRateDraft)));
+  }
+
+  private TaxRate buildTaxRate(String state) {
+    final TaxRate taxRate = mock(TaxRate.class);
+    when(taxRate.getName()).thenReturn("11% US");
+    when(taxRate.getState()).thenReturn(state);
+    when(taxRate.getId()).thenReturn("taxRate-1");
+    when(taxRate.getAmount()).thenReturn(0.11);
+    when(taxRate.getCountry()).thenReturn(CountryCode.US);
+    when(taxRate.isIncludedInPrice()).thenReturn(false);
+
+    final SubRate oldSubRate = SubRate.of("subRate-1", 0.11);
+
+    when(taxRate.getSubRates()).thenReturn(singletonList(oldSubRate));
+    return taxRate;
   }
 }
