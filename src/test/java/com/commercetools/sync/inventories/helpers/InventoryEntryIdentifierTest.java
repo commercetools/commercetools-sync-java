@@ -23,8 +23,8 @@ class InventoryEntryIdentifierTest {
     final InventoryEntryDraft draft = InventoryEntryDraft.of(SKU, 1L);
     final InventoryEntryIdentifier inventoryEntryIdentifier = InventoryEntryIdentifier.of(draft);
     assertThat(inventoryEntryIdentifier).isNotNull();
-    assertThat(inventoryEntryIdentifier.getInventoryEntrySku()).isEqualTo(SKU);
-    assertThat(inventoryEntryIdentifier.getInventoryEntryChannelKey()).isNull();
+    assertThat(inventoryEntryIdentifier.getSku()).isEqualTo(SKU);
+    assertThat(inventoryEntryIdentifier.getSupplyChannelId()).isNull();
   }
 
   @Test
@@ -33,8 +33,8 @@ class InventoryEntryIdentifierTest {
         InventoryEntryDraft.of(SKU, 1L, null, null, Channel.referenceOfId(CHANNEL_ID));
     final InventoryEntryIdentifier inventoryEntryIdentifier = InventoryEntryIdentifier.of(draft);
     assertThat(inventoryEntryIdentifier).isNotNull();
-    assertThat(inventoryEntryIdentifier.getInventoryEntrySku()).isEqualTo(SKU);
-    assertThat(inventoryEntryIdentifier.getInventoryEntryChannelKey()).isEqualTo(CHANNEL_ID);
+    assertThat(inventoryEntryIdentifier.getSku()).isEqualTo(SKU);
+    assertThat(inventoryEntryIdentifier.getSupplyChannelId()).isEqualTo(CHANNEL_ID);
   }
 
   @Test
@@ -43,8 +43,8 @@ class InventoryEntryIdentifierTest {
     final InventoryEntryIdentifier inventoryEntryIdentifier =
         InventoryEntryIdentifier.of(inventoryEntry);
     assertThat(inventoryEntryIdentifier).isNotNull();
-    assertThat(inventoryEntryIdentifier.getInventoryEntrySku()).isEqualTo(SKU);
-    assertThat(inventoryEntryIdentifier.getInventoryEntryChannelKey()).isNull();
+    assertThat(inventoryEntryIdentifier.getSku()).isEqualTo(SKU);
+    assertThat(inventoryEntryIdentifier.getSupplyChannelId()).isNull();
   }
 
   @Test
@@ -54,8 +54,8 @@ class InventoryEntryIdentifierTest {
     final InventoryEntryIdentifier inventoryEntryIdentifier =
         InventoryEntryIdentifier.of(inventoryEntry);
     assertThat(inventoryEntryIdentifier).isNotNull();
-    assertThat(inventoryEntryIdentifier.getInventoryEntrySku()).isEqualTo(SKU);
-    assertThat(inventoryEntryIdentifier.getInventoryEntryChannelKey()).isEqualTo(CHANNEL_ID);
+    assertThat(inventoryEntryIdentifier.getSku()).isEqualTo(SKU);
+    assertThat(inventoryEntryIdentifier.getSupplyChannelId()).isEqualTo(CHANNEL_ID);
   }
 
   @Test
@@ -63,8 +63,8 @@ class InventoryEntryIdentifierTest {
     final InventoryEntryIdentifier inventoryEntryIdentifier =
         InventoryEntryIdentifier.of(SKU, null);
     assertThat(inventoryEntryIdentifier).isNotNull();
-    assertThat(inventoryEntryIdentifier.getInventoryEntrySku()).isEqualTo(SKU);
-    assertThat(inventoryEntryIdentifier.getInventoryEntryChannelKey()).isNull();
+    assertThat(inventoryEntryIdentifier.getSku()).isEqualTo(SKU);
+    assertThat(inventoryEntryIdentifier.getSupplyChannelId()).isNull();
   }
 
   @Test
@@ -72,16 +72,16 @@ class InventoryEntryIdentifierTest {
     final InventoryEntryIdentifier inventoryEntryIdentifier =
         InventoryEntryIdentifier.of(SKU, CHANNEL_ID);
     assertThat(inventoryEntryIdentifier).isNotNull();
-    assertThat(inventoryEntryIdentifier.getInventoryEntrySku()).isEqualTo(SKU);
-    assertThat(inventoryEntryIdentifier.getInventoryEntryChannelKey()).isEqualTo(CHANNEL_ID);
+    assertThat(inventoryEntryIdentifier.getSku()).isEqualTo(SKU);
+    assertThat(inventoryEntryIdentifier.getSupplyChannelId()).isEqualTo(CHANNEL_ID);
   }
 
   @Test
   void of_WithSku_ShouldBuildInventoryEntryIdentifier() {
     final InventoryEntryIdentifier inventoryEntryIdentifier = InventoryEntryIdentifier.of(SKU);
     assertThat(inventoryEntryIdentifier).isNotNull();
-    assertThat(inventoryEntryIdentifier.getInventoryEntrySku()).isEqualTo(SKU);
-    assertThat(inventoryEntryIdentifier.getInventoryEntryChannelKey()).isNull();
+    assertThat(inventoryEntryIdentifier.getSku()).isEqualTo(SKU);
+    assertThat(inventoryEntryIdentifier.getSupplyChannelId()).isNull();
   }
 
   @Test
