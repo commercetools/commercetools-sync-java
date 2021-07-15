@@ -454,7 +454,6 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
                 ids ->
                     CustomObjectQuery.ofJsonNode()
                         .plusPredicates(p -> p.id().isIn(ids))
-                        .withLimit(CHUNK_SIZE)
                         .withFetchTotal(false))
             .collect(toList());
 
