@@ -77,6 +77,14 @@ class InventoryEntryIdentifierTest {
   }
 
   @Test
+  void of_WithSku_ShouldBuildInventoryEntryIdentifier() {
+    final InventoryEntryIdentifier inventoryEntryIdentifier = InventoryEntryIdentifier.of(SKU);
+    assertThat(inventoryEntryIdentifier).isNotNull();
+    assertThat(inventoryEntryIdentifier.getInventoryEntrySku()).isEqualTo(SKU);
+    assertThat(inventoryEntryIdentifier.getInventoryEntryChannelKey()).isNull();
+  }
+
+  @Test
   void equals_WithSameIdentifier_ShouldBeTrue() {
     // preparation
     final InventoryEntry inventoryEntry =

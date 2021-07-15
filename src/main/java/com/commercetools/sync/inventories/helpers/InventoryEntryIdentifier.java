@@ -17,8 +17,8 @@ import javax.annotation.Nullable;
  * this inventory entry.
  */
 public final class InventoryEntryIdentifier {
-  private String inventoryEntrySku;
-  private String inventoryEntryChannelKey;
+  private final String inventoryEntrySku;
+  private final String inventoryEntryChannelKey;
 
   private InventoryEntryIdentifier(
       @Nonnull final String inventoryEntrySku, @Nullable final String inventoryEntryChannelKey) {
@@ -68,6 +68,17 @@ public final class InventoryEntryIdentifier {
       @Nonnull final String inventoryEntrySku, @Nullable final String inventoryEntryChannelKey) {
 
     return new InventoryEntryIdentifier(inventoryEntrySku, inventoryEntryChannelKey);
+  }
+
+  /**
+   * Builds an {@link InventoryEntryIdentifier} instance given an sku.
+   *
+   * @param inventoryEntrySku the SKU of the inventory entry.
+   * @return an instance of {@link InventoryEntryIdentifier} for the given entry.
+   */
+  public static InventoryEntryIdentifier of(@Nonnull final String inventoryEntrySku) {
+
+    return new InventoryEntryIdentifier(inventoryEntrySku, null);
   }
 
   public String getInventoryEntrySku() {

@@ -10,13 +10,13 @@ import io.sphere.sdk.inventory.commands.InventoryEntryCreateCommand;
 import io.sphere.sdk.inventory.commands.InventoryEntryUpdateCommand;
 import io.sphere.sdk.inventory.expansion.InventoryEntryExpansionModel;
 import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
-import io.sphere.sdk.inventory.queries.InventoryEntryQueryBuilder;
 import io.sphere.sdk.inventory.queries.InventoryEntryQueryModel;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
+import org.apache.commons.lang3.NotImplementedException;
 
 public final class InventoryServiceImpl
     extends BaseService<
@@ -36,15 +36,8 @@ public final class InventoryServiceImpl
   @Nonnull
   @Override
   public CompletionStage<Set<InventoryEntry>> fetchInventoryEntriesBySkus(
-      @Nonnull final Set<String> skus) {
-
-    return fetchMatchingResources(
-        skus,
-        draft -> String.valueOf(InventoryEntryIdentifier.of(draft)),
-        (skusNotCached) ->
-            InventoryEntryQueryBuilder.of()
-                .plusPredicates(queryModel -> queryModel.sku().isIn(skusNotCached))
-                .build());
+      @Nonnull Set<InventoryEntryIdentifier> inventoryEntryIdentifiers) {
+    throw new NotImplementedException("wip");
   }
 
   @Nonnull

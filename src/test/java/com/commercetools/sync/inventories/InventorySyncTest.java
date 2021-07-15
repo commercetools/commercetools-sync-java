@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.inventories.helpers.InventoryEntryIdentifier;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.InventoryService;
@@ -261,7 +262,8 @@ class InventorySyncTest {
             existingInventories, mock(InventoryEntry.class), mock(InventoryEntry.class));
 
     final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_3, KEY_3));
-    when(inventoryService.fetchInventoryEntriesBySkus(singleton(SKU_1)))
+    when(inventoryService.fetchInventoryEntriesBySkus(
+            singleton(InventoryEntryIdentifier.of(SKU_1))))
         .thenReturn(getCompletionStageWithException());
 
     final InventorySync inventorySync =

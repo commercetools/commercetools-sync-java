@@ -137,11 +137,13 @@ public final class InventorySync
                 return CompletableFuture.completedFuture(null);
               }
 
-              final Set<String> skus =
-                  validDrafts.stream().map(InventoryEntryDraft::getSku).collect(Collectors.toSet());
+              final Set<InventoryEntryIdentifier> inventoryEntryIdentifiers =
+                  validDrafts.stream()
+                      .map(InventoryEntryIdentifier::of)
+                      .collect(Collectors.toSet());
 
               return inventoryService
-                  .fetchInventoryEntriesBySkus(skus)
+                  .fetchInventoryEntriesBySkus(inventoryEntryIdentifiers)
                   .handle(ImmutablePair::new)
                   .thenCompose(
                       fetchResponse -> {
@@ -149,8 +151,11 @@ public final class InventorySync
                         final Throwable exception = fetchResponse.getValue();
 
                         if (exception != null) {
-                          final String errorMessage = format(CTP_INVENTORY_FETCH_FAILED, skus);
-                          handleError(new SyncException(errorMessage, exception), skus.size());
+                          final String errorMessage =
+                              format(CTP_INVENTORY_FETCH_FAILED, inventoryEntryIdentifiers);
+                          handleError(
+                              new SyncException(errorMessage, exception),
+                              inventoryEntryIdentifiers.size());
                           return CompletableFuture.completedFuture(null);
                         } else {
                           return syncBatch(fetchedInventoryEntries, validDrafts);

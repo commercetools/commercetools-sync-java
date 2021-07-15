@@ -19,6 +19,7 @@ import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
+import com.commercetools.sync.inventories.helpers.InventoryEntryIdentifier;
 import com.commercetools.sync.services.InventoryService;
 import com.commercetools.sync.services.impl.InventoryServiceImpl;
 import io.sphere.sdk.commands.UpdateAction;
@@ -64,12 +65,12 @@ class InventoryServiceImplIT {
 
   @Test
   void fetchInventoryEntriesBySku_ShouldReturnCorrectInventoryEntriesWithoutReferenceExpansion() {
-    // preparation
-    final Set<String> skus = singleton(SKU_1);
-
     // test
     final Set<InventoryEntry> result =
-        inventoryService.fetchInventoryEntriesBySkus(skus).toCompletableFuture().join();
+        inventoryService
+            .fetchInventoryEntriesBySkus(singleton(InventoryEntryIdentifier.of(SKU_1)))
+            .toCompletableFuture()
+            .join();
 
     // assertion
     assertThat(result).isNotNull();
