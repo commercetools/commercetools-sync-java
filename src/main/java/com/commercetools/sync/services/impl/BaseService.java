@@ -272,7 +272,12 @@ abstract class BaseService<
 
     final List<Q> keysQueryMapperList =
         chunkedKeys.stream()
-            .map(_keys -> keysQueryMapper.apply(new HashSet<>(_keys)).withFetchTotal(false))
+            .map(
+                _keys ->
+                    keysQueryMapper
+                        .apply(new HashSet<>(_keys))
+                        .withLimit(CHUNK_SIZE)
+                        .withFetchTotal(false))
             .collect(toList());
 
     return ChunkUtils.executeChunks(syncOptions.getCtpClient(), keysQueryMapperList)

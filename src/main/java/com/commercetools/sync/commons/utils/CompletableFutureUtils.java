@@ -118,7 +118,11 @@ public final class CompletableFutureUtils {
         futureList.toArray(new CompletableFuture[futureList.size()]);
     return CompletableFuture.allOf(futuresAsArray)
         .thenApply(
-            ignoredResult -> futureList.stream().map(CompletableFuture::join).collect(collector));
+            ignoredResult ->
+                futureList.stream()
+                    .map(CompletableFuture::join)
+                    .filter(Objects::nonNull)
+                    .collect(collector));
   }
 
   /**

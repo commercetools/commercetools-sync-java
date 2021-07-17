@@ -13,15 +13,14 @@ import javax.annotation.Nonnull;
 public interface InventoryService {
 
   /**
-   * Queries existing {@link InventoryEntry}'s against set of skus.
+   * Queries existing {@link InventoryEntry}'s against set of sku and supply channels.
    *
    * @param inventoryEntryIdentifiers {@link Set} of unique inventory identifiers, used in search
    *     predicate
-   * @return {@link List} of matching entries or empty list when there was no entry of sku matching
-   *     to {@code skus}.
+   * @return {@link List} of matching entries or empty list when there was no matching resources.
    */
   @Nonnull
-  CompletionStage<Set<InventoryEntry>> fetchInventoryEntriesBySkus(
+  CompletionStage<Set<InventoryEntry>> fetchInventoryEntriesByIdentifiers(
       @Nonnull final Set<InventoryEntryIdentifier> inventoryEntryIdentifiers);
 
   /**

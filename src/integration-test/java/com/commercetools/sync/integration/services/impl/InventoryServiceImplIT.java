@@ -68,7 +68,8 @@ class InventoryServiceImplIT {
     // test
     final Set<InventoryEntry> result =
         inventoryService
-            .fetchInventoryEntriesBySkus(singleton(InventoryEntryIdentifier.of(SKU_1)))
+            .fetchInventoryEntriesByIdentifiers(
+                singleton(InventoryEntryIdentifier.of(InventoryEntryDraft.of(SKU_1, 0L))))
             .toCompletableFuture()
             .join();
 
