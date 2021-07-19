@@ -32,10 +32,10 @@
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/6.0.0)
 
 - 🚧 **Breaking Changes** (1)
-  - **Inventory Sync**: `InventoryService.fetchInventoryEntriesBySkus(Set<String> skus)` is renamed to `InventoryService.fetchInventoryEntriesByIdentifiers(Set<InventoryEntryIdentifier> inventoryEntryIdentifiers)`. [#580](https://github.com/commercetools/commercetools-sync-java/pull/757)
+  - **Inventory Sync**: `InventoryService.fetchInventoryEntriesBySkus(Set<String> skus)` is renamed to `InventoryService.fetchInventoryEntriesByIdentifiers(Set<InventoryEntryIdentifier> inventoryEntryIdentifiers)`. [#757](https://github.com/commercetools/commercetools-sync-java/pull/757)
 
 - 🐞 **Bug Fixes** (1)
-  - **Inventory Sync** - Fixed the `DuplicateField` bug in the `InventorySync` related to fetching and syncing inventories with multiple channels. [#580](https://github.com/commercetools/commercetools-sync-java/pull/757)
+  - **Inventory Sync** - Fixed the `DuplicateField` bug in the `InventorySync` related to fetching and syncing inventories with multiple channels. [#757](https://github.com/commercetools/commercetools-sync-java/pull/757)
 
 ### 5.1.3 - Jul 8, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/5.1.2...5.1.3) |
