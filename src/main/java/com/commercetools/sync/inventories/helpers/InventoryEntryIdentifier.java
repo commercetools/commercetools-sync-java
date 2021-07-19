@@ -13,8 +13,7 @@ import javax.annotation.Nullable;
 
 /**
  * This class provides as a container of the unique identifier of an {@link InventoryEntry} for the
- * sync which is a combination of both the SKU of the inventory entry and the supply channel id of
- * this inventory entry.
+ * sync which is a combination of the SKU and the supply channel id of this inventory entry.
  */
 public final class InventoryEntryIdentifier {
   private final String sku;
