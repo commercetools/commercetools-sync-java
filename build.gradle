@@ -47,7 +47,7 @@ dependencies {
     implementation "com.commercetools.sdk.jvm.core:commercetools-convenience:${commercetoolsJvmSdkVersion}"
     implementation "com.github.ben-manes.caffeine:caffeine:${caffeineVersion}"
     constraints {
-        implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.12.3") {
+        implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.12.4") {
             because "previous versions are vulnerable to DoS"
         }
         implementation("io.netty:netty-codec-http:4.1.66.Final") {
