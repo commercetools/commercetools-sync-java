@@ -48,6 +48,9 @@ public final class InventoryEntryQueryBuilder {
 
       if (queryBuilder.length() + predicate.length() > MAX_QUERY_LENGTH) {
         inventoryEntryQueries.add(getInventoryEntryQuery(queryBuilder, limit));
+
+        // clear/reset the queryBuilder and limit
+        queryBuilder.setLength(0);
         limit = 0;
       }
 
@@ -65,9 +68,7 @@ public final class InventoryEntryQueryBuilder {
   private static InventoryEntryQuery getInventoryEntryQuery(
       @Nonnull final StringBuilder queryBuilder, final int limit) {
     // drop " or " keyword in the end of the predicate.
-    String queryString = queryBuilder.substring(0, queryBuilder.length() - 4);
-    // clear/reset the queryBuilder
-    queryBuilder.setLength(0);
+    final String queryString = queryBuilder.substring(0, queryBuilder.length() - 4);
 
     return io.sphere.sdk.inventory.queries.InventoryEntryQueryBuilder.of()
         .plusPredicates(QueryPredicate.of(queryString))
