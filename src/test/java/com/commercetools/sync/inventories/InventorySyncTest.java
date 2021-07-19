@@ -12,7 +12,6 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
-import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -253,28 +252,6 @@ class InventorySyncTest {
   }
 
   @Test
-  void sync_WithExceptionWhenFetchingExistingInventoriesBatch_ShouldProcessThatBatch() {
-    final InventorySyncOptions options = getInventorySyncOptions(1, false);
-
-    final InventoryService inventoryService =
-        getMockInventoryService(
-            existingInventories, mock(InventoryEntry.class), mock(InventoryEntry.class));
-
-    final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_3, KEY_3));
-    when(inventoryService.fetchInventoryEntriesBySkus(singleton(SKU_1)))
-        .thenReturn(getCompletionStageWithException());
-
-    final InventorySync inventorySync =
-        new InventorySync(options, inventoryService, channelService, mock(TypeService.class));
-
-    final InventorySyncStatistics stats = inventorySync.sync(drafts).toCompletableFuture().join();
-
-    assertThat(stats).hasValues(7, 4, 1, 2);
-    assertThat(errorCallBackMessages).hasSize(2);
-    assertThat(errorCallBackExceptions).hasSize(2);
-  }
-
-  @Test
   void sync_WithExceptionWhenCreatingOrUpdatingEntries_ShouldNotSync() {
     final InventorySyncOptions options = getInventorySyncOptions(3, false);
     final InventoryService inventoryService =
@@ -285,10 +262,9 @@ class InventorySyncTest {
     when(inventoryService.updateInventoryEntry(any(), any()))
         .thenReturn(getCompletionStageWithException());
 
-    final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_2, KEY_2));
-
     final InventorySync inventorySync =
-        new InventorySync(options, inventoryService, channelService, mock(TypeService.class));
+        new InventorySync(
+            options, inventoryService, createMockChannelService(), mock(TypeService.class));
     final InventorySyncStatistics stats = inventorySync.sync(drafts).toCompletableFuture().join();
 
     assertThat(stats).hasValues(7, 0, 0, 5);
@@ -513,8 +489,42 @@ class InventorySyncTest {
     final InventoryService inventoryService =
         getMockInventoryService(
             existingInventories, mock(InventoryEntry.class), mock(InventoryEntry.class));
-    final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_2, KEY_2));
-    return new InventorySync(options, inventoryService, channelService, mock(TypeService.class));
+
+    return new InventorySync(
+        options, inventoryService, createMockChannelService(), mock(TypeService.class));
+  }
+
+  private ChannelService createMockChannelService() {
+    final ChannelService channelService = mock(ChannelService.class);
+    when(channelService.fetchCachedChannelId(anyString()))
+        .thenAnswer(
+            invocation -> {
+              Object argument = invocation.getArguments()[0];
+              if (argument.equals(KEY_1)) {
+                return completedFuture(Optional.of(REF_1));
+              } else if (argument.equals(KEY_2)) {
+                return completedFuture(Optional.of(REF_2));
+              } else if (argument.equals(KEY_3)) {
+                return completedFuture(Optional.of(REF_3));
+              }
+
+              return completedFuture(Optional.empty());
+            });
+    when(channelService.createAndCacheChannel(anyString()))
+        .thenAnswer(
+            invocation -> {
+              Object argument = invocation.getArguments()[0];
+              if (argument.equals(KEY_1)) {
+                return completedFuture(Optional.of(getMockSupplyChannel(REF_1, KEY_1)));
+              } else if (argument.equals(KEY_2)) {
+                return completedFuture(Optional.of(getMockSupplyChannel(REF_2, KEY_2)));
+              } else if (argument.equals(KEY_3)) {
+                return completedFuture(Optional.of(getMockSupplyChannel(REF_3, KEY_3)));
+              }
+
+              return completedFuture(Optional.empty());
+            });
+    return channelService;
   }
 
   private InventorySyncOptions getInventorySyncOptions(int batchSize, boolean ensureChannels) {

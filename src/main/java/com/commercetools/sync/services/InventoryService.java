@@ -1,5 +1,6 @@
 package com.commercetools.sync.services;
 
+import com.commercetools.sync.inventories.helpers.InventoryEntryIdentifier;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
@@ -12,14 +13,15 @@ import javax.annotation.Nonnull;
 public interface InventoryService {
 
   /**
-   * Queries existing {@link InventoryEntry}'s against set of skus.
+   * Queries existing {@link InventoryEntry}'s against set of sku and supply channels.
    *
-   * @param skus {@link Set} of sku values, used in search predicate
-   * @return {@link List} of matching entries or empty list when there was no entry of sku matching
-   *     to {@code skus}.
+   * @param inventoryEntryIdentifiers {@link Set} of unique inventory identifiers, used in search
+   *     predicate
+   * @return {@link List} of matching entries or empty list when there was no matching resources.
    */
   @Nonnull
-  CompletionStage<Set<InventoryEntry>> fetchInventoryEntriesBySkus(@Nonnull final Set<String> skus);
+  CompletionStage<Set<InventoryEntry>> fetchInventoryEntriesByIdentifiers(
+      @Nonnull final Set<InventoryEntryIdentifier> inventoryEntryIdentifiers);
 
   /**
    * Creates new inventory entry from {@code inventoryEntryDraft}.

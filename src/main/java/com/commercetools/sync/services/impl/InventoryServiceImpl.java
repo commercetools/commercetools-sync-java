@@ -1,5 +1,8 @@
 package com.commercetools.sync.services.impl;
 
+import static com.commercetools.sync.inventories.helpers.InventoryEntryQueryBuilder.buildQueries;
+
+import com.commercetools.sync.commons.utils.ChunkUtils;
 import com.commercetools.sync.inventories.InventorySyncOptions;
 import com.commercetools.sync.inventories.helpers.InventoryEntryIdentifier;
 import com.commercetools.sync.services.InventoryService;
@@ -10,8 +13,8 @@ import io.sphere.sdk.inventory.commands.InventoryEntryCreateCommand;
 import io.sphere.sdk.inventory.commands.InventoryEntryUpdateCommand;
 import io.sphere.sdk.inventory.expansion.InventoryEntryExpansionModel;
 import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
-import io.sphere.sdk.inventory.queries.InventoryEntryQueryBuilder;
 import io.sphere.sdk.inventory.queries.InventoryEntryQueryModel;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,16 +38,20 @@ public final class InventoryServiceImpl
 
   @Nonnull
   @Override
-  public CompletionStage<Set<InventoryEntry>> fetchInventoryEntriesBySkus(
-      @Nonnull final Set<String> skus) {
+  public CompletionStage<Set<InventoryEntry>> fetchInventoryEntriesByIdentifiers(
+      @Nonnull final Set<InventoryEntryIdentifier> identifiers) {
 
-    return fetchMatchingResources(
-        skus,
-        draft -> String.valueOf(InventoryEntryIdentifier.of(draft)),
-        (skusNotCached) ->
-            InventoryEntryQueryBuilder.of()
-                .plusPredicates(queryModel -> queryModel.sku().isIn(skusNotCached))
-                .build());
+    return ChunkUtils.executeChunks(syncOptions.getCtpClient(), buildQueries(identifiers))
+        .thenApply(ChunkUtils::flattenPagedQueryResults)
+        .thenApply(this::cacheAndMapToSet);
+  }
+
+  private HashSet<InventoryEntry> cacheAndMapToSet(@Nonnull final List<InventoryEntry> results) {
+    results.forEach(
+        resource ->
+            keyToIdCache.put(
+                String.valueOf(InventoryEntryIdentifier.of(resource)), resource.getId()));
+    return new HashSet<>(results);
   }
 
   @Nonnull

@@ -76,7 +76,7 @@ public class InventorySyncMockUtils {
    * this instance returns values passed in parameters, wrapped in {@link CompletionStage}.
    *
    * @param inventoryEntries result of calling {@link
-   *     InventoryService#fetchInventoryEntriesBySkus(Set)}
+   *     InventoryService#fetchInventoryEntriesByIdentifiers(Set)}
    * @param createdInventoryEntry result of calling {@link
    *     InventoryService#createInventoryEntry(InventoryEntryDraft)}
    * @param updatedInventoryEntry result of calling {@link
@@ -88,7 +88,7 @@ public class InventorySyncMockUtils {
       final InventoryEntry createdInventoryEntry,
       final InventoryEntry updatedInventoryEntry) {
     final InventoryService inventoryService = mock(InventoryService.class);
-    when(inventoryService.fetchInventoryEntriesBySkus(any()))
+    when(inventoryService.fetchInventoryEntriesByIdentifiers(any()))
         .thenReturn(completedFuture(inventoryEntries));
     when(inventoryService.createInventoryEntry(any()))
         .thenReturn(completedFuture(Optional.ofNullable(createdInventoryEntry)));

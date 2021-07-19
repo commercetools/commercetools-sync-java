@@ -13,24 +13,23 @@ import javax.annotation.Nullable;
 
 /**
  * This class provides as a container of the unique identifier of an {@link InventoryEntry} for the
- * sync which is a combination of both the SKU of the inventory entry and the supply channel key of
- * this inventory entry.
+ * sync which is a combination of the SKU and the supply channel id of this inventory entry.
  */
 public final class InventoryEntryIdentifier {
-  private String inventoryEntrySku;
-  private String inventoryEntryChannelKey;
+  private final String sku;
+  private final String supplyChannelId;
 
   private InventoryEntryIdentifier(
-      @Nonnull final String inventoryEntrySku, @Nullable final String inventoryEntryChannelKey) {
-    this.inventoryEntrySku = inventoryEntrySku;
-    this.inventoryEntryChannelKey = inventoryEntryChannelKey;
+      @Nonnull final String sku, @Nullable final String supplyChannelId) {
+    this.sku = sku;
+    this.supplyChannelId = supplyChannelId;
   }
 
   /**
    * Builds an {@link InventoryEntryIdentifier} instance given an {@link InventoryEntryDraft} using
-   * its sku and supply channel key.
+   * its sku and supply channel id.
    *
-   * @param inventoryEntryDraft the draft to take the sku and channel key value from.
+   * @param inventoryEntryDraft the draft to take the sku and supply channel id value from.
    * @return an instance of {@link InventoryEntryIdentifier} for the given draft.
    */
   public static InventoryEntryIdentifier of(
@@ -57,30 +56,17 @@ public final class InventoryEntryIdentifier {
         inventoryEntry.getSku(), supplyChannel != null ? supplyChannel.getId() : null);
   }
 
-  /**
-   * Builds an {@link InventoryEntryIdentifier} instance given an sku and supply channel id.
-   *
-   * @param inventoryEntrySku the SKU of the inventory entry.
-   * @param inventoryEntryChannelKey the channel key of the inventory entry.
-   * @return an instance of {@link InventoryEntryIdentifier} for the given entry.
-   */
-  public static InventoryEntryIdentifier of(
-      @Nonnull final String inventoryEntrySku, @Nullable final String inventoryEntryChannelKey) {
-
-    return new InventoryEntryIdentifier(inventoryEntrySku, inventoryEntryChannelKey);
+  public String getSku() {
+    return sku;
   }
 
-  public String getInventoryEntrySku() {
-    return inventoryEntrySku;
-  }
-
-  public String getInventoryEntryChannelKey() {
-    return inventoryEntryChannelKey;
+  public String getSupplyChannelId() {
+    return supplyChannelId;
   }
 
   @Override
   public String toString() {
-    return format("{sku='%s', channelKey='%s'}", inventoryEntrySku, inventoryEntryChannelKey);
+    return format("{sku='%s', supplyChannelId='%s'}", sku, supplyChannelId);
   }
 
   @Override
@@ -94,12 +80,12 @@ public final class InventoryEntryIdentifier {
 
     final InventoryEntryIdentifier that = (InventoryEntryIdentifier) other;
 
-    return getInventoryEntrySku().equals(that.getInventoryEntrySku())
-        && Objects.equals(getInventoryEntryChannelKey(), that.getInventoryEntryChannelKey());
+    return getSku().equals(that.getSku())
+        && Objects.equals(getSupplyChannelId(), that.getSupplyChannelId());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getInventoryEntrySku(), getInventoryEntryChannelKey());
+    return Objects.hash(getSku(), getSupplyChannelId());
   }
 }

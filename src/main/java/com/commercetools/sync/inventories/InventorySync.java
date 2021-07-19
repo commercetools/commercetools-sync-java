@@ -6,10 +6,13 @@ import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.utils.CompletableFutureUtils;
 import com.commercetools.sync.inventories.helpers.InventoryBatchValidator;
 import com.commercetools.sync.inventories.helpers.InventoryEntryIdentifier;
 import com.commercetools.sync.inventories.helpers.InventoryReferenceResolver;
@@ -137,25 +140,7 @@ public final class InventorySync
                 return CompletableFuture.completedFuture(null);
               }
 
-              final Set<String> skus =
-                  validDrafts.stream().map(InventoryEntryDraft::getSku).collect(Collectors.toSet());
-
-              return inventoryService
-                  .fetchInventoryEntriesBySkus(skus)
-                  .handle(ImmutablePair::new)
-                  .thenCompose(
-                      fetchResponse -> {
-                        final Set<InventoryEntry> fetchedInventoryEntries = fetchResponse.getKey();
-                        final Throwable exception = fetchResponse.getValue();
-
-                        if (exception != null) {
-                          final String errorMessage = format(CTP_INVENTORY_FETCH_FAILED, skus);
-                          handleError(new SyncException(errorMessage, exception), skus.size());
-                          return CompletableFuture.completedFuture(null);
-                        } else {
-                          return syncBatch(fetchedInventoryEntries, validDrafts);
-                        }
-                      });
+              return resolveReferences(validDrafts).thenCompose(this::syncResolvedDrafts);
             })
         .thenApply(
             ignored -> {
@@ -164,16 +149,63 @@ public final class InventorySync
             });
   }
 
-  /**
-   * Given a list of inventory entry {@code drafts}, this method resolves the references of each
-   * entry and attempts to sync it to the CTP project depending whether the references resolution
-   * was successful. In addition the given {@code oldInventories} list is converted to a {@link Map}
-   * of an identifier to an inventory entry, for a resources comparison reason.
-   *
-   * @param oldInventories inventory entries from CTP
-   * @param inventoryEntryDrafts drafts that need to be synced
-   * @return a future which contains an empty result after execution of the update
-   */
+  private CompletableFuture<Set<InventoryEntryDraft>> resolveReferences(
+      @Nonnull final Set<InventoryEntryDraft> inventoryEntryDrafts) {
+
+    final List<CompletionStage<InventoryEntryDraft>> collect =
+        inventoryEntryDrafts.stream().map(this::resolveReferences).collect(toList());
+
+    return CompletableFutureUtils.collectionOfFuturesToFutureOfCollection(collect, toSet());
+  }
+
+  private CompletionStage<InventoryEntryDraft> resolveReferences(
+      @Nonnull final InventoryEntryDraft newInventoryEntry) {
+    return referenceResolver
+        .resolveReferences(newInventoryEntry)
+        .exceptionally(
+            completionException -> {
+              handleFailedToProcessError(newInventoryEntry, completionException);
+              return null;
+            });
+  }
+
+  private void handleFailedToProcessError(
+      @Nonnull final InventoryEntryDraft newInventoryEntry,
+      @Nonnull final Throwable completionException) {
+    final String errorMessage =
+        format(FAILED_TO_PROCESS, newInventoryEntry.getSku(), completionException.getMessage());
+    handleError(new SyncException(errorMessage, completionException), 1);
+  }
+
+  private CompletionStage<Void> syncResolvedDrafts(
+      @Nonnull final Set<InventoryEntryDraft> resolvedDrafts) {
+
+    final Set<InventoryEntryIdentifier> identifiers =
+        resolvedDrafts.stream().map(InventoryEntryIdentifier::of).collect(Collectors.toSet());
+
+    return inventoryService
+        .fetchInventoryEntriesByIdentifiers(identifiers)
+        .handle(ImmutablePair::new)
+        .thenCompose(
+            fetchResponse -> processFetchedInventories(resolvedDrafts, identifiers, fetchResponse));
+  }
+
+  private CompletionStage<Void> processFetchedInventories(
+      @Nonnull final Set<InventoryEntryDraft> resolvedDrafts,
+      @Nonnull final Set<InventoryEntryIdentifier> identifiers,
+      @Nonnull final ImmutablePair<Set<InventoryEntry>, Throwable> fetchResponse) {
+    final Set<InventoryEntry> fetchedInventoryEntries = fetchResponse.getKey();
+    final Throwable exception = fetchResponse.getValue();
+
+    if (exception != null) {
+      final String errorMessage = format(CTP_INVENTORY_FETCH_FAILED, identifiers);
+      handleError(new SyncException(errorMessage, exception), identifiers.size());
+      return CompletableFuture.completedFuture(null);
+    } else {
+      return syncBatch(fetchedInventoryEntries, resolvedDrafts);
+    }
+  }
+
   private CompletionStage<Void> syncBatch(
       @Nonnull final Set<InventoryEntry> oldInventories,
       @Nonnull final Set<InventoryEntryDraft> inventoryEntryDrafts) {
@@ -183,21 +215,7 @@ public final class InventorySync
 
     return CompletableFuture.allOf(
         inventoryEntryDrafts.stream()
-            .map(
-                newInventoryEntry ->
-                    referenceResolver
-                        .resolveReferences(newInventoryEntry)
-                        .thenCompose(resolvedDraft -> syncDraft(oldInventoryMap, resolvedDraft))
-                        .exceptionally(
-                            completionException -> {
-                              final String errorMessage =
-                                  format(
-                                      FAILED_TO_PROCESS,
-                                      newInventoryEntry.getSku(),
-                                      completionException.getMessage());
-                              handleError(new SyncException(errorMessage, completionException), 1);
-                              return Optional.empty();
-                            }))
+            .map(newInventoryEntry -> syncDraft(oldInventoryMap, newInventoryEntry))
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
   }
@@ -220,7 +238,12 @@ public final class InventorySync
 
     return ofNullable(oldInventory)
         .map(type -> buildActionsAndUpdate(oldInventory, resolvedDraft))
-        .orElseGet(() -> applyCallbackAndCreate(resolvedDraft));
+        .orElseGet(() -> applyCallbackAndCreate(resolvedDraft))
+        .exceptionally(
+            completionException -> {
+              handleFailedToProcessError(resolvedDraft, completionException);
+              return Optional.empty();
+            });
   }
 
   /**
