@@ -14,7 +14,6 @@ import static com.commercetools.sync.integration.inventories.utils.InventoryITUt
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteInventoryEntriesFromTargetAndSource;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.getInventoryEntryBySkuAndSupplyChannel;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.populateTargetProject;
-import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,6 +21,9 @@ import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
 import com.commercetools.sync.inventories.helpers.InventoryEntryIdentifier;
 import com.commercetools.sync.services.InventoryService;
 import com.commercetools.sync.services.impl.InventoryServiceImpl;
+import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.channels.ChannelDraft;
+import io.sphere.sdk.channels.commands.ChannelCreateCommand;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
@@ -29,9 +31,12 @@ import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.inventory.commands.updateactions.ChangeQuantity;
 import io.sphere.sdk.inventory.commands.updateactions.SetExpectedDelivery;
 import io.sphere.sdk.inventory.commands.updateactions.SetRestockableInDays;
+import io.sphere.sdk.models.ResourceIdentifier;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,21 +70,43 @@ class InventoryServiceImplIT {
 
   @Test
   void fetchInventoryEntriesBySku_ShouldReturnCorrectInventoryEntriesWithoutReferenceExpansion() {
+    // prepare draft and create
+    final ChannelDraft channelDraft1 = ChannelDraft.of("CHANNEL_KEY");
+    final Channel channel =
+        CTP_TARGET_CLIENT
+            .execute(ChannelCreateCommand.of(channelDraft1))
+            .toCompletableFuture()
+            .join();
+
+    final InventoryEntryDraft inventoryEntryDraft1 =
+        InventoryEntryDraftBuilder.of("SKU_WITH_CHANNEL", 1L)
+            .supplyChannel(ResourceIdentifier.ofId(channel.getId()))
+            .build();
+
+    final InventoryEntryDraft inventoryEntryDraft2 =
+        InventoryEntryDraftBuilder.of("SKU_WITHOUT_CHANNEL", 1L)
+            .supplyChannel(ResourceIdentifier.ofId(channel.getId()))
+            .build();
+
+    CompletableFuture.allOf(
+            inventoryService.createInventoryEntry(inventoryEntryDraft1).toCompletableFuture(),
+            inventoryService.createInventoryEntry(inventoryEntryDraft2).toCompletableFuture())
+        .join();
+
     // test
+    final Set<InventoryEntryIdentifier> identifiers = new HashSet<>();
+    identifiers.add(InventoryEntryIdentifier.of(inventoryEntryDraft1));
+    identifiers.add(InventoryEntryIdentifier.of(inventoryEntryDraft2));
+
     final Set<InventoryEntry> result =
         inventoryService
-            .fetchInventoryEntriesByIdentifiers(
-                singleton(InventoryEntryIdentifier.of(InventoryEntryDraft.of(SKU_1, 0L))))
+            .fetchInventoryEntriesByIdentifiers(identifiers)
             .toCompletableFuture()
             .join();
 
     // assertion
     assertThat(result).isNotNull();
     assertThat(result).hasSize(2);
-
-    // assert SKU is correct
-    result.stream().map(InventoryEntry::getSku).forEach(sku -> assertThat(sku).isEqualTo(SKU_1));
-
     // assert references are not expanded
     result.stream()
         .filter(inventoryEntry -> inventoryEntry.getSupplyChannel() != null)
