@@ -17,7 +17,7 @@ Thanks for taking the time to contribute :+1::tada: All contributions are welcom
       - [Full build with tests, but without install to maven local repo (Recommended)](#full-build-with-tests-but-without-install-to-maven-local-repo-recommended)
       - [Install to local maven repo](#install-to-local-maven-repo)
       - [Publish JavaDoc](#publish-javadoc)
-      - [Build and publish to Bintray](#build-and-publish-to-bintray)
+      - [Build and publish to Maven Central](#build-and-publish-to-maven-central)
   - [Integration Tests](#integration-tests)
     - [Running](#running)
 - [Using the google java style and code formatter](#using-the-google-java-style-and-code-formatter)
@@ -77,9 +77,9 @@ If you have push access to the repository you can fix them directly otherwise ju
 ./gradlew clean javadoc gitPublishPush -Dbuild.version={version}
 ````
 
-##### Build and publish to Bintray
+##### Build and publish to Maven Central
 ````bash
-./gradlew clean build bintrayUpload -Dbuild.version={version} 
+./gradlew clean setLibraryVersion -Dbuild.version={version} publishToSonatype closeAndReleaseSonatypeStagingRepository
 ````
 
 For more detailed information on the build and the release process, see [Build and Release](BUILD.md) documentation.
