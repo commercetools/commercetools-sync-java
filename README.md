@@ -31,20 +31,13 @@ Supported resources: [Categories](/docs/usage/CATEGORY_SYNC.md), [Products](/doc
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 ## Usage
 
-commercetools sync is a Java library that imports commercetools platform data in the following ways:
+Create you own event or cronjob based application and use the library to transform any external data (JSON, CSV, XML, REST API, DB, ...) into [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)) and import those into the commercetools project.
 
-1. Synchronise data coming from an external system in any form (CSV, XML, etc..) that has been already mapped to 
-[commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
-(e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
-    - The amount of data that needs to be synced between your external system and a commercetools project can be huge. To assure good performance we strongly recommend implementing a **delta sync** approach for your logic instead of **full sync**; means that only resources
-      which have been modified since the last time the sync has run need to be synced.
+Notes:
 
-2. Synchronise data from another commercetools project as 
-[commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
-(e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java))
-   - 🔛 Check out the [commercetools-project-sync](https://github.com/commercetools/commercetools-project-sync) for a ready-to-use CLI application that syncs your entire data catalogue between 2 commercetools projects!
-
-> **Note**: During a synchronisation, resources are either created or updated, but **not** deleted.
+- It is often more efficient if you can setup your external data source to provide you only the changes (deltas) instead of the full data set on every import iteration.
+- There is dockerized ready-to-use CLI application [commercetools-project-sync](https://github.com/commercetools/commercetools-project-sync) which based on this library can synchronize entire data catalogue between the 2 commercetools projects.
+- During a synchronisation, resources are either created or updated, but **not** deleted.
 
 ⚡ See the [Quick Start Guide](/docs/usage/QUICK_START.md) for more information on building a product importer!
 
