@@ -7,8 +7,10 @@
 [![Javadoc](http://javadoc-badge.appspot.com/com.commercetools/commercetools-sync-java.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/6.0.0/)
 [![Known Vulnerabilities](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646/badge.svg)](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646)
 
- 
-Java library that imports commercetools platform data in the following ways:
+
+Java library which allows to import/synchronise (import changes) the data from any arbitrary source to commercetools project.
+
+Supported resources: [Categories](/docs/usage/CATEGORY_SYNC.md), [Products](/docs/usage/PRODUCT_SYNC.md), [InventoryEntries](/docs/usage/INVENTORY_SYNC.md), [ProductTypes](/docs/usage/PRODUCT_TYPE_SYNC.md), [Types](/docs/usage/TYPE_SYNC.md), [CartDiscounts](/docs/usage/CART_DISCOUNT_SYNC.md), [States](/docs/usage/STATE_SYNC.md), [TaxCategories](/docs/usage/TAX_CATEGORY_SYNC.md), [CustomObjects](/docs/usage/CUSTOM_OBJECT_SYNC.md), [Customers](/docs/usage/CUSTOMER_SYNC.md), [ShoppingLists](/docs/usage/SHOPPING_LIST_SYNC.md)
              
  1. Synchronise data coming from an external system in any form (CSV, XML, etc..) that has been already mapped to 
  [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
@@ -25,30 +27,15 @@ Java library that imports commercetools platform data in the following ways:
  
  🔛 Check out the [commercetools-project-sync](https://github.com/commercetools/commercetools-project-sync) for a ready-to-use CLI application that syncs your entire data catalogue between 2 commercetools projects! 
 
-The library supports synchronising the following entities in commercetools
-    
- - [Categories](usage/CATEGORY_SYNC.md)
- - [Products](usage/PRODUCT_SYNC.md)
- - [InventoryEntries](usage/INVENTORY_SYNC.md)
- - [ProductTypes](usage/PRODUCT_TYPE_SYNC.md)
- - [Types](usage/TYPE_SYNC.md)
- - [CartDiscounts](usage/CART_DISCOUNT_SYNC.md)
- - [States](usage/STATE_SYNC.md)
- - [TaxCategories](/docs/usage/TAX_CATEGORY_SYNC.md)
- - [CustomObjects](/docs/usage/CUSTOM_OBJECT_SYNC.md)
- - [Customers](/docs/usage/CUSTOMER_SYNC.md)
- - [ShoppingLists](/docs/usage/SHOPPING_LIST_SYNC.md)
-
-![commercetools-java-sync-final 001](https://user-images.githubusercontent.com/9512131/31230702-0f2255a6-a9e5-11e7-9412-04ed52641dde.png)
-
+![commercetools-java-sync-final 001](https://user-images.githubusercontent.com/3469524/126317637-a946a81c-2948-4751-86bb-02bcecfeca95.png)
 
 ### Prerequisites
- 
- - Make sure you have `JDK 8` installed.
- - [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) as a dependency in your JVM-based 
-  application. (Make sure to use a version `>=` [1.60.0](https://search.maven.org/artifact/com.commercetools.sdk.jvm.core/commercetools-jvm-sdk/1.60.0/pom)).
- - a target commercetools project for syncing your source data to.
 
+- Library requires the min JDK version `>= 8`.
+  > The library tested with each major JDK version (i.e: 8, 9, 10, 11, 12, 13...) as well as some specific updates of LTS versions (i.e: 8.0.192, 11.0.3).
+- [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) as a dependency in your JVM-based
+  application. (Make sure to use a version `>= 1.64.0`).
+- A target commercetools project for syncing your source data to.
 
 ### Installation
 There are multiple ways to add the commercetools sync dependency to your project, based on your dependency manager. 
