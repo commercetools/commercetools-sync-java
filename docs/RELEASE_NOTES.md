@@ -26,6 +26,18 @@
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
+
+<!--
+### x.x.x - MM DD, 2021
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/6.0.0...X.X.X) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/X.X.X/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/X.X.X/jar)
+
+- ✨ **Documentation** (1)
+  -  Usage documentation on main readme improved, obsolete links is removed. [#758](https://github.com/commercetools/commercetools-sync-java/pull/758)
+
+-->
+
 ### 6.0.0 - Jul 19, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/5.1.3...6.0.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/6.0.0/) |
