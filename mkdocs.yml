@@ -64,7 +64,6 @@ nav:
         - Cleanup Unresolved References: usage/CLEANUP_GUIDE.md
   - Javadoc: https://commercetools.github.io/commercetools-sync-java/v/6.0.0/
   - Release notes: RELEASE_NOTES.md
-  - Roadmap: https://github.com/commercetools/commercetools-sync-java/milestones
   - Issues: https://github.com/commercetools/commercetools-sync-java/issues
   - Benchmarks: https://commercetools.github.io/commercetools-sync-java/benchmarks/
 

@@ -23,7 +23,6 @@ The library supports synchronising the following entities in commercetools: [Cat
     - [Gradle](#gradle)
     - [SBT](#sbt)
     - [Ivy](#ivy)
-- [Roadmap](#roadmap)
 - [Release Notes](/docs/RELEASE_NOTES.md)
 - [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/6.0.0/)
 - [Benchmarks](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
