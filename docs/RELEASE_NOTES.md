@@ -29,7 +29,7 @@
 
 <!--
 ### x.x.x - MM DD, 2021
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/6.0.0...X.X.X) |
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/7.0.0...X.X.X) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/X.X.X/) |
 [Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/X.X.X/jar)
 
@@ -38,6 +38,44 @@
 
 -->
 
+### 7.0.0 - Aug 23, 2021
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/6.0.0...7.0.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/7.0.0/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/7.0.0/jar)
+
+- 🚧 **Breaking Changes** (1)
+  - **Dependency management:** Avoid JVM-SDK libraries version mismatch between projects.
+     You should not explicitly add JVM-SDK dependencies into your project where you are using Sync-Java. Please remove them if you have already added the below dependencies in your project.
+     
+     For Gradle users, remove: 
+     
+     ````groovy
+     // Add commercetools-jvm-sdk dependencies.
+     implementation 'com.commercetools.sdk.jvm.core:commercetools-models:1.60.0'
+     implementation 'com.commercetools.sdk.jvm.core:commercetools-java-client-ahc-2_5:1.60.0'
+     implementation 'com.commercetools.sdk.jvm.core:commercetools-convenience:1.60.0'
+     ````
+     
+     For Maven users, remove:
+     
+     ````xml
+     <dependency>
+       <groupId>com.commercetools.sdk.jvm.core</groupId>
+       <artifactId>commercetools-models</artifactId>
+       <version>1.60.0</version>
+     </dependency>
+     <dependency>
+       <groupId>com.commercetools.sdk.jvm.core</groupId>
+       <artifactId>commercetools-java-client-ahc-2_5</artifactId>
+       <version>1.60.0</version>
+     </dependency>
+     <dependency>
+       <groupId>com.commercetools.sdk.jvm.core</groupId>
+       <artifactId>commercetools-convenience</artifactId>
+       <version>1.60.0</version>
+     </dependency>
+     ````
+  
 ### 6.0.0 - Jul 19, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/5.1.3...6.0.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/6.0.0/) |
