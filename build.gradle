@@ -42,9 +42,9 @@ apply from: "$rootDir/gradle-scripts/mkdocs.gradle"
 apply from: "$rootDir/gradle-scripts/spotless.gradle"
 
 dependencies {
-    implementation "com.commercetools.sdk.jvm.core:commercetools-models:${commercetoolsJvmSdkVersion}"
-    implementation "com.commercetools.sdk.jvm.core:commercetools-java-client-ahc-2_5:${commercetoolsJvmSdkVersion}"
-    implementation "com.commercetools.sdk.jvm.core:commercetools-convenience:${commercetoolsJvmSdkVersion}"
+    api "com.commercetools.sdk.jvm.core:commercetools-models:${commercetoolsJvmSdkVersion}"
+    api "com.commercetools.sdk.jvm.core:commercetools-java-client-ahc-2_5:${commercetoolsJvmSdkVersion}"
+    api "com.commercetools.sdk.jvm.core:commercetools-convenience:${commercetoolsJvmSdkVersion}"
     implementation "com.github.ben-manes.caffeine:caffeine:${caffeineVersion}"
     constraints {
         implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.12.3") {
