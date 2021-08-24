@@ -46,9 +46,7 @@ Notes:
 ### Prerequisites
  
  - Library requires the min JDK version `>= 8`.
-   > The library tested with each major JDK version (i.e: 8, 9, 10, 11, 12, 13...) as well as some specific updates of LTS versions (i.e: 8.0.192, 11.0.3).        
- - [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) as a dependency in your JVM-based 
-  application. (Make sure to use a version `>= 1.64.0`).
+   > The library tested with each major JDK version (i.e: 8, 9, 10, 11, 12, 13...) as well as some specific updates of LTS versions (i.e: 8.0.192, 11.0.3).
  - A target commercetools project for syncing your source data to.
 
 ### Installation
