@@ -44,8 +44,8 @@
 [Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/7.0.0/jar)
 
 - 🚧 **Breaking Changes** (1)
-  - **Dependency management:** Avoid JVM-SDK libraries version mismatch between projects.
-     It is better not to add JVM-SDK dependencies explicitly into your project and use them from Sync-Java dependencies instead. Please remove them if you have already added the below dependencies in your project.
+  - **Dependency management:** Avoid `commercetools JVM SDK` libraries version mismatch between projects.
+     It is better not to add `commercetools JVM SDK` dependencies explicitly into your project and use them from `commercetools-Sync-Java` dependencies instead. Please remove them if you have already added the below dependencies in your project.
      
      For Gradle users, remove: 
      
