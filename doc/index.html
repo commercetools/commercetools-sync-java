@@ -234,13 +234,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    Usage
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#prerequisites" class="md-nav__link">
     Prerequisites
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#installation" class="md-nav__link">
     Installation
   </a>
@@ -273,6 +281,11 @@
   <a href="#ivy" class="md-nav__link">
     Ivy
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -534,7 +547,7 @@
   
   
     <li class="md-nav__item">
-      <a href="https://commercetools.github.io/commercetools-sync-java/v/6.0.0/" class="md-nav__link">
+      <a href="https://commercetools.github.io/commercetools-sync-java/v/7.0.0/" class="md-nav__link">
         Javadoc
       </a>
     </li>
@@ -551,21 +564,6 @@
     <li class="md-nav__item">
       <a href="RELEASE_NOTES/" class="md-nav__link">
         Release notes
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="https://github.com/commercetools/commercetools-sync-java/milestones" class="md-nav__link">
-        Roadmap
       </a>
     </li>
   
@@ -626,13 +624,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    Usage
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#prerequisites" class="md-nav__link">
     Prerequisites
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#installation" class="md-nav__link">
     Installation
   </a>
@@ -672,6 +678,11 @@
     </nav>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
     </ul>
   
@@ -694,50 +705,29 @@
 <h1 id="commercetools-sync">commercetools sync<a class="headerlink" href="#commercetools-sync" title="Permanent link">&para;</a></h1>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ACI"><img alt="CI" src="https://github.com/commercetools/commercetools-sync-java/workflows/CI/badge.svg" /></a>
 <a href="https://codecov.io/gh/commercetools/commercetools-sync-java"><img alt="codecov" src="https://codecov.io/gh/commercetools/commercetools-sync-java/branch/master/graph/badge.svg" /></a>
-<a href="https://commercetools.github.io/commercetools-sync-java/benchmarks/"><img alt="Benchmarks 6.0.0" src="https://img.shields.io/badge/Benchmarks-6.0.0-orange.svg" /></a>
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/_latestVersion"><img alt="Download from JCenter" src="https://img.shields.io/badge/Bintray_JCenter-6.0.0-green.svg" /> </a>
-<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/6.0.0/jar"><img alt="Download from Maven Central" src="https://img.shields.io/badge/Maven_Central-6.0.0-blue.svg" /></a> 
-<a href="https://commercetools.github.io/commercetools-sync-java/v/6.0.0/"><img alt="Javadoc" src="http://javadoc-badge.appspot.com/com.commercetools/commercetools-sync-java.svg?label=Javadoc" /></a>
+<a href="https://commercetools.github.io/commercetools-sync-java/benchmarks/"><img alt="Benchmarks 7.0.0" src="https://img.shields.io/badge/Benchmarks-7.0.0-orange.svg" /></a>
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/7.0.0/jar"><img alt="Download from Maven Central" src="https://img.shields.io/badge/Maven_Central-7.0.0-blue.svg" /></a> 
+<a href="https://commercetools.github.io/commercetools-sync-java/v/7.0.0/"><img alt="Javadoc" src="http://javadoc-badge.appspot.com/com.commercetools/commercetools-sync-java.svg?label=Javadoc" /></a>
 <a href="https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646"><img alt="Known Vulnerabilities" src="https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646/badge.svg" /></a></p>
-<p>Java library that imports commercetools platform data in the following ways:</p>
-<ol>
-<li>
-<p>Synchronise data coming from an external system in any form (CSV, XML, etc..) that has been already mapped to 
- <a href="https://github.com/commercetools/commercetools-jvm-sdk">commercetools-jvm-sdk</a> resource draft objects 
- (e.g. <a href="https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java">CategoryDraft</a>).</p>
-</li>
-<li>
-<p>Synchronise data from another commercetools project as 
- <a href="https://github.com/commercetools/commercetools-jvm-sdk">commercetools-jvm-sdk</a> resource draft objects 
- (e.g. <a href="https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java">CategoryDraft</a>).</p>
-</li>
-</ol>
-<blockquote>
-<p>Synchronise: Resources will either be created or updated. But they will <strong>not</strong> be deleted.</p>
-</blockquote>
-<p>⚡ See the <a href="https://commercetools.github.io/commercetools-sync-java/doc/usage/QUICK_START/">Quick Start Guide</a> for more information on building a product importer!</p>
-<p>🔛 Check out the <a href="https://github.com/commercetools/commercetools-project-sync">commercetools-project-sync</a> for a ready-to-use CLI application that syncs your entire data catalogue between 2 commercetools projects! </p>
-<p>The library supports synchronising the following entities in commercetools</p>
+<p>Java library which allows to import/synchronise (import changes) the data from any arbitrary source to commercetools project.</p>
+<p>Supported resources: <a href="/docs/usage/CATEGORY_SYNC.md">Categories</a>, <a href="/docs/usage/PRODUCT_SYNC.md">Products</a>, <a href="/docs/usage/INVENTORY_SYNC.md">InventoryEntries</a>, <a href="/docs/usage/PRODUCT_TYPE_SYNC.md">ProductTypes</a>, <a href="/docs/usage/TYPE_SYNC.md">Types</a>, <a href="/docs/usage/CART_DISCOUNT_SYNC.md">CartDiscounts</a>, <a href="/docs/usage/STATE_SYNC.md">States</a>, <a href="/docs/usage/TAX_CATEGORY_SYNC.md">TaxCategories</a>, <a href="/docs/usage/CUSTOM_OBJECT_SYNC.md">CustomObjects</a>, <a href="/docs/usage/CUSTOMER_SYNC.md">Customers</a>, <a href="/docs/usage/SHOPPING_LIST_SYNC.md">ShoppingLists</a></p>
+<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<p>Create you own event or cronjob based application and use the library to transform any external data (JSON, CSV, XML, REST API, DB, ...) into <a href="https://github.com/commercetools/commercetools-jvm-sdk">commercetools-jvm-sdk</a> resource draft objects (e.g. <a href="https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java">CategoryDraft</a>) and import those into the commercetools project.</p>
+<p>Notes:</p>
 <ul>
-<li><a href="usage/CATEGORY_SYNC/">Categories</a></li>
-<li><a href="usage/PRODUCT_SYNC/">Products</a></li>
-<li><a href="usage/INVENTORY_SYNC/">InventoryEntries</a></li>
-<li><a href="usage/PRODUCT_TYPE_SYNC/">ProductTypes</a></li>
-<li><a href="usage/TYPE_SYNC/">Types</a></li>
-<li><a href="usage/CART_DISCOUNT_SYNC/">CartDiscounts</a></li>
-<li><a href="usage/STATE_SYNC/">States</a></li>
-<li><a href="/docs/usage/TAX_CATEGORY_SYNC.md">TaxCategories</a></li>
-<li><a href="/docs/usage/CUSTOM_OBJECT_SYNC.md">CustomObjects</a></li>
-<li><a href="/docs/usage/CUSTOMER_SYNC.md">Customers</a></li>
-<li><a href="/docs/usage/SHOPPING_LIST_SYNC.md">ShoppingLists</a></li>
+<li>It is often more efficient if you can setup your external data source to provide you only the changes (deltas) instead of the full data set on every import iteration.</li>
+<li>There is dockerized ready-to-use CLI application <a href="https://github.com/commercetools/commercetools-project-sync">commercetools-project-sync</a> which based on this library can synchronize entire data catalogue between the 2 commercetools projects.</li>
+<li>During a synchronisation, resources are either created or updated, but <strong>not</strong> deleted.</li>
 </ul>
-<p><img alt="commercetools-java-sync-final 001" src="https://user-images.githubusercontent.com/9512131/31230702-0f2255a6-a9e5-11e7-9412-04ed52641dde.png" /></p>
+<p>⚡ See the <a href="/docs/usage/QUICK_START.md">Quick Start Guide</a> for more information on building a product importer!</p>
+<p><img alt="commercetools-java-sync-final 001" src="https://user-images.githubusercontent.com/3469524/126317637-a946a81c-2948-4751-86bb-02bcecfeca95.png" /></p>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Make sure you have <code>JDK 8</code> installed.</li>
-<li><a href="https://github.com/commercetools/commercetools-jvm-sdk">commercetools-jvm-sdk</a> as a dependency in your JVM-based 
-  application. (Make sure to use a version <code>&gt;=</code> <a href="https://search.maven.org/artifact/com.commercetools.sdk.jvm.core/commercetools-jvm-sdk/1.60.0/pom">1.60.0</a>).</li>
-<li>a target commercetools project for syncing your source data to.</li>
+<li>Library requires the min JDK version <code>&gt;= 8</code>.<blockquote>
+<p>The library tested with each major JDK version (i.e: 8, 9, 10, 11, 12, 13...) as well as some specific updates of LTS versions (i.e: 8.0.192, 11.0.3).</p>
+</blockquote>
+</li>
+<li>A target commercetools project for syncing your source data to.</li>
 </ul>
 <h3 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h3>
 <p>There are multiple ways to add the commercetools sync dependency to your project, based on your dependency manager. 
@@ -746,17 +736,17 @@ Here are the most popular ones:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">&lt;dependency&gt;</span>
   <span class="nt">&lt;groupId&gt;</span>com.commercetools<span class="nt">&lt;/groupId&gt;</span>
   <span class="nt">&lt;artifactId&gt;</span>commercetools-sync-java<span class="nt">&lt;/artifactId&gt;</span>
-  <span class="nt">&lt;version&gt;</span>6.0.0<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;version&gt;</span>7.0.0<span class="nt">&lt;/version&gt;</span>
 <span class="nt">&lt;/dependency&gt;</span>
 </code></pre></div>
 <h4 id="gradle">Gradle<a class="headerlink" href="#gradle" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><span class="n">implementation</span> <span class="s1">&#39;com.commercetools:commercetools-sync-java:6.0.0&#39;</span>
+<div class="highlight"><pre><span></span><code><span class="n">implementation</span> <span class="s1">&#39;com.commercetools:commercetools-sync-java:7.0.0&#39;</span>
 </code></pre></div>
 <h4 id="sbt">SBT<a class="headerlink" href="#sbt" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code>libraryDependencies += &quot;com.commercetools&quot; % &quot;commercetools-sync-java&quot; % &quot;6.0.0&quot;
+<div class="highlight"><pre><span></span><code>libraryDependencies += &quot;com.commercetools&quot; % &quot;commercetools-sync-java&quot; % &quot;7.0.0&quot;
 </code></pre></div>
 <h4 id="ivy">Ivy<a class="headerlink" href="#ivy" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><span class="nt">&lt;dependency</span> <span class="na">org=</span><span class="s">&quot;com.commercetools&quot;</span> <span class="na">name=</span><span class="s">&quot;commercetools-sync-java&quot;</span> <span class="na">rev=</span><span class="s">&quot;6.0.0&quot;</span><span class="nt">/&gt;</span>
+<div class="highlight"><pre><span></span><code><span class="nt">&lt;dependency</span> <span class="na">org=</span><span class="s">&quot;com.commercetools&quot;</span> <span class="na">name=</span><span class="s">&quot;commercetools-sync-java&quot;</span> <span class="na">rev=</span><span class="s">&quot;7.0.0&quot;</span><span class="nt">/&gt;</span>
 </code></pre></div>
                 
               

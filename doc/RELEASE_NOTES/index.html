@@ -455,7 +455,7 @@
   
   
     <li class="md-nav__item">
-      <a href="https://commercetools.github.io/commercetools-sync-java/v/6.0.0/" class="md-nav__link">
+      <a href="https://commercetools.github.io/commercetools-sync-java/v/7.0.0/" class="md-nav__link">
         Javadoc
       </a>
     </li>
@@ -499,6 +499,13 @@
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#700-aug-24-2021" class="md-nav__link">
+    7.0.0 - Aug 24, 2021
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#600-jul-19-2021" class="md-nav__link">
@@ -879,21 +886,6 @@
   
   
     <li class="md-nav__item">
-      <a href="https://github.com/commercetools/commercetools-sync-java/milestones" class="md-nav__link">
-        Roadmap
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
       <a href="https://github.com/commercetools/commercetools-sync-java/issues" class="md-nav__link">
         Issues
       </a>
@@ -939,6 +931,13 @@
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#700-aug-24-2021" class="md-nav__link">
+    7.0.0 - Aug 24, 2021
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#600-jul-19-2021" class="md-nav__link">
@@ -1347,10 +1346,46 @@
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
+
+<h3 id="700-aug-24-2021">7.0.0 - Aug 24, 2021<a class="headerlink" href="#700-aug-24-2021" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/commercetools/commercetools-sync-java/compare/6.0.0...7.0.0">Commits</a> |
+<a href="https://commercetools.github.io/commercetools-sync-java/v/7.0.0/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/7.0.0/jar">Jar</a></p>
+<ul>
+<li>🚧 <strong>Breaking Changes</strong> (1)</li>
+<li>
+<p><strong>Dependency management:</strong> Avoid <code>commercetools JVM SDK</code> libraries version mismatch between projects.
+     It is better not to add <code>commercetools JVM SDK</code> dependencies explicitly into your project and use them from <code>commercetools-Sync-Java</code> dependencies instead. Please remove them if you have already added the below dependencies in your project.</p>
+<p>For Gradle users, remove: </p>
+<div class="highlight"><pre><span></span><code><span class="n">implementation</span> <span class="s1">&#39;com.commercetools.sdk.jvm.core:commercetools-models:&lt;version&gt;&#39;</span>
+<span class="n">implementation</span> <span class="s1">&#39;com.commercetools.sdk.jvm.core:commercetools-java-client-ahc-2_5:&lt;version&gt;&#39;</span>
+<span class="n">implementation</span> <span class="s1">&#39;com.commercetools.sdk.jvm.core:commercetools-convenience:&lt;version&gt;&#39;</span>
+</code></pre></div>
+<p>For Maven users, remove:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">&lt;dependency&gt;</span>
+  <span class="nt">&lt;groupId&gt;</span>com.commercetools.sdk.jvm.core<span class="nt">&lt;/groupId&gt;</span>
+  <span class="nt">&lt;artifactId&gt;</span>commercetools-models<span class="nt">&lt;/artifactId&gt;</span>
+  <span class="nt">&lt;version&gt;</span>version<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+<span class="nt">&lt;dependency&gt;</span>
+  <span class="nt">&lt;groupId&gt;</span>com.commercetools.sdk.jvm.core<span class="nt">&lt;/groupId&gt;</span>
+  <span class="nt">&lt;artifactId&gt;</span>commercetools-java-client-ahc-2_5<span class="nt">&lt;/artifactId&gt;</span>
+  <span class="nt">&lt;version&gt;</span>version<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+<span class="nt">&lt;dependency&gt;</span>
+  <span class="nt">&lt;groupId&gt;</span>com.commercetools.sdk.jvm.core<span class="nt">&lt;/groupId&gt;</span>
+  <span class="nt">&lt;artifactId&gt;</span>commercetools-convenience<span class="nt">&lt;/artifactId&gt;</span>
+  <span class="nt">&lt;version&gt;</span>version<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+</code></pre></div>
+</li>
+</ul>
+<p>✨ <strong>Documentation</strong> (1)
+    - Usage documentation on main readme improved, obsolete links is removed. <a href="https://github.com/commercetools/commercetools-sync-java/pull/758">#758</a></p>
 <h3 id="600-jul-19-2021">6.0.0 - Jul 19, 2021<a class="headerlink" href="#600-jul-19-2021" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/5.1.3...6.0.0">Commits</a> |
 <a href="https://commercetools.github.io/commercetools-sync-java/v/6.0.0/">Javadoc</a> |
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/6.0.0">Jar</a></p>
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/6.0.0/jar">Jar</a></p>
 <ul>
 <li>🚧 <strong>Breaking Changes</strong> (1)</li>
 <li>
@@ -1364,7 +1399,7 @@
 <h3 id="513-jul-8-2021">5.1.3 - Jul 8, 2021<a class="headerlink" href="#513-jul-8-2021" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/5.1.2...5.1.3">Commits</a> |
 <a href="https://commercetools.github.io/commercetools-sync-java/v/5.1.3/">Javadoc</a> |
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/5.1.3">Jar</a></p>
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/5.1.3/jar">Jar</a></p>
 <ul>
 <li>
 <p>🐞 <strong>Bug Fixes</strong> (1)</p>
@@ -1392,7 +1427,7 @@
 <h3 id="512-may-31-2021">5.1.2 - May 31, 2021<a class="headerlink" href="#512-may-31-2021" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/5.1.1...5.1.2">Commits</a> |
 <a href="https://commercetools.github.io/commercetools-sync-java/v/5.1.2/">Javadoc</a> |
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/5.1.2">Jar</a></p>
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/5.1.2/jar">Jar</a></p>
 <ul>
 <li>
 <p>🐞 <strong>Bug Fixes</strong> (1)</p>
@@ -1412,7 +1447,7 @@
 <h3 id="511-may-18-2021">5.1.1 - May 18, 2021<a class="headerlink" href="#511-may-18-2021" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/5.1.0...5.1.1">Commits</a> |
 <a href="https://commercetools.github.io/commercetools-sync-java/v/5.1.1/">Javadoc</a> |
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/5.1.1">Jar</a></p>
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/5.1.1/jar">Jar</a></p>
 <ul>
 <li>
 <p>🐞 <strong>Bug Fixes</strong> (2)</p>
@@ -1439,15 +1474,15 @@
 <h3 id="510-apr-20-2021">5.1.0 - Apr 20, 2021<a class="headerlink" href="#510-apr-20-2021" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/5.0.0...5.1.0">Commits</a> |
 <a href="https://commercetools.github.io/commercetools-sync-java/v/5.1.0/">Javadoc</a> |
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/5.1.0">Jar</a></p>
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/5.1.0/jar">Jar</a></p>
 <ul>
 <li>🎉 <strong>New Features</strong> (1)</li>
 <li>Syncing product types with an attribute of type Set of (Set of Set of..) of NestedType attribute is supported. <a href="https://github.com/commercetools/commercetools-sync-java/pull/720">#720</a></li>
 </ul>
 <h3 id="500-apr-12-2021">5.0.0 - Apr 12, 2021<a class="headerlink" href="#500-apr-12-2021" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/4.0.1...5.0.0">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/5.0.0/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/5.0.0">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/5.0.0/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/5.0.0/jar">Jar</a></p>
 <ul>
 <li>
 <p>🚧 <strong>Breaking Changes</strong> (2)</p>
@@ -1507,8 +1542,8 @@ For detailed documentation refer - <a href="https://github.com/commercetools/com
 </ul>
 <h3 id="401-mar-19-2021">4.0.1 - Mar 19, 2021<a class="headerlink" href="#401-mar-19-2021" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/4.0.0...4.0.1">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/4.0.1/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/4.0.1">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/4.0.1/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/4.0.1/jar">Jar</a></p>
 <ul>
 <li>
 <p>✨ <strong>Enhancements</strong> (1)</p>
@@ -1536,8 +1571,8 @@ For detailed documentation refer - <a href="https://github.com/commercetools/com
 </ul>
 <h3 id="400-feb-26-2021">4.0.0 - Feb 26, 2021<a class="headerlink" href="#400-feb-26-2021" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/3.2.0...4.0.0">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/4.0.0/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/4.0.0">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/4.0.0/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/4.0.0/jar">Jar</a></p>
 <ul>
 <li>
 <p>🚧 <strong>Breaking Changes</strong> (1)</p>
@@ -1565,8 +1600,8 @@ For detailed documentation refer - <a href="https://github.com/commercetools/com
 </ul>
 <h3 id="320-feb-3-2021">3.2.0 - Feb 3, 2021<a class="headerlink" href="#320-feb-3-2021" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/3.1.0...3.2.0">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/3.2.0/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/3.2.0">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/3.2.0/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/3.2.0/jar">Jar</a></p>
 <ul>
 <li>
 <p>🎉 <strong>New Features</strong> (1)</p>
@@ -1596,8 +1631,8 @@ For detailed documentation refer - <a href="https://github.com/commercetools/com
 </ul>
 <h3 id="310-jan-13-2021">3.1.0 - Jan 13, 2021<a class="headerlink" href="#310-jan-13-2021" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/3.0.2...3.1.0">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/3.1.0/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/3.1.0">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/3.1.0/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/3.1.0/jar">Jar</a></p>
 <ul>
 <li>
 <p>🎉 <strong>New Features</strong> (1)</p>
@@ -1620,8 +1655,8 @@ For detailed documentation refer - <a href="https://github.com/commercetools/com
 </ul>
 <h3 id="302-dec-16-2020">3.0.2 - Dec 16, 2020<a class="headerlink" href="#302-dec-16-2020" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/3.0.1...3.0.2">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.2/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/3.0.2">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.2/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/3.0.2/jar">Jar</a></p>
 <ul>
 <li>
 <p>✨ <strong>Documentation</strong> (2)</p>
@@ -1639,8 +1674,8 @@ For detailed documentation refer - <a href="https://github.com/commercetools/com
 </ul>
 <h3 id="301-nov-24-2020">3.0.1 - Nov 24, 2020<a class="headerlink" href="#301-nov-24-2020" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/3.0.0...3.0.1">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.1/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/3.0.1">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.1/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/3.0.1/jar">Jar</a></p>
 <ul>
 <li>
 <p>✨ <strong>Enhancements</strong> (1)</p>
@@ -1661,7 +1696,7 @@ size is configurable in the sync options. <a href="https://github.com/commerceto
 <h3 id="300-nov-18-2020">3.0.0 - Nov 18, 2020<a class="headerlink" href="#300-nov-18-2020" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/2.3.0...3.0.0">Commits</a> |
 <a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.0/">Javadoc</a> |
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/3.0.0">Jar</a></p>
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/3.0.0/jar">Jar</a></p>
 <ul>
 <li>
 <p>🚧 <strong>Breaking Changes</strong> (1)</p>
@@ -1696,7 +1731,7 @@ size is configurable in the sync options. <a href="https://github.com/commerceto
 <h3 id="230-oct-15-2020">2.3.0 - Oct 15, 2020<a class="headerlink" href="#230-oct-15-2020" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/2.2.1...2.3.0">Commits</a> |
 <a href="https://commercetools.github.io/commercetools-sync-java/v/2.3.0/">Javadoc</a> |
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/2.3.0">Jar</a></p>
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/2.3.0/jar">Jar</a></p>
 <ul>
 <li>🎉 <strong>New Features</strong> (4)<ul>
 <li><strong>Customer Sync</strong> - Added support for syncing customers between ctp projects. <a href="https://github.com/commercetools/commercetools-sync-java/issues/579">#579</a></li>
@@ -1708,8 +1743,8 @@ size is configurable in the sync options. <a href="https://github.com/commerceto
 </ul>
 <h3 id="221-sep-29-2020">2.2.1 - Sep 29, 2020<a class="headerlink" href="#221-sep-29-2020" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/2.2.0...2.2.1">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/2.2.1/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/2.2.1">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/2.2.1/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/2.2.1/jar">Jar</a></p>
 <ul>
 <li>🐞 <strong>Bug Fixes</strong> (1)<ul>
 <li><strong>Product Sync</strong> - Fixed a bug in the <code>ProductSync</code> related handling of unresolved product references provided in 
@@ -1719,8 +1754,8 @@ different batches. <a href="https://github.com/commercetools/commercetools-sync-
 </ul>
 <h3 id="220-sep-25-2020">2.2.0 - Sep 25, 2020<a class="headerlink" href="#220-sep-25-2020" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/2.1.0...2.2.0">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/2.2.0/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/2.2.0">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/2.2.0/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/2.2.0/jar">Jar</a></p>
 <ul>
 <li>
 <p>🎉 <strong>New Features</strong> (2)</p>
@@ -1748,8 +1783,8 @@ with collecting referenced keys in batches of drafts. <a href="https://github.co
 </ul>
 <h3 id="210-sep-21-2020">2.1.0 - Sep 21, 2020<a class="headerlink" href="#210-sep-21-2020" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/2.0.0...2.1.0">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/2.1.0/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/2.1.0">Jar</a>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/2.1.0/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/2.1.0/jar">Jar</a>
 - 🎉 <strong>New Features</strong> (2)
     - <strong>CustomObject Sync</strong> - Added support for syncing custom objects between ctp projects. <a href="https://github.com/commercetools/commercetools-sync-java/issues/565">#565</a> For more info how to use it please refer to <a href="/docs/usage/CUSTOM_OBJECT_SYNC.md">CustomObject usage doc</a>.
     - <strong>CustomObject Sync</strong> - Exposed <code>CustomObjectSyncUtils#hasIdenticalValue</code> which determines whether update process is required after comparing a <code>CustomObject</code> and a <code>CustomObjectDraft</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/565">#565</a></p>
@@ -1763,8 +1798,8 @@ with collecting referenced keys in batches of drafts. <a href="https://github.co
 </ul>
 <h3 id="200-sept-14-2020">2.0.0 - Sept 14, 2020<a class="headerlink" href="#200-sept-14-2020" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.9.1...2.0.0">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/2.0.0/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/2.0.0">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/2.0.0/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/2.0.0/jar">Jar</a></p>
 <ul>
 <li>
 <p>🚧 <strong>Breaking Changes</strong> (2)</p>
@@ -1807,8 +1842,8 @@ with collecting referenced keys in batches of drafts. <a href="https://github.co
 </ul>
 <h3 id="191-aug-5-2020">1.9.1 -  Aug 5, 2020<a class="headerlink" href="#191-aug-5-2020" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.9.0...1.9.1">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/1.9.1/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.9.1">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.9.1/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/1.9.1/jar">Jar</a></p>
 <ul>
 <li>🐞 <strong>Bug Fixes</strong> (1)<ul>
 <li><strong>Product Sync</strong> - Fixed a bug in the <code>ProductSync</code> related to publish/unpublish of the product update actions,
@@ -1819,8 +1854,8 @@ which was not correct <a href="https://github.com/commercetools/commercetools-sy
 </ul>
 <h3 id="190-july-27-2020">1.9.0 -  July 27, 2020<a class="headerlink" href="#190-july-27-2020" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.8.2...1.9.0">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/1.9.0/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.9.0">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.9.0/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/1.9.0/jar">Jar</a></p>
 <ul>
 <li>
 <p>🎉 <strong>New Features</strong> (6)</p>
@@ -1848,8 +1883,8 @@ which was not correct <a href="https://github.com/commercetools/commercetools-sy
 </ul>
 <h3 id="182-april-30-2020">1.8.2 -  April 30, 2020<a class="headerlink" href="#182-april-30-2020" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.8.1...1.8.2">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/1.8.2/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.8.2">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.8.2/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/1.8.2/jar">Jar</a></p>
 <ul>
 <li>🐞 <strong>Bug Fixes</strong> (2)<ul>
 <li><strong>Commons</strong> - Fixed a bug in the Sync implementations causing the sync fail with throwing <code>ClassCastException</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/466">#466</a></li>
@@ -1860,8 +1895,8 @@ Thanks, @ahmed-ali225, for the contributions! <a href="https://github.com/commer
 </ul>
 <h3 id="181-april-22-2020">1.8.1 -  April 22, 2020<a class="headerlink" href="#181-april-22-2020" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.8.0...1.8.1">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/1.8.1/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.8.1">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.8.1/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/1.8.1/jar">Jar</a></p>
 <ul>
 <li>
 <p>✨ <strong>Enhancements</strong> (1)</p>
@@ -1895,8 +1930,8 @@ Thanks, @michaelbannister, for the contributions! <a href="https://github.com/co
 </ul>
 <h3 id="180-jan-17-2020">1.8.0 -  Jan 17, 2020<a class="headerlink" href="#180-jan-17-2020" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.7.0...1.8.0">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/1.8.0/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.8.0">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.8.0/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/1.8.0/jar">Jar</a></p>
 <ul>
 <li>✨ <strong>Enhancements</strong> (1)<ul>
 <li><strong>Inventory Sync</strong> - Only cache the needed keys of <code>Channel</code> references instead of 
@@ -1908,8 +1943,8 @@ caching all keys of such resources. <a href="https://github.com/commercetools/co
 </ul>
 <h3 id="170-jan-7-2020">1.7.0 -  Jan 7, 2020<a class="headerlink" href="#170-jan-7-2020" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.6.1...1.7.0">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/1.7.0/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.7.0">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.7.0/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/1.7.0/jar">Jar</a></p>
 <ul>
 <li>
 <p>✨ <strong>Enhancements</strong> (2)</p>
@@ -1949,8 +1984,8 @@ synced with this version, since the key is now treated differently. Make sure to
 </ul>
 <h3 id="161-oct-17-2019">1.6.1 -  Oct 17, 2019<a class="headerlink" href="#161-oct-17-2019" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.6.0...1.6.1">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/1.6.1/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.6.1">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.6.1/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/1.6.1/jar">Jar</a></p>
 <ul>
 <li>
 <p>🐞 <strong>Bug Fixes</strong> (3)</p>
@@ -1975,8 +2010,8 @@ failed fetches of missing references. <a href="https://github.com/commercetools/
 </ul>
 <h3 id="160-oct-10-2019">1.6.0 -  Oct 10, 2019<a class="headerlink" href="#160-oct-10-2019" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.5.0...1.6.0">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/1.6.0/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.6.0">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.6.0/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/1.6.0/jar">Jar</a></p>
 <ul>
 <li>
 <p>🎉 <strong>New Features</strong> (1)</p>
@@ -1993,8 +2028,8 @@ failed fetches of missing references. <a href="https://github.com/commercetools/
 </ul>
 <h3 id="150-sept-13-2019">1.5.0 -  Sept 13, 2019<a class="headerlink" href="#150-sept-13-2019" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.4.1...1.5.0">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/1.5.0/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.5.0">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.5.0/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/1.5.0/jar">Jar</a></p>
 <ul>
 <li>
 <p>🎉 <strong>New Features</strong> (4)</p>
@@ -2024,8 +2059,8 @@ failed fetches of missing references. <a href="https://github.com/commercetools/
 </ul>
 <h3 id="141-sept-2-2019">1.4.1 -  Sept 2, 2019<a class="headerlink" href="#141-sept-2-2019" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.4.0...1.4.1">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/1.4.1/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.4.1">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.4.1/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/1.4.1/jar">Jar</a></p>
 <ul>
 <li>
 <p>🐞 <strong>Bug Fixes</strong> (1)</p>
@@ -2042,8 +2077,8 @@ failed fetches of missing references. <a href="https://github.com/commercetools/
 </ul>
 <h3 id="140-aug-8-2019">1.4.0 -  Aug 8, 2019<a class="headerlink" href="#140-aug-8-2019" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.3.0...1.4.0">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/1.4.0/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.4.0">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.4.0/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/1.4.0/jar">Jar</a></p>
 <ul>
 <li>
 <p>🎉 <strong>New Features</strong> (5)</p>
@@ -2071,8 +2106,8 @@ failed fetches of missing references. <a href="https://github.com/commercetools/
 </ul>
 <h3 id="130-jul-3-2019">1.3.0 -  Jul 3, 2019<a class="headerlink" href="#130-jul-3-2019" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.2.0...1.3.0">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/1.3.0/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.3.0">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.3.0/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/1.3.0/jar">Jar</a></p>
 <ul>
 <li>
 <p>🎉 <strong>New Features</strong> (6)</p>
@@ -2105,8 +2140,8 @@ failed fetches of missing references. <a href="https://github.com/commercetools/
 </ul>
 <h3 id="120-jun-14-2019">1.2.0 -  Jun 14, 2019<a class="headerlink" href="#120-jun-14-2019" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.1.1...1.2.0">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/1.2.0/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.2.0">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.2.0/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/1.2.0/jar">Jar</a></p>
 <ul>
 <li>
 <p>🚧 <strong>Breaking Changes</strong> (2)</p>
@@ -2150,8 +2185,8 @@ failed fetches of missing references. <a href="https://github.com/commercetools/
 </ul>
 <h3 id="111-jan-16-2019">1.1.1 -  Jan 16, 2019<a class="headerlink" href="#111-jan-16-2019" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.1.0...1.1.1">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/1.1.1/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.1.1">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.1.1/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/1.1.1/jar">Jar</a></p>
 <ul>
 <li>🐞 <strong>Bug Fixes</strong> (1)<ul>
 <li><strong>Product Sync</strong> - Fixed a bug in the <code>product</code> sync which would fail on syncing attributes of type <code>Set</code> that has
@@ -2161,8 +2196,8 @@ an empty set as a value. </li>
 </ul>
 <h3 id="110-dec-19-2018">1.1.0 -  Dec 19, 2018<a class="headerlink" href="#110-dec-19-2018" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.0.0...1.1.0">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/1.1.0/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.1.0">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.1.0/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/1.1.0/jar">Jar</a></p>
 <ul>
 <li>
 <p>🎉 <strong>New Features</strong> (4)</p>
@@ -2200,8 +2235,8 @@ as (<code>true</code>, <code>SingleLine</code> and <code>None</code> respectivle
 </ul>
 <h3 id="100-dec-10-2018">1.0.0 -  Dec 10, 2018<a class="headerlink" href="#100-dec-10-2018" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...1.0.0">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/1.0.0/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.0.0">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.0.0/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/1.0.0/jar">Jar</a></p>
 <h5 id="the-beta-is-over">The Beta is Over 🎉<a class="headerlink" href="#the-beta-is-over" title="Permanent link">&para;</a></h5>
 <p>We're happy to announce that the commercetools-sync-java is finally out of beta! Big thanks to all the users 
 who were using it when it was still in beta. Your feedback was definitely valuable for us to reach the current state of 
@@ -2283,8 +2318,8 @@ Its  behaviour is not guaranteed if used externally. <a href="https://github.com
 </ul>
 <h3 id="v100-m14-oct-5-2018">v1.0.0-M14 -  Oct 5, 2018<a class="headerlink" href="#v100-m14-oct-5-2018" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M13...v1.0.0-M14">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M14">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/v1.0.0-M14/jar">Jar</a></p>
 <ul>
 <li>
 <p>🐞 <strong>Bug Fixes</strong> (1)</p>
@@ -2315,8 +2350,8 @@ Its  behaviour is not guaranteed if used externally. <a href="https://github.com
 </ul>
 <h3 id="v100-m13-sept-5-2018">v1.0.0-M13 -  Sept 5, 2018<a class="headerlink" href="#v100-m13-sept-5-2018" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M12...v1.0.0-M13">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M13/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M13">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M13/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/v1.0.0-M13/jar">Jar</a></p>
 <ul>
 <li>
 <p>🎉 <strong>New Features</strong> (15)</p>
@@ -2361,8 +2396,8 @@ Its  behaviour is not guaranteed if used externally. <a href="https://github.com
 </ul>
 <h3 id="v100-m12-jun-05-2018">v1.0.0-M12 -  Jun 05, 2018<a class="headerlink" href="#v100-m12-jun-05-2018" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M11...v1.0.0-M12">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M12/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M12">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M12/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/v1.0.0-M12/jar">Jar</a></p>
 <ul>
 <li>🛠️ <strong>Enhancements</strong> (13)<ul>
 <li><strong>Product Sync</strong> - Support for syncing price custom fields. <a href="https://github.com/commercetools/commercetools-sync-java/issues/277">#277</a></li>
@@ -2383,8 +2418,8 @@ Its  behaviour is not guaranteed if used externally. <a href="https://github.com
 </ul>
 <h3 id="v100-m11-mar-08-2018">v1.0.0-M11 -  Mar 08, 2018<a class="headerlink" href="#v100-m11-mar-08-2018" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M10...v1.0.0-M11">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M11/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M11">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M11/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/v1.0.0-M11/jar">Jar</a></p>
 <ul>
 <li>
 <p>🎉 <strong>New Features</strong> (19)</p>
@@ -2440,8 +2475,8 @@ only be triggered on the full build. <a href="https://github.com/commercetools/c
 </ul>
 <h3 id="v100-m10-feb-13-2018">v1.0.0-M10 -  Feb 13, 2018<a class="headerlink" href="#v100-m10-feb-13-2018" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M9...v1.0.0-M10">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M10/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M10">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M10/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/v1.0.0-M10/jar">Jar</a></p>
 <ul>
 <li>
 <p>🎉 <strong>New Features</strong> (1)</p>
@@ -2460,8 +2495,8 @@ only be triggered on the full build. <a href="https://github.com/commercetools/c
 </ul>
 <h3 id="v100-m9-jan-22-2018">v1.0.0-M9 -  Jan 22, 2018<a class="headerlink" href="#v100-m9-jan-22-2018" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M8...v1.0.0-M9">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M9/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M9">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M9/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/v1.0.0-M9/jar">Jar</a></p>
 <ul>
 <li>
 <p>🎉 <strong>New Features</strong> (1)</p>
@@ -2491,8 +2526,8 @@ only be triggered on the full build. <a href="https://github.com/commercetools/c
 </ul>
 <h3 id="v100-m8-dec-29-2017">v1.0.0-M8 -  Dec 29, 2017<a class="headerlink" href="#v100-m8-dec-29-2017" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M7...v1.0.0-M8">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M8/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M8">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M8/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/v1.0.0-M8/jar">Jar</a></p>
 <ul>
 <li>
 <p>🎉 <strong>New Features</strong> (1)</p>
@@ -2518,8 +2553,8 @@ total number of categories with missing parents from the statistics instance. <a
 </ul>
 <h3 id="v100-m7-dec-15-2017">v1.0.0-M7 -  Dec 15, 2017<a class="headerlink" href="#v100-m7-dec-15-2017" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M6...v1.0.0-M7">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M7/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M7">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M7/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/v1.0.0-M7/jar">Jar</a></p>
 <ul>
 <li>🐞 <strong>Bug Fixes</strong> (1)<ul>
 <li><strong>Commons</strong> - Changed offset-based pagination of querying all elements to a limit-based with sorted ids approach 
@@ -2529,8 +2564,8 @@ to mitigate problems of previous approach. <a href="https://github.com/commercet
 </ul>
 <h3 id="v100-m6-dec-5-2017">v1.0.0-M6 -  Dec 5, 2017<a class="headerlink" href="#v100-m6-dec-5-2017" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M5...v1.0.0-M6">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M6/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M6">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M6/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/v1.0.0-M6/jar">Jar</a></p>
 <ul>
 <li>
 <p>🎉 <strong>New Features</strong> (3)</p>
@@ -2579,8 +2614,8 @@ library. <a href="https://github.com/commercetools/commercetools-sync-java/issue
 </ul>
 <h3 id="v100-m5-nov-16-2017">v1.0.0-M5 -  Nov 16, 2017<a class="headerlink" href="#v100-m5-nov-16-2017" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M4...v1.0.0-M5">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M5/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M5">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M5/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/v1.0.0-M5/jar">Jar</a></p>
 <ul>
 <li>
 <p>🎉 <strong>New Features</strong> (3)</p>
@@ -2625,8 +2660,8 @@ to <code>removeOtherSetEntries</code>, <code>removeOtherCollectionEntries</code>
 </ul>
 <h3 id="v100-m4-nov-7-2017">v1.0.0-M4 -  Nov 7, 2017<a class="headerlink" href="#v100-m4-nov-7-2017" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M3...v1.0.0-M4">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M4/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M4">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M4/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/v1.0.0-M4/jar">Jar</a></p>
 <ul>
 <li>🔥 <strong>Hotfix</strong> (1)<ul>
 <li><strong>Product Sync</strong> - Fixed an issue with <code>replaceAttributesReferencesIdsWithKeys</code> which nullifies localized text attributes due 
@@ -2636,8 +2671,8 @@ to JSON parsing not throwing exception on parsing it to reference set. <a href="
 </ul>
 <h3 id="v100-m3-nov-3-2017">v1.0.0-M3 -  Nov 3, 2017<a class="headerlink" href="#v100-m3-nov-3-2017" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M2...v1.0.0-M3">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M3/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M3">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M3/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/v1.0.0-M3/jar">Jar</a></p>
 <ul>
 <li>
 <p>🎉 <strong>New Features</strong> (7)</p>
@@ -2686,17 +2721,13 @@ Category and rebuilding build update actions. <a href="https://github.com/commer
 </ul>
 <h3 id="v100-m2-oct-12-2017">v1.0.0-M2 -  Oct 12, 2017<a class="headerlink" href="#v100-m2-oct-12-2017" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M2-beta...v1.0.0-M2">Commits</a> |
-<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M2/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M2">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M2/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/v1.0.0-M2/jar">Jar</a>
+- 🎉 <strong>New Features</strong> (3)
+    - <strong>Product Sync</strong> - Supported syncing entire product variant images, putting order into consideration. <a href="https://github.com/commercetools/commercetools-sync-java/issues/114">#114</a>
+    - <strong>Product Sync</strong> - Exposed <code>ProductVariantUpdateActionUtils#buildProductVariantImagesUpdateActions</code> and <code>ProductVariantUpdateActionUtils#buildMoveImageToPositionUpdateActions</code> action build util. <a href="https://github.com/commercetools/commercetools-sync-java/issues/114">#114</a>
+    - <strong>Product Sync</strong> - Supported Blacklisting/Whitelisting update action groups on sync. <a href="https://github.com/commercetools/commercetools-sync-java/issues/122">#122</a></p>
 <ul>
-<li>
-<p>🎉 <strong>New Features</strong> (3)</p>
-<ul>
-<li><strong>Product Sync</strong> - Supported syncing entire product variant images, putting order into consideration. <a href="https://github.com/commercetools/commercetools-sync-java/issues/114">#114</a></li>
-<li><strong>Product Sync</strong> - Exposed <code>ProductVariantUpdateActionUtils#buildProductVariantImagesUpdateActions</code> and <code>ProductVariantUpdateActionUtils#buildMoveImageToPositionUpdateActions</code> action build util. <a href="https://github.com/commercetools/commercetools-sync-java/issues/114">#114</a></li>
-<li><strong>Product Sync</strong> - Supported Blacklisting/Whitelisting update action groups on sync. <a href="https://github.com/commercetools/commercetools-sync-java/issues/122">#122</a></li>
-</ul>
-</li>
 <li>
 <p>🐞 <strong>Bug Fixes</strong> (4)</p>
 <ul>
@@ -2725,8 +2756,8 @@ Category and rebuilding build update actions. <a href="https://github.com/commer
 </li>
 </ul>
 <h3 id="v100-m2-beta-sep-28-2017">v1.0.0-M2-beta -  Sep 28, 2017<a class="headerlink" href="#v100-m2-beta-sep-28-2017" title="Permanent link">&para;</a></h3>
-<p><a href="https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M1...v1.0.0-M2-beta">Commits</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M2-beta">Jar</a></p>
+<p><a href="https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M1...v1.0.0-M2-beta">Commits</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/v1.0.0-M2-beta/jar">Jar</a></p>
 <ul>
 <li><strong>Beta Features</strong> (11)<ul>
 <li><strong>Product Sync</strong> - Introduced syncing products name, categories, categoryOrderHints, description, slug,  metaTitle, 
@@ -2748,8 +2779,8 @@ metaDescription, metaKeywords, masterVariant and searchKeywords. <a href="https:
 </ul>
 <h3 id="v100-m1-sep-06-2017">v1.0.0-M1 -  Sep 06, 2017<a class="headerlink" href="#v100-m1-sep-06-2017" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/commits/v1.0.0-M1">Commits</a> | 
-<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M1/">Javadoc</a> | 
-<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M1">Jar</a></p>
+<a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M1/">Javadoc</a> |
+<a href="https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/v1.0.0-M1/jar">Jar</a></p>
 <ul>
 <li>
 <p>🎉 <strong>New Features</strong> (16) </p>

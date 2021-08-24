@@ -455,7 +455,7 @@
   
   
     <li class="md-nav__item">
-      <a href="https://commercetools.github.io/commercetools-sync-java/v/6.0.0/" class="md-nav__link">
+      <a href="https://commercetools.github.io/commercetools-sync-java/v/7.0.0/" class="md-nav__link">
         Javadoc
       </a>
     </li>
@@ -472,21 +472,6 @@
     <li class="md-nav__item">
       <a href="../RELEASE_NOTES/" class="md-nav__link">
         Release notes
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="https://github.com/commercetools/commercetools-sync-java/milestones" class="md-nav__link">
-        Roadmap
       </a>
     </li>
   
@@ -632,8 +617,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#build-and-publish-to-bintray" class="md-nav__link">
-    Build and publish to Bintray
+  <a href="#build-and-publish-to-maven-central" class="md-nav__link">
+    Build and publish to Maven Central
   </a>
   
 </li>
@@ -764,7 +749,7 @@
 <li><a href="#full-build-with-tests-but-without-install-to-maven-local-repo-recommended">Full build with tests, but without install to maven local repo (Recommended)</a></li>
 <li><a href="#install-to-local-maven-repo">Install to local maven repo</a></li>
 <li><a href="#publish-javadoc">Publish JavaDoc</a></li>
-<li><a href="#build-and-publish-to-bintray">Build and publish to Bintray</a></li>
+<li><a href="#build-and-publish-to-maven-central">Build and publish to Maven Central</a></li>
 </ul>
 </li>
 <li><a href="#integration-tests">Integration Tests</a><ul>
@@ -817,8 +802,8 @@
 <h5 id="publish-javadoc">Publish JavaDoc<a class="headerlink" href="#publish-javadoc" title="Permanent link">&para;</a></h5>
 <div class="highlight"><pre><span></span><code>./gradlew clean javadoc gitPublishPush -Dbuild.version<span class="o">={</span>version<span class="o">}</span>
 </code></pre></div>
-<h5 id="build-and-publish-to-bintray">Build and publish to Bintray<a class="headerlink" href="#build-and-publish-to-bintray" title="Permanent link">&para;</a></h5>
-<div class="highlight"><pre><span></span><code>./gradlew clean build bintrayUpload -Dbuild.version<span class="o">={</span>version<span class="o">}</span> 
+<h5 id="build-and-publish-to-maven-central">Build and publish to Maven Central<a class="headerlink" href="#build-and-publish-to-maven-central" title="Permanent link">&para;</a></h5>
+<div class="highlight"><pre><span></span><code>./gradlew clean setLibraryVersion -Dbuild.version<span class="o">={</span>version<span class="o">}</span> publishToSonatype closeAndReleaseSonatypeStagingRepository
 </code></pre></div>
 <p>For more detailed information on the build and the release process, see <a href="../BUILD/">Build and Release</a> documentation.</p>
 <h3 id="integration-tests">Integration Tests<a class="headerlink" href="#integration-tests" title="Permanent link">&para;</a></h3>
