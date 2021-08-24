@@ -2,9 +2,9 @@
 # commercetools sync
 [![CI](https://github.com/commercetools/commercetools-sync-java/workflows/CI/badge.svg)](https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/commercetools/commercetools-sync-java/branch/master/graph/badge.svg)](https://codecov.io/gh/commercetools/commercetools-sync-java)
-[![Benchmarks 6.0.0](https://img.shields.io/badge/Benchmarks-6.0.0-orange.svg)](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
-[![Download from Maven Central](https://img.shields.io/badge/Maven_Central-6.0.0-blue.svg)](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/6.0.0/jar) 
-[![Javadoc](http://javadoc-badge.appspot.com/com.commercetools/commercetools-sync-java.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/6.0.0/)
+[![Benchmarks 7.0.0](https://img.shields.io/badge/Benchmarks-7.0.0-orange.svg)](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
+[![Download from Maven Central](https://img.shields.io/badge/Maven_Central-7.0.0-blue.svg)](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/7.0.0/jar) 
+[![Javadoc](http://javadoc-badge.appspot.com/com.commercetools/commercetools-sync-java.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/7.0.0/)
 [![Known Vulnerabilities](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646/badge.svg)](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646)
 
 
@@ -30,8 +30,6 @@ Notes:
 
 - Library requires the min JDK version `>= 8`.
   > The library tested with each major JDK version (i.e: 8, 9, 10, 11, 12, 13...) as well as some specific updates of LTS versions (i.e: 8.0.192, 11.0.3).
-- [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) as a dependency in your JVM-based
-  application. (Make sure to use a version `>= 1.64.0`).
 - A target commercetools project for syncing your source data to.
 
 ### Installation
@@ -42,18 +40,18 @@ Here are the most popular ones:
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>6.0.0</version>
+  <version>7.0.0</version>
 </dependency>
 ````
 #### Gradle
 ````groovy
-implementation 'com.commercetools:commercetools-sync-java:6.0.0'
+implementation 'com.commercetools:commercetools-sync-java:7.0.0'
 ````
 #### SBT 
 ````
-libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "6.0.0"
+libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "7.0.0"
 ````
 #### Ivy 
 ````xml
-<dependency org="com.commercetools" name="commercetools-sync-java" rev="6.0.0"/>
+<dependency org="com.commercetools" name="commercetools-sync-java" rev="7.0.0"/>
 ````

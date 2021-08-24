@@ -13,42 +13,20 @@
 
 ### 1. Installation
 - Make sure you have `JDK 8` installed.
-- Add the following dependencies in your application:
+- Add the following dependency in your application:
 - For Maven users: 
 ````xml
-<!-- Add commercetools-jvm-sdk dependencies. -->
-<dependency>
-  <groupId>com.commercetools.sdk.jvm.core</groupId>
-  <artifactId>commercetools-models</artifactId>
-  <version>1.60.0</version>
-</dependency>
-<dependency>
-  <groupId>com.commercetools.sdk.jvm.core</groupId>
-  <artifactId>commercetools-java-client-ahc-2_5</artifactId>
-  <version>1.60.0</version>
-</dependency>
-<dependency>
-  <groupId>com.commercetools.sdk.jvm.core</groupId>
-  <artifactId>commercetools-convenience</artifactId>
-  <version>1.60.0</version>
-</dependency>
-
 <!-- Add commercetools-sync-java dependency. -->
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>6.0.0</version>
+  <version>7.0.0</version>
 </dependency>
 ````
 - For Gradle users:
 ````groovy
-// Add commercetools-jvm-sdk dependencies.
-implementation 'com.commercetools.sdk.jvm.core:commercetools-models:1.60.0'
-implementation 'com.commercetools.sdk.jvm.core:commercetools-java-client-ahc-2_5:1.60.0'
-implementation 'com.commercetools.sdk.jvm.core:commercetools-convenience:1.60.0'
-
 // Add commercetools-sync-java dependency.
-implementation 'com.commercetools:commercetools-sync-java:6.0.0'
+implementation 'com.commercetools:commercetools-sync-java:7.0.0'
 ````
 
 ### 2. Setup Syncing Options

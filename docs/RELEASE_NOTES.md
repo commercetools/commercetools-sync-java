@@ -27,17 +27,47 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
-<!--
-### x.x.x - MM DD, 2021
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/6.0.0...X.X.X) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/X.X.X/) |
-[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/X.X.X/jar)
+### 7.0.0 - Aug 24, 2021
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/6.0.0...7.0.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/7.0.0/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/7.0.0/jar)
 
-- ✨ **Documentation** (1)
-  -  Usage documentation on main readme improved, obsolete links is removed. [#758](https://github.com/commercetools/commercetools-sync-java/pull/758)
+- 🚧 **Breaking Changes** (1)
+  - **Dependency management:** Avoid `commercetools JVM SDK` libraries version mismatch between projects.
+     It is better not to add `commercetools JVM SDK` dependencies explicitly into your project and use them from `commercetools-Sync-Java` dependencies instead. Please remove them if you have already added the below dependencies in your project.
+     
+     For Gradle users, remove: 
+     
+     ````groovy
+     implementation 'com.commercetools.sdk.jvm.core:commercetools-models:<version>'
+     implementation 'com.commercetools.sdk.jvm.core:commercetools-java-client-ahc-2_5:<version>'
+     implementation 'com.commercetools.sdk.jvm.core:commercetools-convenience:<version>'
+     ````
+     
+     For Maven users, remove:
+     
+     ````xml
+     <dependency>
+       <groupId>com.commercetools.sdk.jvm.core</groupId>
+       <artifactId>commercetools-models</artifactId>
+       <version>version</version>
+     </dependency>
+     <dependency>
+       <groupId>com.commercetools.sdk.jvm.core</groupId>
+       <artifactId>commercetools-java-client-ahc-2_5</artifactId>
+       <version>version</version>
+     </dependency>
+     <dependency>
+       <groupId>com.commercetools.sdk.jvm.core</groupId>
+       <artifactId>commercetools-convenience</artifactId>
+       <version>version</version>
+     </dependency>
+     ````
+    
+  ✨ **Documentation** (1)
+    - Usage documentation on main readme improved, obsolete links is removed. [#758](https://github.com/commercetools/commercetools-sync-java/pull/758)
 
--->
-
+  
 ### 6.0.0 - Jul 19, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/5.1.3...6.0.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/6.0.0/) |

@@ -62,7 +62,7 @@ nav:
         - Sync Options: usage/SYNC_OPTIONS.md
         - Usage Tips: usage/IMPORTANT_USAGE_TIPS.md
         - Cleanup Unresolved References: usage/CLEANUP_GUIDE.md
-  - Javadoc: https://commercetools.github.io/commercetools-sync-java/v/6.0.0/
+  - Javadoc: https://commercetools.github.io/commercetools-sync-java/v/7.0.0/
   - Release notes: RELEASE_NOTES.md
   - Issues: https://github.com/commercetools/commercetools-sync-java/issues
   - Benchmarks: https://commercetools.github.io/commercetools-sync-java/benchmarks/
