@@ -92,20 +92,29 @@ class StateReferenceResolutionUtilsTest {
   }
 
   @Test
-  void mapToStateDrafts_WithNullOrEmptyReferences_ShouldNotFail() {
+  void mapToStateDrafts_WithEmptyReferences_ShouldNotFail() {
     // preparation
-    final State mockState1 = mock(State.class);
-    when(mockState1.getTransitions()).thenReturn(null);
-
-    final State mockState2 = mock(State.class);
-    when(mockState2.getTransitions()).thenReturn(Collections.emptySet());
+    final State mockState = mock(State.class);
+    when(mockState.getTransitions()).thenReturn(Collections.emptySet());
 
     // test
     final List<StateDraft> referenceReplacedDrafts =
-        mapToStateDrafts(Arrays.asList(mockState1, mockState2), referenceIdToKeyCache);
+        mapToStateDrafts(Arrays.asList(mockState), referenceIdToKeyCache);
 
     assertThat(referenceReplacedDrafts.get(0).getTransitions()).isEqualTo(Collections.emptySet());
-    assertThat(referenceReplacedDrafts.get(1).getTransitions()).isEqualTo(Collections.emptySet());
+  }
+
+  @Test
+  void mapToStateDrafts_WithNullReferences_ShouldNotFail() {
+    // preparation
+    final State mockState = mock(State.class);
+    when(mockState.getTransitions()).thenReturn(null);
+
+    // test
+    final List<StateDraft> referenceReplacedDrafts =
+        mapToStateDrafts(Arrays.asList(mockState), referenceIdToKeyCache);
+
+    assertThat(referenceReplacedDrafts.get(0).getTransitions()).isEqualTo(null);
   }
 
   @Nonnull
