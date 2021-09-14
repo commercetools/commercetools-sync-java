@@ -913,6 +913,42 @@ class StateSyncIT {
   }
 
   @Test
+  void sync_WithNullTransitions_TargetStateTransitionsShouldBeNull() {
+
+    final StateDraft stateDraft = createStateDraft(keyA);
+    final State state = createStateInSource(stateDraft);
+
+    final StateSyncOptions stateSyncOptions =
+        StateSyncOptionsBuilder.of(CTP_TARGET_CLIENT).batchSize(3).build();
+
+    final StateSync stateSync = new StateSync(stateSyncOptions);
+    final List<StateDraft> stateDrafts =
+        StateTransformUtils.toStateDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, Arrays.asList(state))
+            .join();
+    // test
+    final StateSyncStatistics stateSyncStatistics =
+        stateSync.sync(stateDrafts).toCompletableFuture().join();
+
+    assertThat(stateSyncStatistics).hasValues(1, 1, 0, 0, 0);
+
+    CtpQueryUtils.queryAll(
+            CTP_TARGET_CLIENT,
+            StateQueryBuilder.of().plusPredicates(q -> q.key().is(keyA)).build(),
+            Function.identity())
+        .thenApply(
+            fetchedCategories ->
+                fetchedCategories.stream().flatMap(List::stream).collect(Collectors.toList()))
+        .thenAccept(
+            resultStates -> {
+              Assertions.assertThat(resultStates.size()).isEqualTo(1);
+              Assertions.assertThat(resultStates.get(0).getTransitions()).isNull();
+            })
+        .toCompletableFuture()
+        .join();
+  }
+
+  @Test
   void sync_WithStateWithoutKey_ShouldAddErrorMessage() {
     String nameA = "state-A";
     final StateDraft stateADraft =
@@ -1165,8 +1201,9 @@ class StateSyncIT {
   }
 
   private StateDraft createStateDraft(final String key, final State... transitionStates) {
-    List<Reference<State>> references = new ArrayList<>();
+    List<Reference<State>> references = null;
     if (transitionStates.length > 0) {
+      references = new ArrayList<>();
       for (State transitionState : transitionStates) {
         references.add(referenceOfId(transitionState.getId()));
       }
@@ -1178,7 +1215,7 @@ class StateSyncIT {
       final String key, final List<Reference<State>> references) {
     return StateDraftBuilder.of(key, StateType.REVIEW_STATE)
         .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
-        .transitions(new HashSet<>(references))
+        .transitions(null == references ? null : new HashSet<>(references))
         .initial(true)
         .build();
   }

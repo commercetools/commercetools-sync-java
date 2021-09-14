@@ -77,8 +77,11 @@ public final class StateReferenceResolutionUtils {
   private static Set<Reference<State>> replaceTransitionIdsWithKeys(
       @Nonnull final State state, @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     final Set<Reference<State>> transitions = state.getTransitions();
+
+    if (transitions == null) return null;
+
     final Set<Reference<State>> newTransitions = new HashSet<>();
-    if (transitions != null && !transitions.isEmpty()) {
+    if (!transitions.isEmpty()) {
       transitions.forEach(
           transition -> {
             newTransitions.add(
