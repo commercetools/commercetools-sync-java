@@ -924,8 +924,8 @@ class StateSyncIT {
     final StateSync stateSync = new StateSync(stateSyncOptions);
     final List<StateDraft> stateDrafts =
         StateTransformUtils.toStateDrafts(
-            CTP_SOURCE_CLIENT, referenceIdToKeyCache, Arrays.asList(state))
-                           .join();
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, Arrays.asList(state))
+            .join();
     // test
     final StateSyncStatistics stateSyncStatistics =
         stateSync.sync(stateDrafts).toCompletableFuture().join();
@@ -933,19 +933,19 @@ class StateSyncIT {
     assertThat(stateSyncStatistics).hasValues(1, 1, 0, 0, 0);
 
     CtpQueryUtils.queryAll(
-        CTP_TARGET_CLIENT,
-        StateQueryBuilder.of().plusPredicates(q -> q.key().is(keyA)).build(),
-        Function.identity())
-                 .thenApply(
-                     fetchedCategories ->
-                         fetchedCategories.stream().flatMap(List::stream).collect(Collectors.toList()))
-                 .thenAccept(
-                     resultStates -> {
-                       Assertions.assertThat(resultStates.size()).isEqualTo(1);
-                       Assertions.assertThat(resultStates.get(0).getTransitions()).isNull();
-                     })
-                 .toCompletableFuture()
-                 .join();
+            CTP_TARGET_CLIENT,
+            StateQueryBuilder.of().plusPredicates(q -> q.key().is(keyA)).build(),
+            Function.identity())
+        .thenApply(
+            fetchedCategories ->
+                fetchedCategories.stream().flatMap(List::stream).collect(Collectors.toList()))
+        .thenAccept(
+            resultStates -> {
+              Assertions.assertThat(resultStates.size()).isEqualTo(1);
+              Assertions.assertThat(resultStates.get(0).getTransitions()).isNull();
+            })
+        .toCompletableFuture()
+        .join();
   }
 
   @Test

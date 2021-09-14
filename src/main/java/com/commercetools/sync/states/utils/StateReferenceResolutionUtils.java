@@ -78,7 +78,7 @@ public final class StateReferenceResolutionUtils {
       @Nonnull final State state, @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     final Set<Reference<State>> transitions = state.getTransitions();
 
-    if(transitions == null) return null;
+    if (transitions == null) return null;
 
     final Set<Reference<State>> newTransitions = new HashSet<>();
     if (!transitions.isEmpty()) {
