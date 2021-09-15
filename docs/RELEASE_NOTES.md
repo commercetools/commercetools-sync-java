@@ -27,6 +27,15 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
+### 7.0.1 - Sep 15, 2021
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/7.0.0...7.0.1) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/7.0.1/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/7.0.1/jar)
+
+- 🐞 **Bug Fixes** (1)
+    - **State Sync** - State to sync correctly from source to target when no transitions configured.[#763](https://github.com/commercetools/commercetools-sync-java/pull/763) 
+
+
 ### 7.0.0 - Aug 24, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/6.0.0...7.0.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/7.0.0/) |
