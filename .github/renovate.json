@@ -1,0 +1,17 @@
+{
+  "extends": [
+    "config:base"
+  ],
+  "automerge": true,
+  "schedule": [
+    "every weekend"
+  ],
+  "packageRules": [
+    {
+      "matchManagers": [
+        "gradle"
+      ],
+      "stabilityDays": 3
+    }
+  ]
+}
