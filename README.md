@@ -115,7 +115,7 @@ libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "7.0.1"
         ````
 
 If you want to use different `commercetools JVM SDK` version other than the version used in this project. 
-You can exclude `commercetools JVM SDK` dependencies coming from this project and add explicitly the dependency and version you need in your project.
+, below you will find examples on how to exclude `commercetools JVM SDK` from commercetools-sync-java library. Beware that library might not work with the older `commercetools JVM SDK` versions.
 
         For Gradle: 
         
