@@ -26,7 +26,17 @@
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
+### 7.0.2 - Sep 21, 2021
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/7.0.1...7.0.2) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/7.0.2/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/7.0.2/jar)
 
+- ✨ **Enhancement** (1)
+    - **Dependency management** - Migrate Dependabot to Renovate.[#767](https://github.com/commercetools/commercetools-sync-java/pull/767)
+  
+  ✨ **Documentation** (1) 
+    - Update docs and Release notes about the usage of JVM-SDK dependencies.[#766](https://github.com/commercetools/commercetools-sync-java/pull/766)
+    
 ### 7.0.1 - Sep 15, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/7.0.0...7.0.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/7.0.1/) |
