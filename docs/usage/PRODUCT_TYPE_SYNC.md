@@ -278,3 +278,4 @@ More examples of those utils for different fields can be found [here](https://gi
 
 ## Caveats    
 1. The order of attribute definitions in the synced product types is not guaranteed.
+2. Changing the attribute definition type is not supported.
