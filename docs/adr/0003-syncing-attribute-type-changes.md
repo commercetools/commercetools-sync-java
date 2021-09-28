@@ -1,0 +1,34 @@
+# 3. Syncing attribute type changes
+
+Date: 2021-09-28
+
+## Status
+
+Approved.
+
+## Context
+
+When changing an attribute definition type, we were using the approach by removing and re-adding the attribute with a new type but this approach is not working anymore. See: #762
+ 
+So when removing and adding an attribute from a productType in a single request the API returns
+
+````
+"code" : "AttributeDefinitionAlreadyExists",
+"message" : "An attribute definition with name 'attr_name_1' already exists on product type 'newName'.",
+````
+
+We've discussed 3 different approaches to resolve the issue:
+
+1. Change the logic to apply remove action only and after that throw and just document as limitation that such errors can happen but if they run same import again later it should at some point work.
+2. Change the logic to apply remove action only and after that try apply re-add: handle specific error with a retry (exponential + backoff) with up to x retries.
+3. Check if attribute with the same name id deleted and added in the same request and skip the update with triggering error callback with a message to ask the user to handle it manually.
+
+## Decision
+
+We decided use the approach 3, because other approaches have a data consistency risk.
+
+## Consequences
+
+We could not support of syncing attribute type updates/changes of existing attribute definition anymore.
+
+
