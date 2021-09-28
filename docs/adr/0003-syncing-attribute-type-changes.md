@@ -27,8 +27,14 @@ We've discussed 3 different approaches to resolve the issue:
 
 We decided use the approach 3, because other approaches have a data consistency risk.
 
+### Best practice to change type
+
+Changes to attributes should be planned carefully and implemented with an understanding of the impact on the product data and performance for each change.
+
+1. Ensure product attributes of the same name are defined consistently across all product types.
+2. Allow time between attribute removal and the addition of attributes with the same name. Removal and Addition actions must be in separate requests.
+
 ## Consequences
 
 We could not support of syncing attribute type updates/changes of existing attribute definition anymore.
-
 
