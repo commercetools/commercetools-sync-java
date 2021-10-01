@@ -176,10 +176,11 @@ final class AttributeDefinitionsUpdateActionUtils {
                           } else {
                             throw new UnsupportedOperationException(
                                 format(
-                                    "Changing the attribute definition type (name='%s') can not be "
-                                        + "supported by commercetools-sync-java. "
-                                        + "Please plan the attribute definition type changes "
-                                        + "separately with using commercetools API.",
+                                    "Due to eventual consistency of 'removeAttributeDefinition' action, "
+                                        + "changing the attribute definition type (name='%s') is not "
+                                        + "supported programmatically. "
+                                        + "Please apply the attribute definition type changes "
+                                        + "manually through commercetools API or merchant center.",
                                     oldAttributeDefinitionName));
                           }
                         } else {
