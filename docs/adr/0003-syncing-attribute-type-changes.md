@@ -25,7 +25,7 @@ We've discussed 3 different approaches to resolve the issue:
 
 ## Decision
 
-We decided use the approach 3, because other approaches have a data consistency risk.
+We decided use the approach 3, because unpredictability of other approaches and might nor work reliably, because [removeAttributeDefinition](https://docs.commercetools.com/api/projects/productTypes#remove-attributedefinition) action from product types is [eventually consistent](https://docs.commercetools.com/api/general-concepts#eventual-consistency) which deletes all corresponding attributes on all products with this product type.
 
 ### Best practice to change type
 
