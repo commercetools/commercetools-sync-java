@@ -25,7 +25,7 @@ We've discussed 3 different approaches to resolve the issue:
 
 ## Decision
 
-We decided use the approach 3, because unpredictability of other approaches and might nor work reliably, because [removeAttributeDefinition](https://docs.commercetools.com/api/projects/productTypes#remove-attributedefinition) action from product types is [eventually consistent](https://docs.commercetools.com/api/general-concepts#eventual-consistency) which deletes all corresponding attributes on all products with this product type.
+The third approach is favoured due to the unpredictability of the other approaches since [removeAttributeDefinition](https://docs.commercetools.com/api/projects/productTypes#remove-attributedefinition) action is [eventually consistent](https://docs.commercetools.com/api/general-concepts#eventual-consistency) now and only takes place after the corresponding attribute has been removed from all the products asynchronously by the platform.
 
 ### Best practice to change type
 
@@ -36,4 +36,4 @@ Changes to attributes should be planned carefully and implemented with an unders
 
 ## Consequences
 
-We could not support of syncing attribute type updates/changes of existing attribute definition. Because removal and addition of the attribute with the same name in a single request is not possible anymore.
+Support of changing the attribute type within a single API request is not supported anymore.
