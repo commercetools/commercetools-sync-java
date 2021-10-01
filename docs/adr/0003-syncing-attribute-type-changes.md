@@ -4,18 +4,18 @@ Date: 2021-09-28
 
 ## Status
 
-Approved.
+[Approved](https://github.com/commercetools/commercetools-sync-java/pull/787).
 
 ## Context
 
 When changing an attribute definition type, we were using the approach by removing and re-adding the attribute with a new type but this approach is not working anymore. See: [#762](https://github.com/commercetools/commercetools-sync-java/issues/762)
- 
-So when removing and adding an attribute from a productType in a single request the API returns
 
-````
+So when removing and adding an attribute from a productType in a single request the API returns:
+
+```
 "code" : "AttributeDefinitionAlreadyExists",
 "message" : "An attribute definition with name 'attr_name_1' already exists on product type 'newName'.",
-````
+```
 
 We've discussed 3 different approaches to resolve the issue:
 
@@ -37,4 +37,3 @@ Changes to attributes should be planned carefully and implemented with an unders
 ## Consequences
 
 We could not support of syncing attribute type updates/changes of existing attribute definition anymore.
-
