@@ -36,4 +36,4 @@ Changes to attributes should be planned carefully and implemented with an unders
 
 ## Consequences
 
-We could not support of syncing attribute type updates/changes of existing attribute definition anymore.
+We could not support of syncing attribute type updates/changes of existing attribute definition. Because removal and addition of the attribute with the same name in a single request is not possible anymore.
