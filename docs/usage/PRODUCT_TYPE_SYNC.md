@@ -278,4 +278,4 @@ More examples of those utils for different fields can be found [here](https://gi
 
 ## Caveats    
 1. The order of attribute definitions in the synced product types is not guaranteed.
-2. Changing the attribute definition type is not supported. Instead, remove and re-add it with a new type manually, either over API or merchant center. For more information please [check](../../docs/adr/0003-syncing-attribute-type-changes.md).
+2. Changing the attribute definition type is not supported. Instead, remove and re-add it with a new type manually, either over API or merchant center. For more information please [check](https://github.com/commercetools/commercetools-sync-java/blob/master/docs/adr/0003-syncing-attribute-type-changes.md).

@@ -32,7 +32,7 @@
 [Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/8.0.0/jar)
 
 - 🚧 **Breaking Changes** (1)
-  - Removed support of changing the attribute definition type [#787](https://github.com/commercetools/commercetools-sync-java/pull/787) since removal and addition of the attribute with the same name in a single request is not possible by commercetools API anymore. For more information please [check](../docs/adr/0003-syncing-attribute-type-changes.md).
+  - Removed support of changing the attribute definition type [#787](https://github.com/commercetools/commercetools-sync-java/pull/787) since removal and addition of the attribute with the same name in a single request is not possible by commercetools API anymore. For more information please [check](https://github.com/commercetools/commercetools-sync-java/blob/master/docs/adr/0003-syncing-attribute-type-changes.md).
 
 - ✨ **Enhancement** (1)
   - Use the new concurrency keyword on github actions to limit the concurrency of the workflow runs. [#772](https://github.com/commercetools/commercetools-sync-java/issues/772)
