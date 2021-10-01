@@ -180,7 +180,8 @@ final class AttributeDefinitionsUpdateActionUtils {
                                         + "changing the attribute definition type (name='%s') is not "
                                         + "supported programmatically. "
                                         + "Please apply the attribute definition type changes "
-                                        + "manually through commercetools API or merchant center.",
+                                        + "manually through commercetools API or merchant center. "
+                                        + "For more information please check: https://github.com/commercetools/commercetools-sync-java/blob/master/docs/adr/0003-syncing-attribute-type-changes.md",
                                     oldAttributeDefinitionName));
                           }
                         } else {
