@@ -17,6 +17,8 @@ jobs:
         run: ./gradlew pmdBenchmark pmdIntegrationTest pmdMain pmdTest
       - name: Spotbugs
         run: ./gradlew spotbugsBenchmark spotbugsIntegrationTest spotbugsMain spotbugsTest
+      - name: mkdocsBuild
+        run: ./gradlew mkdocsBuild
 
   tests:
     name: Tests
