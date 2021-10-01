@@ -32,7 +32,7 @@ We decided use the approach 3, because unpredictability of other approaches and 
 Changes to attributes should be planned carefully and implemented with an understanding of the impact on the product data and performance for each change.
 
 1. Ensure product attributes of the same name are defined consistently across all product types.
-2. Allow time between attribute removal and the addition of attributes with the same name. Removal and Addition actions must be in separate requests.
+2. Allow time between attribute removal and the addition of attributes with the same name. Removal and addition actions of the attribute with the same name should be applied in separate requests.
 
 ## Consequences
 
