@@ -33,6 +33,9 @@
 
 - 🚧 **Breaking Changes** (1)
   - The library will not support of syncing attribute definition type updates/changes of existing attribute definition [#787](https://github.com/commercetools/commercetools-sync-java/pull/787). Because removal and addition of the attribute with the same name in a single request is not possible by commercetools API anymore. For more information please [check](../docs/adr/0003-syncing-attribute-type-changes.md).
+
+- ✨ **Enhancement** (1)
+  - Use the new concurrency keyword on github actions to limit the concurrency of the workflow runs. [#772](https://github.com/commercetools/commercetools-sync-java/issues/772)
   
 ### 7.0.2 - Sep 21, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/7.0.1...7.0.2) |
