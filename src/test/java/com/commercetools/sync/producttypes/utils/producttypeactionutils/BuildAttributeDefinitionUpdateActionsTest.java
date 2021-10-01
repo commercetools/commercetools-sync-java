@@ -508,7 +508,7 @@ class BuildAttributeDefinitionUpdateActionsTest {
     assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     assertThat(exceptions.get(0).getMessage())
         .contains(
-            "changing the attribute definition type (name='a') is not supported programmatically");
+            "changing the attribute definition type (attribute name='a') is not supported programmatically");
     assertThat(exceptions.get(0).getCause())
         .isExactlyInstanceOf(UnsupportedOperationException.class);
   }
@@ -554,7 +554,7 @@ class BuildAttributeDefinitionUpdateActionsTest {
     assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     assertThat(exceptions.get(0).getMessage())
         .contains(
-            "changing the attribute definition type (name='a') is not supported programmatically");
+            "changing the attribute definition type (attribute name='a') is not supported programmatically");
     assertThat(exceptions.get(0).getCause())
         .isExactlyInstanceOf(UnsupportedOperationException.class);
   }
@@ -632,7 +632,7 @@ class BuildAttributeDefinitionUpdateActionsTest {
     assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     assertThat(exceptions.get(0).getMessage())
         .contains(
-            "changing the attribute definition type (name='nested') is not supported programmatically");
+            "changing the attribute definition type (attribute name='nested') is not supported programmatically");
     assertThat(exceptions.get(0).getCause())
         .isExactlyInstanceOf(UnsupportedOperationException.class);
   }
@@ -960,7 +960,7 @@ class BuildAttributeDefinitionUpdateActionsTest {
     assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     assertThat(exceptions.get(0).getMessage())
         .contains(
-            "changing the attribute definition type (name='a') is not supported programmatically");
+            "changing the attribute definition type (attribute name='a') is not supported programmatically");
     assertThat(exceptions.get(0).getCause())
         .isExactlyInstanceOf(UnsupportedOperationException.class);
   }
@@ -1003,7 +1003,7 @@ class BuildAttributeDefinitionUpdateActionsTest {
     assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     assertThat(exceptions.get(0).getMessage())
         .contains(
-            "changing the attribute definition type (name='a') is not supported programmatically");
+            "changing the attribute definition type (attribute name='a') is not supported programmatically");
     assertThat(exceptions.get(0).getCause())
         .isExactlyInstanceOf(UnsupportedOperationException.class);
   }
@@ -1050,7 +1050,7 @@ class BuildAttributeDefinitionUpdateActionsTest {
     assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     assertThat(exceptions.get(0).getMessage())
         .contains(
-            "changing the attribute definition type (name='a') is not supported programmatically");
+            "changing the attribute definition type (attribute name='a') is not supported programmatically");
     assertThat(exceptions.get(0).getCause())
         .isExactlyInstanceOf(UnsupportedOperationException.class);
   }
@@ -1095,7 +1095,7 @@ class BuildAttributeDefinitionUpdateActionsTest {
     assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     assertThat(exceptions.get(0).getMessage())
         .contains(
-            "changing the attribute definition type (name='a') is not supported programmatically");
+            "changing the attribute definition type (attribute name='a') is not supported programmatically");
     assertThat(exceptions.get(0).getCause())
         .isExactlyInstanceOf(UnsupportedOperationException.class);
   }

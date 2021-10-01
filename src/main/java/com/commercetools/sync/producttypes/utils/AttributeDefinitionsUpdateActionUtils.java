@@ -177,7 +177,7 @@ final class AttributeDefinitionsUpdateActionUtils {
                             throw new UnsupportedOperationException(
                                 format(
                                     "Due to eventual consistency of 'removeAttributeDefinition' action, "
-                                        + "changing the attribute definition type (name='%s') is not "
+                                        + "changing the attribute definition type (attribute name='%s') is not "
                                         + "supported programmatically. "
                                         + "Please apply the attribute definition type changes "
                                         + "manually through commercetools API or merchant center. "
