@@ -508,8 +508,7 @@ class BuildAttributeDefinitionUpdateActionsTest {
     assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     assertThat(exceptions.get(0).getMessage())
         .contains(
-            "Changing the attribute definition type (name='a') can not be supported by commercetools-sync-java. "
-                + "Please plan the attribute definition type changes separately with using commercetools API.");
+            "changing the attribute definition type (name='a') is not supported programmatically");
     assertThat(exceptions.get(0).getCause())
         .isExactlyInstanceOf(UnsupportedOperationException.class);
   }
@@ -555,8 +554,7 @@ class BuildAttributeDefinitionUpdateActionsTest {
     assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     assertThat(exceptions.get(0).getMessage())
         .contains(
-            "Changing the attribute definition type (name='a') can not be supported by commercetools-sync-java. "
-                + "Please plan the attribute definition type changes separately with using commercetools API.");
+            "changing the attribute definition type (name='a') is not supported programmatically");
     assertThat(exceptions.get(0).getCause())
         .isExactlyInstanceOf(UnsupportedOperationException.class);
   }
@@ -634,8 +632,7 @@ class BuildAttributeDefinitionUpdateActionsTest {
     assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     assertThat(exceptions.get(0).getMessage())
         .contains(
-            "Changing the attribute definition type (name='nested') can not be supported by commercetools-sync-java. "
-                + "Please plan the attribute definition type changes separately with using commercetools API.");
+            "changing the attribute definition type (name='nested') is not supported programmatically");
     assertThat(exceptions.get(0).getCause())
         .isExactlyInstanceOf(UnsupportedOperationException.class);
   }
@@ -963,8 +960,7 @@ class BuildAttributeDefinitionUpdateActionsTest {
     assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     assertThat(exceptions.get(0).getMessage())
         .contains(
-            "Changing the attribute definition type (name='a') can not be supported by commercetools-sync-java. "
-                + "Please plan the attribute definition type changes separately with using commercetools API.");
+            "changing the attribute definition type (name='a') is not supported programmatically");
     assertThat(exceptions.get(0).getCause())
         .isExactlyInstanceOf(UnsupportedOperationException.class);
   }
@@ -1007,8 +1003,7 @@ class BuildAttributeDefinitionUpdateActionsTest {
     assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     assertThat(exceptions.get(0).getMessage())
         .contains(
-            "Changing the attribute definition type (name='a') can not be supported by commercetools-sync-java. "
-                + "Please plan the attribute definition type changes separately with using commercetools API.");
+            "changing the attribute definition type (name='a') is not supported programmatically");
     assertThat(exceptions.get(0).getCause())
         .isExactlyInstanceOf(UnsupportedOperationException.class);
   }
@@ -1055,8 +1050,7 @@ class BuildAttributeDefinitionUpdateActionsTest {
     assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     assertThat(exceptions.get(0).getMessage())
         .contains(
-            "Changing the attribute definition type (name='a') can not be supported by commercetools-sync-java. "
-                + "Please plan the attribute definition type changes separately with using commercetools API.");
+            "changing the attribute definition type (name='a') is not supported programmatically");
     assertThat(exceptions.get(0).getCause())
         .isExactlyInstanceOf(UnsupportedOperationException.class);
   }
@@ -1101,8 +1095,7 @@ class BuildAttributeDefinitionUpdateActionsTest {
     assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
     assertThat(exceptions.get(0).getMessage())
         .contains(
-            "Changing the attribute definition type (name='a') can not be supported by commercetools-sync-java. "
-                + "Please plan the attribute definition type changes separately with using commercetools API.");
+            "changing the attribute definition type (name='a') is not supported programmatically");
     assertThat(exceptions.get(0).getCause())
         .isExactlyInstanceOf(UnsupportedOperationException.class);
   }
