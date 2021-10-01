@@ -8,7 +8,7 @@ Approved.
 
 ## Context
 
-When changing an attribute definition type, we were using the approach by removing and re-adding the attribute with a new type but this approach is not working anymore. See: #762
+When changing an attribute definition type, we were using the approach by removing and re-adding the attribute with a new type but this approach is not working anymore. See: [#762](https://github.com/commercetools/commercetools-sync-java/issues/762)
  
 So when removing and adding an attribute from a productType in a single request the API returns
 
