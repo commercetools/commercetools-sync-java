@@ -23,7 +23,6 @@ import io.sphere.sdk.producttypes.commands.updateactions.AddAttributeDefinition;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeOrderByName;
 import io.sphere.sdk.producttypes.commands.updateactions.RemoveAttributeDefinition;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +87,7 @@ final class AttributeDefinitionsUpdateActionUtils {
    *     not identical. Otherwise, if the attribute definitions are identical, an empty list is
    *     returned.
    * @throws BuildUpdateActionException in case there are attribute definitions drafts with
-   *     duplicate names or enums duplicate keys.
+   *     duplicate names, enums duplicate keys or unsupported attribute definition type change.
    */
   @Nonnull
   private static List<UpdateAction<ProductType>> buildUpdateActions(
@@ -111,7 +110,9 @@ final class AttributeDefinitionsUpdateActionUtils {
 
       return updateActions;
 
-    } catch (final DuplicateNameException | DuplicateKeyException exception) {
+    } catch (final DuplicateNameException
+        | DuplicateKeyException
+        | UnsupportedOperationException exception) {
       throw new BuildUpdateActionException(exception);
     }
   }
@@ -123,9 +124,6 @@ final class AttributeDefinitionsUpdateActionUtils {
    * the attribute definition fields (name, label, etc..), and add the computed actions to the list
    * of update actions.
    *
-   * <p>Note: If the attribute type field changes, the old attribute definition is removed and the
-   * new attribute definition is added with the new attribute type.
-   *
    * @param oldAttributeDefinitions the list of old {@link AttributeDefinition}s.
    * @param newAttributeDefinitionsDrafts the list of new {@link AttributeDefinitionDraft}s.
    * @return a list of attribute definition update actions if there are attribute definitions that
@@ -136,6 +134,7 @@ final class AttributeDefinitionsUpdateActionUtils {
    * @throws DuplicateNameException in case there are attribute definitions drafts with duplicate
    *     names.
    * @throws DuplicateKeyException in case there are enum values with duplicate keys.
+   * @throws UnsupportedOperationException in case the attribute type field changes.
    */
   @Nonnull
   private static List<UpdateAction<ProductType>>
@@ -175,12 +174,15 @@ final class AttributeDefinitionsUpdateActionUtils {
                               matchingNewAttributeDefinitionDraft.getAttributeType())) {
                             return buildActions(oldAttributeDefinition, attributeDefinitionDraft);
                           } else {
-                            // since there is no way to change an attribute type on CTP,
-                            // we remove the attribute definition and add a new one with a new
-                            // attribute type
-                            return Arrays.asList(
-                                RemoveAttributeDefinition.of(oldAttributeDefinitionName),
-                                AddAttributeDefinition.of(attributeDefinitionDraft));
+                            throw new UnsupportedOperationException(
+                                format(
+                                    "Due to eventual consistency of 'removeAttributeDefinition' action, "
+                                        + "changing the attribute definition type (attribute name='%s') is not "
+                                        + "supported programmatically. "
+                                        + "Please apply the attribute definition type changes "
+                                        + "manually through commercetools API or merchant center. "
+                                        + "For more information please check: https://github.com/commercetools/commercetools-sync-java/blob/master/docs/adr/0003-syncing-attribute-type-changes.md",
+                                    oldAttributeDefinitionName));
                           }
                         } else {
                           return new ArrayList<UpdateAction<ProductType>>();

@@ -20,16 +20,11 @@ jobs:
 
   tests:
     name: Tests
+    concurrency: tests
     needs: checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: serializing workflow runs
-        uses: softprops/turnstyle@v1
-        with:
-          same-branch-only: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-java@v1
         with:
           java-version: 1.8

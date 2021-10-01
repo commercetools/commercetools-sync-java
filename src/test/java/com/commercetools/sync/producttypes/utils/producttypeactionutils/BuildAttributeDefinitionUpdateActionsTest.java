@@ -469,7 +469,7 @@ class BuildAttributeDefinitionUpdateActionsTest {
 
   @Test
   void
-      buildAttributesUpdateActions_WithDifferentAttributeType_ShouldRemoveOldAttributeAndAddNewAttribute() {
+      buildAttributesUpdateActions_WithDifferentAttributeType_ShouldNotBuildActionsAndTriggerErrorCb() {
     // preparation
     final AttributeDefinitionDraft newDefinition =
         AttributeDefinitionDraftBuilder.of(
@@ -487,29 +487,35 @@ class BuildAttributeDefinitionUpdateActionsTest {
 
     final ProductType productType = mock(ProductType.class);
     when(productType.getAttributes()).thenReturn(singletonList(oldDefinition));
+    final List<String> errorMessages = new ArrayList<>();
+    final List<Throwable> exceptions = new ArrayList<>();
     final ProductTypeSyncOptions syncOptions =
-        ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class))
+            .errorCallback(
+                (exception, oldResource, newResource, updateActions) -> {
+                  errorMessages.add(exception.getMessage());
+                  exceptions.add(exception.getCause());
+                })
+            .build();
 
     // test
     final List<UpdateAction<ProductType>> updateActions =
         buildAttributesUpdateActions(productType, productTypeDraft, syncOptions);
 
     // assertions
-    assertThat(updateActions)
-        .containsExactly(
-            RemoveAttributeDefinition.of("a"),
-            AddAttributeDefinition.of(
-                AttributeDefinitionDraftBuilder.of(
-                        newDefinition.getAttributeType(),
-                        newDefinition.getName(),
-                        newDefinition.getLabel(),
-                        newDefinition.isRequired())
-                    .build()));
+    assertThat(updateActions).isEmpty();
+    assertThat(errorMessages).hasSize(1);
+    assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
+    assertThat(exceptions.get(0).getMessage())
+        .contains(
+            "changing the attribute definition type (attribute name='a') is not supported programmatically");
+    assertThat(exceptions.get(0).getCause())
+        .isExactlyInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   void
-      buildAttributesUpdateActions_WithDifferentSetAttributeType_ShouldRemoveOldAttributeAndAddNewAttribute() {
+      buildAttributesUpdateActions_WithDifferentSetAttributeType_ShouldNotBuildActionsAndTriggerErrorCb() {
     // preparation
     final AttributeDefinitionDraft newDefinition =
         AttributeDefinitionDraftBuilder.of(
@@ -527,29 +533,35 @@ class BuildAttributeDefinitionUpdateActionsTest {
 
     final ProductType productType = mock(ProductType.class);
     when(productType.getAttributes()).thenReturn(singletonList(oldDefinition));
+    final List<String> errorMessages = new ArrayList<>();
+    final List<Throwable> exceptions = new ArrayList<>();
     final ProductTypeSyncOptions syncOptions =
-        ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class))
+            .errorCallback(
+                (exception, oldResource, newResource, updateActions) -> {
+                  errorMessages.add(exception.getMessage());
+                  exceptions.add(exception.getCause());
+                })
+            .build();
 
     // test
     final List<UpdateAction<ProductType>> updateActions =
         buildAttributesUpdateActions(productType, productTypeDraft, syncOptions);
 
     // assertions
-    assertThat(updateActions)
-        .containsExactly(
-            RemoveAttributeDefinition.of("a"),
-            AddAttributeDefinition.of(
-                AttributeDefinitionDraftBuilder.of(
-                        newDefinition.getAttributeType(),
-                        newDefinition.getName(),
-                        newDefinition.getLabel(),
-                        newDefinition.isRequired())
-                    .build()));
+    assertThat(updateActions).isEmpty();
+    assertThat(errorMessages).hasSize(1);
+    assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
+    assertThat(exceptions.get(0).getMessage())
+        .contains(
+            "changing the attribute definition type (attribute name='a') is not supported programmatically");
+    assertThat(exceptions.get(0).getCause())
+        .isExactlyInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   void
-      buildAttributesUpdateActions_WithDifferentNestedAttributeRefs_ShouldRemoveOldAttributeAndAddNewAttributes() {
+      buildAttributesUpdateActions_WithDifferentNestedAttributeRefs_ShouldNotBuildActionsAndTriggerErrorCb() {
     // preparation
     final AttributeDefinition ofNestedType =
         AttributeDefinitionBuilder.of(
@@ -599,22 +611,30 @@ class BuildAttributeDefinitionUpdateActionsTest {
     when(newProductTypeDraft.getAttributes())
         .thenReturn(asList(ofNestedTypeDraft, ofSetOfNestedTypeDraft, ofSetOfSetOfNestedTypeDraft));
 
+    final List<String> errorMessages = new ArrayList<>();
+    final List<Throwable> exceptions = new ArrayList<>();
     final ProductTypeSyncOptions syncOptions =
-        ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class))
+            .errorCallback(
+                (exception, oldResource, newResource, updateActions) -> {
+                  errorMessages.add(exception.getMessage());
+                  exceptions.add(exception.getCause());
+                })
+            .build();
 
     // test
     final List<UpdateAction<ProductType>> updateActions =
         buildAttributesUpdateActions(oldProductType, newProductTypeDraft, syncOptions);
 
     // assertions
-    assertThat(updateActions)
-        .containsExactly(
-            RemoveAttributeDefinition.of(ofNestedType.getName()),
-            AddAttributeDefinition.of(ofNestedTypeDraft),
-            RemoveAttributeDefinition.of(ofSetOfNestedType.getName()),
-            AddAttributeDefinition.of(ofSetOfNestedTypeDraft),
-            RemoveAttributeDefinition.of(ofSetOfSetOfNestedType.getName()),
-            AddAttributeDefinition.of(ofSetOfSetOfNestedTypeDraft));
+    assertThat(updateActions).isEmpty();
+    assertThat(errorMessages).hasSize(1);
+    assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
+    assertThat(exceptions.get(0).getMessage())
+        .contains(
+            "changing the attribute definition type (attribute name='nested') is not supported programmatically");
+    assertThat(exceptions.get(0).getCause())
+        .isExactlyInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
@@ -901,7 +921,8 @@ class BuildAttributeDefinitionUpdateActionsTest {
   }
 
   @Test
-  void buildAttributesUpdateActions_WithOldEnumAndNewAsNonEnum_ShouldBuildRemoveAndAddActions() {
+  void
+      buildAttributesUpdateActions_WithOldEnumAndNewAsNonEnum_ShouldNotBuildActionsAndTriggerErrorCb() {
     // preparation
     final AttributeDefinitionDraft newDefinition =
         AttributeDefinitionDraftBuilder.of(
@@ -919,25 +940,34 @@ class BuildAttributeDefinitionUpdateActionsTest {
     final ProductType productType = mock(ProductType.class);
     when(productType.getAttributes()).thenReturn(singletonList(oldDefinition));
 
+    final List<String> errorMessages = new ArrayList<>();
+    final List<Throwable> exceptions = new ArrayList<>();
+    final ProductTypeSyncOptions syncOptions =
+        ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class))
+            .errorCallback(
+                (exception, oldResource, newResource, updateActions) -> {
+                  errorMessages.add(exception.getMessage());
+                  exceptions.add(exception.getCause());
+                })
+            .build();
     // test
     final List<UpdateAction<ProductType>> updateActions =
-        buildAttributesUpdateActions(productType, productTypeDraft, SYNC_OPTIONS);
+        buildAttributesUpdateActions(productType, productTypeDraft, syncOptions);
 
     // assertions
-    assertThat(updateActions)
-        .containsExactly(
-            RemoveAttributeDefinition.of("a"),
-            AddAttributeDefinition.of(
-                AttributeDefinitionDraftBuilder.of(
-                        newDefinition.getAttributeType(),
-                        newDefinition.getName(),
-                        newDefinition.getLabel(),
-                        newDefinition.isRequired())
-                    .build()));
+    assertThat(updateActions).isEmpty();
+    assertThat(errorMessages).hasSize(1);
+    assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
+    assertThat(exceptions.get(0).getMessage())
+        .contains(
+            "changing the attribute definition type (attribute name='a') is not supported programmatically");
+    assertThat(exceptions.get(0).getCause())
+        .isExactlyInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
-  void buildAttributesUpdateActions_WithNewEnumAndOldAsNonEnum_ShouldBuildRemoveAndAddActions() {
+  void
+      buildAttributesUpdateActions_WithNewEnumAndOldAsNonEnum_ShouldNotBuildActionsAndTriggerErrorCb() {
     // preparation
     final AttributeDefinitionDraft newDefinition =
         AttributeDefinitionDraftBuilder.of(
@@ -952,25 +982,35 @@ class BuildAttributeDefinitionUpdateActionsTest {
     final ProductType productType = mock(ProductType.class);
     when(productType.getAttributes()).thenReturn(singletonList(oldDefinition));
 
+    final List<String> errorMessages = new ArrayList<>();
+    final List<Throwable> exceptions = new ArrayList<>();
+    final ProductTypeSyncOptions syncOptions =
+        ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class))
+            .errorCallback(
+                (exception, oldResource, newResource, updateActions) -> {
+                  errorMessages.add(exception.getMessage());
+                  exceptions.add(exception.getCause());
+                })
+            .build();
+
     // test
     final List<UpdateAction<ProductType>> updateActions =
-        buildAttributesUpdateActions(productType, productTypeDraft, SYNC_OPTIONS);
+        buildAttributesUpdateActions(productType, productTypeDraft, syncOptions);
 
     // assertions
-    assertThat(updateActions)
-        .containsExactly(
-            RemoveAttributeDefinition.of("a"),
-            AddAttributeDefinition.of(
-                AttributeDefinitionDraftBuilder.of(
-                        newDefinition.getAttributeType(),
-                        newDefinition.getName(),
-                        newDefinition.getLabel(),
-                        newDefinition.isRequired())
-                    .build()));
+    assertThat(updateActions).isEmpty();
+    assertThat(errorMessages).hasSize(1);
+    assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
+    assertThat(exceptions.get(0).getMessage())
+        .contains(
+            "changing the attribute definition type (attribute name='a') is not supported programmatically");
+    assertThat(exceptions.get(0).getCause())
+        .isExactlyInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
-  void buildAttributesUpdateActions_WithOldLenumAndNewAsNonLenum_ShouldBuildRemoveAndAddActions() {
+  void
+      buildAttributesUpdateActions_WithOldLenumAndNewAsNonLenum_ShouldNotBuildActionsAndTriggerErrorCb() {
     // preparation
     final AttributeDefinitionDraft newDefinition =
         AttributeDefinitionDraftBuilder.of(
@@ -989,25 +1029,35 @@ class BuildAttributeDefinitionUpdateActionsTest {
     final ProductType productType = mock(ProductType.class);
     when(productType.getAttributes()).thenReturn(singletonList(oldDefinition));
 
+    final List<String> errorMessages = new ArrayList<>();
+    final List<Throwable> exceptions = new ArrayList<>();
+    final ProductTypeSyncOptions syncOptions =
+        ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class))
+            .errorCallback(
+                (exception, oldResource, newResource, updateActions) -> {
+                  errorMessages.add(exception.getMessage());
+                  exceptions.add(exception.getCause());
+                })
+            .build();
+
     // test
     final List<UpdateAction<ProductType>> updateActions =
-        buildAttributesUpdateActions(productType, productTypeDraft, SYNC_OPTIONS);
+        buildAttributesUpdateActions(productType, productTypeDraft, syncOptions);
 
     // assertions
-    assertThat(updateActions)
-        .containsExactly(
-            RemoveAttributeDefinition.of("a"),
-            AddAttributeDefinition.of(
-                AttributeDefinitionDraftBuilder.of(
-                        newDefinition.getAttributeType(),
-                        newDefinition.getName(),
-                        newDefinition.getLabel(),
-                        newDefinition.isRequired())
-                    .build()));
+    assertThat(updateActions).isEmpty();
+    assertThat(errorMessages).hasSize(1);
+    assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
+    assertThat(exceptions.get(0).getMessage())
+        .contains(
+            "changing the attribute definition type (attribute name='a') is not supported programmatically");
+    assertThat(exceptions.get(0).getCause())
+        .isExactlyInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
-  void buildAttributesUpdateActions_WithNewLenumAndOldAsNonLenum_ShouldBuildRemoveAndAddActions() {
+  void
+      buildAttributesUpdateActions_WithNewLenumAndOldAsNonLenum_ShouldNotBuildActionsAndTriggerErrorCb() {
     // preparation
     final AttributeDefinitionDraft newDefinition =
         AttributeDefinitionDraftBuilder.of(
@@ -1025,21 +1075,29 @@ class BuildAttributeDefinitionUpdateActionsTest {
     final ProductType productType = mock(ProductType.class);
     when(productType.getAttributes()).thenReturn(singletonList(oldDefinition));
 
+    final List<String> errorMessages = new ArrayList<>();
+    final List<Throwable> exceptions = new ArrayList<>();
+    final ProductTypeSyncOptions syncOptions =
+        ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class))
+            .errorCallback(
+                (exception, oldResource, newResource, updateActions) -> {
+                  errorMessages.add(exception.getMessage());
+                  exceptions.add(exception.getCause());
+                })
+            .build();
     // test
     final List<UpdateAction<ProductType>> updateActions =
-        buildAttributesUpdateActions(productType, productTypeDraft, SYNC_OPTIONS);
+        buildAttributesUpdateActions(productType, productTypeDraft, syncOptions);
 
     // assertions
-    assertThat(updateActions)
-        .containsExactly(
-            RemoveAttributeDefinition.of("a"),
-            AddAttributeDefinition.of(
-                AttributeDefinitionDraftBuilder.of(
-                        newDefinition.getAttributeType(),
-                        newDefinition.getName(),
-                        newDefinition.getLabel(),
-                        newDefinition.isRequired())
-                    .build()));
+    assertThat(updateActions).isEmpty();
+    assertThat(errorMessages).hasSize(1);
+    assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
+    assertThat(exceptions.get(0).getMessage())
+        .contains(
+            "changing the attribute definition type (attribute name='a') is not supported programmatically");
+    assertThat(exceptions.get(0).getCause())
+        .isExactlyInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test

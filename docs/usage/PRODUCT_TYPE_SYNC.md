@@ -36,7 +36,7 @@ against a [ProductTypeDraft](https://docs.commercetools.com/http-api-projects-pr
 ### Prerequisites
 #### SphereClient
 
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/7.0.2/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/8.0.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
@@ -66,7 +66,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`toProductTypeDrafts`](https://commercetools.github.io/commercetools-sync-java/v/7.0.2/com/commercetools/sync/producttypes/utils/ProductTypeTransformUtils.html#toProductTypeDrafts-java.util.List-)
+When syncing from a source commercetools project, you can use [`toProductTypeDrafts`](https://commercetools.github.io/commercetools-sync-java/v/8.0.0/com/commercetools/sync/producttypes/utils/ProductTypeTransformUtils.html#toProductTypeDrafts-java.util.List-)
  method that transforms(resolves by querying and caching key-id pairs) and maps from a `ProductType` to `ProductTypeDraft`. It can be configured to use a cache that will speed up the reference resolution performed during the sync, for example: 
 
 ````java
@@ -278,3 +278,4 @@ More examples of those utils for different fields can be found [here](https://gi
 
 ## Caveats    
 1. The order of attribute definitions in the synced product types is not guaranteed.
+2. Changing the attribute definition type is not supported. Instead, remove and re-add it with a new type manually, either over API or merchant center. For more information please [check](../../docs/adr/0003-syncing-attribute-type-changes.md).

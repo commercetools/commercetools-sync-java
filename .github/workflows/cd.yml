@@ -8,6 +8,7 @@ on:
 jobs:
   benchmark_tests:
     name: benchmark tests
+    concurrency: benchmark_tests
     runs-on: ubuntu-latest
     env:
       SOURCE_PROJECT_KEY: java-sync-target-dev2
@@ -21,12 +22,6 @@ jobs:
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2
-      - name: serializing workflow runs
-        uses: softprops/turnstyle@v1
-        with:
-          same-branch-only: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Fetch Library version
         id: vars
         run: echo ::set-output name=libVersion::${GITHUB_REF#refs/*/}

@@ -26,6 +26,17 @@
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
+### 8.0.0 - Oct 1, 2021
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/7.0.2...8.0.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/8.0.0/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/8.0.0/jar)
+
+- 🚧 **Breaking Changes** (1)
+  - Removed support of changing the attribute definition type [#787](https://github.com/commercetools/commercetools-sync-java/pull/787) since removal and addition of the attribute with the same name in a single request is not possible by commercetools API anymore. For more information please [check](../docs/adr/0003-syncing-attribute-type-changes.md).
+
+- ✨ **Enhancement** (1)
+  - Use the new concurrency keyword on github actions to limit the concurrency of the workflow runs. [#772](https://github.com/commercetools/commercetools-sync-java/issues/772)
+  
 ### 7.0.2 - Sep 21, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/7.0.1...7.0.2) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/7.0.2/) |
