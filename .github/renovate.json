@@ -7,5 +7,11 @@
   "schedule": [
     "every weekend"
   ],
-  "groupName": "all"
+  "groupName": "all",
+  "packageRules": [
+    {
+      "matchPackageNames": ["com.github.ben-manes.caffeine:"],
+      "allowedVersions": "< 3.0.0"
+    }
+  ]
 }
