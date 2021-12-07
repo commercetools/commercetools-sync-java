@@ -3,7 +3,7 @@ package com.commercetools.sync.customers.utils;
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
-import static org.apache.http.util.TextUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.sphere.sdk.customergroups.CustomerGroup;

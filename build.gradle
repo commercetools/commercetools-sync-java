@@ -18,6 +18,7 @@ ext{
     jacocoVersion = '0.8.4'
     caffeineVersion = '2.9.2'
     nexusStagingPluginVersion = '0.22.0'
+    commonTextVersion = '1.9'
 }
 
 apply from: "$rootDir/gradle-scripts/repositories.gradle"
@@ -46,6 +47,7 @@ dependencies {
     api "com.commercetools.sdk.jvm.core:commercetools-java-client-ahc-2_5:${commercetoolsJvmSdkVersion}"
     api "com.commercetools.sdk.jvm.core:commercetools-convenience:${commercetoolsJvmSdkVersion}"
     implementation "com.github.ben-manes.caffeine:caffeine:${caffeineVersion}"
+    implementation "org.apache.commons:commons-text:${commonTextVersion}"
     testImplementation "org.mockito:mockito-junit-jupiter:${mockitoJunitJupiterVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterApiVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-params:${jupiterApiVersion}"
