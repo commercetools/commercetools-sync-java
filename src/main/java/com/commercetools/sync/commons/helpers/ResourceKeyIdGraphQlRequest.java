@@ -13,7 +13,7 @@ import io.sphere.sdk.http.HttpResponse;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 /**
  * A SphereRequest implementation to allow {@link SphereClient} to execute graphQL queries on CTP.
@@ -77,7 +77,7 @@ public class ResourceKeyIdGraphQlRequest
     final String commaSeparatedKeys =
         keys.stream()
             .filter(key -> !isBlank(key))
-            .map(key -> StringEscapeUtils.escapeJava(key))
+            .map(StringEscapeUtils::escapeJava)
             .collect(
                 joining(
                     format("%s, %s", backslashQuote, backslashQuote),

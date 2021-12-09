@@ -1,23 +1,24 @@
 plugins {
     id 'org.ajoberstar.git-publish' version '3.0.0'
-    id 'com.adarshr.test-logger' version '3.0.0'
-    id 'org.ajoberstar.grgit' version '4.1.0'
+    id 'com.adarshr.test-logger' version '3.1.0'
+    id 'org.ajoberstar.grgit' version '4.1.1'
     id "com.github.ben-manes.versions" version '0.39.0'
-    id 'ru.vyarus.mkdocs' version '2.1.1'
-    id "com.github.spotbugs" version "4.7.1"
-    id 'com.diffplug.spotless' version '5.14.2'
+    id 'ru.vyarus.mkdocs' version '2.1.2'
+    id "com.github.spotbugs" version "5.0.0-rc.1"
+    id 'com.diffplug.spotless' version '6.0.1'
     id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
 }
 
 ext{
-    commercetoolsJvmSdkVersion = '1.64.0'
-    mockitoJunitJupiterVersion = '3.11.2'
-    jupiterApiVersion = '5.7.2'
-    assertjVersion = '3.20.2'
+    commercetoolsJvmSdkVersion = '2.5.0'
+    mockitoJunitJupiterVersion = '4.1.0'
+    jupiterApiVersion = '5.8.2'
+    assertjVersion = '3.21.0'
     pmdVersion = '6.14.0'
     jacocoVersion = '0.8.4'
     caffeineVersion = '2.9.2'
     nexusStagingPluginVersion = '0.22.0'
+    commonTextVersion = '1.9'
 }
 
 apply from: "$rootDir/gradle-scripts/repositories.gradle"
@@ -46,20 +47,7 @@ dependencies {
     api "com.commercetools.sdk.jvm.core:commercetools-java-client-ahc-2_5:${commercetoolsJvmSdkVersion}"
     api "com.commercetools.sdk.jvm.core:commercetools-convenience:${commercetoolsJvmSdkVersion}"
     implementation "com.github.ben-manes.caffeine:caffeine:${caffeineVersion}"
-    constraints {
-        implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.12.3") {
-            because "previous versions are vulnerable to DoS"
-        }
-        implementation("io.netty:netty-codec-http:4.1.66.Final") {
-            because "previous versions are vulnerable to Information Disclosure"
-        }
-        implementation("org.apache.httpcomponents:httpclient:4.5.13") {
-            because "previous versions are vulnerable to Improper Input Validation"
-        }
-        implementation("commons-codec:commons-codec:1.15") {
-            because "previous versions are vulnerable to Information Exposure"
-        }
-    }
+    implementation "org.apache.commons:commons-text:${commonTextVersion}"
     testImplementation "org.mockito:mockito-junit-jupiter:${mockitoJunitJupiterVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterApiVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-params:${jupiterApiVersion}"
