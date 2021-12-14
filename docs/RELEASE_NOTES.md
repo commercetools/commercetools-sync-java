@@ -26,6 +26,32 @@
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
+
+### 8.1.0 - Dec 14, 2021
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/8.0.0...8.1.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/8.1.0/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/8.1.0/jar)
+
+- ✨ **Build Tools** 
+  - Migrated from gradle `v6.8.2` to [`v7.3.1`](https://togithub.com/gradle/gradle/releases/v7.3.1).
+  - Migrated github actions `setup-java` plugin from `v1` to [`v2`](https://togithub.com/actions/setup-java/compare/v1...v2)
+  - Migrated github actions `codecov-action` plugin from `v1` to [`v2`](https://togithub.com/codecov/codecov-action/compare/v1...v2)
+
+- 🛠️ **Dependency Updates** 
+  - `commercetools-jvm-sdk` `1.64.0` -> [`2.5.0`](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v2.5.0)
+  - `com.adarshr.test-logger` `3.0.0` -> [`3.1.0`](https://github.com/radarsh/gradle-test-logger-plugin/releases/tag/v3.1.0)
+  - `ru.vyarus.mkdocs` `2.1.2` -> [`2.2.0`](https://github.com/xvik/gradle-mkdocs-plugin/releases/tag/2.2.0)
+  - `org.ajoberstar.grgit` `4.1.0` -> [`4.1.1`](https://github.com/ajoberstar/grgit/releases/tag/4.1.1)
+  - `com.github.spotbugs` `4.7.1` -> [`5.0.2`](https://github.com/spotbugs/spotbugs-gradle-plugin/releases/tag/5.0.2)
+  - `com.diffplug.spotless` `5.14.2` -> `6.0.4`
+  - `mockito-junit-jupiter` `3.11.2` ->  [`4.1.0`](https://github.com/mockito/mockito/releases/tag/v4.1.0)
+  - `org.junit.jupiter:junit-jupiter-api` `5.7.2` -> [`5.8.2`](https://junit.org/junit5/docs/snapshot/release-notes/index.html#release-notes-5.8.2)
+  - `org.junit.jupiter:junit-jupiter-engine` `5.7.2` -> [`5.8.2`](https://junit.org/junit5/docs/snapshot/release-notes/index.html#release-notes-5.8.2)
+  - `org.junit.jupiter:junit-jupiter-params` `5.7.2` -> [`5.8.2`](https://junit.org/junit5/docs/snapshot/release-notes/index.html#release-notes-5.8.2)
+  - `org.assertj.assertj-core` `3.20.2` ->  [`3.21.0`](https://assertj.github.io/doc/#assertj-core-3-21-0-release-notes)
+  - `com.github.ben-manes.caffeine` `2.9.2` -> [`2.9.3`](https://github.com/ben-manes/caffeine/releases/tag/v2.9.3)
+  - (new) `org.apache.commons:common-text`  [`1.9`](https://commons.apache.org/proper/commons-text/changes-report.html#a1.9)
+  
 ### 8.0.0 - Oct 1, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/7.0.2...8.0.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/8.0.0/) |
