@@ -1,52 +1,31 @@
 package com.commercetools.sync.sdk2.commons.utils;
 
 import com.commercetools.api.client.ProjectApiRoot;
-import com.commercetools.api.models.customer.Customer;
-import com.commercetools.api.models.customer.CustomerChangeEmailAction;
-import com.commercetools.api.models.customer.CustomerUpdate;
-import com.commercetools.api.models.customer.CustomerUpdateAction;
-import com.commercetools.http.okhttp4.CtOkHttp4Client;
-import com.commercetools.sync.sdk2.commons.utils.retry.RetryableProjectApiClientBuilder;
-import io.vrap.rmf.base.client.ApiHttpResponse;
-import java.util.ArrayList;
-import java.util.List;
+import com.commercetools.api.defaultconfig.ApiRootBuilder;
+import io.vrap.rmf.base.client.oauth2.ClientCredentials;
+import java.util.Arrays;
 import javax.annotation.Nonnull;
 
 public final class ClientConfigurationUtils {
 
   /**
-   * Creates a RetryableProjectApiClient {@link ProjectApiRoot}.
+   * Creates a {@link ProjectApiRoot}.
    *
-   * @param clientConfig the client configuration for the client.
+   * @param projectKey commercetools project key
+   * @param credentials api credentials with clientId, clientSecret and scopes
+   * @param authUrl the auth url of the commercetools platform that project is bound
+   * @param apiUrl the api url of the commercetools platform that project is bound
    * @return the instantiated {@link ProjectApiRoot}.
    */
-  public static ProjectApiRoot createClient(@Nonnull final ClientConfig clientConfig) {
-    return RetryableProjectApiClientBuilder.of(clientConfig, new CtOkHttp4Client()).build();
-  }
+  public static ProjectApiRoot createClient(
+      @Nonnull final String projectKey,
+      @Nonnull final ClientCredentials credentials,
+      @Nonnull final String authUrl,
+      @Nonnull final String apiUrl) {
 
-  public static void main(String[] args) {
-    final CustomerUpdate cu = CustomerUpdate.of();
-    cu.setVersion(1L);
-
-    List<CustomerUpdateAction> updateActions = new ArrayList<>();
-
-    final CustomerChangeEmailAction customerChangeEmailAction = CustomerChangeEmailAction.of();
-    customerChangeEmailAction.setEmail("email");
-    updateActions.add(customerChangeEmailAction);
-
-    cu.setActions(updateActions);
-
-    ClientConfig clientConfig = ClientConfig.of("", "", "");
-    final ProjectApiRoot client = createClient(clientConfig);
-    final Customer updatedCust =
-        client
-            .customers()
-            .withId("id")
-            .post(cu)
-            .execute()
-            .thenApply(ApiHttpResponse::getBody)
-            .join();
-
-    System.out.println(updatedCust);
+    return ApiRootBuilder.of()
+        .defaultClient(credentials, authUrl, apiUrl)
+        .withRetryMiddleware(5, Arrays.asList(500, 502, 503, 504))
+        .build(projectKey);
   }
 }
