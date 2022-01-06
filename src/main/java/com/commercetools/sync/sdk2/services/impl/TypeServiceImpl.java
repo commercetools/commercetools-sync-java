@@ -10,8 +10,8 @@ import com.commercetools.api.models.graph_ql.GraphQLVariablesMapBuilder;
 import com.commercetools.api.models.type.Type;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.ChunkUtils;
+import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import com.commercetools.sync.sdk2.services.TypeService;
-import com.commercetools.sync.sdk2.types.TypeSyncOptions;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vrap.rmf.base.client.ApiHttpResponse;
@@ -30,9 +30,9 @@ import javax.annotation.Nullable;
 import org.apache.commons.text.StringEscapeUtils;
 
 // todo: reuse duplicated code between TypeService and CustomerService
-public final class TypeServiceImpl extends BaseService<TypeSyncOptions> implements TypeService {
+public final class TypeServiceImpl extends BaseService<BaseSyncOptions> implements TypeService {
 
-  public TypeServiceImpl(@Nonnull final TypeSyncOptions syncOptions) {
+  public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
     super(syncOptions);
   }
 
@@ -49,7 +49,7 @@ public final class TypeServiceImpl extends BaseService<TypeSyncOptions> implemen
 
     String query =
         "query fetchIdKeyPairs($where: String, $limit: Int) {\n"
-            + "  types(limit: $limit, where: $where) {\n"
+            + "  typeDefinitions(limit: $limit, where: $where) {\n"
             + "    results {\n"
             + "      id\n"
             + "      key\n"
@@ -95,7 +95,7 @@ public final class TypeServiceImpl extends BaseService<TypeSyncOptions> implemen
                         ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
                         final JsonNode jsonNode = objectMapper.convertValue(data, JsonNode.class);
                         final Iterator<JsonNode> elements =
-                            jsonNode.get("types").get("results").elements();
+                            jsonNode.get("typeDefinitions").get("results").elements();
                         while (elements.hasNext()) {
                           JsonNode idAndKey = elements.next();
                           keyToIdCache.put(

@@ -723,7 +723,13 @@ public final class CustomerUpdateActionUtils {
             oldAddress ->
                 isBlank(oldAddress.getKey()) || !newAddressKeys.contains(oldAddress.getKey()))
         .map(
-            address -> CustomerRemoveAddressActionBuilder.of().addressKey(address.getKey()).build())
+            address -> {
+              if (address.getId() != null) {
+                return CustomerRemoveAddressActionBuilder.of().addressId(address.getId()).build();
+              }
+
+              return CustomerRemoveAddressActionBuilder.of().addressKey(address.getKey()).build();
+            })
         .collect(toList());
   }
 
@@ -767,12 +773,21 @@ public final class CustomerUpdateActionUtils {
         .map(
             newAddress -> {
               final Address oldAddress = oldAddressKeyToAddressMap.get(newAddress.getKey());
-              if (!newAddress.equals(oldAddress)) { // TODO: ignore id
+              // ignore id on equals
+              String oldAddressId = oldAddress.getId();
+              String newAddressId = newAddress.getId();
+              oldAddress.setId(null);
+              newAddress.setId(null);
+
+              if (!newAddress.equals(oldAddress)) {
                 return CustomerChangeAddressActionBuilder.of()
-                    .addressId(oldAddress.getId())
+                    .addressId(oldAddressId)
                     .address(newAddress)
                     .build();
               }
+
+              oldAddress.setId(oldAddressId);
+              newAddress.setId(newAddressId);
               return null;
             })
         .filter(Objects::nonNull)
@@ -842,7 +857,8 @@ public final class CustomerUpdateActionUtils {
                         && address.getId().equals(oldCustomer.getDefaultShippingAddressId()))
             .findFirst();
     final String newAddressKey =
-        getAddressKeyAt(newCustomer.getAddresses(), newCustomer.getDefaultShippingAddress());
+        getAddressKeyAt(
+            newCustomer.getAddresses(), newCustomer.getDefaultShippingAddress().intValue());
 
     if (newAddressKey != null) {
       if (!oldAddress.isPresent() || !Objects.equals(oldAddress.get().getKey(), newAddressKey)) {
@@ -879,7 +895,8 @@ public final class CustomerUpdateActionUtils {
             .findFirst();
 
     final String newAddressKey =
-        getAddressKeyAt(newCustomer.getAddresses(), newCustomer.getDefaultBillingAddress());
+        getAddressKeyAt(
+            newCustomer.getAddresses(), newCustomer.getDefaultBillingAddress().intValue());
 
     if (newAddressKey != null) {
       if (!oldAddress.isPresent() || !Objects.equals(oldAddress.get().getKey(), newAddressKey)) {
@@ -895,13 +912,7 @@ public final class CustomerUpdateActionUtils {
 
   @Nullable
   private static String getAddressKeyAt(
-      @Nullable final List<BaseAddress> addressList, @Nullable final Object indexObj) {
-
-    if (indexObj == null) {
-      return null;
-    }
-
-    int index = (int) indexObj;
+      @Nullable final List<BaseAddress> addressList, final int index) {
 
     if (addressList == null || index < 0 || index >= addressList.size()) {
       throw new IllegalArgumentException(
