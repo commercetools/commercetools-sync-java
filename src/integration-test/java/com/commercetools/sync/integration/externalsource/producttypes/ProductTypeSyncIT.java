@@ -19,9 +19,11 @@ import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.util.Lists.emptyList;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -359,17 +361,16 @@ class ProductTypeSyncIT {
                 + "Please make sure all productType drafts have keys.",
             newProductTypeDraft.getName());
     // assertions
-    assertThat(errorMessages)
-        .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message -> assertThat(message).isEqualTo(expectedErrorMessage));
+    assertThat(errorMessages).hasSize(1).singleElement(as(STRING)).isEqualTo(expectedErrorMessage);
 
     assertThat(exceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
+        .singleElement()
+        .matches(
             throwable -> {
               assertThat(throwable).isInstanceOf(SyncException.class);
               assertThat(throwable.getMessage()).isEqualTo(expectedErrorMessage);
+              return true;
             });
 
     assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
@@ -400,15 +401,17 @@ class ProductTypeSyncIT {
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message -> assertThat(message).isEqualTo("ProductTypeDraft is null."));
+        .singleElement(as(STRING))
+        .isEqualTo("ProductTypeDraft is null.");
 
     assertThat(exceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
+        .singleElement()
+        .matches(
             throwable -> {
               assertThat(throwable).isInstanceOf(SyncException.class);
               assertThat(throwable.getMessage()).isEqualTo("ProductTypeDraft is null.");
+              return true;
             });
 
     assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
@@ -455,15 +458,17 @@ class ProductTypeSyncIT {
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message -> assertThat(message).contains("Failed to create draft with key: 'key_2'."));
+        .singleElement(as(STRING))
+        .contains("Failed to create draft with key: 'key_2'.");
 
     assertThat(exceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
+        .singleElement()
+        .matches(
             throwable -> {
               assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
               assertThat(throwable).hasMessageContaining("AttributeDefinitionTypeConflict");
+              return true;
             });
 
     assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
@@ -508,17 +513,18 @@ class ProductTypeSyncIT {
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message ->
-                assertThat(message).contains("Failed to update product type with key: 'key_1'."));
+        .singleElement(as(STRING))
+        .contains("Failed to update product type with key: 'key_1'.");
 
     assertThat(exceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
+        .singleElement()
+        .matches(
             throwable -> {
               assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
               assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
               assertThat(throwable).hasMessageContaining("InvalidInput");
+              return true;
             });
 
     assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
@@ -556,17 +562,18 @@ class ProductTypeSyncIT {
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message ->
-                assertThat(message).contains("Failed to update product type with key: 'key_1'."));
+        .singleElement(as(STRING))
+        .contains("Failed to update product type with key: 'key_1'.");
 
     assertThat(exceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
+        .singleElement()
+        .matches(
             throwable -> {
               assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
               assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
               assertThat(throwable).hasMessageContaining("Missing required value");
+              return true;
             });
 
     assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
@@ -611,17 +618,18 @@ class ProductTypeSyncIT {
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message ->
-                assertThat(message).contains("Failed to update product type with key: 'key_1'."));
+        .singleElement(as(STRING))
+        .contains("Failed to update product type with key: 'key_1'.");
 
     assertThat(exceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
+        .singleElement()
+        .matches(
             throwable -> {
               assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
               assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
               assertThat(throwable).hasMessageContaining("Missing required value");
+              return true;
             });
 
     assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);

@@ -35,6 +35,8 @@ import io.sphere.sdk.producttypes.ProductType;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -116,10 +118,10 @@ class ProductTypeReferenceResolverTest {
         getBuilderWithProductTypeRefKey(null).key("dummyKey");
 
     assertThat(referenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
-        .hasFailed()
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve '%s' resource identifier on ProductDraft"
                     + " with key:'%s'. Reason: %s",
@@ -133,10 +135,10 @@ class ProductTypeReferenceResolverTest {
     final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRefKey("").key("dummyKey");
 
     assertThat(referenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
-        .hasFailed()
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve '%s' resource identifier on ProductDraft"
                     + " with key:'%s'. Reason: %s",
@@ -157,9 +159,10 @@ class ProductTypeReferenceResolverTest {
         .thenReturn(futureThrowingSphereException);
 
     assertThat(referenceResolver.resolveProductTypeReference(productBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(SphereException.class)
-        .hasMessageContaining("CTP error on fetch");
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(SphereException.class)
+        .withMessageContaining("CTP error on fetch");
   }
 
   @Test
@@ -170,7 +173,7 @@ class ProductTypeReferenceResolverTest {
             .key("dummyKey");
 
     assertThat(referenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
-        .hasNotFailed()
+        .isCompleted()
         .isCompletedWithValueMatching(
             resolvedDraft ->
                 Objects.equals(resolvedDraft.getProductType(), productBuilder.getProductType()));

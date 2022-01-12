@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("unchecked")
 class CustomObjectSyncOptionsBuilderTest {
 
   private static final SphereClient CTP_CLIENT = mock(SphereClient.class);

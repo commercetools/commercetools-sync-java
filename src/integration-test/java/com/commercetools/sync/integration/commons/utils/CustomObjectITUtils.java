@@ -16,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
 
+@SuppressWarnings("unchecked")
 public final class CustomObjectITUtils {
 
   /**

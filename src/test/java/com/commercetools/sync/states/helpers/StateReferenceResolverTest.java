@@ -24,6 +24,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
@@ -91,7 +93,6 @@ class StateReferenceResolverTest {
 
     // test and assertion
     assertThat(stateReferenceResolver.resolveReferences(stateDraft).toCompletableFuture())
-        .hasNotFailed()
         .isCompletedWithValueMatching(resolvedDraft -> resolvedDraft.getTransitions() == null);
   }
 
@@ -115,10 +116,10 @@ class StateReferenceResolverTest {
 
     // test and assertion
     assertThat(stateReferenceResolver.resolveReferences(stateDraft).toCompletableFuture())
-        .hasFailed()
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve 'transition' reference on StateDraft with "
                     + "key:'%s'. Reason: %s",
@@ -145,10 +146,10 @@ class StateReferenceResolverTest {
 
     // test and assertion
     assertThat(stateReferenceResolver.resolveReferences(stateDraft).toCompletableFuture())
-        .hasFailed()
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve 'transition' reference on StateDraft with "
                     + "key:'%s'. Reason: %s",
@@ -185,10 +186,10 @@ class StateReferenceResolverTest {
 
     // test and assertion
     assertThat(stateReferenceResolver.resolveReferences(stateDraft).toCompletableFuture())
-        .hasFailed()
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(SphereException.class)
-        .hasMessageContaining("CTP error on fetch");
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(SphereException.class)
+        .withMessageContaining("CTP error on fetch");
   }
 
   @Test
@@ -209,7 +210,6 @@ class StateReferenceResolverTest {
         new StateReferenceResolver(stateSyncOptions, mockStateService);
 
     assertThat(stateReferenceResolver.resolveReferences(stateDraft).toCompletableFuture())
-        .hasNotFailed()
         .isCompleted();
   }
 }

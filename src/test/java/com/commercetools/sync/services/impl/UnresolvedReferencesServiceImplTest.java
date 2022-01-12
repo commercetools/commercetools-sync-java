@@ -7,7 +7,10 @@ import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
+import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -37,6 +40,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+@SuppressWarnings("unchecked")
 class UnresolvedReferencesServiceImplTest {
 
   private UnresolvedReferencesServiceImpl<WaitingToBeResolvedProducts> service;
@@ -56,7 +60,8 @@ class UnresolvedReferencesServiceImplTest {
                   errorExceptions.add(exception);
                 })
             .build();
-    service = new UnresolvedReferencesServiceImpl(productSyncOptions);
+
+    service = new UnresolvedReferencesServiceImpl<>(productSyncOptions);
   }
 
   @Test
@@ -236,21 +241,17 @@ class UnresolvedReferencesServiceImplTest {
     assertThat(result).isEmpty();
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message ->
-                assertThat(message)
-                    .contains(
-                        format(
-                            "Failed to save CustomObject with key: '%s' (hash of product key: '%s').",
-                            sha1Hex(productKey), productKey)));
+        .singleElement(as(STRING))
+        .contains(
+            format(
+                "Failed to save CustomObject with key: '%s' (hash of product key: '%s').",
+                sha1Hex(productKey), productKey));
 
     assertThat(errorExceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            exception -> {
-              assertThat(exception).isExactlyInstanceOf(SyncException.class);
-              assertThat(exception).hasCauseExactlyInstanceOf(BadRequestException.class);
-            });
+        .singleElement(as(THROWABLE))
+        .isExactlyInstanceOf(SyncException.class)
+        .hasCauseExactlyInstanceOf(BadRequestException.class);
   }
 
   @Test
@@ -278,20 +279,16 @@ class UnresolvedReferencesServiceImplTest {
     assertThat(errorExceptions).hasSize(1);
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message ->
-                assertThat(message)
-                    .contains(
-                        format(
-                            "Failed to delete CustomObject with key: '%s' (hash of product key: '%s')",
-                            sha1Hex(key), key)));
+        .singleElement(as(STRING))
+        .contains(
+            format(
+                "Failed to delete CustomObject with key: '%s' (hash of product key: '%s')",
+                sha1Hex(key), key));
     assertThat(errorExceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            exception -> {
-              assertThat(exception).isExactlyInstanceOf(SyncException.class);
-              assertThat(exception).hasCauseExactlyInstanceOf(BadRequestException.class);
-            });
+        .singleElement(as(THROWABLE))
+        .isExactlyInstanceOf(SyncException.class)
+        .hasCauseExactlyInstanceOf(BadRequestException.class);
   }
 
   @SuppressWarnings("unchecked")

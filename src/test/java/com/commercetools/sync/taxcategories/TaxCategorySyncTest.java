@@ -8,7 +8,9 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -241,11 +243,9 @@ class TaxCategorySyncTest {
         () -> assertThat(errors).hasSize(1),
         () ->
             assertThat(errors)
-                .hasOnlyOneElementSatisfying(
-                    msg ->
-                        assertThat(msg)
-                            .contains(
-                                "Failed to fetch from CTP while retrying after concurrency modification.")));
+                .singleElement(as(STRING))
+                .contains(
+                    "Failed to fetch from CTP while retrying after concurrency modification."));
     verify(taxCategoryService, times(1)).fetchMatchingTaxCategoriesByKeys(any());
     verify(taxCategoryService, times(1)).updateTaxCategory(any(), any());
     verify(taxCategoryService, times(1)).fetchTaxCategory(any());
@@ -287,11 +287,9 @@ class TaxCategorySyncTest {
         () -> assertThat(errors).hasSize(1),
         () ->
             assertThat(errors)
-                .hasOnlyOneElementSatisfying(
-                    msg ->
-                        assertThat(msg)
-                            .contains(
-                                "Not found when attempting to fetch while retrying after concurrency modification.")));
+                .singleElement(as(STRING))
+                .contains(
+                    "Not found when attempting to fetch while retrying after concurrency modification."));
     verify(taxCategoryService, times(1)).fetchMatchingTaxCategoriesByKeys(any());
     verify(taxCategoryService, times(1)).updateTaxCategory(any(), any());
     verify(taxCategoryService, times(1)).fetchTaxCategory(any());

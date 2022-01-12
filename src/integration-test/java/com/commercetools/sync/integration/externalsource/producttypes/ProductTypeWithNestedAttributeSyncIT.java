@@ -23,7 +23,9 @@ import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedF
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -51,6 +53,7 @@ import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -340,10 +343,10 @@ class ProductTypeWithNestedAttributeSyncIT {
     assertThat(errorMessages)
         .containsExactly("Failed to fetch existing product types with keys: '[key_1]'.");
     assertThat(exceptions)
-        .hasOnlyOneElementSatisfying(
-            exception ->
-                assertThat(exception.getCause())
-                    .hasCauseExactlyInstanceOf(BadGatewayException.class));
+        .hasSize(1)
+        .singleElement(as(THROWABLE))
+        .isExactlyInstanceOf(CompletionException.class)
+        .hasCauseExactlyInstanceOf(BadGatewayException.class);
     assertThat(builtUpdateActions).isEmpty();
     assertThat(productTypeSyncStatistics).hasValues(2, 1, 0, 0, 1);
     assertThat(productTypeSyncStatistics.getReportMessage())
