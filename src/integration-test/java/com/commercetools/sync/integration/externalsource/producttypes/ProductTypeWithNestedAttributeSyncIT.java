@@ -30,6 +30,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.producttypes.ProductTypeSync;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
@@ -345,8 +346,9 @@ class ProductTypeWithNestedAttributeSyncIT {
     assertThat(exceptions)
         .hasSize(1)
         .singleElement(as(THROWABLE))
-        .isExactlyInstanceOf(CompletionException.class)
-        .hasCauseExactlyInstanceOf(BadGatewayException.class);
+        .isExactlyInstanceOf(SyncException.class)
+        .hasCauseExactlyInstanceOf(CompletionException.class)
+        .hasRootCauseExactlyInstanceOf(BadGatewayException.class);
     assertThat(builtUpdateActions).isEmpty();
     assertThat(productTypeSyncStatistics).hasValues(2, 1, 0, 0, 1);
     assertThat(productTypeSyncStatistics.getReportMessage())

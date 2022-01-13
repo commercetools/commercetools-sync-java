@@ -61,6 +61,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletionException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterAll;
@@ -947,12 +948,14 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
         .containsExactly("Failed to fetch ProductDrafts waiting to be resolved with keys '[foo]'.");
     assertThat(errorCallBackExceptions)
         .singleElement(as(THROWABLE))
-        .hasCauseExactlyInstanceOf(BadGatewayException.class);
+        .isExactlyInstanceOf(SyncException.class)
+        .hasCauseExactlyInstanceOf(CompletionException.class)
+        .hasRootCauseExactlyInstanceOf(BadGatewayException.class);
     assertThat(warningCallBackMessages).isEmpty();
     assertThat(actions).isEmpty();
 
     final UnresolvedReferencesService<WaitingToBeResolvedProducts> unresolvedReferencesService =
-        new UnresolvedReferencesServiceImpl(syncOptions);
+        new UnresolvedReferencesServiceImpl<>(syncOptions);
 
     final Set<WaitingToBeResolvedProducts> waitingDrafts =
         unresolvedReferencesService
