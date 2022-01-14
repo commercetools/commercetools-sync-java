@@ -16,7 +16,9 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.createReferen
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.TriConsumer;
@@ -480,7 +482,8 @@ class ProductSyncWithNestedReferencedCategoriesIT {
     assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
     assertThat(errorCallBackExceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
+        .singleElement()
+        .matches(
             error -> {
               assertThat(error).hasCauseExactlyInstanceOf(ErrorResponseException.class);
               final ErrorResponseException errorResponseException =
@@ -490,15 +493,14 @@ class ProductSyncWithNestedReferencedCategoriesIT {
                   .contains(
                       "The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
                           + "is not valid for field 'nestedAttribute.category-reference'");
+              return true;
             });
     assertThat(errorCallBackMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message ->
-                assertThat(message)
-                    .contains(
-                        "The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
-                            + "is not valid for field 'nestedAttribute.category-reference'"));
+        .singleElement(as(STRING))
+        .contains(
+            "The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
+                + "is not valid for field 'nestedAttribute.category-reference'");
     assertThat(warningCallBackMessages).isEmpty();
     assertThat(actions).isEmpty();
   }
@@ -625,7 +627,8 @@ class ProductSyncWithNestedReferencedCategoriesIT {
     assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
     assertThat(errorCallBackExceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
+        .singleElement()
+        .matches(
             error -> {
               assertThat(error).hasCauseExactlyInstanceOf(ErrorResponseException.class);
               final ErrorResponseException errorResponseException =
@@ -635,15 +638,14 @@ class ProductSyncWithNestedReferencedCategoriesIT {
                   .contains(
                       "The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
                           + "is not valid for field 'nestedAttribute.category-reference-set'");
+              return true;
             });
     assertThat(errorCallBackMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message ->
-                assertThat(message)
-                    .contains(
-                        "The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
-                            + "is not valid for field 'nestedAttribute.category-reference-set'"));
+        .singleElement(as(STRING))
+        .contains(
+            "The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
+                + "is not valid for field 'nestedAttribute.category-reference-set'");
     assertThat(warningCallBackMessages).isEmpty();
     assertThat(actions).isEmpty();
   }

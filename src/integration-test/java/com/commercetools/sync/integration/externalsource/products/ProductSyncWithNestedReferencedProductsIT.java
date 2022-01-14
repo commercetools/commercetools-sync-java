@@ -537,7 +537,7 @@ class ProductSyncWithNestedReferencedProductsIT {
     assertThat(actions).isEmpty();
 
     final UnresolvedReferencesServiceImpl<WaitingToBeResolvedProducts> unresolvedReferencesService =
-        new UnresolvedReferencesServiceImpl(syncOptions);
+        new UnresolvedReferencesServiceImpl<>(syncOptions);
     final Set<WaitingToBeResolvedProducts> waitingToBeResolvedDrafts =
         unresolvedReferencesService
             .fetch(
@@ -548,12 +548,14 @@ class ProductSyncWithNestedReferencedProductsIT {
             .join();
 
     assertThat(waitingToBeResolvedDrafts)
-        .hasOnlyOneElementSatisfying(
+        .singleElement()
+        .matches(
             waitingToBeResolvedDraft -> {
               assertThat(waitingToBeResolvedDraft.getProductDraft().getKey())
                   .isEqualTo(productDraftWithProductReference.getKey());
               assertThat(waitingToBeResolvedDraft.getMissingReferencedProductKeys())
                   .containsExactly("nonExistingKey");
+              return true;
             });
   }
 
@@ -683,7 +685,7 @@ class ProductSyncWithNestedReferencedProductsIT {
     assertThat(actions).isEmpty();
 
     final UnresolvedReferencesServiceImpl<WaitingToBeResolvedProducts> unresolvedReferencesService =
-        new UnresolvedReferencesServiceImpl(syncOptions);
+        new UnresolvedReferencesServiceImpl<>(syncOptions);
     final Set<WaitingToBeResolvedProducts> waitingToBeResolvedDrafts =
         unresolvedReferencesService
             .fetch(
@@ -694,12 +696,14 @@ class ProductSyncWithNestedReferencedProductsIT {
             .join();
 
     assertThat(waitingToBeResolvedDrafts)
-        .hasOnlyOneElementSatisfying(
+        .singleElement()
+        .matches(
             waitingToBeResolvedDraft -> {
               assertThat(waitingToBeResolvedDraft.getProductDraft().getKey())
                   .isEqualTo(productDraftWithProductReference.getKey());
               assertThat(waitingToBeResolvedDraft.getMissingReferencedProductKeys())
                   .containsExactly("nonExistingKey");
+              return true;
             });
   }
 

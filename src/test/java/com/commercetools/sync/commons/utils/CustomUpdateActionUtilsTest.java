@@ -586,13 +586,15 @@ class CustomUpdateActionUtilsTest {
 
     assertThat(updateActions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
+        .singleElement()
+        .matches(
             action -> {
               assertThat(action).isInstanceOf(SetProductPriceCustomField.class);
               final SetProductPriceCustomField setProductPriceCustomFieldAction =
                   (SetProductPriceCustomField) action;
               assertThat(setProductPriceCustomFieldAction.getName()).isEqualTo("backgroundColor");
               assertThat(setProductPriceCustomFieldAction.getValue()).isEqualTo(null);
+              return true;
             });
   }
 

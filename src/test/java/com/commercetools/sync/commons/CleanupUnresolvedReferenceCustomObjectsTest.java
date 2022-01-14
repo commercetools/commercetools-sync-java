@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("unchecked")
 class CleanupUnresolvedReferenceCustomObjectsTest {
   private final SphereClient mockClient = mock(SphereClient.class);
   private static final int deleteDaysAfterLastModification = 30;

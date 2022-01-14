@@ -204,6 +204,7 @@ public final class ProductUpdateActionUtils {
    *
    * <p>{@link ProductProjection} which should be updated.
    *
+   * @param oldProduct the productprojection which should be updated.
    * @param newProduct the product draft where we get the new categoryOrderHints.
    * @return A list containing the update actions or an empty list if the categoryOrderHints are
    *     identical.
@@ -398,6 +399,7 @@ public final class ProductUpdateActionUtils {
    *
    * <p>{@link ProductProjection} which should be updated.
    *
+   * @param oldProduct the productprojection which should be updated.
    * @param newProduct the product draft where we get the new meta title.
    * @param syncOptions the sync options wrapper which contains options related to the sync process
    *     supplied by the user. For example, custom callbacks to call in case of warnings or errors
@@ -838,6 +840,7 @@ public final class ProductUpdateActionUtils {
    *
    * <p>{@link ProductProjection} which should be updated.
    *
+   * @param oldProduct the productprojection which should be updated.
    * @param newProduct the product draft with new {@link io.sphere.sdk.taxcategories.TaxCategory}
    *     reference.
    * @return An optional with {@link SetTaxCategory} update action.

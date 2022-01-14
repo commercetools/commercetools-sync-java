@@ -42,6 +42,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -195,8 +197,9 @@ class CategoryServiceImplIT {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(spyCategoryService.fetchMatchingCategoriesByKeys(keys))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(BadGatewayException.class);
+        .failsWithin(10, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(BadGatewayException.class);
   }
 
   @Test
@@ -546,7 +549,8 @@ class CategoryServiceImplIT {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(spyCategoryService.fetchCategory(oldCategoryKey))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(BadGatewayException.class);
+        .failsWithin(10, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(BadGatewayException.class);
   }
 }

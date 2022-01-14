@@ -43,6 +43,8 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -93,9 +95,10 @@ class PriceReferenceResolverTest {
 
     // Test and assertion
     assertThat(priceReferenceResolver.resolveCustomTypeReference(priceBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(SphereException.class)
-        .hasMessageContaining("CTP error on fetch");
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(SphereException.class)
+        .withMessageContaining("CTP error on fetch");
   }
 
   @Test
@@ -122,9 +125,10 @@ class PriceReferenceResolverTest {
             "%s Reason: %s", expectedExceptionMessage, format(TYPE_DOES_NOT_EXIST, customTypeKey));
     ;
     assertThat(priceReferenceResolver.resolveCustomTypeReference(priceBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(expectedMessageWithCause);
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(expectedMessageWithCause);
   }
 
   @Test
@@ -138,9 +142,10 @@ class PriceReferenceResolverTest {
         new PriceReferenceResolver(syncOptions, typeService, channelService, customerGroupService);
 
     assertThat(priceReferenceResolver.resolveCustomTypeReference(priceBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve custom type reference on PriceDraft"
                     + " with country:'DE' and value: 'EUR 10.00'. Reason: %s",
@@ -212,9 +217,10 @@ class PriceReferenceResolverTest {
 
     // Test and assertion
     assertThat(priceReferenceResolver.resolveChannelReference(priceBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 FAILED_TO_RESOLVE_REFERENCE,
                 Channel.resourceTypeId(),
@@ -266,9 +272,10 @@ class PriceReferenceResolverTest {
 
     // Test and assertion
     assertThat(priceReferenceResolver.resolveChannelReference(priceBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 FAILED_TO_RESOLVE_REFERENCE,
                 Channel.resourceTypeId(),
@@ -293,9 +300,10 @@ class PriceReferenceResolverTest {
 
     // Test and assertion
     assertThat(priceReferenceResolver.resolveChannelReference(priceBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 FAILED_TO_RESOLVE_REFERENCE,
                 Channel.resourceTypeId(),

@@ -9,7 +9,9 @@ import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.mock;
@@ -101,19 +103,18 @@ class CartDiscountSyncTest {
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message ->
-                assertThat(message)
-                    .isEqualTo(
-                        format("Failed to fetch existing cart discounts with keys: '[%s]'.", KEY)));
+        .singleElement(as(STRING))
+        .isEqualTo(format("Failed to fetch existing cart discounts with keys: '[%s]'.", KEY));
 
     assertThat(exceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
+        .singleElement()
+        .matches(
             throwable -> {
               assertThat(throwable).isExactlyInstanceOf(SyncException.class);
               assertThat(throwable).hasCauseExactlyInstanceOf(CompletionException.class);
               assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(SphereException.class);
+              return true;
             });
 
     assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
@@ -201,12 +202,17 @@ class CartDiscountSyncTest {
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message -> assertThat(message).isEqualTo("CartDiscountDraft is null."));
+        .singleElement(as(STRING))
+        .isEqualTo("CartDiscountDraft is null.");
 
     assertThat(exceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable.getCause()).isNull());
+        .singleElement()
+        .matches(
+            throwable -> {
+              assertThat(throwable.getCause()).isNull();
+              return true;
+            });
 
     assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
   }
@@ -243,16 +249,19 @@ class CartDiscountSyncTest {
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message ->
-                assertThat(message)
-                    .isEqualTo(
-                        "CartDiscountDraft with name: null doesn't have a key. "
-                            + "Please make sure all cart discount drafts have keys."));
+        .singleElement(as(STRING))
+        .isEqualTo(
+            "CartDiscountDraft with name: null doesn't have a key. "
+                + "Please make sure all cart discount drafts have keys.");
 
     assertThat(exceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable.getCause()).isNull());
+        .singleElement()
+        .matches(
+            throwable -> {
+              assertThat(throwable.getCause()).isNull();
+              return true;
+            });
 
     assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
   }
@@ -300,15 +309,17 @@ class CartDiscountSyncTest {
 
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message -> assertThat(message).contains("Failed to build a cache of keys to ids."));
+        .singleElement(as(STRING))
+        .contains("Failed to build a cache of keys to ids.");
 
     assertThat(exceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
+        .singleElement()
+        .matches(
             throwable -> {
               assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
               assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
+              return true;
             });
   }
 }

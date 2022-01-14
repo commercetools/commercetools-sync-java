@@ -403,6 +403,7 @@ abstract class BaseService<
   }
 
   @Nonnull
+  @SuppressWarnings("unchecked")
   CompletionStage<Optional<U>> executeCreateCommand(
       @Nonnull final T draft,
       @Nonnull final Function<T, String> keyMapper,

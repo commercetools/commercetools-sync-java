@@ -36,6 +36,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -88,9 +90,10 @@ class CustomerReferenceResolverTest {
             referenceResolver
                 .resolveCustomTypeReference(customerDraftBuilder)
                 .toCompletableFuture())
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve custom type reference on CustomerDraft with "
                     + "key:'customer-key'. Reason: %s",
@@ -109,9 +112,10 @@ class CustomerReferenceResolverTest {
             referenceResolver
                 .resolveCustomTypeReference(customerDraftBuilder)
                 .toCompletableFuture())
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve custom type reference on CustomerDraft with "
                     + "key:'customer-key'. Reason: %s",
@@ -134,9 +138,10 @@ class CustomerReferenceResolverTest {
         format(
             "%s Reason: %s", expectedExceptionMessage, format(TYPE_DOES_NOT_EXIST, customTypeKey));
     assertThat(referenceResolver.resolveCustomTypeReference(customerDraftBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(expectedMessageWithCause);
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(expectedMessageWithCause);
   }
 
   @Test
@@ -191,9 +196,10 @@ class CustomerReferenceResolverTest {
             format(CUSTOMER_GROUP_DOES_NOT_EXIST, "anyKey"));
 
     assertThat(referenceResolver.resolveCustomerGroupReference(customerDraftBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(expectedMessageWithCause);
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(expectedMessageWithCause);
   }
 
   @Test
@@ -208,9 +214,10 @@ class CustomerReferenceResolverTest {
             referenceResolver
                 .resolveCustomerGroupReference(customerDraftBuilder)
                 .toCompletableFuture())
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 FAILED_TO_RESOLVE_CUSTOMER_GROUP_REFERENCE,
                 "dummyKey",
@@ -229,9 +236,10 @@ class CustomerReferenceResolverTest {
             referenceResolver
                 .resolveCustomerGroupReference(customerDraftBuilder)
                 .toCompletableFuture())
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 FAILED_TO_RESOLVE_CUSTOMER_GROUP_REFERENCE,
                 "dummyKey",
@@ -252,9 +260,10 @@ class CustomerReferenceResolverTest {
         .thenReturn(futureThrowingSphereException);
 
     assertThat(referenceResolver.resolveCustomerGroupReference(customerDraftBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(SphereException.class)
-        .hasMessageContaining("CTP error on fetch");
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(SphereException.class)
+        .withMessageContaining("CTP error on fetch");
   }
 
   @Test
@@ -268,7 +277,6 @@ class CustomerReferenceResolverTest {
             referenceResolver
                 .resolveCustomerGroupReference(customerDraftBuilder)
                 .toCompletableFuture())
-        .hasNotFailed()
         .isCompletedWithValueMatching(
             resolvedDraft ->
                 Objects.equals(
@@ -341,9 +349,10 @@ class CustomerReferenceResolverTest {
             .key("dummyKey");
 
     assertThat(referenceResolver.resolveStoreReferences(customerDraftBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 FAILED_TO_RESOLVE_STORE_REFERENCE,
                 "dummyKey",
@@ -358,9 +367,10 @@ class CustomerReferenceResolverTest {
             .key("dummyKey");
 
     assertThat(referenceResolver.resolveStoreReferences(customerDraftBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 FAILED_TO_RESOLVE_STORE_REFERENCE,
                 "dummyKey",

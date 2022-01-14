@@ -38,6 +38,7 @@ import javax.annotation.Nonnull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("unchecked")
 public class CustomObjectSyncTest {
 
   private CustomObjectDraft<JsonNode> newCustomObjectDraft;

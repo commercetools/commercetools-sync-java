@@ -37,6 +37,8 @@ import java.util.Set;
 import java.util.Spliterator;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.BeforeEach;
@@ -141,10 +143,10 @@ class WithCustomObjectReferencesTest {
 
     // test
     assertThat(referenceResolver.resolveReferences(productVariantDraft))
-        .hasFailed()
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(IllegalArgumentException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(IllegalArgumentException.class)
+        .withMessageContaining(
             "The custom object identifier value: \"container-key\" does not have the correct format. "
                 + "The correct format must have a vertical bar \"|\" character between the container and key.");
   }

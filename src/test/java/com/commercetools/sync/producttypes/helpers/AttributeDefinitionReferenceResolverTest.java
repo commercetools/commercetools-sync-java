@@ -1,6 +1,5 @@
 package com.commercetools.sync.producttypes.helpers;
 
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_REFERENCE;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -20,6 +19,8 @@ import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 class AttributeDefinitionReferenceResolverTest {
@@ -120,15 +121,12 @@ class AttributeDefinitionReferenceResolverTest {
         new AttributeDefinitionReferenceResolver(syncOptions, productTypeService);
 
     // test and assertion
-    final ReferenceResolutionException expectedRootCause =
-        new ReferenceResolutionException(BLANK_ID_VALUE_ON_REFERENCE);
     assertThat(attributeDefinitionReferenceResolver.resolveReferences(attributeDefinitionDraft))
-        .hasFailedWithThrowableThat()
-        .hasMessageContaining(
-            "Failed to resolve references on attribute definition with name 'foo'")
-        .hasCause(
-            new ReferenceResolutionException(
-                "Failed to resolve NestedType productType reference.", expectedRootCause));
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
+            "Failed to resolve references on attribute definition with name 'foo'");
   }
 
   @Test
@@ -210,14 +208,11 @@ class AttributeDefinitionReferenceResolverTest {
         new AttributeDefinitionReferenceResolver(syncOptions, productTypeService);
 
     // test and assertion
-    final ReferenceResolutionException expectedRootCause =
-        new ReferenceResolutionException(BLANK_ID_VALUE_ON_REFERENCE);
     assertThat(attributeDefinitionReferenceResolver.resolveReferences(attributeDefinitionDraft))
-        .hasFailedWithThrowableThat()
-        .hasMessageContaining(
-            "Failed to resolve references on attribute definition with name 'foo'")
-        .hasCause(
-            new ReferenceResolutionException(
-                "Failed to resolve NestedType productType reference.", expectedRootCause));
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
+            "Failed to resolve references on attribute definition with name 'foo'");
   }
 }

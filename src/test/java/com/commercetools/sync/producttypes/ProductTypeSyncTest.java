@@ -10,7 +10,10 @@ import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
+import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
 import static org.assertj.core.util.Lists.list;
 import static org.assertj.core.util.Sets.newLinkedHashSet;
 import static org.mockito.ArgumentMatchers.any;
@@ -243,19 +246,15 @@ class ProductTypeSyncTest {
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message ->
-                assertThat(message)
-                    .isEqualTo("Failed to fetch existing product types with keys: '[foo]'."));
+        .singleElement(as(STRING))
+        .isEqualTo("Failed to fetch existing product types with keys: '[foo]'.");
 
     assertThat(exceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            throwable -> {
-              assertThat(throwable).isExactlyInstanceOf(SyncException.class);
-              assertThat(throwable).hasCauseExactlyInstanceOf(CompletionException.class);
-              assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(SphereException.class);
-            });
+        .singleElement(as(THROWABLE))
+        .isExactlyInstanceOf(SyncException.class)
+        .hasCauseExactlyInstanceOf(CompletionException.class)
+        .hasRootCauseExactlyInstanceOf(SphereException.class);
 
     assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
   }
@@ -302,22 +301,17 @@ class ProductTypeSyncTest {
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message ->
-                assertThat(message)
-                    .contains(
-                        "Failed to process the productTypeDraft with key:'foo'."
-                            + " Reason: java.lang.NullPointerException"));
+        .singleElement(as(STRING))
+        .contains(
+            "Failed to process the productTypeDraft with key:'foo'."
+                + " Reason: java.lang.NullPointerException");
 
     assertThat(exceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            throwable -> {
-              assertThat(throwable).isExactlyInstanceOf(SyncException.class);
-              assertThat(throwable).hasCauseExactlyInstanceOf(CompletionException.class);
-              assertThat(throwable.getCause())
-                  .hasCauseExactlyInstanceOf(NullPointerException.class);
-            });
+        .singleElement(as(THROWABLE))
+        .isExactlyInstanceOf(SyncException.class)
+        .hasCauseExactlyInstanceOf(CompletionException.class)
+        .hasRootCauseExactlyInstanceOf(NullPointerException.class);
 
     assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
   }
@@ -362,24 +356,21 @@ class ProductTypeSyncTest {
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message ->
-                assertThat(message)
-                    .isEqualTo("Failed to fetch existing product types with keys: '[foo]'."));
+        .singleElement(as(STRING))
+        .isEqualTo("Failed to fetch existing product types with keys: '[foo]'.");
 
     assertThat(exceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            throwable -> {
-              assertThat(throwable).isExactlyInstanceOf(SyncException.class);
-              assertThat(throwable).hasCauseExactlyInstanceOf(CompletionException.class);
-              assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(SphereException.class);
-            });
+        .singleElement(as(THROWABLE))
+        .isExactlyInstanceOf(SyncException.class)
+        .hasCauseExactlyInstanceOf(CompletionException.class)
+        .hasRootCauseExactlyInstanceOf(SphereException.class);
 
     assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void sync_WithInvalidAttributeDefinitions_ShouldThrowError() {
     // preparation
     String nestedAttributeTypeId = "attributeId";
@@ -446,6 +437,7 @@ class ProductTypeSyncTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void sync_WithErrorUpdatingProductType_ShouldCallErrorCallback() {
     String draftKey = "key2";
 
@@ -557,17 +549,15 @@ class ProductTypeSyncTest {
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message -> assertThat(message).isEqualTo("Failed to build a cache of keys to ids."));
+        .singleElement(as(STRING))
+        .isEqualTo("Failed to build a cache of keys to ids.");
 
     assertThat(exceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            throwable -> {
-              assertThat(throwable).isExactlyInstanceOf(SyncException.class);
-              assertThat(throwable).hasCauseExactlyInstanceOf(CompletionException.class);
-              assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(SphereException.class);
-            });
+        .singleElement(as(THROWABLE))
+        .isExactlyInstanceOf(SyncException.class)
+        .hasCauseExactlyInstanceOf(CompletionException.class)
+        .hasRootCauseExactlyInstanceOf(SphereException.class);
 
     assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
   }

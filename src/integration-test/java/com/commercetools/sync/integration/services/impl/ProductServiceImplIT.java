@@ -67,6 +67,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.commons.lang3.StringUtils;
@@ -326,8 +328,9 @@ class ProductServiceImplIT {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(spyProductService.fetchMatchingProductsByKeys(keys))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(BadGatewayException.class);
+        .failsWithin(10, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(BadGatewayException.class);
   }
 
   @Test
@@ -752,7 +755,8 @@ class ProductServiceImplIT {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(spyProductService.fetchProduct(productKey))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(BadGatewayException.class);
+        .failsWithin(10, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(BadGatewayException.class);
   }
 }

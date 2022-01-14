@@ -34,6 +34,8 @@ import io.sphere.sdk.states.State;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -88,7 +90,6 @@ class StateReferenceResolverTest {
     final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType().key("dummyKey");
 
     assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
-        .hasNotFailed()
         .isCompletedWithValueMatching(resolvedDraft -> Objects.isNull(resolvedDraft.getState()));
   }
 
@@ -127,10 +128,10 @@ class StateReferenceResolverTest {
         getBuilderWithRandomProductType().state(ResourceIdentifier.ofKey(null)).key("dummyKey");
 
     assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
-        .hasFailed()
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve 'state' resource identifier on ProductDraft with "
                     + "key:'%s'. Reason: %s",
@@ -143,10 +144,10 @@ class StateReferenceResolverTest {
         getBuilderWithRandomProductType().state(ResourceIdentifier.ofKey("")).key("dummyKey");
 
     assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
-        .hasFailed()
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve 'state' resource identifier on ProductDraft with "
                     + "key:'%s'. Reason: %s",
@@ -166,10 +167,10 @@ class StateReferenceResolverTest {
     when(stateService.fetchCachedStateId(anyString())).thenReturn(futureThrowingSphereException);
 
     assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
-        .hasFailed()
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(SphereException.class)
-        .hasMessageContaining("CTP error on fetch");
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(SphereException.class)
+        .withMessageContaining("CTP error on fetch");
   }
 
   @Test
@@ -180,7 +181,7 @@ class StateReferenceResolverTest {
             .key("dummyKey");
 
     assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
-        .hasNotFailed()
+        .isCompleted()
         .isCompletedWithValueMatching(
             resolvedDraft -> Objects.equals(resolvedDraft.getState(), productBuilder.getState()));
   }

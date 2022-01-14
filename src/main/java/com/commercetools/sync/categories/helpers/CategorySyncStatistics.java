@@ -106,6 +106,7 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
   /**
    * Returns the children keys of given {@code parentKey}.
    *
+   * @param parentKey parent category key
    * @return Returns the children keys of given {@code parentKey}.
    */
   @Nullable

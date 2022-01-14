@@ -54,7 +54,9 @@ import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
@@ -404,11 +406,13 @@ class ProductSyncWithPricesIT {
         .hasSize(1)
         .extracting(Throwable::getMessage)
         .extracting(String::toLowerCase)
-        .hasOnlyOneElementSatisfying(msg -> assertThat(msg).contains("duplicate price scope"));
+        .singleElement(as(STRING))
+        .contains("duplicate price scope");
     assertThat(errorCallBackMessages)
         .hasSize(1)
         .extracting(String::toLowerCase)
-        .hasOnlyOneElementSatisfying(msg -> assertThat(msg).contains("duplicate price scope"));
+        .singleElement(as(STRING))
+        .contains("duplicate price scope");
     assertThat(warningCallBackMessages).isEmpty();
 
     final Integer masterVariantId = product.getMasterData().getStaged().getMasterVariant().getId();

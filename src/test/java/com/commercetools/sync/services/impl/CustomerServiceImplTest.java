@@ -27,6 +27,8 @@ import io.sphere.sdk.utils.CompletableFutureUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -166,8 +168,9 @@ class CustomerServiceImplTest {
         .thenReturn(CompletableFutureUtils.failed(new BadGatewayException("bad gateway")));
 
     assertThat(service.fetchCachedCustomerId("key"))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(BadGatewayException.class);
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(BadGatewayException.class);
     assertThat(errorExceptions).isEmpty();
     assertThat(errorMessages).isEmpty();
   }
@@ -178,8 +181,9 @@ class CustomerServiceImplTest {
         .thenReturn(CompletableFutureUtils.failed(new BadGatewayException("bad gateway")));
 
     assertThat(service.fetchCustomerByKey("key"))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(BadGatewayException.class);
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(BadGatewayException.class);
     assertThat(errorExceptions).isEmpty();
     assertThat(errorMessages).isEmpty();
   }

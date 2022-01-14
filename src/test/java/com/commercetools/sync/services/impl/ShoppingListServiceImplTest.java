@@ -4,7 +4,9 @@ import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -38,6 +40,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -119,8 +123,9 @@ class ShoppingListServiceImplTest {
         .thenReturn(CompletableFutureUtils.failed(new BadGatewayException("bad gateway")));
 
     assertThat(service.fetchMatchingShoppingListsByKeys(singleton("key")))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(BadGatewayException.class);
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(BadGatewayException.class);
     assertThat(errorExceptions).isEmpty();
     assertThat(errorMessages).isEmpty();
   }
@@ -218,10 +223,8 @@ class ShoppingListServiceImplTest {
     assertThat(result).isCompletedWithValue(Optional.empty());
     assertThat(errors.keySet())
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message -> {
-              assertThat(message).contains("Failed to create draft with key: 'key'.");
-            });
+        .singleElement(as(STRING))
+        .contains("Failed to create draft with key: 'key'.");
 
     assertThat(errors.values())
         .hasSize(1)
@@ -279,7 +282,8 @@ class ShoppingListServiceImplTest {
 
     // assertions
     assertThat(result)
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(InternalServerErrorException.class);
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(InternalServerErrorException.class);
   }
 }
