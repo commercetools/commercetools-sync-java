@@ -43,9 +43,9 @@ apply from: "$rootDir/gradle-scripts/mkdocs.gradle"
 apply from: "$rootDir/gradle-scripts/spotless.gradle"
 
 dependencies {
-    implementation "com.commercetools.sdk.jvm.core:commercetools-models:${commercetoolsJvmSdkVersion}"
-    implementation "com.commercetools.sdk.jvm.core:commercetools-java-client-ahc-2_12:${commercetoolsJvmSdkVersion}"
-    implementation "com.commercetools.sdk.jvm.core:commercetools-convenience:${commercetoolsJvmSdkVersion}"
+    api "com.commercetools.sdk.jvm.core:commercetools-models:${commercetoolsJvmSdkVersion}"
+    api "com.commercetools.sdk.jvm.core:commercetools-java-client-ahc-2_12:${commercetoolsJvmSdkVersion}"
+    api "com.commercetools.sdk.jvm.core:commercetools-convenience:${commercetoolsJvmSdkVersion}"
     implementation "com.github.ben-manes.caffeine:caffeine:${caffeineVersion}"
     implementation "org.apache.commons:commons-text:${commonTextVersion}"
     testImplementation "org.mockito:mockito-junit-jupiter:${mockitoJunitJupiterVersion}"
