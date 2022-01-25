@@ -4,6 +4,8 @@ import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUt
 import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUtils.ensureCustomerGroup;
 import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUtils.ensureSampleCustomerJohnDoe;
 import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUtils.ensureStore;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.BOOLEAN_CUSTOM_FIELD_NAME;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.LOCALISED_STRING_CUSTOM_FIELD_NAME;
 import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.createCustomFieldsJsonMap;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.sdk2.customers.utils.CustomerUpdateActionUtils.CUSTOMER_NUMBER_EXISTS_WARNING;
@@ -26,6 +28,7 @@ import com.commercetools.api.models.customer.CustomerDraftBuilder;
 import com.commercetools.api.models.customer.CustomerRemoveAddressActionBuilder;
 import com.commercetools.api.models.customer.CustomerRemoveBillingAddressIdActionBuilder;
 import com.commercetools.api.models.customer.CustomerSetCompanyNameActionBuilder;
+import com.commercetools.api.models.customer.CustomerSetCustomFieldActionBuilder;
 import com.commercetools.api.models.customer.CustomerSetCustomerGroupActionBuilder;
 import com.commercetools.api.models.customer.CustomerSetDateOfBirthActionBuilder;
 import com.commercetools.api.models.customer.CustomerSetDefaultBillingAddressActionBuilder;
@@ -47,6 +50,7 @@ import com.commercetools.sync.sdk2.customers.CustomerSync;
 import com.commercetools.sync.sdk2.customers.CustomerSyncOptions;
 import com.commercetools.sync.sdk2.customers.CustomerSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.customers.helpers.CustomerSyncStatistics;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.neovisionaries.i18n.CountryCode;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -294,16 +298,14 @@ class CustomerSyncIT {
             CustomerSetDefaultBillingAddressActionBuilder.of().addressKey("address4").build(),
             CustomerAddShippingAddressIdActionBuilder.of().addressKey("address1").build(),
             CustomerAddBillingAddressIdActionBuilder.of().addressKey("address4").build(),
-            // TODO: those actions below not implmented yet:
-            //            CustomerSetCustomFieldActionBuilder.of()
-            //                .name(LOCALISED_STRING_CUSTOM_FIELD_NAME)
-            //                .value(JsonNodeFactory.instance.objectNode().put("de",
-            // "rot").put("en", "red"))
-            //                .build(),
-            //            CustomerSetCustomFieldActionBuilder.of()
-            //                .name(BOOLEAN_CUSTOM_FIELD_NAME)
-            //                .value(JsonNodeFactory.instance.booleanNode(false))
-            //                .build(),
+            CustomerSetCustomFieldActionBuilder.of()
+                .name(LOCALISED_STRING_CUSTOM_FIELD_NAME)
+                .value(JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"))
+                .build(),
+            CustomerSetCustomFieldActionBuilder.of()
+                .name(BOOLEAN_CUSTOM_FIELD_NAME)
+                .value(JsonNodeFactory.instance.booleanNode(false))
+                .build(),
             CustomerAddStoreActionBuilder.of()
                 .store(StoreResourceIdentifierBuilder.of().key(storeCologne.getKey()).build())
                 .build());

@@ -1,6 +1,7 @@
 package com.commercetools.sync.sdk2.customers.utils;
 
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
+import static com.commercetools.sync.sdk2.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
 import static com.commercetools.sync.sdk2.customers.utils.CustomerUpdateActionUtils.buildAllAddressUpdateActions;
 import static com.commercetools.sync.sdk2.customers.utils.CustomerUpdateActionUtils.buildChangeEmailUpdateAction;
 import static com.commercetools.sync.sdk2.customers.utils.CustomerUpdateActionUtils.buildSetCompanyNameUpdateAction;
@@ -17,14 +18,20 @@ import static com.commercetools.sync.sdk2.customers.utils.CustomerUpdateActionUt
 import static com.commercetools.sync.sdk2.customers.utils.CustomerUpdateActionUtils.buildSetVatIdUpdateAction;
 import static com.commercetools.sync.sdk2.customers.utils.CustomerUpdateActionUtils.buildStoreUpdateActions;
 
+import com.commercetools.api.models.ResourceUpdateAction;
 import com.commercetools.api.models.customer.Customer;
 import com.commercetools.api.models.customer.CustomerDraft;
 import com.commercetools.api.models.customer.CustomerUpdateAction;
 import com.commercetools.sync.sdk2.customers.CustomerSyncOptions;
+import com.commercetools.sync.sdk2.customers.models.CustomerCustomTypeAdapter;
+import com.commercetools.sync.sdk2.customers.models.CustomerDraftCustomTypeAdapter;
 import java.util.List;
 import javax.annotation.Nonnull;
 
 public final class CustomerSyncUtils {
+
+  private static final CustomerCustomActionBuilder customerCustomActionBuilder =
+      CustomerCustomActionBuilder.of();
 
   /**
    * Compares all the fields of a {@link Customer} and a {@link CustomerDraft}. It returns a {@link
@@ -67,7 +74,15 @@ public final class CustomerSyncUtils {
 
     updateActions.addAll(addressUpdateActions);
 
-    // TODO (ahmetoz) add custom type actions
+    final List<ResourceUpdateAction> customerCustomUpdateActions =
+        buildPrimaryResourceCustomUpdateActions(
+            CustomerCustomTypeAdapter.of(oldCustomer),
+            CustomerDraftCustomTypeAdapter.of(newCustomer),
+            customerCustomActionBuilder,
+            syncOptions);
+
+    customerCustomUpdateActions.forEach(
+        resourceUpdateAction -> updateActions.add((CustomerUpdateAction) resourceUpdateAction));
 
     final List<CustomerUpdateAction> buildStoreUpdateActions =
         buildStoreUpdateActions(oldCustomer, newCustomer);
