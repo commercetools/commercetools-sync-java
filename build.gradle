@@ -19,7 +19,7 @@ ext{
     caffeineVersion = '2.9.3'
     nexusStagingPluginVersion = '0.22.0'
     commonTextVersion = '1.9'
-    commercetoolsJavaSDK2Version = '7.1.0'
+    commercetoolsJavaSDK2Version = '7.6.0'
 }
 
 apply from: "$rootDir/gradle-scripts/repositories.gradle"

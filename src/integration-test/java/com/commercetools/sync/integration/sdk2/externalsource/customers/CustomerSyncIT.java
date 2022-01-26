@@ -240,9 +240,9 @@ class CustomerSyncIT {
                         .city("cologne")
                         .key("address4")
                         .build()))
-            .defaultBillingAddress(2L) // 0 becomes 2 -> berlin to cologne.
+            .defaultBillingAddress(2) // 0 becomes 2 -> berlin to cologne.
             .billingAddresses(singletonList(2)) // 0, 1 becomes 2 -> berlin, hamburg to cologne.
-            .defaultShippingAddress(1L) // 2 becomes 1 -> munich to munich.
+            .defaultShippingAddress(1) // 2 becomes 1 -> munich to munich.
             .shippingAddresses(asList(0, 1)) // 2 become 0, 1 -> munich to berlin, munich.
             .custom(
                 CustomFieldsDraftBuilder.of()

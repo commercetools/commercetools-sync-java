@@ -84,9 +84,9 @@ public final class CustomerITUtils {
                         .city("munich")
                         .key("address3")
                         .build()))
-            .defaultBillingAddress(0L)
+            .defaultBillingAddress(0)
             .billingAddresses(asList(0, 1))
-            .defaultShippingAddress(2L)
+            .defaultShippingAddress(2)
             .shippingAddresses(singletonList(2))
             .custom(
                 CustomFieldsDraftBuilder.of()
@@ -131,9 +131,9 @@ public final class CustomerITUtils {
                         .city("berlin")
                         .key("address2")
                         .build()))
-            .defaultBillingAddress(0L)
+            .defaultBillingAddress(0)
             .billingAddresses(singletonList(0))
-            .defaultShippingAddress(1L)
+            .defaultShippingAddress(1)
             .shippingAddresses(singletonList(1))
             .locale(Locale.ENGLISH.toLanguageTag())
             .build();
