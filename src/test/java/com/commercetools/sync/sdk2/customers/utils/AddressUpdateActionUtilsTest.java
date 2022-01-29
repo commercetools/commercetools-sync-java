@@ -1,31 +1,5 @@
 package com.commercetools.sync.sdk2.customers.utils;
 
-import com.commercetools.api.models.common.Address;
-import com.commercetools.api.models.common.AddressBuilder;
-import com.commercetools.api.models.common.AddressDraft;
-import com.commercetools.api.models.common.AddressDraftBuilder;
-import com.commercetools.api.models.customer.Customer;
-import com.commercetools.api.models.customer.CustomerAddAddressActionBuilder;
-import com.commercetools.api.models.customer.CustomerAddBillingAddressIdActionBuilder;
-import com.commercetools.api.models.customer.CustomerAddShippingAddressIdActionBuilder;
-import com.commercetools.api.models.customer.CustomerChangeAddressActionBuilder;
-import com.commercetools.api.models.customer.CustomerDraft;
-import com.commercetools.api.models.customer.CustomerDraftBuilder;
-import com.commercetools.api.models.customer.CustomerRemoveAddressActionBuilder;
-import com.commercetools.api.models.customer.CustomerRemoveBillingAddressIdActionBuilder;
-import com.commercetools.api.models.customer.CustomerRemoveShippingAddressIdActionBuilder;
-import com.commercetools.api.models.customer.CustomerSetDefaultBillingAddressActionBuilder;
-import com.commercetools.api.models.customer.CustomerSetDefaultShippingAddressActionBuilder;
-import com.commercetools.api.models.customer.CustomerUpdateAction;
-import com.neovisionaries.i18n.CountryCode;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
 import static com.commercetools.sync.sdk2.customers.utils.CustomerUpdateActionUtils.buildAddAddressUpdateActions;
 import static com.commercetools.sync.sdk2.customers.utils.CustomerUpdateActionUtils.buildAddBillingAddressUpdateActions;
 import static com.commercetools.sync.sdk2.customers.utils.CustomerUpdateActionUtils.buildAddShippingAddressUpdateActions;
@@ -44,6 +18,31 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import com.commercetools.api.models.common.Address;
+import com.commercetools.api.models.common.AddressBuilder;
+import com.commercetools.api.models.common.AddressDraft;
+import com.commercetools.api.models.common.AddressDraftBuilder;
+import com.commercetools.api.models.customer.Customer;
+import com.commercetools.api.models.customer.CustomerAddAddressActionBuilder;
+import com.commercetools.api.models.customer.CustomerAddBillingAddressIdActionBuilder;
+import com.commercetools.api.models.customer.CustomerAddShippingAddressIdActionBuilder;
+import com.commercetools.api.models.customer.CustomerChangeAddressActionBuilder;
+import com.commercetools.api.models.customer.CustomerDraft;
+import com.commercetools.api.models.customer.CustomerDraftBuilder;
+import com.commercetools.api.models.customer.CustomerRemoveAddressActionBuilder;
+import com.commercetools.api.models.customer.CustomerRemoveBillingAddressIdActionBuilder;
+import com.commercetools.api.models.customer.CustomerRemoveShippingAddressIdActionBuilder;
+import com.commercetools.api.models.customer.CustomerSetDefaultBillingAddressActionBuilder;
+import com.commercetools.api.models.customer.CustomerSetDefaultShippingAddressActionBuilder;
+import com.commercetools.api.models.customer.CustomerUpdateAction;
+import com.neovisionaries.i18n.CountryCode;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 class AddressUpdateActionUtilsTest {
 
@@ -1171,10 +1170,7 @@ class AddressUpdateActionUtilsTest {
                     .build()));
     when(oldCustomer.getShippingAddressIds()).thenReturn(singletonList("address-id-1"));
     final CustomerDraft newCustomer =
-        CustomerDraftBuilder.of()
-            .email("email")
-            .password("pass")
-            .build();
+        CustomerDraftBuilder.of().email("email").password("pass").build();
 
     final List<CustomerUpdateAction> updateActions =
         buildAddShippingAddressUpdateActions(oldCustomer, newCustomer);
@@ -1575,9 +1571,8 @@ class AddressUpdateActionUtilsTest {
 
     // assertions
     assertThat(updateActions)
-        .containsExactly(CustomerRemoveShippingAddressIdActionBuilder
-            .of()
-            .addressId("address-id-1").build());
+        .containsExactly(
+            CustomerRemoveShippingAddressIdActionBuilder.of().addressId("address-id-1").build());
   }
 
   @Test
@@ -2295,10 +2290,7 @@ class AddressUpdateActionUtilsTest {
     when(oldCustomer.getAddresses())
         .thenReturn(
             singletonList(
-                AddressBuilder.of()
-                    .country(CountryCode.DE.toString())
-                    .id("address-id-1")
-                    .build()));
+                AddressBuilder.of().country(CountryCode.DE.toString()).id("address-id-1").build()));
 
     final CustomerDraft newCustomer =
         CustomerDraftBuilder.of()

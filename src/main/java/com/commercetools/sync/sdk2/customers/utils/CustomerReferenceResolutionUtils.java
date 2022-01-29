@@ -1,5 +1,8 @@
 package com.commercetools.sync.sdk2.customers.utils;
 
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import com.commercetools.api.models.common.Address;
 import com.commercetools.api.models.common.AddressDraftBuilder;
 import com.commercetools.api.models.common.BaseAddress;
@@ -21,16 +24,12 @@ import com.commercetools.api.models.type.TypeReference;
 import com.commercetools.api.models.type.TypeResourceIdentifier;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang3.StringUtils.isBlank;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Util class which provides utilities that can be used when syncing resources from a source
@@ -154,29 +153,29 @@ public final class CustomerReferenceResolutionUtils {
             address -> {
               final AddressDraftBuilder builder =
                   AddressDraftBuilder.of()
-                  .id(address.getId())
-                  .key(address.getKey())
-                  .title(address.getTitle())
-                  .salutation(address.getSalutation())
-                  .firstName(address.getFirstName())
-                  .lastName(address.getLastName())
-                  .streetName(address.getStreetName())
-                  .streetNumber(address.getStreetNumber())
-                  .additionalAddressInfo(address.getAdditionalAddressInfo())
-                  .postalCode(address.getPostalCode())
-                  .city(address.getCity())
-                  .region(address.getRegion())
-                  .country(address.getCountry())
-                  .company(address.getCompany())
-                  .department(address.getDepartment())
-                  .building(address.getBuilding())
-                  .apartment(address.getApartment())
-                  .pOBox(address.getPOBox())
-                  .phone(address.getPhone())
-                  .mobile(address.getMobile())
-                  .email(address.getEmail())
-                  .fax(address.getFax())
-                  .externalId(address.getExternalId());
+                      .id(address.getId())
+                      .key(address.getKey())
+                      .title(address.getTitle())
+                      .salutation(address.getSalutation())
+                      .firstName(address.getFirstName())
+                      .lastName(address.getLastName())
+                      .streetName(address.getStreetName())
+                      .streetNumber(address.getStreetNumber())
+                      .additionalAddressInfo(address.getAdditionalAddressInfo())
+                      .postalCode(address.getPostalCode())
+                      .city(address.getCity())
+                      .region(address.getRegion())
+                      .country(address.getCountry())
+                      .company(address.getCompany())
+                      .department(address.getDepartment())
+                      .building(address.getBuilding())
+                      .apartment(address.getApartment())
+                      .pOBox(address.getPOBox())
+                      .phone(address.getPhone())
+                      .mobile(address.getMobile())
+                      .email(address.getEmail())
+                      .fax(address.getFax())
+                      .externalId(address.getExternalId());
 
               if (address.getCustom() != null) {
                 builder.custom(
