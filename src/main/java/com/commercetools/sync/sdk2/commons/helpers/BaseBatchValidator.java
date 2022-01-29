@@ -7,7 +7,6 @@ import com.commercetools.api.models.common.ResourceIdentifier;
 import com.commercetools.api.models.customer.CustomerDraft;
 import com.commercetools.api.models.type.CustomFieldsDraft;
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import io.sphere.sdk.models.Reference;
 import java.util.List;

@@ -1,6 +1,6 @@
 package com.commercetools.sync.sdk2.customers.helpers;
 
-import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
+import com.commercetools.sync.sdk2.commons.helpers.BaseSyncStatistics;
 
 public class CustomerSyncStatistics extends BaseSyncStatistics {
 

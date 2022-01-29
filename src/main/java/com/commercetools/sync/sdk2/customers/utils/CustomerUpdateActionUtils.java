@@ -772,6 +772,9 @@ public final class CustomerUpdateActionUtils {
         .filter(newAddress -> oldAddressKeyToAddressMap.containsKey(newAddress.getKey()))
         .map(
             newAddress -> {
+              // todo: better checks also other address related utilities
+              // like mapping between Address and AddressDraft
+              // comparing AddressImpl and AddressDraftImpl
               final Address oldAddress = oldAddressKeyToAddressMap.get(newAddress.getKey());
               // ignore id on equals
               String oldAddressId = oldAddress.getId();
@@ -780,6 +783,9 @@ public final class CustomerUpdateActionUtils {
               newAddress.setId(null);
 
               if (!newAddress.equals(oldAddress)) {
+                oldAddress.setId(oldAddressId);
+                newAddress.setId(newAddressId);
+
                 return CustomerChangeAddressActionBuilder.of()
                     .addressId(oldAddressId)
                     .address(newAddress)
@@ -857,8 +863,7 @@ public final class CustomerUpdateActionUtils {
                         && address.getId().equals(oldCustomer.getDefaultShippingAddressId()))
             .findFirst();
     final String newAddressKey =
-        getAddressKeyAt(
-            newCustomer.getAddresses(), newCustomer.getDefaultShippingAddress().intValue());
+        getAddressKeyAt(newCustomer.getAddresses(), newCustomer.getDefaultShippingAddress());
 
     if (newAddressKey != null) {
       if (!oldAddress.isPresent() || !Objects.equals(oldAddress.get().getKey(), newAddressKey)) {
@@ -895,8 +900,7 @@ public final class CustomerUpdateActionUtils {
             .findFirst();
 
     final String newAddressKey =
-        getAddressKeyAt(
-            newCustomer.getAddresses(), newCustomer.getDefaultBillingAddress().intValue());
+        getAddressKeyAt(newCustomer.getAddresses(), newCustomer.getDefaultBillingAddress());
 
     if (newAddressKey != null) {
       if (!oldAddress.isPresent() || !Objects.equals(oldAddress.get().getKey(), newAddressKey)) {
@@ -912,7 +916,11 @@ public final class CustomerUpdateActionUtils {
 
   @Nullable
   private static String getAddressKeyAt(
-      @Nullable final List<BaseAddress> addressList, final int index) {
+      @Nullable final List<BaseAddress> addressList, @Nullable final Integer index) {
+
+    if (index == null) {
+      return null;
+    }
 
     if (addressList == null || index < 0 || index >= addressList.size()) {
       throw new IllegalArgumentException(
@@ -1091,7 +1099,7 @@ public final class CustomerUpdateActionUtils {
       @Nonnull final Customer oldCustomer, @Nonnull final CustomerDraft newCustomer) {
 
     final List<Address> billingAddresses = getBillingAddresses(oldCustomer);
-    if (newCustomer.getBillingAddresses().isEmpty()) {
+    if (newCustomer.getBillingAddresses() == null || newCustomer.getBillingAddresses().isEmpty()) {
       return Collections.emptyList();
     }
 

@@ -1,6 +1,6 @@
 package com.commercetools.sync.sdk2.commons;
 
-import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
+import com.commercetools.sync.sdk2.commons.helpers.BaseSyncStatistics;
 import io.vrap.rmf.base.client.error.ConcurrentModificationException;
 import java.util.List;
 import java.util.concurrent.CompletionStage;

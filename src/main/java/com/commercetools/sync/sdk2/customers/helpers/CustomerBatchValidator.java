@@ -121,6 +121,9 @@ public class CustomerBatchValidator
     if (addressList == null || addressList.isEmpty()) {
       return true;
     }
+    if (addressList.stream().noneMatch(Objects::nonNull)) {
+      return true;
+    }
 
     final List<Integer> indexesOfNullAddresses = getIndexes(addressList, Objects::isNull);
     if (!indexesOfNullAddresses.isEmpty()) {
