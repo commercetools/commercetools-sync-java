@@ -1,7 +1,10 @@
 package com.commercetools.sync.services.impl;
 
 import static java.lang.String.format;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
+import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -226,18 +229,14 @@ class StateServiceImplTest {
         () -> assertThat(errorMessages).hasSize(1),
         () ->
             assertThat(errorMessages)
-                .hasOnlyOneElementSatisfying(
-                    message -> {
-                      assertThat(message)
-                          .contains("Failed to create draft with key: '" + stateKey + "'.");
-                      assertThat(message).contains("BadRequestException");
-                    }),
+                .singleElement(as(STRING))
+                .contains("Failed to create draft with key: '" + stateKey + "'.")
+                .contains("BadRequestException"),
         () -> assertThat(errorExceptions).hasSize(1),
         () ->
             assertThat(errorExceptions)
-                .hasOnlyOneElementSatisfying(
-                    exception ->
-                        assertThat(exception).isExactlyInstanceOf(BadRequestException.class)));
+                .singleElement(as(THROWABLE))
+                .isExactlyInstanceOf(BadRequestException.class));
   }
 
   @Test

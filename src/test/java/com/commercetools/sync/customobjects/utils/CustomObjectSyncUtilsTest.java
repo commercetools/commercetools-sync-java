@@ -18,6 +18,7 @@ class CustomObjectSyncUtilsTest {
   private CustomObject<JsonNode> oldCustomObject;
   private CustomObjectDraft<JsonNode> newCustomObjectdraft;
 
+  @SuppressWarnings("unchecked")
   private void prepareMockObjects(final JsonNode actualObj, final JsonNode mockedObj) {
     final String key = "testkey";
     final String container = "testcontainer";

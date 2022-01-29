@@ -14,7 +14,10 @@ import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
+import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.mock;
@@ -48,6 +51,7 @@ import org.junit.jupiter.api.Test;
 class ProductSyncTest {
 
   @Test
+  @SuppressWarnings("unchecked")
   void sync_WithNoValidDrafts_ShouldCompleteWithoutAnyProcessing() {
     // preparation
     final SphereClient ctpClient = mock(SphereClient.class);
@@ -88,6 +92,7 @@ class ProductSyncTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void sync_WithErrorCachingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
     // preparation
     final ProductDraft productDraft =
@@ -139,21 +144,20 @@ class ProductSyncTest {
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message -> assertThat(message).contains("Failed to build a cache of keys to ids."));
+        .singleElement(as(STRING))
+        .contains("Failed to build a cache of keys to ids.");
 
     assertThat(exceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            throwable -> {
-              assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
-              assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
-            });
+        .singleElement(as(THROWABLE))
+        .isExactlyInstanceOf(CompletionException.class)
+        .hasCauseExactlyInstanceOf(SphereException.class);
 
     assertThat(productSyncStatistics).hasValues(1, 0, 0, 1);
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void sync_WithErrorFetchingExistingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
     // preparation
     final ProductDraft productDraft =
@@ -217,21 +221,20 @@ class ProductSyncTest {
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message -> assertThat(message).contains("Failed to fetch existing products"));
+        .singleElement(as(STRING))
+        .contains("Failed to fetch existing products");
 
     assertThat(exceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            throwable -> {
-              assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
-              assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
-            });
+        .singleElement(as(THROWABLE))
+        .isExactlyInstanceOf(CompletionException.class)
+        .hasCauseExactlyInstanceOf(SphereException.class);
 
     assertThat(productSyncStatistics).hasValues(1, 0, 0, 1);
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
     // preparation
     final ProductDraft productDraft =
@@ -284,6 +287,7 @@ class ProductSyncTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
     // preparation
     final ProductDraft productDraft =
@@ -345,6 +349,7 @@ class ProductSyncTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   void sync_WithEmptyAttributeMetaDataMap_ShouldCallErrorCallback() {
     // preparation
     final ProductDraft productDraft =
@@ -414,12 +419,10 @@ class ProductSyncTest {
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message ->
-                assertThat(message)
-                    .contains(
-                        "Failed to update Product with key: 'productKey1'. Reason: Failed to"
-                            + " fetch a productType for the product to build the products' attributes metadata."));
+        .singleElement(as(STRING))
+        .contains(
+            "Failed to update Product with key: 'productKey1'. Reason: Failed to"
+                + " fetch a productType for the product to build the products' attributes metadata.");
 
     AssertionsForStatistics.assertThat(productSyncStatistics).hasValues(1, 0, 0, 1);
   }

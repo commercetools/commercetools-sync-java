@@ -41,6 +41,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -116,9 +118,10 @@ class ShoppingListReferenceResolverTest {
         referenceResolver.resolveCustomTypeReference(draftBuilder);
 
     assertThat(resolvedDraftCompletionStage)
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(SphereException.class)
-        .hasMessageContaining("CTP error on fetch");
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(SphereException.class)
+        .withMessageContaining("CTP error on fetch");
   }
 
   @Test
@@ -148,9 +151,10 @@ class ShoppingListReferenceResolverTest {
             "%s Reason: %s", expectedExceptionMessage, format(TYPE_DOES_NOT_EXIST, customTypeKey));
     ;
     assertThat(resolvedDraftCompletionStage)
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(expectedMessageWithCause);
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(expectedMessageWithCause);
   }
 
   @Test
@@ -164,9 +168,10 @@ class ShoppingListReferenceResolverTest {
             .description(LocalizedString.of(Locale.ENGLISH, "DESCRIPTION"));
 
     assertThat(referenceResolver.resolveCustomTypeReference(draftBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve custom type reference on ShoppingListDraft"
                     + " with key:'null'.  Reason: %s",
@@ -217,9 +222,10 @@ class ShoppingListReferenceResolverTest {
         .thenReturn(futureThrowingSphereException);
 
     assertThat(referenceResolver.resolveCustomerReference(draftBuilder).toCompletableFuture())
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(SphereException.class)
-        .hasMessageContaining("CTP error on fetch");
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(SphereException.class)
+        .withMessageContaining("CTP error on fetch");
   }
 
   @Test
@@ -230,9 +236,10 @@ class ShoppingListReferenceResolverTest {
             .description(LocalizedString.of(Locale.ENGLISH, "DESCRIPTION"));
 
     assertThat(referenceResolver.resolveCustomerReference(draftBuilder).toCompletableFuture())
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 FAILED_TO_RESOLVE_CUSTOMER_REFERENCE,
                 draftBuilder.getKey(),
@@ -247,9 +254,10 @@ class ShoppingListReferenceResolverTest {
             .description(LocalizedString.of(Locale.ENGLISH, "DESCRIPTION"));
 
     assertThat(referenceResolver.resolveCustomerReference(draftBuilder).toCompletableFuture())
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 FAILED_TO_RESOLVE_CUSTOMER_REFERENCE,
                 draftBuilder.getKey(),
@@ -268,9 +276,10 @@ class ShoppingListReferenceResolverTest {
             .description(LocalizedString.of(Locale.ENGLISH, "DESCRIPTION"));
 
     assertThat(referenceResolver.resolveCustomerReference(draftBuilder).toCompletableFuture())
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 ShoppingListReferenceResolver.FAILED_TO_RESOLVE_CUSTOMER_REFERENCE,
                 draftBuilder.getKey(),
@@ -285,7 +294,7 @@ class ShoppingListReferenceResolverTest {
             .description(LocalizedString.of(Locale.ENGLISH, "DESCRIPTION"));
 
     assertThat(referenceResolver.resolveCustomerReference(draftBuilder).toCompletableFuture())
-        .hasNotFailed()
+        .isCompleted()
         .isCompletedWithValueMatching(
             resolvedDraft ->
                 Objects.equals(resolvedDraft.getCustomer(), draftBuilder.getCustomer()));

@@ -12,7 +12,9 @@ import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -40,6 +42,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -188,8 +192,9 @@ class TaxCategoryServiceImplIT {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(spyTaxCategoryService.fetchMatchingTaxCategoriesByKeys(keys))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(BadGatewayException.class);
+        .failsWithin(10, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(BadGatewayException.class);
   }
 
   @Test
@@ -344,11 +349,13 @@ class TaxCategoryServiceImplIT {
     assertThat(result).isEmpty();
     assertThat(errorCallBackMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(msg -> assertThat(msg).contains("A duplicate value"));
+        .singleElement(as(STRING))
+        .contains("A duplicate value");
 
     assertThat(errorCallBackExceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
+        .singleElement()
+        .matches(
             exception -> {
               assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
               final ErrorResponseException errorResponseException =
@@ -362,7 +369,7 @@ class TaxCategoryServiceImplIT {
                             return sphereError.as(DuplicateFieldError.class);
                           })
                       .collect(toList());
-              assertThat(fieldErrors).hasSize(1);
+              return fieldErrors.size() == 1;
             });
   }
 

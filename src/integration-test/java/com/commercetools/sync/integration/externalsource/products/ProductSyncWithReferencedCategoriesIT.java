@@ -10,7 +10,9 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.TriConsumer;
@@ -379,7 +381,8 @@ class ProductSyncWithReferencedCategoriesIT {
     assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
     assertThat(errorCallBackExceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
+        .singleElement()
+        .matches(
             error -> {
               assertThat(error).hasCauseExactlyInstanceOf(ErrorResponseException.class);
               final ErrorResponseException errorResponseException =
@@ -389,15 +392,14 @@ class ProductSyncWithReferencedCategoriesIT {
                   .contains(
                       "The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
                           + "is not valid for field 'category-reference'");
+              return true;
             });
     assertThat(errorCallBackMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message ->
-                assertThat(message)
-                    .contains(
-                        "The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
-                            + "is not valid for field 'category-reference'"));
+        .singleElement(as(STRING))
+        .contains(
+            "The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
+                + "is not valid for field 'category-reference'");
     assertThat(warningCallBackMessages).isEmpty();
     assertThat(actions).isEmpty();
   }
@@ -536,7 +538,8 @@ class ProductSyncWithReferencedCategoriesIT {
     assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
     assertThat(errorCallBackExceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
+        .singleElement()
+        .matches(
             error -> {
               assertThat(error).hasCauseExactlyInstanceOf(ErrorResponseException.class);
               final ErrorResponseException errorResponseException =
@@ -546,15 +549,14 @@ class ProductSyncWithReferencedCategoriesIT {
                   .contains(
                       "The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
                           + "is not valid for field 'category-reference-set'");
+              return true;
             });
     assertThat(errorCallBackMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message ->
-                assertThat(message)
-                    .contains(
-                        "The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
-                            + "is not valid for field 'category-reference-set'"));
+        .singleElement(as(STRING))
+        .contains(
+            "The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
+                + "is not valid for field 'category-reference-set'");
     assertThat(warningCallBackMessages).isEmpty();
     assertThat(actions).isEmpty();
   }

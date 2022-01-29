@@ -1,8 +1,8 @@
 package com.commercetools.sync.categories.helpers;
 
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.util.Lists.emptyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

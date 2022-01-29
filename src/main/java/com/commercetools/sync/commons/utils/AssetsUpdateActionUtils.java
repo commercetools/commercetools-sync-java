@@ -95,6 +95,7 @@ public final class AssetsUpdateActionUtils {
    *     identical. Otherwise, if the assets are identical, an empty list is returned.
    * @throws BuildUpdateActionException in case there are asset drafts with duplicate keys.
    */
+  @SuppressWarnings("unchecked")
   @Nonnull
   private static <T extends Resource, D>
       List<UpdateAction<T>> buildAssetsUpdateActionsWithNewAssetDrafts(

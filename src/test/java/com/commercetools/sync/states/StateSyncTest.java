@@ -8,7 +8,10 @@ import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
+import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.mock;
@@ -113,16 +116,14 @@ class StateSyncTest {
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message -> assertThat(message).contains("Failed to build a cache of keys to ids."));
+        .singleElement(as(STRING))
+        .contains("Failed to build a cache of keys to ids.");
 
     assertThat(exceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            throwable -> {
-              assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
-              assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
-            });
+        .singleElement(as(THROWABLE))
+        .isExactlyInstanceOf(CompletionException.class)
+        .hasCauseExactlyInstanceOf(SphereException.class);
 
     assertThat(stateSyncStatistics).hasValues(1, 0, 0, 1);
   }
@@ -167,16 +168,14 @@ class StateSyncTest {
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message -> assertThat(message).contains("Failed to fetch existing states"));
+        .singleElement(as(STRING))
+        .contains("Failed to fetch existing states");
 
     assertThat(exceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            throwable -> {
-              assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
-              assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
-            });
+        .singleElement(as(THROWABLE))
+        .isExactlyInstanceOf(CompletionException.class)
+        .hasCauseExactlyInstanceOf(SphereException.class);
 
     assertThat(stateSyncStatistics).hasValues(1, 0, 0, 1);
   }

@@ -2,7 +2,9 @@ package com.commercetools.sync.services.impl;
 
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -32,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 class CartDiscountServiceImplTest {
@@ -182,18 +186,18 @@ class CartDiscountServiceImplTest {
     assertThat(result).isCompletedWithValue(Optional.empty());
     assertThat(errors.keySet())
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message -> {
-              assertThat(message).contains("Failed to create draft with key: 'cartDiscountKey'.");
-            });
+        .singleElement(as(STRING))
+        .contains("Failed to create draft with key: 'cartDiscountKey'.");
 
     assertThat(errors.values())
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
+        .singleElement()
+        .matches(
             exception -> {
               assertThat(exception).isExactlyInstanceOf(SyncException.class);
               assertThat(exception.getCause())
                   .isExactlyInstanceOf(InternalServerErrorException.class);
+              return true;
             });
   }
 
@@ -244,7 +248,8 @@ class CartDiscountServiceImplTest {
 
     // assertions
     assertThat(result)
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(InternalServerErrorException.class);
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(InternalServerErrorException.class);
   }
 }

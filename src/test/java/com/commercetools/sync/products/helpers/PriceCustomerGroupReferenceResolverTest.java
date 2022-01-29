@@ -28,6 +28,8 @@ import io.sphere.sdk.utils.MoneyImpl;
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -70,7 +72,6 @@ class PriceCustomerGroupReferenceResolverTest {
         PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR));
 
     assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
-        .hasNotFailed()
         .isCompletedWithValueMatching(resolvedDraft -> isNull(resolvedDraft.getCustomerGroup()));
   }
 
@@ -86,9 +87,10 @@ class PriceCustomerGroupReferenceResolverTest {
         .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
     assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 FAILED_TO_RESOLVE_REFERENCE,
                 CustomerGroup.referenceTypeId(),
@@ -108,10 +110,10 @@ class PriceCustomerGroupReferenceResolverTest {
             .customerGroup(customerGroupResourceIdentifier);
 
     assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
-        .hasFailed()
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve 'customer-group' reference on PriceDraft with country:'%s' and"
                     + " value: '%s'. Reason: %s",
@@ -130,10 +132,10 @@ class PriceCustomerGroupReferenceResolverTest {
             .customerGroup(customerGroupResourceIdentifier);
 
     assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
-        .hasFailed()
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve 'customer-group' reference on PriceDraft with country:'%s' and"
                     + " value: '%s'. Reason: %s",
@@ -157,9 +159,9 @@ class PriceCustomerGroupReferenceResolverTest {
         .thenReturn(futureThrowingSphereException);
 
     assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
-        .hasFailed()
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(SphereException.class)
-        .hasMessageContaining("CTP error on fetch");
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(SphereException.class)
+        .withMessageContaining("CTP error on fetch");
   }
 }

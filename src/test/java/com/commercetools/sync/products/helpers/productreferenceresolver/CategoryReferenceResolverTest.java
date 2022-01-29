@@ -44,6 +44,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
@@ -213,7 +215,7 @@ class CategoryReferenceResolverTest {
             productReferenceResolver
                 .resolveCategoryReferences(productBuilder)
                 .toCompletableFuture())
-        .hasNotFailed()
+        .matches(f -> !f.isCompletedExceptionally() || f.isCancelled())
         .isCompletedWithValueMatching(resolvedDraft -> resolvedDraft.getCategories().isEmpty());
   }
 
@@ -264,9 +266,10 @@ class CategoryReferenceResolverTest {
 
     // test and assertion
     assertThat(productReferenceResolver.resolveCategoryReferences(productBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve 'category' resource identifier on ProductDraft with "
                     + "key:'%s'. Reason: %s",
@@ -285,9 +288,10 @@ class CategoryReferenceResolverTest {
 
     // test and assertion
     assertThat(productReferenceResolver.resolveCategoryReferences(productBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve 'category' resource identifier on ProductDraft with "
                     + "key:'%s'. Reason: %s",
@@ -342,9 +346,10 @@ class CategoryReferenceResolverTest {
 
     // test and assertion
     assertThat(productReferenceResolver.resolveCategoryReferences(productBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(SphereException.class)
-        .hasMessageContaining("CTP error on fetch");
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(SphereException.class)
+        .withMessageContaining("CTP error on fetch");
   }
 
   @Test
@@ -363,7 +368,7 @@ class CategoryReferenceResolverTest {
             productReferenceResolver
                 .resolveCategoryReferences(productBuilder)
                 .toCompletableFuture())
-        .hasNotFailed()
+        .matches(f -> !f.isCompletedExceptionally() || f.isCancelled())
         .isCompletedWithValueMatching(
             resolvedDraft ->
                 Objects.equals(resolvedDraft.getCategories(), productBuilder.getCategories()));

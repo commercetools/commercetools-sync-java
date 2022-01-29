@@ -34,6 +34,8 @@ import io.sphere.sdk.taxcategories.TaxCategory;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -88,7 +90,6 @@ class TaxCategoryReferenceResolverTest {
     final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType().key("dummyKey");
 
     assertThat(referenceResolver.resolveTaxCategoryReference(productBuilder).toCompletableFuture())
-        .hasNotFailed()
         .isCompletedWithValueMatching(
             resolvedDraft -> Objects.isNull(resolvedDraft.getTaxCategory()));
   }
@@ -130,9 +131,10 @@ class TaxCategoryReferenceResolverTest {
             .key("dummyKey");
 
     assertThat(referenceResolver.resolveTaxCategoryReference(productBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve 'tax-category' resource identifier on ProductDraft with "
                     + "key:'%s'. Reason: %s",
@@ -145,9 +147,10 @@ class TaxCategoryReferenceResolverTest {
         getBuilderWithRandomProductType().taxCategory(ResourceIdentifier.ofKey("")).key("dummyKey");
 
     assertThat(referenceResolver.resolveTaxCategoryReference(productBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve 'tax-category' resource identifier on ProductDraft with "
                     + "key:'%s'. Reason: %s",
@@ -168,9 +171,10 @@ class TaxCategoryReferenceResolverTest {
         .thenReturn(futureThrowingSphereException);
 
     assertThat(referenceResolver.resolveTaxCategoryReference(productBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(SphereException.class)
-        .hasMessageContaining("CTP error on fetch");
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(SphereException.class)
+        .withMessageContaining("CTP error on fetch");
   }
 
   @Test
@@ -181,7 +185,6 @@ class TaxCategoryReferenceResolverTest {
             .key("dummyKey");
 
     assertThat(referenceResolver.resolveTaxCategoryReference(productBuilder).toCompletableFuture())
-        .hasNotFailed()
         .isCompletedWithValueMatching(
             resolvedDraft ->
                 Objects.equals(resolvedDraft.getTaxCategory(), productBuilder.getTaxCategory()));

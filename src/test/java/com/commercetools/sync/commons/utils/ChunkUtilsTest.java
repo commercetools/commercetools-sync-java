@@ -61,6 +61,7 @@ class ChunkUtilsTest {
   void executeChunks_withQueryBuilderRequests_ShouldReturnResults() {
     final SphereClient client = mock(SphereClient.class);
 
+    @SuppressWarnings("unchecked")
     final PagedQueryResult<Category> pagedQueryResult = mock(PagedQueryResult.class);
     when(pagedQueryResult.getResults())
         .thenReturn(

@@ -56,13 +56,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+@SuppressWarnings("unchecked")
 class BaseServiceImplTest {
 
-  @SuppressWarnings("unchecked")
-  private TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
+  private final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
       warningCallback = mock(TriConsumer.class);
 
-  private SphereClient client = mock(SphereClient.class);
+  private final SphereClient client = mock(SphereClient.class);
   private ProductService service;
 
   @BeforeEach
@@ -273,7 +273,10 @@ class BaseServiceImplTest {
         service.fetchMatchingProductsByKeys(resourceKeys);
 
     // assertions
-    assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);
+    assertThat(result)
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(BadGatewayException.class);
     verify(client).execute(any(ProductProjectionQuery.class));
   }
 
@@ -325,7 +328,10 @@ class BaseServiceImplTest {
     final CompletionStage<Optional<ProductProjection>> result = service.fetchProduct("foo");
 
     // assertions
-    assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);
+    assertThat(result)
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(BadGatewayException.class);
     verify(client, times(1)).execute(any(ProductProjectionQuery.class));
   }
 

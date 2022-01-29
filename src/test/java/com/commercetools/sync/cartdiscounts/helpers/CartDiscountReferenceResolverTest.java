@@ -29,6 +29,8 @@ import io.sphere.sdk.utils.MoneyImpl;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -86,10 +88,10 @@ class CartDiscountReferenceResolverTest {
             referenceResolver
                 .resolveCustomTypeReference(cartDiscountDraftBuilder)
                 .toCompletableFuture())
-        .hasFailed()
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve custom type reference on CartDiscountDraft with "
                     + "key:'cart-discount-key'. Reason: %s",
@@ -114,10 +116,10 @@ class CartDiscountReferenceResolverTest {
             referenceResolver
                 .resolveCustomTypeReference(cartDiscountDraftBuilder)
                 .toCompletableFuture())
-        .hasFailed()
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve custom type reference on CartDiscountDraft with "
                     + "key:'cart-discount-key'. Reason: %s",
@@ -148,9 +150,10 @@ class CartDiscountReferenceResolverTest {
         format(
             "%s Reason: %s", expectedExceptionMessage, format(TYPE_DOES_NOT_EXIST, customTypeKey));
     assertThat(referenceResolver.resolveCustomTypeReference(cartDiscountDraftBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(expectedMessageWithCause);
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(expectedMessageWithCause);
   }
 
   @Test

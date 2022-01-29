@@ -17,6 +17,8 @@ import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 class ProductTypeServiceImplTest {
@@ -69,6 +71,9 @@ class ProductTypeServiceImplTest {
         productTypeService.fetchProductType("foo");
 
     // assertions
-    assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);
+    assertThat(result)
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(BadGatewayException.class);
   }
 }

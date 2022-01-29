@@ -33,14 +33,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("unchecked")
 class CustomObjectServiceImplTest {
 
-  private SphereClient client = mock(SphereClient.class);
+  private final SphereClient client = mock(SphereClient.class);
 
   private CustomObjectServiceImpl service;
 
@@ -209,13 +212,15 @@ class CustomObjectServiceImplTest {
     when(draftMock.getJavaType())
         .thenReturn(getCustomObjectJavaTypeForValue(convertToJavaType(JsonNode.class)));
 
-    CompletableFuture future = service.upsertCustomObject(draftMock).toCompletableFuture();
+    final CompletableFuture<Optional<CustomObject<JsonNode>>> future =
+        service.upsertCustomObject(draftMock).toCompletableFuture();
 
     assertAll(
         () -> assertThat(future.isCompletedExceptionally()).isTrue(),
         () ->
             assertThat(future)
-                .hasFailedWithThrowableThat()
-                .isExactlyInstanceOf(BadRequestException.class));
+                .failsWithin(1, TimeUnit.SECONDS)
+                .withThrowableOfType(ExecutionException.class)
+                .withCauseExactlyInstanceOf(BadRequestException.class));
   }
 }

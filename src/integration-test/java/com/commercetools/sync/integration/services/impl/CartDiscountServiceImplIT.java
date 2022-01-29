@@ -15,7 +15,10 @@ import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedF
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
+import static org.assertj.core.api.InstanceOfAssertFactories.throwable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -41,6 +44,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -176,8 +181,9 @@ class CartDiscountServiceImplIT {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(spyCartDiscountService.fetchMatchingCartDiscountsByKeys(cartDiscountKeys))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(BadGatewayException.class);
+        .failsWithin(10, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(BadGatewayException.class);
   }
 
   @Test
@@ -276,13 +282,9 @@ class CartDiscountServiceImplIT {
     assertThat(result).isEmpty();
     assertThat(errorCallBackMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            msg ->
-                assertThat(msg)
-                    .contains(
-                        format(
-                            "A duplicate value '\"%s\"' exists for field 'key'.",
-                            CART_DISCOUNT_KEY_1)));
+        .singleElement(as(STRING))
+        .contains(
+            format("A duplicate value '\"%s\"' exists for field 'key'.", CART_DISCOUNT_KEY_1));
 
     ensureErrorCallbackIsDuplicateFieldError();
   }
@@ -290,7 +292,8 @@ class CartDiscountServiceImplIT {
   private void ensureErrorCallbackIsDuplicateFieldError() {
     assertThat(errorCallBackExceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
+        .singleElement()
+        .matches(
             exception -> {
               assertThat(exception).hasCauseExactlyInstanceOf(ErrorResponseException.class);
               final ErrorResponseException errorResponseException =
@@ -304,7 +307,8 @@ class CartDiscountServiceImplIT {
                             return sphereError.as(DuplicateFieldError.class);
                           })
                       .collect(toList());
-              assertThat(fieldErrors).hasSize(1);
+
+              return fieldErrors.size() == 1;
             });
   }
 
@@ -342,13 +346,8 @@ class CartDiscountServiceImplIT {
     assertThat(result).isEmpty();
     assertThat(errorCallBackMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            msg ->
-                assertThat(msg)
-                    .contains(
-                        format(
-                            "A duplicate value '\"%s\"' exists for field 'sortOrder'.",
-                            SORT_ORDER_1)));
+        .singleElement(as(STRING))
+        .contains(format("A duplicate value '\"%s\"' exists for field 'sortOrder'.", SORT_ORDER_1));
 
     ensureErrorCallbackIsDuplicateFieldError();
   }

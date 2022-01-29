@@ -18,7 +18,9 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -59,6 +61,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletionException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterAll;
@@ -863,7 +866,7 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
     assertThat(actions).isEmpty();
 
     final UnresolvedReferencesService<WaitingToBeResolvedProducts> unresolvedReferencesService =
-        new UnresolvedReferencesServiceImpl(syncOptions);
+        new UnresolvedReferencesServiceImpl<>(syncOptions);
 
     final Set<WaitingToBeResolvedProducts> waitingDrafts =
         unresolvedReferencesService
@@ -944,15 +947,15 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
     assertThat(errorCallBackMessages)
         .containsExactly("Failed to fetch ProductDrafts waiting to be resolved with keys '[foo]'.");
     assertThat(errorCallBackExceptions)
-        .hasOnlyOneElementSatisfying(
-            exception ->
-                assertThat(exception.getCause())
-                    .hasCauseExactlyInstanceOf(BadGatewayException.class));
+        .singleElement(as(THROWABLE))
+        .isExactlyInstanceOf(SyncException.class)
+        .hasCauseExactlyInstanceOf(CompletionException.class)
+        .hasRootCauseExactlyInstanceOf(BadGatewayException.class);
     assertThat(warningCallBackMessages).isEmpty();
     assertThat(actions).isEmpty();
 
     final UnresolvedReferencesService<WaitingToBeResolvedProducts> unresolvedReferencesService =
-        new UnresolvedReferencesServiceImpl(syncOptions);
+        new UnresolvedReferencesServiceImpl<>(syncOptions);
 
     final Set<WaitingToBeResolvedProducts> waitingDrafts =
         unresolvedReferencesService

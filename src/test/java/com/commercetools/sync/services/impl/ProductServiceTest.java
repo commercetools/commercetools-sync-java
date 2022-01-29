@@ -3,7 +3,10 @@ package com.commercetools.sync.services.impl;
 import static java.util.Collections.singletonList;
 import static java.util.Locale.ENGLISH;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
+import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -93,16 +96,14 @@ class ProductServiceTest {
     assertThat(productOptional).isEmpty();
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message -> {
-              assertThat(message).contains("Failed to create draft with key: 'productKey'.");
-              assertThat(message).contains("BadRequestException");
-            });
+        .singleElement(as(STRING))
+        .contains("Failed to create draft with key: 'productKey'.")
+        .contains("BadRequestException");
 
     assertThat(errorExceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            exception -> assertThat(exception).isExactlyInstanceOf(BadRequestException.class));
+        .singleElement(as(THROWABLE))
+        .isExactlyInstanceOf(BadRequestException.class);
   }
 
   @Test

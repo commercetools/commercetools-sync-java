@@ -1,6 +1,9 @@
 package com.commercetools.sync.services.impl;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
+import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -181,17 +184,13 @@ class TaxCategoryServiceImplTest {
         () -> assertThat(taxCategoryOptional).isEmpty(),
         () ->
             assertThat(errorMessages)
-                .hasOnlyOneElementSatisfying(
-                    message -> {
-                      assertThat(message)
-                          .contains("Failed to create draft with key: '" + taxCategoryKey + "'.");
-                      assertThat(message).contains("BadRequestException");
-                    }),
+                .singleElement(as(STRING))
+                .contains("Failed to create draft with key: '" + taxCategoryKey + "'.")
+                .contains("BadRequestException"),
         () ->
             assertThat(errorExceptions)
-                .hasOnlyOneElementSatisfying(
-                    exception ->
-                        assertThat(exception).isExactlyInstanceOf(BadRequestException.class)));
+                .singleElement(as(THROWABLE))
+                .isExactlyInstanceOf(BadRequestException.class));
   }
 
   @Test

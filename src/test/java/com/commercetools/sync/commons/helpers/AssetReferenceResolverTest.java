@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -65,9 +67,10 @@ class AssetReferenceResolverTest {
         format(
             "%s Reason: %s", expectedExceptionMessage, format(TYPE_DOES_NOT_EXIST, customTypeKey));
     assertThat(assetReferenceResolver.resolveCustomTypeReference(assetDraftBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(expectedMessageWithCause);
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(expectedMessageWithCause);
   }
 
   @Test
@@ -86,9 +89,10 @@ class AssetReferenceResolverTest {
         new AssetReferenceResolver(syncOptions, typeService);
 
     assertThat(assetReferenceResolver.resolveCustomTypeReference(assetDraftBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve custom type reference on AssetDraft with key:'%s'. Reason: %s",
                 assetDraftBuilder.getKey(), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
@@ -132,9 +136,10 @@ class AssetReferenceResolverTest {
         new AssetReferenceResolver(syncOptions, typeService);
 
     assertThat(assetReferenceResolver.resolveCustomTypeReference(assetDraftBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve custom type reference on AssetDraft with key:'%s'. Reason: %s",
                 assetDraftBuilder.getKey(), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
@@ -159,9 +164,10 @@ class AssetReferenceResolverTest {
         new AssetReferenceResolver(syncOptions, typeService);
 
     assertThat(assetReferenceResolver.resolveCustomTypeReference(assetDraftBuilder))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(SphereException.class)
-        .hasMessageContaining("CTP error on fetch");
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(SphereException.class)
+        .withMessageContaining("CTP error on fetch");
   }
 
   @Test

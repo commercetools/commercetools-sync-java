@@ -23,6 +23,8 @@ import io.sphere.sdk.utils.CompletableFutureUtils;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -86,9 +88,10 @@ class LineItemReferenceResolverTest {
         LineItemDraftBuilder.ofSku("dummy-sku", 10L).custom(customFieldsDraft).build();
 
     assertThat(referenceResolver.resolveReferences(lineItemDraft))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(SphereException.class)
-        .hasMessageContaining("CTP error on fetch");
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(SphereException.class)
+        .withMessageContaining("CTP error on fetch");
   }
 
   @Test
@@ -111,9 +114,10 @@ class LineItemReferenceResolverTest {
             "%s Reason: %s", expectedExceptionMessage, format(TYPE_DOES_NOT_EXIST, customTypeKey));
 
     assertThat(referenceResolver.resolveReferences(lineItemDraft))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(expectedMessageWithCause);
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(expectedMessageWithCause);
   }
 
   @Test
@@ -125,9 +129,10 @@ class LineItemReferenceResolverTest {
         LineItemDraftBuilder.ofSku("dummy-sku", 10L).custom(customFieldsDraft).build();
 
     assertThat(referenceResolver.resolveReferences(lineItemDraft))
-        .hasFailedWithThrowableThat()
-        .isExactlyInstanceOf(ReferenceResolutionException.class)
-        .hasMessage(
+        .failsWithin(1, TimeUnit.SECONDS)
+        .withThrowableOfType(ExecutionException.class)
+        .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+        .withMessageContaining(
             format(
                 "Failed to resolve custom type reference on LineItemDraft"
                     + " with SKU: 'dummy-sku'. Reason: %s",

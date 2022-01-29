@@ -32,7 +32,9 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -449,13 +451,13 @@ class CartDiscountSyncIT {
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message ->
-                assertThat(message).contains("Failed to update cart discount with key: 'key_1'."));
+        .singleElement(as(STRING))
+        .contains("Failed to update cart discount with key: 'key_1'.");
 
     assertThat(exceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
+        .singleElement()
+        .matches(
             throwable -> {
               assertThat(throwable).isExactlyInstanceOf(SyncException.class);
               assertThat(throwable).hasCauseExactlyInstanceOf(CompletionException.class);
@@ -463,6 +465,7 @@ class CartDiscountSyncIT {
                   .hasCauseExactlyInstanceOf(ErrorResponseException.class);
               assertThat(throwable.getCause())
                   .hasMessageContaining("cartPredicate: Missing required value");
+              return true;
             });
 
     assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
@@ -511,13 +514,13 @@ class CartDiscountSyncIT {
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
-            message ->
-                assertThat(message).contains("Failed to update cart discount with key: 'key_1'."));
+        .singleElement(as(STRING))
+        .contains("Failed to update cart discount with key: 'key_1'.");
 
     assertThat(exceptions)
         .hasSize(1)
-        .hasOnlyOneElementSatisfying(
+        .singleElement()
+        .matches(
             throwable -> {
               assertThat(throwable).isExactlyInstanceOf(SyncException.class);
               assertThat(throwable).hasCauseExactlyInstanceOf(CompletionException.class);
@@ -525,6 +528,7 @@ class CartDiscountSyncIT {
                   .hasCauseExactlyInstanceOf(ErrorResponseException.class);
               assertThat(throwable.getCause())
                   .hasMessageContaining("value: Missing required value");
+              return true;
             });
 
     assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
