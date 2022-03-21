@@ -16,7 +16,6 @@ import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductProjectionType;
 import io.sphere.sdk.products.commands.updateactions.AddToCategory;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,8 +44,17 @@ class BuildAddToCategoryUpdateActionsTest {
 
   @Test
   void buildAddToCategoryUpdateActions_WithSameStagedValues_ShouldNotBuildUpdateAction() {
+    final Set<ResourceIdentifier<Category>> newProductCategories = new HashSet<>();
+    MOCK_OLD_PUBLISHED_PRODUCT.getCategories().stream()
+        .forEach(
+            categoryReference -> {
+              newProductCategories.add(
+                  ResourceIdentifier.ofId(
+                      categoryReference.getId(), categoryReference.getTypeId()));
+            });
+
     final List<UpdateAction<Product>> addToCategoryUpdateAction =
-        getAddToCategoryUpdateActions(MOCK_OLD_PUBLISHED_PRODUCT, Collections.emptySet());
+        getAddToCategoryUpdateActions(MOCK_OLD_PUBLISHED_PRODUCT, newProductCategories);
 
     assertThat(addToCategoryUpdateAction).isEmpty();
   }

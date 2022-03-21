@@ -39,10 +39,13 @@ class BuildRemoveFromCategoryUpdateActionsTest {
   @Test
   void buildRemoveFromCategoryUpdateActions_WithSameStagedValues_ShouldNotBuildUpdateAction() {
     final Set<ResourceIdentifier<Category>> newProductCategories = new HashSet<>();
-    newProductCategories.add(Category.referenceOfId("1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"));
-    newProductCategories.add(Category.referenceOfId("2dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"));
-    newProductCategories.add(Category.referenceOfId("3dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"));
-    newProductCategories.add(Category.referenceOfId("4dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"));
+    MOCK_OLD_PUBLISHED_PRODUCT.getCategories().stream()
+        .forEach(
+            categoryReference -> {
+              newProductCategories.add(
+                  ResourceIdentifier.ofId(
+                      categoryReference.getId(), categoryReference.getTypeId()));
+            });
 
     final List<UpdateAction<Product>> removeFromCategoryUpdateActions =
         getRemoveFromCategoryUpdateActions(MOCK_OLD_PUBLISHED_PRODUCT, newProductCategories);

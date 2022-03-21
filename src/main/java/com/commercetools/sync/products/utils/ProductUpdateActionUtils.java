@@ -3,6 +3,7 @@ package com.commercetools.sync.products.utils;
 import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToMap;
 import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
 import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.areResourceIdentifiersEqual;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActionForReferences;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActions;
@@ -184,7 +185,8 @@ public final class ProductUpdateActionUtils {
                               .map(Reference::toResourceIdentifier)
                               .noneMatch(
                                   oldResourceIdentifier ->
-                                      oldResourceIdentifier.equals(newCategoryReference)))
+                                      areResourceIdentifiersEqual(
+                                          oldResourceIdentifier, newCategoryReference)))
                   .collect(toList());
           newCategoriesResourceIdentifiers.forEach(
               categoryResourceIdentifier ->
@@ -278,7 +280,12 @@ public final class ProductUpdateActionUtils {
           filterCollection(
                   oldCategories,
                   oldCategoryReference ->
-                      !newCategories.contains(oldCategoryReference.toResourceIdentifier()))
+                      newCategories.stream()
+                          .noneMatch(
+                              newResourceIdentifier ->
+                                  areResourceIdentifiersEqual(
+                                      newResourceIdentifier,
+                                      oldCategoryReference.toResourceIdentifier())))
               .forEach(
                   categoryReference ->
                       updateActions.add(
