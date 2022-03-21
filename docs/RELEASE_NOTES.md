@@ -41,8 +41,7 @@
 - ✨ **Build Tools**
   - Migrated from gradle `v7.3.1` to [`v7.3.3`](https://togithub.com/gradle/gradle/releases/v7.3.3).
   - Migrated github actions `setup-java` plugin from `v2` to [`v3`](https://togithub.com/actions/setup-java/compare/v2...v3)
-  - Migrated github actions `codecov-action` plugin from `v1` to [`v2`](https://togithub.com/codecov/codecov-action/compare/v1...v2)
-
+  
 - 🛠️ **Dependency Updates**
   - `commercetools-jvm-sdk` `2.5.0` -> [`2.6.0`](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v2.6.0)
   - `com.github.spotbugs` `5.0.2` -> [`5.0.5`](https://github.com/spotbugs/spotbugs-gradle-plugin/releases/tag/5.0.5)
