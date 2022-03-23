@@ -27,6 +27,28 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
+### 8.1.1 - Mar 21, 2022
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/8.1.0...8.1.1) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/8.1.1/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/8.1.1/jar)
+
+- 🐞 **Bug Fixes** (1)
+  - **Product Sync** - Fixed the `AddToCategory`, `RemoveFromCategory` action, which creates unnecessary update action when there is no difference and it leads to error. [#816](https://github.com/commercetools/commercetools-sync-java/issues/816)
+
+- ✨ **Enhancement** (1)
+  - Resolve warnings and deprecated usages. [#808](https://github.com/commercetools/commercetools-sync-java/pull/808)
+
+- ✨ **Build Tools**
+  - Migrated from gradle `v7.3.1` to [`v7.3.3`](https://togithub.com/gradle/gradle/releases/v7.3.3).
+  - Migrated github actions `setup-java` plugin from `v2` to [`v3`](https://togithub.com/actions/setup-java/compare/v2...v3)
+  
+- 🛠️ **Dependency Updates**
+  - `commercetools-jvm-sdk` `2.5.0` -> [`2.6.0`](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v2.6.0)
+  - `com.github.spotbugs` `5.0.2` -> [`5.0.5`](https://github.com/spotbugs/spotbugs-gradle-plugin/releases/tag/5.0.5)
+  - `com.diffplug.spotless`  `6.0.4` -> `6.2.0`
+  - `mockito-junit-jupiter` `4.1.0` ->  [`4.3.1`](https://github.com/mockito/mockito/releases/tag/v4.3.1)
+  - `org.assertj.assertj-core` `3.21.0` ->  [`3.22.0`](https://assertj.github.io/doc/#assertj-core-3-22-0-release-notes)
+  
 ### 8.1.0 - Dec 14, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/8.0.0...8.1.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/8.1.0/) |

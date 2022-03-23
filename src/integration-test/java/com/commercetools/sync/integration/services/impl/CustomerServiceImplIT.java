@@ -218,7 +218,7 @@ class CustomerServiceImplIT {
     assertThat(errorCallBackMessages.get(0))
         .contains(
             "Failed to create draft with key: 'newKey'. Reason: "
-                + "detailMessage: There is already an existing customer with the email '\"mail@mail.com\"'.");
+                + "detailMessage: There is already an existing customer with the provided email.");
     assertThat(errorCallBackExceptions).hasSize(1);
   }
 

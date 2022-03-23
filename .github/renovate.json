@@ -12,6 +12,14 @@
     {
       "matchPackageNames": ["com.github.ben-manes.caffeine:"],
       "allowedVersions": "< 3.0.0"
+    },
+    {
+      "matchPackageNames": ["org.ajoberstar.git-publish:"],
+      "allowedVersions": "< 4.0.0"
+    },
+    {
+      "matchPackageNames": ["org.ajoberstar.grgit:"],
+      "allowedVersions": "< 5.0.0"
     }
   ]
 }
