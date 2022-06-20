@@ -38,7 +38,7 @@ public final class ClientConfigurationUtils {
                     .withClientSecret(clientConfig.getClientSecret())
                     .withClientId(clientConfig.getClientId())
                     .build(),
-                clientConfig.getAuthUrl(),
+                clientConfig.getAuthUrl() + "/oauth/token",
                 clientConfig.getApiUrl())
             .withInternalLoggerFactory(
                 ApiInternalLoggerFactory::get,
