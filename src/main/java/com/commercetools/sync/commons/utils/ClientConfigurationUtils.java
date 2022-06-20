@@ -7,19 +7,15 @@ import com.commercetools.compat.CompatSphereClient;
 import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
-import io.sphere.sdk.client.retry.RetryableSphereClientBuilder;
 import io.sphere.sdk.http.AsyncHttpClientAdapter;
 import io.sphere.sdk.http.HttpClient;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import javax.annotation.Nonnull;
-
 import io.vrap.rmf.base.client.ApiHttpMethod;
 import io.vrap.rmf.base.client.error.ApiClientException;
 import io.vrap.rmf.base.client.oauth2.ClientCredentials;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
@@ -35,17 +31,24 @@ public final class ClientConfigurationUtils {
    * @return the instantiated {@link SphereClient}.
    */
   public static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
-    ProjectApiRoot apiRoot = ApiRootBuilder.of()
-            .defaultClient(ClientCredentials.of()
-                            .withClientSecret(clientConfig.getClientSecret())
-                            .withClientId(clientConfig.getClientId())
-                            .build(),
-                    clientConfig.getAuthUrl(),
-                    clientConfig.getApiUrl())
-            .withInternalLoggerFactory(ApiInternalLoggerFactory::get, Level.INFO, Level.INFO, Level.ERROR, Collections.singletonMap(
-                    ApiClientException.class, Level.INFO))
+    ProjectApiRoot apiRoot =
+        ApiRootBuilder.of()
+            .defaultClient(
+                ClientCredentials.of()
+                    .withClientSecret(clientConfig.getClientSecret())
+                    .withClientId(clientConfig.getClientId())
+                    .build(),
+                clientConfig.getAuthUrl(),
+                clientConfig.getApiUrl())
+            .withInternalLoggerFactory(
+                ApiInternalLoggerFactory::get,
+                Level.INFO,
+                Level.INFO,
+                Level.ERROR,
+                Collections.singletonMap(ApiClientException.class, Level.INFO))
             .addNotFoundExceptionMiddleware(Collections.singleton(ApiHttpMethod.GET))
-            .withRetryMiddleware(5, 200, 60000, Arrays.asList(500, 502, 503, 504), null, options -> options)
+            .withRetryMiddleware(
+                5, 200, 60000, Arrays.asList(500, 502, 503, 504), null, options -> options)
             .build(clientConfig.getProjectKey());
     return CompatSphereClient.of(apiRoot);
   }
