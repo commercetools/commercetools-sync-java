@@ -3,17 +3,17 @@ plugins {
     id 'com.adarshr.test-logger' version '3.2.0'
     id 'org.ajoberstar.grgit' version '5.0.0'
     id "com.github.ben-manes.versions" version '0.42.0'
-    id 'ru.vyarus.mkdocs' version '2.3.0'
-    id "com.github.spotbugs" version "5.0.6"
-    id 'com.diffplug.spotless' version '6.5.1'
+    id 'ru.vyarus.mkdocs' version '2.4.0'
+    id "com.github.spotbugs" version "5.0.8"
+    id 'com.diffplug.spotless' version '6.7.2'
     id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
 }
 
 ext{
-    commercetoolsJvmSdkVersion = '2.7.0'
-    mockitoJunitJupiterVersion = '4.5.1'
+    commercetoolsJvmSdkVersion = '2.8.0'
+    mockitoJunitJupiterVersion = '4.6.1'
     jupiterApiVersion = '5.8.2'
-    assertjVersion = '3.22.0'
+    assertjVersion = '3.23.1'
     pmdVersion = '6.14.0'
     jacocoVersion = '0.8.4'
     caffeineVersion = '2.9.3'
