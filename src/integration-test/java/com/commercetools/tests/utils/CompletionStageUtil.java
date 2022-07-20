@@ -1,7 +1,6 @@
 package com.commercetools.tests.utils;
 
 import io.vrap.rmf.base.client.utils.ClientUtils;
-
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
