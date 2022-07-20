@@ -15,6 +15,7 @@ import io.vrap.rmf.base.client.http.ErrorMiddleware;
 import io.vrap.rmf.base.client.oauth2.ClientCredentials;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 import org.asynchttpclient.AsyncHttpClient;
@@ -33,7 +34,7 @@ public final class ClientConfigurationUtils {
    */
   public static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
     ProjectApiRoot apiRoot =
-        ApiRootBuilder.of()
+        ApiRootBuilder.of(new ForkJoinPool())
             .defaultClient(
                 ClientCredentials.of()
                     .withClientSecret(clientConfig.getClientSecret())
@@ -41,6 +42,7 @@ public final class ClientConfigurationUtils {
                     .build(),
                 clientConfig.getAuthUrl() + "/oauth/token",
                 clientConfig.getApiUrl())
+            .withOAuthExecutorService(new ForkJoinPool())
             .withInternalLoggerFactory(
                 ApiInternalLoggerFactory::get,
                 Level.INFO,
@@ -50,6 +52,7 @@ public final class ClientConfigurationUtils {
             .withErrorMiddleware(ErrorMiddleware.ExceptionMode.UNWRAP_COMPLETION_EXCEPTION)
             .addNotFoundExceptionMiddleware(Collections.singleton(ApiHttpMethod.GET))
             .withRetryMiddleware(
+                    new ForkJoinPool(),
                 5, 200, 60000, Arrays.asList(500, 502, 503, 504), null, options -> options)
             .build(clientConfig.getProjectKey());
     return CompatSphereClient.of(apiRoot);
