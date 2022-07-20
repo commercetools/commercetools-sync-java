@@ -34,7 +34,7 @@ public final class ClientConfigurationUtils {
    */
   public static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
     ProjectApiRoot apiRoot =
-        ApiRootBuilder.of(new ForkJoinPool())
+        ApiRootBuilder.of(new ForkJoinPool(8))
             .defaultClient(
                 ClientCredentials.of()
                     .withClientSecret(clientConfig.getClientSecret())
@@ -42,7 +42,7 @@ public final class ClientConfigurationUtils {
                     .build(),
                 clientConfig.getAuthUrl() + "/oauth/token",
                 clientConfig.getApiUrl())
-            .withOAuthExecutorService(new ForkJoinPool())
+            .withOAuthExecutorService(new ForkJoinPool(8))
             .withInternalLoggerFactory(
                 ApiInternalLoggerFactory::get,
                 Level.INFO,
@@ -52,7 +52,7 @@ public final class ClientConfigurationUtils {
             .withErrorMiddleware(ErrorMiddleware.ExceptionMode.UNWRAP_COMPLETION_EXCEPTION)
             .addNotFoundExceptionMiddleware(Collections.singleton(ApiHttpMethod.GET))
             .withRetryMiddleware(
-                new ForkJoinPool(),
+                new ForkJoinPool(8),
                 5,
                 200,
                 60000,
