@@ -52,8 +52,13 @@ public final class ClientConfigurationUtils {
             .withErrorMiddleware(ErrorMiddleware.ExceptionMode.UNWRAP_COMPLETION_EXCEPTION)
             .addNotFoundExceptionMiddleware(Collections.singleton(ApiHttpMethod.GET))
             .withRetryMiddleware(
-                    new ForkJoinPool(),
-                5, 200, 60000, Arrays.asList(500, 502, 503, 504), null, options -> options)
+                new ForkJoinPool(),
+                5,
+                200,
+                60000,
+                Arrays.asList(500, 502, 503, 504),
+                null,
+                options -> options)
             .build(clientConfig.getProjectKey());
     return CompatSphereClient.of(apiRoot);
   }
