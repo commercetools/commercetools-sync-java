@@ -16,7 +16,6 @@ import io.vrap.rmf.base.client.oauth2.ClientCredentials;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.*;
-import java.util.function.Function;
 import javax.annotation.Nonnull;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClient;
@@ -42,7 +41,6 @@ public final class ClientConfigurationUtils {
                     .build(),
                 clientConfig.getAuthUrl() + "/oauth/token",
                 clientConfig.getApiUrl())
-//            .withOAuthExecutorService(new ForkJoinPool())
             .withInternalLoggerFactory(
                 ApiInternalLoggerFactory::get,
                 Level.INFO,
@@ -52,9 +50,7 @@ public final class ClientConfigurationUtils {
             .withErrorMiddleware(ErrorMiddleware.ExceptionMode.UNWRAP_COMPLETION_EXCEPTION)
             .addNotFoundExceptionMiddleware(Collections.singleton(ApiHttpMethod.GET))
             .withRetryMiddleware(
-//                new ForkJoinPool(8),
                 5, 200, 60000, Arrays.asList(500, 502, 503, 504), null, options -> options)
-//            .addMiddleware((request, next) -> next.apply(request).thenApplyAsync(Function.identity(), new ForkJoinPool(8)))
             .build(clientConfig.getProjectKey());
     return CompatSphereClient.of(apiRoot);
   }
