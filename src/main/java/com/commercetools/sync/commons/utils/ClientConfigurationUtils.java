@@ -42,7 +42,7 @@ public final class ClientConfigurationUtils {
                     .build(),
                 clientConfig.getAuthUrl() + "/oauth/token",
                 clientConfig.getApiUrl())
-            .withOAuthExecutorService(new ForkJoinPool())
+//            .withOAuthExecutorService(new ForkJoinPool())
             .withInternalLoggerFactory(
                 ApiInternalLoggerFactory::get,
                 Level.INFO,
