@@ -32,7 +32,7 @@ jobs:
           java-version: 8
           distribution: 'temurin'
       - name: Build with Gradle
-        run: ./gradlew clean setLibraryVersion test integrationTest jacocoTestCoverageVerification jacocoTestReport
+        run: ./gradlew clean setLibraryVersion test integrationTest
         env:
           SOURCE_PROJECT_KEY: java-sync-source
           SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
@@ -40,5 +40,5 @@ jobs:
           TARGET_PROJECT_KEY: java-sync-target
           TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID }}
           TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
-      - name: Codecov
-        uses: codecov/codecov-action@v2
+#      - name: Codecov
+#        uses: codecov/codecov-action@v2
