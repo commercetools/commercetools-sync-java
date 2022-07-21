@@ -54,7 +54,7 @@ public final class ClientConfigurationUtils {
             .withRetryMiddleware(
                 new ForkJoinPool(8),
                 5, 200, 60000, Arrays.asList(500, 502, 503, 504), null, options -> options)
-            .addMiddleware((request, next) -> next.apply(request).thenApplyAsync(Function.identity(), new ForkJoinPool(8)))
+//            .addMiddleware((request, next) -> next.apply(request).thenApplyAsync(Function.identity(), new ForkJoinPool(8)))
             .build(clientConfig.getProjectKey());
     return CompatSphereClient.of(apiRoot);
   }
