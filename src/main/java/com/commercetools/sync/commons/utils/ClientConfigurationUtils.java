@@ -34,7 +34,7 @@ public final class ClientConfigurationUtils {
    */
   public static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
     ProjectApiRoot apiRoot =
-        ApiRootBuilder.of(new ForkJoinPool(8))
+        ApiRootBuilder.of()
             .defaultClient(
                 ClientCredentials.of()
                     .withClientSecret(clientConfig.getClientSecret())
