@@ -32,7 +32,7 @@ jobs:
           java-version: 8
           distribution: 'temurin'
       - name: Build with Gradle
-        run: ./gradlew clean setLibraryVersion integrationTest
+        run: ./gradlew clean setLibraryVersion integrationTest --tests "com.commercetools.sync.integration.commons.CtpQueryUtilsIT"
         env:
           SOURCE_PROJECT_KEY: java-sync-source
           SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
