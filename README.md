@@ -45,8 +45,8 @@ Notes:
 
 ### Prerequisites
  
- - Library requires the min JDK version `>= 8`.
-   > The library tested with each major JDK version (i.e: 8, 9, 10, 11, 12, 13...) as well as some specific updates of LTS versions (i.e: 8.0.192, 11.0.3).
+ - Library requires the min JDK version `>= 11`.
+   > The library tested with each major JDK version (i.e: 11, 12, 13...) as well as some specific updates of LTS versions (i.e: 11.0.3 and above).
  - A target commercetools project for syncing your source data to.
 
 ### Installation

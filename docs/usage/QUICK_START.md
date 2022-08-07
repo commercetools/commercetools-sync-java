@@ -12,7 +12,7 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ### 1. Installation
-- Make sure you have `JDK 8` installed.
+- Make sure you have `JDK 11` installed.
 - Add the following dependency in your application:
 - For Maven users: 
 ````xml
