@@ -27,6 +27,22 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
+### 9.0.0 - Aug 8, 2022
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/8.1.1...9.0.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.0.0/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.0.0/jar)
+
+- 🚧 **Breaking Changes** (1)
+    - Minimum Java 11 or above is required [#840](https://github.com/commercetools/commercetools-sync-java/pull/840)
+    
+- ✨ **Build Tools**
+    - Migrated `org.ajoberstar.grgit` plugin from `4.1.1` to [`5.0.0`](https://github.com/ajoberstar/grgit/releases/tag/5.0.0).
+    - Migrated `org.ajoberstar.git-publish` plugin from `3.0.1` to [`4.1.0`](https://github.com/ajoberstar/gradle-git-publish/releases/tag/4.1.0).
+      
+- 🛠️ **Dependency Updates**
+    - `commercetools-jvm-sdk` `2.6.0` -> [`2.9.0`](https://github.com/commercetools/commercetools-jvm-sdk/releases/tag/v2.9.0)
+    - `caffeineVersion` `2.9.3` -> [`3.1.1`](https://github.com/ben-manes/caffeine/releases/tag/v3.1.1)
+        
 ### 8.1.1 - Mar 21, 2022
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/8.1.0...8.1.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/8.1.1/) |
