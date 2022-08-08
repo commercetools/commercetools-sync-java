@@ -46,7 +46,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
-          java-version: 8
+          java-version: 11
           distribution: 'zulu'
       - name: status
         run: echo Build is tagged. Uploading artifact ${{ steps.vars.outputs.tag }} to maven central.
