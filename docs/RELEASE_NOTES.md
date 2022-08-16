@@ -27,6 +27,17 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
+### 9.0.1 - Aug 13, 2022
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/9.0.0...9.0.1) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.0.1/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.0.1/jar)
+- 🐞 **Bug Fixes**
+  - Fix broken links in the github.io documentation [#843](https://github.com/commercetools/commercetools-sync-java/pull/843)
+- 🛠️ **Dependency Updates**
+  - `org.ajoberstar.git-publish` `4.1.0` -> [`4.1.1`](https://github.com/ajoberstar/gradle-git-publish/releases/tag/4.1.1)
+  - `org.mockito:mockito-junit-jupiter` `4.6.1` -> [`4.7.0`](https://github.com/mockito/mockito/releases/tag/v4.7.0)
+  - `com.diffplug.spotless` `6.9.0` -> [`6.9.1`](https://github.com/diffplug/spotless/releases/tag/gradle%2F6.9.1)
+
 ### 9.0.0 - Aug 8, 2022
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/8.1.1...9.0.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.0.0/) |
