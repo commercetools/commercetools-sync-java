@@ -19,7 +19,7 @@ The main goal of the build process is to publish the artifacts to public reposit
 Create a new PR for the new release: 
 - Increment the release version to the new library version, please follow the [semantic versioning](https://semver.org/) for finding the new version.
 - Make sure all the dependencies are up-to-date everywhere in the documentation files and the project files where needed.
-- Make sure to add a section for the release in the [release notes](/docs/RELEASE_NOTES.md). 
+- Make sure to add a section for the release in the [release notes](./RELEASE_NOTES.md). 
 - Ask for review for this PR and then "squash and merge" to master.
 
 For example PR, see: https://github.com/commercetools/commercetools-sync-java/pull/412

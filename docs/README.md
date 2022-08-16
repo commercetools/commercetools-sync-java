@@ -10,7 +10,7 @@
 
 Java library which allows to import/synchronise (import changes) the data from any arbitrary source to commercetools project.
 
-Supported resources: [Categories](/docs/usage/CATEGORY_SYNC.md), [Products](/docs/usage/PRODUCT_SYNC.md), [InventoryEntries](/docs/usage/INVENTORY_SYNC.md), [ProductTypes](/docs/usage/PRODUCT_TYPE_SYNC.md), [Types](/docs/usage/TYPE_SYNC.md), [CartDiscounts](/docs/usage/CART_DISCOUNT_SYNC.md), [States](/docs/usage/STATE_SYNC.md), [TaxCategories](/docs/usage/TAX_CATEGORY_SYNC.md), [CustomObjects](/docs/usage/CUSTOM_OBJECT_SYNC.md), [Customers](/docs/usage/CUSTOMER_SYNC.md), [ShoppingLists](/docs/usage/SHOPPING_LIST_SYNC.md)
+Supported resources: [Categories](./usage/CATEGORY_SYNC.md), [Products](./usage/PRODUCT_SYNC.md), [InventoryEntries](./usage/INVENTORY_SYNC.md), [ProductTypes](./usage/PRODUCT_TYPE_SYNC.md), [Types](./usage/TYPE_SYNC.md), [CartDiscounts](./usage/CART_DISCOUNT_SYNC.md), [States](./usage/STATE_SYNC.md), [TaxCategories](./usage/TAX_CATEGORY_SYNC.md), [CustomObjects](./usage/CUSTOM_OBJECT_SYNC.md), [Customers](./usage/CUSTOMER_SYNC.md), [ShoppingLists](./usage/SHOPPING_LIST_SYNC.md)
 
 ## Usage
 
