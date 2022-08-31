@@ -9,6 +9,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
 import io.sphere.sdk.http.AsyncHttpClientAdapter;
 import io.sphere.sdk.http.HttpClient;
+import io.vrap.rmf.base.client.ApiHttpMethod;
 import io.vrap.rmf.base.client.error.ApiClientException;
 import io.vrap.rmf.base.client.oauth2.ClientCredentials;
 import java.util.Arrays;
@@ -46,6 +47,7 @@ public final class ClientConfigurationUtils {
                 Level.INFO,
                 Level.ERROR,
                 Collections.singletonMap(ApiClientException.class, Level.INFO))
+            .addNotFoundExceptionMiddleware(Collections.singleton(ApiHttpMethod.GET))
             .withRetryMiddleware(
                 5, 200, 60000, Arrays.asList(500, 502, 503, 504), null, options -> options)
             .build(clientConfig.getProjectKey());
