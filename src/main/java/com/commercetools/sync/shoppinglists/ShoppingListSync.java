@@ -304,7 +304,12 @@ public class ShoppingListSync
                         CTP_SHOPPING_LIST_UPDATE_FAILED,
                         shoppingListKey,
                         "Failed to fetch from CTP while retrying after concurrency modification.");
-                handleError(new SyncException(errorMessage, exception), 1);
+                handleError(
+                    new SyncException(errorMessage, exception),
+                    oldShoppingList,
+                    newShoppingListDraft,
+                    null,
+                    1);
                 return CompletableFuture.completedFuture(null);
               }
 
@@ -319,7 +324,12 @@ public class ShoppingListSync
                                 CTP_SHOPPING_LIST_UPDATE_FAILED,
                                 shoppingListKey,
                                 "Not found when attempting to fetch while retrying after concurrency modification.");
-                        handleError(new SyncException(errorMessage, null), 1);
+                        handleError(
+                            new SyncException(errorMessage, null),
+                            oldShoppingList,
+                            newShoppingListDraft,
+                            null,
+                            1);
                         return CompletableFuture.completedFuture(null);
                       });
             });
