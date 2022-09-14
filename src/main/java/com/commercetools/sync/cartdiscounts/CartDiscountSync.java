@@ -133,6 +133,9 @@ public class CartDiscountSync
                 handleError(
                     "Failed to build a cache of keys to ids.",
                     cachingException,
+                    null,
+                    null,
+                    null,
                     validDrafts.size());
                 return CompletableFuture.completedFuture(null);
               }
@@ -150,7 +153,7 @@ public class CartDiscountSync
 
                         if (exception != null) {
                           final String errorMessage = format(CTP_CART_DISCOUNT_FETCH_FAILED, keys);
-                          handleError(errorMessage, exception, keys.size());
+                          handleError(errorMessage, exception, null, null, null, keys.size());
                           return CompletableFuture.completedFuture(null);
                         } else {
                           return syncBatch(fetchedCartDiscounts, validDrafts);
@@ -177,8 +180,15 @@ public class CartDiscountSync
   private void handleError(
       @Nonnull final String errorMessage,
       @Nullable final Throwable exception,
+      final CartDiscount oldCartDiscount,
+      final CartDiscountDraft newCartDiscount,
+      List<UpdateAction<CartDiscount>> updateActions,
       final int failedTimes) {
-    syncOptions.applyErrorCallback(new SyncException(errorMessage, exception));
+    syncOptions.applyErrorCallback(
+        new SyncException(errorMessage, exception),
+        oldCartDiscount,
+        newCartDiscount,
+        updateActions);
     statistics.incrementFailed(failedTimes);
   }
 
@@ -213,7 +223,7 @@ public class CartDiscountSync
                                       FAILED_TO_PROCESS,
                                       newCartDiscount.getKey(),
                                       completionException.getMessage());
-                              handleError(errorMessage, completionException, 1);
+                              handleError(errorMessage, completionException, null, null, null, 1);
                               return null;
                             }))
             .map(CompletionStage::toCompletableFuture)
@@ -316,7 +326,13 @@ public class CartDiscountSync
                               CTP_CART_DISCOUNT_UPDATE_FAILED,
                               newCartDiscount.getKey(),
                               sphereException.getMessage());
-                      handleError(errorMessage, sphereException, 1);
+                      handleError(
+                          errorMessage,
+                          sphereException,
+                          oldCartDiscount,
+                          newCartDiscount,
+                          updateActions,
+                          1);
                       return CompletableFuture.completedFuture(null);
                     });
               } else {
@@ -346,7 +362,7 @@ public class CartDiscountSync
                         CTP_CART_DISCOUNT_UPDATE_FAILED,
                         key,
                         "Failed to fetch from CTP while retrying after concurrency modification.");
-                handleError(errorMessage, exception, 1);
+                handleError(errorMessage, exception, oldCartDiscount, newCartDiscount, null, 1);
                 return CompletableFuture.completedFuture(null);
               }
 
@@ -362,7 +378,7 @@ public class CartDiscountSync
                                 key,
                                 "Not found when attempting to fetch while retrying "
                                     + "after concurrency modification.");
-                        handleError(errorMessage, null, 1);
+                        handleError(errorMessage, null, oldCartDiscount, newCartDiscount, null, 1);
                         return CompletableFuture.completedFuture(null);
                       });
             });
