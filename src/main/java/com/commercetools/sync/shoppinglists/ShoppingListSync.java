@@ -358,12 +358,12 @@ public class ShoppingListSync
 
   private void handleError(
       @Nonnull final SyncException syncException,
-      @Nullable final ShoppingList entry,
-      @Nullable final ShoppingListDraft draft,
+      @Nullable final ShoppingList oldShoppingList,
+      @Nullable final ShoppingListDraft newShoppingList,
       @Nullable final List<UpdateAction<ShoppingList>> updateActions,
       final int failedTimes) {
 
-    syncOptions.applyErrorCallback(syncException);
+    syncOptions.applyErrorCallback(syncException, oldShoppingList, newShoppingList, updateActions);
     statistics.incrementFailed(failedTimes);
   }
 }
