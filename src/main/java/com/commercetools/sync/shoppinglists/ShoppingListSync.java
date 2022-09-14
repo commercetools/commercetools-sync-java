@@ -31,9 +31,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.states.StateDraft;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 /**
@@ -145,9 +142,9 @@ public class ShoppingListSync
               if (cachingException != null) {
                 handleError(
                     new SyncException("Failed to build a cache of keys to ids.", cachingException),
-                        null,
-                        null,
-                        null,
+                    null,
+                    null,
+                    null,
                     shoppingListDrafts.size());
                 return CompletableFuture.completedFuture(null);
               }
@@ -168,9 +165,9 @@ public class ShoppingListSync
                               format(CTP_SHOPPING_LIST_FETCH_FAILED, shoppingListDraftKeys);
                           handleError(
                               new SyncException(errorMessage, exception),
-                                  null,
-                                  null,
-                                  null,
+                              null,
+                              null,
+                              null,
                               shoppingListDraftKeys.size());
                           return CompletableFuture.completedFuture(null);
                         } else {
@@ -209,7 +206,12 @@ public class ShoppingListSync
                                       FAILED_TO_PROCESS,
                                       shoppingListDraft.getKey(),
                                       completionException.getMessage());
-                              handleError(new SyncException(errorMessage, completionException), null, null, null,1);
+                              handleError(
+                                  new SyncException(errorMessage, completionException),
+                                  null,
+                                  null,
+                                  null,
+                                  1);
                               return null;
                             }))
             .map(CompletionStage::toCompletableFuture)
@@ -267,7 +269,12 @@ public class ShoppingListSync
                               CTP_SHOPPING_LIST_UPDATE_FAILED,
                               newShoppingListDraft.getKey(),
                               exception.getMessage());
-                      handleError(new SyncException(errorMessage, exception), oldShoppingList, newShoppingListDraft, updateActionsAfterCallback, 1);
+                      handleError(
+                          new SyncException(errorMessage, exception),
+                          oldShoppingList,
+                          newShoppingListDraft,
+                          updateActionsAfterCallback,
+                          1);
                       return CompletableFuture.completedFuture(null);
                     });
               } else {
@@ -339,11 +346,12 @@ public class ShoppingListSync
         .orElseGet(() -> CompletableFuture.completedFuture(null));
   }
 
-  private void handleError(@Nonnull final SyncException syncException,
-                           @Nullable final ShoppingList entry,
-                           @Nullable final ShoppingListDraft draft,
-                           @Nullable final List<UpdateAction<ShoppingList>> updateActions,
-                           final int failedTimes) {
+  private void handleError(
+      @Nonnull final SyncException syncException,
+      @Nullable final ShoppingList entry,
+      @Nullable final ShoppingListDraft draft,
+      @Nullable final List<UpdateAction<ShoppingList>> updateActions,
+      final int failedTimes) {
 
     syncOptions.applyErrorCallback(syncException);
     statistics.incrementFailed(failedTimes);
