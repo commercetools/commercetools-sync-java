@@ -14,7 +14,6 @@ import io.vrap.rmf.base.client.error.ApiClientException;
 import io.vrap.rmf.base.client.oauth2.ClientCredentials;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 import org.asynchttpclient.AsyncHttpClient;
@@ -33,7 +32,7 @@ public final class ClientConfigurationUtils {
    */
   public static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
     ProjectApiRoot apiRoot =
-        ApiRootBuilder.of(new ForkJoinPool(Runtime.getRuntime().availableProcessors() * 4))
+        ApiRootBuilder.of()
             .defaultClient(
                 ClientCredentials.of()
                     .withClientSecret(clientConfig.getClientSecret())
