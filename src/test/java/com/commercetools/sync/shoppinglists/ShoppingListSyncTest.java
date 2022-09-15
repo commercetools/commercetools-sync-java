@@ -743,7 +743,8 @@ public class ShoppingListSyncTest {
   }
 
   @Test
-  void sync_WithErrorUpdatingShoppingListAndCustomErrorCallback_ShouldCallErrorCallbackAndContainResourceName() {
+  void
+      sync_WithErrorUpdatingShoppingListAndCustomErrorCallback_ShouldCallErrorCallbackAndContainResourceName() {
     // preparation
     final ShoppingListDraft newShoppingListDraft1 =
         ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shoppingListName1"))
