@@ -783,8 +783,6 @@ public class ShoppingListSyncTest {
                 () -> {
                   throw new SphereException();
                 }));
-    when(mockShoppingListService.cacheKeysToIds(anySet()))
-        .thenReturn(CompletableFuture.completedFuture(emptyMap()));
     when(mockShoppingListService.createShoppingList(any()))
         .thenReturn(CompletableFuture.completedFuture(Optional.of(existingShoppingList)));
     when(mockShoppingListService.fetchShoppingList(any()))

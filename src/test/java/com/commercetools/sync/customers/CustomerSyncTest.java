@@ -625,8 +625,7 @@ public class CustomerSyncTest {
                 () -> {
                   throw new SphereException();
                 }));
-    when(mockCustomerService.cacheKeysToIds(anySet()))
-        .thenReturn(CompletableFuture.completedFuture(emptyMap()));
+
     when(mockCustomerService.createCustomer(any()))
         .thenReturn(CompletableFuture.completedFuture(Optional.of(existingCustomer)));
     when(mockCustomerService.fetchCustomerByKey(any()))
