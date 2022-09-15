@@ -25,6 +25,7 @@ import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.CartDiscountService;
 import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.impl.CartDiscountServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
@@ -38,9 +39,11 @@ import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -321,5 +324,65 @@ class CartDiscountSyncTest {
               assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
               return true;
             });
+  }
+
+  @Test
+  void
+      sync_WithErrorUpdatingCartDiscountAndCustomErrorCallback_ShouldCallErrorCallbackAndContainResourceName() {
+    // preparation
+    final List<String> errorMessages = new ArrayList<>();
+    final List<Throwable> exceptions = new ArrayList<>();
+
+    final CartDiscountSyncOptions syncOptions =
+        CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class))
+            .errorCallback(
+                (exception, newResourceDraft, oldResource, actions) -> {
+                  errorMessages.add(
+                      oldResource.get().getKey() + " : " + oldResource.get().getName());
+                  errorMessages.add(
+                      newResourceDraft.get().getKey() + " : " + newResourceDraft.get().getName());
+                  errorMessages.add(actions.get(0).getAction());
+                  errorMessages.add(exception.getMessage());
+                  exceptions.add(exception);
+                })
+            .build();
+
+    final CartDiscountService mockCartDiscountService = mock(CartDiscountServiceImpl.class);
+    final TypeService mockTypeService = mock(TypeServiceImpl.class);
+    final CartDiscount existingCartDiscount = mock(CartDiscount.class);
+    when(existingCartDiscount.getKey()).thenReturn(newCartDiscount.getKey());
+    when(mockCartDiscountService.fetchMatchingCartDiscountsByKeys(any()))
+        .thenReturn(CompletableFuture.completedFuture(singleton(existingCartDiscount)));
+    when(mockCartDiscountService.fetchMatchingCartDiscountsByKeys(emptySet()))
+        .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
+    when(mockCartDiscountService.updateCartDiscount(any(), any()))
+        .thenReturn(
+            supplyAsync(
+                () -> {
+                  throw new SphereException();
+                }));
+    when(mockTypeService.cacheKeysToIds(anySet()))
+        .thenReturn(CompletableFuture.completedFuture(emptyMap()));
+    when(mockCartDiscountService.createCartDiscount(any()))
+        .thenReturn(CompletableFuture.completedFuture(Optional.of(existingCartDiscount)));
+    when(mockCartDiscountService.fetchCartDiscount(any()))
+        .thenReturn(CompletableFuture.completedFuture(Optional.of(existingCartDiscount)));
+
+    // test
+    final CartDiscountSync cartDiscountSync =
+        new CartDiscountSync(syncOptions, mockTypeService, mockCartDiscountService);
+
+    cartDiscountSync.sync(singletonList(newCartDiscount)).toCompletableFuture().join();
+
+    // assertions
+    assertThat(errorMessages.get(0))
+        .isEqualTo(existingCartDiscount.getKey() + " : " + existingCartDiscount.getName());
+    assertThat(errorMessages.get(1))
+        .isEqualTo(newCartDiscount.getKey() + " : " + newCartDiscount.getName());
+    assertThat(errorMessages.get(2)).isEqualTo("changeValue");
+
+    assertThat(errorMessages.get(3))
+        .contains(
+            "Failed to update cart discount with key: 'cart-discount-key'. Reason: io.sphere.sdk.models.SphereException:");
   }
 }
