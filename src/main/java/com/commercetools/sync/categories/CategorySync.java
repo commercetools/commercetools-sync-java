@@ -14,7 +14,6 @@ import com.commercetools.sync.categories.helpers.CategoryBatchValidator;
 import com.commercetools.sync.categories.helpers.CategoryReferenceResolver;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.commons.BaseSync;
-import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedCategories;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
@@ -38,12 +37,11 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public class CategorySync
-    extends BaseSync<CategoryDraft, CategorySyncStatistics, CategorySyncOptions> {
+    extends BaseSync<CategoryDraft, Category, CategorySyncStatistics, CategorySyncOptions> {
 
   private static final String FAILED_TO_FETCH =
       "Failed to fetch existing categories with keys: '%s'. Reason: %s";
@@ -480,20 +478,5 @@ public class CategorySync
         .map(CompletionStage::toCompletableFuture)
         .forEach(CompletableFuture::join);
     return completedFuture(null);
-  }
-
-  private void handleError(
-      @Nonnull final String errorMessage,
-      @Nullable final Throwable exception,
-      @Nullable final Category oldCategory,
-      @Nullable final CategoryDraft newCategory,
-      @Nullable final List<UpdateAction<Category>> updateActions,
-      final int failedTimes) {
-    SyncException syncException =
-        exception != null
-            ? new SyncException(errorMessage, exception)
-            : new SyncException(errorMessage);
-    syncOptions.applyErrorCallback(syncException, oldCategory, newCategory, updateActions);
-    statistics.incrementFailed(failedTimes);
   }
 }

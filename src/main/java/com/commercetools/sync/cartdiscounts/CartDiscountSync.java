@@ -13,7 +13,6 @@ import com.commercetools.sync.cartdiscounts.helpers.CartDiscountBatchValidator;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountReferenceResolver;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
 import com.commercetools.sync.commons.BaseSync;
-import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.CartDiscountService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CartDiscountServiceImpl;
@@ -28,14 +27,14 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 /**
  * This class syncs cart discount drafts with the corresponding cart discounts in the CTP project.
  */
 public class CartDiscountSync
-    extends BaseSync<CartDiscountDraft, CartDiscountSyncStatistics, CartDiscountSyncOptions> {
+    extends BaseSync<
+        CartDiscountDraft, CartDiscount, CartDiscountSyncStatistics, CartDiscountSyncOptions> {
 
   private static final String CTP_CART_DISCOUNT_FETCH_FAILED =
       "Failed to fetch existing cart discounts with keys: '%s'.";
@@ -165,31 +164,6 @@ public class CartDiscountSync
               statistics.incrementProcessed(batch.size());
               return statistics;
             });
-  }
-
-  /**
-   * This method calls the optional error callback specified in the {@code syncOptions} and updates
-   * the {@code statistics} instance by incrementing the total number of failed cart discounts to
-   * sync.
-   *
-   * @param errorMessage The error message describing the reason(s) of failure.
-   * @param exception The exception that called caused the failure, if any.
-   * @param failedTimes The number of times that the failed cart discount statistic counter is
-   *     incremented.
-   */
-  private void handleError(
-      @Nonnull final String errorMessage,
-      @Nullable final Throwable exception,
-      final CartDiscount oldCartDiscount,
-      final CartDiscountDraft newCartDiscount,
-      List<UpdateAction<CartDiscount>> updateActions,
-      final int failedTimes) {
-    syncOptions.applyErrorCallback(
-        new SyncException(errorMessage, exception),
-        oldCartDiscount,
-        newCartDiscount,
-        updateActions);
-    statistics.incrementFailed(failedTimes);
   }
 
   /**
