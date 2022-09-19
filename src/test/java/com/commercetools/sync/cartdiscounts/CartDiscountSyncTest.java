@@ -34,6 +34,7 @@ import io.sphere.sdk.cartdiscounts.CartDiscountValue;
 import io.sphere.sdk.cartdiscounts.CartPredicate;
 import io.sphere.sdk.cartdiscounts.ShippingCostTarget;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.types.CustomFieldsDraft;
@@ -45,16 +46,34 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class CartDiscountSyncTest {
 
-  private static CartDiscountDraft newCartDiscount;
   private static final String KEY = "cart-discount-key";
+  private CartDiscountDraft newCartDiscount;
+  final List<String> errorMessages = new ArrayList<>();
+  final List<Throwable> exceptions = new ArrayList<>();
+  private CartDiscountSyncOptions syncOptions;
+  private CartDiscount errorCallbackOldResource;
+  private CartDiscountDraft errorCallbackNewResource;
+  private List<UpdateAction<CartDiscount>> errorCallbackUpdateActions;
 
-  @BeforeAll
-  static void setup() {
+  @BeforeEach
+  void setup() {
+    syncOptions =
+        CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class))
+            .errorCallback(
+                (exception, newResource, oldResource, updateActions) -> {
+                  this.errorCallbackOldResource = oldResource.orElse(null);
+                  this.errorCallbackNewResource = newResource.orElse(null);
+                  this.errorCallbackUpdateActions = updateActions;
+                  errorMessages.add(exception.getMessage());
+                  exceptions.add(exception);
+                })
+            .build();
+
     newCartDiscount =
         CartDiscountDraftBuilder.of(
                 LocalizedString.of(Locale.GERMAN, "Neu Name", Locale.ENGLISH, "new name"),
@@ -74,19 +93,6 @@ class CartDiscountSyncTest {
 
   @Test
   void sync_WithErrorFetchingExistingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
-    // preparation
-    final List<String> errorMessages = new ArrayList<>();
-    final List<Throwable> exceptions = new ArrayList<>();
-
-    final CartDiscountSyncOptions syncOptions =
-        CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback(
-                (exception, oldResource, newResource, actions) -> {
-                  errorMessages.add(exception.getMessage());
-                  exceptions.add(exception);
-                })
-            .build();
-
     final CartDiscountService mockCartDiscountService = mock(CartDiscountService.class);
 
     when(mockCartDiscountService.fetchMatchingCartDiscountsByKeys(singleton(KEY)))
@@ -126,16 +132,13 @@ class CartDiscountSyncTest {
   @Test
   void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
     // preparation
-    final CartDiscountSyncOptions cartDiscountSyncOptions =
-        CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class)).build();
-
     final CartDiscountService cartDiscountService = mock(CartDiscountService.class);
     when(cartDiscountService.fetchMatchingCartDiscountsByKeys(anySet()))
         .thenReturn(completedFuture(emptySet()));
     when(cartDiscountService.createCartDiscount(any()))
         .thenReturn(completedFuture(Optional.empty()));
 
-    final CartDiscountSyncOptions spyCartDiscountSyncOptions = spy(cartDiscountSyncOptions);
+    final CartDiscountSyncOptions spyCartDiscountSyncOptions = spy(syncOptions);
 
     // test
     new CartDiscountSync(spyCartDiscountSyncOptions, getMockTypeService(), cartDiscountService)
@@ -151,9 +154,6 @@ class CartDiscountSyncTest {
   @Test
   void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
     // preparation
-    final CartDiscountSyncOptions cartDiscountSyncOptions =
-        CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class)).build();
-
     final CartDiscount mockedExistingCartDiscount = mock(CartDiscount.class);
     when(mockedExistingCartDiscount.getKey()).thenReturn(newCartDiscount.getKey());
 
@@ -164,7 +164,7 @@ class CartDiscountSyncTest {
     when(cartDiscountService.updateCartDiscount(any(), any()))
         .thenReturn(completedFuture(mockedExistingCartDiscount));
 
-    final CartDiscountSyncOptions spyCartDiscountSyncOptions = spy(cartDiscountSyncOptions);
+    final CartDiscountSyncOptions spyCartDiscountSyncOptions = spy(syncOptions);
 
     // test
     new CartDiscountSync(spyCartDiscountSyncOptions, getMockTypeService(), cartDiscountService)
@@ -182,21 +182,8 @@ class CartDiscountSyncTest {
     // preparation
     final CartDiscountDraft newCartDiscountDraft = null;
 
-    final List<String> errorMessages = new ArrayList<>();
-    final List<Throwable> exceptions = new ArrayList<>();
-
-    final CartDiscountSyncOptions cartDiscountSyncOptions =
-        CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback(
-                (exception, oldResource, newResource, actions) -> {
-                  errorMessages.add(exception.getMessage());
-                  exceptions.add(exception);
-                })
-            .build();
-
     final CartDiscountSync cartDiscountSync =
-        new CartDiscountSync(
-            cartDiscountSyncOptions, getMockTypeService(), mock(CartDiscountService.class));
+        new CartDiscountSync(syncOptions, getMockTypeService(), mock(CartDiscountService.class));
 
     // test
     final CartDiscountSyncStatistics cartDiscountSyncStatistics =
@@ -226,21 +213,8 @@ class CartDiscountSyncTest {
     final CartDiscountDraft newCartDiscountDraftWithoutKey = mock(CartDiscountDraft.class);
     when(newCartDiscountDraftWithoutKey.getKey()).thenReturn(null);
 
-    final List<String> errorMessages = new ArrayList<>();
-    final List<Throwable> exceptions = new ArrayList<>();
-
-    final CartDiscountSyncOptions cartDiscountSyncOptions =
-        CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback(
-                (exception, oldResource, newResource, actions) -> {
-                  errorMessages.add(exception.getMessage());
-                  exceptions.add(exception);
-                })
-            .build();
-
     final CartDiscountSync cartDiscountSync =
-        new CartDiscountSync(
-            cartDiscountSyncOptions, getMockTypeService(), mock(CartDiscountService.class));
+        new CartDiscountSync(syncOptions, getMockTypeService(), mock(CartDiscountService.class));
 
     // test
     final CartDiscountSyncStatistics cartDiscountSyncStatistics =
@@ -272,19 +246,7 @@ class CartDiscountSyncTest {
   @Test
   void sync_WithFailOnCachingKeysToIds_ShouldTriggerErrorCallbackAndReturnProperStats() {
     // preparation
-    final List<String> errorMessages = new ArrayList<>();
-    final List<Throwable> exceptions = new ArrayList<>();
-
-    final CartDiscountSyncOptions cartDiscountSyncOptions =
-        CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback(
-                (exception, oldResource, newResource, actions) -> {
-                  errorMessages.add(exception.getMessage());
-                  exceptions.add(exception.getCause());
-                })
-            .build();
-
-    final TypeService typeService = spy(new TypeServiceImpl(cartDiscountSyncOptions));
+    final TypeService typeService = spy(new TypeServiceImpl(syncOptions));
     when(typeService.cacheKeysToIds(anySet()))
         .thenReturn(
             supplyAsync(
@@ -293,7 +255,7 @@ class CartDiscountSyncTest {
                 }));
 
     final CartDiscountSync cartDiscountSync =
-        new CartDiscountSync(cartDiscountSyncOptions, typeService, mock(CartDiscountService.class));
+        new CartDiscountSync(syncOptions, typeService, mock(CartDiscountService.class));
 
     final CartDiscountDraft newCartDiscountDraftWithCustomType = mock(CartDiscountDraft.class);
     when(newCartDiscountDraftWithCustomType.getKey()).thenReturn("cart-discount-key");
@@ -320,8 +282,8 @@ class CartDiscountSyncTest {
         .singleElement()
         .matches(
             throwable -> {
-              assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
-              assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
+              assertThat(throwable.getCause()).isExactlyInstanceOf(CompletionException.class);
+              assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(SphereException.class);
               return true;
             });
   }
@@ -330,23 +292,6 @@ class CartDiscountSyncTest {
   void
       sync_WithErrorUpdatingCartDiscountAndCustomErrorCallback_ShouldCallErrorCallbackAndContainResourceName() {
     // preparation
-    final List<String> errorMessages = new ArrayList<>();
-    final List<Throwable> exceptions = new ArrayList<>();
-
-    final CartDiscountSyncOptions syncOptions =
-        CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback(
-                (exception, newResourceDraft, oldResource, actions) -> {
-                  errorMessages.add(
-                      oldResource.get().getKey() + " : " + oldResource.get().getName());
-                  errorMessages.add(
-                      newResourceDraft.get().getKey() + " : " + newResourceDraft.get().getName());
-                  errorMessages.add(actions.get(0).getAction());
-                  errorMessages.add(exception.getMessage());
-                  exceptions.add(exception);
-                })
-            .build();
-
     final CartDiscountService mockCartDiscountService = mock(CartDiscountServiceImpl.class);
     final TypeService mockTypeService = mock(TypeServiceImpl.class);
     final CartDiscount existingCartDiscount = mock(CartDiscount.class);
@@ -375,13 +320,11 @@ class CartDiscountSyncTest {
     cartDiscountSync.sync(singletonList(newCartDiscount)).toCompletableFuture().join();
 
     // assertions
-    assertThat(errorMessages.get(0))
-        .isEqualTo(existingCartDiscount.getKey() + " : " + existingCartDiscount.getName());
-    assertThat(errorMessages.get(1))
-        .isEqualTo(newCartDiscount.getKey() + " : " + newCartDiscount.getName());
-    assertThat(errorMessages.get(2)).isEqualTo("changeValue");
+    assertThat(errorCallbackOldResource).isEqualTo(existingCartDiscount);
+    assertThat(errorCallbackNewResource).isEqualTo(newCartDiscount);
+    assertThat(errorCallbackUpdateActions.get(0).getAction()).isEqualTo("changeValue");
 
-    assertThat(errorMessages.get(3))
+    assertThat(errorMessages.get(0))
         .contains(
             "Failed to update cart discount with key: 'cart-discount-key'. Reason: io.sphere.sdk.models.SphereException:");
   }
