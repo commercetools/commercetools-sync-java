@@ -38,6 +38,7 @@ import com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics;
 import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
@@ -68,6 +69,9 @@ public class ShoppingListSyncTest {
   private ShoppingListSyncOptions syncOptions;
   private List<String> errorMessages;
   private List<Throwable> exceptions;
+  private ShoppingList errorCallbackOldResource;
+  private ShoppingListDraft errorCallbackNewResource;
+  private List<UpdateAction<ShoppingList>> errorCallbackUpdateActions;
 
   @BeforeEach
   void setup() {
@@ -78,7 +82,10 @@ public class ShoppingListSyncTest {
     syncOptions =
         ShoppingListSyncOptionsBuilder.of(ctpClient)
             .errorCallback(
-                (exception, oldResource, newResource, updateActions) -> {
+                (exception, newResource, oldResource, updateActions) -> {
+                  this.errorCallbackOldResource = oldResource.orElse(null);
+                  this.errorCallbackNewResource = newResource.orElse(null);
+                  this.errorCallbackUpdateActions = updateActions;
                   errorMessages.add(exception.getMessage());
                   exceptions.add(exception);
                 })
@@ -750,22 +757,6 @@ public class ShoppingListSyncTest {
         ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shoppingListName1"))
             .key("shoppingListKey1")
             .build();
-    final List<String> errorMessages = new ArrayList<>();
-    final List<Throwable> exceptions = new ArrayList<>();
-
-    final ShoppingListSyncOptions syncOptions =
-        ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback(
-                (exception, newResourceDraft, oldResource, actions) -> {
-                  errorMessages.add(
-                      oldResource.get().getKey() + " : " + oldResource.get().getName());
-                  errorMessages.add(
-                      newResourceDraft.get().getKey() + " : " + newResourceDraft.get().getName());
-                  errorMessages.add(actions.get(0).getAction());
-                  errorMessages.add(exception.getMessage());
-                  exceptions.add(exception);
-                })
-            .build();
 
     final ShoppingListService mockShoppingListService = mock(ShoppingListServiceImpl.class);
     final CustomerService mockCustomerService = mock(CustomerServiceImpl.class);
@@ -795,13 +786,11 @@ public class ShoppingListSyncTest {
     shoppingListSync.sync(singletonList(newShoppingListDraft1)).toCompletableFuture().join();
 
     // assertions
-    assertThat(errorMessages.get(0))
-        .isEqualTo(existingShoppingList.getKey() + " : " + existingShoppingList.getName());
-    assertThat(errorMessages.get(1))
-        .isEqualTo(newShoppingListDraft1.getKey() + " : " + newShoppingListDraft1.getName());
-    assertThat(errorMessages.get(2)).isEqualTo("changeName");
+    assertThat(errorCallbackOldResource).isEqualTo(existingShoppingList);
+    assertThat(errorCallbackNewResource).isEqualTo(newShoppingListDraft1);
+    assertThat(errorCallbackUpdateActions.get(0).getAction()).isEqualTo("changeName");
 
-    assertThat(errorMessages.get(3))
+    assertThat(errorMessages.get(0))
         .contains(
             "Failed to update shopping lists with key: 'shoppingListKey1'. Reason: io.sphere.sdk.models.SphereException:");
   }
