@@ -191,7 +191,7 @@ public class CustomerSync
                                       FAILED_TO_PROCESS,
                                       customerDraft.getKey(),
                                       completionException.getMessage());
-                              handleError(errorMessage, completionException, null, null, null, 1);
+                              handleError(errorMessage, completionException, null, customerDraft, null, 1);
                               return null;
                             }))
             .map(CompletionStage::toCompletableFuture)

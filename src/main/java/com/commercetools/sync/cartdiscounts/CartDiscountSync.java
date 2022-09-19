@@ -197,7 +197,7 @@ public class CartDiscountSync
                                       FAILED_TO_PROCESS,
                                       newCartDiscount.getKey(),
                                       completionException.getMessage());
-                              handleError(errorMessage, completionException, null, null, null, 1);
+                              handleError(errorMessage, completionException, null, newCartDiscount, null, 1);
                               return null;
                             }))
             .map(CompletionStage::toCompletableFuture)

@@ -140,6 +140,7 @@ public abstract class BaseSync<
    * @param failedTimes The number of times that the failed cart discount statistic counter is
    *     incremented.
    */
+  @SuppressWarnings("unchecked")
   protected void handleError(
       @Nonnull final String errorMessage,
       @Nullable final Throwable exception,

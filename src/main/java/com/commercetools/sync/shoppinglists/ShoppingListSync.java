@@ -207,7 +207,7 @@ public class ShoppingListSync
                                       FAILED_TO_PROCESS,
                                       shoppingListDraft.getKey(),
                                       completionException.getMessage());
-                              handleError(errorMessage, completionException, null, null, null, 1);
+                              handleError(errorMessage, completionException, null, shoppingListDraft, null, 1);
                               return null;
                             }))
             .map(CompletionStage::toCompletableFuture)
