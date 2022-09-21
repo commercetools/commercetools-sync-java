@@ -180,7 +180,7 @@ public class ProductSync
             cachingResponse -> {
               final Throwable cachingException = cachingResponse.getValue();
               if (cachingException != null) {
-                super.handleError(
+                handleError(
                     "Failed to build a cache of keys to ids.",
                     cachingException,
                     null,
@@ -220,7 +220,7 @@ public class ProductSync
               final Throwable fetchException = fetchResponse.getValue();
               if (fetchException != null) {
                 final String errorMessage = format(CTP_PRODUCT_FETCH_FAILED, productDraftKeys);
-                super.handleError(
+                handleError(
                     errorMessage, fetchException, null, null, null, productDraftKeys.size());
                 return CompletableFuture.completedFuture(null);
               } else {
@@ -324,7 +324,7 @@ public class ProductSync
               if (fetchException != null) {
                 final String errorMessage =
                     format(UNRESOLVED_REFERENCES_STORE_FETCH_FAILED, referencingDraftKeys);
-                super.handleError(
+                handleError(
                     errorMessage, fetchException, null, null, null, referencingDraftKeys.size());
                 return CompletableFuture.completedFuture(null);
               }
@@ -406,7 +406,7 @@ public class ProductSync
                       FAILED_TO_PROCESS,
                       newProductDraft.getKey(),
                       completionException.getMessage());
-              super.handleError(errorMessage, completionException, null, null, null, 1);
+              handleError(errorMessage, completionException, null, null, null, 1);
               return null;
             });
   }
@@ -442,7 +442,7 @@ public class ProductSync
                           final String errorMessage =
                               format(
                                   UPDATE_FAILED, oldProduct.getKey(), FAILED_TO_FETCH_PRODUCT_TYPE);
-                          super.handleError(errorMessage, null, oldProduct, newProduct, null, 1);
+                          handleError(errorMessage, null, oldProduct, newProduct, null, 1);
                           return CompletableFuture.completedFuture(null);
                         }));
   }
@@ -465,7 +465,7 @@ public class ProductSync
                     () -> fetchAndUpdate(oldProduct, newProduct),
                     () -> {
                       final String productKey = oldProduct.getKey();
-                      handleError(
+                      handleProductSyncError(
                           format(UPDATE_FAILED, productKey, sphereException),
                           sphereException,
                           oldProduct,
@@ -510,7 +510,7 @@ public class ProductSync
                         key,
                         "Failed to fetch from CTP while "
                             + "retrying after concurrency modification.");
-                super.handleError(errorMessage, exception, oldProduct, newProduct, null, 1);
+                handleError(errorMessage, exception, oldProduct, newProduct, null, 1);
                 return CompletableFuture.completedFuture(null);
               }
 
@@ -526,7 +526,7 @@ public class ProductSync
                                 key,
                                 "Not found when attempting to fetch "
                                     + "while retrying after concurrency modification.");
-                        super.handleError(errorMessage, null, oldProduct, newProduct, null, 1);
+                        handleError(errorMessage, null, oldProduct, newProduct, null, 1);
                         return CompletableFuture.completedFuture(null);
                       });
             });
@@ -567,7 +567,7 @@ public class ProductSync
    * @param newProduct the ProductProjection draft where we get the new data.
    * @param updateActions the update actions to update the {@link Product} with.
    */
-  private void handleError(
+  private void handleProductSyncError(
       @Nonnull final String errorMessage,
       @Nullable final Throwable exception,
       @Nullable final ProductProjection oldProduct,
