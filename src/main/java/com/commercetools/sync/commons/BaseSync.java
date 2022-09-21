@@ -146,9 +146,9 @@ public abstract class BaseSync<
       @Nullable final Throwable exception,
       final S oldResource,
       final T newResourceDraft,
-      List<UpdateAction<S>> updateActions,
+      final List<UpdateAction<S>> updateActions,
       final int failedTimes) {
-    SyncException syncException =
+    final SyncException syncException =
         exception != null
             ? new SyncException(errorMessage, exception)
             : new SyncException(errorMessage);
