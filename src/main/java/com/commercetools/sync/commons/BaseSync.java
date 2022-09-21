@@ -1,13 +1,18 @@
 package com.commercetools.sync.commons;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 import io.sphere.sdk.client.ConcurrentModificationException;
+import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.Versioned;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSyncOptions> {
+public abstract class BaseSync<
+    T, S extends Versioned, U extends BaseSyncStatistics, V extends BaseSyncOptions> {
   protected final U statistics;
   protected final V syncOptions;
 
@@ -121,5 +126,33 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
       return onConcurrentModificationSupplier.get();
     }
     return onOtherExceptionSupplier.get();
+  }
+
+  /**
+   * This method calls the optional error callback specified in the {@code syncOptions} and updates
+   * the {@code statistics} instance by incrementing the total number of failed resources S to sync.
+   *
+   * @param errorMessage The error message describing the reason(s) of failure.
+   * @param exception The exception that called caused the failure, if any.
+   * @param oldResource the commercetools resource which could be updated.
+   * @param newResourceDraft the commercetools resource draft where we get the new data.
+   * @param updateActions the update actions to update the resource with.
+   * @param failedTimes The number of times that the failed cart discount statistic counter is
+   *     incremented.
+   */
+  @SuppressWarnings("unchecked")
+  protected void handleError(
+      @Nonnull final String errorMessage,
+      @Nullable final Throwable exception,
+      final S oldResource,
+      final T newResourceDraft,
+      final List<UpdateAction<S>> updateActions,
+      final int failedTimes) {
+    final SyncException syncException =
+        exception != null
+            ? new SyncException(errorMessage, exception)
+            : new SyncException(errorMessage);
+    syncOptions.applyErrorCallback(syncException, oldResource, newResourceDraft, updateActions);
+    statistics.incrementFailed(failedTimes);
   }
 }

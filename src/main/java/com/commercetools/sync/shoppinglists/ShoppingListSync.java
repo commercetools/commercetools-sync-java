@@ -9,7 +9,6 @@ import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
 import com.commercetools.sync.commons.BaseSync;
-import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
 import com.commercetools.sync.services.CustomerService;
 import com.commercetools.sync.services.ShoppingListService;
@@ -37,7 +36,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
  * project.
  */
 public class ShoppingListSync
-    extends BaseSync<ShoppingListDraft, ShoppingListSyncStatistics, ShoppingListSyncOptions> {
+    extends BaseSync<
+        ShoppingListDraft, ShoppingList, ShoppingListSyncStatistics, ShoppingListSyncOptions> {
 
   private static final String CTP_SHOPPING_LIST_UPDATE_FAILED =
       "Failed to update shopping lists with key: '%s'. Reason: %s";
@@ -140,7 +140,11 @@ public class ShoppingListSync
               final Throwable cachingException = cachingResponse.getRight();
               if (cachingException != null) {
                 handleError(
-                    new SyncException("Failed to build a cache of keys to ids.", cachingException),
+                    "Failed to build a cache of keys to ids.",
+                    cachingException,
+                    null,
+                    null,
+                    null,
                     shoppingListDrafts.size());
                 return CompletableFuture.completedFuture(null);
               }
@@ -160,7 +164,11 @@ public class ShoppingListSync
                           final String errorMessage =
                               format(CTP_SHOPPING_LIST_FETCH_FAILED, shoppingListDraftKeys);
                           handleError(
-                              new SyncException(errorMessage, exception),
+                              errorMessage,
+                              exception,
+                              null,
+                              null,
+                              null,
                               shoppingListDraftKeys.size());
                           return CompletableFuture.completedFuture(null);
                         } else {
@@ -199,7 +207,13 @@ public class ShoppingListSync
                                       FAILED_TO_PROCESS,
                                       shoppingListDraft.getKey(),
                                       completionException.getMessage());
-                              handleError(new SyncException(errorMessage, completionException), 1);
+                              handleError(
+                                  errorMessage,
+                                  completionException,
+                                  null,
+                                  shoppingListDraft,
+                                  null,
+                                  1);
                               return null;
                             }))
             .map(CompletionStage::toCompletableFuture)
@@ -257,7 +271,13 @@ public class ShoppingListSync
                               CTP_SHOPPING_LIST_UPDATE_FAILED,
                               newShoppingListDraft.getKey(),
                               exception.getMessage());
-                      handleError(new SyncException(errorMessage, exception), 1);
+                      handleError(
+                          errorMessage,
+                          exception,
+                          oldShoppingList,
+                          newShoppingListDraft,
+                          updateActionsAfterCallback,
+                          1);
                       return CompletableFuture.completedFuture(null);
                     });
               } else {
@@ -287,7 +307,8 @@ public class ShoppingListSync
                         CTP_SHOPPING_LIST_UPDATE_FAILED,
                         shoppingListKey,
                         "Failed to fetch from CTP while retrying after concurrency modification.");
-                handleError(new SyncException(errorMessage, exception), 1);
+                handleError(
+                    errorMessage, exception, oldShoppingList, newShoppingListDraft, null, 1);
                 return CompletableFuture.completedFuture(null);
               }
 
@@ -302,7 +323,8 @@ public class ShoppingListSync
                                 CTP_SHOPPING_LIST_UPDATE_FAILED,
                                 shoppingListKey,
                                 "Not found when attempting to fetch while retrying after concurrency modification.");
-                        handleError(new SyncException(errorMessage, null), 1);
+                        handleError(
+                            errorMessage, null, oldShoppingList, newShoppingListDraft, null, 1);
                         return CompletableFuture.completedFuture(null);
                       });
             });
@@ -327,11 +349,5 @@ public class ShoppingListSync
                           }
                         }))
         .orElseGet(() -> CompletableFuture.completedFuture(null));
-  }
-
-  private void handleError(@Nonnull final SyncException syncException, final int failedTimes) {
-
-    syncOptions.applyErrorCallback(syncException);
-    statistics.incrementFailed(failedTimes);
   }
 }

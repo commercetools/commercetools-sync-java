@@ -7,6 +7,7 @@ import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedF
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -30,10 +31,14 @@ import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.CustomerService;
 import com.commercetools.sync.services.ShoppingListService;
 import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.impl.CustomerServiceImpl;
+import com.commercetools.sync.services.impl.ShoppingListServiceImpl;
+import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics;
 import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
@@ -50,9 +55,11 @@ import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,6 +69,9 @@ public class ShoppingListSyncTest {
   private ShoppingListSyncOptions syncOptions;
   private List<String> errorMessages;
   private List<Throwable> exceptions;
+  private ShoppingList errorCallbackOldResource;
+  private ShoppingListDraft errorCallbackNewResource;
+  private List<UpdateAction<ShoppingList>> errorCallbackUpdateActions;
 
   @BeforeEach
   void setup() {
@@ -72,7 +82,10 @@ public class ShoppingListSyncTest {
     syncOptions =
         ShoppingListSyncOptionsBuilder.of(ctpClient)
             .errorCallback(
-                (exception, oldResource, newResource, updateActions) -> {
+                (exception, newResource, oldResource, updateActions) -> {
+                  this.errorCallbackOldResource = oldResource.orElse(null);
+                  this.errorCallbackNewResource = newResource.orElse(null);
+                  this.errorCallbackUpdateActions = updateActions;
                   errorMessages.add(exception.getMessage());
                   exceptions.add(exception);
                 })
@@ -734,5 +747,51 @@ public class ShoppingListSyncTest {
         .hasSize(1)
         .singleElement(as(THROWABLE))
         .isExactlyInstanceOf(SyncException.class);
+  }
+
+  @Test
+  void
+      sync_WithErrorUpdatingShoppingListAndCustomErrorCallback_ShouldCallErrorCallbackAndContainResourceName() {
+    // preparation
+    final ShoppingListDraft newShoppingListDraft1 =
+        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shoppingListName1"))
+            .key("shoppingListKey1")
+            .build();
+
+    final ShoppingListService mockShoppingListService = mock(ShoppingListServiceImpl.class);
+    final CustomerService mockCustomerService = mock(CustomerServiceImpl.class);
+    final TypeService mockTypeService = mock(TypeServiceImpl.class);
+
+    final ShoppingList existingShoppingList = mock(ShoppingList.class);
+    when(existingShoppingList.getKey()).thenReturn(newShoppingListDraft1.getKey());
+    when(mockShoppingListService.fetchMatchingShoppingListsByKeys(any()))
+        .thenReturn(CompletableFuture.completedFuture(singleton(existingShoppingList)));
+    when(mockShoppingListService.fetchMatchingShoppingListsByKeys(emptySet()))
+        .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
+    when(mockShoppingListService.updateShoppingList(any(), any()))
+        .thenReturn(
+            supplyAsync(
+                () -> {
+                  throw new SphereException();
+                }));
+    when(mockShoppingListService.createShoppingList(any()))
+        .thenReturn(CompletableFuture.completedFuture(Optional.of(existingShoppingList)));
+    when(mockShoppingListService.fetchShoppingList(any()))
+        .thenReturn(CompletableFuture.completedFuture(Optional.of(existingShoppingList)));
+
+    // test
+    final ShoppingListSync shoppingListSync =
+        new ShoppingListSync(
+            syncOptions, mockShoppingListService, mockCustomerService, mockTypeService);
+    shoppingListSync.sync(singletonList(newShoppingListDraft1)).toCompletableFuture().join();
+
+    // assertions
+    assertThat(errorCallbackOldResource).isEqualTo(existingShoppingList);
+    assertThat(errorCallbackNewResource).isEqualTo(newShoppingListDraft1);
+    assertThat(errorCallbackUpdateActions.get(0).getAction()).isEqualTo("changeName");
+
+    assertThat(errorMessages.get(0))
+        .contains(
+            "Failed to update shopping lists with key: 'shoppingListKey1'. Reason: io.sphere.sdk.models.SphereException:");
   }
 }
