@@ -22,7 +22,7 @@ Notes:
 - There is dockerized ready-to-use CLI application [commercetools-project-sync](https://github.com/commercetools/commercetools-project-sync) which based on this library can synchronize entire data catalogue between the 2 commercetools projects.
 - During a synchronisation, resources are either created or updated, but **not** deleted.
 
-⚡ See the [Quick Start Guide](/docs/usage/QUICK_START.md) for more information on building a product importer!
+⚡ See the [Quick Start Guide](./usage/QUICK_START.md) for more information on building a product importer!
 
 ![commercetools-java-sync-final 001](https://user-images.githubusercontent.com/3469524/126317637-a946a81c-2948-4751-86bb-02bcecfeca95.png)
 
