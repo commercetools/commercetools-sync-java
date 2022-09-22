@@ -2,9 +2,9 @@
 # commercetools sync
 [![CI](https://github.com/commercetools/commercetools-sync-java/workflows/CI/badge.svg)](https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/commercetools/commercetools-sync-java/branch/master/graph/badge.svg)](https://codecov.io/gh/commercetools/commercetools-sync-java)
-[![Benchmarks 9.0.2](https://img.shields.io/badge/Benchmarks-9.0.2-orange.svg)](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
-[![Download from Maven Central](https://img.shields.io/badge/Maven_Central-9.0.2-blue.svg)](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.0.2/jar) 
-[![Javadoc](https://javadoc.io/badge2/com.commercetools/commercetools-sync-java/javadoc.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/9.0.2/)
+[![Benchmarks 9.0.3](https://img.shields.io/badge/Benchmarks-9.0.3-orange.svg)](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
+[![Download from Maven Central](https://img.shields.io/badge/Maven_Central-9.0.3-blue.svg)](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.0.3/jar) 
+[![Javadoc](https://javadoc.io/badge2/com.commercetools/commercetools-sync-java/javadoc.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/9.0.3/)
 [![Known Vulnerabilities](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646/badge.svg)](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646)
 
 More at https://commercetools.github.io/commercetools-sync-java
@@ -25,7 +25,7 @@ Supported resources: [Categories](/docs/usage/CATEGORY_SYNC.md), [Products](/doc
     - [SBT](#sbt)
     - [Ivy](#ivy)
 - [Release Notes](/docs/RELEASE_NOTES.md)
-- [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.0.2/)
+- [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.0.3/)
 - [Benchmarks](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -60,26 +60,26 @@ Here are the most popular ones:
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>9.0.2</version>
+  <version>9.0.3</version>
 </dependency>
 ````
 
 #### Gradle
 
 ````groovy
-implementation 'com.commercetools:commercetools-sync-java:9.0.2'
+implementation 'com.commercetools:commercetools-sync-java:9.0.3'
 ````
 
 #### SBT 
 
 ````
-libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "9.0.2"
+libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "9.0.3"
 ````
 
 #### Ivy 
 
 ````xml
-<dependency org="com.commercetools" name="commercetools-sync-java" rev="9.0.2"/>
+<dependency org="com.commercetools" name="commercetools-sync-java" rev="9.0.3"/>
 ````
 
 **Note**: To avoid `commercetools JVM SDK` libraries version mismatch between projects.
