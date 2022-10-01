@@ -18,7 +18,7 @@ ext{
     jacocoVersion = '0.8.8'
     caffeineVersion = '3.1.1'
     nexusStagingPluginVersion = '0.22.0'
-    commonTextVersion = '1.9'
+    commonTextVersion = '1.10.0'
 }
 
 apply from: "$rootDir/gradle-scripts/repositories.gradle"
