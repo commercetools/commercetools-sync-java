@@ -1,28 +1,48 @@
 package com.commercetools.sync.commons.utils;
 
-import com.commercetools.api.client.ApiInternalLoggerFactory;
-import com.commercetools.api.client.ProjectApiRoot;
-import com.commercetools.api.defaultconfig.ApiRootBuilder;
-import com.commercetools.compat.CompatSphereClient;
+import com.commercetools.sync.commons.utils.CompactClientConfigurationUtils;
 import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
 import io.sphere.sdk.http.AsyncHttpClientAdapter;
 import io.sphere.sdk.http.HttpClient;
-import io.vrap.rmf.base.client.ApiHttpMethod;
-import io.vrap.rmf.base.client.error.ApiClientException;
-import io.vrap.rmf.base.client.http.ErrorMiddleware;
-import io.vrap.rmf.base.client.oauth2.ClientCredentials;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
-import org.slf4j.event.Level;
 
 public final class ClientConfigurationUtils {
+
+  public static final String CLIENT_VERSION_V1 = "CLIENT_VERSION_V1";
+  public static final String CLIENT_VERSION_V2 = "CLIENT_VERSION_V2";
+
+  public static SphereClient createClient(
+      @Nonnull final SphereClientConfig clientConfig, final String clientVersion) {
+    switch (clientVersion) {
+      case CLIENT_VERSION_V1:
+        return createClient(clientConfig);
+      case CLIENT_VERSION_V2:
+        return CompactClientConfigurationUtils.createClient(clientConfig);
+      default:
+        return createClient(clientConfig);
+    }
+  }
+
+  public static SphereClient createClient(
+      @Nonnull final SphereClientConfig clientConfig,
+      final long timeout,
+      @Nonnull final TimeUnit timeUnit,
+      final String clientVersion) {
+    switch (clientVersion) {
+      case CLIENT_VERSION_V1:
+        return createClient(clientConfig, timeout, timeUnit);
+      case CLIENT_VERSION_V2:
+        return createClient(clientConfig, timeout, timeUnit);
+      default:
+        return createClient(clientConfig, timeout, timeUnit);
+    }
+  }
 
   /**
    * Creates a {@link SphereClient} with retry logic which computes a exponential backoff time delay
@@ -32,27 +52,7 @@ public final class ClientConfigurationUtils {
    * @return the instantiated {@link SphereClient}.
    */
   public static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
-    ProjectApiRoot apiRoot =
-        ApiRootBuilder.of()
-            .defaultClient(
-                ClientCredentials.of()
-                    .withClientSecret(clientConfig.getClientSecret())
-                    .withClientId(clientConfig.getClientId())
-                    .build(),
-                clientConfig.getAuthUrl() + "/oauth/token",
-                clientConfig.getApiUrl())
-            .withInternalLoggerFactory(
-                ApiInternalLoggerFactory::get,
-                Level.INFO,
-                Level.INFO,
-                Level.ERROR,
-                Collections.singletonMap(ApiClientException.class, Level.INFO))
-            .withErrorMiddleware(ErrorMiddleware.ExceptionMode.UNWRAP_COMPLETION_EXCEPTION)
-            .addNotFoundExceptionMiddleware(Collections.singleton(ApiHttpMethod.GET))
-            .withRetryMiddleware(
-                5, 200, 60000, Arrays.asList(500, 502, 503, 504), null, options -> options)
-            .build(clientConfig.getProjectKey());
-    return CompatSphereClient.of(apiRoot);
+    return RetryableSphereClientBuilder.of(clientConfig, getHttpClient()).build();
   }
 
   /**
