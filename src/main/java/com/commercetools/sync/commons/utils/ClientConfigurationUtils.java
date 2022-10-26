@@ -1,9 +1,9 @@
 package com.commercetools.sync.commons.utils;
 
-import com.commercetools.sync.commons.utils.CompactClientConfigurationUtils;
 import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
+import io.sphere.sdk.client.retry.RetryableSphereClientBuilder;
 import io.sphere.sdk.http.AsyncHttpClientAdapter;
 import io.sphere.sdk.http.HttpClient;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +23,7 @@ public final class ClientConfigurationUtils {
       case CLIENT_VERSION_V1:
         return createClient(clientConfig);
       case CLIENT_VERSION_V2:
-        return CompactClientConfigurationUtils.createClient(clientConfig);
+        return ClientV2ConfigurationUtils.createClient(clientConfig);
       default:
         return createClient(clientConfig);
     }
@@ -38,7 +38,7 @@ public final class ClientConfigurationUtils {
       case CLIENT_VERSION_V1:
         return createClient(clientConfig, timeout, timeUnit);
       case CLIENT_VERSION_V2:
-        return createClient(clientConfig, timeout, timeUnit);
+        return ClientV2ConfigurationUtils.createClient(clientConfig, timeout, timeUnit);
       default:
         return createClient(clientConfig, timeout, timeUnit);
     }
