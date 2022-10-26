@@ -11,6 +11,7 @@ import io.sphere.sdk.http.AsyncHttpClientAdapter;
 import io.sphere.sdk.http.HttpClient;
 import io.vrap.rmf.base.client.ApiHttpMethod;
 import io.vrap.rmf.base.client.error.ApiClientException;
+import io.vrap.rmf.base.client.http.ErrorMiddleware;
 import io.vrap.rmf.base.client.oauth2.ClientCredentials;
 import java.util.Arrays;
 import java.util.Collections;
