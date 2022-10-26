@@ -46,6 +46,7 @@ public final class ClientConfigurationUtils {
                 Level.INFO,
                 Level.ERROR,
                 Collections.singletonMap(ApiClientException.class, Level.INFO))
+            .withErrorMiddleware(ErrorMiddleware.ExceptionMode.UNWRAP_COMPLETION_EXCEPTION)
             .addNotFoundExceptionMiddleware(Collections.singleton(ApiHttpMethod.GET))
             .withRetryMiddleware(
                 5, 200, 60000, Arrays.asList(500, 502, 503, 504), null, options -> options)
