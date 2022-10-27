@@ -15,8 +15,6 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -365,25 +363,17 @@ class CategorySyncIT {
     final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
     final CategoryQuery anyCategoryQuery = any(CategoryQuery.class);
 
-    //    when(spyClient.execute(anyCategoryQuery))
-    //        .thenCallRealMethod() // cache category keys
-    //        .thenCallRealMethod() // Call real fetch on fetching matching categories
-    //        .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
-    doCallRealMethod()
-        .doCallRealMethod()
-        .doReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()))
-        .when(spyClient)
-        .execute(anyCategoryQuery);
+    when(spyClient.execute(anyCategoryQuery))
+        .thenCallRealMethod() // cache category keys
+        .thenCallRealMethod() // Call real fetch on fetching matching categories
+        .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
+
     final CategoryUpdateCommand anyCategoryUpdate = any(CategoryUpdateCommand.class);
-    //    when(spyClient.execute(anyCategoryUpdate))
-    //        .thenReturn(
-    //            CompletableFutureUtils.exceptionallyCompletedFuture(
-    //                new ConcurrentModificationException()));
-    doReturn(
+    when(spyClient.execute(anyCategoryUpdate))
+        .thenReturn(
             CompletableFutureUtils.exceptionallyCompletedFuture(
-                new ConcurrentModificationException()))
-        .when(spyClient)
-        .execute(anyCategoryUpdate);
+                new ConcurrentModificationException()));
+
     return spyClient;
   }
 
