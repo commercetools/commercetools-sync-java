@@ -13,6 +13,7 @@ import io.vrap.rmf.base.client.http.ErrorMiddleware;
 import io.vrap.rmf.base.client.oauth2.ClientCredentials;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 import org.slf4j.event.Level;
@@ -29,7 +30,7 @@ public final class ClientV2ConfigurationUtils {
    */
   protected static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
     ProjectApiRoot apiRoot =
-        ApiRootBuilder.of()
+        ApiRootBuilder.of(new ForkJoinPool(Runtime.getRuntime().availableProcessors() * 4))
             .defaultClient(
                 ClientCredentials.of()
                     .withClientSecret(clientConfig.getClientSecret())
