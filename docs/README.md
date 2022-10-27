@@ -2,15 +2,15 @@
 # commercetools sync
 [![CI](https://github.com/commercetools/commercetools-sync-java/workflows/CI/badge.svg)](https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/commercetools/commercetools-sync-java/branch/master/graph/badge.svg)](https://codecov.io/gh/commercetools/commercetools-sync-java)
-[![Benchmarks 8.1.1](https://img.shields.io/badge/Benchmarks-8.1.1-orange.svg)](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
-[![Download from Maven Central](https://img.shields.io/badge/Maven_Central-8.1.1-blue.svg)](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/8.1.1/jar) 
-[![Javadoc](https://javadoc.io/badge2/com.commercetools/commercetools-sync-java/javadoc.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/8.1.1/)
+[![Benchmarks 9.0.3](https://img.shields.io/badge/Benchmarks-9.0.3-orange.svg)](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
+[![Download from Maven Central](https://img.shields.io/badge/Maven_Central-9.0.3-blue.svg)](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.0.3/jar) 
+[![Javadoc](https://javadoc.io/badge2/com.commercetools/commercetools-sync-java/javadoc.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/9.0.3/)
 [![Known Vulnerabilities](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646/badge.svg)](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646)
 
 
 Java library which allows to import/synchronise (import changes) the data from any arbitrary source to commercetools project.
 
-Supported resources: [Categories](/docs/usage/CATEGORY_SYNC.md), [Products](/docs/usage/PRODUCT_SYNC.md), [InventoryEntries](/docs/usage/INVENTORY_SYNC.md), [ProductTypes](/docs/usage/PRODUCT_TYPE_SYNC.md), [Types](/docs/usage/TYPE_SYNC.md), [CartDiscounts](/docs/usage/CART_DISCOUNT_SYNC.md), [States](/docs/usage/STATE_SYNC.md), [TaxCategories](/docs/usage/TAX_CATEGORY_SYNC.md), [CustomObjects](/docs/usage/CUSTOM_OBJECT_SYNC.md), [Customers](/docs/usage/CUSTOMER_SYNC.md), [ShoppingLists](/docs/usage/SHOPPING_LIST_SYNC.md)
+Supported resources: [Categories](./usage/CATEGORY_SYNC.md), [Products](./usage/PRODUCT_SYNC.md), [InventoryEntries](./usage/INVENTORY_SYNC.md), [ProductTypes](./usage/PRODUCT_TYPE_SYNC.md), [Types](./usage/TYPE_SYNC.md), [CartDiscounts](./usage/CART_DISCOUNT_SYNC.md), [States](./usage/STATE_SYNC.md), [TaxCategories](./usage/TAX_CATEGORY_SYNC.md), [CustomObjects](./usage/CUSTOM_OBJECT_SYNC.md), [Customers](./usage/CUSTOMER_SYNC.md), [ShoppingLists](./usage/SHOPPING_LIST_SYNC.md)
 
 ## Usage
 
@@ -22,7 +22,7 @@ Notes:
 - There is dockerized ready-to-use CLI application [commercetools-project-sync](https://github.com/commercetools/commercetools-project-sync) which based on this library can synchronize entire data catalogue between the 2 commercetools projects.
 - During a synchronisation, resources are either created or updated, but **not** deleted.
 
-⚡ See the [Quick Start Guide](/docs/usage/QUICK_START.md) for more information on building a product importer!
+⚡ See the [Quick Start Guide](./usage/QUICK_START.md) for more information on building a product importer!
 
 ![commercetools-java-sync-final 001](https://user-images.githubusercontent.com/3469524/126317637-a946a81c-2948-4751-86bb-02bcecfeca95.png)
 
@@ -40,18 +40,18 @@ Here are the most popular ones:
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>8.1.1</version>
+  <version>9.0.3</version>
 </dependency>
 ````
 #### Gradle
 ````groovy
-implementation 'com.commercetools:commercetools-sync-java:8.1.1'
+implementation 'com.commercetools:commercetools-sync-java:9.0.3'
 ````
 #### SBT 
 ````
-libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "8.1.1"
+libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "9.0.3"
 ````
 #### Ivy 
 ````xml
-<dependency org="com.commercetools" name="commercetools-sync-java" rev="8.1.1"/>
+<dependency org="com.commercetools" name="commercetools-sync-java" rev="9.0.3"/>
 ````

@@ -11,7 +11,6 @@ import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
 import com.commercetools.sync.commons.BaseSync;
-import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.CompletableFutureUtils;
 import com.commercetools.sync.inventories.helpers.InventoryBatchValidator;
 import com.commercetools.sync.inventories.helpers.InventoryEntryIdentifier;
@@ -38,12 +37,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 /** Default implementation of inventories sync process. */
 public final class InventorySync
-    extends BaseSync<InventoryEntryDraft, InventorySyncStatistics, InventorySyncOptions> {
+    extends BaseSync<
+        InventoryEntryDraft, InventoryEntry, InventorySyncStatistics, InventorySyncOptions> {
 
   private static final String CTP_INVENTORY_FETCH_FAILED =
       "Failed to fetch existing inventory entries of SKUs %s.";
@@ -135,7 +134,11 @@ public final class InventorySync
               final Throwable cachingException = cachingResponse.getValue();
               if (cachingException != null) {
                 handleError(
-                    new SyncException("Failed to build a cache of keys to ids.", cachingException),
+                    "Failed to build a cache of keys to ids.",
+                    cachingException,
+                    null,
+                    null,
+                    null,
                     validDrafts.size());
                 return CompletableFuture.completedFuture(null);
               }
@@ -174,7 +177,7 @@ public final class InventorySync
       @Nonnull final Throwable completionException) {
     final String errorMessage =
         format(FAILED_TO_PROCESS, newInventoryEntry.getSku(), completionException.getMessage());
-    handleError(new SyncException(errorMessage, completionException), 1);
+    handleError(errorMessage, completionException, null, null, null, 1);
   }
 
   private CompletionStage<Void> syncResolvedDrafts(
@@ -199,7 +202,7 @@ public final class InventorySync
 
     if (exception != null) {
       final String errorMessage = format(CTP_INVENTORY_FETCH_FAILED, identifiers);
-      handleError(new SyncException(errorMessage, exception), identifiers.size());
+      handleError(errorMessage, exception, null, null, null, identifiers.size());
       return CompletableFuture.completedFuture(null);
     } else {
       return syncBatch(fetchedInventoryEntries, resolvedDrafts);
@@ -285,11 +288,7 @@ public final class InventorySync
                           CTP_INVENTORY_ENTRY_UPDATE_FAILED,
                           draft.getSku(),
                           supplyChannel != null ? supplyChannel.getId() : null);
-                  handleError(
-                      new SyncException(errorMessage, sphereException),
-                      entry,
-                      draft,
-                      updateActions);
+                  handleError(errorMessage, sphereException, entry, draft, updateActions, 1);
                   return CompletableFuture.completedFuture(Optional.empty());
                 } else {
                   statistics.incrementUpdated();
@@ -330,37 +329,5 @@ public final class InventorySync
                           return inventoryEntryOptional;
                         }))
         .orElse(CompletableFuture.completedFuture(Optional.empty()));
-  }
-
-  /**
-   * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this
-   * method calls the optional error callback specified in the {@code syncOptions} and updates the
-   * {@code statistics} instance by incrementing the total number of failed categories to sync.
-   *
-   * @param syncException The exception that caused the failure.
-   * @param failedTimes The number of times that the failed counter is incremented.
-   */
-  private void handleError(@Nonnull final SyncException syncException, final int failedTimes) {
-    syncOptions.applyErrorCallback(syncException);
-    statistics.incrementFailed(failedTimes);
-  }
-
-  /**
-   * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this
-   * method calls the optional error callback specified in the {@code syncOptions} and updates the
-   * {@code statistics} instance by incrementing the total number of failed categories to sync.
-   *
-   * @param syncException The exception that caused the failure.
-   * @param entry existing inventory entry that could be updated.
-   * @param draft draft containing data that could differ from data in {@code entry}.
-   * @param updateActions the update actions to update the {@link InventoryEntry} with.
-   */
-  private void handleError(
-      @Nonnull final SyncException syncException,
-      @Nullable final InventoryEntry entry,
-      @Nullable final InventoryEntryDraft draft,
-      @Nullable final List<UpdateAction<InventoryEntry>> updateActions) {
-    syncOptions.applyErrorCallback(syncException, entry, draft, updateActions);
-    statistics.incrementFailed(1);
   }
 }

@@ -10,6 +10,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
@@ -36,10 +37,13 @@ import com.commercetools.sync.customers.helpers.CustomerSyncStatistics;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.CustomerService;
 import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.impl.CustomerGroupServiceImpl;
+import com.commercetools.sync.services.impl.CustomerServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.customers.CustomerDraftBuilder;
@@ -47,9 +51,11 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,6 +65,9 @@ public class CustomerSyncTest {
   private CustomerSyncOptions syncOptions;
   private List<String> errorMessages;
   private List<Throwable> exceptions;
+  private Customer errorCallbackOldResource;
+  private CustomerDraft errorCallbackNewResource;
+  private List<UpdateAction<Customer>> errorCallbackUpdateActions;
 
   @BeforeEach
   void setup() {
@@ -69,7 +78,10 @@ public class CustomerSyncTest {
     syncOptions =
         CustomerSyncOptionsBuilder.of(ctpClient)
             .errorCallback(
-                (exception, oldResource, newResource, updateActions) -> {
+                (exception, newResource, oldResource, updateActions) -> {
+                  this.errorCallbackOldResource = oldResource.orElse(null);
+                  this.errorCallbackNewResource = newResource.orElse(null);
+                  this.errorCallbackUpdateActions = updateActions;
                   errorMessages.add(exception.getMessage());
                   exceptions.add(exception);
                 })
@@ -581,5 +593,50 @@ public class CustomerSyncTest {
         .singleElement(as(THROWABLE))
         .isExactlyInstanceOf(SyncException.class)
         .hasNoCause();
+  }
+
+  @Test
+  void
+      sync_WithErrorUpdatingCustomerAndCustomErrorCallback_ShouldCallErrorCallbackAndContainResourceName() {
+    // preparation
+    final CustomerDraft newCustomerDraft =
+        CustomerDraftBuilder.of("customerEmail", "customerPassword").key("customerKey").build();
+    final CustomerService mockCustomerService = mock(CustomerServiceImpl.class);
+
+    final Customer existingCustomer = mock(Customer.class);
+    when(existingCustomer.getKey()).thenReturn(newCustomerDraft.getKey());
+    when(mockCustomerService.fetchMatchingCustomersByKeys(any()))
+        .thenReturn(CompletableFuture.completedFuture(singleton(existingCustomer)));
+    when(mockCustomerService.fetchMatchingCustomersByKeys(emptySet()))
+        .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
+    when(mockCustomerService.updateCustomer(any(), any()))
+        .thenReturn(
+            supplyAsync(
+                () -> {
+                  throw new SphereException();
+                }));
+
+    when(mockCustomerService.createCustomer(any()))
+        .thenReturn(CompletableFuture.completedFuture(Optional.of(existingCustomer)));
+    when(mockCustomerService.fetchCustomerByKey(any()))
+        .thenReturn(CompletableFuture.completedFuture(Optional.of(existingCustomer)));
+
+    // test
+    final CustomerSync customerSync =
+        new CustomerSync(
+            syncOptions,
+            mockCustomerService,
+            mock(TypeServiceImpl.class),
+            mock(CustomerGroupServiceImpl.class));
+    customerSync.sync(singletonList(newCustomerDraft)).toCompletableFuture().join();
+
+    // assertions
+    assertThat(this.errorCallbackOldResource).isEqualTo(existingCustomer);
+    assertThat(this.errorCallbackNewResource).isEqualTo(newCustomerDraft);
+    assertThat(errorCallbackUpdateActions.get(0).getAction()).isEqualTo("changeEmail");
+
+    assertThat(errorMessages.get(0))
+        .contains(
+            "Failed to update customer with key: 'customerKey'. Reason: io.sphere.sdk.models.SphereException:");
   }
 }

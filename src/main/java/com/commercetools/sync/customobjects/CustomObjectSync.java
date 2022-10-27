@@ -8,7 +8,6 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
 import com.commercetools.sync.commons.BaseSync;
-import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.customobjects.helpers.CustomObjectBatchValidator;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.customobjects.helpers.CustomObjectSyncStatistics;
@@ -25,7 +24,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 /**
@@ -33,7 +31,10 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
  */
 public class CustomObjectSync
     extends BaseSync<
-        CustomObjectDraft<JsonNode>, CustomObjectSyncStatistics, CustomObjectSyncOptions> {
+        CustomObjectDraft<JsonNode>,
+        CustomObject<JsonNode>,
+        CustomObjectSyncStatistics,
+        CustomObjectSyncOptions> {
 
   private static final String CTP_CUSTOM_OBJECT_FETCH_FAILED =
       "Failed to fetch existing custom objects with keys: '%s'.";
@@ -129,7 +130,7 @@ public class CustomObjectSync
               if (exception != null) {
                 final String errorMessage =
                     format(CTP_CUSTOM_OBJECT_FETCH_FAILED, validIdentifiers);
-                handleError(errorMessage, exception, validIdentifiers.size());
+                handleError(errorMessage, exception, null, null, null, validIdentifiers.size());
                 return CompletableFuture.completedFuture(null);
               } else {
                 return syncBatch(fetchedCustomObjects, validDrafts);
@@ -140,51 +141,6 @@ public class CustomObjectSync
               statistics.incrementProcessed(batch.size());
               return statistics;
             });
-  }
-
-  /**
-   * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this
-   * method calls the optional error callback specified in the {@code syncOptions} and updates the
-   * {@code statistics} instance by incrementing the total number of failed custom objects to sync.
-   *
-   * @param errorMessage The error message describing the reason(s) of failure.
-   * @param exception The exception that called caused the failure, if any.
-   * @param failedTimes The number of times that the failed custom objects counter is incremented.
-   */
-  private void handleError(
-      @Nonnull final String errorMessage,
-      @Nonnull final Throwable exception,
-      final int failedTimes) {
-    SyncException syncException = new SyncException(errorMessage, exception);
-    syncOptions.applyErrorCallback(syncException);
-    statistics.incrementFailed(failedTimes);
-  }
-
-  /**
-   * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this
-   * method calls the optional error callback specified in the {@code syncOptions} and updates the
-   * {@code statistics} instance by incrementing the total number of failed custom objects to sync.
-   *
-   * @param errorMessage The error message describing the reason(s) of failure.
-   * @param exception The exception that called caused the failure, if any.
-   * @param failedTimes The number of times that the failed custom objects counter is incremented.
-   * @param oldCustomObject existing custom object that could be updated.
-   * @param newCustomObjectDraft draft containing data that could differ from data in {@code
-   *     oldCustomObject}.
-   */
-  private void handleError(
-      @Nonnull final String errorMessage,
-      @Nullable final Throwable exception,
-      final int failedTimes,
-      @Nullable final CustomObject<JsonNode> oldCustomObject,
-      @Nullable final CustomObjectDraft<JsonNode> newCustomObjectDraft) {
-
-    SyncException syncException =
-        exception != null
-            ? new SyncException(errorMessage, exception)
-            : new SyncException(errorMessage);
-    syncOptions.applyErrorCallback(syncException, oldCustomObject, newCustomObjectDraft, null);
-    statistics.incrementFailed(failedTimes);
   }
 
   /**
@@ -261,7 +217,8 @@ public class CustomObjectSync
                                   CTP_CUSTOM_OBJECT_CREATE_FAILED,
                                   CustomObjectCompositeIdentifier.of(customObjectDraft).toString(),
                                   sphereException.getMessage());
-                          handleError(errorMessage, sphereException, 1, null, customObjectDraft);
+                          handleError(
+                              errorMessage, sphereException, null, customObjectDraft, null, 1);
                           return Optional.empty();
                         }))
         .orElse(completedFuture(Optional.empty()));
@@ -307,7 +264,12 @@ public class CustomObjectSync
                                 CustomObjectCompositeIdentifier.of(newCustomObject).toString(),
                                 sphereException.getMessage());
                         handleError(
-                            errorMessage, sphereException, 1, oldCustomObject, newCustomObject);
+                            errorMessage,
+                            sphereException,
+                            oldCustomObject,
+                            newCustomObject,
+                            null,
+                            1);
                         return CompletableFuture.completedFuture(Optional.empty());
                       });
                 } else {
@@ -343,7 +305,7 @@ public class CustomObjectSync
                         CTP_CUSTOM_OBJECT_UPDATE_FAILED,
                         identifier.toString(),
                         "Failed to fetch from CTP while retrying after concurrency modification.");
-                handleError(errorMessage, exception, 1, oldCustomObject, customObjectDraft);
+                handleError(errorMessage, exception, oldCustomObject, customObjectDraft, null, 1);
                 return CompletableFuture.completedFuture(Optional.empty());
               }
               return fetchedCustomObjectOptional
@@ -358,7 +320,8 @@ public class CustomObjectSync
                                 identifier.toString(),
                                 "Not found when attempting to fetch while retrying "
                                     + "after concurrency modification.");
-                        handleError(errorMessage, null, 1, oldCustomObject, customObjectDraft);
+                        handleError(
+                            errorMessage, null, oldCustomObject, customObjectDraft, null, 1);
                         return CompletableFuture.completedFuture(null);
                       });
             });
