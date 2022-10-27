@@ -36,8 +36,7 @@ import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.commercetools.sync.cartdiscounts.CartDiscountSync;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
@@ -619,9 +618,13 @@ class CartDiscountSyncIT {
 
     final CartDiscountUpdateCommand anyCartDiscountUpdate = any(CartDiscountUpdateCommand.class);
 
-    when(spyClient.execute(anyCartDiscountUpdate))
-        .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
-        .thenCallRealMethod();
+    //    when(spyClient.execute(anyCartDiscountUpdate))
+    //        .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
+    //        .thenCallRealMethod();
+    doReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
+        .doCallRealMethod()
+        .when(spyClient)
+        .execute(anyCartDiscountUpdate);
 
     return spyClient;
   }
