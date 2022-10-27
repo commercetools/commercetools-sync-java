@@ -7,7 +7,6 @@ import com.commercetools.compat.CompatSphereClient;
 import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
-
 import io.vrap.rmf.base.client.ApiHttpMethod;
 import io.vrap.rmf.base.client.error.ApiClientException;
 import io.vrap.rmf.base.client.http.ErrorMiddleware;
@@ -16,14 +15,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
-
 import org.slf4j.event.Level;
 
 public final class ClientV2ConfigurationUtils {
 
   /**
-   * Creates a {@link SphereClient} with compact layer provided in SDK-v2, which enable different middlewares to suport
-   * features like retry logic, NotFoundException handling and conversion of API error to Exception.
+   * Creates a {@link SphereClient} with compact layer provided in SDK-v2, which enable different
+   * middlewares to suport features like retry logic, NotFoundException handling and conversion of
+   * API error to Exception.
    *
    * @param clientConfig the client configuration for the client.
    * @return the instantiated {@link SphereClient}.
@@ -62,9 +61,9 @@ public final class ClientV2ConfigurationUtils {
    * @return the instantiated {@link BlockingSphereClient}.
    */
   public static SphereClient createClient(
-          @Nonnull final SphereClientConfig clientConfig,
-          final long timeout,
-          @Nonnull final TimeUnit timeUnit) {
+      @Nonnull final SphereClientConfig clientConfig,
+      final long timeout,
+      @Nonnull final TimeUnit timeUnit) {
     return BlockingSphereClient.of(createClient(clientConfig), timeout, timeUnit);
   }
 
