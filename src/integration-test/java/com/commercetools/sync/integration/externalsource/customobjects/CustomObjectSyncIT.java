@@ -6,8 +6,9 @@ import static com.commercetools.sync.integration.commons.utils.CustomObjectITUti
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static java.lang.String.format;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 import com.commercetools.sync.customobjects.CustomObjectSync;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
@@ -124,13 +125,12 @@ public class CustomObjectSyncIT {
       sync_withChangedCustomObjectAndConcurrentModificationException_shouldRetryAndUpdateCustomObject() {
     final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
 
-    final CustomObjectUpsertCommand customObjectUpsertCommand =
-        any(CustomObjectUpsertCommand.class);
-    when(spyClient.execute(customObjectUpsertCommand))
-        .thenReturn(
+    doReturn(
             CompletableFutureUtils.exceptionallyCompletedFuture(
                 new ConcurrentModificationException()))
-        .thenCallRealMethod();
+        .doCallRealMethod()
+        .when(spyClient)
+        .execute(any(CustomObjectUpsertCommand.class));
 
     final ObjectNode newCustomObjectValue =
         JsonNodeFactory.instance.objectNode().put("name", "value2");
@@ -169,17 +169,17 @@ public class CustomObjectSyncIT {
   void sync_withChangedCustomObjectWithBadGatewayExceptionInsideUpdateRetry_shouldFailToUpdate() {
     final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
 
-    final CustomObjectUpsertCommand upsertCommand = any(CustomObjectUpsertCommand.class);
-    when(spyClient.execute(upsertCommand))
-        .thenReturn(
+    doReturn(
             CompletableFutureUtils.exceptionallyCompletedFuture(
                 new ConcurrentModificationException()))
-        .thenCallRealMethod();
+        .doCallRealMethod()
+        .when(spyClient)
+        .execute(any(CustomObjectUpsertCommand.class));
 
-    final CustomObjectQuery customObjectQuery = any(CustomObjectQuery.class);
-    when(spyClient.execute(customObjectQuery))
-        .thenCallRealMethod()
-        .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
+    doCallRealMethod()
+        .doReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
+        .when(spyClient)
+        .execute(any(CustomObjectQuery.class));
 
     final ObjectNode newCustomObjectValue =
         JsonNodeFactory.instance.objectNode().put("name", "value2");
@@ -222,19 +222,17 @@ public class CustomObjectSyncIT {
 
     final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
 
-    final CustomObjectUpsertCommand customObjectUpsertCommand =
-        any(CustomObjectUpsertCommand.class);
-    when(spyClient.execute(customObjectUpsertCommand))
-        .thenReturn(
+    doReturn(
             CompletableFutureUtils.exceptionallyCompletedFuture(
                 new ConcurrentModificationException()))
-        .thenCallRealMethod();
+        .doCallRealMethod()
+        .when(spyClient)
+        .execute(any(CustomObjectUpsertCommand.class));
 
-    final CustomObjectQuery customObjectQuery = any(CustomObjectQuery.class);
-
-    when(spyClient.execute(customObjectQuery))
-        .thenCallRealMethod()
-        .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
+    doCallRealMethod()
+        .doReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()))
+        .when(spyClient)
+        .execute(any(CustomObjectQuery.class));
 
     final ObjectNode newCustomObjectValue =
         JsonNodeFactory.instance.objectNode().put("name", "value2");
@@ -278,12 +276,12 @@ public class CustomObjectSyncIT {
 
     final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
 
-    final CustomObjectUpsertCommand upsertCommand = any(CustomObjectUpsertCommand.class);
-    when(spyClient.execute(upsertCommand))
-        .thenReturn(
+    doReturn(
             CompletableFutureUtils.exceptionallyCompletedFuture(
                 new BadRequestException("bad request")))
-        .thenCallRealMethod();
+        .doCallRealMethod()
+        .when(spyClient)
+        .execute(any(CustomObjectUpsertCommand.class));
 
     final ObjectNode newCustomObjectValue =
         JsonNodeFactory.instance.objectNode().put("name", "value2");
