@@ -36,7 +36,8 @@ import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import com.commercetools.sync.cartdiscounts.CartDiscountSync;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
@@ -616,10 +617,12 @@ class CartDiscountSyncIT {
 
     final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
 
-    doReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
-        .doCallRealMethod()
-        .when(spyClient)
-        .execute(any(CartDiscountUpdateCommand.class));
+    final CartDiscountUpdateCommand anyCartDiscountUpdate = any(CartDiscountUpdateCommand.class);
+
+    when(spyClient.execute(anyCartDiscountUpdate))
+        .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
+        .thenCallRealMethod();
+
     return spyClient;
   }
 
@@ -679,16 +682,16 @@ class CartDiscountSyncIT {
   private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
 
     final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+    when(spyClient.execute(any(CartDiscountQuery.class)))
+        .thenCallRealMethod() // Call real fetch on fetching matching cart discounts
+        .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
 
-    doCallRealMethod()
-        .doReturn(exceptionallyCompletedFuture(new BadGatewayException()))
-        .when(spyClient)
-        .execute(any(CartDiscountQuery.class));
+    final CartDiscountUpdateCommand anyCartDiscountUpdate = any(CartDiscountUpdateCommand.class);
 
-    doReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
-        .doCallRealMethod()
-        .when(spyClient)
-        .execute(any(CartDiscountUpdateCommand.class));
+    when(spyClient.execute(anyCartDiscountUpdate))
+        .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
+        .thenCallRealMethod();
+
     return spyClient;
   }
 
@@ -746,16 +749,18 @@ class CartDiscountSyncIT {
   private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
 
     final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+    final CartDiscountQuery anyCartDiscountQuery = any(CartDiscountQuery.class);
 
-    doCallRealMethod()
-        .doReturn(completedFuture(PagedQueryResult.empty()))
-        .when(spyClient)
-        .execute(any(CartDiscountQuery.class));
+    when(spyClient.execute(anyCartDiscountQuery))
+        .thenCallRealMethod() // Call real fetch on fetching matching cart discounts
+        .thenReturn(completedFuture(PagedQueryResult.empty()));
 
-    doReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
-        .doCallRealMethod()
-        .when(spyClient)
-        .execute(any(CartDiscountUpdateCommand.class));
+    final CartDiscountUpdateCommand anyCartDiscountUpdate = any(CartDiscountUpdateCommand.class);
+
+    when(spyClient.execute(anyCartDiscountUpdate))
+        .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
+        .thenCallRealMethod();
+
     return spyClient;
   }
 }
