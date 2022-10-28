@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.commons.utils;
 
+import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.CLIENT_VERSION_V2;
 import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.createClient;
 import static java.lang.String.format;
 
@@ -18,6 +19,11 @@ public class SphereClientUtils {
 
   public static final SphereClient CTP_SOURCE_CLIENT = createClient(CTP_SOURCE_CLIENT_CONFIG);
   public static final SphereClient CTP_TARGET_CLIENT = createClient(CTP_TARGET_CLIENT_CONFIG);
+
+  public static final SphereClient CTP_SOURCE_CLIENT_V2 =
+      createClient(CTP_SOURCE_CLIENT_CONFIG, CLIENT_VERSION_V2);
+  public static final SphereClient CTP_TARGET_CLIENT_V2 =
+      createClient(CTP_TARGET_CLIENT_CONFIG, CLIENT_VERSION_V2);
 
   private static SphereClientConfig getCtpSourceClientConfig() {
     return getCtpClientConfig("source.", "SOURCE");
