@@ -959,7 +959,7 @@ class ProductSyncWithSdkV2IT {
                 warningCallBackMessages.add(exception.getMessage());
 
     final ProductSyncOptions customOptions =
-        ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+        ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT_V2)
             .errorCallback(
                 (exception, oldResource, newResource, actions) ->
                     collectErrors(exception.getMessage(), exception.getCause()))
