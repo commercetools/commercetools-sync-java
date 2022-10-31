@@ -16,8 +16,8 @@ include 'services:webservice'
 */
 pluginManagement {
     repositories {
-        gradlePluginPortal()
         mavenCentral()
+        gradlePluginPortal()
     }
 }
 rootProject.name = 'commercetools-sync-java'
