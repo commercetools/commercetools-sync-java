@@ -1,11 +1,12 @@
 package com.commercetools.sync.integration.commons.utils;
 
-import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.CLIENT_VERSION_V2;
 import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.createClient;
 import static java.lang.String.format;
 
+import com.commercetools.api.defaultconfig.ServiceRegion;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
+import io.vrap.rmf.base.client.oauth2.ClientCredentials;
 import java.io.InputStream;
 import java.util.Properties;
 import javax.annotation.Nonnull;
@@ -20,10 +21,17 @@ public class SphereClientUtils {
   public static final SphereClient CTP_SOURCE_CLIENT = createClient(CTP_SOURCE_CLIENT_CONFIG);
   public static final SphereClient CTP_TARGET_CLIENT = createClient(CTP_TARGET_CLIENT_CONFIG);
 
-  public static final SphereClient CTP_SOURCE_CLIENT_V2 =
-      createClient(CTP_SOURCE_CLIENT_CONFIG, CLIENT_VERSION_V2);
+  public static final String CTP_TARGET_PROJECT_KEY = CTP_TARGET_CLIENT_CONFIG.getProjectKey();
+
+  public static final ClientCredentials CTP_TARGET_CLIENT_CREDENTIALS =
+      ClientCredentials.of()
+          .withClientId(CTP_TARGET_CLIENT_CONFIG.getClientId())
+          .withClientSecret(CTP_TARGET_CLIENT_CONFIG.getClientSecret())
+          .build();
+
   public static final SphereClient CTP_TARGET_CLIENT_V2 =
-      createClient(CTP_TARGET_CLIENT_CONFIG, CLIENT_VERSION_V2);
+      createClient(
+          CTP_TARGET_PROJECT_KEY, CTP_TARGET_CLIENT_CREDENTIALS, ServiceRegion.GCP_EUROPE_WEST1);
 
   private static SphereClientConfig getCtpSourceClientConfig() {
     return getCtpClientConfig("source.", "SOURCE");

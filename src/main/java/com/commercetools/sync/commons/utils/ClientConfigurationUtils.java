@@ -1,11 +1,13 @@
 package com.commercetools.sync.commons.utils;
 
+import com.commercetools.api.defaultconfig.ServiceRegion;
 import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
 import io.sphere.sdk.client.retry.RetryableSphereClientBuilder;
 import io.sphere.sdk.http.AsyncHttpClientAdapter;
 import io.sphere.sdk.http.HttpClient;
+import io.vrap.rmf.base.client.oauth2.ClientCredentials;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 import org.asynchttpclient.AsyncHttpClient;
@@ -18,30 +20,20 @@ public final class ClientConfigurationUtils {
   public static final String CLIENT_VERSION_V2 = "CLIENT_VERSION_V2";
 
   public static SphereClient createClient(
-      @Nonnull final SphereClientConfig clientConfig, final String clientVersion) {
-    switch (clientVersion) {
-      case CLIENT_VERSION_V1:
-        return createClient(clientConfig);
-      case CLIENT_VERSION_V2:
-        return ClientV2ConfigurationUtils.createClient(clientConfig);
-      default:
-        return createClient(clientConfig);
-    }
+      @Nonnull final String projectKey,
+      @Nonnull final ClientCredentials clientCredentials,
+      @Nonnull final ServiceRegion serviceRegion) {
+    return ClientV2ConfigurationUtils.createClient(projectKey, clientCredentials, serviceRegion);
   }
 
   public static SphereClient createClient(
-      @Nonnull final SphereClientConfig clientConfig,
+      @Nonnull final String projectKey,
+      @Nonnull final ClientCredentials clientCredentials,
+      @Nonnull final ServiceRegion serviceRegion,
       final long timeout,
-      @Nonnull final TimeUnit timeUnit,
-      final String clientVersion) {
-    switch (clientVersion) {
-      case CLIENT_VERSION_V1:
-        return createClient(clientConfig, timeout, timeUnit);
-      case CLIENT_VERSION_V2:
-        return ClientV2ConfigurationUtils.createClient(clientConfig, timeout, timeUnit);
-      default:
-        return createClient(clientConfig, timeout, timeUnit);
-    }
+      @Nonnull final TimeUnit timeUnit) {
+    return ClientV2ConfigurationUtils.createClient(
+        projectKey, clientCredentials, serviceRegion, timeout, timeUnit);
   }
 
   /**
