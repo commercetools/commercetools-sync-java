@@ -32,7 +32,7 @@ jobs:
           java-version: 11
           distribution: 'zulu'
       - name: Build with Gradle
-        run: ./gradlew clean setLibraryVersion test integrationTest benchmark jacocoTestCoverageVerification jacocoTestReport
+        run: ./gradlew clean setLibraryVersion test integrationTest benchmark benchmarkCommit jacocoTestCoverageVerification jacocoTestReport
         env:
           SOURCE_PROJECT_KEY: java-sync-source
           SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
