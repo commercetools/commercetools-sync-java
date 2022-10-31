@@ -14,9 +14,5 @@ include 'shared'
 include 'api'
 include 'services:webservice'
 */
-pluginManagement {
-    repositories {
-        mavenCentral()
-    }
-}
+
 rootProject.name = 'commercetools-sync-java'
