@@ -490,11 +490,11 @@ class ProductSyncWithSdkV2IT {
         .doCallRealMethod()
         .when(spyClient)
         .execute(any(ProductUpdateCommand.class));
-    final ProductProjectionQuery anyProductQuery = any(ProductProjectionQuery.class);
-    when(spyClient.execute(anyProductQuery))
-        .thenCallRealMethod() // Call real fetch on fetching matching products
-        .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
+    doCallRealMethod()
+        .doReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
+        .when(spyClient)
+        .execute(any(ProductProjectionQuery.class));
     return spyClient;
   }
 
@@ -546,19 +546,17 @@ class ProductSyncWithSdkV2IT {
   private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
     final SphereClient spyClient = spy(CTP_TARGET_CLIENT_V2);
 
-    final ProductUpdateCommand anyProductUpdateCommand = any(ProductUpdateCommand.class);
-    when(spyClient.execute(anyProductUpdateCommand))
-        .thenReturn(
+    doReturn(
             CompletableFutureUtils.exceptionallyCompletedFuture(
                 new ConcurrentModificationException()))
-        .thenCallRealMethod();
+        .doCallRealMethod()
+        .when(spyClient)
+        .execute(any(ProductUpdateCommand.class));
 
-    final ProductProjectionQuery anyProductQuery = any(ProductProjectionQuery.class);
-
-    when(spyClient.execute(anyProductQuery))
-        .thenCallRealMethod() // Call real fetch on fetching matching products
-        .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
-
+    doCallRealMethod()
+        .doReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()))
+        .when(spyClient)
+        .execute(any(ProductProjectionQuery.class));
     return spyClient;
   }
 
