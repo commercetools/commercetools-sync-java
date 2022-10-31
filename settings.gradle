@@ -14,5 +14,10 @@ include 'shared'
 include 'api'
 include 'services:webservice'
 */
-
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
 rootProject.name = 'commercetools-sync-java'
