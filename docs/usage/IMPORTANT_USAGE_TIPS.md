@@ -10,6 +10,15 @@ When creating a customized `SphereClient` the following remarks should be consid
 If you have no special requirements on the sphere client creation, then you can use the `ClientConfigurationUtils#createClient` 
 util which applies the best practices for `SphereClient` creation.
 
+As [next generation of JVM-SDK](http://commercetools.github.io/commercetools-sdk-java-v2) has been released, now we provide an overloading method for `ClientConfigurationUtils#createClient`
+which makes use of JVM-SDK-V2 to apply the best practices for `SphereClient` creation. Meanwhile the original `ClientConfigurationUtils#createClient` is supporting the last generation of JVM-SDK to avoid breaking change. 
+```
+public static SphereClient createClient(
+      @Nonnull final String projectKey,
+      @Nonnull final ClientCredentials clientCredentials,
+      @Nonnull final ServiceRegion serviceRegion) {
+```
+To understand how to initialize those method arguments, please refer to the [unit test](https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/commons/utils/ClientV2ConfigurationUtilsTest.java#L20)
 
 #### Tuning the Sync Process 
 The sync library is not meant to be executed in a parallel fashion. For example:
