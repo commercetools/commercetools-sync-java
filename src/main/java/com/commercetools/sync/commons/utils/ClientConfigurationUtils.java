@@ -19,6 +19,17 @@ public final class ClientConfigurationUtils {
   public static final String CLIENT_VERSION_V1 = "CLIENT_VERSION_V1";
   public static final String CLIENT_VERSION_V2 = "CLIENT_VERSION_V2";
 
+  /**
+   * Creates a {@link SphereClient} with compact layer provided in SDK-v2, which enable different
+   * middlewares to suport features like retry logic, NotFoundException handling and conversion of
+   * API error to Exception.
+   *
+   * @param projectKey the projectKey for the client.
+   * @param clientCredentials the client credentials for the client consisting of client ID and
+   *     secret.
+   * @param serviceRegion the service region for the client consisting of API URI and OAuth URI.
+   * @return the instantiated {@link SphereClient}.
+   */
   public static SphereClient createClient(
       @Nonnull final String projectKey,
       @Nonnull final ClientCredentials clientCredentials,
@@ -26,6 +37,18 @@ public final class ClientConfigurationUtils {
     return ClientV2ConfigurationUtils.createClient(projectKey, clientCredentials, serviceRegion);
   }
 
+  /**
+   * Creates a {@link BlockingSphereClient} with compact layer provided in SDK-v2, with a custom
+   * {@code timeout} with a custom {@link TimeUnit}.
+   *
+   * @param projectKey the projectKey for the client.
+   * @param clientCredentials the client credentials for the client consisting of client ID and
+   *     secret.
+   * @param serviceRegion the service region for the client consisting of API URI and OAuth URI.
+   * @param timeout the timeout value for the client requests.
+   * @param timeUnit the timeout time unit.
+   * @return the instantiated {@link BlockingSphereClient}.
+   */
   public static SphereClient createClient(
       @Nonnull final String projectKey,
       @Nonnull final ClientCredentials clientCredentials,
