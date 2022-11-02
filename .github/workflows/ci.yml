@@ -19,6 +19,7 @@ jobs:
         run: ./gradlew spotbugsBenchmark spotbugsIntegrationTest spotbugsMain spotbugsTest
       - name: mkdocsBuild
         run: ./gradlew mkdocsBuild
+
   tests:
     name: Tests
     concurrency: tests
