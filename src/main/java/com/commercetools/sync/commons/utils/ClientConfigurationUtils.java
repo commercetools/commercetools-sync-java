@@ -15,10 +15,6 @@ import org.asynchttpclient.DefaultAsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 
 public final class ClientConfigurationUtils {
-
-  public static final String CLIENT_VERSION_V1 = "CLIENT_VERSION_V1";
-  public static final String CLIENT_VERSION_V2 = "CLIENT_VERSION_V2";
-
   /**
    * Creates a {@link SphereClient} with compact layer provided in SDK-v2, which enable different
    * middlewares to suport features like retry logic, NotFoundException handling and conversion of
