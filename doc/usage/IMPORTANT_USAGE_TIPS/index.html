@@ -678,6 +678,14 @@
 </ul>
 <p>If you have no special requirements on the sphere client creation, then you can use the <code>ClientConfigurationUtils#createClient</code> 
 util which applies the best practices for <code>SphereClient</code> creation.</p>
+<p>As <a href="http://commercetools.github.io/commercetools-sdk-java-v2">next generation of JVM-SDK</a> has been released, now we provide an overloading method for <code>ClientConfigurationUtils#createClient</code>
+which makes use of JVM-SDK-V2 to apply the best practices for <code>SphereClient</code> creation. Meanwhile the original <code>ClientConfigurationUtils#createClient</code> is supporting the last generation of JVM-SDK to avoid breaking change. 
+<div class="highlight"><pre><span></span><code>public static SphereClient createClient(
+      @Nonnull final String projectKey,
+      @Nonnull final ClientCredentials clientCredentials,
+      @Nonnull final ServiceRegion serviceRegion) {
+</code></pre></div>
+To understand how to initialize those method arguments, please refer to the <a href="https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/commons/utils/ClientV2ConfigurationUtilsTest.java#L20">unit test</a></p>
 <h4 id="tuning-the-sync-process">Tuning the Sync Process<a class="headerlink" href="#tuning-the-sync-process" title="Permanent link">&para;</a></h4>
 <p>The sync library is not meant to be executed in a parallel fashion. For example:
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ProductSync</span><span class="w"> </span><span class="n">productSync</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ProductSync</span><span class="p">(</span><span class="n">syncOptions</span><span class="p">);</span><span class="w"></span>
@@ -696,7 +704,7 @@ used in a sequential fashion:
 By design, scaling the sync process should <strong>not</strong> be done by executing the batches themselves in parallel. However, it can be done either by:</p>
 <ul>
 <li>Changing the number of <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116">max parallel requests</a> within the <code>sphereClient</code> configuration. It defines how many requests the client can execute in parallel.</li>
-<li>or changing the draft <a href="https://commercetools.github.io/commercetools-sync-java/v/9.0.3/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-">batch size</a>. It defines how many drafts can one batch contains.</li>
+<li>or changing the draft <a href="https://commercetools.github.io/commercetools-sync-java/v/9.1.0/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-">batch size</a>. It defines how many drafts can one batch contains.</li>
 </ul>
 <p>The current overridable default <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45">configuration</a> of the <code>sphereClient</code> 
 is the recommended good balance for stability and performance for the sync process.</p>
