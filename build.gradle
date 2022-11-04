@@ -11,6 +11,7 @@ plugins {
 
 ext{
     commercetoolsJvmSdkVersion = '2.9.0'
+    commercetoolsJavaSdkV2Version = '9.4.0'
     mockitoJunitJupiterVersion = '4.8.1'
     jupiterApiVersion = '5.9.1'
     assertjVersion = '3.23.1'
@@ -48,6 +49,8 @@ dependencies {
     api "com.commercetools.sdk.jvm.core:commercetools-convenience:${commercetoolsJvmSdkVersion}"
     implementation "com.github.ben-manes.caffeine:caffeine:${caffeineVersion}"
     implementation "org.apache.commons:commons-text:${commonTextVersion}"
+    api "com.commercetools.sdk:commercetools-sdk-compat-v1:${commercetoolsJavaSdkV2Version}"
+    api "com.commercetools.sdk:commercetools-apachehttp-client:${commercetoolsJavaSdkV2Version}"
     testImplementation "org.mockito:mockito-junit-jupiter:${mockitoJunitJupiterVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterApiVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-params:${jupiterApiVersion}"

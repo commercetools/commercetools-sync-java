@@ -27,6 +27,22 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
+### 9.1.0 - Nov 02, 2022
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/9.0.3...9.1.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.1.0/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.1.0/jar)
+- 🐞 **Enhancement** (1)
+  - Java SDK-v2 Compatible layer adaption [#859](https://github.com/commercetools/commercetools-sync-java/pull/859)
+  
+- 🛠️ **Dependency Updates**
+    - Added `com.commercetools.sdk` [`9.4.0`](https://github.com/commercetools/commercetools-sdk-java-v2/releases/tag/9.4.0)
+    - Migrated `com.diffplug.spotless` plugin from `6.9.1` to [`6.11.0`](https://github.com/diffplug/spotless/releases/tag/gradle%2F6.11.0).
+    - Migrated `com.github.ben-manes.versions` `0.42.0` -> [`0.43.0`](https://github.com/spotbugs/spotbugs-gradle-plugin/releases/tag/5.0.13)
+    - Migrated `com.github.spotbugs` `5.0.12` -> [`5.0.13`](https://github.com/spotbugs/spotbugs-gradle-plugin/releases/tag/5.0.13)
+    - Migrated `commercetools-jvm-sdk` -> [2.9.0](https://github.com/commercetools/commercetools-jvm-sdk/releases/tag/v2.9.0)
+    - Migrated `org.apache.commons:common-text`  `1.9` -> [`1.10`](https://commons.apache.org/proper/commons-text/changes-report.html#a1.10)
+    - Migrated `org.mockito:mockito-junit-jupiter` `4.7.0` -> [`4.8.1`](https://github.com/mockito/mockito/releases/tag/v4.8.1)
+
 ### 9.0.3 - Sep 22, 2022
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/9.0.2...9.0.3) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.0.3/) |
