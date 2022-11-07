@@ -34,6 +34,10 @@
 - 🐞 **Enhancement** (1)
   - Java SDK-v2 Compatible layer adaption [#859](https://github.com/commercetools/commercetools-sync-java/pull/859)
   
+    Commercetools has already developed [next generation Java SDK](https://github.com/commercetools/commercetools-sdk-java-v2) for communication between client-side and the platform. 
+    As it provides a compatible layer which ease the migration work. we now provide alternative methods in [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java) for client creation purpose. Meanwhile the original
+    methods keep unchanged and support client creation with [existing JAVA SDK](https://github.com/commercetools/commercetools-jvm-sdk).
+  
 - 🛠️ **Dependency Updates**
     - Added `com.commercetools.sdk` [`9.4.0`](https://github.com/commercetools/commercetools-sdk-java-v2/releases/tag/9.4.0)
     - Migrated `com.diffplug.spotless` plugin from `6.9.1` to [`6.11.0`](https://github.com/diffplug/spotless/releases/tag/gradle%2F6.11.0).
