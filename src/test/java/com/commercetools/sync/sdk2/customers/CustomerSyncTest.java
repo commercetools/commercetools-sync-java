@@ -137,6 +137,7 @@ public class CustomerSyncTest {
         .isEqualTo(format(CUSTOMER_DRAFT_EMAIL_NOT_SET, "key"));
   }
 
+  @SuppressWarnings("PMD")
   @Test
   void sync_WithFailOnCachingKeysToIds_ShouldTriggerErrorCallbackAndReturnProperStats() {
     // preparation
@@ -193,6 +194,7 @@ public class CustomerSyncTest {
         .hasRootCauseExactlyInstanceOf(RuntimeException.class);
   }
 
+  @SuppressWarnings("PMD")
   @Test
   void sync_WithErrorFetchingExistingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
     final CustomerService mockCustomerService = mock(CustomerService.class);
