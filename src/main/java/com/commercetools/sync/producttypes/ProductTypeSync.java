@@ -37,12 +37,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 /** This class syncs product type drafts with the corresponding product types in the CTP project. */
 public class ProductTypeSync
-    extends BaseSync<ProductTypeDraft, ProductTypeSyncStatistics, ProductTypeSyncOptions> {
+    extends BaseSync<
+        ProductTypeDraft, ProductType, ProductTypeSyncStatistics, ProductTypeSyncOptions> {
   private static final String CTP_PRODUCT_TYPE_FETCH_FAILED =
       "Failed to fetch existing product types with keys:" + " '%s'.";
   private static final String CTP_PRODUCT_TYPE_UPDATE_FAILED =
@@ -156,7 +156,11 @@ public class ProductTypeSync
 
               if (cachingException != null) {
                 handleError(
-                    new SyncException("Failed to build a cache of keys to ids.", cachingException),
+                    "Failed to build a cache of keys to ids.",
+                    cachingException,
+                    null,
+                    null,
+                    null,
                     validDrafts.size());
                 return CompletableFuture.completedFuture(null);
               }
@@ -176,7 +180,7 @@ public class ProductTypeSync
                           final String errorMessage =
                               format(CTP_PRODUCT_TYPE_FETCH_FAILED, batchDraftKeys);
                           handleError(
-                              new SyncException(errorMessage, exception), batchDraftKeys.size());
+                              errorMessage, exception, null, null, null, batchDraftKeys.size());
                           return CompletableFuture.completedFuture(null);
                         } else {
                           return syncBatch(matchingProductTypes, validDrafts, keyToIdCache)
@@ -190,47 +194,6 @@ public class ProductTypeSync
               statistics.incrementProcessed(batch.size());
               return statistics;
             });
-  }
-
-  /**
-   * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this
-   * method calls the optional error callback specified in the {@code syncOptions} and updates the
-   * {@code statistics} instance by incrementing the total number of failed product types to sync.
-   *
-   * @param syncException The exception that called caused the failure.
-   * @param failedTimes The number of times that the failed product types counter is incremented.
-   */
-  private void handleError(@Nonnull final SyncException syncException, final int failedTimes) {
-    syncOptions.applyErrorCallback(syncException);
-    statistics.incrementFailed(failedTimes);
-  }
-
-  /**
-   * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this
-   * method calls the optional error callback specified in the {@code syncOptions} and updates the
-   * {@code statistics} instance by incrementing the total number of failed product types to sync.
-   *
-   * @param errorMessage The error message describing the reason(s) of failure.
-   * @param exception The exception that called caused the failure, if any.
-   * @param failedTimes The number of times that the failed product types counter is incremented.
-   * @param oldProductType existing product type that could be updated.
-   * @param newProductType draft containing data that could differ from data in {@code
-   *     oldProductType}.
-   * @param updateActions the update actions to update the {@link ProductType} with.
-   */
-  private void handleError(
-      @Nonnull final String errorMessage,
-      @Nullable final Throwable exception,
-      final int failedTimes,
-      @Nullable final ProductType oldProductType,
-      @Nullable final ProductTypeDraft newProductType,
-      @Nullable final List<UpdateAction<ProductType>> updateActions) {
-    SyncException syncException =
-        exception != null
-            ? new SyncException(errorMessage, exception)
-            : new SyncException(errorMessage);
-    syncOptions.applyErrorCallback(syncException, oldProductType, newProductType, updateActions);
-    statistics.incrementFailed(failedTimes);
   }
 
   /**
@@ -272,7 +235,7 @@ public class ProductTypeSync
                                       FAILED_TO_PROCESS,
                                       draftWithoutMissingRefAttrs.getKey(),
                                       completionException.getMessage());
-                              handleError(new SyncException(errorMessage, completionException), 1);
+                              handleError(errorMessage, completionException, null, null, null, 1);
                               return null;
                             }))
             .map(CompletionStage::toCompletableFuture)
@@ -373,11 +336,13 @@ public class ProductTypeSync
               });
     } catch (InvalidReferenceException invalidReferenceException) {
       handleError(
-          new SyncException(
-              "This exception is unexpectedly thrown since the draft batch has been"
-                  + "already validated for blank keys at an earlier stage, which means this draft should"
-                  + " have a valid reference. Please communicate this error with the maintainer of the library.",
-              invalidReferenceException),
+          "This exception is unexpectedly thrown since the draft batch has been"
+              + "already validated for blank keys at an earlier stage, which means this draft should"
+              + " have a valid reference. Please communicate this error with the maintainer of the library.",
+          invalidReferenceException,
+          null,
+          null,
+          null,
           1);
     }
   }
@@ -533,7 +498,7 @@ public class ProductTypeSync
                               CTP_PRODUCT_TYPE_UPDATE_FAILED,
                               oldProductType.getKey(),
                               sphereException.getMessage());
-                      handleError(new SyncException(errorMessage, sphereException), 1);
+                      handleError(errorMessage, sphereException, null, null, null, 1);
                       return CompletableFuture.completedFuture(null);
                     });
               } else {
@@ -633,10 +598,10 @@ public class ProductTypeSync
                       handleError(
                           errorMessage,
                           sphereException,
-                          1,
                           oldProductType,
                           newProductType,
-                          updateActions);
+                          updateActions,
+                          1);
                       return CompletableFuture.completedFuture(null);
                     });
               } else {
@@ -666,7 +631,7 @@ public class ProductTypeSync
                         CTP_PRODUCT_TYPE_UPDATE_FAILED,
                         key,
                         "Failed to fetch from CTP while retrying after concurrency modification.");
-                handleError(errorMessage, exception, 1, oldProductType, null, null);
+                handleError(errorMessage, exception, oldProductType, null, null, 1);
                 return CompletableFuture.completedFuture(null);
               }
 
@@ -680,7 +645,7 @@ public class ProductTypeSync
                                 key,
                                 "Not found when attempting to fetch while retrying "
                                     + "after concurrency modification.");
-                        handleError(errorMessage, null, 1, oldProductType, null, null);
+                        handleError(errorMessage, null, oldProductType, null, null, 1);
                         return CompletableFuture.completedFuture(null);
                       });
             });

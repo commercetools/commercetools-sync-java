@@ -10,7 +10,6 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
 import com.commercetools.sync.commons.BaseSync;
-import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.taxcategories.helpers.TaxCategoryBatchValidator;
@@ -25,11 +24,11 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public class TaxCategorySync
-    extends BaseSync<TaxCategoryDraft, TaxCategorySyncStatistics, TaxCategorySyncOptions> {
+    extends BaseSync<
+        TaxCategoryDraft, TaxCategory, TaxCategorySyncStatistics, TaxCategorySyncOptions> {
 
   private static final String TAX_CATEGORY_FETCH_FAILED =
       "Failed to fetch existing tax categories with keys: '%s'.";
@@ -112,12 +111,7 @@ public class TaxCategorySync
 
               if (exception != null) {
                 final String errorMessage = format(TAX_CATEGORY_FETCH_FAILED, validTaxCategoryKeys);
-                handleError(
-                    new SyncException(errorMessage, exception),
-                    null,
-                    null,
-                    null,
-                    validTaxCategoryKeys.size());
+                handleError(errorMessage, exception, null, null, null, validTaxCategoryKeys.size());
                 return completedFuture(null);
               } else {
                 return syncBatch(fetchedTaxCategories, validDrafts);
@@ -128,27 +122,6 @@ public class TaxCategorySync
               statistics.incrementProcessed(batch.size());
               return statistics;
             });
-  }
-
-  /**
-   * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this
-   * method calls the optional error callback specified in the {@code syncOptions} and updates the
-   * {@code statistics} instance by incrementing the total number of failed states to sync.
-   *
-   * @param syncException The exception describing the reason(s) of failure.
-   * @param entry The Resource, which should be updated
-   * @param draft The draft, which should be sync
-   * @param updateActions Generated update actions
-   * @param failedTimes The number of times that the failed states counter is incremented.
-   */
-  private void handleError(
-      @Nonnull final SyncException syncException,
-      @Nullable final TaxCategory entry,
-      @Nullable final TaxCategoryDraft draft,
-      @Nullable final List<UpdateAction<TaxCategory>> updateActions,
-      final int failedTimes) {
-    syncOptions.applyErrorCallback(syncException, entry, draft, updateActions);
-    statistics.incrementFailed(failedTimes);
   }
 
   /**
@@ -268,7 +241,8 @@ public class TaxCategorySync
                               newTaxCategory.getKey(),
                               sphereException.getMessage());
                       handleError(
-                          new SyncException(errorMessage, sphereException),
+                          errorMessage,
+                          sphereException,
                           oldTaxCategory,
                           newTaxCategory,
                           updateActions,
@@ -301,12 +275,7 @@ public class TaxCategorySync
                         TAX_CATEGORY_UPDATE_FAILED,
                         key,
                         "Failed to fetch from CTP while retrying after concurrency modification.");
-                handleError(
-                    new SyncException(errorMessage, exception),
-                    oldTaxCategory,
-                    newTaxCategory,
-                    null,
-                    1);
+                handleError(errorMessage, exception, oldTaxCategory, newTaxCategory, null, 1);
                 return completedFuture(null);
               }
 
@@ -322,12 +291,7 @@ public class TaxCategorySync
                                 key,
                                 "Not found when attempting to fetch while retrying "
                                     + "after concurrency modification.");
-                        handleError(
-                            new SyncException(errorMessage),
-                            oldTaxCategory,
-                            newTaxCategory,
-                            null,
-                            1);
+                        handleError(errorMessage, null, oldTaxCategory, newTaxCategory, null, 1);
                         return completedFuture(null);
                       });
             });

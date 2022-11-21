@@ -3,20 +3,21 @@ plugins {
     id 'com.adarshr.test-logger' version '3.1.0'
     id 'org.ajoberstar.grgit' version '4.1.1'
     id "com.github.ben-manes.versions" version '0.41.0'
-    id 'ru.vyarus.mkdocs' version '3.0.0'
+    id 'ru.vyarus.mkdocs' version '2.2.0'
     id "com.github.spotbugs" version "5.0.5"
     id 'com.diffplug.spotless' version '6.2.0'
     id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
 }
 
 ext{
-    commercetoolsJvmSdkVersion = '2.5.0'
-    mockitoJunitJupiterVersion = '4.3.1'
-    jupiterApiVersion = '5.8.2'
-    assertjVersion = '3.22.0'
+    commercetoolsJvmSdkVersion = '2.9.0'
+    commercetoolsJavaSdkV2Version = '9.5.0'
+    mockitoJunitJupiterVersion = '4.8.1'
+    jupiterApiVersion = '5.9.1'
+    assertjVersion = '3.23.1'
     pmdVersion = '6.14.0'
-    jacocoVersion = '0.8.4'
-    caffeineVersion = '2.9.3'
+    jacocoVersion = '0.8.8'
+    caffeineVersion = '3.1.1'
     nexusStagingPluginVersion = '0.22.0'
     commonTextVersion = '1.9'
     commercetoolsJavaSDK2Version = '7.6.0'
@@ -53,6 +54,8 @@ dependencies {
 
     implementation "com.github.ben-manes.caffeine:caffeine:${caffeineVersion}"
     implementation "org.apache.commons:commons-text:${commonTextVersion}"
+    api "com.commercetools.sdk:commercetools-sdk-compat-v1:${commercetoolsJavaSdkV2Version}"
+    api "com.commercetools.sdk:commercetools-apachehttp-client:${commercetoolsJavaSdkV2Version}"
     testImplementation "org.mockito:mockito-junit-jupiter:${mockitoJunitJupiterVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterApiVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-params:${jupiterApiVersion}"

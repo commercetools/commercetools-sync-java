@@ -11,7 +11,6 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
 import com.commercetools.sync.commons.BaseSync;
-import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.UnresolvedReferencesService;
@@ -36,10 +35,9 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
-public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSyncOptions> {
+public class StateSync extends BaseSync<StateDraft, State, StateSyncStatistics, StateSyncOptions> {
 
   private static final String CTP_STATE_FETCH_FAILED =
       "Failed to fetch existing states with keys: '%s'.";
@@ -116,7 +114,8 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
               final Throwable cachingException = cachingResponse.getValue();
               if (cachingException != null) {
                 handleError(
-                    new SyncException("Failed to build a cache of keys to ids.", cachingException),
+                    "Failed to build a cache of keys to ids.",
+                    cachingException,
                     null,
                     null,
                     null,
@@ -132,24 +131,6 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
               statistics.incrementProcessed(batch.size());
               return statistics;
             });
-  }
-
-  /**
-   * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this
-   * method calls the optional error callback specified in the {@code syncOptions} and updates the
-   * {@code statistics} instance by incrementing the total number of failed states to sync.
-   *
-   * @param syncException The exception that caused the failure.
-   * @param failedTimes The number of times that the failed states counter is incremented.
-   */
-  private void handleError(
-      @Nonnull final SyncException syncException,
-      @Nullable final State entry,
-      @Nullable final StateDraft draft,
-      @Nullable final List<UpdateAction<State>> updateActions,
-      final int failedTimes) {
-    syncOptions.applyErrorCallback(syncException, entry, draft, updateActions);
-    statistics.incrementFailed(failedTimes);
   }
 
   @Nonnull
@@ -171,12 +152,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
               final Throwable fetchException = fetchResponse.getValue();
               if (fetchException != null) {
                 final String errorMessage = format(CTP_STATE_FETCH_FAILED, stateDraftKeys);
-                handleError(
-                    new SyncException(errorMessage, fetchException),
-                    null,
-                    null,
-                    null,
-                    stateDraftKeys.size());
+                handleError(errorMessage, fetchException, null, null, null, stateDraftKeys.size());
                 return CompletableFuture.completedFuture(null);
               } else {
                 final Set<State> matchingStates = fetchResponse.getKey();
@@ -268,12 +244,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
               final String errorMessage =
                   format(
                       FAILED_TO_PROCESS, newStateDraft.getKey(), completionException.getMessage());
-              handleError(
-                  new SyncException(errorMessage, completionException),
-                  null,
-                  newStateDraft,
-                  null,
-                  1);
+              handleError(errorMessage, completionException, null, newStateDraft, null, 1);
               return null;
             });
   }
@@ -359,11 +330,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
                               newState.getKey(),
                               sphereException.getMessage());
                       handleError(
-                          new SyncException(errorMessage, sphereException),
-                          oldState,
-                          newState,
-                          updateActions,
-                          1);
+                          errorMessage, sphereException, oldState, newState, updateActions, 1);
                       return completedFuture(null);
                     });
               } else {
@@ -391,8 +358,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
                         CTP_STATE_UPDATE_FAILED,
                         key,
                         "Failed to fetch from CTP while retrying after concurrency modification.");
-                handleError(
-                    new SyncException(errorMessage, exception), oldState, newState, null, 1);
+                handleError(errorMessage, exception, oldState, newState, null, 1);
                 return completedFuture(null);
               }
 
@@ -406,7 +372,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
                                 key,
                                 "Not found when attempting to fetch while retrying "
                                     + "after concurrency modification.");
-                        handleError(new SyncException(errorMessage), oldState, newState, null, 1);
+                        handleError(errorMessage, null, oldState, newState, null, 1);
                         return completedFuture(null);
                       });
             });
@@ -449,11 +415,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
                 final String errorMessage =
                     format(UNRESOLVED_TRANSITIONS_STORE_FETCH_FAILED, referencingDraftKeys);
                 handleError(
-                    new SyncException(errorMessage, fetchException),
-                    null,
-                    null,
-                    null,
-                    referencingDraftKeys.size());
+                    errorMessage, fetchException, null, null, null, referencingDraftKeys.size());
                 return CompletableFuture.completedFuture(null);
               }
 

@@ -27,6 +27,91 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
+### 9.1.0 - Nov 02, 2022
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/9.0.3...9.1.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.1.0/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.1.0/jar)
+- 🐞 **Enhancement** (1)
+  - Java SDK-v2 Compatible layer adaption [#859](https://github.com/commercetools/commercetools-sync-java/pull/859)
+  
+    Commercetools has already developed [next generation Java SDK (Java-SDK-v2)](https://github.com/commercetools/commercetools-sdk-java-v2) for communication between client-side and the platform. 
+    As it provides a compatible layer which ease the migration work, we now provide alternative methods in [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java) for client creation purpose. Meanwhile the original
+    methods keep unchanged and support client creation with [existing JAVA SDK](https://github.com/commercetools/commercetools-jvm-sdk).
+
+    For details how to create client from Java-SDK-v2, please refer to [Important Usage Tips](https://github.com/commercetools/commercetools-sync-java/blob/master/docs/usage/IMPORTANT_USAGE_TIPS.md)
+  
+- 🛠️ **Dependency Updates**
+    - Added `com.commercetools.sdk` [`9.4.0`](https://github.com/commercetools/commercetools-sdk-java-v2/releases/tag/9.4.0)
+    - Migrated `com.diffplug.spotless` plugin from `6.9.1` to [`6.11.0`](https://github.com/diffplug/spotless/releases/tag/gradle%2F6.11.0).
+    - Migrated `com.github.ben-manes.versions` `0.42.0` -> [`0.43.0`](https://github.com/spotbugs/spotbugs-gradle-plugin/releases/tag/5.0.13)
+    - Migrated `com.github.spotbugs` `5.0.12` -> [`5.0.13`](https://github.com/spotbugs/spotbugs-gradle-plugin/releases/tag/5.0.13)
+    - Migrated `commercetools-jvm-sdk` -> [2.9.0](https://github.com/commercetools/commercetools-jvm-sdk/releases/tag/v2.9.0)
+    - Migrated `org.apache.commons:common-text`  `1.9` -> [`1.10`](https://commons.apache.org/proper/commons-text/changes-report.html#a1.10)
+    - Migrated `org.mockito:mockito-junit-jupiter` `4.7.0` -> [`4.8.1`](https://github.com/mockito/mockito/releases/tag/v4.8.1)
+
+### 9.0.3 - Sep 22, 2022
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/9.0.2...9.0.3) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.0.3/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.0.3/jar)
+- 🐞 **Bug Fixes**
+  - Fix broken link in the github.io documentation [#853](https://github.com/commercetools/commercetools-sync-java/pull/853)
+
+### 9.0.2 - Sep 21, 2022
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/9.0.1...9.0.2) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.0.2/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.0.2/jar)
+- 🐞 **Bug Fixes**
+  - Add correct resources to the error callbacks [#850](https://github.com/commercetools/commercetools-sync-java/pull/850)
+
+### 9.0.1 - Aug 13, 2022
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/9.0.0...9.0.1) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.0.1/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.0.1/jar)
+- 🐞 **Bug Fixes**
+  - Fix broken links in the github.io documentation [#843](https://github.com/commercetools/commercetools-sync-java/pull/843)
+- 🛠️ **Dependency Updates**
+  - `org.ajoberstar.git-publish` `4.1.0` -> [`4.1.1`](https://github.com/ajoberstar/gradle-git-publish/releases/tag/4.1.1)
+  - `org.mockito:mockito-junit-jupiter` `4.6.1` -> [`4.7.0`](https://github.com/mockito/mockito/releases/tag/v4.7.0)
+  - `com.diffplug.spotless` `6.9.0` -> [`6.9.1`](https://github.com/diffplug/spotless/releases/tag/gradle%2F6.9.1)
+
+### 9.0.0 - Aug 8, 2022
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/8.1.1...9.0.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.0.0/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.0.0/jar)
+
+- 🚧 **Breaking Changes** (1)
+    - Minimum Java 11 or above is required [#840](https://github.com/commercetools/commercetools-sync-java/pull/840)
+    
+- ✨ **Build Tools**
+    - Migrated `org.ajoberstar.grgit` plugin from `4.1.1` to [`5.0.0`](https://github.com/ajoberstar/grgit/releases/tag/5.0.0).
+    - Migrated `org.ajoberstar.git-publish` plugin from `3.0.1` to [`4.1.0`](https://github.com/ajoberstar/gradle-git-publish/releases/tag/4.1.0).
+      
+- 🛠️ **Dependency Updates**
+    - `commercetools-jvm-sdk` `2.6.0` -> [`2.9.0`](https://github.com/commercetools/commercetools-jvm-sdk/releases/tag/v2.9.0)
+    - `caffeineVersion` `2.9.3` -> [`3.1.1`](https://github.com/ben-manes/caffeine/releases/tag/v3.1.1)
+        
+### 8.1.1 - Mar 21, 2022
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/8.1.0...8.1.1) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/8.1.1/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/8.1.1/jar)
+
+- 🐞 **Bug Fixes** (1)
+  - **Product Sync** - Fixed the `AddToCategory`, `RemoveFromCategory` action, which creates unnecessary update action when there is no difference and it leads to error. [#816](https://github.com/commercetools/commercetools-sync-java/issues/816)
+
+- ✨ **Enhancement** (1)
+  - Resolve warnings and deprecated usages. [#808](https://github.com/commercetools/commercetools-sync-java/pull/808)
+
+- ✨ **Build Tools**
+  - Migrated from gradle `v7.3.1` to [`v7.3.3`](https://togithub.com/gradle/gradle/releases/v7.3.3).
+  - Migrated github actions `setup-java` plugin from `v2` to [`v3`](https://togithub.com/actions/setup-java/compare/v2...v3)
+  
+- 🛠️ **Dependency Updates**
+  - `commercetools-jvm-sdk` `2.5.0` -> [`2.6.0`](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v2.6.0)
+  - `com.github.spotbugs` `5.0.2` -> [`5.0.5`](https://github.com/spotbugs/spotbugs-gradle-plugin/releases/tag/5.0.5)
+  - `com.diffplug.spotless`  `6.0.4` -> `6.2.0`
+  - `mockito-junit-jupiter` `4.1.0` ->  [`4.3.1`](https://github.com/mockito/mockito/releases/tag/v4.3.1)
+  - `org.assertj.assertj-core` `3.21.0` ->  [`3.22.0`](https://assertj.github.io/doc/#assertj-core-3-22-0-release-notes)
+  
 ### 8.1.0 - Dec 14, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/8.0.0...8.1.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/8.1.0/) |
