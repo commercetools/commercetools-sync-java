@@ -7604,8 +7604,9 @@ defaults._set('polarArea', {
 						var fill = custom.backgroundColor ? custom.backgroundColor : valueAtIndexOrDefault(ds.backgroundColor, i, arcOpts.backgroundColor);
 						var stroke = custom.borderColor ? custom.borderColor : valueAtIndexOrDefault(ds.borderColor, i, arcOpts.borderColor);
 						var bw = custom.borderWidth ? custom.borderWidth : valueAtIndexOrDefault(ds.borderWidth, i, arcOpts.borderWidth);
-                        return {
-							text: label,
+                        console.log('label : '+ label)
+						return {
+							text: label+'_1',
 							fillStyle: fill,
 							strokeStyle: stroke,
 							lineWidth: bw,
@@ -15839,7 +15840,7 @@ defaults._set('global', {
 				return helpers.isArray(data.datasets) ? data.datasets.map(function(dataset, i) {
 					console.log('label : ' + dataset.label)
 					return {
-						text: '_1',
+						text: dataset.label + '_1',
 						fillStyle: (!helpers.isArray(dataset.backgroundColor) ? dataset.backgroundColor : dataset.backgroundColor[0]),
 						hidden: !chart.isDatasetVisible(i),
 						lineCap: dataset.borderCapStyle,
