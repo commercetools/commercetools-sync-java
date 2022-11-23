@@ -115,30 +115,6 @@ var cartDiscountSyncCreatesUpdates = {
     data: [],
 }
 
-
-var allData = {
-    labels: [],
-    datasets: [
-        productSyncCreatesOnly,
-        productSyncUpdatesOnly,
-        productSyncCreatesUpdates,
-
-        inventorySyncCreatesOnly,
-
-        productTypeSyncCreatesOnly,
-        productTypeSyncUpdatesOnly,
-        productTypeSyncCreatesUpdates,
-
-        typeSyncCreatesOnly,
-        typeSyncUpdatesOnly,
-        typeSyncCreatesUpdates,
-
-        cartDiscountSyncCreatesOnly,
-        cartDiscountSyncUpdatesOnly,
-        cartDiscountSyncCreatesUpdates
-    ]
-};
-
 var barChartData = {
     labels: [],
     datasets: [
