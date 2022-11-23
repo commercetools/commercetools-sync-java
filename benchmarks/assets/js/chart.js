@@ -7604,9 +7604,8 @@ defaults._set('polarArea', {
 						var fill = custom.backgroundColor ? custom.backgroundColor : valueAtIndexOrDefault(ds.backgroundColor, i, arcOpts.backgroundColor);
 						var stroke = custom.borderColor ? custom.borderColor : valueAtIndexOrDefault(ds.borderColor, i, arcOpts.borderColor);
 						var bw = custom.borderWidth ? custom.borderWidth : valueAtIndexOrDefault(ds.borderWidth, i, arcOpts.borderWidth);
-                        console.log('label : '+ label)
-						return {
-							text: label+'_1',
+                        return {
+							text: label,
 							fillStyle: fill,
 							strokeStyle: stroke,
 							lineWidth: bw,
@@ -16623,7 +16622,7 @@ module.exports = function(Chart) {
 		*/
 		getLabels: function() {
 			var data = this.chart.data;
-			return this.options.labels || (this.isHorizontal() ? data.xLabels : data.yLabels) || data.labels;
+			return this.options.labels || (this.isHorizontal() ? data.xLabels : data.yLabels) || data.labels + '_1';
 		},
 
 		determineDataLimits: function() {
