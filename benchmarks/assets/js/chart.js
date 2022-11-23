@@ -15838,8 +15838,9 @@ defaults._set('global', {
 			generateLabels: function(chart) {
 				var data = chart.data;
 				return helpers.isArray(data.datasets) ? data.datasets.map(function(dataset, i) {
+					console.log('label : ' + dataset.label)
 					return {
-						text: dataset.label,
+						text: dataset.label + '_1',
 						fillStyle: (!helpers.isArray(dataset.backgroundColor) ? dataset.backgroundColor : dataset.backgroundColor[0]),
 						hidden: !chart.isDatasetVisible(i),
 						lineCap: dataset.borderCapStyle,
