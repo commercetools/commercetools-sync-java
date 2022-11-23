@@ -186,7 +186,7 @@ window.onload = function () {
 
     function addData(data) {
         $.each(data, function (key, val) {
-            barChartData.labels.push(key);
+            barChartData.labels.push(key + "_test");
 
             productSyncCreatesOnly.data.push(val.productSync.createsOnly.executionTime / 1000)
             productSyncUpdatesOnly.data.push(val.productSync.updatesOnly.executionTime / 1000)
