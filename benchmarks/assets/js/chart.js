@@ -7606,7 +7606,7 @@ defaults._set('polarArea', {
 						var bw = custom.borderWidth ? custom.borderWidth : valueAtIndexOrDefault(ds.borderWidth, i, arcOpts.borderWidth);
 
 						return {
-							text: label,
+							text: '<a href="">'+label+'</a>',
 							fillStyle: fill,
 							strokeStyle: stroke,
 							lineWidth: bw,
