@@ -230,7 +230,7 @@ window.onload = function () {
         var count = 0;
         $.each(data, function (key, val) {
             if (count<2) {
-                barChartData.labels.push(key);
+                barChartData.labels.push(key+"_test");
 
                 productSyncCreatesOnly.data.push(val.productSync.createsOnly.executionTime / 1000)
                 productSyncUpdatesOnly.data.push(val.productSync.updatesOnly.executionTime / 1000)
@@ -249,8 +249,8 @@ window.onload = function () {
                 cartDiscountSyncCreatesOnly.data.push(val.cartDiscountSync.createsOnly.executionTime / 1000)
                 cartDiscountSyncUpdatesOnly.data.push(val.cartDiscountSync.updatesOnly.executionTime / 1000)
                 cartDiscountSyncCreatesUpdates.data.push(val.cartDiscountSync.mix.executionTime / 1000)
-                count++
             }
+            count++
         });
         window.myBar.update();
     }
