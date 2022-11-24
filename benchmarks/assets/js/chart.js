@@ -16645,8 +16645,8 @@ module.exports = function(Chart) {
 				me.maxIndex = findIndex !== -1 ? findIndex : me.maxIndex;
 			}
 
-			me.min = labels[me.minIndex];
-			me.max = labels[me.maxIndex];
+			me.min = labels[me.minIndex]+'_16648';
+			me.max = labels[me.maxIndex]+'_16649';
 		},
 
 		buildTicks: function() {
