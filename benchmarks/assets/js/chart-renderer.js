@@ -184,28 +184,26 @@ window.onload = function () {
     function addData(data) {
         var count = 0;
         $.each(data, function (key, val) {
-            if (count<2) {
-                barChartData.labels.push('<a href="">'+key+"_test</a>");
+            barChartData.labels.push(key);
 
-                productSyncCreatesOnly.data.push(val.productSync.createsOnly.executionTime / 1000)
-                productSyncUpdatesOnly.data.push(val.productSync.updatesOnly.executionTime / 1000)
-                productSyncCreatesUpdates.data.push(val.productSync.mix.executionTime / 1000)
+            productSyncCreatesOnly.data.push(val.productSync.createsOnly.executionTime / 1000)
+            productSyncUpdatesOnly.data.push(val.productSync.updatesOnly.executionTime / 1000)
+            productSyncCreatesUpdates.data.push(val.productSync.mix.executionTime / 1000)
 
-                inventorySyncCreatesOnly.data.push(val.inventorySync.createsOnly.executionTime / 1000)
+            inventorySyncCreatesOnly.data.push(val.inventorySync.createsOnly.executionTime / 1000)
 
-                productTypeSyncCreatesOnly.data.push(val.productTypeSync.createsOnly.executionTime / 1000)
-                productTypeSyncUpdatesOnly.data.push(val.productTypeSync.updatesOnly.executionTime / 1000)
-                productTypeSyncCreatesUpdates.data.push(val.productTypeSync.mix.executionTime / 1000)
+            productTypeSyncCreatesOnly.data.push(val.productTypeSync.createsOnly.executionTime / 1000)
+            productTypeSyncUpdatesOnly.data.push(val.productTypeSync.updatesOnly.executionTime / 1000)
+            productTypeSyncCreatesUpdates.data.push(val.productTypeSync.mix.executionTime / 1000)
 
-                typeSyncCreatesOnly.data.push(val.typeSync.createsOnly.executionTime / 1000)
-                typeSyncUpdatesOnly.data.push(val.typeSync.updatesOnly.executionTime / 1000)
-                typeSyncCreatesUpdates.data.push(val.typeSync.mix.executionTime / 1000)
+            typeSyncCreatesOnly.data.push(val.typeSync.createsOnly.executionTime / 1000)
+            typeSyncUpdatesOnly.data.push(val.typeSync.updatesOnly.executionTime / 1000)
+            typeSyncCreatesUpdates.data.push(val.typeSync.mix.executionTime / 1000)
 
-                cartDiscountSyncCreatesOnly.data.push(val.cartDiscountSync.createsOnly.executionTime / 1000)
-                cartDiscountSyncUpdatesOnly.data.push(val.cartDiscountSync.updatesOnly.executionTime / 1000)
-                cartDiscountSyncCreatesUpdates.data.push(val.cartDiscountSync.mix.executionTime / 1000)
-            }
-            count++
+            cartDiscountSyncCreatesOnly.data.push(val.cartDiscountSync.createsOnly.executionTime / 1000)
+            cartDiscountSyncUpdatesOnly.data.push(val.cartDiscountSync.updatesOnly.executionTime / 1000)
+            cartDiscountSyncCreatesUpdates.data.push(val.cartDiscountSync.mix.executionTime / 1000)
+
         });
         window.myBar.update();
     }
