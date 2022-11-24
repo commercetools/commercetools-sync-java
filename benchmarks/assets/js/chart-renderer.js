@@ -186,14 +186,14 @@ window.onload = function () {
         var commitHashArray = []
         var dataMap = []
         $.each(data, function (key, val) {
+            console.log('before sort : ' + key)
             commitHashArray.push(key);
             dataMap[key] = val
         })
-        commitHashArray = commitHashArray.sort(function(hash1, hash2) {
-            return hash1 - hash2
-        })
+        commitHashArray = commitHashArray.sort()
 
         commitHashArray.forEach(function(commitHash) {
+            console.log('after sort : ' + commitHash)
             var val = dataMap[commitHash];
             barChartData.labels.push(commitHash);
 
