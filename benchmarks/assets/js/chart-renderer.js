@@ -188,7 +188,7 @@ window.onload = function () {
         $.each(data, function (key, val) {
             commitHashArray.push(key);
             dataMap[key] = value
-        }
+        })
         commitHashArray = commitHashArray.sort(function(hash1, hash2) {
             return hash1 - hash2
         })
