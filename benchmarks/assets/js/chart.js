@@ -6403,7 +6403,7 @@ module.exports = function(Chart) {
 		initialize: function() {
 			var me = this;
 			var meta;
-            console.log(JSON.stringify(me))
+
 			Chart.DatasetController.prototype.initialize.apply(me, arguments);
 
 			meta = me.getMeta();
@@ -6475,6 +6475,8 @@ module.exports = function(Chart) {
 		 * @private
 		 */
 		getValueScaleId: function() {
+		    console.log('yAxisID : ' + this.getMeta().yAxisID)
+
 			return this.getMeta().yAxisID;
 		},
 
@@ -6482,6 +6484,7 @@ module.exports = function(Chart) {
 		 * @private
 		 */
 		getIndexScaleId: function() {
+			console.log('xAxisID : ' + this.getMeta().xAxisID)
 			return this.getMeta().xAxisID;
 		},
 
@@ -6708,6 +6711,7 @@ module.exports = function(Chart) {
 		 * @private
 		 */
 		getValueScaleId: function() {
+
 			return this.getMeta().xAxisID;
 		},
 
@@ -6715,7 +6719,8 @@ module.exports = function(Chart) {
 		 * @private
 		 */
 		getIndexScaleId: function() {
-			return this.getMeta().yAxisID;
+
+		    return this.getMeta().yAxisID;
 		}
 	});
 };
