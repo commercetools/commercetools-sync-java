@@ -6401,14 +6401,14 @@ module.exports = function(Chart) {
 		dataElementType: elements.Rectangle,
 
 		initialize: function() {
-			var me = this;
-			var meta;
-
-			Chart.DatasetController.prototype.initialize.apply(me, arguments);
-
-			meta = me.getMeta();
-			meta.stack = me.getDataset().stack;
-			meta.bar = true;
+//			var me = this;
+//			var meta;
+//
+//			Chart.DatasetController.prototype.initialize.apply(me, arguments);
+//
+//			meta = me.getMeta();
+//			meta.stack = me.getDataset().stack;
+//			meta.bar = true;
 		},
 
 		update: function(reset) {
@@ -6475,8 +6475,6 @@ module.exports = function(Chart) {
 		 * @private
 		 */
 		getValueScaleId: function() {
-		    console.log('yAxisID : ' + this.getMeta().yAxisID)
-
 			return this.getMeta().yAxisID;
 		},
 
@@ -6484,7 +6482,6 @@ module.exports = function(Chart) {
 		 * @private
 		 */
 		getIndexScaleId: function() {
-			console.log('xAxisID : ' + this.getMeta().xAxisID)
 			return this.getMeta().xAxisID;
 		},
 
