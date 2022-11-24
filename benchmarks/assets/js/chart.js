@@ -18517,7 +18517,7 @@ module.exports = function(Chart) {
 			var i, ilen;
 
 			for (i = 0, ilen = ticks.length; i < ilen; ++i) {
-				labels.push(this.tickFormatFunction(moment(ticks[i].value), i, ticks))';
+				labels.push(this.tickFormatFunction(moment(ticks[i].value), i, ticks));
 			}
 
 			return labels;
