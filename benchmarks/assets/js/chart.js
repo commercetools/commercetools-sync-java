@@ -6401,14 +6401,14 @@ module.exports = function(Chart) {
 		dataElementType: elements.Rectangle,
 
 		initialize: function() {
-//			var me = this;
-//			var meta;
-//
+			var me = this;
+			var meta;
+
 //			Chart.DatasetController.prototype.initialize.apply(me, arguments);
-//
-//			meta = me.getMeta();
-//			meta.stack = me.getDataset().stack;
-//			meta.bar = true;
+
+			meta = me.getMeta();
+			meta.stack = me.getDataset().stack;
+			meta.bar = true;
 		},
 
 		update: function(reset) {
