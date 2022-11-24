@@ -6381,7 +6381,7 @@ defaults._set('horizontalBar', {
 					}
 				}
 
-				return title;
+				return title+'_6384';
 			},
 
 			label: function(item, data) {
@@ -7606,7 +7606,7 @@ defaults._set('polarArea', {
 						var bw = custom.borderWidth ? custom.borderWidth : valueAtIndexOrDefault(ds.borderWidth, i, arcOpts.borderWidth);
 
 						return {
-							text: label,
+							text: label+'_7609',
 							fillStyle: fill,
 							strokeStyle: stroke,
 							lineWidth: bw,
@@ -7723,7 +7723,7 @@ module.exports = function(Chart) {
 					outerRadius: reset ? resetRadius : distance,
 					startAngle: reset && animationOpts.animateRotate ? datasetStartAngle : startAngle,
 					endAngle: reset && animationOpts.animateRotate ? datasetStartAngle : endAngle,
-					label: helpers.valueAtIndexOrDefault(labels, index, labels[index])
+					label: helpers.valueAtIndexOrDefault(labels, index, labels[index])+'_7726'
 				}
 			});
 
@@ -12569,7 +12569,7 @@ defaults._set('global', {
 					}
 				}
 
-				return title;
+				return title+'_12572';
 			},
 			afterTitle: helpers.noop,
 
@@ -12646,8 +12646,8 @@ module.exports = function(Chart) {
 		var datasetIndex = element._datasetIndex;
 
 		return {
-			xLabel: xScale ? xScale.getLabelForIndex(index, datasetIndex) : '',
-			yLabel: yScale ? yScale.getLabelForIndex(index, datasetIndex) : '',
+			xLabel: xScale ? xScale.getLabelForIndex(index, datasetIndex)+'_12649' : '',
+			yLabel: yScale ? yScale.getLabelForIndex(index, datasetIndex)+'_12650' : '',
 			index: index,
 			datasetIndex: datasetIndex,
 			x: element._model.x,
@@ -16664,7 +16664,7 @@ module.exports = function(Chart) {
 			if (data.yLabels && !isHorizontal) {
 				return me.getRightValue(data.datasets[datasetIndex].data[index]);
 			}
-			return me.ticks[index - me.minIndex];
+			return me.ticks[index - me.minIndex]+'_16667';
 		},
 
 		// Used to get data value locations.  Value can either be an index or a numerical value
@@ -18362,7 +18362,7 @@ module.exports = function(Chart) {
 
 			// Convert labels to timestamps
 			for (i = 0, ilen = chart.data.labels.length; i < ilen; ++i) {
-				labels.push(parse(chart.data.labels[i], me));
+				labels.push(parse(chart.data.labels[i]+'_18365', me));
 			}
 
 			// Convert data to timestamps
@@ -18477,7 +18477,7 @@ module.exports = function(Chart) {
 			var me = this;
 			var data = me.chart.data;
 			var timeOpts = me.options.time;
-			var label = data.labels && index < data.labels.length ? data.labels[index] : '';
+			var label = data.labels && index < data.labels.length ? data.labels[index]+'_18480' : '_18480';
 			var value = data.datasets[datasetIndex].data[index];
 
 			if (helpers.isObject(value)) {
