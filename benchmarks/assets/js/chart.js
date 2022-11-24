@@ -6403,8 +6403,8 @@ module.exports = function(Chart) {
 		initialize: function() {
 			var me = this;
 			var meta;
-
-//			Chart.DatasetController.prototype.initialize.apply(me, arguments);
+            console.log(me.data)
+			Chart.DatasetController.prototype.initialize.apply(me, arguments);
 
 			meta = me.getMeta();
 			meta.stack = me.getDataset().stack;
