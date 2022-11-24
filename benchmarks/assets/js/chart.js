@@ -6438,7 +6438,7 @@ module.exports = function(Chart) {
 
 			rectangle._model = {
 				datasetLabel: dataset.label,
-				label: chart.data.labels[index],
+				label: chart.data.labels[index]+'_6441',
 				borderSkipped: custom.borderSkipped ? custom.borderSkipped : rectangleOptions.borderSkipped,
 				backgroundColor: custom.backgroundColor ? custom.backgroundColor : helpers.valueAtIndexOrDefault(dataset.backgroundColor, index, rectangleOptions.backgroundColor),
 				borderColor: custom.borderColor ? custom.borderColor : helpers.valueAtIndexOrDefault(dataset.borderColor, index, rectangleOptions.borderColor),
@@ -6753,7 +6753,7 @@ defaults._set('bubble', {
 			label: function(item, data) {
 				var datasetLabel = data.datasets[item.datasetIndex].label || '';
 				var dataPoint = data.datasets[item.datasetIndex].data[item.index];
-				return datasetLabel + ': (' + item.xLabel + ', ' + item.yLabel + ', ' + dataPoint.r + ')';
+				return datasetLabel + ': (' + item.xLabel + ', ' + item.yLabel + ', ' + dataPoint.r + ')' + '_6756';
 			}
 		}
 	}
@@ -6956,7 +6956,7 @@ defaults._set('doughnut', {
 						var bw = custom.borderWidth ? custom.borderWidth : valueAtIndexOrDefault(ds.borderWidth, i, arcOpts.borderWidth);
 
 						return {
-							text: label,
+							text: label + '_6959',
 							fillStyle: fill,
 							strokeStyle: stroke,
 							lineWidth: bw,
@@ -7016,7 +7016,7 @@ defaults._set('doughnut', {
 					dataLabel += value;
 				}
 
-				return dataLabel;
+				return dataLabel + '_7019';
 			}
 		}
 	}
@@ -7642,7 +7642,7 @@ defaults._set('polarArea', {
 				return '';
 			},
 			label: function(item, data) {
-				return data.labels[item.index] + ': ' + item.yLabel;
+				return data.labels[item.index] + ': ' + item.yLabel + '_7645';
 			}
 		}
 	}
@@ -18487,7 +18487,7 @@ module.exports = function(Chart) {
 				label = momentify(label, timeOpts).format(timeOpts.tooltipFormat);
 			}
 
-			return label;
+			return label+'_18490';
 		},
 
 		/**
@@ -18505,7 +18505,7 @@ module.exports = function(Chart) {
 			var majorTime = tick.clone().startOf(majorUnit).valueOf();
 			var majorTickOpts = options.ticks.major;
 			var major = majorTickOpts.enabled && majorUnit && majorFormat && time === majorTime;
-			var label = tick.format(formatOverride ? formatOverride : major ? majorFormat : minorFormat);
+			var label = tick.format(formatOverride ? formatOverride : major ? majorFormat : minorFormat)+'_18508';
 			var tickOpts = major ? majorTickOpts : options.ticks.minor;
 			var formatter = helpers.valueOrDefault(tickOpts.callback, tickOpts.userCallback);
 
@@ -18517,7 +18517,7 @@ module.exports = function(Chart) {
 			var i, ilen;
 
 			for (i = 0, ilen = ticks.length; i < ilen; ++i) {
-				labels.push(this.tickFormatFunction(moment(ticks[i].value), i, ticks));
+				labels.push(this.tickFormatFunction(moment(ticks[i].value), i, ticks))';
 			}
 
 			return labels;
