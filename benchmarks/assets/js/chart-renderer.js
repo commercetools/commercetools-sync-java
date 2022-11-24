@@ -195,7 +195,7 @@ window.onload = function () {
 
         commitHashArray.forEach(function(commitHash) {
             var val = dataMap[commitHash];
-            barChartData.labels.push(key);
+            barChartData.labels.push(commitHash);
 
             productSyncCreatesOnly.data.push(val.productSync.createsOnly.executionTime / 1000)
             productSyncUpdatesOnly.data.push(val.productSync.updatesOnly.executionTime / 1000)
