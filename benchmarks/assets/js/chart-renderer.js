@@ -185,7 +185,7 @@ window.onload = function () {
         var count = 0;
         $.each(data, function (key, val) {
             if (count<2) {
-                barChartData.labels.push(key+"_test");
+                barChartData.labels.push('<a href="">'+key+"_test</a>");
 
                 productSyncCreatesOnly.data.push(val.productSync.createsOnly.executionTime / 1000)
                 productSyncUpdatesOnly.data.push(val.productSync.updatesOnly.executionTime / 1000)
