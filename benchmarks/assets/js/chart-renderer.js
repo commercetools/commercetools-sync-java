@@ -183,6 +183,11 @@ window.onload = function () {
 
     function addData(data) {
         var count = 0;
+        data.sort(function (obj1, obj2) {
+            console.log('obj1 ' + obj1.key)
+            console.log('obj2 ' + obj2.key)
+            return obj1.key-obj2.key
+        })
         $.each(data, function (key, val) {
             barChartData.labels.push(key);
 
