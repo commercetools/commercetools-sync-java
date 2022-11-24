@@ -6403,7 +6403,8 @@ module.exports = function(Chart) {
 		initialize: function() {
 			var me = this;
 			var meta;
-
+            console.log(me.data.labels[0])
+            console.log(JSON.stringify(me))
 			Chart.DatasetController.prototype.initialize.apply(me, arguments);
 
 			meta = me.getMeta();
@@ -6659,7 +6660,24 @@ module.exports = function(Chart) {
 		},
 
 		draw: function() {
-			
+//			var me = this;
+//			var chart = me.chart;
+//			var chart = me.chart;
+//			var scale = me.getValueScale();
+//			var rects = me.getMeta().data;
+//			var dataset = me.getDataset();
+//			var ilen = rects.length;
+//			var i = 0;
+//
+//			helpers.canvas.clipArea(chart.ctx, chart.chartArea);
+//
+//			for (; i < ilen; ++i) {
+//				if (!isNaN(scale.getRightValue(dataset.data[i]))) {
+//					rects[i].draw();
+//				}
+//			}
+//
+//			helpers.canvas.unclipArea(chart.ctx);
 		},
 
 		setHoverStyle: function(rectangle) {
