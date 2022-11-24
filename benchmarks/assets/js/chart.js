@@ -1442,11 +1442,11 @@ for (var func in conversions) {
   // export rgb2hsl and ["rgb"]["hsl"]
   convert[from] = convert[from] || {};
 
-  convert[from][to] = convert[func] = (function(func) { 
+  convert[from][to] = convert[func] = (function(func) {
     return function(arg) {
       if (typeof arg == "number")
         arg = Array.prototype.slice.call(arguments);
-      
+
       var val = conversions[func](arg);
       if (typeof val == "string" || val === undefined)
         return val; // keyword
@@ -1474,12 +1474,12 @@ Converter.prototype.routeSpace = function(space, args) {
    }
    // color.rgb(10, 10, 10)
    if (typeof values == "number") {
-      values = Array.prototype.slice.call(args);        
+      values = Array.prototype.slice.call(args);
    }
 
    return this.setValues(space, values);
 };
-  
+
 /* Set the values for a space, invalidating cache */
 Converter.prototype.setValues = function(space, values) {
    this.space = space;
@@ -6381,7 +6381,7 @@ defaults._set('horizontalBar', {
 					}
 				}
 
-				return title+'_6384';
+				return title;
 			},
 
 			label: function(item, data) {
@@ -6403,7 +6403,7 @@ module.exports = function(Chart) {
 		initialize: function() {
 			var me = this;
 			var meta;
-            console.log(me.data)
+
 			Chart.DatasetController.prototype.initialize.apply(me, arguments);
 
 			meta = me.getMeta();
@@ -6438,7 +6438,7 @@ module.exports = function(Chart) {
 
 			rectangle._model = {
 				datasetLabel: dataset.label,
-				label: chart.data.labels[index]+'_6441',
+				label: chart.data.labels[index],
 				borderSkipped: custom.borderSkipped ? custom.borderSkipped : rectangleOptions.borderSkipped,
 				backgroundColor: custom.backgroundColor ? custom.backgroundColor : helpers.valueAtIndexOrDefault(dataset.backgroundColor, index, rectangleOptions.backgroundColor),
 				borderColor: custom.borderColor ? custom.borderColor : helpers.valueAtIndexOrDefault(dataset.borderColor, index, rectangleOptions.borderColor),
@@ -6661,7 +6661,6 @@ module.exports = function(Chart) {
 		draw: function() {
 			var me = this;
 			var chart = me.chart;
-			var chart = me.chart;
 			var scale = me.getValueScale();
 			var rects = me.getMeta().data;
 			var dataset = me.getDataset();
@@ -6708,7 +6707,6 @@ module.exports = function(Chart) {
 		 * @private
 		 */
 		getValueScaleId: function() {
-
 			return this.getMeta().xAxisID;
 		},
 
@@ -6716,8 +6714,7 @@ module.exports = function(Chart) {
 		 * @private
 		 */
 		getIndexScaleId: function() {
-
-		    return this.getMeta().yAxisID;
+			return this.getMeta().yAxisID;
 		}
 	});
 };
@@ -6756,7 +6753,7 @@ defaults._set('bubble', {
 			label: function(item, data) {
 				var datasetLabel = data.datasets[item.datasetIndex].label || '';
 				var dataPoint = data.datasets[item.datasetIndex].data[item.index];
-				return datasetLabel + ': (' + item.xLabel + ', ' + item.yLabel + ', ' + dataPoint.r + ')' + '_6756';
+				return datasetLabel + ': (' + item.xLabel + ', ' + item.yLabel + ', ' + dataPoint.r + ')';
 			}
 		}
 	}
@@ -6959,7 +6956,7 @@ defaults._set('doughnut', {
 						var bw = custom.borderWidth ? custom.borderWidth : valueAtIndexOrDefault(ds.borderWidth, i, arcOpts.borderWidth);
 
 						return {
-							text: label + '_6959',
+							text: label,
 							fillStyle: fill,
 							strokeStyle: stroke,
 							lineWidth: bw,
@@ -7019,7 +7016,7 @@ defaults._set('doughnut', {
 					dataLabel += value;
 				}
 
-				return dataLabel + '_7019';
+				return dataLabel;
 			}
 		}
 	}
@@ -7609,7 +7606,7 @@ defaults._set('polarArea', {
 						var bw = custom.borderWidth ? custom.borderWidth : valueAtIndexOrDefault(ds.borderWidth, i, arcOpts.borderWidth);
 
 						return {
-							text: label+'_7609',
+							text: label,
 							fillStyle: fill,
 							strokeStyle: stroke,
 							lineWidth: bw,
@@ -7645,7 +7642,7 @@ defaults._set('polarArea', {
 				return '';
 			},
 			label: function(item, data) {
-				return data.labels[item.index] + ': ' + item.yLabel + '_7645';
+				return data.labels[item.index] + ': ' + item.yLabel;
 			}
 		}
 	}
@@ -7726,7 +7723,7 @@ module.exports = function(Chart) {
 					outerRadius: reset ? resetRadius : distance,
 					startAngle: reset && animationOpts.animateRotate ? datasetStartAngle : startAngle,
 					endAngle: reset && animationOpts.animateRotate ? datasetStartAngle : endAngle,
-					label: helpers.valueAtIndexOrDefault(labels, index, labels[index])+'_7726'
+					label: helpers.valueAtIndexOrDefault(labels, index, labels[index])
 				}
 			});
 
@@ -12572,7 +12569,7 @@ defaults._set('global', {
 					}
 				}
 
-				return title+'_12572';
+				return title;
 			},
 			afterTitle: helpers.noop,
 
@@ -12649,8 +12646,8 @@ module.exports = function(Chart) {
 		var datasetIndex = element._datasetIndex;
 
 		return {
-			xLabel: xScale ? xScale.getLabelForIndex(index, datasetIndex)+'_12649' : '',
-			yLabel: yScale ? yScale.getLabelForIndex(index, datasetIndex)+'_12650' : '',
+			xLabel: xScale ? xScale.getLabelForIndex(index, datasetIndex) : '',
+			yLabel: yScale ? yScale.getLabelForIndex(index, datasetIndex) : '',
 			index: index,
 			datasetIndex: datasetIndex,
 			x: element._model.x,
@@ -16648,8 +16645,8 @@ module.exports = function(Chart) {
 				me.maxIndex = findIndex !== -1 ? findIndex : me.maxIndex;
 			}
 
-			me.min = labels[me.minIndex]+'_16648';
-			me.max = labels[me.maxIndex]+'_16649';
+			me.min = labels[me.minIndex];
+			me.max = labels[me.maxIndex];
 		},
 
 		buildTicks: function() {
@@ -16667,7 +16664,7 @@ module.exports = function(Chart) {
 			if (data.yLabels && !isHorizontal) {
 				return me.getRightValue(data.datasets[datasetIndex].data[index]);
 			}
-			return me.ticks[index - me.minIndex]+'_16667';
+			return me.ticks[index - me.minIndex];
 		},
 
 		// Used to get data value locations.  Value can either be an index or a numerical value
@@ -18365,7 +18362,7 @@ module.exports = function(Chart) {
 
 			// Convert labels to timestamps
 			for (i = 0, ilen = chart.data.labels.length; i < ilen; ++i) {
-				labels.push(parse(chart.data.labels[i]+'_18365', me));
+				labels.push(parse(chart.data.labels[i], me));
 			}
 
 			// Convert data to timestamps
@@ -18480,7 +18477,7 @@ module.exports = function(Chart) {
 			var me = this;
 			var data = me.chart.data;
 			var timeOpts = me.options.time;
-			var label = data.labels && index < data.labels.length ? data.labels[index]+'_18480' : '_18480';
+			var label = data.labels && index < data.labels.length ? data.labels[index] : '';
 			var value = data.datasets[datasetIndex].data[index];
 
 			if (helpers.isObject(value)) {
@@ -18490,7 +18487,7 @@ module.exports = function(Chart) {
 				label = momentify(label, timeOpts).format(timeOpts.tooltipFormat);
 			}
 
-			return label+'_18490';
+			return label;
 		},
 
 		/**
@@ -18508,7 +18505,7 @@ module.exports = function(Chart) {
 			var majorTime = tick.clone().startOf(majorUnit).valueOf();
 			var majorTickOpts = options.ticks.major;
 			var major = majorTickOpts.enabled && majorUnit && majorFormat && time === majorTime;
-			var label = tick.format(formatOverride ? formatOverride : major ? majorFormat : minorFormat)+'_18508';
+			var label = tick.format(formatOverride ? formatOverride : major ? majorFormat : minorFormat);
 			var tickOpts = major ? majorTickOpts : options.ticks.minor;
 			var formatter = helpers.valueOrDefault(tickOpts.callback, tickOpts.userCallback);
 
