@@ -44,6 +44,8 @@ import javax.annotation.Nonnull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class ProductTypeSyncBenchmark {
 
@@ -51,6 +53,8 @@ class ProductTypeSyncBenchmark {
   private List<String> errorCallBackMessages;
   private List<String> warningCallBackMessages;
   private List<Throwable> errorCallBackExceptions;
+
+  private final Logger logger = LoggerFactory.getLogger(ProductTypeSyncBenchmark.class);
 
   @AfterAll
   static void tearDown() {
@@ -127,6 +131,9 @@ class ProductTypeSyncBenchmark {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
+    logger.info("Resources Type : " + PRODUCT_TYPE_SYNC);
+    logger.info("Sync Type : " + CREATES_ONLY);
+    logger.info("Time elapsed : " + totalTime);
 
     saveNewResult(PRODUCT_TYPE_SYNC, CREATES_ONLY, totalTime);
   }
