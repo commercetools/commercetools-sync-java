@@ -136,6 +136,9 @@ class ProductTypeSyncBenchmark {
       logger.info("Sync Type : " + CREATES_ONLY);
       logger.info("Time elapsed : " + totalTime);
     }
+    System.out.println("Resources Type : " + PRODUCT_TYPE_SYNC);
+    System.out.println("Sync Type : " + CREATES_ONLY);
+    System.out.println("Time elapsed : " + totalTime);
     saveNewResult(PRODUCT_TYPE_SYNC, CREATES_ONLY, totalTime);
   }
 
