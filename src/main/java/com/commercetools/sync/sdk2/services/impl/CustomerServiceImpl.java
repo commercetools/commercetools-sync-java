@@ -184,10 +184,10 @@ public final class CustomerServiceImpl extends BaseService<CustomerSyncOptions>
             })
         .exceptionally(
             throwable -> {
-              if (throwable instanceof NotFoundException) {
+              if (throwable.getCause() instanceof NotFoundException) {
                 return Optional.empty();
               }
-              // todo: what is the best way to handle this ?
+              // todo - to check with the team: what is the best way to handle this ?
               syncOptions.applyErrorCallback(new SyncException(throwable));
               return Optional.empty();
             });

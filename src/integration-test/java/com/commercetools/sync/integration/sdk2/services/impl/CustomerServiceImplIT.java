@@ -95,9 +95,8 @@ class CustomerServiceImplIT {
             .toCompletableFuture()
             .join();
     assertThat(customerId).isEmpty();
-    // todo: shall it be checked ?
-    assertThat(errorCallBackExceptions).isNotEmpty();
-    assertThat(errorCallBackMessages).isNotEmpty();
+    assertThat(errorCallBackExceptions).isEmpty();
+    assertThat(errorCallBackMessages).isEmpty();
   }
 
   @Test
@@ -212,16 +211,15 @@ class CustomerServiceImplIT {
   @Test
   void createCustomer_WithDuplicationException_ShouldNotCreateCustomer() {
     CustomerDraft customerDraft =
-        CustomerDraftBuilder.of().email("mail@mail.com").password("password").key("newKey").build();
+        CustomerDraftBuilder.of().email("mail@mail.com").password("password").key("newKeyTest1").build();
 
     Optional<Customer> customerOptional =
         customerService.createCustomer(customerDraft).toCompletableFuture().join();
 
     assertThat(customerOptional).isEmpty();
     assertThat(errorCallBackMessages).hasSize(1);
-    // todo: check why this assertion fails.
     assertThat(errorCallBackMessages.get(0))
-        .contains("There is already an existing customer with the email '\"mail@mail.com\"'.");
+        .contains("There is already an existing customer with the provided email.");
     assertThat(errorCallBackExceptions).hasSize(1);
   }
 
