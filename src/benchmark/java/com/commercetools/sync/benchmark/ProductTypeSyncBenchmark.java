@@ -54,7 +54,7 @@ class ProductTypeSyncBenchmark {
   private List<String> warningCallBackMessages;
   private List<Throwable> errorCallBackExceptions;
 
-  private final Logger logger = LoggerFactory.getLogger(ProductTypeSyncBenchmark.class);
+  private static final Logger logger = LoggerFactory.getLogger(ProductTypeSyncBenchmark.class);
 
   @AfterAll
   static void tearDown() {
@@ -131,10 +131,11 @@ class ProductTypeSyncBenchmark {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
-    logger.info("Resources Type : " + PRODUCT_TYPE_SYNC);
-    logger.info("Sync Type : " + CREATES_ONLY);
-    logger.info("Time elapsed : " + totalTime);
-
+    if (logger.isInfoEnabled()) {
+      logger.info("Resources Type : " + PRODUCT_TYPE_SYNC);
+      logger.info("Sync Type : " + CREATES_ONLY);
+      logger.info("Time elapsed : " + totalTime);
+    }
     saveNewResult(PRODUCT_TYPE_SYNC, CREATES_ONLY, totalTime);
   }
 
