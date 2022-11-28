@@ -19,7 +19,6 @@ jobs:
         run: ./gradlew spotbugsBenchmark spotbugsIntegrationTest spotbugsMain spotbugsTest
       - name: mkdocsBuild
         run: ./gradlew mkdocsBuild
-
   benchmark_tests:
     name: benchmark tests
     concurrency: benchmark_tests
@@ -42,6 +41,6 @@ jobs:
         run: echo ::set-output name=libVersion::${GITHUB_REF#refs/*/}
       - name: benchmark test
         if: ${{ success() }}
-        run: ./gradlew clean setLibraryVersion benchmarkCommit
+        run: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
         env:
           GITHUB_TAG: ${{ steps.vars.outputs.libVersion }}
