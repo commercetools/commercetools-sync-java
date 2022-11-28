@@ -37,6 +37,10 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class InventorySyncBenchmark {
+
+  private static final int INVENTORY_BENCHMARKS_CREATE_ACTION_THRESHOLD =
+      18_000; // (based on history of benchmarks; highest was ~9 seconds)
+
   @BeforeEach
   void setup() {
     deleteInventoryEntries(CTP_TARGET_CLIENT);
@@ -66,11 +70,12 @@ class InventorySyncBenchmark {
         executeBlocking(inventorySync.sync(inventoryEntryDrafts));
     final long totalTime = System.currentTimeMillis() - beforeSync;
 
-    // assert on threshold (based on history of benchmarks; highest was ~9 seconds)
-    final int threshold = 18000; // double of the highest benchmark
+    // assert on threshold
     assertThat(totalTime)
-        .withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
-        .isLessThan(threshold);
+        .withFailMessage(
+            format(
+                THRESHOLD_EXCEEDED_ERROR, totalTime, INVENTORY_BENCHMARKS_CREATE_ACTION_THRESHOLD))
+        .isLessThan(INVENTORY_BENCHMARKS_CREATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (total number of existing inventories)
     final CompletableFuture<Integer> totalNumberOfInventories =

@@ -44,8 +44,6 @@ import javax.annotation.Nonnull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class ProductTypeSyncBenchmark {
 
@@ -53,8 +51,10 @@ class ProductTypeSyncBenchmark {
   private List<String> errorCallBackMessages;
   private List<String> warningCallBackMessages;
   private List<Throwable> errorCallBackExceptions;
-
-  private static final Logger logger = LoggerFactory.getLogger(ProductTypeSyncBenchmark.class);
+  private static final int PRODUCT_TYPE_BENCHMARKS_CREATE_ACTION_THRESHOLD =
+      24_000; // 150% of the maximum value (16K)
+  private static final int PRODUCT_TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD =
+      24_000; // 150% of the maximum value (16K)
 
   @AfterAll
   static void tearDown() {
@@ -110,10 +110,13 @@ class ProductTypeSyncBenchmark {
     final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
     // assert on threshold (based on history of benchmarks; highest was ~12 seconds)
-    final int threshold = 24000; // double of the highest benchmark
     assertThat(totalTime)
-        .withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
-        .isLessThan(threshold);
+        .withFailMessage(
+            format(
+                THRESHOLD_EXCEEDED_ERROR,
+                totalTime,
+                PRODUCT_TYPE_BENCHMARKS_CREATE_ACTION_THRESHOLD))
+        .isLessThan(PRODUCT_TYPE_BENCHMARKS_CREATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (total number of existing product types)
     final CompletableFuture<Integer> totalNumberOfProductTypes =
@@ -131,10 +134,6 @@ class ProductTypeSyncBenchmark {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
-
-    logger.info("Resources Type : " + PRODUCT_TYPE_SYNC);
-    logger.info("Sync Type : " + CREATES_ONLY);
-    logger.info("Time elapsed : " + totalTime);
 
     saveNewResult(PRODUCT_TYPE_SYNC, CREATES_ONLY, totalTime);
   }
@@ -164,10 +163,13 @@ class ProductTypeSyncBenchmark {
     final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
     // assert on threshold (based on history of benchmarks; highest was ~13 seconds)
-    final int threshold = 26000; // double of the highest benchmark
     assertThat(totalTime)
-        .withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
-        .isLessThan(threshold);
+        .withFailMessage(
+            format(
+                THRESHOLD_EXCEEDED_ERROR,
+                totalTime,
+                PRODUCT_TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD))
+        .isLessThan(PRODUCT_TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (number of updated product types)
     final CompletableFuture<Integer> totalNumberOfUpdatedProductTypes =
@@ -232,10 +234,13 @@ class ProductTypeSyncBenchmark {
     final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
     // assert on threshold (based on history of benchmarks; highest was ~13 seconds)
-    final int threshold = 26000; // double of the highest benchmark
     assertThat(totalTime)
-        .withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
-        .isLessThan(threshold);
+        .withFailMessage(
+            format(
+                THRESHOLD_EXCEEDED_ERROR,
+                totalTime,
+                PRODUCT_TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD))
+        .isLessThan(PRODUCT_TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (number of updated product types)
     final CompletableFuture<Integer> totalNumberOfProductTypesWithOldName =
