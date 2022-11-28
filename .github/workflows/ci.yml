@@ -19,28 +19,7 @@ jobs:
         run: ./gradlew spotbugsBenchmark spotbugsIntegrationTest spotbugsMain spotbugsTest
       - name: mkdocsBuild
         run: ./gradlew mkdocsBuild
-  tests:
-    name: Tests
-    concurrency: tests
-    needs: checks
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          java-version: 11
-          distribution: 'zulu'
-      - name: Build with Gradle
-        run: ./gradlew clean setLibraryVersion test integrationTest jacocoTestCoverageVerification jacocoTestReport
-        env:
-          SOURCE_PROJECT_KEY: java-sync-source
-          SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
-          SOURCE_CLIENT_SECRET:  ${{ secrets.SOURCE_CLIENT_SECRET }}
-          TARGET_PROJECT_KEY: java-sync-target
-          TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID }}
-          TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
-      - name: Codecov
-        uses: codecov/codecov-action@v3
+
   benchmark_tests:
     name: benchmark tests
     concurrency: benchmark_tests
@@ -63,6 +42,6 @@ jobs:
         run: echo ::set-output name=libVersion::${GITHUB_REF#refs/*/}
       - name: benchmark test
         if: ${{ success() }}
-        run: ./gradlew clean setLibraryVersion benchmark
+        run: ./gradlew clean setLibraryVersion benchmarkCommit
         env:
           GITHUB_TAG: ${{ steps.vars.outputs.libVersion }}
