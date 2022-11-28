@@ -131,14 +131,16 @@ class ProductTypeSyncBenchmark {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
+    assertThat(logger.isErrorEnabled()).isTrue();
+    assertThat(logger.isWarnEnabled()).isTrue();
+    assertThat(logger.isInfoEnabled()).isTrue();
+    assertThat(logger.isDebugEnabled()).isTrue();
+    assertThat(logger.isTraceEnabled()).isTrue();
     if (logger.isInfoEnabled()) {
       logger.info("Resources Type : " + PRODUCT_TYPE_SYNC);
       logger.info("Sync Type : " + CREATES_ONLY);
       logger.info("Time elapsed : " + totalTime);
     }
-    System.out.println("Resources Type : " + PRODUCT_TYPE_SYNC);
-    System.out.println("Sync Type : " + CREATES_ONLY);
-    System.out.println("Time elapsed : " + totalTime);
     saveNewResult(PRODUCT_TYPE_SYNC, CREATES_ONLY, totalTime);
   }
 
