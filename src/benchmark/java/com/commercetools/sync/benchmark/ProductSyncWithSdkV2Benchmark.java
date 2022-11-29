@@ -1,6 +1,13 @@
 package com.commercetools.sync.benchmark;
 
-import static com.commercetools.sync.benchmark.BenchmarkUtils.*;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATES;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.PRODUCT_SYNC_SDK_V2;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.SUBMIT_BENCHMARK_RESULT;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.*;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
@@ -131,8 +138,9 @@ class ProductSyncWithSdkV2Benchmark {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
-
-    saveNewResult(PRODUCT_SYNC, CREATES_ONLY, totalTime);
+    if (SUBMIT_BENCHMARK_RESULT) {
+      saveNewResult(PRODUCT_SYNC_SDK_V2, CREATES_ONLY, totalTime);
+    }
   }
 
   @Test
@@ -197,8 +205,9 @@ class ProductSyncWithSdkV2Benchmark {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
-
-    saveNewResult(PRODUCT_SYNC, UPDATES_ONLY, totalTime);
+    if (SUBMIT_BENCHMARK_RESULT) {
+      saveNewResult(PRODUCT_SYNC_SDK_V2, UPDATES_ONLY, totalTime);
+    }
   }
 
   @Test
@@ -266,8 +275,9 @@ class ProductSyncWithSdkV2Benchmark {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
-
-    saveNewResult(PRODUCT_SYNC, CREATES_AND_UPDATES, totalTime);
+    if (SUBMIT_BENCHMARK_RESULT) {
+      saveNewResult(PRODUCT_SYNC_SDK_V2, CREATES_AND_UPDATES, totalTime);
+    }
   }
 
   @Nonnull

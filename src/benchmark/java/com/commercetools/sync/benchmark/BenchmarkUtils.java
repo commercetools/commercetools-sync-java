@@ -27,11 +27,9 @@ final class BenchmarkUtils {
       ofNullable(System.getenv("GITHUB_ACTION_COMMIT"))
           .map(commitMessage -> commitMessage.substring(0, 7)) // Use smaller commit sha
           .orElse("dev-local");
-  private static final Boolean SUBMIT_BENCHMARK_RESULT =
-      ofNullable(System.getenv("SUBMIT_BENCHMARK_RESULT"))
-          .map(submitBenchmarkResult -> Boolean.valueOf(submitBenchmarkResult))
-          .orElse(Boolean.FALSE);
+
   static final String PRODUCT_SYNC = "productSync";
+  static final String PRODUCT_SYNC_SDK_V2 = "productSyncWithSDKV2";
   static final String INVENTORY_SYNC = "inventorySync";
   static final String CATEGORY_SYNC = "categorySync";
   static final String TYPE_SYNC = "typeSync";
@@ -43,15 +41,18 @@ final class BenchmarkUtils {
   static final int NUMBER_OF_RESOURCE_UNDER_TEST = 1000;
   static final String THRESHOLD_EXCEEDED_ERROR =
       "Total execution time of benchmark '%d' took longer than allowed" + " threshold of '%d'.";
+  static final Boolean SUBMIT_BENCHMARK_RESULT =
+      ofNullable(System.getenv("SUBMIT_BENCHMARK_RESULT"))
+          .map(submitBenchmarkResult -> Boolean.valueOf(submitBenchmarkResult))
+          .orElse(Boolean.FALSE);
 
   static void saveNewResult(
       @Nonnull final String sync, @Nonnull final String benchmark, final double newResult)
       throws IOException {
-    if (SUBMIT_BENCHMARK_RESULT) {
-      final JsonNode rootNode = new ObjectMapper().readTree(getFileContent());
-      final JsonNode withNewResult = addNewResult(rootNode, sync, benchmark, newResult);
-      writeToFile(withNewResult.toString());
-    }
+
+    final JsonNode rootNode = new ObjectMapper().readTree(getFileContent());
+    final JsonNode withNewResult = addNewResult(rootNode, sync, benchmark, newResult);
+    writeToFile(withNewResult.toString());
   }
 
   @Nonnull

@@ -4,6 +4,7 @@ import static com.commercetools.sync.benchmark.BenchmarkUtils.CART_DISCOUNT_SYNC
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATES;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.SUBMIT_BENCHMARK_RESULT;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
@@ -144,7 +145,9 @@ class CartDiscountSyncBenchmark {
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
 
-    saveNewResult(CART_DISCOUNT_SYNC, CREATES_ONLY, totalTime);
+    if (SUBMIT_BENCHMARK_RESULT) {
+      saveNewResult(CART_DISCOUNT_SYNC, CREATES_ONLY, totalTime);
+    }
   }
 
   @Test
@@ -214,7 +217,9 @@ class CartDiscountSyncBenchmark {
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
 
-    saveNewResult(CART_DISCOUNT_SYNC, UPDATES_ONLY, totalTime);
+    if (SUBMIT_BENCHMARK_RESULT) {
+      saveNewResult(CART_DISCOUNT_SYNC, UPDATES_ONLY, totalTime);
+    }
   }
 
   @Test
@@ -287,7 +292,9 @@ class CartDiscountSyncBenchmark {
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
 
-    saveNewResult(CART_DISCOUNT_SYNC, CREATES_AND_UPDATES, totalTime);
+    if (SUBMIT_BENCHMARK_RESULT) {
+      saveNewResult(CART_DISCOUNT_SYNC, CREATES_AND_UPDATES, totalTime);
+    }
   }
 
   @Nonnull

@@ -3,6 +3,7 @@ package com.commercetools.sync.benchmark;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATES;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.SUBMIT_BENCHMARK_RESULT;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.TYPE_SYNC;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
@@ -129,8 +130,9 @@ class TypeSyncBenchmark {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
-
-    saveNewResult(TYPE_SYNC, CREATES_ONLY, totalTime);
+    if (SUBMIT_BENCHMARK_RESULT) {
+      saveNewResult(TYPE_SYNC, CREATES_ONLY, totalTime);
+    }
   }
 
   @Test
@@ -190,8 +192,9 @@ class TypeSyncBenchmark {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
-
-    saveNewResult(TYPE_SYNC, UPDATES_ONLY, totalTime);
+    if (SUBMIT_BENCHMARK_RESULT) {
+      saveNewResult(TYPE_SYNC, UPDATES_ONLY, totalTime);
+    }
   }
 
   @Test
@@ -258,8 +261,9 @@ class TypeSyncBenchmark {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
-
-    saveNewResult(TYPE_SYNC, CREATES_AND_UPDATES, totalTime);
+    if (SUBMIT_BENCHMARK_RESULT) {
+      saveNewResult(TYPE_SYNC, CREATES_AND_UPDATES, totalTime);
+    }
   }
 
   @Nonnull

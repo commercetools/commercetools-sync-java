@@ -4,6 +4,7 @@ import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATE
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.INVENTORY_SYNC;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.SUBMIT_BENCHMARK_RESULT;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
@@ -91,8 +92,9 @@ class InventorySyncBenchmark {
     // Assert on sync statistics
     assertThat(inventorySyncStatistics)
         .hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
-
-    saveNewResult(INVENTORY_SYNC, CREATES_ONLY, totalTime);
+    if (SUBMIT_BENCHMARK_RESULT) {
+      saveNewResult(INVENTORY_SYNC, CREATES_ONLY, totalTime);
+    }
   }
 
   @Disabled
