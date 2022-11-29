@@ -10,7 +10,8 @@ pre-defined threshold, so that we know if the corresponding commit influences th
 
 3. Benchmark results are written as JSON to 
 [benchmarks.json](https://commercetools.github.io/commercetools-sync-java/benchmarks/benchmarks.json) only when a 
-release is made or the build has a git tag. The JSON file is saved in the gh-pages branch of the repo.
+new release is made. The JSON file is saved in the [gh-pages branch](https://github.com/commercetools/commercetools-sync-java/tree/gh-pages) 
+of the repo.
 
 4. The average results in [benchmarks.json](https://commercetools.github.io/commercetools-sync-java/benchmarks/benchmarks.json)
 are used to display the results in the form of this [graph](https://commercetools.github.io/commercetools-sync-java/benchmarks/). 
