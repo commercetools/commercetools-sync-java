@@ -142,14 +142,17 @@ var barChartData = {
 
 
 function addDropDownBoxItem(dropDownBoxItems) {
-    console.log('dropDownBoxItems : ' + dropDownBoxItems)
-    var select = document.getElementById("versionTagDropDownBox1");
+
+    var dropDownBox1 = document.getElementById("versionTagDropDownBox1");
+    var dropDownBox2 = document.getElementById("versionTagDropDownBox2");
     for(var i = dropDownBoxItems.length-1; i >= 0; --i) {
-        console.log('item ' + i + ' : ' + dropDownBoxItems[i])
         var option = document.createElement('option');
         option.text = option.value = dropDownBoxItems[i];
-        select.add(option, 0);
+        dropDownBox1.add(option, 0);
+        dropDownBox2.add(option, 0);
     }
+    dropDownBox1.option[0].selected = true
+    dropDownBox2.option[0].selected = true
 }
 
 window.onload = function () {
