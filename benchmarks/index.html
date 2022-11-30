@@ -9,6 +9,14 @@
 </head>
 
 <body cz-shortcut-listen="true">
+<div id="customContainer">
+    <div id="versionTagDropDownBoxContainer">
+        <select id="versionTagDropDownBox" name="versionTagDropDownBox">
+            <option value="9.1.0">9.1.0</option>
+            <option value="9.0.0">9.0.0</option>
+        </select>
+    </div>
+</div>
 <div id="container" style="width: 100%;">
     <div class="chartjs-size-monitor"
          style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;color: wheat">
@@ -21,6 +29,7 @@
             <div style="position:absolute;width:200%;height:200%;left:0; top:0"></div>
         </div>
     </div>
+
     <canvas id="canvas" width="1428" height="714" class="chartjs-render-monitor"
             style="display: block; width: 1428px; height: 714px;"></canvas>
 </div>
