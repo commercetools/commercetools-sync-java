@@ -140,6 +140,16 @@ var barChartData = {
 
 };
 
+
+function addDropDownBoxItem(dropDownBoxItems) {
+    var select = document.getElementById("versionTagDropDownBox1");
+    for(var i = dropDownBoxItems.size-1; i >= 0; --i) {
+        var option = document.createElement('option');
+        option.text = option.value = dropDownBoxItems[i].key;
+        select.add(option, 0);
+    }
+}
+
 window.onload = function () {
     var ctx = document.getElementById("canvas").getContext("2d");
     window.myBar = new Chart(ctx, {
@@ -180,29 +190,64 @@ window.onload = function () {
     $.getJSON("https://commercetools.github.io/commercetools-sync-java/benchmarks/benchmarks.json", addData);
 
     function addData(data) {
+        var count = 0
+        var commitHashArray = []
+        var dataMap = []
         $.each(data, function (key, val) {
             console.log('key: '+key)
-            barChartData.labels.push(key);
+            commitHashArray.push(key);
+            dataMap[key] = val
+        })
+        commitHashArray = commitHashArray.reverse()
+        addDropDownBoxItem(commitHashArray)
+        commitHashArray.forEach(function(commitHash) {
+            if (count < numberOfDisplayedCommits) {
+                var val = dataMap[commitHash];
+                barChartData.labels.push(commitHash);
 
-            productSyncCreatesOnly.data.push(val.productSync.createsOnly.executionTime / 1000)
-            productSyncUpdatesOnly.data.push(val.productSync.updatesOnly.executionTime / 1000)
-            productSyncCreatesUpdates.data.push(val.productSync.mix.executionTime / 1000)
+                productSyncCreatesOnly.data.push(val.productSync.createsOnly.executionTime / 1000)
+                productSyncUpdatesOnly.data.push(val.productSync.updatesOnly.executionTime / 1000)
+                productSyncCreatesUpdates.data.push(val.productSync.mix.executionTime / 1000)
 
-            inventorySyncCreatesOnly.data.push(val.inventorySync.createsOnly.executionTime / 1000)
+                inventorySyncCreatesOnly.data.push(val.inventorySync.createsOnly.executionTime / 1000)
 
-            productTypeSyncCreatesOnly.data.push(val.productTypeSync.createsOnly.executionTime / 1000)
-            productTypeSyncUpdatesOnly.data.push(val.productTypeSync.updatesOnly.executionTime / 1000)
-            productTypeSyncCreatesUpdates.data.push(val.productTypeSync.mix.executionTime / 1000)
+                productTypeSyncCreatesOnly.data.push(val.productTypeSync.createsOnly.executionTime / 1000)
+                productTypeSyncUpdatesOnly.data.push(val.productTypeSync.updatesOnly.executionTime / 1000)
+                productTypeSyncCreatesUpdates.data.push(val.productTypeSync.mix.executionTime / 1000)
 
-            typeSyncCreatesOnly.data.push(val.typeSync.createsOnly.executionTime / 1000)
-            typeSyncUpdatesOnly.data.push(val.typeSync.updatesOnly.executionTime / 1000)
-            typeSyncCreatesUpdates.data.push(val.typeSync.mix.executionTime / 1000)
+                typeSyncCreatesOnly.data.push(val.typeSync.createsOnly.executionTime / 1000)
+                typeSyncUpdatesOnly.data.push(val.typeSync.updatesOnly.executionTime / 1000)
+                typeSyncCreatesUpdates.data.push(val.typeSync.mix.executionTime / 1000)
 
-            cartDiscountSyncCreatesOnly.data.push(val.cartDiscountSync.createsOnly.executionTime / 1000)
-            cartDiscountSyncUpdatesOnly.data.push(val.cartDiscountSync.updatesOnly.executionTime / 1000)
-            cartDiscountSyncCreatesUpdates.data.push(val.cartDiscountSync.mix.executionTime / 1000)
-
-        });
+                cartDiscountSyncCreatesOnly.data.push(val.cartDiscountSync.createsOnly.executionTime / 1000)
+                cartDiscountSyncUpdatesOnly.data.push(val.cartDiscountSync.updatesOnly.executionTime / 1000)
+                cartDiscountSyncCreatesUpdates.data.push(val.cartDiscountSync.mix.executionTime / 1000)
+            }
+            count++
+        })
+//        $.each(data, function (key, val) {
+//            console.log('key: '+key)
+//            barChartData.labels.push(key);
+//
+//            productSyncCreatesOnly.data.push(val.productSync.createsOnly.executionTime / 1000)
+//            productSyncUpdatesOnly.data.push(val.productSync.updatesOnly.executionTime / 1000)
+//            productSyncCreatesUpdates.data.push(val.productSync.mix.executionTime / 1000)
+//
+//            inventorySyncCreatesOnly.data.push(val.inventorySync.createsOnly.executionTime / 1000)
+//
+//            productTypeSyncCreatesOnly.data.push(val.productTypeSync.createsOnly.executionTime / 1000)
+//            productTypeSyncUpdatesOnly.data.push(val.productTypeSync.updatesOnly.executionTime / 1000)
+//            productTypeSyncCreatesUpdates.data.push(val.productTypeSync.mix.executionTime / 1000)
+//
+//            typeSyncCreatesOnly.data.push(val.typeSync.createsOnly.executionTime / 1000)
+//            typeSyncUpdatesOnly.data.push(val.typeSync.updatesOnly.executionTime / 1000)
+//            typeSyncCreatesUpdates.data.push(val.typeSync.mix.executionTime / 1000)
+//
+//            cartDiscountSyncCreatesOnly.data.push(val.cartDiscountSync.createsOnly.executionTime / 1000)
+//            cartDiscountSyncUpdatesOnly.data.push(val.cartDiscountSync.updatesOnly.executionTime / 1000)
+//            cartDiscountSyncCreatesUpdates.data.push(val.cartDiscountSync.mix.executionTime / 1000)
+//
+//        });
         window.myBar.update();
     }
 
