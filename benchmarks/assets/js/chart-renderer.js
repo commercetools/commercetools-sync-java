@@ -153,8 +153,8 @@ function addDropDownBoxItem(dropDownBoxItems) {
         dropDownBox1.add(option1);
         dropDownBox2.add(option2);
     }
-    dropDownBox1.option[0].selected = true
-    dropDownBox2.option[0].selected = true
+    dropDownBox1.options[0].selected = true
+    dropDownBox2.options[0].selected = true
 }
 
 window.onload = function () {
