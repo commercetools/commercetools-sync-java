@@ -142,6 +142,7 @@ var barChartData = {
 
 
 function addDropDownBoxItem(dropDownBoxItems) {
+    console.log('dropDownBoxItems : ' + dropDownBoxItems)
     var select = document.getElementById("versionTagDropDownBox1");
     for(var i = dropDownBoxItems.size-1; i >= 0; --i) {
         var option = document.createElement('option');
@@ -194,7 +195,6 @@ window.onload = function () {
         var commitHashArray = []
         var dataMap = []
         $.each(data, function (key, val) {
-            console.log('key: '+key)
             commitHashArray.push(key);
             dataMap[key] = val
         })
