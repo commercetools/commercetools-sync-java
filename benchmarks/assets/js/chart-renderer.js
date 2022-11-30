@@ -146,10 +146,12 @@ function addDropDownBoxItem(dropDownBoxItems) {
     var dropDownBox1 = document.getElementById("versionTagDropDownBox1");
     var dropDownBox2 = document.getElementById("versionTagDropDownBox2");
     for(var i = dropDownBoxItems.length-1; i >= 0; --i) {
-        var option = document.createElement('option');
-        option.text = option.value = dropDownBoxItems[i];
-        dropDownBox1.add(option, 0);
-        dropDownBox2.add(option, 0);
+        var option1 = document.createElement('option');
+        var option2 = document.createElement('option');
+        option1.text = option1.value = dropDownBoxItems[i];
+        option2.text = option2.value = dropDownBoxItems[i];
+        dropDownBox1.add(option1);
+        dropDownBox2.add(option2);
     }
     dropDownBox1.option[0].selected = true
     dropDownBox2.option[0].selected = true
