@@ -144,7 +144,7 @@ var barChartData = {
 function addDropDownBoxItem(dropDownBoxItems) {
     console.log('dropDownBoxItems : ' + dropDownBoxItems)
     var select = document.getElementById("versionTagDropDownBox1");
-    for(var i = dropDownBoxItems.size-1; i >= 0; --i) {
+    for(var i = dropDownBoxItems.length-1; i >= 0; --i) {
         console.log('item ' + i + ' : ' + dropDownBoxItems[i])
         var option = document.createElement('option');
         option.text = option.value = dropDownBoxItems[i];
