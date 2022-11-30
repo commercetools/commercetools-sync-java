@@ -146,7 +146,7 @@ function addDropDownBoxItem(dropDownBoxItems) {
     var select = document.getElementById("versionTagDropDownBox1");
     for(var i = dropDownBoxItems.size-1; i >= 0; --i) {
         var option = document.createElement('option');
-        option.text = option.value = dropDownBoxItems[i].key;
+        option.text = option.value = dropDownBoxItems[i];
         select.add(option, 0);
     }
 }
@@ -192,18 +192,18 @@ window.onload = function () {
 
     function addData(data) {
         var count = 0
-        var commitHashArray = []
+        var versionNumberArray = []
         var dataMap = []
         $.each(data, function (key, val) {
-            commitHashArray.push(key);
+            versionNumberArray.push(key);
             dataMap[key] = val
         })
-        commitHashArray = commitHashArray.reverse()
-        addDropDownBoxItem(commitHashArray)
-        commitHashArray.forEach(function(commitHash) {
+        versionNumberArray = versionNumberArray.reverse()
+        addDropDownBoxItem(versionNumberArray)
+        versionNumberArray.forEach(function(versionNumber) {
             if (count < numberOfDisplayedCommits) {
-                var val = dataMap[commitHash];
-                barChartData.labels.push(commitHash);
+                var val = dataMap[versionNumber];
+                barChartData.labels.push(versionNumber);
 
                 productSyncCreatesOnly.data.push(val.productSync.createsOnly.executionTime / 1000)
                 productSyncUpdatesOnly.data.push(val.productSync.updatesOnly.executionTime / 1000)
