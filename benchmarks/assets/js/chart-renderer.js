@@ -162,7 +162,7 @@ function clearBarData() {
 function addRecords(dropDownBoxId) {
     clearBarData();
     var versionNumber = {}
-    for (int i=1; i<=2; i++) {
+    for (var i=1; i<=2; i++) {
         var versionNumber[i] = document.getElementById("versionTagDropDownBox"+i).value;
         var val = barChartDataMap[versionNumber[i]];
 
