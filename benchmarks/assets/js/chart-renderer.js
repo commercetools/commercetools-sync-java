@@ -154,7 +154,7 @@ function clearBarData() {
    typeSyncCreatesOnly.data = []
    typeSyncUpdatesOnly.data = []
    typeSyncCreatesUpdates.data = []
-   cartDiscountSyncCreatesOnly.dat = []
+   cartDiscountSyncCreatesOnly.data = []
    cartDiscountSyncUpdatesOnly.data = []
    cartDiscountSyncCreatesUpdates.data = []
 }
