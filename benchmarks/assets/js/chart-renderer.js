@@ -202,7 +202,7 @@ function addDropDownBoxItem(dropDownBoxItems) {
     dropDownBox2.options[0].selected = true
 }
 
-function addDataToChart() {
+function addDataToChart(data) {
     var count = 0
     var versionNumberArray = []
     $.each(data, function (key, val) {
