@@ -221,7 +221,6 @@ function prepareBarChartDataCache(data) {
 }
 function addDataToChart(data) {
     var count = 0
-    console.log("versionNumberArray length : " + versionNumberArray.length)
     if(versionNumberArray.length==0) {
         prepareBarChartDataCache(data)
     }
@@ -256,7 +255,7 @@ function addDataToChart(data) {
 
 function redirectToGithubRepo() {
     alert('test')
-    var versionNumber  = document.getElementById("versionTagDropDownBox"+i).value;
+    var versionNumber  = document.getElementById("redirectDropDownBox").value;
     var url = '';
     if (versionNumber.chatAt(0)=='v') {
         // Redirect to Github release
