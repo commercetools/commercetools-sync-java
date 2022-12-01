@@ -163,7 +163,7 @@ function addRecords(dropDownBoxId) {
     clearBarData();
     var versionNumber = [];
     for (var i=1; i<=2; i++) {
-        var versionNumber[i-1] = document.getElementById("versionTagDropDownBox"+i).value;
+        versionNumber[i-1] = document.getElementById("versionTagDropDownBox"+i).value;
         var val = barChartDataMap[versionNumber[i-1]];
 
         barChartData.labels.push(versionNumber[i-1]);
