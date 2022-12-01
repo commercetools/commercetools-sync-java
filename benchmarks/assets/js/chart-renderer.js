@@ -141,65 +141,46 @@ var barChartData = {
     ]
 };
 
-function addRecords(dropDownBoxId) {
-    var dropDownBox = document.getElementById("versionTagDropDownBox"+dropDownBoxId);
-    var versionNumber = dropDownBox.value
-    var selectedBarChartData = {
-       labels: [],
-       datasets: [
-           productSyncCreatesOnly,
-           productSyncUpdatesOnly,
-           productSyncCreatesUpdates,
-
-           inventorySyncCreatesOnly,
-
-           productTypeSyncCreatesOnly,
-           productTypeSyncUpdatesOnly,
-           productTypeSyncCreatesUpdates,
-
-           typeSyncCreatesOnly,
-           typeSyncUpdatesOnly,
-           typeSyncCreatesUpdates,
-
-           cartDiscountSyncCreatesOnly,
-           cartDiscountSyncUpdatesOnly,
-           cartDiscountSyncCreatesUpdates
-       ]
-   };
-   var val = barChartDataMap[versionNumber];
+function clearBarData() {
    barChartData.labels=[]
-   barChartData.labels.push(versionNumber);
    productSyncCreatesOnly.data = []
-   productSyncCreatesOnly.data.push(val.productSync.createsOnly.executionTime / 1000)
    productSyncUpdatesOnly.data = []
-   productSyncUpdatesOnly.data.push(val.productSync.updatesOnly.executionTime / 1000)
    productSyncCreatesUpdates.data = []
-   productSyncCreatesUpdates.data.push(val.productSync.mix.executionTime / 1000)
-
    inventorySyncCreatesOnly.data = []
-   inventorySyncCreatesOnly.data.push(val.inventorySync.createsOnly.executionTime / 1000)
-
    productTypeSyncCreatesOnly.data = []
-   productTypeSyncCreatesOnly.data.push(val.productTypeSync.createsOnly.executionTime / 1000)
    productTypeSyncUpdatesOnly.data = []
-   productTypeSyncUpdatesOnly.data.push(val.productTypeSync.updatesOnly.executionTime / 1000)
+   productTypeSyncUpdatesOnly.data = []
    productTypeSyncCreatesUpdates.data = []
-   productTypeSyncCreatesUpdates.data.push(val.productTypeSync.mix.executionTime / 1000)
-
    typeSyncCreatesOnly.data = []
-   typeSyncCreatesOnly.data.push(val.typeSync.createsOnly.executionTime / 1000)
    typeSyncUpdatesOnly.data = []
-   typeSyncUpdatesOnly.data.push(val.typeSync.updatesOnly.executionTime / 1000)
    typeSyncCreatesUpdates.data = []
-   typeSyncCreatesUpdates.data.push(val.typeSync.mix.executionTime / 1000)
-
-    cartDiscountSyncCreatesOnly.dat = []
-   cartDiscountSyncCreatesOnly.data.push(val.cartDiscountSync.createsOnly.executionTime / 1000)
+   cartDiscountSyncCreatesOnly.dat = []
    cartDiscountSyncUpdatesOnly.data = []
-   cartDiscountSyncUpdatesOnly.data.push(val.cartDiscountSync.updatesOnly.executionTime / 1000)
    cartDiscountSyncCreatesUpdates.data = []
-   cartDiscountSyncCreatesUpdates.data.push(val.cartDiscountSync.mix.executionTime / 1000)
+}
 
+function addRecords(dropDownBoxId) {
+    clearBarData();
+    var versionNumber = {}
+    for (int i=1; i<=2; i++) {
+        var versionNumber[i] = document.getElementById("versionTagDropDownBox"+i).value;
+        var val = barChartDataMap[versionNumber[i]];
+
+        barChartData.labels.push(versionNumber[i]);
+        productSyncCreatesOnly.data.push(val.productSync.createsOnly.executionTime / 1000)
+        productSyncUpdatesOnly.data.push(val.productSync.updatesOnly.executionTime / 1000)
+        productSyncCreatesUpdates.data.push(val.productSync.mix.executionTime / 1000)
+        inventorySyncCreatesOnly.data.push(val.inventorySync.createsOnly.executionTime / 1000)
+        productTypeSyncCreatesOnly.data.push(val.productTypeSync.createsOnly.executionTime / 1000)
+        productTypeSyncUpdatesOnly.data.push(val.productTypeSync.updatesOnly.executionTime / 1000)
+        productTypeSyncCreatesUpdates.data.push(val.productTypeSync.mix.executionTime / 1000)
+        typeSyncCreatesOnly.data.push(val.typeSync.createsOnly.executionTime / 1000)
+        typeSyncUpdatesOnly.data.push(val.typeSync.updatesOnly.executionTime / 1000)
+        typeSyncCreatesUpdates.data.push(val.typeSync.mix.executionTime / 1000)
+        cartDiscountSyncCreatesOnly.data.push(val.cartDiscountSync.createsOnly.executionTime / 1000)
+        cartDiscountSyncUpdatesOnly.data.push(val.cartDiscountSync.updatesOnly.executionTime / 1000)
+        cartDiscountSyncCreatesUpdates.data.push(val.cartDiscountSync.mix.executionTime / 1000)
+    }
     window.myBar.update();
 }
 
