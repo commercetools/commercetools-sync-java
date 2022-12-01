@@ -140,7 +140,7 @@ var barChartData = {
 
 };
 
-funciton addRecords(dropDownBoxId) {
+function addRecords(dropDownBoxId) {
     var dropDownBox = document.getElementById("versionTagDropDownBox"+dropDownBoxId);
     var versionNumber = dropDownBox.value
     alert(versionNumber)
