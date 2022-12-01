@@ -161,12 +161,12 @@ function clearBarData() {
 
 function addRecords(dropDownBoxId) {
     clearBarData();
-    var versionNumber = []
+    var versionNumber = [];
     for (var i=1; i<=2; i++) {
-        var versionNumber[i] = document.getElementById("versionTagDropDownBox"+i).value;
-        var val = barChartDataMap[versionNumber[i]];
+        var versionNumber[i-1] = document.getElementById("versionTagDropDownBox"+i).value;
+        var val = barChartDataMap[versionNumber[i-1]];
 
-        barChartData.labels.push(versionNumber[i]);
+        barChartData.labels.push(versionNumber[i-1]);
         productSyncCreatesOnly.data.push(val.productSync.createsOnly.executionTime / 1000)
         productSyncUpdatesOnly.data.push(val.productSync.updatesOnly.executionTime / 1000)
         productSyncCreatesUpdates.data.push(val.productSync.mix.executionTime / 1000)
