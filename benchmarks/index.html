@@ -9,17 +9,15 @@
 </head>
 
 <body cz-shortcut-listen="true">
-<div id="customContainer">
-    <span id="versionTagDropDownBoxContainer">
-        <p style="font-family:Arial; font-size:7">Please specify release version for comparison</p>
-        <select id="versionTagDropDownBox1" name="versionTagDropDownBox1" onChange="compareBarChartData()">
-            <option value=""/>
-        </select>
-        <select id="versionTagDropDownBox2" name="versionTagDropDownBox2" onChange="compareBarChartData()">
-            <option value=""/>
-        </select>
-        <input type="button" name="showAllData" value="Reset benchmarks chart" onClick="showDataForLatestVersions()">
-    </span>
+<div id="versionTagDropDownBoxContainer">
+    <p style="font-family:Arial; font-size:7">Please specify release version for comparison</p>
+    <select id="versionTagDropDownBox1" name="versionTagDropDownBox1" onChange="compareBarChartData()">
+        <option value=""/>
+    </select>
+    <select id="versionTagDropDownBox2" name="versionTagDropDownBox2" onChange="compareBarChartData()">
+        <option value=""/>
+    </select>
+    <input type="button" name="showAllData" value="Reset benchmarks chart" onClick="showDataForLatestVersions()">
 </div>
 <div id="container" style="width: 100%;">
     <div class="chartjs-size-monitor"
@@ -36,8 +34,15 @@
 
     <canvas id="canvas" width="1428" height="714" class="chartjs-render-monitor"
             style="display: block; width: 1428px; height: 714px;"></canvas>
-</div>
 
+</div>
+<hr>
+<div id="gitRedirectContainer">
+    <p style="font-family:Arial; font-size:7">Please select version number to navigate Github repo</p>
+    <select id="redirectDropDownBox" name="redirectDropDownBox" onChange="redirectToGithubRepo()">
+        <option value=""/>
+    </select>
+</div>
 <script src="assets/js/chart-renderer.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 

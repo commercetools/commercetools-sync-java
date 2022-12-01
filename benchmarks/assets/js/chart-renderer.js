@@ -200,6 +200,14 @@ function initDropDownBoxItem(dropDownBoxItems) {
     }
     dropDownBox1.options[0].selected = true
     dropDownBox2.options[0].selected = true
+
+    var dropDownBox = document.getElementById("redirectDropDownBox");
+    for(var i = 0; i <= dropDownBoxItems.length-1; ++i) {
+        var option = document.createElement('option');
+        option.text = option.value = dropDownBoxItems[i];
+        dropDownBox.add(option);
+    }
+    dropDownBox.options[0].selected = true
 }
 
 function prepareBarChartDataCache(data) {
@@ -245,6 +253,18 @@ function addDataToChart(data) {
     window.myBar.update();
 }
 
+function redirectToGithubRepo() {
+    var versionNumber  = document.getElementById("versionTagDropDownBox"+i).value;
+    var url = '';
+    if (versionNumber.chatAt(0)=='v') {
+        // Redirect to Github release
+        url = 'https://github.com/commercetools/commercetools-sync-java/releases/tag/' + versionNumber
+    } else {
+        // Redirect to Github commit
+        url = 'https://github.com/commercetools/commercetools-sync-java/commit/' + versionNumber
+    }
+    window.open(url, '_blank');
+}
 function showDataForLatestVersions() {
     clearBarData()
     $.getJSON("https://commercetools.github.io/commercetools-sync-java/benchmarks/benchmarks.json", addDataToChart);
