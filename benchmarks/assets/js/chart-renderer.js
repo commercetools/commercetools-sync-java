@@ -214,7 +214,7 @@ function addDataToChart(data) {
     var count = 0
     console.log("versionNumberArray length : " + versionNumberArray.length)
     if(versionNumberArray.length==0) {
-        prepareBarChartDataCache()
+        prepareBarChartDataCache(data)
     }
 
     versionNumberArray.forEach(function(versionNumber) {
