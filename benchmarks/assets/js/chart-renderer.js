@@ -254,10 +254,9 @@ function addDataToChart(data) {
 }
 
 function redirectToGithubRepo() {
-    alert('test')
     var versionNumber  = document.getElementById("redirectDropDownBox").value;
     var url = '';
-    if (versionNumber.chatAt(0)=='v') {
+    if (versionNumber.charAt(0)=='v') {
         // Redirect to Github release
         url = 'https://github.com/commercetools/commercetools-sync-java/releases/tag/' + versionNumber
     } else {

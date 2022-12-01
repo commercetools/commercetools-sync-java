@@ -9,21 +9,23 @@
 </head>
 
 <body cz-shortcut-listen="true">
-<div id="versionTagDropDownBoxContainer">
-    <p style="font-family:Arial; font-size:7">Please specify release version for comparison</p>
-    <select id="versionTagDropDownBox1" name="versionTagDropDownBox1" onChange="compareBarChartData()">
-        <option value=""/>
-    </select>
-    <select id="versionTagDropDownBox2" name="versionTagDropDownBox2" onChange="compareBarChartData()">
-        <option value=""/>
-    </select>
-    <input type="button" name="showAllData" value="Reset benchmarks chart" onClick="showDataForLatestVersions()">
-</div>
-<div id="gitRedirectContainer">
-    <p style="font-family:Arial; font-size:7">Please select version number to navigate Github repo</p>
-    <select id="redirectDropDownBox" name="redirectDropDownBox" onChange="redirectToGithubRepo()">
-        <option value=""/>
-    </select>
+<div id="customContainer">
+    <div id="versionTagDropDownBoxContainer" style="width:60%">
+        <p style="font-family:Arial; font-size:7">Please specify release version for comparison</p>
+        <select id="versionTagDropDownBox1" name="versionTagDropDownBox1" onChange="compareBarChartData()">
+            <option value=""/>
+        </select>
+        <select id="versionTagDropDownBox2" name="versionTagDropDownBox2" onChange="compareBarChartData()">
+            <option value=""/>
+        </select>
+        <input type="button" name="showAllData" value="Reset benchmarks chart" onClick="showDataForLatestVersions()">
+    </div>
+    <div id="gitRedirectContainer" style="width:40%">
+        <p style="font-family:Arial; font-size:7">Please select version number to navigate Github repo</p>
+        <select id="redirectDropDownBox" name="redirectDropDownBox" onChange="redirectToGithubRepo()">
+            <option value=""/>
+        </select>
+    </div>
 </div>
 <hr>
 <div id="container" style="width: 100%;">
