@@ -166,7 +166,7 @@ function addRecords(dropDownBoxId) {
            cartDiscountSyncCreatesUpdates
        ]
    };
-   var val = selectedBarChartData[versionNumber];
+   var val = barChartDataMap[versionNumber];
    barChartData.labels=[]
    barChartData.labels.push(versionNumber);
    productSyncCreatesOnly.data = []
