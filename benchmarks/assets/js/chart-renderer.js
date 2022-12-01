@@ -256,7 +256,8 @@ function addDataToChart(data) {
 function redirectToGithubRepo() {
     var versionNumber  = document.getElementById("redirectDropDownBox").value;
     var url = '';
-    if (versionNumber.charAt(0)=='v') {
+    if (versionNumber.charAt(0)=='v' && versionNumber.indexOf('.')>=0) {
+        versionNumber = versionNumber.substring(1, versionNumber.length) // remove 'v' character
         // Redirect to Github release
         url = 'https://github.com/commercetools/commercetools-sync-java/releases/tag/' + versionNumber
     } else {

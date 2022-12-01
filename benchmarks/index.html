@@ -9,8 +9,8 @@
 </head>
 
 <body cz-shortcut-listen="true">
-<div id="customContainer">
-    <div id="versionTagDropDownBoxContainer" style="width:60%">
+<div id="customContainer" style="width: 100%;">
+    <div id="versionTagDropDownBoxContainer" style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px;">
         <p style="font-family:Arial; font-size:7">Please specify release version for comparison</p>
         <select id="versionTagDropDownBox1" name="versionTagDropDownBox1" onChange="compareBarChartData()">
             <option value=""/>
@@ -20,7 +20,7 @@
         </select>
         <input type="button" name="showAllData" value="Reset benchmarks chart" onClick="showDataForLatestVersions()">
     </div>
-    <div id="gitRedirectContainer" style="width:40%">
+    <div id="gitRedirectContainer" style="position: absolute; left: 300px; top: 0px; right: 0px; bottom: 0px;">
         <p style="font-family:Arial; font-size:7">Please select version number to navigate Github repo</p>
         <select id="redirectDropDownBox" name="redirectDropDownBox" onChange="redirectToGithubRepo()">
             <option value=""/>
