@@ -1,6 +1,7 @@
 'use strict';
 
 var numberOfDisplayedCommits = 10
+var versionNumberArray = []
 var barChartDataMap = []
 
 window.chartColors = {
@@ -159,14 +160,13 @@ function clearBarData() {
    cartDiscountSyncCreatesUpdates.data = []
 }
 
-function addRecords(dropDownBoxId) {
+function compareBarChartData() {
     clearBarData();
     var versionNumber = [];
     for (var i=1; i<=2; i++) {
         versionNumber[i-1] = document.getElementById("versionTagDropDownBox"+i).value;
         if (versionNumber[i-1]!="") {
             var val = barChartDataMap[versionNumber[i-1]];
-
             barChartData.labels.push(versionNumber[i-1]);
             productSyncCreatesOnly.data.push(val.productSync.createsOnly.executionTime / 1000)
             productSyncUpdatesOnly.data.push(val.productSync.updatesOnly.executionTime / 1000)
@@ -186,7 +186,7 @@ function addRecords(dropDownBoxId) {
     window.myBar.update();
 }
 
-function addDropDownBoxItem(dropDownBoxItems) {
+function initDropDownBoxItem(dropDownBoxItems) {
 
     var dropDownBox1 = document.getElementById("versionTagDropDownBox1");
     var dropDownBox2 = document.getElementById("versionTagDropDownBox2");
@@ -202,15 +202,21 @@ function addDropDownBoxItem(dropDownBoxItems) {
     dropDownBox2.options[0].selected = true
 }
 
-function addDataToChart(data) {
-    var count = 0
-    var versionNumberArray = []
+function prepareBarChartDataCache(data) {
     $.each(data, function (key, val) {
         versionNumberArray.push(key);
         barChartDataMap[key] = val
     })
     versionNumberArray = versionNumberArray.reverse()
-    addDropDownBoxItem(versionNumberArray)
+    initDropDownBoxItem(versionNumberArray)
+}
+function addDataToChart(data) {
+    var count = 0
+
+    if(versionNumberArray.length==0) {
+        prepareBarChartDataCache()
+    }
+
     versionNumberArray.forEach(function(versionNumber) {
         if (count < numberOfDisplayedCommits) {
             var val = barChartDataMap[versionNumber];
@@ -281,5 +287,6 @@ window.onload = function () {
             }
         }
     });
+
     showDataForLatestVersions()
 };
