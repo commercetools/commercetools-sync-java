@@ -19,6 +19,13 @@
     </select>
     <input type="button" name="showAllData" value="Reset benchmarks chart" onClick="showDataForLatestVersions()">
 </div>
+<div id="gitRedirectContainer">
+    <p style="font-family:Arial; font-size:7">Please select version number to navigate Github repo</p>
+    <select id="redirectDropDownBox" name="redirectDropDownBox" onChange="redirectToGithubRepo()">
+        <option value=""/>
+    </select>
+</div>
+<hr>
 <div id="container" style="width: 100%;">
     <div class="chartjs-size-monitor"
          style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;color: wheat">
@@ -35,13 +42,6 @@
     <canvas id="canvas" width="1428" height="714" class="chartjs-render-monitor"
             style="display: block; width: 1428px; height: 714px;"></canvas>
 
-</div>
-<hr>
-<div id="gitRedirectContainer">
-    <p style="font-family:Arial; font-size:7">Please select version number to navigate Github repo</p>
-    <select id="redirectDropDownBox" name="redirectDropDownBox" onChange="redirectToGithubRepo()">
-        <option value=""/>
-    </select>
 </div>
 <script src="assets/js/chart-renderer.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>

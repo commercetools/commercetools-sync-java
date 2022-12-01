@@ -202,6 +202,7 @@ function initDropDownBoxItem(dropDownBoxItems) {
     dropDownBox2.options[0].selected = true
 
     var dropDownBox = document.getElementById("redirectDropDownBox");
+    console.log(dropDownBox==='undefined')
     for(var i = 0; i <= dropDownBoxItems.length-1; ++i) {
         var option = document.createElement('option');
         option.text = option.value = dropDownBoxItems[i];
@@ -254,6 +255,7 @@ function addDataToChart(data) {
 }
 
 function redirectToGithubRepo() {
+    alert('test')
     var versionNumber  = document.getElementById("versionTagDropDownBox"+i).value;
     var url = '';
     if (versionNumber.chatAt(0)=='v') {
