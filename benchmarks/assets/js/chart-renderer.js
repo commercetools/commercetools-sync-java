@@ -201,7 +201,7 @@ function addDropDownBoxItem(dropDownBoxItems) {
     dropDownBox1.options[0].selected = true
     dropDownBox2.options[0].selected = true
 }
-function showLatestBenchmarks() {
+function showDataForLatestVersions() {
     $.getJSON("https://commercetools.github.io/commercetools-sync-java/benchmarks/benchmarks.json", addData);
     function addData(data) {
         var count = 0
@@ -279,7 +279,7 @@ window.onload = function () {
             }
         }
     });
-    showLatestBenchmarks()
+    showDataForLatestVersions()
 
 
 };
