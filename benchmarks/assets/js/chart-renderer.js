@@ -190,7 +190,7 @@ function initDropDownBoxItem(dropDownBoxItems) {
 
     var dropDownBox1 = document.getElementById("versionTagDropDownBox1");
     var dropDownBox2 = document.getElementById("versionTagDropDownBox2");
-    for(var i = dropDownBoxItems.length-1; i >= 0; --i) {
+    for(var i = 0; i <= dropDownBoxItems.length-1; ++i) {
         var option1 = document.createElement('option');
         var option2 = document.createElement('option');
         option1.text = option1.value = dropDownBoxItems[i];
