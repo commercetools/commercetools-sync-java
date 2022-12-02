@@ -1,6 +1,6 @@
 'use strict';
 
-var numberOfDisplayedCommits = 10
+var numberOfDisplayedVersions = 20
 var versionNumberArray = []
 var barChartDataMap = []
 
@@ -226,7 +226,7 @@ function addDataToChart(data) {
     }
 
     versionNumberArray.forEach(function(versionNumber) {
-        if (count < numberOfDisplayedCommits) {
+        if (count < numberOfDisplayedVersions) {
             var val = barChartDataMap[versionNumber];
             barChartData.labels.push(versionNumber);
 
