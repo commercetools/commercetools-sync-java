@@ -19,7 +19,6 @@ jobs:
         run: ./gradlew spotbugsBenchmark spotbugsIntegrationTest spotbugsMain spotbugsTest
       - name: mkdocsBuild
         run: ./gradlew mkdocsBuild
-
   tests:
     name: Tests
     concurrency: tests
@@ -42,3 +41,28 @@ jobs:
           TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
       - name: Codecov
         uses: codecov/codecov-action@v3
+  benchmark_tests:
+    name: benchmark tests
+    concurrency: benchmark_tests
+    runs-on: ubuntu-latest
+    env:
+      SOURCE_PROJECT_KEY: java-sync-target-dev2
+      SOURCE_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID_2 }}
+      SOURCE_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET_2 }}
+      TARGET_PROJECT_KEY: java-sync-target-dev2
+      TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID_2 }}
+      TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET_2 }}
+      GRGIT_USER: ${{ secrets.GRGIT_USER }}
+      GITHUB_ACTION_COMMIT: ${{github.sha}}
+      SUBMIT_BENCHMARK_RESULT: false
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v3
+      - name: Fetch Library version
+        id: vars
+        run: echo ::set-output name=libVersion::${GITHUB_REF#refs/*/}
+      - name: benchmark test
+        if: ${{ success() }}
+        run: ./gradlew clean setLibraryVersion benchmark
+        env:
+          GITHUB_TAG: ${{ steps.vars.outputs.libVersion }}

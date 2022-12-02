@@ -4,6 +4,7 @@ import static com.commercetools.sync.benchmark.BenchmarkUtils.CART_DISCOUNT_SYNC
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATES;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.SUBMIT_BENCHMARK_RESULT;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
@@ -59,6 +60,12 @@ class CartDiscountSyncBenchmark {
   private List<String> warningCallBackMessages;
   private List<Throwable> errorCallBackExceptions;
 
+  private static final int CART_DISCOUNT_BENCHMARKS_CREATE_ACTION_THRESHOLD =
+      23_000; // assert on threshold (based on history of benchmarks; highest was 10496 ms)
+
+  private static final int CART_DISCOUNT_BENCHMARKS_UPDATE_ACTION_THRESHOLD =
+      23_000; // assert on threshold (based on history of benchmarks; highest was 11263 ms)
+
   @AfterAll
   static void tearDown() {
     deleteCartDiscounts(CTP_TARGET_CLIENT);
@@ -113,11 +120,13 @@ class CartDiscountSyncBenchmark {
         executeBlocking(cartDiscountSync.sync(cartDiscountDrafts));
     final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-    // assert on threshold (based on history of benchmarks; highest was 10496 ms)
-    final int threshold = 23000; // double of the highest benchmark
     assertThat(totalTime)
-        .withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
-        .isLessThan(threshold);
+        .withFailMessage(
+            format(
+                THRESHOLD_EXCEEDED_ERROR,
+                totalTime,
+                CART_DISCOUNT_BENCHMARKS_CREATE_ACTION_THRESHOLD))
+        .isLessThan(CART_DISCOUNT_BENCHMARKS_CREATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (total number of existing cart discounts)
     final CompletableFuture<Integer> totalNumberOfCartDiscounts =
@@ -136,7 +145,9 @@ class CartDiscountSyncBenchmark {
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
 
-    saveNewResult(CART_DISCOUNT_SYNC, CREATES_ONLY, totalTime);
+    if (SUBMIT_BENCHMARK_RESULT) {
+      saveNewResult(CART_DISCOUNT_SYNC, CREATES_ONLY, totalTime);
+    }
   }
 
   @Test
@@ -166,11 +177,13 @@ class CartDiscountSyncBenchmark {
         executeBlocking(cartDiscountSync.sync(cartDiscountDrafts));
     final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-    // assert on threshold (based on history of benchmarks; highest was 11263 ms)
-    final int threshold = 23000; // double of the highest benchmark
     assertThat(totalTime)
-        .withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
-        .isLessThan(threshold);
+        .withFailMessage(
+            format(
+                THRESHOLD_EXCEEDED_ERROR,
+                totalTime,
+                CART_DISCOUNT_BENCHMARKS_UPDATE_ACTION_THRESHOLD))
+        .isLessThan(CART_DISCOUNT_BENCHMARKS_UPDATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (number of updated cart discount)
     final CompletableFuture<Integer> totalNumberOfUpdatedCartDiscounts =
@@ -204,7 +217,9 @@ class CartDiscountSyncBenchmark {
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
 
-    saveNewResult(CART_DISCOUNT_SYNC, UPDATES_ONLY, totalTime);
+    if (SUBMIT_BENCHMARK_RESULT) {
+      saveNewResult(CART_DISCOUNT_SYNC, UPDATES_ONLY, totalTime);
+    }
   }
 
   @Test
@@ -238,11 +253,13 @@ class CartDiscountSyncBenchmark {
         executeBlocking(cartDiscountSync.sync(cartDiscountDrafts));
     final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-    // assert on threshold (based on history of benchmarks; highest was 11277 ms)
-    final int threshold = 23000; // double of the highest benchmark
     assertThat(totalTime)
-        .withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
-        .isLessThan(threshold);
+        .withFailMessage(
+            format(
+                THRESHOLD_EXCEEDED_ERROR,
+                totalTime,
+                CART_DISCOUNT_BENCHMARKS_UPDATE_ACTION_THRESHOLD))
+        .isLessThan(CART_DISCOUNT_BENCHMARKS_UPDATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (number of updated cart discount)
     final CompletableFuture<Integer> totalNumberOfUpdatedCartDiscounts =
@@ -275,7 +292,9 @@ class CartDiscountSyncBenchmark {
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
 
-    saveNewResult(CART_DISCOUNT_SYNC, CREATES_AND_UPDATES, totalTime);
+    if (SUBMIT_BENCHMARK_RESULT) {
+      saveNewResult(CART_DISCOUNT_SYNC, CREATES_AND_UPDATES, totalTime);
+    }
   }
 
   @Nonnull
