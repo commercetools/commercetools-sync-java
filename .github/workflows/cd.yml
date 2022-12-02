@@ -19,6 +19,7 @@ jobs:
       TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET_2 }}
       GRGIT_USER: ${{ secrets.GRGIT_USER }}
       GITHUB_ACTION_COMMIT: ${{github.sha}}
+      SUBMIT_BENCHMARK_RESULT: true
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3
@@ -30,7 +31,6 @@ jobs:
         run: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
         env:
           GITHUB_TAG: ${{ steps.vars.outputs.libVersion }}
-
   deployment:
     name: deployment
     needs: benchmark_tests

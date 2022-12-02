@@ -29,6 +29,7 @@ final class BenchmarkUtils {
           .orElse("dev-local");
 
   static final String PRODUCT_SYNC = "productSync";
+  static final String PRODUCT_SYNC_SDK_V2 = "productSyncWithSDKV2";
   static final String INVENTORY_SYNC = "inventorySync";
   static final String CATEGORY_SYNC = "categorySync";
   static final String TYPE_SYNC = "typeSync";
@@ -40,6 +41,10 @@ final class BenchmarkUtils {
   static final int NUMBER_OF_RESOURCE_UNDER_TEST = 1000;
   static final String THRESHOLD_EXCEEDED_ERROR =
       "Total execution time of benchmark '%d' took longer than allowed" + " threshold of '%d'.";
+  static final Boolean SUBMIT_BENCHMARK_RESULT =
+      ofNullable(System.getenv("SUBMIT_BENCHMARK_RESULT"))
+          .map(submitBenchmarkResult -> Boolean.valueOf(submitBenchmarkResult))
+          .orElse(Boolean.FALSE);
 
   static void saveNewResult(
       @Nonnull final String sync, @Nonnull final String benchmark, final double newResult)
