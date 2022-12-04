@@ -27,7 +27,7 @@ public interface GenericCustomActionBuilder {
    */
   @Nonnull
   ResourceUpdateAction buildRemoveCustomTypeAction(
-      @Nullable Integer variantId, @Nullable String objectId);
+      @Nullable Long variantId, @Nullable String objectId);
 
   /**
    * Creates a CTP "setCustomType" update action on the given resource {@code T}. If the resource
@@ -45,7 +45,7 @@ public interface GenericCustomActionBuilder {
    */
   @Nonnull
   ResourceUpdateAction buildSetCustomTypeAction(
-      @Nullable Integer variantId,
+      @Nullable Long variantId,
       @Nullable String objectId,
       @Nonnull String customTypeId,
       @Nullable Map<String, Object> customFieldsJsonMap);
@@ -69,7 +69,7 @@ public interface GenericCustomActionBuilder {
    */
   @Nonnull
   ResourceUpdateAction buildSetCustomFieldAction(
-      @Nullable Integer variantId,
+      @Nullable Long variantId,
       @Nullable String objectId,
       @Nullable String customFieldName,
       @Nullable Object customFieldValue);
