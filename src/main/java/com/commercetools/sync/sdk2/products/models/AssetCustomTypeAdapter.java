@@ -28,7 +28,7 @@ public final class AssetCustomTypeAdapter implements Custom {
   /**
    * Get typeId of the {@link Asset} see: https://docs.commercetools.com/api/types#referencetype
    *
-   * @return the typeId "customer"
+   * @return the typeId "asset"
    */
   @Override
   public String getTypeId() {
