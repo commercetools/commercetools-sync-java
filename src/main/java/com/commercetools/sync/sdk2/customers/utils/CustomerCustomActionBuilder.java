@@ -26,7 +26,7 @@ public final class CustomerCustomActionBuilder implements GenericCustomActionBui
   @Nonnull
   @Override
   public CustomerUpdateAction buildRemoveCustomTypeAction(
-      @Nullable final Integer variantId, @Nullable final String objectId) {
+      @Nullable final Long variantId, @Nullable final String objectId) {
 
     return CustomerSetCustomTypeActionBuilder.of().build();
   }
@@ -34,7 +34,7 @@ public final class CustomerCustomActionBuilder implements GenericCustomActionBui
   @Nonnull
   @Override
   public CustomerUpdateAction buildSetCustomTypeAction(
-      @Nullable final Integer variantId,
+      @Nullable final Long variantId,
       @Nullable final String objectId,
       @Nonnull final String customTypeId,
       @Nullable final Map<String, Object> customFieldsJsonMap) {
@@ -55,7 +55,7 @@ public final class CustomerCustomActionBuilder implements GenericCustomActionBui
   @Nonnull
   @Override
   public CustomerUpdateAction buildSetCustomFieldAction(
-      @Nullable final Integer variantId,
+      @Nullable final Long variantId,
       @Nullable final String objectId,
       @Nullable final String customFieldName,
       @Nullable final Object customFieldValue) {
