@@ -1,7 +1,6 @@
 package com.commercetools.sync.sdk2.products.models;
 
 import com.commercetools.api.models.common.PriceDraft;
-import com.commercetools.api.models.customer.CustomerDraft;
 import com.commercetools.api.models.type.CustomFieldsDraft;
 import com.commercetools.sync.sdk2.commons.models.CustomDraft;
 import com.commercetools.sync.sdk2.commons.utils.CustomUpdateActionUtils;
