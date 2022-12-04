@@ -43,7 +43,7 @@ public final class ProductVariantPriceUpdateActionUtils {
   @Nonnull
   public static List<ProductUpdateAction> buildActions(
       @Nonnull final ProductDraft newProduct,
-      @Nonnull final Integer variantId,
+      @Nonnull final Long variantId,
       @Nonnull final Price oldPrice,
       @Nonnull final PriceDraft newPrice,
       @Nonnull final ProductSyncOptions syncOptions) {
@@ -140,7 +140,7 @@ public final class ProductVariantPriceUpdateActionUtils {
   @Nonnull
   public static List<ProductUpdateAction> buildCustomUpdateActions(
       @Nonnull final ProductDraft newProduct,
-      @Nonnull final Integer variantId,
+      @Nonnull final Long variantId,
       @Nonnull final Price oldPrice,
       @Nonnull final PriceDraft newPrice,
       @Nonnull final ProductSyncOptions syncOptions) {
@@ -161,7 +161,7 @@ public final class ProductVariantPriceUpdateActionUtils {
             PriceCustomTypeAdapter::getId,
             syncOptions);
 
-    List<ProductUpdateAction> productUpdateActions = new ArrayList<ProductUpdateAction>();
+    List<ProductUpdateAction> productUpdateActions = new ArrayList();
     customUpdateAction.forEach(
         resourceUpdateAction ->
             productUpdateActions.add((ProductUpdateAction) resourceUpdateAction));
