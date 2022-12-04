@@ -1,14 +1,13 @@
 package com.commercetools.sync.sdk2.products.models;
 
 import com.commercetools.api.models.common.AssetDraft;
-import com.commercetools.api.models.customer.CustomerDraft;
 import com.commercetools.api.models.type.CustomFieldsDraft;
 import com.commercetools.sync.sdk2.commons.models.CustomDraft;
 import com.commercetools.sync.sdk2.commons.utils.CustomUpdateActionUtils;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Adapt Customer with {@link CustomDraft} interface to be used on {@link CustomUpdateActionUtils}
+ * Adapt AssetDraft with {@link CustomDraft} interface to be used on {@link CustomUpdateActionUtils}
  */
 public final class AssetDraftCustomTypeAdapter implements CustomDraft {
 

@@ -6,7 +6,7 @@ import com.commercetools.sync.sdk2.commons.models.Custom;
 import com.commercetools.sync.sdk2.commons.utils.CustomUpdateActionUtils;
 import org.jetbrains.annotations.Nullable;
 
-/** Adapt Customer with {@link Custom} interface to be used on {@link CustomUpdateActionUtils} */
+/** Adapt Asset with {@link Custom} interface to be used on {@link CustomUpdateActionUtils} */
 public final class AssetCustomTypeAdapter implements Custom {
 
   private final Asset asset;
