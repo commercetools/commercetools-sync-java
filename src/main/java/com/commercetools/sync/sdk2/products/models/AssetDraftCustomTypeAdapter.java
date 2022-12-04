@@ -19,7 +19,7 @@ public final class AssetDraftCustomTypeAdapter implements CustomDraft {
   }
 
   /**
-   * Get custom fields of the {@link CustomerDraft}
+   * Get custom fields of the {@link AssetDraft}
    *
    * @return the {@link CustomFieldsDraft}
    */
@@ -31,7 +31,7 @@ public final class AssetDraftCustomTypeAdapter implements CustomDraft {
 
   /**
    * Build an adapter to be used for preparing custom type actions of with the given {@link
-   * CustomerDraft}
+   * AssetDraft}
    *
    * @param assetDraft the {@link AssetDraft}
    * @return the {@link AssetDraftCustomTypeAdapter}
