@@ -4,18 +4,19 @@ import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.helpers.AssetActionFactory;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Asset;
-import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.models.Resource;
+import com.commercetools.sync.sdk2.commons.helpers.AssetActionFactory;
+
+import com.commercetools.api.models.ResourceUpdateAction;
+import com.commercetools.api.models.common.Asset;
+import com.commercetools.api.models.common.AssetDraft;
+
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.IntStream;
 
-import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
@@ -51,7 +52,7 @@ public final class AssetsUpdateActionUtils {
    * @throws BuildUpdateActionException in case there are asset drafts with duplicate keys.
    */
   @Nonnull
-  public static <T extends Resource, D> List<UpdateAction<T>> buildAssetsUpdateActions(
+  public static <T extends ResourceUpdateAction<T>, D> List<T> buildAssetsUpdateActions(
       @Nonnull final D newResource,
       @Nonnull final List<Asset> oldAssets,
       @Nullable final List<AssetDraft> newAssetDrafts,
@@ -88,8 +89,8 @@ public final class AssetsUpdateActionUtils {
    */
   @SuppressWarnings("unchecked")
   @Nonnull
-  private static <T extends Resource, D>
-      List<UpdateAction<T>> buildAssetsUpdateActionsWithNewAssetDrafts(
+  private static <T extends ResourceUpdateAction<T>, D>
+      List<T> buildAssetsUpdateActionsWithNewAssetDrafts(
           @Nonnull final D newResource,
           @Nonnull final List<Asset> oldAssets,
           @Nonnull final List<AssetDraft> newAssetDrafts,
@@ -149,7 +150,7 @@ public final class AssetsUpdateActionUtils {
     // by CTP after an asset is created. Therefore, the order of update actions must be:
 
     // 1. Remove or compare if matching.
-    final List<UpdateAction<T>> updateActions =
+    final List<T> updateActions =
         buildRemoveAssetOrAssetUpdateActions(
             newResource, oldAssets, removedAssetKeys, newAssetDraftsKeyMap, assetActionFactory);
 
@@ -183,7 +184,7 @@ public final class AssetsUpdateActionUtils {
    *     returned.
    */
   @Nonnull
-  private static <T extends Resource, D> List<UpdateAction<T>> buildRemoveAssetOrAssetUpdateActions(
+  private static <T extends ResourceUpdateAction<T>, D> List<T> buildRemoveAssetOrAssetUpdateActions(
       @Nonnull final D newResource,
       @Nonnull final List<Asset> oldAssets,
       @Nonnull final Set<String> removedAssetKeys,
@@ -232,8 +233,8 @@ public final class AssetsUpdateActionUtils {
    *     returned.
    */
   @Nonnull
-  private static <T extends Resource, D>
-      Optional<UpdateAction<T>> buildChangeAssetOrderUpdateAction(
+  private static <T extends ResourceUpdateAction<T>, D>
+      Optional<T> buildChangeAssetOrderUpdateAction(
           @Nonnull final List<Asset> oldAssets,
           @Nonnull final List<AssetDraft> newAssetDrafts,
           @Nonnull final Set<String> removedAssetKeys,
@@ -278,12 +279,12 @@ public final class AssetsUpdateActionUtils {
    *     returned.
    */
   @Nonnull
-  private static <T extends Resource, D> List<UpdateAction<T>> buildAddAssetUpdateActions(
+  private static <T extends ResourceUpdateAction<T>, D> List<T> buildAddAssetUpdateActions(
       @Nonnull final List<AssetDraft> newAssetDrafts,
       @Nonnull final Map<String, Asset> oldAssetsKeyMap,
       @Nonnull final AssetActionFactory<T, D> assetActionFactory) {
 
-    final ArrayList<Optional<UpdateAction<T>>> optionalActions =
+    final ArrayList<Optional<T>> optionalActions =
         IntStream.range(0, newAssetDrafts.size())
             .mapToObj(
                 assetDraftIndex ->

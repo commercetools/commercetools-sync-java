@@ -15,7 +15,7 @@ import javax.annotation.Nonnull;
  * @param <D> the type of the draft, which contains the changes the asset update actions are built
  *     for.
  */
-public abstract class AssetActionFactory<T extends ResourceUpdateAction, D> {
+public abstract class AssetActionFactory<T extends ResourceUpdateAction<T>, D> {
   public BaseSyncOptions syncOptions = null;
 
   /**
@@ -35,7 +35,7 @@ public abstract class AssetActionFactory<T extends ResourceUpdateAction, D> {
    * @param assetKey the key of the asset used un building the update action.
    * @return the built remove asset update action.
    */
-  public abstract ResourceUpdateAction buildRemoveAssetAction(@Nonnull String assetKey);
+  public abstract T buildRemoveAssetAction(@Nonnull String assetKey);
 
   /**
    * Takes a list of asset ids to build a ChangeAssetOrder action of the type T.
@@ -43,16 +43,16 @@ public abstract class AssetActionFactory<T extends ResourceUpdateAction, D> {
    * @param newAssetOrder the new asset order needed to build the action.
    * @return the built update action.
    */
-  public abstract ResourceUpdateAction buildChangeAssetOrderAction(
+  public abstract T buildChangeAssetOrderAction(
       @Nonnull List<String> newAssetOrder);
 
   /**
    * Takes an asset draft and an asset position to build an AddAsset action of the type T.
-   *
+   *buildRemoveAssetAction
    * @param newAssetDraft the new asset draft to create an Add asset action for.
    * @param position the position to add the new asset to.
    * @return the built update action.
    */
-  public abstract ResourceUpdateAction buildAddAssetAction(
+  public abstract T buildAddAssetAction(
       @Nonnull AssetDraft newAssetDraft, @Nonnull Integer position);
 }
