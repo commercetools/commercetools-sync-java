@@ -202,7 +202,7 @@ function initDropDownBoxItem(dropDownBoxItems) {
     dropDownBox2.options[0].selected = true
 
     var dropDownBox = document.getElementById("redirectDropDownBox");
-    console.log(dropDownBox==='undefined')
+
     for(var i = 0; i <= dropDownBoxItems.length-1; ++i) {
         var option = document.createElement('option');
         option.text = option.value = dropDownBoxItems[i];
@@ -218,37 +218,35 @@ function prepareBarChartDataCache(data) {
     })
     versionNumberArray = versionNumberArray.reverse()
     initDropDownBoxItem(versionNumberArray)
+    versionNumberArray = versionNumberArray.slice(0,numberOfDisplayedVersions).reverse()
 }
 function addDataToChart(data) {
-    var count = 0
+
     if(versionNumberArray.length==0) {
         prepareBarChartDataCache(data)
     }
 
     versionNumberArray.forEach(function(versionNumber) {
-        if (count < numberOfDisplayedVersions) {
-            var val = barChartDataMap[versionNumber];
-            barChartData.labels.push(versionNumber);
+        var val = barChartDataMap[versionNumber];
+        barChartData.labels.push(versionNumber);
 
-            productSyncCreatesOnly.data.push(val.productSync.createsOnly.executionTime / 1000)
-            productSyncUpdatesOnly.data.push(val.productSync.updatesOnly.executionTime / 1000)
-            productSyncCreatesUpdates.data.push(val.productSync.mix.executionTime / 1000)
+        productSyncCreatesOnly.data.push(val.productSync.createsOnly.executionTime / 1000)
+        productSyncUpdatesOnly.data.push(val.productSync.updatesOnly.executionTime / 1000)
+        productSyncCreatesUpdates.data.push(val.productSync.mix.executionTime / 1000)
 
-            inventorySyncCreatesOnly.data.push(val.inventorySync.createsOnly.executionTime / 1000)
+        inventorySyncCreatesOnly.data.push(val.inventorySync.createsOnly.executionTime / 1000)
 
-            productTypeSyncCreatesOnly.data.push(val.productTypeSync.createsOnly.executionTime / 1000)
-            productTypeSyncUpdatesOnly.data.push(val.productTypeSync.updatesOnly.executionTime / 1000)
-            productTypeSyncCreatesUpdates.data.push(val.productTypeSync.mix.executionTime / 1000)
+        productTypeSyncCreatesOnly.data.push(val.productTypeSync.createsOnly.executionTime / 1000)
+        productTypeSyncUpdatesOnly.data.push(val.productTypeSync.updatesOnly.executionTime / 1000)
+        productTypeSyncCreatesUpdates.data.push(val.productTypeSync.mix.executionTime / 1000)
 
-            typeSyncCreatesOnly.data.push(val.typeSync.createsOnly.executionTime / 1000)
-            typeSyncUpdatesOnly.data.push(val.typeSync.updatesOnly.executionTime / 1000)
-            typeSyncCreatesUpdates.data.push(val.typeSync.mix.executionTime / 1000)
+        typeSyncCreatesOnly.data.push(val.typeSync.createsOnly.executionTime / 1000)
+        typeSyncUpdatesOnly.data.push(val.typeSync.updatesOnly.executionTime / 1000)
+        typeSyncCreatesUpdates.data.push(val.typeSync.mix.executionTime / 1000)
 
-            cartDiscountSyncCreatesOnly.data.push(val.cartDiscountSync.createsOnly.executionTime / 1000)
-            cartDiscountSyncUpdatesOnly.data.push(val.cartDiscountSync.updatesOnly.executionTime / 1000)
-            cartDiscountSyncCreatesUpdates.data.push(val.cartDiscountSync.mix.executionTime / 1000)
-        }
-        count++
+        cartDiscountSyncCreatesOnly.data.push(val.cartDiscountSync.createsOnly.executionTime / 1000)
+        cartDiscountSyncUpdatesOnly.data.push(val.cartDiscountSync.updatesOnly.executionTime / 1000)
+        cartDiscountSyncCreatesUpdates.data.push(val.cartDiscountSync.mix.executionTime / 1000)
     })
     window.myBar.update();
 }
@@ -265,9 +263,18 @@ function redirectToGithubRepo() {
     }
     window.open(url, '_blank');
 }
+
+function resetDropDownBox() {
+    var dropDownBox1 = document.getElementById("versionTagDropDownBox1");
+    var dropDownBox2 = document.getElementById("versionTagDropDownBox2");
+    dropDownBox1.options[0].selected = true
+    dropDownBox2.options[0].selected = true
+}
+
 function showDataForLatestVersions() {
     clearBarData()
-    $.getJSON("https://commercetools.github.io/commercetools-sync-java/benchmarks/benchmarks.json", addDataToChart);
+    resetDropDownBox()
+    $.getJSON("http://localhost:63342/commercetools-sync-java/benchmarks/benchmarks.json", addDataToChart);
 }
 
 window.onload = function () {
