@@ -274,7 +274,7 @@ function resetDropDownBox() {
 function showDataForLatestVersions() {
     clearBarData()
     resetDropDownBox()
-    $.getJSON("http://localhost:63342/commercetools-sync-java/benchmarks/benchmarks.json", addDataToChart);
+    $.getJSON("https://commercetools.github.io/commercetools-sync-java/benchmarks/benchmarks.json", addDataToChart);
 }
 
 window.onload = function () {
