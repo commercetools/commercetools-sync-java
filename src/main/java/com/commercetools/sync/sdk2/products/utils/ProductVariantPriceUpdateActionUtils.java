@@ -28,8 +28,9 @@ public final class ProductVariantPriceUpdateActionUtils {
 
   /**
    * Compares all the fields of a {@link Price} and a {@link PriceDraft} and returns a list of
-   * {@link ProductUpdateAction}&lt;{@link Product}&gt; as a result. If both the {@link Price} and
-   * the {@link PriceDraft} have identical fields, then no update action is needed and hence an
+   *
+   * <p>{@link ProductUpdateAction}&lt;{@link Product}&gt; as a result. If both the {@link Price}
+   * and the {@link PriceDraft} have identical fields, then no update action is needed and hence an
    * empty {@link List} is returned.
    *
    * @param newProduct new product draft, which provides the prices to update.
@@ -49,7 +50,6 @@ public final class ProductVariantPriceUpdateActionUtils {
       @Nonnull final ProductSyncOptions syncOptions) {
 
     final List<ProductUpdateAction> updateActions = new ArrayList<>();
-
     buildChangePriceUpdateAction(oldPrice, newPrice, syncOptions).ifPresent(updateActions::add);
     updateActions.addAll(
         buildCustomUpdateActions(newProduct, variantId, oldPrice, newPrice, syncOptions));
@@ -124,9 +124,10 @@ public final class ProductVariantPriceUpdateActionUtils {
 
   /**
    * Compares the custom fields and custom types of a {@link Price} and a {@link PriceDraft} and
-   * returns a list of {@link ProductUpdateAction}&lt;{@link Product}&gt; as a result. If both the
-   * {@link Price} and the {@link PriceDraft} have identical custom fields and types, then no update
-   * action is needed and hence an empty {@link List} is returned.
+   *
+   * <p>returns a list of {@link ProductUpdateAction}&lt;{@link Product}&gt; as a result. If both
+   * the {@link Price} and the {@link PriceDraft} have identical custom fields and types, then no
+   * update action is needed and hence an empty {@link List} is returned.
    *
    * @param newProduct new product draft, which provides the prices to update.
    * @param variantId the variantId needed for building the update action.

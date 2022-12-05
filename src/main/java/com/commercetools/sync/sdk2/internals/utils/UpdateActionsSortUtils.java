@@ -53,6 +53,7 @@ public final class UpdateActionsSortUtils {
 
           if (action1 instanceof ProductAddPriceAction
               && !(action2 instanceof ProductAddPriceAction)) {
+
             return 1;
           }
 

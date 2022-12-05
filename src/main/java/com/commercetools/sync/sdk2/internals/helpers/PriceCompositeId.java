@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 public final class PriceCompositeId {
 
   private final String countryCode;
+
   private final String currencyCode;
   private final String channelId;
   private final String customerGroupId;
@@ -101,6 +102,7 @@ public final class PriceCompositeId {
   }
 
   public String getCountryCode() {
+
     return countryCode;
   }
 

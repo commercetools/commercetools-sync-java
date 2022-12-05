@@ -27,8 +27,9 @@ public final class ProductVariantAssetUpdateActionUtils {
 
   /**
    * Compares all the fields of an {@link Asset} and an {@link AssetDraft} and returns a list of
-   * {@link ProductUpdateAction}&lt;{@link Product}&gt; as a result. If both the {@link Asset} and
-   * the {@link AssetDraft} have identical fields, then no update action is needed and hence an
+   *
+   * <p>{@link ProductUpdateAction}&lt;{@link Product}&gt; as a result. If both the {@link Asset}
+   * and the {@link AssetDraft} have identical fields, then no update action is needed and hence an
    * empty {@link List} is returned.
    *
    * @param <D> Type of the mainresource draft
@@ -149,9 +150,12 @@ public final class ProductVariantAssetUpdateActionUtils {
 
   /**
    * Compares the sources of an {@link Asset} and an {@link AssetDraft} and returns an {@link
-   * ProductUpdateAction}&lt;{@link Product}&gt; as a result in an {@link Optional}. If both the
-   * {@link Asset} and the {@link AssetDraft} have the same sources, then no update action is needed
-   * and hence an empty {@link Optional} is returned.
+   * <<<<<<< HEAD ProductUpdateAction}&lt;{@link Product}&gt; as a result in an {@link Optional}. If
+   * both the {@link Asset} and the {@link AssetDraft} have the same sources, then no update action
+   * is needed and hence an empty {@link Optional} is returned. ======= UpdateAction}&lt;{@link
+   * Product}&gt; as a result in an {@link Optional}. If both the {@link Asset} and the {@link
+   * AssetDraft} have the same sources, then no update action is needed and hence an empty {@link
+   * Optional} is returned. >>>>>>> java-sdk-v2-product-sync-migration
    *
    * @param variantId the variantId needed for building the update action.
    * @param oldAsset the asset which should be updated.
@@ -178,9 +182,10 @@ public final class ProductVariantAssetUpdateActionUtils {
 
   /**
    * Compares the custom fields and custom types of an {@link Asset} and an {@link AssetDraft} and
-   * returns a list of {@link ProductUpdateAction}&lt;{@link Product}&gt; as a result. If both the
-   * {@link Asset} and the {@link AssetDraft} have identical custom fields and types, then no update
-   * action is needed and hence an empty {@link List} is returned.
+   *
+   * <p>returns a list of {@link ProductUpdateAction}&lt;{@link Product}&gt; as a result. If both
+   * the {@link Asset} and the {@link AssetDraft} have identical custom fields and types, then no
+   * update action is needed and hence an empty {@link List} is returned.
    *
    * @param <D> Type of the mainresource draft
    * @param newResource new mainresource draft, which contains the asset to update.

@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 
 public final class ProductSyncOptions
     extends BaseSyncOptions<ProductProjection, ProductDraft, ProductUpdateAction> {
+
   private final SyncFilter
       syncFilter; // which attributes to calculate update actions to black list or white list
   private final boolean ensurePriceChannels;
