@@ -43,12 +43,12 @@ public abstract class AssetActionFactory<T extends ResourceUpdateAction<T>, D> {
    * @param newAssetOrder the new asset order needed to build the action.
    * @return the built update action.
    */
-  public abstract T buildChangeAssetOrderAction(
-      @Nonnull List<String> newAssetOrder);
+  public abstract T buildChangeAssetOrderAction(@Nonnull List<String> newAssetOrder);
 
   /**
    * Takes an asset draft and an asset position to build an AddAsset action of the type T.
-   *buildRemoveAssetAction
+   * buildRemoveAssetAction
+   *
    * @param newAssetDraft the new asset draft to create an Add asset action for.
    * @param position the position to add the new asset to.
    * @return the built update action.

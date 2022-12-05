@@ -14,6 +14,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 
+import com.commercetools.api.models.ResourceUpdateAction;
 import com.commercetools.api.models.common.AssetDraft;
 import com.commercetools.api.models.common.Image;
 import com.commercetools.api.models.common.Price;
@@ -358,7 +359,7 @@ public final class ProductVariantUpdateActionUtils {
           newProduct,
           oldProductVariant.getAssets(),
           newProductVariant.getAssets(),
-          new ProductAssetActionFactory(oldProductVariant.getId(), syncOptions),
+          new ProductAssetActionFactory(oldProductVariant.getId(), syncOptions), // AssetActionFactory : T = ProductUpdateAction, D = ProductDraft
           syncOptions);
     } catch (final BuildUpdateActionException exception) {
       SyncException syncException =

@@ -1,28 +1,25 @@
 package com.commercetools.sync.sdk2.commons.utils;
 
-import com.commercetools.sync.commons.BaseSyncOptions;
-import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
-import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
-import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.sdk2.commons.helpers.AssetActionFactory;
-
-import com.commercetools.api.models.ResourceUpdateAction;
-import com.commercetools.api.models.common.Asset;
-import com.commercetools.api.models.common.AssetDraft;
-
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.stream.IntStream;
-
-import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
+import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.*;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
+import com.commercetools.api.models.ResourceUpdateAction;
+import com.commercetools.api.models.common.Asset;
+import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
+import com.commercetools.sync.sdk2.commons.helpers.AssetActionFactory;
+import java.util.*;
+import java.util.stream.IntStream;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public final class AssetsUpdateActionUtils {
 
@@ -184,12 +181,13 @@ public final class AssetsUpdateActionUtils {
    *     returned.
    */
   @Nonnull
-  private static <T extends ResourceUpdateAction<T>, D> List<T> buildRemoveAssetOrAssetUpdateActions(
-      @Nonnull final D newResource,
-      @Nonnull final List<Asset> oldAssets,
-      @Nonnull final Set<String> removedAssetKeys,
-      @Nonnull final Map<String, AssetDraft> newAssetDraftsKeyMap,
-      @Nonnull final AssetActionFactory<T, D> assetActionFactory) {
+  private static <T extends ResourceUpdateAction<T>, D>
+      List<T> buildRemoveAssetOrAssetUpdateActions(
+          @Nonnull final D newResource,
+          @Nonnull final List<Asset> oldAssets,
+          @Nonnull final Set<String> removedAssetKeys,
+          @Nonnull final Map<String, AssetDraft> newAssetDraftsKeyMap,
+          @Nonnull final AssetActionFactory<T, D> assetActionFactory) {
     // For every old asset, If it doesn't exist anymore in the new asset drafts,
     // then add a RemoveAsset action to the list of update actions. If the asset still exists in the
     // new draft,
