@@ -1,5 +1,8 @@
 package com.commercetools.sync.sdk2.products.utils;
 
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
+
 import com.commercetools.sync.commons.utils.CustomUpdateActionUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.helpers.AssetCustomActionBuilder;
@@ -12,13 +15,9 @@ import io.sphere.sdk.products.commands.updateactions.ChangeAssetName;
 import io.sphere.sdk.products.commands.updateactions.SetAssetDescription;
 import io.sphere.sdk.products.commands.updateactions.SetAssetSources;
 import io.sphere.sdk.products.commands.updateactions.SetAssetTags;
-
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
-
-import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
-import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
+import javax.annotation.Nonnull;
 
 public final class ProductVariantAssetUpdateActionUtils {
 

@@ -1,24 +1,5 @@
 package com.commercetools.sync.sdk2.products.utils;
 
-import com.commercetools.sync.commons.BaseSyncOptions;
-import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.products.ActionGroup;
-import com.commercetools.sync.products.AttributeMetaData;
-import com.commercetools.sync.products.ProductSyncOptions;
-import com.commercetools.sync.products.SyncFilter;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.*;
-import io.sphere.sdk.products.*;
-import io.sphere.sdk.products.commands.updateactions.*;
-import io.sphere.sdk.search.SearchKeywords;
-import io.sphere.sdk.states.State;
-
-import javax.annotation.Nonnull;
-import java.util.*;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
 import static com.commercetools.sync.commons.utils.CollectionUtils.*;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.*;
 import static com.commercetools.sync.commons.utils.FilterUtils.executeSupplierIfPassesFilter;
@@ -33,6 +14,24 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+
+import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.products.ActionGroup;
+import com.commercetools.sync.products.AttributeMetaData;
+import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.SyncFilter;
+import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.*;
+import io.sphere.sdk.products.*;
+import io.sphere.sdk.products.commands.updateactions.*;
+import io.sphere.sdk.search.SearchKeywords;
+import io.sphere.sdk.states.State;
+import java.util.*;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 
 public final class ProductUpdateActionUtils {
   private static final String BLANK_VARIANT_KEY = "The variant key is blank.";

@@ -1,22 +1,5 @@
 package com.commercetools.sync.sdk2.products.utils;
 
-import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
-import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.internals.helpers.PriceCompositeId;
-import com.commercetools.sync.products.AttributeMetaData;
-import com.commercetools.sync.products.ProductSyncOptions;
-import com.commercetools.sync.products.helpers.ProductAssetActionFactory;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.products.*;
-import io.sphere.sdk.products.attributes.Attribute;
-import io.sphere.sdk.products.attributes.AttributeDraft;
-import io.sphere.sdk.products.commands.updateactions.*;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.*;
-
 import static com.commercetools.sync.commons.utils.AssetsUpdateActionUtils.buildAssetsUpdateActions;
 import static com.commercetools.sync.commons.utils.CollectionUtils.*;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
@@ -29,6 +12,22 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
+
+import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.internals.helpers.PriceCompositeId;
+import com.commercetools.sync.products.AttributeMetaData;
+import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.helpers.ProductAssetActionFactory;
+import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.AssetDraft;
+import io.sphere.sdk.products.*;
+import io.sphere.sdk.products.attributes.Attribute;
+import io.sphere.sdk.products.attributes.AttributeDraft;
+import io.sphere.sdk.products.commands.updateactions.*;
+import java.util.*;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public final class ProductVariantUpdateActionUtils {
   public static final String FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION =
@@ -62,11 +61,10 @@ public final class ProductVariantUpdateActionUtils {
   }
 
   /**
-   * Compares the {@link List} of {@link Price}s of a {@link
-   * ProductVariantDraft} and a {@link ProductVariant} and returns a {@link List} of {@link
-   * UpdateAction}&lt;{@link Product}&gt;. If both the {@link ProductVariantDraft} and the {@link
-   * ProductVariant} have identical list of prices, then no update action is needed and hence an
-   * empty {@link List} is returned.
+   * Compares the {@link List} of {@link Price}s of a {@link ProductVariantDraft} and a {@link
+   * ProductVariant} and returns a {@link List} of {@link UpdateAction}&lt;{@link Product}&gt;. If
+   * both the {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of
+   * prices, then no update action is needed and hence an empty {@link List} is returned.
    *
    * @param oldProduct the product which should be updated.
    * @param newProduct the product draft.
@@ -293,10 +291,9 @@ public final class ProductVariantUpdateActionUtils {
 
   /**
    * Compares the attributes of a {@link ProductVariantDraft} and a {@link ProductVariant} to build
-   * either {@link SetAttribute} or {@link
-   * SetAttributeInAllVariants} update actions. If
-   * both the {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of
-   * attributes, then no update action is needed and hence an empty {@link List} is returned.
+   * either {@link SetAttribute} or {@link SetAttributeInAllVariants} update actions. If both the
+   * {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of attributes,
+   * then no update action is needed and hence an empty {@link List} is returned.
    *
    * @param oldProduct the product that the variants belong to. It is used only in the error
    *     messages if any.

@@ -3,10 +3,9 @@ package com.commercetools.sync.sdk2.internals.utils;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.commands.updateactions.*;
-
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nonnull;
 
 /** This class is only meant for the internal use of the commercetools-sync-java library. */
 public final class UpdateActionsSortUtils {

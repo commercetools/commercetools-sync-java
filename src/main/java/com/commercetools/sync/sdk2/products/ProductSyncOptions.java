@@ -1,5 +1,7 @@
 package com.commercetools.sync.sdk2.products;
 
+import static java.util.Optional.ofNullable;
+
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
@@ -11,14 +13,11 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-
-import static java.util.Optional.ofNullable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public final class ProductSyncOptions
     extends BaseSyncOptions<ProductProjection, ProductDraft, Product> {

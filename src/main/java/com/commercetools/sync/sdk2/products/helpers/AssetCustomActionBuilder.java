@@ -1,17 +1,16 @@
 package com.commercetools.sync.sdk2.products.helpers;
 
+import static io.sphere.sdk.types.CustomFieldsDraft.ofTypeIdAndJson;
+
 import com.commercetools.sync.commons.helpers.GenericCustomActionBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.commands.updateactions.SetAssetCustomField;
 import io.sphere.sdk.products.commands.updateactions.SetAssetCustomType;
-
+import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Map;
-
-import static io.sphere.sdk.types.CustomFieldsDraft.ofTypeIdAndJson;
 
 public class AssetCustomActionBuilder implements GenericCustomActionBuilder<Product> {
 

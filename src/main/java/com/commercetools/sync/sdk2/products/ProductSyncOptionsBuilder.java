@@ -7,7 +7,6 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
-
 import javax.annotation.Nonnull;
 
 public final class ProductSyncOptionsBuilder

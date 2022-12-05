@@ -1,18 +1,17 @@
 package com.commercetools.sync.sdk2.internals.utils;
 
-import io.sphere.sdk.commands.UpdateAction;
+import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToMap;
+import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
+import static java.util.stream.Collectors.toList;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import io.sphere.sdk.commands.UpdateAction;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-
-import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToMap;
-import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
-import static java.util.stream.Collectors.toList;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /** This class is only meant for the internal use of the commercetools-sync-java library. */
 public final class UnorderedCollectionSyncUtils {

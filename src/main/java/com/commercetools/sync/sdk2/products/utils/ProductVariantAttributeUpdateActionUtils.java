@@ -1,5 +1,8 @@
 package com.commercetools.sync.sdk2.products.utils;
 
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static java.lang.String.format;
+
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -9,15 +12,11 @@ import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
-import static java.lang.String.format;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public final class ProductVariantAttributeUpdateActionUtils {
   public static final String ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA =
@@ -25,11 +24,9 @@ public final class ProductVariantAttributeUpdateActionUtils {
 
   /**
    * Compares the attributes of a {@link AttributeDraft} and a {@link Attribute} to build either a
-   * {@link SetAttribute} or a {@link
-   * SetAttributeInAllVariants}.
+   * {@link SetAttribute} or a {@link SetAttributeInAllVariants}.
    *
-   * <p>If the attribute is sameForAll a {@link
-   * SetAttributeInAllVariants} is built. Otherwise, a
+   * <p>If the attribute is sameForAll a {@link SetAttributeInAllVariants} is built. Otherwise, a
    * {@link SetAttribute} is built.
    *
    * <p>If both the {@link AttributeDraft} and the {@link Attribute} have identical values, then no

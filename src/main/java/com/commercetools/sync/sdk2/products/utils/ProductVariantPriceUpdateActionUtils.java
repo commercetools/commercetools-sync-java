@@ -1,5 +1,8 @@
 package com.commercetools.sync.sdk2.products.utils;
 
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static java.lang.String.format;
+
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.CustomUpdateActionUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
@@ -10,15 +13,11 @@ import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.ChangePrice;
-
-import javax.annotation.Nonnull;
-import javax.money.MonetaryAmount;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
-import static java.lang.String.format;
+import javax.annotation.Nonnull;
+import javax.money.MonetaryAmount;
 
 public final class ProductVariantPriceUpdateActionUtils {
   private static final String VARIANT_CHANGE_PRICE_EMPTY_VALUE =

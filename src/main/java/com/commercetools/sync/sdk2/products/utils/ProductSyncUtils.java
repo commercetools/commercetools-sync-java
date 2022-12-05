@@ -1,5 +1,9 @@
 package com.commercetools.sync.sdk2.products.utils;
 
+import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
+import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.*;
+
 import com.commercetools.sync.products.ActionGroup;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
@@ -9,17 +13,12 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
-
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
-import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.*;
+import javax.annotation.Nonnull;
 
 public final class ProductSyncUtils {
 

@@ -1,17 +1,16 @@
 package com.commercetools.sync.sdk2.internals.helpers;
 
+import static java.util.Optional.ofNullable;
+
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Objects;
-
-import static java.util.Optional.ofNullable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * This class is only meant for the internal use of the commercetools-sync-java library.
