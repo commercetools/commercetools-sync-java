@@ -150,12 +150,9 @@ public final class ProductVariantAssetUpdateActionUtils {
 
   /**
    * Compares the sources of an {@link Asset} and an {@link AssetDraft} and returns an {@link
-   * <<<<<<< HEAD ProductUpdateAction}&lt;{@link Product}&gt; as a result in an {@link Optional}. If
-   * both the {@link Asset} and the {@link AssetDraft} have the same sources, then no update action
-   * is needed and hence an empty {@link Optional} is returned. ======= UpdateAction}&lt;{@link
-   * Product}&gt; as a result in an {@link Optional}. If both the {@link Asset} and the {@link
-   * AssetDraft} have the same sources, then no update action is needed and hence an empty {@link
-   * Optional} is returned. >>>>>>> java-sdk-v2-product-sync-migration
+   * ProductUpdateAction}&lt;{@link Product}&gt; as a result in an {@link Optional}. If both the
+   * {@link Asset} and the {@link AssetDraft} have the same sources, then no update action is needed
+   * and hence an empty {@link Optional} is returned.
    *
    * @param variantId the variantId needed for building the update action.
    * @param oldAsset the asset which should be updated.
