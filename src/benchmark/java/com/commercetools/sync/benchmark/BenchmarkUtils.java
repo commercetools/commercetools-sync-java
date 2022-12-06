@@ -89,6 +89,7 @@ final class BenchmarkUtils {
 
     final ObjectNode newVersionNode = JsonNodeFactory.instance.objectNode();
     newVersionNode.set(PRODUCT_SYNC, createSyncNode());
+    newVersionNode.set(PRODUCT_SYNC_SDK_V2, createSyncNode());
     newVersionNode.set(INVENTORY_SYNC, createSyncNode());
     newVersionNode.set(CATEGORY_SYNC, createSyncNode());
     newVersionNode.set(PRODUCT_TYPE_SYNC, createSyncNode());
