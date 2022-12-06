@@ -27,6 +27,24 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
+### 9.2.0 - Dec 06, 2022
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/9.1.0...9.2.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.2.0/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.2.0/jar)
+- 🐞 **Enhancement** (1)
+  - Display Github tag instead of Github commit hash in Benchmarks chart [#867](https://github.com/commercetools/commercetools-sync-java/pull/867)
+  - Run Bechmarks test in every commit [#868](https://github.com/commercetools/commercetools-sync-java/pull/868)
+  
+    To help developers to review the performance change before creating new release, benchmarks test now executes not only during making new release, but also pushing new commit in branches.
+    The test result of commit is displayed in the build in Github Action. It shows whether benchmarks of current commit over the pre-defined threshold, while the benchmarks chart keeps displaying  
+    the test result of each library version.
+
+- 🛠️ **Dependency Updates**
+  - Migrated `com.commercetools.sdk` from `9.4.0` to [`9.5.0`](https://github.com/commercetools/commercetools-sdk-java-v2/releases/tag/9.5.0)
+  - Migrated `com.github.ben-manes.caffeine` `3.1.1` to [`3.1.2`](https://github.com/ben-manes/caffeine/releases/tag/v3.1.2)
+  - Migrated `com.github.ben-manes.versions` `0.43.0` -> `0.44.0`
+  - Migrated `ru.vyarus.mkdocs` `2.4.0` -> `3.0.0`
+  
 ### 9.1.0 - Nov 02, 2022
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/9.0.3...9.1.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.1.0/) |
