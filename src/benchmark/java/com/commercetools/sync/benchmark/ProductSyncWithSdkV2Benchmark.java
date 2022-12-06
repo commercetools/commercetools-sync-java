@@ -206,6 +206,9 @@ class ProductSyncWithSdkV2Benchmark {
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
     if (SUBMIT_BENCHMARK_RESULT) {
+      assertThat(PRODUCT_SYNC_SDK_V2).isNotEmpty();
+      assertThat(UPDATES_ONLY).isNotEmpty();
+      assertThat(totalTime).isGreaterThan(0);
       saveNewResult(PRODUCT_SYNC_SDK_V2, UPDATES_ONLY, totalTime);
     }
   }
