@@ -139,6 +139,7 @@ class ProductSyncWithSdkV2Benchmark {
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
     if (SUBMIT_BENCHMARK_RESULT) {
+      System.out.println("ready to saveNewResult");
       saveNewResult(PRODUCT_SYNC_SDK_V2, CREATES_ONLY, totalTime);
     }
   }
@@ -209,6 +210,7 @@ class ProductSyncWithSdkV2Benchmark {
       assertThat(PRODUCT_SYNC_SDK_V2).isNotEmpty();
       assertThat(UPDATES_ONLY).isNotEmpty();
       assertThat(totalTime).isGreaterThan(0);
+      System.out.println("ready to saveNewResult");
       saveNewResult(PRODUCT_SYNC_SDK_V2, UPDATES_ONLY, totalTime);
     }
   }
@@ -279,6 +281,7 @@ class ProductSyncWithSdkV2Benchmark {
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
     if (SUBMIT_BENCHMARK_RESULT) {
+      System.out.println("ready to saveNewResult");
       saveNewResult(PRODUCT_SYNC_SDK_V2, CREATES_AND_UPDATES, totalTime);
     }
   }
