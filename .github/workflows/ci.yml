@@ -53,7 +53,7 @@ jobs:
       TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID_2 }}
       TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET_2 }}
       GRGIT_USER: ${{ secrets.GRGIT_USER }}
-      SUBMIT_BENCHMARK_RESULT: true
+      SUBMIT_BENCHMARK_RESULT: false
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3
@@ -62,6 +62,6 @@ jobs:
         run: echo ::set-output name=libVersion::${GITHUB_REF#refs/*/}
       - name: benchmark test
         if: ${{ success() }}
-        run: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
+        run: ./gradlew clean setLibraryVersion benchmark
         env:
           GITHUB_TAG: ${{ steps.vars.outputs.libVersion }}
