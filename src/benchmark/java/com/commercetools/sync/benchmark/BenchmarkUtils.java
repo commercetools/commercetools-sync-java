@@ -23,10 +23,8 @@ final class BenchmarkUtils {
       BENCHMARK_RESULTS_FILE_DIR + BENCHMARK_RESULTS_FILE_NAME;
   private static final Charset UTF8_CHARSET = StandardCharsets.UTF_8;
   private static final String EXECUTION_TIME = "executionTime";
-  private static final String BRANCH_NAME =
-      ofNullable(System.getenv("GITHUB_ACTION_COMMIT"))
-          .map(commitMessage -> commitMessage.substring(0, 7)) // Use smaller commit sha
-          .orElse("dev-local");
+  private static final String TAG_NAME =
+      ofNullable(System.getenv("GITHUB_TAG")).orElse("DEV-SNAPSHOT");
 
   static final String PRODUCT_SYNC = "productSync";
   static final String PRODUCT_SYNC_SDK_V2 = "productSyncWithSDKV2";
@@ -70,12 +68,12 @@ final class BenchmarkUtils {
       final double newResult) {
 
     ObjectNode rootNode = (ObjectNode) originalRoot;
-    ObjectNode branchNode = (ObjectNode) rootNode.get(BRANCH_NAME);
+    ObjectNode branchNode = (ObjectNode) rootNode.get(TAG_NAME);
 
     // If version doesn't exist yet, create a new JSON object for the new version.
     if (branchNode == null) {
       branchNode = createVersionNode();
-      rootNode.set(BRANCH_NAME, branchNode);
+      rootNode.set(TAG_NAME, branchNode);
     }
 
     final ObjectNode syncNode = (ObjectNode) branchNode.get(sync);
