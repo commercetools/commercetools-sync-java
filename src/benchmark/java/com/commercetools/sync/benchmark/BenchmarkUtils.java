@@ -47,7 +47,6 @@ final class BenchmarkUtils {
   static void saveNewResult(
       @Nonnull final String sync, @Nonnull final String benchmark, final double newResult)
       throws IOException {
-    System.out.println("saveNewResult");
     final JsonNode rootNode = new ObjectMapper().readTree(getFileContent());
     final JsonNode withNewResult = addNewResult(rootNode, sync, benchmark, newResult);
     writeToFile(withNewResult.toString());
