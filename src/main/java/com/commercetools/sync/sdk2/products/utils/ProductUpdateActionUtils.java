@@ -24,6 +24,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.models.category.CategoryReference;
 import com.commercetools.api.models.category.CategoryResourceIdentifier;
+import com.commercetools.api.models.common.Asset;
 import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.product.CategoryOrderHints;
 import com.commercetools.api.models.product.Product;
@@ -52,6 +53,8 @@ import com.commercetools.api.models.product.ProductVariantDraft;
 import com.commercetools.api.models.product.SearchKeywords;
 import com.commercetools.api.models.state.State;
 import com.commercetools.api.models.state.StateSetTransitionsAction;
+import com.commercetools.api.models.type.CustomFieldsBuilder;
+import com.commercetools.api.models.type.TypeReferenceBuilder;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.products.ActionGroup;
 import com.commercetools.sync.products.AttributeMetaData;
@@ -243,12 +246,13 @@ public final class ProductUpdateActionUtils {
 
           // add category hints present in draft if they are absent or changed in old product
           newMap.forEach(
-              (key, value) -> {
-                if (!oldMap.containsKey(key) || !Objects.equals(oldMap.get(key), value)) {
-                  // TODO : King-Hin Leung : Set key into action
+              (categoryId, value) -> {
+                if (!oldMap.containsKey(categoryId)
+                    || !Objects.equals(oldMap.get(categoryId), value)) {
                   updateActions.add(
                       ProductSetCategoryOrderHintAction.builder()
                           .orderHint(value)
+                          .categoryId(categoryId)
                           .staged(true)
                           .build());
                 }
@@ -941,6 +945,28 @@ public final class ProductUpdateActionUtils {
   static ProductUpdateAction buildAddVariantUpdateActionFromDraft(
       @Nonnull final ProductVariantDraft draft) {
 
+    // TODO : This conversion logic can be removed and use AssetDraft directly after sdk-v2 v9.5.0
+    List<Asset> assets =
+        draft.getAssets().stream()
+            .map(
+                assetDraft ->
+                    Asset.builder()
+                        .key(assetDraft.getKey())
+                        .description(assetDraft.getDescription())
+                        .name(assetDraft.getName())
+                        .custom(
+                            CustomFieldsBuilder.of()
+                                .type(
+                                    TypeReferenceBuilder.of()
+                                        .id(assetDraft.getCustom().getType().getId())
+                                        .build())
+                                .fields(assetDraft.getCustom().getFields())
+                                .buildUnchecked())
+                        .sources(assetDraft.getSources())
+                        .tags(assetDraft.getTags())
+                        .buildUnchecked())
+            .collect(Collectors.toList());
+
     return ProductAddVariantAction.builder()
         .prices(draft.getPrices())
         .sku(draft.getSku())
@@ -948,9 +974,7 @@ public final class ProductUpdateActionUtils {
         .staged(true)
         .key(draft.getKey())
         .images(draft.getImages())
-            // TODO : King-Hin Leung : Work with dev-tooling team how to put assetDraft into ProductAddVariantAction,
-            //          which only accepts List<Asset> at this moment.
-        .assets(draft.getAssets())
+        .assets(assets)
         .build();
   }
 
