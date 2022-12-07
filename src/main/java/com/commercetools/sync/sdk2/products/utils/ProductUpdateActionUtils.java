@@ -918,7 +918,8 @@ public final class ProductUpdateActionUtils {
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     return ofNullable(
         newProduct.getState() != null
-                && !Objects.equals(oldProduct.getState(), newProduct.getState())
+                && !Objects.equals(
+                    oldProduct.getState().toResourceIdentifier(), newProduct.getState())
             ? StateSetTransitionsAction.builder().transitions(newProduct.getState()).build()
             : null);
   }

@@ -162,7 +162,7 @@ public final class ProductVariantPriceUpdateActionUtils {
             PriceCustomTypeAdapter::getId,
             syncOptions);
 
-    List<ProductUpdateAction> productUpdateActions = new ArrayList();
+    List<ProductUpdateAction> productUpdateActions = new ArrayList<ProductUpdateAction>();
     customUpdateAction.forEach(
         resourceUpdateAction ->
             productUpdateActions.add((ProductUpdateAction) resourceUpdateAction));

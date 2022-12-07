@@ -36,7 +36,7 @@ public class PriceCustomActionBuilder implements GenericCustomActionBuilder {
     return ProductSetProductPriceCustomTypeAction.builder()
         .priceId(priceId)
         .type(TypeResourceIdentifierBuilder.of().id(customTypeId).build())
-        .fields(customFields.build())
+        .fields(customFields != null ? customFields.build() : null)
         .staged(true)
         .build();
   }
