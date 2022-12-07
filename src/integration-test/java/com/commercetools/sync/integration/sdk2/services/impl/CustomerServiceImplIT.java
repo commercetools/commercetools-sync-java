@@ -211,7 +211,11 @@ class CustomerServiceImplIT {
   @Test
   void createCustomer_WithDuplicationException_ShouldNotCreateCustomer() {
     CustomerDraft customerDraft =
-        CustomerDraftBuilder.of().email("mail@mail.com").password("password").key("newKeyTest1").build();
+        CustomerDraftBuilder.of()
+            .email("mail@mail.com")
+            .password("password")
+            .key("newKeyTest1")
+            .build();
 
     Optional<Customer> customerOptional =
         customerService.createCustomer(customerDraft).toCompletableFuture().join();
