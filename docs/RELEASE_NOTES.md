@@ -31,13 +31,16 @@
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/9.1.0...9.2.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.2.0/) |
 [Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.2.0/jar)
-- 🐞 **Enhancement** (1)
+- ✨ **Enhancements** (2)
   - Display Github tag instead of Github commit hash in Benchmarks chart [#867](https://github.com/commercetools/commercetools-sync-java/pull/867)
   - Run Bechmarks test in every commit [#868](https://github.com/commercetools/commercetools-sync-java/pull/868)
-  
+
     To help developers to review the performance change before creating new release, benchmarks test now executes not only during making new release, but also pushing new commit in branches.
     The test result of commit is displayed in the build in Github Action. It shows whether benchmarks of current commit over the pre-defined threshold, while the benchmarks chart keeps displaying  
     the test result of each library version.
+  
+- 🐞 **Bug Fixes**
+  - Fix NPE in ProductSync benchmarks test for SDK-v2 [#874](https://github.com/commercetools/commercetools-sync-java/pull/874)
 
 - 🛠️ **Dependency Updates**
   - Migrated `com.commercetools.sdk` from `9.4.0` to [`9.5.0`](https://github.com/commercetools/commercetools-sdk-java-v2/releases/tag/9.5.0)
@@ -49,7 +52,7 @@
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/9.0.3...9.1.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.1.0/) |
 [Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.1.0/jar)
-- 🐞 **Enhancement** (1)
+- ✨ **Enhancement** (1)
   - Java SDK-v2 Compatible layer adaption [#859](https://github.com/commercetools/commercetools-sync-java/pull/859)
   
     Commercetools has already developed [next generation Java SDK (Java-SDK-v2)](https://github.com/commercetools/commercetools-sdk-java-v2) for communication between client-side and the platform. 

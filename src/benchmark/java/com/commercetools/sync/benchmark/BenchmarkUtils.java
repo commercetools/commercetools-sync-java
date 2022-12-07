@@ -47,7 +47,6 @@ final class BenchmarkUtils {
   static void saveNewResult(
       @Nonnull final String sync, @Nonnull final String benchmark, final double newResult)
       throws IOException {
-
     final JsonNode rootNode = new ObjectMapper().readTree(getFileContent());
     final JsonNode withNewResult = addNewResult(rootNode, sync, benchmark, newResult);
     writeToFile(withNewResult.toString());
@@ -89,6 +88,7 @@ final class BenchmarkUtils {
 
     final ObjectNode newVersionNode = JsonNodeFactory.instance.objectNode();
     newVersionNode.set(PRODUCT_SYNC, createSyncNode());
+    newVersionNode.set(PRODUCT_SYNC_SDK_V2, createSyncNode());
     newVersionNode.set(INVENTORY_SYNC, createSyncNode());
     newVersionNode.set(CATEGORY_SYNC, createSyncNode());
     newVersionNode.set(PRODUCT_TYPE_SYNC, createSyncNode());
