@@ -23,12 +23,11 @@ final class BenchmarkUtils {
       BENCHMARK_RESULTS_FILE_DIR + BENCHMARK_RESULTS_FILE_NAME;
   private static final Charset UTF8_CHARSET = StandardCharsets.UTF_8;
   private static final String EXECUTION_TIME = "executionTime";
-  private static final String BRANCH_NAME =
-      ofNullable(System.getenv("GITHUB_ACTION_COMMIT"))
-          .map(commitMessage -> commitMessage.substring(0, 7)) // Use smaller commit sha
-          .orElse("dev-local");
+  private static final String TAG_NAME =
+      ofNullable(System.getenv("GITHUB_TAG")).orElse("DEV-SNAPSHOT");
 
   static final String PRODUCT_SYNC = "productSync";
+  static final String PRODUCT_SYNC_SDK_V2 = "productSyncWithSDKV2";
   static final String INVENTORY_SYNC = "inventorySync";
   static final String CATEGORY_SYNC = "categorySync";
   static final String TYPE_SYNC = "typeSync";
@@ -40,11 +39,14 @@ final class BenchmarkUtils {
   static final int NUMBER_OF_RESOURCE_UNDER_TEST = 1000;
   static final String THRESHOLD_EXCEEDED_ERROR =
       "Total execution time of benchmark '%d' took longer than allowed" + " threshold of '%d'.";
+  static final Boolean SUBMIT_BENCHMARK_RESULT =
+      ofNullable(System.getenv("SUBMIT_BENCHMARK_RESULT"))
+          .map(submitBenchmarkResult -> Boolean.valueOf(submitBenchmarkResult))
+          .orElse(Boolean.FALSE);
 
   static void saveNewResult(
       @Nonnull final String sync, @Nonnull final String benchmark, final double newResult)
       throws IOException {
-
     final JsonNode rootNode = new ObjectMapper().readTree(getFileContent());
     final JsonNode withNewResult = addNewResult(rootNode, sync, benchmark, newResult);
     writeToFile(withNewResult.toString());
@@ -65,12 +67,12 @@ final class BenchmarkUtils {
       final double newResult) {
 
     ObjectNode rootNode = (ObjectNode) originalRoot;
-    ObjectNode branchNode = (ObjectNode) rootNode.get(BRANCH_NAME);
+    ObjectNode branchNode = (ObjectNode) rootNode.get(TAG_NAME);
 
     // If version doesn't exist yet, create a new JSON object for the new version.
     if (branchNode == null) {
       branchNode = createVersionNode();
-      rootNode.set(BRANCH_NAME, branchNode);
+      rootNode.set(TAG_NAME, branchNode);
     }
 
     final ObjectNode syncNode = (ObjectNode) branchNode.get(sync);
@@ -86,6 +88,7 @@ final class BenchmarkUtils {
 
     final ObjectNode newVersionNode = JsonNodeFactory.instance.objectNode();
     newVersionNode.set(PRODUCT_SYNC, createSyncNode());
+    newVersionNode.set(PRODUCT_SYNC_SDK_V2, createSyncNode());
     newVersionNode.set(INVENTORY_SYNC, createSyncNode());
     newVersionNode.set(CATEGORY_SYNC, createSyncNode());
     newVersionNode.set(PRODUCT_TYPE_SYNC, createSyncNode());

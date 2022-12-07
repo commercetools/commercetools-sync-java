@@ -4,6 +4,7 @@ import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATE
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.PRODUCT_TYPE_SYNC;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.SUBMIT_BENCHMARK_RESULT;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
@@ -51,6 +52,10 @@ class ProductTypeSyncBenchmark {
   private List<String> errorCallBackMessages;
   private List<String> warningCallBackMessages;
   private List<Throwable> errorCallBackExceptions;
+  private static final int PRODUCT_TYPE_BENCHMARKS_CREATE_ACTION_THRESHOLD =
+      24_000; // 150% of the maximum value (16K)
+  private static final int PRODUCT_TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD =
+      24_000; // 150% of the maximum value (16K)
 
   @AfterAll
   static void tearDown() {
@@ -106,10 +111,13 @@ class ProductTypeSyncBenchmark {
     final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
     // assert on threshold (based on history of benchmarks; highest was ~12 seconds)
-    final int threshold = 24000; // double of the highest benchmark
     assertThat(totalTime)
-        .withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
-        .isLessThan(threshold);
+        .withFailMessage(
+            format(
+                THRESHOLD_EXCEEDED_ERROR,
+                totalTime,
+                PRODUCT_TYPE_BENCHMARKS_CREATE_ACTION_THRESHOLD))
+        .isLessThan(PRODUCT_TYPE_BENCHMARKS_CREATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (total number of existing product types)
     final CompletableFuture<Integer> totalNumberOfProductTypes =
@@ -127,8 +135,9 @@ class ProductTypeSyncBenchmark {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
-
-    saveNewResult(PRODUCT_TYPE_SYNC, CREATES_ONLY, totalTime);
+    if (SUBMIT_BENCHMARK_RESULT) {
+      saveNewResult(PRODUCT_TYPE_SYNC, CREATES_ONLY, totalTime);
+    }
   }
 
   @Test
@@ -156,10 +165,13 @@ class ProductTypeSyncBenchmark {
     final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
     // assert on threshold (based on history of benchmarks; highest was ~13 seconds)
-    final int threshold = 26000; // double of the highest benchmark
     assertThat(totalTime)
-        .withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
-        .isLessThan(threshold);
+        .withFailMessage(
+            format(
+                THRESHOLD_EXCEEDED_ERROR,
+                totalTime,
+                PRODUCT_TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD))
+        .isLessThan(PRODUCT_TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (number of updated product types)
     final CompletableFuture<Integer> totalNumberOfUpdatedProductTypes =
@@ -192,8 +204,9 @@ class ProductTypeSyncBenchmark {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
-
-    saveNewResult(PRODUCT_TYPE_SYNC, UPDATES_ONLY, totalTime);
+    if (SUBMIT_BENCHMARK_RESULT) {
+      saveNewResult(PRODUCT_TYPE_SYNC, UPDATES_ONLY, totalTime);
+    }
   }
 
   @Test
@@ -224,10 +237,13 @@ class ProductTypeSyncBenchmark {
     final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
     // assert on threshold (based on history of benchmarks; highest was ~13 seconds)
-    final int threshold = 26000; // double of the highest benchmark
     assertThat(totalTime)
-        .withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
-        .isLessThan(threshold);
+        .withFailMessage(
+            format(
+                THRESHOLD_EXCEEDED_ERROR,
+                totalTime,
+                PRODUCT_TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD))
+        .isLessThan(PRODUCT_TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (number of updated product types)
     final CompletableFuture<Integer> totalNumberOfProductTypesWithOldName =
@@ -259,8 +275,9 @@ class ProductTypeSyncBenchmark {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
-
-    saveNewResult(PRODUCT_TYPE_SYNC, CREATES_AND_UPDATES, totalTime);
+    if (SUBMIT_BENCHMARK_RESULT) {
+      saveNewResult(PRODUCT_TYPE_SYNC, CREATES_AND_UPDATES, totalTime);
+    }
   }
 
   @Nonnull
