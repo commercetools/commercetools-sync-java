@@ -147,6 +147,7 @@ public final class AssetsUpdateActionUtils {
     // by CTP after an asset is created. Therefore, the order of update actions must be:
 
     // 1. Remove or compare if matching.
+
     final List<T> updateActions =
         buildRemoveAssetOrAssetUpdateActions(
             newResource, oldAssets, removedAssetKeys, newAssetDraftsKeyMap, assetActionFactory);
@@ -188,6 +189,7 @@ public final class AssetsUpdateActionUtils {
           @Nonnull final Set<String> removedAssetKeys,
           @Nonnull final Map<String, AssetDraft> newAssetDraftsKeyMap,
           @Nonnull final AssetActionFactory<T, D> assetActionFactory) {
+
     // For every old asset, If it doesn't exist anymore in the new asset drafts,
     // then add a RemoveAsset action to the list of update actions. If the asset still exists in the
     // new draft,

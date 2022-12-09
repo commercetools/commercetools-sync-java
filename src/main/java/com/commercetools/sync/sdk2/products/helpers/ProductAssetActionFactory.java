@@ -23,6 +23,7 @@ public final class ProductAssetActionFactory
 
   public ProductAssetActionFactory(
       @Nonnull final Long variantId, @Nonnull final ProductSyncOptions syncOptions) {
+
     this.variantId = variantId;
     this.syncOptions = syncOptions;
   }

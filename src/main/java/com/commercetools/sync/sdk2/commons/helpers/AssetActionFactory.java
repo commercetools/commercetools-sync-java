@@ -16,6 +16,7 @@ import javax.annotation.Nonnull;
  *     for.
  */
 public abstract class AssetActionFactory<T extends ResourceUpdateAction<T>, D> {
+
   public BaseSyncOptions syncOptions = null;
 
   /**
