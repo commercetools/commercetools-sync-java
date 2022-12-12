@@ -52,6 +52,7 @@ import com.commercetools.api.models.product.ProductVariant;
 import com.commercetools.api.models.product.ProductVariantDraft;
 import com.commercetools.api.models.product.SearchKeywords;
 import com.commercetools.api.models.state.State;
+import com.commercetools.api.models.state.StateResourceIdentifier;
 import com.commercetools.api.models.state.StateSetTransitionsAction;
 import com.commercetools.api.models.type.CustomFieldsBuilder;
 import com.commercetools.api.models.type.TypeReferenceBuilder;
@@ -916,10 +917,18 @@ public final class ProductUpdateActionUtils {
   @Nonnull
   public static Optional<StateSetTransitionsAction> buildTransitionStateUpdateAction(
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
+
     return ofNullable(
         newProduct.getState() != null
                 && !Objects.equals(
-                    oldProduct.getState().toResourceIdentifier(), newProduct.getState())
+                    Optional.ofNullable(oldProduct.getState())
+                        .map(
+                            stateReference ->
+                                StateResourceIdentifier.builder()
+                                    .id(stateReference.getId())
+                                    .build())
+                        .orElse(null),
+                    newProduct.getState())
             ? StateSetTransitionsAction.builder().transitions(newProduct.getState()).build()
             : null);
   }
