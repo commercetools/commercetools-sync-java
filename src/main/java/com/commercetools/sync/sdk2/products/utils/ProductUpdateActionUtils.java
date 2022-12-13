@@ -46,6 +46,7 @@ import com.commercetools.api.models.product.ProductSetMetaKeywordsAction;
 import com.commercetools.api.models.product.ProductSetMetaTitleAction;
 import com.commercetools.api.models.product.ProductSetSearchKeywordsAction;
 import com.commercetools.api.models.product.ProductSetTaxCategoryAction;
+import com.commercetools.api.models.product.ProductTransitionStateAction;
 import com.commercetools.api.models.product.ProductUnpublishAction;
 import com.commercetools.api.models.product.ProductUpdateAction;
 import com.commercetools.api.models.product.ProductVariant;
@@ -53,7 +54,6 @@ import com.commercetools.api.models.product.ProductVariantDraft;
 import com.commercetools.api.models.product.SearchKeywords;
 import com.commercetools.api.models.state.State;
 import com.commercetools.api.models.state.StateResourceIdentifier;
-import com.commercetools.api.models.state.StateSetTransitionsAction;
 import com.commercetools.api.models.type.CustomFieldsBuilder;
 import com.commercetools.api.models.type.TypeReferenceBuilder;
 import com.commercetools.sync.commons.exceptions.SyncException;
@@ -888,10 +888,10 @@ public final class ProductUpdateActionUtils {
    * @param oldProduct the productprojection which should be updated.
    * @param newProduct the product draft with new {@link io.sphere.sdk.taxcategories.TaxCategory}
    *     reference.
-   * @return An optional with {@link ProductSetTaxCategoryAction} update action.
+   * @return An optional with {@link ProductUpdateAction} update action.
    */
   @Nonnull
-  public static Optional<ProductSetTaxCategoryAction> buildSetTaxCategoryUpdateAction(
+  public static Optional<ProductUpdateAction> buildSetTaxCategoryUpdateAction(
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     return buildUpdateActionForReferences(
         oldProduct.getTaxCategory(),
@@ -902,7 +902,8 @@ public final class ProductUpdateActionUtils {
 
   /**
    * Compares the {@link State} references of an old {@link ProductProjection} and new {@link
-   * ProductDraft}. If they are different - return {@link StateSetTransitionsAction} update action.
+   * ProductDraft}. If they are different - return {@link ProductTransitionStateAction} update
+   * action.
    *
    * <p>If the old value is set, but the new one is empty - return empty object, because unset
    * transition state is not possible.
@@ -912,10 +913,10 @@ public final class ProductUpdateActionUtils {
    *
    * @param oldProduct the productprojection which should be updated.
    * @param newProduct the product draft with new {@link State} reference.
-   * @return An optional with {@link StateSetTransitionsAction} update action.
+   * @return An optional with {@link ProductTransitionStateAction} update action.
    */
   @Nonnull
-  public static Optional<StateSetTransitionsAction> buildTransitionStateUpdateAction(
+  public static Optional<ProductUpdateAction> buildTransitionStateUpdateAction(
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
 
     return ofNullable(
@@ -929,7 +930,7 @@ public final class ProductUpdateActionUtils {
                                     .build())
                         .orElse(null),
                     newProduct.getState())
-            ? StateSetTransitionsAction.builder().transitions(newProduct.getState()).build()
+            ? ProductTransitionStateAction.builder().state(newProduct.getState()).build()
             : null);
   }
 

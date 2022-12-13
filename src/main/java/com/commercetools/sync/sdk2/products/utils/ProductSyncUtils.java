@@ -107,15 +107,11 @@ public final class ProductSyncUtils {
                 buildActionIfPassesFilter(
                     syncFilter,
                     ActionGroup.TAXCATEGORY,
-                    () ->
-                        buildSetTaxCategoryUpdateAction(oldProduct, newProduct)
-                            .map(action -> (ProductUpdateAction) action)),
+                    () -> buildSetTaxCategoryUpdateAction(oldProduct, newProduct)),
                 buildActionIfPassesFilter(
                     syncFilter,
                     ActionGroup.STATE,
-                    () ->
-                        buildTransitionStateUpdateAction(oldProduct, newProduct)
-                            .map(action -> (ProductUpdateAction) action))));
+                    () -> buildTransitionStateUpdateAction(oldProduct, newProduct))));
 
     final List<ProductUpdateAction> productCategoryUpdateActions =
         buildActionsIfPassesFilter(
