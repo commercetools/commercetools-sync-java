@@ -30,6 +30,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public final class CustomerITUtils {
 
+  public static final String CUSTOMER_KEY_JANE_DOE = "customer-key-jane-doe";
+
   public static ImmutablePair<Customer, CustomerDraft> ensureSampleCustomerJohnDoe(
       @Nonnull final ProjectApiRoot ctpClient) {
 
@@ -109,7 +111,7 @@ public final class CustomerITUtils {
             .email("jane@example.com")
             .password("12345")
             .customerNumber("random-1")
-            .key("customer-key-jane-doe")
+            .key(CUSTOMER_KEY_JANE_DOE)
             .firstName("Jane")
             .lastName("Doe")
             .middleName("Jr")

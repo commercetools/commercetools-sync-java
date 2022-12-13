@@ -1,5 +1,7 @@
 package com.commercetools.sync.integration.sdk2.ctpprojectsource.customers;
 
+import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUtils.CUSTOMER_KEY_JANE_DOE;
+import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUtils.deleteCustomer;
 import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUtils.ensureSampleCustomerJaneDoe;
 import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUtils.ensureSampleCustomerJohnDoe;
 import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUtils.ensureStore;
@@ -18,6 +20,7 @@ import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.integration.sdk2.commons.utils.ITUtils;
+import com.commercetools.sync.sdk2.commons.statistics.AssertionsForStatistics;
 import com.commercetools.sync.sdk2.customers.CustomerSync;
 import com.commercetools.sync.sdk2.customers.CustomerSyncOptions;
 import com.commercetools.sync.sdk2.customers.CustomerSyncOptionsBuilder;
@@ -39,7 +42,9 @@ class CustomerSyncIT {
 
   @BeforeEach
   void setup() {
-    ensureSampleCustomerJohnDoe(CTP_TARGET_CLIENT);
+    deleteCustomerSyncTestDataFromProjects();
+
+    ensureSampleCustomerJohnDoe(CTP_SOURCE_CLIENT);
     ensureSampleCustomerJaneDoe(CTP_SOURCE_CLIENT);
 
     ensureSampleCustomerJohnDoe(CTP_TARGET_CLIENT);
@@ -58,6 +63,11 @@ class CustomerSyncIT {
     referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
   }
 
+  private static void deleteCustomerSyncTestDataFromProjects() {
+    deleteCustomer(CTP_SOURCE_CLIENT, CUSTOMER_KEY_JANE_DOE);
+    deleteCustomer(CTP_TARGET_CLIENT, CUSTOMER_KEY_JANE_DOE);
+  }
+
   @Test
   void sync_WithoutUpdates_ShouldReturnProperStatistics() {
 
@@ -74,7 +84,7 @@ class CustomerSyncIT {
     assertThat(errorMessages).isEmpty();
     assertThat(exceptions).isEmpty();
 
-    // assertThat(customerSyncStatistics).hasValues(2, 1, 0, 0);
+    AssertionsForStatistics.assertThat(customerSyncStatistics).hasValues(2, 1, 0, 0);
     assertThat(customerSyncStatistics.getReportMessage())
         .isEqualTo(
             "Summary: 2 customers were processed in total (1 created, 0 updated and 0 failed to sync).");
@@ -92,7 +102,7 @@ class CustomerSyncIT {
     assertThat(errorMessages).isEmpty();
     assertThat(exceptions).isEmpty();
 
-    // AssertionsForStatistics.assertThat(customerSyncStatistics).hasValues(2, 1, 1, 0);
+    AssertionsForStatistics.assertThat(customerSyncStatistics).hasValues(2, 1, 1, 0);
     assertThat(customerSyncStatistics.getReportMessage())
         .isEqualTo(
             "Summary: 2 customers were processed in total (1 created, 1 updated and 0 failed to sync).");
