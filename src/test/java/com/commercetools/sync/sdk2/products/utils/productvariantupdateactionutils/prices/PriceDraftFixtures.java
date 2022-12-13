@@ -25,6 +25,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.money.CurrencyUnit;
@@ -307,7 +308,7 @@ public final class PriceDraftFixtures {
             .build();
     return PriceDraftBuilder.of()
         .value(typedMoney)
-        .country(countryCode.getName())
+        .country(Optional.ofNullable(countryCode).map(CountryCode::getName).orElse(null))
         .customerGroup(
             ofNullable(customerGroupId)
                 .map(id -> CustomerGroupResourceIdentifier.builder().id(id).build())
@@ -340,7 +341,7 @@ public final class PriceDraftFixtures {
             .build();
     return PriceDraftBuilder.of()
         .value(typedMoney)
-        .country(countryCode.getName())
+        .country(Optional.ofNullable(countryCode).map(CountryCode::getName).orElse(null))
         .customerGroup(
             ofNullable(customerGroupKey)
                 .map(key -> CustomerGroupResourceIdentifier.builder().key(key).build())

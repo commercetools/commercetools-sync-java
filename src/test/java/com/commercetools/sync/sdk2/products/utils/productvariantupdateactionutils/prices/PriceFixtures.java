@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.neovisionaries.i18n.CountryCode;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -242,7 +243,7 @@ public final class PriceFixtures {
             ofNullable(customerGroupId)
                 .map(id -> CustomerGroupReferenceBuilder.of().id(id).build())
                 .orElse(null))
-        .country(countryCode.getName())
+        .country(Optional.ofNullable(countryCode).map(CountryCode::getName).orElse(null))
         .validFrom(validFrom)
         .validUntil(validUntil)
         .channel(
