@@ -4,6 +4,7 @@ import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATE
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.INVENTORY_SYNC;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.SUBMIT_BENCHMARK_RESULT;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
@@ -37,6 +38,10 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class InventorySyncBenchmark {
+
+  private static final int INVENTORY_BENCHMARKS_CREATE_ACTION_THRESHOLD =
+      18_000; // (based on history of benchmarks; highest was ~9 seconds)
+
   @BeforeEach
   void setup() {
     deleteInventoryEntries(CTP_TARGET_CLIENT);
@@ -66,11 +71,12 @@ class InventorySyncBenchmark {
         executeBlocking(inventorySync.sync(inventoryEntryDrafts));
     final long totalTime = System.currentTimeMillis() - beforeSync;
 
-    // assert on threshold (based on history of benchmarks; highest was ~9 seconds)
-    final int threshold = 18000; // double of the highest benchmark
+    // assert on threshold
     assertThat(totalTime)
-        .withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
-        .isLessThan(threshold);
+        .withFailMessage(
+            format(
+                THRESHOLD_EXCEEDED_ERROR, totalTime, INVENTORY_BENCHMARKS_CREATE_ACTION_THRESHOLD))
+        .isLessThan(INVENTORY_BENCHMARKS_CREATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (total number of existing inventories)
     final CompletableFuture<Integer> totalNumberOfInventories =
@@ -86,8 +92,9 @@ class InventorySyncBenchmark {
     // Assert on sync statistics
     assertThat(inventorySyncStatistics)
         .hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
-
-    saveNewResult(INVENTORY_SYNC, CREATES_ONLY, totalTime);
+    if (SUBMIT_BENCHMARK_RESULT) {
+      saveNewResult(INVENTORY_SYNC, CREATES_ONLY, totalTime);
+    }
   }
 
   @Disabled
