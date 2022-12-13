@@ -140,7 +140,7 @@ public final class ProductSyncUtils {
       final List<ProductUpdateAction> updateActions, final Long oldMasterVariantId) {
 
     final ProductRemoveVariantAction removeMasterVariantUpdateAction =
-        ProductRemoveVariantAction.builder().of().id(oldMasterVariantId).build();
+        ProductRemoveVariantAction.builder().id(oldMasterVariantId).build();
 
     final List<ProductUpdateAction> removeVariantUpdateActionsNoMaster =
         getActionsByActionName(
