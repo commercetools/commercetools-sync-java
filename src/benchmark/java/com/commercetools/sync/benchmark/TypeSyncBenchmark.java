@@ -3,6 +3,7 @@ package com.commercetools.sync.benchmark;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATES;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.SUBMIT_BENCHMARK_RESULT;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.TYPE_SYNC;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
@@ -54,6 +55,14 @@ class TypeSyncBenchmark {
   private List<String> warningCallBackMessages;
   private List<Throwable> errorCallBackExceptions;
 
+  private static final int TYPE_BENCHMARKS_CREATE_ACTION_THRESHOLD =
+      26_000; // (based on history of benchmarks; highest was ~13 seconds)
+  private static final int TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD =
+      26_000; // (based on history of benchmarks; highest was ~13 seconds)
+
+  private static final int TYPE_BENCHMARKS_CREATE_AND_UPDATE_ACTION_THRESHOLD =
+      24_000; // (based on history of benchmarks; highest was ~12 seconds)
+
   @AfterEach
   void tearDown() {
     deleteTypes(CTP_TARGET_CLIENT);
@@ -100,11 +109,10 @@ class TypeSyncBenchmark {
     final TypeSyncStatistics syncStatistics = executeBlocking(typeSync.sync(typeDrafts));
     final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-    // assert on threshold (based on history of benchmarks; highest was ~13 seconds)
-    final int threshold = 26000; // double of the highest benchmark
     assertThat(totalTime)
-        .withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
-        .isLessThan(threshold);
+        .withFailMessage(
+            format(THRESHOLD_EXCEEDED_ERROR, totalTime, TYPE_BENCHMARKS_CREATE_ACTION_THRESHOLD))
+        .isLessThan(TYPE_BENCHMARKS_CREATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (total number of existing types)
     final CompletableFuture<Integer> totalNumberOfTypes =
@@ -122,8 +130,9 @@ class TypeSyncBenchmark {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
-
-    saveNewResult(TYPE_SYNC, CREATES_ONLY, totalTime);
+    if (SUBMIT_BENCHMARK_RESULT) {
+      saveNewResult(TYPE_SYNC, CREATES_ONLY, totalTime);
+    }
   }
 
   @Test
@@ -148,11 +157,10 @@ class TypeSyncBenchmark {
     final TypeSyncStatistics syncStatistics = executeBlocking(typeSync.sync(typeDrafts));
     final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-    // assert on threshold (based on history of benchmarks; highest was ~13 seconds)
-    final int threshold = 26000; // double of the highest benchmark
     assertThat(totalTime)
-        .withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
-        .isLessThan(threshold);
+        .withFailMessage(
+            format(THRESHOLD_EXCEEDED_ERROR, totalTime, TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD))
+        .isLessThan(TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (number of updated types)
     final CompletableFuture<Integer> totalNumberOfUpdatedTypes =
@@ -184,8 +192,9 @@ class TypeSyncBenchmark {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
-
-    saveNewResult(TYPE_SYNC, UPDATES_ONLY, totalTime);
+    if (SUBMIT_BENCHMARK_RESULT) {
+      saveNewResult(TYPE_SYNC, UPDATES_ONLY, totalTime);
+    }
   }
 
   @Test
@@ -213,11 +222,13 @@ class TypeSyncBenchmark {
     final TypeSyncStatistics syncStatistics = executeBlocking(typeSync.sync(typeDrafts));
     final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-    // assert on threshold (based on history of benchmarks; highest was ~12 seconds)
-    final int threshold = 24000; // double of the highest benchmark
     assertThat(totalTime)
-        .withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
-        .isLessThan(threshold);
+        .withFailMessage(
+            format(
+                THRESHOLD_EXCEEDED_ERROR,
+                totalTime,
+                TYPE_BENCHMARKS_CREATE_AND_UPDATE_ACTION_THRESHOLD))
+        .isLessThan(TYPE_BENCHMARKS_CREATE_AND_UPDATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (number of updated types)
     final CompletableFuture<Integer> totalNumberOfUpdatedTypesWithOldFieldDefinitionName =
@@ -250,8 +261,9 @@ class TypeSyncBenchmark {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
-
-    saveNewResult(TYPE_SYNC, CREATES_AND_UPDATES, totalTime);
+    if (SUBMIT_BENCHMARK_RESULT) {
+      saveNewResult(TYPE_SYNC, CREATES_AND_UPDATES, totalTime);
+    }
   }
 
   @Nonnull

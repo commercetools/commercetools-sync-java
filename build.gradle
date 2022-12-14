@@ -4,8 +4,8 @@ plugins {
     id 'org.ajoberstar.grgit' version '4.1.1'
     id "com.github.ben-manes.versions" version '0.41.0'
     id 'ru.vyarus.mkdocs' version '3.0.0'
-    id "com.github.spotbugs" version "5.0.5"
-    id 'com.diffplug.spotless' version '6.2.0'
+    id "com.github.spotbugs" version "5.0.13"
+    id 'com.diffplug.spotless' version '6.12.0'
     id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
 }
 
@@ -17,7 +17,7 @@ ext{
     assertjVersion = '3.23.1'
     pmdVersion = '6.14.0'
     jacocoVersion = '0.8.8'
-    caffeineVersion = '3.1.1'
+    caffeineVersion = '3.1.2'
     nexusStagingPluginVersion = '0.22.0'
     commonTextVersion = '1.9'
     commercetoolsJavaSDK2Version = '7.6.0'
