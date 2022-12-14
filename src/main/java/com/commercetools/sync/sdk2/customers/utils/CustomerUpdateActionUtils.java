@@ -772,28 +772,13 @@ public final class CustomerUpdateActionUtils {
         .filter(newAddress -> oldAddressKeyToAddressMap.containsKey(newAddress.getKey()))
         .map(
             newAddress -> {
-              // todo: better checks also other address related utilities
-              // like mapping between Address and AddressDraft
-              // comparing AddressImpl and AddressDraftImpl
               final Address oldAddress = oldAddressKeyToAddressMap.get(newAddress.getKey());
-              // ignore id on equals
-              String oldAddressId = oldAddress.getId();
-              String newAddressId = newAddress.getId();
-              oldAddress.setId(null);
-              newAddress.setId(null);
-
-              if (!newAddress.equals(oldAddress)) {
-                oldAddress.setId(oldAddressId);
-                newAddress.setId(newAddressId);
-
+              if (!newAddress.equalsIgnoreId(oldAddress)) {
                 return CustomerChangeAddressActionBuilder.of()
-                    .addressId(oldAddressId)
+                    .addressId(oldAddress.getId())
                     .address(newAddress)
                     .build();
               }
-
-              oldAddress.setId(oldAddressId);
-              newAddress.setId(newAddressId);
               return null;
             })
         .filter(Objects::nonNull)
