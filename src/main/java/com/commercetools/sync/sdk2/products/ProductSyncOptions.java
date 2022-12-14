@@ -9,26 +9,45 @@ import com.commercetools.sync.commons.utils.TriFunction;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 // TODO: While implementing this class, ResourceUpdateAction should change to ProductUpdateAction
 public final class ProductSyncOptions
     extends BaseSyncOptions<ProductProjection, ProductDraft, ResourceUpdateAction> {
 
-
   protected ProductSyncOptions(
       @NotNull ProjectApiRoot ctpClient,
-      @Nullable QuadConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>, List<ResourceUpdateAction>> errorCallback,
-      @Nullable TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>> warningCallback,
+      @Nullable
+          QuadConsumer<
+                  SyncException,
+                  Optional<ProductDraft>,
+                  Optional<ProductProjection>,
+                  List<ResourceUpdateAction>>
+              errorCallback,
+      @Nullable
+          TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
+              warningCallback,
       int batchSize,
-      @Nullable TriFunction<List<ResourceUpdateAction>, ProductDraft, ProductProjection, List<ResourceUpdateAction>> beforeUpdateCallback,
+      @Nullable
+          TriFunction<
+                  List<ResourceUpdateAction>,
+                  ProductDraft,
+                  ProductProjection,
+                  List<ResourceUpdateAction>>
+              beforeUpdateCallback,
       @Nullable Function<ProductDraft, ProductDraft> beforeCreateCallback,
       long cacheSize) {
-    super(ctpClient, errorCallback, warningCallback, batchSize, beforeUpdateCallback, beforeCreateCallback, cacheSize);
+    super(
+        ctpClient,
+        errorCallback,
+        warningCallback,
+        batchSize,
+        beforeUpdateCallback,
+        beforeCreateCallback,
+        cacheSize);
   }
 }
