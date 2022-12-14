@@ -1,5 +1,10 @@
 package com.commercetools.sync.sdk2.products.utils.productvariantupdateactionutils.prices;
 
+import static com.neovisionaries.i18n.CountryCode.*;
+import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
+import static io.sphere.sdk.models.DefaultCurrencyUnits.USD;
+import static java.util.Optional.ofNullable;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.neovisionaries.i18n.CountryCode;
@@ -11,20 +16,14 @@ import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.MoneyImpl;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.money.CurrencyUnit;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.neovisionaries.i18n.CountryCode.*;
-import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
-import static io.sphere.sdk.models.DefaultCurrencyUnits.USD;
-import static java.util.Optional.ofNullable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.money.CurrencyUnit;
 
 public final class PriceDraftFixtures {
   public static final PriceDraft DRAFT_111_USD =

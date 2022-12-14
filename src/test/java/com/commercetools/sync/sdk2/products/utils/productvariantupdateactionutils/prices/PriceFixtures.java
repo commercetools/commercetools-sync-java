@@ -1,20 +1,5 @@
 package com.commercetools.sync.sdk2.products.utils.productvariantupdateactionutils.prices;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.neovisionaries.i18n.CountryCode;
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.customergroups.CustomerGroup;
-import io.sphere.sdk.products.Price;
-import io.sphere.sdk.products.PriceBuilder;
-import io.sphere.sdk.types.CustomFields;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.money.CurrencyUnit;
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.UUID;
-
 import static com.commercetools.sync.commons.MockUtils.getMockCustomFields;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.GBP;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.byMonth;
@@ -22,6 +7,20 @@ import static com.neovisionaries.i18n.CountryCode.*;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.USD;
 import static java.util.Optional.ofNullable;
+
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.neovisionaries.i18n.CountryCode;
+import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.customergroups.CustomerGroup;
+import io.sphere.sdk.products.Price;
+import io.sphere.sdk.products.PriceBuilder;
+import io.sphere.sdk.types.CustomFields;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.UUID;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.money.CurrencyUnit;
 
 public final class PriceFixtures {
   public static final Price USD_111 =
