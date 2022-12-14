@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.models.common.Asset;
 import com.commercetools.api.models.type.CustomFields;
 import com.commercetools.api.models.type.FieldContainerBuilder;
 import com.commercetools.api.models.type.TypeReference;
@@ -18,7 +19,6 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
@@ -153,8 +153,7 @@ public class MockUtils {
     // Mock asset with custom fields
     final Asset asset = mock(Asset.class);
 
-    // TODO : Migrate CustomField for Asset
-    // when(asset.getCustom()).thenReturn(mockCustomFields);
+    when(asset.getCustom()).thenReturn(mockCustomFields);
 
     return asset;
   }
