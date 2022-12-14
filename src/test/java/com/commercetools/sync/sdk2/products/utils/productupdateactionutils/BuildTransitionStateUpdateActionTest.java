@@ -60,14 +60,17 @@ class BuildTransitionStateUpdateActionTest {
   @Test
   void buildTransitionStateUpdateAction_withEqual() {
     when(oldProduct.getState()).thenReturn(oldState);
+
     StateResourceIdentifier stateResourceIdentifier =
         StateResourceIdentifier.builder().id(newState.getId()).build();
     when(newProduct.getState()).thenReturn(stateResourceIdentifier);
+
     assertThat(buildTransitionStateUpdateAction(oldProduct, newProduct)).isEmpty();
   }
 
   @Test
   void buildTransitionStateUpdateAction_withEmptyOldShouldReturnNew() {
+
     StateResourceIdentifier changedStateResourceIdentifier =
         StateResourceIdentifier.builder().id(newChangedState.getId()).build();
     when(newProduct.getState()).thenReturn(changedStateResourceIdentifier);
@@ -79,6 +82,7 @@ class BuildTransitionStateUpdateActionTest {
   @Test
   void buildTransitionStateUpdateAction_withDifferent() {
     when(oldProduct.getState()).thenReturn(oldState);
+
     StateResourceIdentifier changedStateResourceIdentifier =
         StateResourceIdentifier.builder().id(newChangedState.getId()).build();
     when(newProduct.getState()).thenReturn(changedStateResourceIdentifier);

@@ -300,6 +300,7 @@ public final class PriceDraftFixtures {
       @Nullable final ZonedDateTime validUntil,
       @Nullable final String channelId,
       @Nullable final CustomFieldsDraft customFieldsDraft) {
+
     final TypedMoney typedMoney =
         TypedMoneyBuilder.of()
             .centPrecisionBuilder()
@@ -333,6 +334,7 @@ public final class PriceDraftFixtures {
       @Nullable final ZonedDateTime validUntil,
       @Nullable final String channelKey,
       @Nullable final CustomFieldsDraft customFieldsDraft) {
+
     final TypedMoney typedMoney =
         TypedMoneyBuilder.of()
             .centPrecisionBuilder()

@@ -229,6 +229,7 @@ public final class PriceFixtures {
       @Nullable final ZonedDateTime validUntil,
       @Nullable final String channelId,
       @Nullable final CustomFields customFields) {
+
     final TypedMoney typedMoney =
         TypedMoneyBuilder.of()
             .centPrecisionBuilder()

@@ -51,7 +51,8 @@ public class MockUtils {
    * Returns mock {@link CustomFields} instance. Executing {@link CustomFields#getType()} on
    * returned instance will return {@link Reference} of given {@code typeId} with mock {@link Type}
    * instance of {@code typeId} and {@code typeKey} (getters of key and id would return given
-   * values). Executing {@link CustomFields#getFields()} on returned instance will return {@link
+   *
+   * <p>values). Executing {@link CustomFields#getFields()} on returned instance will return {@link
    * Map} populated with given {@code fieldName} and {@code fieldValue}
    *
    * @param typeId custom type id
@@ -72,6 +73,7 @@ public class MockUtils {
 
   private static Map<String, Object> mockFields(final String name, final Object value) {
     final HashMap<String, Object> fields = new HashMap<>();
+
     fields.put(name, value);
     return fields;
   }
@@ -143,14 +145,17 @@ public class MockUtils {
    */
   @Nonnull
   public static Asset getAssetMockWithCustomFields(@Nullable final TypeReference typeReference) {
+
     // Mock Custom with expanded type reference
     final CustomFields mockCustomFields = mock(CustomFields.class);
     when(mockCustomFields.getType()).thenReturn(typeReference);
 
     // Mock asset with custom fields
     final Asset asset = mock(Asset.class);
+
     // TODO : Migrate CustomField for Asset
     // when(asset.getCustom()).thenReturn(mockCustomFields);
+
     return asset;
   }
 
