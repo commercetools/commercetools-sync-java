@@ -4,7 +4,7 @@ import com.commercetools.api.models.common.Price;
 import com.commercetools.api.models.type.CustomFields;
 import com.commercetools.sync.sdk2.commons.models.Custom;
 import com.commercetools.sync.sdk2.commons.utils.CustomUpdateActionUtils;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 
 /** Adapt Customer with {@link Custom} interface to be used on {@link CustomUpdateActionUtils} */
 public final class PriceCustomTypeAdapter implements Custom {
