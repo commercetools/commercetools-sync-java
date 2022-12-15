@@ -9,18 +9,19 @@ import com.commercetools.sync.commons.utils.TriFunction;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 // TODO: While implementing this class, ResourceUpdateAction should change to ProductUpdateAction
 public final class ProductSyncOptions
     extends BaseSyncOptions<ProductProjection, ProductDraft, ResourceUpdateAction> {
 
   protected ProductSyncOptions(
-      @NotNull ProjectApiRoot ctpClient,
+      @Nonnull ProjectApiRoot ctpClient,
       @Nullable
           QuadConsumer<
                   SyncException,
