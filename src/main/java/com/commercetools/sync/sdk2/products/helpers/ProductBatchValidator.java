@@ -9,19 +9,19 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import com.commercetools.api.models.category.CategoryReferenceImpl;
+import com.commercetools.api.models.custom_object.CustomObjectReferenceImpl;
 import com.commercetools.api.models.product.Attribute;
 import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductReferenceImpl;
 import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product_type.ProductTypeReferenceImpl;
 import com.commercetools.sync.commons.utils.SyncUtils;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.products.helpers.VariantReferenceResolver;
 import com.commercetools.sync.sdk2.commons.helpers.BaseBatchValidator;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.producttypes.ProductType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -186,13 +186,14 @@ public class ProductBatchValidator
     referencedKeys.productKeys.addAll(getReferencedProductKeys(variantDraft));
 
     referencedKeys.categoryKeys.addAll(
-        getReferencedKeysWithReferenceTypeId(variantDraft, Category.referenceTypeId()));
+        getReferencedKeysWithReferenceTypeId(variantDraft, CategoryReferenceImpl.CATEGORY));
 
     referencedKeys.productTypeKeys.addAll(
-        getReferencedKeysWithReferenceTypeId(variantDraft, ProductType.referenceTypeId()));
+        getReferencedKeysWithReferenceTypeId(variantDraft, ProductTypeReferenceImpl.PRODUCT_TYPE));
 
     referencedKeys.customObjectCompositeIdentifiers.addAll(
-        getReferencedKeysWithReferenceTypeId(variantDraft, CustomObject.referenceTypeId()));
+        getReferencedKeysWithReferenceTypeId(
+            variantDraft, CustomObjectReferenceImpl.KEY_VALUE_DOCUMENT));
   }
 
   @Nonnull
@@ -248,35 +249,34 @@ public class ProductBatchValidator
   @Nonnull
   public static Set<String> getReferencedProductKeys(
       @Nonnull final ProductVariantDraft variantDraft) {
-    return getReferencedKeysWithReferenceTypeId(variantDraft, Product.referenceTypeId());
+    return getReferencedKeysWithReferenceTypeId(variantDraft, ProductReferenceImpl.PRODUCT);
   }
 
   private static Set<String> getReferencedKeysWithReferenceTypeId(
       @Nonnull final ProductVariantDraft variantDraft, @Nonnull final String referenceTypeId) {
 
-    final List<Attribute> attributeDrafts = variantDraft.getAttributes();
-    if (attributeDrafts == null) {
+    final List<Attribute> attributes = variantDraft.getAttributes();
+    if (attributes == null) {
       return emptySet();
     }
-    return attributeDrafts.stream()
+    return attributes.stream()
         .filter(Objects::nonNull)
-        .map(
-            attributeDraft -> getReferencedKeysWithReferenceTypeId(attributeDraft, referenceTypeId))
+        .map(attribute -> getReferencedKeysWithReferenceTypeId(attribute, referenceTypeId))
         .flatMap(Collection::stream)
         .collect(Collectors.toSet());
   }
 
   @Nonnull
   private static Set<String> getReferencedKeysWithReferenceTypeId(
-      @Nonnull final Attribute attributeDraft, @Nonnull final String referenceTypeId) {
+      @Nonnull final Attribute attribute, @Nonnull final String referenceTypeId) {
 
-    final JsonNode attributeDraftValue = (JsonNode) attributeDraft.getValue();
-    if (attributeDraftValue == null) {
+    final JsonNode attributeValue = (JsonNode) attribute.getValue();
+    if (attributeValue == null) {
       return emptySet();
     }
 
     final List<JsonNode> allAttributeReferences =
-        attributeDraftValue.findParents(REFERENCE_TYPE_ID_FIELD);
+        attributeValue.findParents(REFERENCE_TYPE_ID_FIELD);
 
     return allAttributeReferences.stream()
         .filter(reference -> isReferenceOfType(reference, referenceTypeId))
