@@ -9,7 +9,6 @@ import com.commercetools.sync.commons.utils.TriFunction;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -20,7 +19,7 @@ import javax.annotation.Nullable;
 public final class ProductSyncOptions
     extends BaseSyncOptions<ProductProjection, ProductDraft, ResourceUpdateAction> {
 
-  protected ProductSyncOptions(
+  ProductSyncOptions(
       @Nonnull ProjectApiRoot ctpClient,
       @Nullable
           QuadConsumer<
