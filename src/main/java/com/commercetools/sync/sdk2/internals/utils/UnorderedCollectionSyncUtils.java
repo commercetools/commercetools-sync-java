@@ -4,7 +4,7 @@ import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToM
 import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
 import static java.util.stream.Collectors.toList;
 
-import io.sphere.sdk.commands.UpdateAction;
+import com.commercetools.api.models.ResourceUpdateAction;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,12 +40,12 @@ public final class UnorderedCollectionSyncUtils {
    *     empty list is returned.
    */
   @Nonnull
-  public static <T, S, U, V> List<UpdateAction<T>> buildRemoveUpdateActions(
+  public static <T extends ResourceUpdateAction<T>, S, U, V> List<T> buildRemoveUpdateActions(
       @Nonnull final List<U> oldResources,
       @Nullable final List<V> newDrafts,
       @Nonnull final Function<U, S> oldResourceKeyMapper,
       @Nonnull final Function<V, S> draftKeyMapper,
-      @Nonnull final Function<U, UpdateAction<T>> removeUpdateActionMapper) {
+      @Nonnull final Function<U, T> removeUpdateActionMapper) {
 
     final Map<S, U> oldResourcesMap = collectionToMap(oldResources, oldResourceKeyMapper);
     oldResourcesMap.remove(null);

@@ -1,7 +1,7 @@
 package com.commercetools.sync.sdk2.commons.utils;
 
-import com.commercetools.sync.products.ActionGroup;
-import com.commercetools.sync.products.SyncFilter;
+import com.commercetools.sync.sdk2.products.ActionGroup;
+import com.commercetools.sync.sdk2.products.SyncFilter;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 

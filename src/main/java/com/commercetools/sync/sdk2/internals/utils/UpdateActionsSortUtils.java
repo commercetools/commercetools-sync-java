@@ -1,8 +1,11 @@
 package com.commercetools.sync.sdk2.internals.utils;
 
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.commands.updateactions.*;
+import com.commercetools.api.models.product.ProductAddPriceAction;
+import com.commercetools.api.models.product.ProductChangePriceAction;
+import com.commercetools.api.models.product.ProductRemovePriceAction;
+import com.commercetools.api.models.product.ProductSetProductPriceCustomFieldAction;
+import com.commercetools.api.models.product.ProductSetProductPriceCustomTypeAction;
+import com.commercetools.api.models.product.ProductUpdateAction;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -14,10 +17,10 @@ public final class UpdateActionsSortUtils {
    * the following precedence:
    *
    * <ol>
-   *   <li>{@link RemovePrice}
-   *   <li>{@link ChangePrice} or {@link SetProductPriceCustomType} or {@link
-   *       SetProductPriceCustomField}
-   *   <li>{@link AddPrice}
+   *   <li>{@link ProductRemovePriceAction}
+   *   <li>{@link ProductChangePriceAction} or {@link ProductSetProductPriceCustomTypeAction} or
+   *       {@link ProductSetProductPriceCustomFieldAction}
+   *   <li>{@link ProductAddPriceAction}
    * </ol>
    *
    * <p>This is to ensure that there are no conflicts when adding a new price that might have a
@@ -27,25 +30,30 @@ public final class UpdateActionsSortUtils {
    * @return a new sorted list of update actions (remove, change, add).
    */
   @Nonnull
-  public static List<UpdateAction<Product>> sortPriceActions(
-      @Nonnull final List<UpdateAction<Product>> updateActions) {
+  public static List<ProductUpdateAction> sortPriceActions(
+      @Nonnull final List<ProductUpdateAction> updateActions) {
 
-    final List<UpdateAction<Product>> actionsCopy = new ArrayList<>(updateActions);
+    final List<ProductUpdateAction> actionsCopy = new ArrayList<>(updateActions);
     actionsCopy.sort(
         (action1, action2) -> {
-          if (action1 instanceof RemovePrice && !(action2 instanceof RemovePrice)) {
+          if (action1 instanceof ProductRemovePriceAction
+              && !(action2 instanceof ProductRemovePriceAction)) {
             return -1;
           }
 
-          if (!(action1 instanceof RemovePrice) && action2 instanceof RemovePrice) {
+          if (!(action1 instanceof ProductRemovePriceAction)
+              && action2 instanceof ProductRemovePriceAction) {
             return 1;
           }
 
-          if (!(action1 instanceof AddPrice) && action2 instanceof AddPrice) {
+          if (!(action1 instanceof ProductAddPriceAction)
+              && action2 instanceof ProductAddPriceAction) {
             return -1;
           }
 
-          if (action1 instanceof AddPrice && !(action2 instanceof AddPrice)) {
+          if (action1 instanceof ProductAddPriceAction
+              && !(action2 instanceof ProductAddPriceAction)) {
+
             return 1;
           }
 

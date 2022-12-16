@@ -13,9 +13,9 @@ import com.commercetools.api.models.product.Product;
 import com.commercetools.api.models.product.ProductVariantDraft;
 import com.commercetools.api.models.type.CustomFields;
 import com.commercetools.api.models.type.CustomFieldsDraft;
-import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
-import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
+import com.commercetools.sync.sdk2.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.commons.helpers.GenericCustomActionBuilder;
 import com.commercetools.sync.sdk2.commons.models.Custom;
 import com.commercetools.sync.sdk2.commons.models.CustomDraft;
@@ -41,10 +41,10 @@ public final class CustomUpdateActionUtils {
 
   /**
    * This method is a syntactic sugar for the method {@link #buildCustomUpdateActions(Custom,
-   * CustomDraft, GenericCustomActionBuilder, Integer, Function, Function, Function,
-   * BaseSyncOptions)} but this one is only for primary resources (i.e resources which have their
-   * own endpoints for example channels, categories, inventory entries. For more details of the
-   * inner logic and different scenarios, check the Javadoc of the other method.
+   * CustomDraft, GenericCustomActionBuilder, Long, Function, Function, Function, BaseSyncOptions)}
+   * but this one is only for primary resources (i.e resources which have their own endpoints for
+   * example channels, categories, inventory entries. For more details of the inner logic and
+   * different scenarios, check the Javadoc of the other method.
    *
    * @param <T> the type of the old {@link Custom} which has the custom fields.
    * @param <S> the type of the new resource {@link CustomDraft}.
@@ -55,8 +55,8 @@ public final class CustomUpdateActionUtils {
    * @param syncOptions responsible for supplying the sync options to the sync utility method.
    * @return a list that contains all the update actions needed, otherwise an empty list if no
    *     update actions are needed.
-   * @see #buildCustomUpdateActions(Custom, CustomDraft, GenericCustomActionBuilder, Integer,
-   *     Function, Function, Function, BaseSyncOptions) )
+   * @see #buildCustomUpdateActions(Custom, CustomDraft, GenericCustomActionBuilder, Long, Function,
+   *     Function, Function, BaseSyncOptions) )
    */
   @Nonnull
   public static <T extends Custom, S extends CustomDraft>
@@ -87,7 +87,7 @@ public final class CustomUpdateActionUtils {
    * sync options to the sync utility method. For example, custom error callbacks for errors. The
    * {@link TypeService} is injected also for fetching the key of the old resource type from it's
    * cache (see {@link CustomUpdateActionUtils#buildNonNullCustomFieldsUpdateActions(CustomFields,
-   * CustomFieldsDraft, Custom, GenericCustomActionBuilder, Integer, Function, Function, Function,
+   * CustomFieldsDraft, Custom, GenericCustomActionBuilder, Long, Function, Function, Function,
    * BaseSyncOptions)}).
    *
    * <p>An update action will be added to the result list in the following cases:-
@@ -101,7 +101,7 @@ public final class CustomUpdateActionUtils {
    *   <li>If both the resources custom types are the same and the custom fields are both set. The
    *       custom field values of both resources are then calculated. (see {@link
    *       CustomUpdateActionUtils#buildSetCustomFieldsUpdateActions(Map, Map, Custom,
-   *       GenericCustomActionBuilder, Integer, Function)} )})
+   *       GenericCustomActionBuilder, Long, Function)} )})
    *   <li>If the keys of both custom types are different, then a "setCustomType" update action is
    *       added, where the old resource's custom type is set to be as the new one's.
    *   <li>If both resources custom type keys are identical but the custom fields of the new
@@ -146,7 +146,7 @@ public final class CustomUpdateActionUtils {
           @Nonnull final T oldResource,
           @Nonnull final S newResourceDraft,
           @Nonnull final GenericCustomActionBuilder customActionBuilder,
-          @Nullable final Integer variantId,
+          @Nullable final Long variantId,
           @Nonnull final Function<T, String> resourceIdGetter,
           @Nonnull final Function<T, String> resourceTypeIdGetter,
           @Nonnull final Function<T, String> updateIdGetter,
@@ -233,7 +233,7 @@ public final class CustomUpdateActionUtils {
           @Nonnull final T oldResource,
           @Nonnull final S newResourceDraft,
           @Nonnull final GenericCustomActionBuilder customActionBuilder,
-          @Nullable final Integer variantId,
+          @Nullable final Long variantId,
           @Nonnull final Function<T, String> resourceIdGetter,
           @Nonnull final Function<T, String> resourceTypeIdGetter,
           @Nonnull final Function<T, String> updateIdGetter,
@@ -264,7 +264,7 @@ public final class CustomUpdateActionUtils {
    *   <li>If both the resources custom type keys are the same and the custom fields are both set.
    *       The custom field values of both resources are then calculated. (see {@link
    *       CustomUpdateActionUtils#buildSetCustomFieldsUpdateActions(Map, Map, Custom,
-   *       GenericCustomActionBuilder, Integer, Function)})
+   *       GenericCustomActionBuilder, Long, Function)})
    *   <li>If the keys of both custom types are different, then a "setCustomType" update action is
    *       added, where the old resource's custom type is set to be as the new one's.
    *   <li>If both resources custom type keys are identical but the custom fields of the new
@@ -300,7 +300,7 @@ public final class CustomUpdateActionUtils {
       @Nonnull final CustomFieldsDraft newCustomFields,
       @Nonnull final T resource,
       @Nonnull final GenericCustomActionBuilder customActionBuilder,
-      @Nullable final Integer variantId,
+      @Nullable final Long variantId,
       @Nonnull final Function<T, String> resourceIdGetter,
       @Nonnull final Function<T, String> resourceTypeIdGetter,
       @Nonnull final Function<T, String> updateIdGetter,
@@ -402,7 +402,7 @@ public final class CustomUpdateActionUtils {
       @Nonnull final Map<String, Object> newCustomFields,
       @Nonnull final T resource,
       @Nonnull final GenericCustomActionBuilder customActionBuilder,
-      @Nullable final Integer variantId,
+      @Nullable final Long variantId,
       @Nonnull final Function<T, String> updateIdGetter) {
 
     final List<ResourceUpdateAction> customFieldsUpdateActions =
@@ -458,7 +458,7 @@ public final class CustomUpdateActionUtils {
           @Nonnull final Map<String, Object> newCustomFields,
           @Nonnull final T resource,
           @Nonnull final GenericCustomActionBuilder customActionBuilder,
-          @Nullable final Integer variantId,
+          @Nullable final Long variantId,
           @Nonnull final Function<T, String> updateIdGetter) {
 
     return newCustomFields.keySet().stream()
@@ -512,7 +512,7 @@ public final class CustomUpdateActionUtils {
           @Nonnull final Map<String, Object> newCustomFields,
           @Nonnull final T resource,
           @Nonnull final GenericCustomActionBuilder customActionBuilder,
-          @Nullable final Integer variantId,
+          @Nullable final Long variantId,
           @Nonnull final Function<T, String> updateIdGetter) {
 
     return oldCustomFields.keySet().stream()

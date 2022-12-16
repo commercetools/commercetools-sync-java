@@ -2,11 +2,12 @@ package com.commercetools.sync.sdk2.internals.helpers;
 
 import static java.util.Optional.ofNullable;
 
-import com.neovisionaries.i18n.CountryCode;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.Price;
-import io.sphere.sdk.products.PriceDraft;
+import com.commercetools.api.models.channel.ChannelReference;
+import com.commercetools.api.models.channel.ChannelResourceIdentifier;
+import com.commercetools.api.models.common.Price;
+import com.commercetools.api.models.common.PriceDraft;
+import com.commercetools.api.models.customer_group.CustomerGroupReference;
+import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifier;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -21,7 +22,8 @@ import javax.annotation.Nullable;
  */
 public final class PriceCompositeId {
 
-  private final CountryCode countryCode;
+  private final String countryCode;
+
   private final String currencyCode;
   private final String channelId;
   private final String customerGroupId;
@@ -30,7 +32,7 @@ public final class PriceCompositeId {
 
   private PriceCompositeId(
       @Nonnull final String currencyCode,
-      @Nullable final CountryCode countryCode,
+      @Nullable final String countryCode,
       @Nullable final String channelId,
       @Nullable final String customerGroupId,
       @Nullable final ZonedDateTime validFrom,
@@ -64,8 +66,10 @@ public final class PriceCompositeId {
     return new PriceCompositeId(
         priceDraft.getValue().getCurrency().getCurrencyCode(),
         priceDraft.getCountry(),
-        ofNullable(priceDraft.getChannel()).map(ResourceIdentifier::getId).orElse(null),
-        ofNullable(priceDraft.getCustomerGroup()).map(ResourceIdentifier::getId).orElse(null),
+        ofNullable(priceDraft.getChannel()).map(ChannelResourceIdentifier::getId).orElse(null),
+        ofNullable(priceDraft.getCustomerGroup())
+            .map(CustomerGroupResourceIdentifier::getId)
+            .orElse(null),
         priceDraft.getValidFrom(),
         priceDraft.getValidUntil());
   }
@@ -91,13 +95,14 @@ public final class PriceCompositeId {
     return new PriceCompositeId(
         price.getValue().getCurrency().getCurrencyCode(),
         price.getCountry(),
-        ofNullable(price.getChannel()).map(Reference::getId).orElse(null),
-        ofNullable(price.getCustomerGroup()).map(Reference::getId).orElse(null),
+        ofNullable(price.getChannel()).map(ChannelReference::getId).orElse(null),
+        ofNullable(price.getCustomerGroup()).map(CustomerGroupReference::getId).orElse(null),
         price.getValidFrom(),
         price.getValidUntil());
   }
 
-  public CountryCode getCountryCode() {
+  public String getCountryCode() {
+
     return countryCode;
   }
 

@@ -3,12 +3,12 @@ package com.commercetools.sync.sdk2.commons.helpers;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.api.models.common.Reference;
 import com.commercetools.api.models.common.ResourceIdentifier;
 import com.commercetools.api.models.customer.CustomerDraft;
 import com.commercetools.api.models.type.CustomFieldsDraft;
-import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
-import io.sphere.sdk.models.Reference;
+import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -18,7 +18,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public abstract class BaseBatchValidator<
     D, O extends BaseSyncOptions, S extends BaseSyncStatistics> {
-
   private final O syncOptions;
   private final S syncStatistics;
 
@@ -69,8 +68,7 @@ public abstract class BaseBatchValidator<
   }
 
   protected <T> void collectReferencedKeyFromReference(
-      @Nullable final Reference<T> reference,
-      @Nonnull final Consumer<String> keyInReferenceSupplier) {
+      @Nullable final Reference reference, @Nonnull final Consumer<String> keyInReferenceSupplier) {
 
     if (reference != null && !isBlank(reference.getId())) {
       keyInReferenceSupplier.accept(reference.getId());

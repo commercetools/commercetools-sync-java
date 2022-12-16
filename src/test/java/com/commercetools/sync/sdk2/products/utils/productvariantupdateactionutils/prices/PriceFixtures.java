@@ -1,22 +1,29 @@
 package com.commercetools.sync.sdk2.products.utils.productvariantupdateactionutils.prices;
 
-import static com.commercetools.sync.commons.MockUtils.getMockCustomFields;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.GBP;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.byMonth;
-import static com.neovisionaries.i18n.CountryCode.*;
-import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
-import static io.sphere.sdk.models.DefaultCurrencyUnits.USD;
+import static com.commercetools.sync.sdk2.commons.MockUtils.getMockCustomFields;
+import static com.commercetools.sync.sdk2.commons.helpers.DefaultCurrencyUnits.EUR;
+import static com.commercetools.sync.sdk2.commons.helpers.DefaultCurrencyUnits.USD;
+import static com.commercetools.sync.sdk2.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.GBP;
+import static com.commercetools.sync.sdk2.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.byMonth;
+import static com.neovisionaries.i18n.CountryCode.DE;
+import static com.neovisionaries.i18n.CountryCode.FR;
+import static com.neovisionaries.i18n.CountryCode.NE;
+import static com.neovisionaries.i18n.CountryCode.UK;
+import static com.neovisionaries.i18n.CountryCode.US;
 import static java.util.Optional.ofNullable;
 
+import com.commercetools.api.models.channel.ChannelReferenceBuilder;
+import com.commercetools.api.models.common.Price;
+import com.commercetools.api.models.common.PriceBuilder;
+import com.commercetools.api.models.common.TypedMoney;
+import com.commercetools.api.models.common.TypedMoneyBuilder;
+import com.commercetools.api.models.customer_group.CustomerGroupReferenceBuilder;
+import com.commercetools.api.models.type.CustomFields;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.neovisionaries.i18n.CountryCode;
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.customergroups.CustomerGroup;
-import io.sphere.sdk.products.Price;
-import io.sphere.sdk.products.PriceBuilder;
-import io.sphere.sdk.types.CustomFields;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -223,13 +230,27 @@ public final class PriceFixtures {
       @Nullable final String channelId,
       @Nullable final CustomFields customFields) {
 
-    return PriceBuilder.of(Price.of(value, currencyUnits))
+    final TypedMoney typedMoney =
+        TypedMoneyBuilder.of()
+            .centPrecisionBuilder()
+            .centAmount(value.multiply(BigDecimal.valueOf(100)).longValue())
+            .currencyCode(currencyUnits.getCurrencyCode())
+            .build();
+
+    return PriceBuilder.of()
+        .value(typedMoney)
         .id(UUID.randomUUID().toString())
-        .customerGroup(ofNullable(customerGroupId).map(CustomerGroup::referenceOfId).orElse(null))
-        .country(countryCode)
+        .customerGroup(
+            ofNullable(customerGroupId)
+                .map(id -> CustomerGroupReferenceBuilder.of().id(id).build())
+                .orElse(null))
+        .country(Optional.ofNullable(countryCode).map(CountryCode::getName).orElse(null))
         .validFrom(validFrom)
         .validUntil(validUntil)
-        .channel(ofNullable(channelId).map(Channel::referenceOfId).orElse(null))
+        .channel(
+            ofNullable(channelId)
+                .map(id -> ChannelReferenceBuilder.of().id(id).build())
+                .orElse(null))
         .custom(customFields)
         .build();
   }
