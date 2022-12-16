@@ -28,7 +28,7 @@ public class PriceCustomActionBuilder implements GenericCustomActionBuilder {
       @Nullable final Map<String, Object> customFieldsJsonMap) {
 
     FieldContainerBuilder customFields = null;
-    if (customFieldsJsonMap != null && !customFieldsJsonMap.isEmpty()) {
+    if (customFieldsJsonMap != null) {
       customFields = FieldContainerBuilder.of();
       customFieldsJsonMap.forEach(customFields::addValue);
     }
