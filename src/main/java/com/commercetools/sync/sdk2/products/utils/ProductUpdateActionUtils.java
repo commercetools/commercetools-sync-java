@@ -1,11 +1,18 @@
 package com.commercetools.sync.sdk2.products.utils;
 
-import static com.commercetools.sync.commons.utils.CollectionUtils.*;
-import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.*;
-import static com.commercetools.sync.commons.utils.FilterUtils.executeSupplierIfPassesFilter;
-import static com.commercetools.sync.internals.utils.UnorderedCollectionSyncUtils.buildRemoveUpdateActions;
-import static com.commercetools.sync.products.ActionGroup.*;
-import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.*;
+import static com.commercetools.sync.sdk2.commons.utils.CollectionUtils.*;
+import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.areResourceIdentifiersEqual;
+import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActionForReferences;
+import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActions;
+import static com.commercetools.sync.sdk2.commons.utils.FilterUtils.executeSupplierIfPassesFilter;
+import static com.commercetools.sync.sdk2.internals.utils.UnorderedCollectionSyncUtils.buildRemoveUpdateActions;
+import static com.commercetools.sync.sdk2.products.ActionGroup.*;
+import static com.commercetools.sync.sdk2.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions;
+import static com.commercetools.sync.sdk2.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions;
+import static com.commercetools.sync.sdk2.products.utils.ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions;
+import static com.commercetools.sync.sdk2.products.utils.ProductVariantUpdateActionUtils.buildProductVariantPricesUpdateActions;
+import static com.commercetools.sync.sdk2.products.utils.ProductVariantUpdateActionUtils.buildProductVariantSkuUpdateAction;
 import static java.lang.String.format;
 import static java.util.Collections.*;
 import static java.util.Objects.nonNull;
@@ -15,19 +22,43 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-import com.commercetools.sync.commons.BaseSyncOptions;
-import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.products.ActionGroup;
-import com.commercetools.sync.products.AttributeMetaData;
-import com.commercetools.sync.products.ProductSyncOptions;
-import com.commercetools.sync.products.SyncFilter;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.*;
-import io.sphere.sdk.products.*;
-import io.sphere.sdk.products.commands.updateactions.*;
-import io.sphere.sdk.search.SearchKeywords;
-import io.sphere.sdk.states.State;
+import com.commercetools.api.models.category.CategoryReference;
+import com.commercetools.api.models.category.CategoryResourceIdentifier;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.product.CategoryOrderHints;
+import com.commercetools.api.models.product.Product;
+import com.commercetools.api.models.product.ProductAddToCategoryAction;
+import com.commercetools.api.models.product.ProductAddVariantAction;
+import com.commercetools.api.models.product.ProductChangeMasterVariantAction;
+import com.commercetools.api.models.product.ProductChangeNameAction;
+import com.commercetools.api.models.product.ProductChangeSlugAction;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductPublishAction;
+import com.commercetools.api.models.product.ProductRemoveFromCategoryAction;
+import com.commercetools.api.models.product.ProductRemoveVariantAction;
+import com.commercetools.api.models.product.ProductSetAttributeInAllVariantsAction;
+import com.commercetools.api.models.product.ProductSetCategoryOrderHintAction;
+import com.commercetools.api.models.product.ProductSetDescriptionAction;
+import com.commercetools.api.models.product.ProductSetMetaDescriptionAction;
+import com.commercetools.api.models.product.ProductSetMetaKeywordsAction;
+import com.commercetools.api.models.product.ProductSetMetaTitleAction;
+import com.commercetools.api.models.product.ProductSetSearchKeywordsAction;
+import com.commercetools.api.models.product.ProductSetTaxCategoryAction;
+import com.commercetools.api.models.product.ProductTransitionStateAction;
+import com.commercetools.api.models.product.ProductUnpublishAction;
+import com.commercetools.api.models.product.ProductUpdateAction;
+import com.commercetools.api.models.product.ProductVariant;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product.SearchKeywords;
+import com.commercetools.api.models.state.State;
+import com.commercetools.api.models.state.StateResourceIdentifier;
+import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
+import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
+import com.commercetools.sync.sdk2.products.ActionGroup;
+import com.commercetools.sync.sdk2.products.AttributeMetaData;
+import com.commercetools.sync.sdk2.products.ProductSyncOptions;
+import com.commercetools.sync.sdk2.products.SyncFilter;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -42,9 +73,9 @@ public final class ProductUpdateActionUtils {
 
   /**
    * Compares the {@link LocalizedString} names of a {@link ProductDraft} and a {@link
-   * ProductProjection}. It returns an {@link ChangeName} as a result in an {@link Optional}. If
-   * both the {@link ProductProjection} and the {@link ProductDraft} have the same name, then no
-   * update action is needed and hence an empty {@link Optional} is returned.
+   * ProductProjection}. It returns an {@link ProductChangeNameAction} as a result in an {@link
+   * Optional}. If both the {@link ProductProjection} and the {@link ProductDraft} have the same
+   * name, then no update action is needed and hence an empty {@link Optional} is returned.
    *
    * <p>NOTE: Comparison is done against the staged projection of the old product.
    *
@@ -54,18 +85,21 @@ public final class ProductUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<Product>> buildChangeNameUpdateAction(
+  public static Optional<ProductUpdateAction> buildChangeNameUpdateAction(
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     final LocalizedString newName = newProduct.getName();
     final LocalizedString oldName = oldProduct.getName();
-    return buildUpdateAction(oldName, newName, () -> ChangeName.of(newName, true));
+    return buildUpdateAction(
+        oldName,
+        newName,
+        () -> ProductChangeNameAction.builder().name(newName).staged(true).build());
   }
 
   /**
    * Compares the {@link LocalizedString} descriptions of a {@link ProductDraft} and a {@link
-   * ProductProjection}. It returns an {@link SetDescription} as a result in an {@link Optional}. If
-   * both the {@link ProductProjection} and the {@link ProductDraft} have the same description, then
-   * no update action is needed and hence an empty {@link Optional} is returned.
+   * ProductProjection}. It returns an {@link ProductSetDescriptionAction} as a result in an {@link
+   * Optional}. If both the {@link ProductProjection} and the {@link ProductDraft} have the same
+   * description, then no update action is needed and hence an empty {@link Optional} is returned.
    *
    * <p>NOTE: Comparison is done against the staged projection of the old product.
    *
@@ -75,19 +109,22 @@ public final class ProductUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<Product>> buildSetDescriptionUpdateAction(
+  public static Optional<ProductUpdateAction> buildSetDescriptionUpdateAction(
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     final LocalizedString newDescription = newProduct.getDescription();
     final LocalizedString oldDescription = oldProduct.getDescription();
     return buildUpdateAction(
-        oldDescription, newDescription, () -> SetDescription.of(newDescription, true));
+        oldDescription,
+        newDescription,
+        () ->
+            ProductSetDescriptionAction.builder().description(newDescription).staged(true).build());
   }
 
   /**
    * Compares the {@link LocalizedString} slugs of a {@link ProductDraft} and a {@link
-   * ProductProjection}. It returns a {@link ChangeSlug} update action as a result in an {@link
-   * Optional}. If both the {@link ProductProjection} and the {@link ProductDraft} have the same
-   * slug, then no update action is needed and hence an empty {@link Optional} is returned.
+   * ProductProjection}. It returns a {@link ProductChangeSlugAction} update action as a result in
+   * an {@link Optional}. If both the {@link ProductProjection} and the {@link ProductDraft} have
+   * the same slug, then no update action is needed and hence an empty {@link Optional} is returned.
    *
    * <p>NOTE: Comparison is done against the staged projection of the old product.
    *
@@ -97,118 +134,21 @@ public final class ProductUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<Product>> buildChangeSlugUpdateAction(
+  public static Optional<ProductUpdateAction> buildChangeSlugUpdateAction(
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     final LocalizedString newSlug = newProduct.getSlug();
     final LocalizedString oldSlug = oldProduct.getSlug();
-    return buildUpdateAction(oldSlug, newSlug, () -> ChangeSlug.of(newSlug, true));
+    return buildUpdateAction(
+        oldSlug,
+        newSlug,
+        () -> ProductChangeSlugAction.builder().slug(newSlug).staged(true).build());
   }
 
   /**
-   * Compares the {@link Set} of {@link Category} {@link Reference}s of a {@link ProductDraft} and a
-   * {@link ProductProjection}. It returns a {@link List} of {@link AddToCategory} update actions as
-   * a result, if the old product needs to be added to a category to have the same set of categories
-   * as the new product. If both the {@link ProductProjection} and the {@link ProductDraft} have the
-   * same set of categories, then no update actions are needed and hence an empty {@link List} is
-   * returned.
-   *
-   * <p>NOTE: Comparison is done against the staged projection of the old product.
-   *
-   * @param oldProduct the productprojection which should be updated.
-   * @param newProduct the product draft where we get the new slug.
-   * @return A list containing the update actions or an empty list if the category sets are
-   *     identical.
-   */
-  @Nonnull
-  public static List<UpdateAction<Product>> buildAddToCategoryUpdateActions(
-      @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
-    final Set<ResourceIdentifier<Category>> newCategories = newProduct.getCategories();
-    final Set<Reference<Category>> oldCategories = oldProduct.getCategories();
-    return buildUpdateActions(
-        oldCategories,
-        newCategories,
-        () -> {
-          final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-          final List<ResourceIdentifier<Category>> newCategoriesResourceIdentifiers =
-              filterCollection(
-                      newCategories,
-                      newCategoryReference ->
-                          oldCategories.stream()
-                              .map(Reference::toResourceIdentifier)
-                              .noneMatch(
-                                  oldResourceIdentifier ->
-                                      areResourceIdentifiersEqual(
-                                          oldResourceIdentifier, newCategoryReference)))
-                  .collect(toList());
-          newCategoriesResourceIdentifiers.forEach(
-              categoryResourceIdentifier ->
-                  updateActions.add(AddToCategory.of(categoryResourceIdentifier, true)));
-          return updateActions;
-        });
-  }
-
-  /**
-   * Compares the {@link CategoryOrderHints} of a {@link ProductDraft} and a {@link
-   * ProductProjection}. It returns a {@link SetCategoryOrderHint} update action as a result in an
-   * {@link List}. If both the {@link ProductProjection} and the {@link ProductDraft} have the same
-   * categoryOrderHints, then no update actions are needed and hence an empty {@link List} is
-   * returned.
-   *
-   * <p>NOTE: Comparison is done against the staged projection of the old product.
-   *
-   * <p>{@link ProductProjection} which should be updated.
-   *
-   * @param oldProduct the productprojection which should be updated.
-   * @param newProduct the product draft where we get the new categoryOrderHints.
-   * @return A list containing the update actions or an empty list if the categoryOrderHints are
-   *     identical.
-   */
-  @Nonnull
-  public static List<UpdateAction<Product>> buildSetCategoryOrderHintUpdateActions(
-      @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
-    final CategoryOrderHints newCategoryOrderHints = newProduct.getCategoryOrderHints();
-    final CategoryOrderHints oldCategoryOrderHints = oldProduct.getCategoryOrderHints();
-    return buildUpdateActions(
-        oldCategoryOrderHints,
-        newCategoryOrderHints,
-        () -> {
-          final Set<String> newCategoryIds =
-              newProduct.getCategories().stream().map(ResourceIdentifier::getId).collect(toSet());
-
-          final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-
-          final Map<String, String> newMap =
-              nonNull(newCategoryOrderHints) ? newCategoryOrderHints.getAsMap() : emptyMap();
-          final Map<String, String> oldMap =
-              nonNull(oldCategoryOrderHints) ? oldCategoryOrderHints.getAsMap() : emptyMap();
-
-          // remove category hints present in old product if they are absent in draft but only if
-          // product
-          // is or will be assigned to given category
-          oldMap.forEach(
-              (categoryId, value) -> {
-                if (!newMap.containsKey(categoryId) && newCategoryIds.contains(categoryId)) {
-                  updateActions.add(SetCategoryOrderHint.of(categoryId, null, true));
-                }
-              });
-
-          // add category hints present in draft if they are absent or changed in old product
-          newMap.forEach(
-              (key, value) -> {
-                if (!oldMap.containsKey(key) || !Objects.equals(oldMap.get(key), value)) {
-                  updateActions.add(SetCategoryOrderHint.of(key, value, true));
-                }
-              });
-
-          return updateActions;
-        });
-  }
-
-  /**
-   * Compares the {@link Set} of {@link Category} {@link Reference}s of a {@link ProductDraft} and a
-   * {@link ProductProjection}. It returns a {@link List} of {@link RemoveFromCategory} update
-   * actions as a result, if the old product needs to be removed from a category to have the same
-   * set of categories as the new product. If both the {@link ProductProjection} and the {@link
+   * Compares the {@link List} of {@link CategoryReference}s of a {@link ProductDraft} and a {@link
+   * ProductProjection}. It returns a {@link List} of {@link ProductAddToCategoryAction} update
+   * actions as a result, if the old product needs to be added to a category to have the same set of
+   * categories as the new product. If both the {@link ProductProjection} and the {@link
    * ProductDraft} have the same set of categories, then no update actions are needed and hence an
    * empty {@link List} is returned.
    *
@@ -220,15 +160,131 @@ public final class ProductUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static List<UpdateAction<Product>> buildRemoveFromCategoryUpdateActions(
+  public static List<ProductUpdateAction> buildAddToCategoryUpdateActions(
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
-    final Set<ResourceIdentifier<Category>> newCategories = newProduct.getCategories();
-    final Set<Reference<Category>> oldCategories = oldProduct.getCategories();
+    final List<CategoryResourceIdentifier> newCategories = newProduct.getCategories();
+    final List<CategoryReference> oldCategories = oldProduct.getCategories();
     return buildUpdateActions(
         oldCategories,
         newCategories,
         () -> {
-          final List<UpdateAction<Product>> updateActions = new ArrayList<>();
+          final List<ProductUpdateAction> updateActions = new ArrayList<>();
+          final List<CategoryResourceIdentifier> newCategoriesResourceIdentifiers =
+              filterCollection(
+                      newCategories,
+                      newCategoryReference ->
+                          oldCategories.stream()
+                              .noneMatch(
+                                  oldResourceReference ->
+                                      areResourceIdentifiersEqual(
+                                          oldResourceReference, newCategoryReference)))
+                  .collect(toList());
+          newCategoriesResourceIdentifiers.forEach(
+              categoryResourceIdentifier ->
+                  updateActions.add(
+                      ProductAddToCategoryAction.builder()
+                          .category(categoryResourceIdentifier)
+                          .staged(true)
+                          .build()));
+          return updateActions;
+        });
+  }
+
+  /**
+   * Compares the {@link CategoryOrderHints} of a {@link ProductDraft} and a {@link
+   * ProductProjection}. It returns a {@link ProductSetCategoryOrderHintAction} update action as a
+   * result in an {@link List}. If both the {@link ProductProjection} and the {@link ProductDraft}
+   * have the same categoryOrderHints, then no update actions are needed and hence an empty {@link
+   * List} is returned.
+   *
+   * <p>NOTE: Comparison is done against the staged projection of the old product.
+   *
+   * <p>{@link ProductProjection} which should be updated.
+   *
+   * @param oldProduct the productprojection which should be updated.
+   * @param newProduct the product draft where we get the new categoryOrderHints.
+   * @return A list containing the update actions or an empty list if the categoryOrderHints are
+   *     identical.
+   */
+  @Nonnull
+  public static List<ProductUpdateAction> buildSetCategoryOrderHintUpdateActions(
+      @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
+    final CategoryOrderHints newCategoryOrderHints = newProduct.getCategoryOrderHints();
+    final CategoryOrderHints oldCategoryOrderHints = oldProduct.getCategoryOrderHints();
+    return buildUpdateActions(
+        oldCategoryOrderHints,
+        newCategoryOrderHints,
+        () -> {
+          final Set<String> newCategoryIds =
+              newProduct.getCategories().stream()
+                  .map(CategoryResourceIdentifier::getId)
+                  .collect(toSet());
+
+          final List<ProductUpdateAction> updateActions = new ArrayList<>();
+
+          final Map<String, String> newMap =
+              nonNull(newCategoryOrderHints) ? newCategoryOrderHints.values() : emptyMap();
+          final Map<String, String> oldMap =
+              nonNull(oldCategoryOrderHints) ? oldCategoryOrderHints.values() : emptyMap();
+
+          // remove category hints present in old product if they are absent in draft but only if
+          // product
+          // is or will be assigned to given category
+          oldMap.forEach(
+              (categoryId, value) -> {
+                if (!newMap.containsKey(categoryId) && newCategoryIds.contains(categoryId)) {
+                  updateActions.add(
+                      ProductSetCategoryOrderHintAction.builder()
+                          .categoryId(categoryId)
+                          .orderHint(null)
+                          .staged(true)
+                          .build());
+                }
+              });
+
+          // add category hints present in draft if they are absent or changed in old product
+          newMap.forEach(
+              (categoryId, value) -> {
+                if (!oldMap.containsKey(categoryId)
+                    || !Objects.equals(oldMap.get(categoryId), value)) {
+                  updateActions.add(
+                      ProductSetCategoryOrderHintAction.builder()
+                          .orderHint(value)
+                          .categoryId(categoryId)
+                          .staged(true)
+                          .build());
+                }
+              });
+
+          return updateActions;
+        });
+  }
+
+  /**
+   * Compares the {@link List} of {@link CategoryResourceIdentifier} {@link CategoryReference}s of a
+   * {@link ProductDraft} and a {@link ProductProjection}. It returns a {@link List} of {@link
+   * ProductRemoveFromCategoryAction} update actions as a result, if the old product needs to be
+   * removed from a category to have the same set of categories as the new product. If both the
+   * {@link ProductProjection} and the {@link ProductDraft} have the same set of categories, then no
+   * update actions are needed and hence an empty {@link List} is returned.
+   *
+   * <p>NOTE: Comparison is done against the staged projection of the old product.
+   *
+   * @param oldProduct the productprojection which should be updated.
+   * @param newProduct the product draft where we get the new slug.
+   * @return A list containing the update actions or an empty list if the category sets are
+   *     identical.
+   */
+  @Nonnull
+  public static List<ProductUpdateAction> buildRemoveFromCategoryUpdateActions(
+      @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
+    final List<CategoryResourceIdentifier> newCategories = newProduct.getCategories();
+    final List<CategoryReference> oldCategories = oldProduct.getCategories();
+    return buildUpdateActions(
+        oldCategories,
+        newCategories,
+        () -> {
+          final List<ProductUpdateAction> updateActions = new ArrayList<>();
           filterCollection(
                   oldCategories,
                   oldCategoryReference ->
@@ -236,21 +292,26 @@ public final class ProductUpdateActionUtils {
                           .noneMatch(
                               newResourceIdentifier ->
                                   areResourceIdentifiersEqual(
-                                      newResourceIdentifier,
-                                      oldCategoryReference.toResourceIdentifier())))
+                                      oldCategoryReference, newResourceIdentifier)))
               .forEach(
                   categoryReference ->
                       updateActions.add(
-                          RemoveFromCategory.of(categoryReference.toResourceIdentifier(), true)));
+                          ProductRemoveFromCategoryAction.builder()
+                              .category(
+                                  (CategoryResourceIdentifier)
+                                      categoryReference.toResourceIdentifier())
+                              .staged(true)
+                              .build()));
           return updateActions;
         });
   }
 
   /**
    * Compares the {@link SearchKeywords} of a {@link ProductDraft} and a {@link ProductProjection}.
-   * It returns a {@link SetSearchKeywords} update action as a result in an {@link Optional}. If
-   * both the {@link ProductProjection} and the {@link ProductDraft} have the same search keywords,
-   * then no update action is needed and hence an empty {@link Optional} is returned.
+   * It returns a {@link ProductSetSearchKeywordsAction} update action as a result in an {@link
+   * Optional}. If both the {@link ProductProjection} and the {@link ProductDraft} have the same
+   * search keywords, then no update action is needed and hence an empty {@link Optional} is
+   * returned.
    *
    * <p>NOTE: Comparison is done against the staged projection of the old product.
    *
@@ -260,19 +321,25 @@ public final class ProductUpdateActionUtils {
    *     are identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<Product>> buildSetSearchKeywordsUpdateAction(
+  public static Optional<ProductUpdateAction> buildSetSearchKeywordsUpdateAction(
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     final SearchKeywords newSearchKeywords = newProduct.getSearchKeywords();
     final SearchKeywords oldSearchKeywords = oldProduct.getSearchKeywords();
     return buildUpdateAction(
-        oldSearchKeywords, newSearchKeywords, () -> SetSearchKeywords.of(newSearchKeywords, true));
+        oldSearchKeywords,
+        newSearchKeywords,
+        () ->
+            ProductSetSearchKeywordsAction.builder()
+                .searchKeywords(newSearchKeywords)
+                .staged(true)
+                .build());
   }
 
   /**
    * Compares the {@link LocalizedString} meta descriptions of a {@link ProductDraft} and a {@link
-   * Product}. It returns a {@link SetMetaDescription} update action as a result in an {@link
-   * Optional}. If both the {@link ProductProjection} and the {@link ProductDraft} have the same
-   * meta description, then no update action is needed and hence an empty {@link Optional} is
+   * Product}. It returns a {@link ProductSetMetaDescriptionAction} update action as a result in an
+   * {@link Optional}. If both the {@link ProductProjection} and the {@link ProductDraft} have the
+   * same meta description, then no update action is needed and hence an empty {@link Optional} is
    * returned.
    *
    * <p>NOTE: Comparison is done against the staged projection of the old product.
@@ -283,19 +350,23 @@ public final class ProductUpdateActionUtils {
    *     are identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<Product>> buildSetMetaDescriptionUpdateAction(
+  public static Optional<ProductUpdateAction> buildSetMetaDescriptionUpdateAction(
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     final LocalizedString newMetaDescription = newProduct.getMetaDescription();
     final LocalizedString oldMetaDescription = oldProduct.getMetaDescription();
     return buildUpdateAction(
-        oldMetaDescription, newMetaDescription, () -> SetMetaDescription.of(newMetaDescription));
+        oldMetaDescription,
+        newMetaDescription,
+        () ->
+            ProductSetMetaDescriptionAction.builder().metaDescription(newMetaDescription).build());
   }
 
   /**
    * Compares the {@link LocalizedString} meta keywordss of a {@link ProductDraft} and a {@link
-   * Product}. It returns a {@link SetMetaKeywords} update action as a result in an {@link
-   * Optional}. If both the {@link ProductProjection} and the {@link ProductDraft} have the same
-   * meta keywords, then no update action is needed and hence an empty {@link Optional} is returned.
+   * Product}. It returns a {@link ProductSetMetaKeywordsAction} update action as a result in an
+   * {@link Optional}. If both the {@link ProductProjection} and the {@link ProductDraft} have the
+   * same meta keywords, then no update action is needed and hence an empty {@link Optional} is
+   * returned.
    *
    * <p>NOTE: Comparison is done against the staged projection of the old product.
    *
@@ -305,19 +376,21 @@ public final class ProductUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<Product>> buildSetMetaKeywordsUpdateAction(
+  public static Optional<ProductUpdateAction> buildSetMetaKeywordsUpdateAction(
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     final LocalizedString newMetaKeywords = newProduct.getMetaKeywords();
     final LocalizedString oldMetaKeywords = oldProduct.getMetaKeywords();
     return buildUpdateAction(
-        oldMetaKeywords, newMetaKeywords, () -> SetMetaKeywords.of(newMetaKeywords));
+        oldMetaKeywords,
+        newMetaKeywords,
+        () -> ProductSetMetaKeywordsAction.builder().metaKeywords(newMetaKeywords).build());
   }
 
   /**
    * Compares the {@link LocalizedString} meta titles of a {@link ProductDraft} and a {@link
-   * Product}. It returns a {@link SetMetaTitle} update action as a result in an {@link Optional}.
-   * If both the {@link ProductProjection} and the {@link ProductDraft} have the same meta title,
-   * then no update action is needed and hence an empty {@link Optional} is returned.
+   * Product}. It returns a {@link ProductSetMetaTitleAction} update action as a result in an {@link
+   * Optional}. If both the {@link ProductProjection} and the {@link ProductDraft} have the same
+   * meta title, then no update action is needed and hence an empty {@link Optional} is returned.
    *
    * <p>NOTE: Comparison is done against the staged projection of the old product.
    *
@@ -327,11 +400,14 @@ public final class ProductUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<Product>> buildSetMetaTitleUpdateAction(
+  public static Optional<ProductUpdateAction> buildSetMetaTitleUpdateAction(
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     final LocalizedString newMetaTitle = newProduct.getMetaTitle();
     final LocalizedString oldMetaTitle = oldProduct.getMetaTitle();
-    return buildUpdateAction(oldMetaTitle, newMetaTitle, () -> SetMetaTitle.of(newMetaTitle));
+    return buildUpdateAction(
+        oldMetaTitle,
+        newMetaTitle,
+        () -> ProductSetMetaTitleAction.builder().metaTitle(newMetaTitle).build());
   }
 
   /**
@@ -339,11 +415,11 @@ public final class ProductUpdateActionUtils {
    * Product}. It returns a {@link List} of variant related update actions. For example:
    *
    * <ul>
-   *   <li>{@link AddVariant}
-   *   <li>{@link RemoveVariant}
-   *   <li>{@link ChangeMasterVariant}
+   *   <li>{@link ProductAddVariantAction}
+   *   <li>{@link ProductRemoveVariantAction}
+   *   <li>{@link ProductChangeMasterVariantAction}
    *   <li>{@link io.sphere.sdk.products.commands.updateactions.SetAttribute}
-   *   <li>{@link SetAttributeInAllVariants}
+   *   <li>{@link ProductSetAttributeInAllVariantsAction}
    *   <li>{@link io.sphere.sdk.products.commands.updateactions.SetSku}
    *   <li>{@link io.sphere.sdk.products.commands.updateactions.AddExternalImage}
    *   <li>{@link io.sphere.sdk.products.commands.updateactions.RemoveImage}
@@ -370,7 +446,7 @@ public final class ProductUpdateActionUtils {
    * @return A list of product variant-specific update actions.
    */
   @Nonnull
-  public static List<UpdateAction<Product>> buildVariantsUpdateActions(
+  public static List<ProductUpdateAction> buildVariantsUpdateActions(
       @Nonnull final ProductProjection oldProduct,
       @Nonnull final ProductDraft newProduct,
       @Nonnull final ProductSyncOptions syncOptions,
@@ -396,13 +472,14 @@ public final class ProductUpdateActionUtils {
     newAllProductVariants.add(newProduct.getMasterVariant());
 
     // Remove missing variants, but keep master variant (MV can't be removed)
-    final List<UpdateAction<Product>> updateActions =
+    final List<ProductUpdateAction> updateActions =
         buildRemoveUpdateActions(
             oldProductVariantsWithoutMaster,
             newAllProductVariants,
             ProductVariant::getKey,
             ProductVariantDraft::getKey,
-            variant -> RemoveVariant.ofVariantId(variant.getId(), true));
+            variant ->
+                ProductRemoveVariantAction.builder().id(variant.getId()).staged(true).build());
 
     emptyIfNull(newAllProductVariants)
         .forEach(
@@ -416,7 +493,7 @@ public final class ProductUpdateActionUtils {
                 } else {
                   final ProductVariant matchingOldVariant =
                       oldProductVariantsWithMaster.get(newProductVariantKey);
-                  final List<UpdateAction<Product>> updateOrAddVariant =
+                  final List<ProductUpdateAction> updateOrAddVariant =
                       ofNullable(matchingOldVariant)
                           .map(
                               oldVariant ->
@@ -441,10 +518,12 @@ public final class ProductUpdateActionUtils {
     return updateActions;
   }
 
-  private static List<UpdateAction<Product>> getSameForAllUpdateActions(
-      final List<UpdateAction<Product>> updateActions) {
+  private static List<ProductUpdateAction> getSameForAllUpdateActions(
+      final List<ProductUpdateAction> updateActions) {
     return emptyIfNull(updateActions).stream()
-        .filter(productUpdateAction -> productUpdateAction instanceof SetAttributeInAllVariants)
+        .filter(
+            productUpdateAction ->
+                productUpdateAction instanceof ProductSetAttributeInAllVariantsAction)
         .collect(toList());
   }
 
@@ -467,27 +546,27 @@ public final class ProductUpdateActionUtils {
   }
 
   private static boolean hasDuplicateSameForAllAction(
-      final List<UpdateAction<Product>> sameForAllUpdateActions,
-      final UpdateAction<Product> collectedUpdateAction) {
+      final List<ProductUpdateAction> sameForAllUpdateActions,
+      final ProductUpdateAction collectedUpdateAction) {
 
-    return !(collectedUpdateAction instanceof SetAttributeInAllVariants)
+    return !(collectedUpdateAction instanceof ProductSetAttributeInAllVariantsAction)
         || isSameForAllActionNew(sameForAllUpdateActions, collectedUpdateAction);
   }
 
   private static boolean isSameForAllActionNew(
-      final List<UpdateAction<Product>> sameForAllUpdateActions,
-      final UpdateAction<Product> productUpdateAction) {
+      final List<ProductUpdateAction> sameForAllUpdateActions,
+      final ProductUpdateAction productUpdateAction) {
 
     return sameForAllUpdateActions.stream()
         .noneMatch(
             previouslyAddedAction ->
-                previouslyAddedAction instanceof SetAttributeInAllVariants
+                previouslyAddedAction instanceof ProductSetAttributeInAllVariantsAction
                     && previouslyAddedAction.getAction().equals(productUpdateAction.getAction()));
   }
 
   @Nonnull
-  private static List<UpdateAction<Product>> collectAllVariantUpdateActions(
-      @Nonnull final List<UpdateAction<Product>> sameForAllUpdateActions,
+  private static List<ProductUpdateAction> collectAllVariantUpdateActions(
+      @Nonnull final List<ProductUpdateAction> sameForAllUpdateActions,
       @Nonnull final ProductProjection oldProduct,
       @Nonnull final ProductDraft newProduct,
       @Nonnull final ProductVariant oldProductVariant,
@@ -495,7 +574,7 @@ public final class ProductUpdateActionUtils {
       @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
       @Nonnull final ProductSyncOptions syncOptions) {
 
-    final ArrayList<UpdateAction<Product>> updateActions = new ArrayList<>();
+    final ArrayList<ProductUpdateAction> updateActions = new ArrayList<>();
     final SyncFilter syncFilter = syncOptions.getSyncFilter();
 
     updateActions.addAll(
@@ -552,8 +631,8 @@ public final class ProductUpdateActionUtils {
   /**
    * Compares the 'published' field of a {@link ProductDraft} and a {@link ProductProjection} with
    * the new update actions and hasStagedChanges of the old product. Accordingly it returns a {@link
-   * Publish} or {@link Unpublish} update action as a result in an {@link Optional}. Check the
-   * calculation table below for all different combinations named as states.
+   * ProductPublishAction} or {@link ProductUnpublishAction} update action as a result in an {@link
+   * Optional}. Check the calculation table below for all different combinations named as states.
    *
    * <table>
    * <caption>Mapping of product publish/unpublish update action calculation</caption>
@@ -709,22 +788,22 @@ public final class ProductUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<Product>> buildPublishOrUnpublishUpdateAction(
+  public static Optional<ProductUpdateAction> buildPublishOrUnpublishUpdateAction(
       @Nonnull final ProductProjection oldProduct,
       @Nonnull final ProductDraft newProduct,
       final boolean hasNewUpdateActions) {
 
-    final boolean isNewProductPublished = toBoolean(newProduct.isPublish());
-    final boolean isOldProductPublished = toBoolean(oldProduct.isPublished());
+    final boolean isNewProductPublished = toBoolean(newProduct.getPublish());
+    final boolean isOldProductPublished = toBoolean(oldProduct.getPublished());
 
     if (isNewProductPublished) {
-      if (isOldProductPublished && (hasNewUpdateActions || oldProduct.hasStagedChanges())) {
+      if (isOldProductPublished && (hasNewUpdateActions || oldProduct.getHasStagedChanges())) {
         // covers the state 14, state 15 and state 16.
-        return Optional.of(Publish.of());
+        return Optional.of(ProductPublishAction.of());
       }
-      return buildUpdateAction(isOldProductPublished, true, Publish::of);
+      return buildUpdateAction(isOldProductPublished, true, ProductPublishAction::of);
     }
-    return buildUpdateAction(isOldProductPublished, false, Unpublish::of);
+    return buildUpdateAction(isOldProductPublished, false, ProductUnpublishAction::of);
   }
 
   /**
@@ -734,19 +813,19 @@ public final class ProductUpdateActionUtils {
    * <p>If update action is created - it is created of {@link ProductVariantDraft
    * newProduct.getMasterVariant().getSku()}
    *
-   * <p>If old master variant is missing in the new variants list - add {@link RemoveVariant} action
-   * at the end.
+   * <p>If old master variant is missing in the new variants list - add {@link
+   * ProductRemoveVariantAction} action at the end.
    *
    * @param oldProduct old productprojections with variants
    * @param newProduct new product draft with variants <b>with resolved references prices
    *     references</b>
    * @param syncOptions the sync options wrapper which contains options related to the sync process
-   * @return a list of maximum two elements: {@link ChangeMasterVariant} if the keys are different,
-   *     optionally followed by {@link RemoveVariant} if the changed variant does not exist in the
-   *     new variants list.
+   * @return a list of maximum two elements: {@link ProductChangeMasterVariantAction} if the keys
+   *     are different, optionally followed by {@link ProductRemoveVariantAction} if the changed
+   *     variant does not exist in the new variants list.
    */
   @Nonnull
-  public static List<UpdateAction<Product>> buildChangeMasterVariantUpdateAction(
+  public static List<ProductUpdateAction> buildChangeMasterVariantUpdateAction(
       @Nonnull final ProductProjection oldProduct,
       @Nonnull final ProductDraft newProduct,
       @Nonnull final ProductSyncOptions syncOptions) {
@@ -772,8 +851,9 @@ public final class ProductUpdateActionUtils {
             return emptyList();
           }
 
-          final List<UpdateAction<Product>> updateActions = new ArrayList<>(2);
-          updateActions.add(ChangeMasterVariant.ofSku(newSku, true));
+          final List<ProductUpdateAction> updateActions = new ArrayList<>(2);
+          updateActions.add(
+              ProductChangeMasterVariantAction.builder().sku(newSku).staged(true).build());
 
           // verify whether the old master variant should be removed:
           // if the new variant list doesn't contain the old master variant key.
@@ -784,7 +864,10 @@ public final class ProductUpdateActionUtils {
           // because this body is called only if newKey != oldKey
           if (newProduct.getVariants().stream()
               .noneMatch(variant -> Objects.equals(variant.getKey(), oldKey))) {
-            updateActions.add(RemoveVariant.of(oldProduct.getMasterVariant()));
+            updateActions.add(
+                ProductRemoveVariantAction.builder()
+                    .id(oldProduct.getMasterVariant().getId())
+                    .build());
           }
           return updateActions;
         });
@@ -792,8 +875,8 @@ public final class ProductUpdateActionUtils {
 
   /**
    * Compares the {@link io.sphere.sdk.taxcategories.TaxCategory} references of an old {@link
-   * Product} and new {@link ProductDraft}. If they are different - return {@link SetTaxCategory}
-   * update action.
+   * Product} and new {@link ProductDraft}. If they are different - return {@link
+   * ProductSetTaxCategoryAction} update action.
    *
    * <p>If the old value is set, but the new one is empty - the command will unset the tax category.
    *
@@ -802,20 +885,22 @@ public final class ProductUpdateActionUtils {
    * @param oldProduct the productprojection which should be updated.
    * @param newProduct the product draft with new {@link io.sphere.sdk.taxcategories.TaxCategory}
    *     reference.
-   * @return An optional with {@link SetTaxCategory} update action.
+   * @return An optional with {@link ProductUpdateAction} update action.
    */
   @Nonnull
-  public static Optional<SetTaxCategory> buildSetTaxCategoryUpdateAction(
+  public static Optional<ProductUpdateAction> buildSetTaxCategoryUpdateAction(
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     return buildUpdateActionForReferences(
         oldProduct.getTaxCategory(),
         newProduct.getTaxCategory(),
-        () -> SetTaxCategory.of(newProduct.getTaxCategory()));
+        () ->
+            ProductSetTaxCategoryAction.builder().taxCategory(newProduct.getTaxCategory()).build());
   }
 
   /**
    * Compares the {@link State} references of an old {@link ProductProjection} and new {@link
-   * ProductDraft}. If they are different - return {@link TransitionState} update action.
+   * ProductDraft}. If they are different - return {@link ProductTransitionStateAction} update
+   * action.
    *
    * <p>If the old value is set, but the new one is empty - return empty object, because unset
    * transition state is not possible.
@@ -825,34 +910,32 @@ public final class ProductUpdateActionUtils {
    *
    * @param oldProduct the productprojection which should be updated.
    * @param newProduct the product draft with new {@link State} reference.
-   * @return An optional with {@link TransitionState} update action.
+   * @return An optional with {@link ProductTransitionStateAction} update action.
    */
   @Nonnull
-  public static Optional<TransitionState> buildTransitionStateUpdateAction(
+  public static Optional<ProductUpdateAction> buildTransitionStateUpdateAction(
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
+
     return ofNullable(
         newProduct.getState() != null
-                && !Objects.equals(oldProduct.getState(), newProduct.getState())
-            ? TransitionState.of(mapResourceIdentifierToReferencable(newProduct.getState()), true)
+                && !Objects.equals(
+                    Optional.ofNullable(oldProduct.getState())
+                        .map(
+                            stateReference ->
+                                StateResourceIdentifier.builder()
+                                    .id(stateReference.getId())
+                                    .build())
+                        .orElse(null),
+                    newProduct.getState())
+            ? ProductTransitionStateAction.builder().state(newProduct.getState()).build()
             : null);
   }
 
-  @Nonnull // TODO (JVM-SDK), see: SUPPORT-10336 TransitionState needs to be created with a
-  // ResourceIdentifier
-  private static Referenceable<State> mapResourceIdentifierToReferencable(
-      @Nonnull final ResourceIdentifier<State> resourceIdentifier) {
-    return new ResourceImpl<State>(null, null, null, null) {
-      @Override
-      public Reference<State> toReference() {
-        return Reference.of(State.referenceTypeId(), resourceIdentifier.getId());
-      }
-    };
-  }
-
   /**
-   * Factory method to create {@link AddVariant} action from {@link ProductVariantDraft} instance.
+   * Factory method to create {@link ProductAddVariantAction} action from {@link
+   * ProductVariantDraft} instance.
    *
-   * <p>The {@link AddVariant} will include:
+   * <p>The {@link ProductAddVariantAction} will include:
    *
    * <ul>
    *   <li>sku
@@ -864,16 +947,21 @@ public final class ProductUpdateActionUtils {
    * </ul>
    *
    * @param draft {@link ProductVariantDraft} which to add.
-   * @return an {@link AddVariant} update action with properties from {@code draft}.
+   * @return an {@link ProductAddVariantAction} update action with properties from {@code draft}.
    */
   @Nonnull
-  static UpdateAction<Product> buildAddVariantUpdateActionFromDraft(
+  static ProductUpdateAction buildAddVariantUpdateActionFromDraft(
       @Nonnull final ProductVariantDraft draft) {
 
-    return AddVariant.of(draft.getAttributes(), draft.getPrices(), draft.getSku(), true)
-        .withKey(draft.getKey())
-        .withImages(draft.getImages())
-        .withAssetDrafts(draft.getAssets());
+    return ProductAddVariantAction.builder()
+        .prices(draft.getPrices())
+        .sku(draft.getSku())
+        .attributes(draft.getAttributes())
+        .staged(true)
+        .key(draft.getKey())
+        .images(draft.getImages())
+        .assets(draft.getAssets())
+        .build();
   }
 
   /**

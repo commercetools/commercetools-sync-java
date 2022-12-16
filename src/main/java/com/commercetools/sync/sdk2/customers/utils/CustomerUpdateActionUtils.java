@@ -69,7 +69,7 @@ import com.commercetools.api.models.customer_group.CustomerGroup;
 import com.commercetools.api.models.store.StoreKeyReference;
 import com.commercetools.api.models.store.StoreResourceIdentifier;
 import com.commercetools.api.models.store.StoreResourceIdentifierBuilder;
-import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.customers.CustomerSyncOptions;
 import java.util.ArrayList;
 import java.util.Collections;

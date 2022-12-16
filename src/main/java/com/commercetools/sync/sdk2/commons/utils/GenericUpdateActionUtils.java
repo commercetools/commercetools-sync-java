@@ -43,7 +43,7 @@ final class GenericUpdateActionUtils {
       @Nullable final Map<String, Object> customFieldsJsonMap,
       @Nonnull final T resource,
       @Nonnull final GenericCustomActionBuilder customActionBuilder,
-      @Nullable final Integer variantId,
+      @Nullable final Long variantId,
       @Nonnull final Function<T, String> resourceIdGetter,
       @Nonnull final Function<T, String> resourceTypeIdGetter,
       @Nonnull final Function<T, String> updateIdGetter,

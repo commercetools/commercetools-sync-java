@@ -2,17 +2,15 @@ package com.commercetools.sync.sdk2.products;
 
 import static java.util.Optional.ofNullable;
 
-import com.commercetools.sync.commons.BaseSyncOptions;
-import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.utils.QuadConsumer;
-import com.commercetools.sync.commons.utils.TriConsumer;
-import com.commercetools.sync.commons.utils.TriFunction;
-import com.commercetools.sync.products.SyncFilter;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductProjection;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductUpdateAction;
+import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
+import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
+import com.commercetools.sync.sdk2.commons.utils.QuadConsumer;
+import com.commercetools.sync.sdk2.commons.utils.TriConsumer;
+import com.commercetools.sync.sdk2.commons.utils.TriFunction;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -20,19 +18,19 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public final class ProductSyncOptions
-    extends BaseSyncOptions<ProductProjection, ProductDraft, Product> {
+    extends BaseSyncOptions<ProductProjection, ProductDraft, ProductUpdateAction> {
   private final SyncFilter
       syncFilter; // which attributes to calculate update actions to black list or white list
   private final boolean ensurePriceChannels;
 
   ProductSyncOptions(
-      @Nonnull final SphereClient ctpClient,
+      @Nonnull final ProjectApiRoot ctpClient,
       @Nullable
           final QuadConsumer<
                   SyncException,
                   Optional<ProductDraft>,
                   Optional<ProductProjection>,
-                  List<UpdateAction<Product>>>
+                  List<ProductUpdateAction>>
               errorCallBack,
       @Nullable
           final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
@@ -41,10 +39,10 @@ public final class ProductSyncOptions
       @Nullable final SyncFilter syncFilter,
       @Nullable
           final TriFunction<
-                  List<UpdateAction<Product>>,
+                  List<ProductUpdateAction>,
                   ProductDraft,
                   ProductProjection,
-                  List<UpdateAction<Product>>>
+                  List<ProductUpdateAction>>
               beforeUpdateCallback,
       @Nullable final Function<ProductDraft, ProductDraft> beforeCreateCallback,
       final long cacheSize,

@@ -4,7 +4,7 @@ import com.commercetools.api.models.customer.CustomerDraft;
 import com.commercetools.api.models.type.CustomFieldsDraft;
 import com.commercetools.sync.sdk2.commons.models.CustomDraft;
 import com.commercetools.sync.sdk2.commons.utils.CustomUpdateActionUtils;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 
 /**
  * Adapt Customer with {@link CustomDraft} interface to be used on {@link CustomUpdateActionUtils}
