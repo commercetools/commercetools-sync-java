@@ -1,16 +1,15 @@
 package com.commercetools.sync.sdk2.products.helpers;
 
-import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
+import static com.commercetools.api.models.InternalUtils.asSet;
+import static java.lang.String.format;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import com.commercetools.sync.sdk2.commons.helpers.BaseSyncStatistics;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
-import static java.lang.String.format;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class ProductSyncStatistics extends BaseSyncStatistics {
 
