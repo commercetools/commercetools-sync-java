@@ -1,8 +1,7 @@
 package com.commercetools.sync.sdk2.products;
 
-import com.commercetools.api.models.product_type.AttributeDefinition;
 import com.commercetools.api.models.product_type.AttributeConstraintEnum;
-
+import com.commercetools.api.models.product_type.AttributeDefinition;
 import javax.annotation.Nonnull;
 
 /**
