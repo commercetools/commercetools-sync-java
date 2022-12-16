@@ -10,7 +10,7 @@ import com.commercetools.api.models.product.Product;
 import com.commercetools.api.models.product.ProductChangePriceAction;
 import com.commercetools.api.models.product.ProductDraft;
 import com.commercetools.api.models.product.ProductUpdateAction;
-import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.commons.utils.CustomUpdateActionUtils;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.helpers.PriceCustomActionBuilder;

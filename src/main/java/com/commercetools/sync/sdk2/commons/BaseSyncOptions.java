@@ -5,10 +5,10 @@ import static java.util.Optional.ofNullable;
 
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.models.ResourceUpdateAction;
-import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.utils.QuadConsumer;
-import com.commercetools.sync.commons.utils.TriConsumer;
-import com.commercetools.sync.commons.utils.TriFunction;
+import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
+import com.commercetools.sync.sdk2.commons.utils.QuadConsumer;
+import com.commercetools.sync.sdk2.commons.utils.TriConsumer;
+import com.commercetools.sync.sdk2.commons.utils.TriFunction;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
