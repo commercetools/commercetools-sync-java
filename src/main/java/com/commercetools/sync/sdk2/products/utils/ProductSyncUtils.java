@@ -1,7 +1,7 @@
 package com.commercetools.sync.sdk2.products.utils;
 
-import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
-import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
+import static com.commercetools.sync.sdk2.commons.utils.CollectionUtils.emptyIfNull;
+import static com.commercetools.sync.sdk2.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.sdk2.products.utils.ProductUpdateActionUtils.buildActionIfPassesFilter;
 import static com.commercetools.sync.sdk2.products.utils.ProductUpdateActionUtils.buildActionsIfPassesFilter;
 import static com.commercetools.sync.sdk2.products.utils.ProductUpdateActionUtils.buildAddToCategoryUpdateActions;
