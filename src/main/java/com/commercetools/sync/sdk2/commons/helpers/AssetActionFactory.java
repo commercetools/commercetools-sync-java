@@ -3,7 +3,7 @@ package com.commercetools.sync.sdk2.commons.helpers;
 import com.commercetools.api.models.ResourceUpdateAction;
 import com.commercetools.api.models.common.Asset;
 import com.commercetools.api.models.common.AssetDraft;
-import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import java.util.List;
 import javax.annotation.Nonnull;
 
