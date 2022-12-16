@@ -1,7 +1,7 @@
 package com.commercetools.sync.sdk2.products.utils;
 
-import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.sdk2.commons.utils.OptionalUtils.filterEmptyOptionals;
 
 import com.commercetools.api.models.ResourceUpdateAction;
 import com.commercetools.api.models.common.Asset;
