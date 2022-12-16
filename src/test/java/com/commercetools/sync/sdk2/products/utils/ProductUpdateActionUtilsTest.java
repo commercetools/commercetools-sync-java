@@ -1,0 +1,593 @@
+package com.commercetools.sync.sdk2.products.utils;
+
+import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftFromJson;
+import static com.commercetools.sync.products.ProductSyncMockUtils.createProductFromJson;
+import static com.commercetools.sync.sdk2.products.utils.ProductUpdateActionUtils.*;
+import static java.util.Arrays.asList;
+import static java.util.Collections.*;
+import static java.util.stream.Collectors.toList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.api.models.common.AssetDraftBuilder;
+import com.commercetools.api.models.common.AssetSourceBuilder;
+import com.commercetools.api.models.common.Image;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.common.PriceDraft;
+import com.commercetools.api.models.product.Attribute;
+import com.commercetools.api.models.product.ProductAddExternalImageAction;
+import com.commercetools.api.models.product.ProductAddVariantAction;
+import com.commercetools.api.models.product.ProductChangeMasterVariantAction;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductDraftBuilder;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductRemoveImageAction;
+import com.commercetools.api.models.product.ProductRemoveVariantAction;
+import com.commercetools.api.models.product.ProductSetAttributeAction;
+import com.commercetools.api.models.product.ProductSetAttributeInAllVariantsAction;
+import com.commercetools.api.models.product.ProductSetSkuAction;
+import com.commercetools.api.models.product.ProductUpdateAction;
+import com.commercetools.api.models.product.ProductVariant;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.product_type.AttributeConstraintEnum;
+import com.commercetools.api.models.product_type.AttributeDefinitionBuilder;
+import com.commercetools.api.models.product_type.AttributeType;
+import com.commercetools.api.models.product_type.ProductTypeResourceIdentifier;
+import com.commercetools.sync.sdk2.products.AttributeMetaData;
+import com.commercetools.sync.sdk2.products.ProductSyncOptions;
+import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.sdk2.products.SyncFilter;
+import java.util.*;
+import java.util.stream.IntStream;
+import org.junit.jupiter.api.Test;
+
+class ProductUpdateActionUtilsTest {
+
+  private static final String RES_ROOT =
+      "com/commercetools/sync/products/utils/productVariantUpdateActionUtils/";
+  private static final String OLD_PROD_WITH_VARIANTS = RES_ROOT + "productOld.json";
+  private static final String OLD_PROD_WITHOUT_MV_KEY_SKU =
+      RES_ROOT + "productOld_noMasterVariantKeySku.json";
+
+  // this product's variants don't contain old master variant
+  private static final String NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER =
+      RES_ROOT + "productDraftNew_changeRemoveMasterVariant.json";
+
+  // this product's variants contain only attribute update
+  private static final String NEW_PROD_DRAFT_WITH_MATCHING_VARIANTS_WITH_UPDATED_ATTR_VALUES =
+      RES_ROOT + "productDraftNew_matchingVariants.json";
+
+  // this product's variants contain old master variant, but not as master any more
+  private static final String NEW_PROD_DRAFT_WITH_VARIANTS_MOVE_MASTER =
+      RES_ROOT + "productDraftNew_moveMasterVariant.json";
+
+  private static final String NEW_PROD_DRAFT_WITHOUT_MV =
+      RES_ROOT + "productDraftNew_noMasterVariant.json";
+
+  private static final String NEW_PROD_DRAFT_WITHOUT_MV_KEY =
+      RES_ROOT + "productDraftNew_noMasterVariantKey.json";
+
+  private static final String NEW_PROD_DRAFT_WITHOUT_MV_SKU =
+      RES_ROOT + "productDraftNew_noMasterVariantSku.json";
+
+  @Test
+  void buildVariantsUpdateActions_updatesVariants() {
+    // preparation
+    final ProductProjection productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+    final ProductDraft productDraftNew =
+        createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
+
+    final ProductSyncOptions productSyncOptions =
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
+            .syncFilter(SyncFilter.of())
+            .build();
+
+    final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
+    final AttributeMetaData priceInfo =
+        AttributeMetaData.of(
+            AttributeDefinitionBuilder.of()
+                .name("priceInfo")
+                .label((LocalizedString) null)
+                .type((AttributeType) null)
+                .build());
+    attributesMetaData.put("priceInfo", priceInfo);
+
+    final List<ProductUpdateAction> updateActions =
+        buildVariantsUpdateActions(
+            productOld, productDraftNew, productSyncOptions, attributesMetaData);
+
+    // check remove variants are the first in the list, but not the master variant
+    assertThat(updateActions.subList(0, 2))
+        .containsExactlyInAnyOrder(
+            ProductRemoveVariantAction.builder().id(2L).staged(true).build(),
+            ProductRemoveVariantAction.builder().id(3L).staged(true).build());
+
+    // check add actions
+
+    final ProductVariantDraft draftMaster = productDraftNew.getMasterVariant();
+    final ProductVariantDraft draft5 = productDraftNew.getVariants().get(1);
+    final ProductVariantDraft draft6 = productDraftNew.getVariants().get(2);
+    final ProductVariantDraft draft7 = productDraftNew.getVariants().get(3);
+
+    assertThat(updateActions)
+        .contains(
+            ProductAddVariantAction.builder()
+                .of()
+                .attributes(draftMaster.getAttributes())
+                .prices(draftMaster.getPrices())
+                .sku(draftMaster.getSku())
+                .staged(true)
+                .images(draftMaster.getImages())
+                .key(draftMaster.getKey())
+                .build(),
+            ProductAddVariantAction.builder()
+                .of()
+                .attributes(draft5.getAttributes())
+                .prices(draft5.getPrices())
+                .sku(draft5.getSku())
+                .staged(true)
+                .key(draft5.getKey())
+                .images(draft5.getImages())
+                .build(),
+            ProductAddVariantAction.builder()
+                .of()
+                .attributes(draft6.getAttributes())
+                .prices(draft6.getPrices())
+                .sku(draft6.getSku())
+                .staged(true)
+                .key(draft6.getKey())
+                .images(draft6.getImages())
+                .build(),
+            ProductAddVariantAction.builder()
+                .of()
+                .attributes(draft7.getAttributes())
+                .prices(draft7.getPrices())
+                .sku(draft7.getSku())
+                .staged(true)
+                .key(draft7.getKey())
+                .images(draft7.getImages())
+                .assets(draft7.getAssets())
+                .build());
+
+    // variant 4 sku change
+    assertThat(updateActions)
+        .containsOnlyOnce(
+            ProductSetSkuAction.builder()
+                .of()
+                .variantId(4L)
+                .sku("var-44-sku")
+                .staged(true)
+                .build());
+
+    // verify image update of variant 4
+    ProductRemoveImageAction removeImageAction =
+        ProductRemoveImageAction.builder()
+            .variantId(4L)
+            .imageUrl("https://xxx.ggg/4.png")
+            .staged(true)
+            .build();
+    ProductAddExternalImageAction addExternalImageAction =
+        ProductAddExternalImageAction.builder()
+            .variantId(4L)
+            .image(productDraftNew.getVariants().get(0).getImages().get(0))
+            .staged(true)
+            .build();
+
+    assertThat(updateActions).containsOnlyOnce(removeImageAction);
+    assertThat(updateActions).containsOnlyOnce(addExternalImageAction);
+    assertThat(updateActions.indexOf(removeImageAction))
+        .withFailMessage("Remove image action must be executed before add image action")
+        .isLessThan(updateActions.indexOf(addExternalImageAction));
+
+    // verify attributes changes
+    assertThat(updateActions)
+        .contains(
+            ProductSetAttributeAction.builder()
+                .variantId(4L)
+                .name("priceInfo")
+                .value("44/kg")
+                .staged(true)
+                .build());
+
+    // change master variant must be always after variants are added/updated,
+    // because it is set by SKU and we should be sure the master variant is already added and SKUs
+    // are actual.
+    // Also, master variant should be removed because it is missing in
+    // NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER
+    final int size = updateActions.size();
+    assertThat(updateActions.subList(size - 2, size))
+        .containsExactly(
+            ProductChangeMasterVariantAction.builder().sku("var-7-sku").staged(true).build(),
+            ProductRemoveVariantAction.builder()
+                .sku(productOld.getMasterVariant().getSku())
+                .build());
+  }
+
+  @Test
+  void buildVariantsUpdateActions_updateVariantsWithSameForAll() {
+    // preparation
+    final ProductProjection productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+    final ProductDraft productDraftNew =
+        createProductDraftFromJson(NEW_PROD_DRAFT_WITH_MATCHING_VARIANTS_WITH_UPDATED_ATTR_VALUES);
+
+    final ProductSyncOptions productSyncOptions =
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
+            .syncFilter(SyncFilter.of())
+            .build();
+
+    final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
+    final AttributeMetaData priceInfo =
+        AttributeMetaData.of(
+            AttributeDefinitionBuilder.of()
+                .name("priceInfo")
+                .label((LocalizedString) null)
+                .type((AttributeType) null)
+                .attributeConstraint(AttributeConstraintEnum.SAME_FOR_ALL)
+                .build());
+    final AttributeMetaData size =
+        AttributeMetaData.of(
+            AttributeDefinitionBuilder.of()
+                .name("size")
+                .label((LocalizedString) null)
+                .type((AttributeType) null)
+                .build());
+    attributesMetaData.put("priceInfo", priceInfo);
+    attributesMetaData.put("size", size);
+
+    final List<ProductUpdateAction> updateActions =
+        buildVariantsUpdateActions(
+            productOld, productDraftNew, productSyncOptions, attributesMetaData);
+
+    // check that we only have one generated action for all the variants and no duplicates
+    assertThat(updateActions.size()).isEqualTo(3);
+    assertThat(updateActions)
+        .containsOnlyOnce(
+            ProductSetAttributeInAllVariantsAction.builder()
+                .name("priceInfo")
+                .value("74,90/kg")
+                .staged(true)
+                .build());
+    // Other update actions can be duplicated per variant
+    assertThat(updateActions)
+        .containsOnlyOnce(
+            ProductSetAttributeAction.builder()
+                .variantId(2L)
+                .name("size")
+                .value("ca. 1 x 1200 g")
+                .staged(true)
+                .build());
+    assertThat(updateActions)
+        .containsOnlyOnce(
+            ProductSetAttributeAction.builder()
+                .variantId(3L)
+                .name("size")
+                .value("ca. 1 x 1200 g")
+                .staged(true)
+                .build());
+  }
+
+  @Test
+  void buildVariantsUpdateActions_doesNotRemoveMaster() {
+    final ProductProjection productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+    final ProductDraft productDraftNew =
+        createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_MOVE_MASTER);
+
+    final ProductSyncOptions productSyncOptions =
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
+            .syncFilter(SyncFilter.of())
+            .build();
+
+    final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
+
+    final AttributeMetaData priceInfo =
+        AttributeMetaData.of(
+            AttributeDefinitionBuilder.of()
+                .name("priceInfo")
+                .label((LocalizedString) null)
+                .type((AttributeType) null)
+                .build());
+    attributesMetaData.put("priceInfo", priceInfo);
+
+    final List<ProductUpdateAction> updateActions =
+        buildVariantsUpdateActions(
+            productOld, productDraftNew, productSyncOptions, attributesMetaData);
+
+    // check remove variants are the first in the list, but not the master variant
+    assertThat(updateActions.subList(0, 3))
+        .containsExactlyInAnyOrder(
+            ProductRemoveVariantAction.builder().id(2L).staged(true).build(),
+            ProductRemoveVariantAction.builder().id(3L).staged(true).build(),
+            ProductRemoveVariantAction.builder().id(4L).staged(true).build());
+
+    // change master variant must be always after variants are added/updated,
+    // because it is set by SKU and we should be sure the master variant is already added and SKUs
+    // are actual.
+    assertThat(updateActions)
+        .endsWith(ProductChangeMasterVariantAction.builder().sku("var-7-sku").staged(true).build());
+
+    // Old master variant should NOT be removed because it exists in
+    // NEW_PROD_DRAFT_WITH_VARIANTS_MOVE_MASTER
+    final ProductVariant oldMasterVariant = productOld.getMasterVariant();
+    assertThat(updateActions)
+        .filteredOn(
+            action -> {
+              // verify old master variant is not removed
+              if (action instanceof ProductChangeMasterVariantAction) {
+                ProductRemoveVariantAction removeVariantAction =
+                    (ProductRemoveVariantAction) action;
+                return Objects.equals(oldMasterVariant.getId(), removeVariantAction.getId())
+                    || Objects.equals(oldMasterVariant.getSku(), removeVariantAction.getSku());
+              }
+              return false;
+            })
+        .isEmpty();
+  }
+
+  @Test
+  void buildVariantsUpdateActions_withEmptyOldMasterVariantKey() {
+    assertMissingMasterVariantKey(
+        OLD_PROD_WITHOUT_MV_KEY_SKU,
+        NEW_PROD_DRAFT_WITH_VARIANTS_MOVE_MASTER,
+        BLANK_OLD_MASTER_VARIANT_KEY);
+  }
+
+  @Test
+  void
+      buildVariantsUpdateActions_withEmptyNewMasterVariantOrKey_ShouldNotBuildActionAndTriggerCallback() {
+    assertMissingMasterVariantKey(
+        OLD_PROD_WITH_VARIANTS, NEW_PROD_DRAFT_WITHOUT_MV, BLANK_NEW_MASTER_VARIANT_KEY);
+    assertMissingMasterVariantKey(
+        OLD_PROD_WITH_VARIANTS, NEW_PROD_DRAFT_WITHOUT_MV_KEY, BLANK_NEW_MASTER_VARIANT_KEY);
+  }
+
+  @Test
+  void
+      buildVariantsUpdateActions_withEmptyBothMasterVariantKey_ShouldNotBuildActionAndTriggerCallback() {
+    assertMissingMasterVariantKey(
+        OLD_PROD_WITHOUT_MV_KEY_SKU,
+        NEW_PROD_DRAFT_WITHOUT_MV_KEY,
+        BLANK_OLD_MASTER_VARIANT_KEY,
+        BLANK_NEW_MASTER_VARIANT_KEY);
+  }
+
+  private void assertMissingMasterVariantKey(
+      final String oldProduct, final String newProduct, final String... errorMessages) {
+    final ProductProjection productOld = createProductFromJson(oldProduct);
+    final ProductDraft productDraftNew = createProductDraftFromJson(newProduct);
+
+    final List<String> errorsCatcher = new ArrayList<>();
+    final ProductSyncOptions syncOptions =
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
+            .errorCallback(
+                (exception, oldResource, newResource, updateActions) ->
+                    errorsCatcher.add(exception.getMessage()))
+            .build();
+
+    final List<ProductUpdateAction> updateActions =
+        buildVariantsUpdateActions(productOld, productDraftNew, syncOptions, emptyMap());
+    assertThat(updateActions).isEmpty();
+    assertThat(errorsCatcher).hasSize(errorMessages.length);
+
+    // verify all expected error messages
+    for (int i = 0; i < errorMessages.length; i++) {
+      assertThat(errorsCatcher.get(i))
+          .containsIgnoringCase("failed")
+          .contains(productOld.getKey())
+          .containsIgnoringCase(errorMessages[i]);
+    }
+  }
+
+  @Test
+  void buildChangeMasterVariantUpdateAction_changesMasterVariant() {
+    final ProductProjection productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+    final ProductDraft productDraftNew =
+        createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
+
+    final List<ProductUpdateAction> changeMasterVariant =
+        buildChangeMasterVariantUpdateAction(
+            productOld,
+            productDraftNew,
+            ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build());
+    assertThat(changeMasterVariant).hasSize(2);
+    assertThat(changeMasterVariant.get(0))
+        .isEqualTo(
+            ProductChangeMasterVariantAction.builder()
+                .sku(productDraftNew.getMasterVariant().getSku())
+                .staged(true)
+                .build());
+    assertThat(changeMasterVariant.get(1))
+        .isEqualTo(
+            ProductRemoveVariantAction.builder()
+                .sku(productOld.getMasterVariant().getSku())
+                .build());
+  }
+
+  @Test
+  void buildVariantsUpdateActions_withEmptyKey_ShouldNotBuildActionAndTriggerCallback() {
+    assertChangeMasterVariantEmptyErrorCatcher(
+        NEW_PROD_DRAFT_WITHOUT_MV_KEY, BLANK_NEW_MASTER_VARIANT_KEY);
+  }
+
+  @Test
+  void buildVariantsUpdateActions_withEmptySku_ShouldNotBuildActionAndTriggerCallback() {
+    assertChangeMasterVariantEmptyErrorCatcher(
+        NEW_PROD_DRAFT_WITHOUT_MV_SKU, BLANK_NEW_MASTER_VARIANT_SKU);
+  }
+
+  private void assertChangeMasterVariantEmptyErrorCatcher(
+      final String productMockName, final String expectedErrorReason) {
+    final ProductProjection productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+    final ProductDraft productDraftNew_withoutKey = createProductDraftFromJson(productMockName);
+
+    final List<String> errorsCatcher = new ArrayList<>();
+    final ProductSyncOptions syncOptions =
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
+            .errorCallback(
+                (exception, oldResource, newResource, updateActions) ->
+                    errorsCatcher.add(exception.getMessage()))
+            .build();
+
+    final List<ProductUpdateAction> changeMasterVariant =
+        buildChangeMasterVariantUpdateAction(productOld, productDraftNew_withoutKey, syncOptions);
+    assertThat(changeMasterVariant).hasSize(0);
+    assertThat(errorsCatcher).hasSize(1);
+    assertThat(errorsCatcher.get(0))
+        .containsIgnoringCase("failed")
+        .contains(productOld.getKey())
+        .containsIgnoringCase(expectedErrorReason);
+  }
+
+  @Test
+  void
+      buildAddVariantUpdateActionFromDraft_WithAttribsPricesAndImages_ShouldBuildCorrectAddVariantAction() {
+    // preparation
+    final List<Attribute> attributeList = emptyList();
+    final List<PriceDraft> priceList = emptyList();
+    final List<Image> imageList = emptyList();
+    final ProductVariantDraft draft =
+        ProductVariantDraftBuilder.of()
+            .attributes(attributeList)
+            .prices(priceList)
+            .sku("testSKU")
+            .key("testKey")
+            .images(imageList)
+            .build();
+
+    // test
+    final ProductUpdateAction action = buildAddVariantUpdateActionFromDraft(draft);
+
+    // assertion
+    assertThat(action).isInstanceOf(ProductAddVariantAction.class);
+    final ProductAddVariantAction addVariant = (ProductAddVariantAction) action;
+    assertThat(addVariant.getAttributes()).isSameAs(attributeList);
+    assertThat(addVariant.getPrices()).isSameAs(priceList);
+    assertThat(addVariant.getSku()).isEqualTo("testSKU");
+    assertThat(addVariant.getKey()).isEqualTo("testKey");
+    assertThat(addVariant.getImages()).isSameAs(imageList);
+  }
+
+  @Test
+  void buildAddVariantUpdateActionFromDraft_WithNoAssets_BuildsAddVariantActionWithoutAssets() {
+    // preparation
+    final ProductVariantDraft productVariantDraft =
+        ProductVariantDraftBuilder.of().sku("foo").build();
+
+    // test
+    final ProductUpdateAction action = buildAddVariantUpdateActionFromDraft(productVariantDraft);
+
+    // assertion
+    assertThat(action)
+        .isEqualTo(
+            ProductAddVariantAction.builder()
+                .attributes((Attribute) null)
+                .prices((PriceDraft) null)
+                .sku("foo")
+                .staged(true)
+                .build());
+  }
+
+  @Test
+  void buildAddVariantUpdateActionFromDraft_WithMultipleAssets_BuildsAddVariantActionWithAssets() {
+    // preparation
+    final List<AssetDraft> assetDrafts =
+        IntStream.range(1, 4)
+            .mapToObj(
+                i ->
+                    AssetDraftBuilder.of()
+                        .sources(AssetSourceBuilder.of().uri("foo").build())
+                        .name(LocalizedString.of(Locale.ENGLISH, "assetName"))
+                        .key(i + "")
+                        .build())
+            .collect(toList());
+
+    final ProductVariantDraft productVariantDraft =
+        ProductVariantDraftBuilder.of().sku("foo").assets(assetDrafts).build();
+
+    // test
+    final ProductUpdateAction action = buildAddVariantUpdateActionFromDraft(productVariantDraft);
+
+    // assertion
+    assertThat(action)
+        .isEqualTo(
+            ProductAddVariantAction.builder()
+                .attributes((Attribute) null)
+                .prices((PriceDraft) null)
+                .sku("foo")
+                .assets(assetDrafts)
+                .staged(true)
+                .build());
+  }
+
+  @Test
+  void getAllVariants_WithNoVariants_ShouldReturnListWithNullMasterVariant() {
+    final ProductDraft productDraft =
+        ProductDraftBuilder.of()
+            .productType(mock(ProductTypeResourceIdentifier.class))
+            .name(LocalizedString.of(Locale.ENGLISH, "name"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "slug"))
+            .variants(emptyList())
+            .build();
+
+    final List<ProductVariantDraft> allVariants = getAllVariants(productDraft);
+
+    assertThat(allVariants).hasSize(1).containsOnlyNulls();
+  }
+
+  @Test
+  void getAllVariants_WithOnlyMasterVariant_ShouldReturnListWithMasterVariant() {
+    final ProductVariantDraft masterVariant = ProductVariantDraftBuilder.of().build();
+
+    final ProductDraft productDraft =
+        ProductDraftBuilder.of()
+            .productType(mock(ProductTypeResourceIdentifier.class))
+            .name(LocalizedString.of(Locale.ENGLISH, "name"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "slug"))
+            .variants(masterVariant)
+            .build();
+
+    final List<ProductVariantDraft> allVariants = getAllVariants(productDraft);
+
+    assertThat(allVariants).containsExactly(masterVariant);
+  }
+
+  @Test
+  void getAllVariants_WithOnlyVariants_ShouldReturnListWithVariants() {
+    final ProductVariantDraft variant1 = ProductVariantDraftBuilder.of().build();
+    final ProductVariantDraft variant2 = ProductVariantDraftBuilder.of().build();
+    final List<ProductVariantDraft> variants = asList(variant1, variant2);
+
+    final ProductDraft productDraft =
+        ProductDraftBuilder.of()
+            .productType(mock(ProductTypeResourceIdentifier.class))
+            .name(LocalizedString.of(Locale.ENGLISH, "name"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "slug"))
+            .variants(variants)
+            .build();
+
+    final List<ProductVariantDraft> allVariants = getAllVariants(productDraft);
+
+    assertThat(allVariants).containsExactlyElementsOf(variants);
+  }
+
+  @Test
+  void getAllVariants_WithNullInVariants_ShouldReturnListWithVariants() {
+    final ProductVariantDraft variant1 = ProductVariantDraftBuilder.of().build();
+    final ProductVariantDraft variant2 = ProductVariantDraftBuilder.of().build();
+    final List<ProductVariantDraft> variants = asList(variant1, variant2, null);
+
+    final ProductDraft productDraft =
+        ProductDraftBuilder.of()
+            .productType(mock(ProductTypeResourceIdentifier.class))
+            .name(LocalizedString.of(Locale.ENGLISH, "name"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "slug"))
+            .variants(variants)
+            .build();
+
+    final List<ProductVariantDraft> allVariants = getAllVariants(productDraft);
+
+    assertThat(allVariants).containsExactlyElementsOf(variants);
+  }
+}
