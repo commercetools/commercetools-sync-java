@@ -1,10 +1,10 @@
 package com.commercetools.sync.sdk2.services.impl;
 
-import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.products.AttributeMetaData;
+import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import com.commercetools.sync.services.ProductTypeService;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.producttypes.ProductType;

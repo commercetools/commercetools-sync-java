@@ -1,10 +1,8 @@
 package com.commercetools.sync.sdk2.services.impl;
 
-import com.commercetools.sync.commons.BaseSyncOptions;
-import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
-import com.commercetools.sync.commons.models.GraphQlQueryResources;
+import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
+import com.commercetools.sync.sdk2.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.services.ChannelService;
-import com.commercetools.sync.services.impl.BaseServiceWithKey;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelDraft;
 import io.sphere.sdk.channels.ChannelDraftBuilder;

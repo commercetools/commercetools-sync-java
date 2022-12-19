@@ -1,7 +1,7 @@
 package com.commercetools.sync.sdk2.services.impl;
 
-import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
+import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.DraftBasedCreateCommand;
 import io.sphere.sdk.models.Resource;
@@ -42,7 +42,7 @@ abstract class BaseServiceWithKey<
         Q extends MetaModelQueryDsl<UQ, Q, M, E>,
         M,
         E>
-    extends com.commercetools.sync.services.impl.BaseService<T, U, UQ, S, Q, M, E> {
+    extends BaseService<S> {
 
   BaseServiceWithKey(@Nonnull final S syncOptions) {
     super(syncOptions);
