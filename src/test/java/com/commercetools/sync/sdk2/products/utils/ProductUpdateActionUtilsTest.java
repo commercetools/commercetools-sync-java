@@ -1,7 +1,7 @@
 package com.commercetools.sync.sdk2.products.utils;
 
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftFromJson;
-import static com.commercetools.sync.products.ProductSyncMockUtils.createProductFromJson;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createProductFromJson;
 import static com.commercetools.sync.sdk2.products.utils.ProductUpdateActionUtils.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
