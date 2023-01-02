@@ -159,6 +159,7 @@ public final class ShoppingListReferenceResolutionUtils {
   }
 
   @Nullable
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   private static List<LineItemDraft> mapToLineItemDrafts(
       @Nullable final List<LineItem> lineItems,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
@@ -190,6 +191,7 @@ public final class ShoppingListReferenceResolutionUtils {
   }
 
   @Nullable
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   private static List<TextLineItemDraft> mapToTextLineItemDrafts(
       @Nullable final List<TextLineItem> textLineItems,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
