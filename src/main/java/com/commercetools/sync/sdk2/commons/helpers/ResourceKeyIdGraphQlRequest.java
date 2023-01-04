@@ -1,21 +1,20 @@
 package com.commercetools.sync.sdk2.commons.helpers;
 
+import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.joining;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import com.commercetools.sync.commons.helpers.GraphQlBaseRequestImpl;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.http.HttpResponse;
-import org.apache.commons.text.StringEscapeUtils;
-
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Set;
-
-import static java.lang.String.format;
-import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.joining;
-import static org.apache.commons.lang3.StringUtils.isBlank;
+import org.apache.commons.text.StringEscapeUtils;
 
 /**
  * A SphereRequest implementation to allow {@link SphereClient} to execute graphQL queries on CTP.

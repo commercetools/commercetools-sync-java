@@ -1,5 +1,7 @@
 package com.commercetools.sync.sdk2.commons.helpers;
 
+import static java.lang.String.format;
+
 import com.commercetools.sync.commons.models.GraphQlBaseRequest;
 import com.commercetools.sync.commons.models.GraphQlBaseResource;
 import com.commercetools.sync.commons.models.GraphQlBaseResult;
@@ -8,11 +10,8 @@ import io.sphere.sdk.client.HttpRequestIntent;
 import io.sphere.sdk.http.HttpMethod;
 import io.sphere.sdk.http.HttpResponse;
 import io.sphere.sdk.json.SphereJsonUtils;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-import static java.lang.String.format;
 
 public abstract class GraphQlBaseRequestImpl<
         T extends GraphQlBaseResult<? extends GraphQlBaseResource>>

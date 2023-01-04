@@ -1,73 +1,134 @@
 package com.commercetools.sync.sdk2.services.impl;
 
-import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
-import com.commercetools.sync.commons.models.GraphQlQueryResources;
-import com.commercetools.sync.commons.utils.CtpQueryUtils;
-import com.commercetools.sync.products.AttributeMetaData;
-import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
-import com.commercetools.sync.services.ProductTypeService;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
-import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
-import io.sphere.sdk.producttypes.commands.ProductTypeUpdateCommand;
-import io.sphere.sdk.producttypes.expansion.ProductTypeExpansionModel;
-import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
-import io.sphere.sdk.producttypes.queries.ProductTypeQueryBuilder;
-import io.sphere.sdk.producttypes.queries.ProductTypeQueryModel;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import com.commercetools.api.client.ByProjectKeyProductTypesGet;
+import com.commercetools.api.client.QueryUtils;
+import com.commercetools.api.models.graph_ql.GraphQLRequest;
+import com.commercetools.api.models.graph_ql.GraphQLRequestBuilder;
+import com.commercetools.api.models.graph_ql.GraphQLVariablesMapBuilder;
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.product_type.ProductTypeDraft;
+import com.commercetools.api.models.product_type.ProductTypePagedQueryResponse;
+import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
+import com.commercetools.api.models.product_type.ProductTypeUpdateBuilder;
+import com.commercetools.sync.commons.utils.ChunkUtils;
+import com.commercetools.sync.products.AttributeMetaData;
+import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
+import com.commercetools.sync.sdk2.producttypes.ProductTypeSyncOptions;
+import com.commercetools.sync.sdk2.services.ProductTypeService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.ApiMethod;
+import io.vrap.rmf.base.client.error.NotFoundException;
+import io.vrap.rmf.base.client.utils.json.JsonUtils;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.apache.commons.text.StringEscapeUtils;
 
-import static java.util.Collections.singleton;
-
-public final class ProductTypeServiceImpl
-    extends BaseServiceWithKey<
-                ProductTypeDraft,
-                ProductType,
-                ProductType,
-                BaseSyncOptions,
-                ProductTypeQuery,
-                ProductTypeQueryModel,
-                ProductTypeExpansionModel<ProductType>>
+public final class ProductTypeServiceImpl extends BaseService<ProductTypeSyncOptions>
     implements ProductTypeService {
 
   private final Map<String, Map<String, AttributeMetaData>> productsAttributesMetaData =
       new ConcurrentHashMap<>();
 
-  public ProductTypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
+  public ProductTypeServiceImpl(@Nonnull final ProductTypeSyncOptions syncOptions) {
     super(syncOptions);
   }
 
   @Nonnull
-  @Override
-  public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> keys) {
+  public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull Set<String> keysToCache) {
+    final Set<String> keysNotCached = getKeysNotCached(keysToCache);
 
-    return cacheKeysToIds(
-        keys,
-        keysNotCached ->
-            new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.PRODUCT_TYPES));
+    if (keysNotCached.isEmpty()) {
+      return CompletableFuture.completedFuture(keyToIdCache.asMap());
+    }
+
+    final List<List<String>> chunkedKeys = ChunkUtils.chunk(keysNotCached, CHUNK_SIZE);
+
+    String query =
+        "query fetchIdKeyPairs($where: String, $limit: Int) {\n"
+            + "  productTypes(limit: $limit, where: $where) {\n"
+            + "    results {\n"
+            + "      id\n"
+            + "      key\n"
+            + "    }\n"
+            + "  }\n"
+            + "}";
+
+    final List<GraphQLRequest> graphQLRequests =
+        chunkedKeys.stream()
+            .map(
+                keys ->
+                    keys.stream()
+                        .filter(key -> !isBlank(key))
+                        .map(StringEscapeUtils::escapeJava)
+                        .map(s -> "\"" + s + "\"")
+                        .collect(Collectors.joining(", ")))
+            .map(commaSeparatedKeys -> format("key in (%s)", commaSeparatedKeys))
+            .map(
+                whereQuery ->
+                    GraphQLVariablesMapBuilder.of()
+                        .addValue("where", whereQuery)
+                        .addValue("limit", CHUNK_SIZE)
+                        .build())
+            .map(variables -> GraphQLRequestBuilder.of().query(query).variables(variables).build())
+            .collect(Collectors.toList());
+
+    return collectionOfFuturesToFutureOfCollection(
+            graphQLRequests.stream()
+                .map(
+                    graphQLRequest ->
+                        syncOptions.getCtpClient().graphql().post(graphQLRequest).execute())
+                .collect(Collectors.toList()),
+            Collectors.toList())
+        .thenApply(
+            graphQlResults -> {
+              graphQlResults.stream()
+                  .map(r -> r.getBody().getData())
+                  // todo: set limit to -1, the payload will have errors object but what to do with
+                  // it ?
+                  //                  .filter(Objects::nonNull)
+                  .forEach(
+                      data -> {
+                        ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
+                        final JsonNode jsonNode = objectMapper.convertValue(data, JsonNode.class);
+                        final Iterator<JsonNode> elements =
+                            jsonNode.get("productTypes").get("results").elements();
+                        while (elements.hasNext()) {
+                          JsonNode idAndKey = elements.next();
+                          keyToIdCache.put(
+                              idAndKey.get("key").asText(), idAndKey.get("id").asText());
+                        }
+                      });
+              return keyToIdCache.asMap();
+            });
   }
 
   @Nonnull
   @Override
   public CompletionStage<Optional<String>> fetchCachedProductTypeId(@Nonnull final String key) {
+    ByProjectKeyProductTypesGet query =
+        syncOptions
+            .getCtpClient()
+            .productTypes()
+            .get()
+            .withWhere("key in :keys")
+            .withPredicateVar("keys", Collections.singletonList(key));
 
-    return fetchCachedResourceId(
-        key,
-        () ->
-            ProductTypeQueryBuilder.of()
-                .plusPredicates(queryModel -> queryModel.key().isIn(singleton(key)))
-                .build());
+    return fetchCachedResourceId(key, query);
   }
 
   @Nonnull
@@ -94,7 +155,6 @@ public final class ProductTypeServiceImpl
   @Nonnull
   private CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchAndCacheProductMetaData(
       @Nonnull final String productTypeId) {
-
     final Consumer<List<ProductType>> productTypePageConsumer =
         productTypePage ->
             productTypePage.forEach(
@@ -102,49 +162,193 @@ public final class ProductTypeServiceImpl
                   final String id = type.getId();
                   productsAttributesMetaData.put(id, getAttributeMetaDataMap(type));
                 });
+    ByProjectKeyProductTypesGet byProjectKeyProductTypesGet =
+        this.syncOptions.getCtpClient().productTypes().get();
 
-    return CtpQueryUtils.queryAll(
-            syncOptions.getCtpClient(), ProductTypeQuery.of(), productTypePageConsumer)
+    return QueryUtils.queryAll(byProjectKeyProductTypesGet, productTypePageConsumer)
         .thenApply(result -> Optional.ofNullable(productsAttributesMetaData.get(productTypeId)));
   }
 
   @Nonnull
   @Override
   public CompletionStage<Set<ProductType>> fetchMatchingProductTypesByKeys(
-      @Nonnull final Set<String> keys) {
-    return fetchMatchingResources(
-        keys,
-        (keysNotCached) ->
-            ProductTypeQueryBuilder.of()
-                .plusPredicates(queryModel -> queryModel.key().isIn(keysNotCached))
-                .build());
+      @Nonnull final Set<String> productTypeKeys) {
+    if (productTypeKeys.isEmpty()) {
+      return CompletableFuture.completedFuture(Collections.emptySet());
+    }
+
+    final List<List<String>> chunkedKeys = ChunkUtils.chunk(productTypeKeys, CHUNK_SIZE);
+
+    final List<ByProjectKeyProductTypesGet> fetchByKeysRequests =
+        chunkedKeys.stream()
+            .map(
+                keys ->
+                    keys.stream()
+                        .filter(key -> !isBlank(key))
+                        .map(StringEscapeUtils::escapeJava)
+                        .map(s -> "\"" + s + "\"")
+                        .collect(Collectors.joining(", ")))
+            .map(commaSeparatedKeys -> format("key in (%s)", commaSeparatedKeys))
+            .map(
+                whereQuery ->
+                    syncOptions
+                        .getCtpClient()
+                        .productTypes()
+                        .get()
+                        .addWhere(whereQuery)
+                        .withLimit(CHUNK_SIZE)
+                        .withWithTotal(false))
+            .collect(toList());
+
+    // todo: what happens on error ?
+    return collectionOfFuturesToFutureOfCollection(
+            fetchByKeysRequests.stream().map(ApiMethod::execute).collect(Collectors.toList()),
+            Collectors.toList())
+        .thenApply(
+            pagedProductTypeResponses ->
+                pagedProductTypeResponses.stream()
+                    .map(ApiHttpResponse::getBody)
+                    .map(ProductTypePagedQueryResponse::getResults)
+                    .flatMap(Collection::stream)
+                    .peek(
+                        productType -> keyToIdCache.put(productType.getKey(), productType.getId()))
+                    .collect(Collectors.toSet()));
   }
 
   @Nonnull
   @Override
   public CompletionStage<Optional<ProductType>> createProductType(
       @Nonnull final ProductTypeDraft productTypeDraft) {
-    return createResource(productTypeDraft, ProductTypeCreateCommand::of);
+    final String draftKey = productTypeDraft.getKey();
+
+    if (isBlank(draftKey)) {
+      syncOptions.applyErrorCallback(
+          new SyncException(format(CREATE_FAILED, draftKey, "Draft key is blank!")),
+          null,
+          productTypeDraft,
+          null);
+      return CompletableFuture.completedFuture(Optional.empty());
+    } else {
+      return syncOptions
+          .getCtpClient()
+          .productTypes()
+          .post(productTypeDraft)
+          .execute()
+          .handle(
+              ((resource, exception) -> {
+                if (exception == null && resource.getBody() != null) {
+                  keyToIdCache.put(draftKey, resource.getBody().getId());
+                  return Optional.of(resource.getBody());
+                } else if (exception != null) {
+                  syncOptions.applyErrorCallback(
+                      new SyncException(
+                          format(CREATE_FAILED, draftKey, exception.getMessage()), exception),
+                      null,
+                      productTypeDraft,
+                      null);
+                  return Optional.empty();
+                } else {
+                  return Optional.empty();
+                }
+              }));
+    }
   }
 
   @Nonnull
   @Override
   public CompletionStage<ProductType> updateProductType(
       @Nonnull final ProductType productType,
-      @Nonnull final List<UpdateAction<ProductType>> updateActions) {
+      @Nonnull final List<ProductTypeUpdateAction> updateActions) {
 
-    return updateResource(productType, ProductTypeUpdateCommand::of, updateActions);
+    final List<List<ProductTypeUpdateAction>> actionBatches =
+        batchElements(updateActions, MAXIMUM_ALLOWED_UPDATE_ACTIONS);
+
+    CompletionStage<ApiHttpResponse<ProductType>> resultStage =
+        CompletableFuture.completedFuture(new ApiHttpResponse<>(200, null, productType));
+
+    for (final List<ProductTypeUpdateAction> batch : actionBatches) {
+      resultStage =
+          resultStage
+              .thenApply(ApiHttpResponse::getBody)
+              .thenCompose(
+                  updatedProductType ->
+                      syncOptions
+                          .getCtpClient()
+                          .productTypes()
+                          .withId(updatedProductType.getId())
+                          .post(
+                              ProductTypeUpdateBuilder.of()
+                                  .actions(batch)
+                                  .version(updatedProductType.getVersion())
+                                  .build())
+                          .execute());
+    }
+
+    return resultStage.thenApply(ApiHttpResponse::getBody);
   }
 
   @Nonnull
   @Override
   public CompletionStage<Optional<ProductType>> fetchProductType(@Nullable final String key) {
+    if (isBlank(key)) {
+      return CompletableFuture.completedFuture(null);
+    }
 
-    return fetchResource(
-        key,
-        () ->
-            ProductTypeQueryBuilder.of()
-                .plusPredicates(queryModel -> queryModel.key().is(key))
-                .build());
+    return syncOptions
+        .getCtpClient()
+        .productTypes()
+        .withKey(key)
+        .get()
+        .execute()
+        .thenApply(ApiHttpResponse::getBody)
+        .thenApply(
+            productType -> {
+              keyToIdCache.put(productType.getKey(), productType.getId());
+              return Optional.of(productType);
+            })
+        .exceptionally(
+            throwable -> {
+              if (throwable.getCause() instanceof NotFoundException) {
+                return Optional.empty();
+              }
+              // todo - to check with the team: what is the best way to handle this ?
+              syncOptions.applyErrorCallback(new SyncException(throwable));
+              return Optional.empty();
+            });
+  }
+
+  @Nonnull
+  CompletionStage<Optional<String>> fetchCachedResourceId(
+      @Nullable final String key, @Nonnull final ByProjectKeyProductTypesGet query) {
+    return fetchCachedResourceId(key, resource -> resource.getKey(), query);
+  }
+
+  @Nonnull
+  CompletionStage<Optional<String>> fetchCachedResourceId(
+      @Nullable final String key,
+      @Nonnull final Function<ProductType, String> keyMapper,
+      @Nonnull final ByProjectKeyProductTypesGet query) {
+
+    if (isBlank(key)) {
+      return CompletableFuture.completedFuture(Optional.empty());
+    }
+
+    final String id = keyToIdCache.getIfPresent(key);
+    if (id != null) {
+      return CompletableFuture.completedFuture(Optional.of(id));
+    }
+    return fetchAndCache(key, keyMapper, query);
+  }
+
+  private CompletionStage<Optional<String>> fetchAndCache(
+      @Nullable final String key,
+      @Nonnull final Function<ProductType, String> keyMapper,
+      @Nonnull final ByProjectKeyProductTypesGet query) {
+    final Consumer<List<ProductType>> pageConsumer =
+        page ->
+            page.forEach(resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
+
+    return QueryUtils.queryAll(query, pageConsumer)
+        .thenApply(result -> Optional.ofNullable(keyToIdCache.getIfPresent(key)));
   }
 }
