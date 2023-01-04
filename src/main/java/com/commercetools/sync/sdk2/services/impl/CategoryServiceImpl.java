@@ -13,22 +13,16 @@ import com.commercetools.api.models.category.CategoryDraft;
 import com.commercetools.api.models.category.CategoryPagedQueryResponse;
 import com.commercetools.api.models.category.CategoryUpdateAction;
 import com.commercetools.api.models.category.CategoryUpdateBuilder;
-import com.commercetools.api.models.graph_ql.GraphQLRequest;
-import com.commercetools.api.models.graph_ql.GraphQLRequestBuilder;
-import com.commercetools.api.models.graph_ql.GraphQLVariablesMapBuilder;
 import com.commercetools.sync.commons.utils.ChunkUtils;
 import com.commercetools.sync.sdk2.categories.CategorySyncOptions;
 import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
+import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.services.CategoryService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sphere.sdk.client.NotFoundException;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.ApiMethod;
-import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -54,85 +48,13 @@ public final class CategoryServiceImpl extends BaseService<CategorySyncOptions>
   @Override
   public CompletionStage<Map<String, String>> cacheKeysToIds(
       @Nonnull final Set<String> categoryKeys) {
-    final Set<String> keysNotCached = getKeysNotCached(categoryKeys);
-
-    if (keysNotCached.isEmpty()) {
-      return CompletableFuture.completedFuture(keyToIdCache.asMap());
-    }
-
-    final List<List<String>> chunkedKeys = ChunkUtils.chunk(keysNotCached, CHUNK_SIZE);
-
-    String query =
-        "query fetchIdKeyPairs($where: String, $limit: Int) {\n"
-            + "  categories(limit: $limit, where: $where) {\n"
-            + "    results {\n"
-            + "      id\n"
-            + "      key\n"
-            + "    }\n"
-            + "  }\n"
-            + "}";
-
-    final List<GraphQLRequest> graphQLRequests =
-        chunkedKeys.stream()
-            .map(
-                keys ->
-                    keys.stream()
-                        .filter(key -> !isBlank(key))
-                        .map(StringEscapeUtils::escapeJava)
-                        .map(s -> "\"" + s + "\"")
-                        .collect(Collectors.joining(", ")))
-            .map(commaSeparatedKeys -> format("key in (%s)", commaSeparatedKeys))
-            .map(
-                whereQuery ->
-                    GraphQLVariablesMapBuilder.of()
-                        .addValue("where", whereQuery)
-                        .addValue("limit", CHUNK_SIZE)
-                        .build())
-            .map(variables -> GraphQLRequestBuilder.of().query(query).variables(variables).build())
-            .collect(Collectors.toList());
-
-    return collectionOfFuturesToFutureOfCollection(
-            graphQLRequests.stream()
-                .map(
-                    graphQLRequest ->
-                        syncOptions.getCtpClient().graphql().post(graphQLRequest).execute())
-                .collect(Collectors.toList()),
-            Collectors.toList())
-        .thenApply(
-            graphQlResults -> {
-              graphQlResults.stream()
-                  .map(r -> r.getBody().getData())
-                  // todo: set limit to -1, the payload will have errors object but what to do with
-                  // it ?
-                  //                  .filter(Objects::nonNull)
-                  .forEach(
-                      data -> {
-                        ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
-                        final JsonNode jsonNode = objectMapper.convertValue(data, JsonNode.class);
-                        final Iterator<JsonNode> elements =
-                            jsonNode.get("categories").get("results").elements();
-                        while (elements.hasNext()) {
-                          JsonNode idAndKey = elements.next();
-                          keyToIdCache.put(
-                              idAndKey.get("key").asText(), idAndKey.get("id").asText());
-                        }
-                      });
-              return keyToIdCache.asMap();
-            });
+    return super.cacheKeysToIds(categoryKeys, GraphQlQueryResource.CATEGORIES);
   }
 
   @Nonnull
   @Override
   public CompletionStage<Set<Category>> fetchMatchingCategoriesByKeys(
       @Nonnull final Set<String> categoryKeys) {
-
-    //    return fetchMatchingResources(
-    //        categoryKeys,
-    //        (keysNotCached) ->
-    //            CategoryQuery.of()
-    //                .plusPredicates(
-    //                    categoryQueryModel -> categoryQueryModel.key().isIn(keysNotCached)));
-
     if (categoryKeys.isEmpty()) {
       return CompletableFuture.completedFuture(Collections.emptySet());
     }

@@ -1,6 +1,5 @@
 package com.commercetools.sync.sdk2.services.impl;
 
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -10,25 +9,17 @@ import com.commercetools.api.models.channel.Channel;
 import com.commercetools.api.models.channel.ChannelDraft;
 import com.commercetools.api.models.channel.ChannelDraftBuilder;
 import com.commercetools.api.models.channel.ChannelRoleEnum;
-import com.commercetools.api.models.graph_ql.GraphQLRequest;
-import com.commercetools.api.models.graph_ql.GraphQLRequestBuilder;
-import com.commercetools.api.models.graph_ql.GraphQLVariablesMapBuilder;
-import com.commercetools.sync.commons.utils.ChunkUtils;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
+import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.services.ChannelService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.apache.commons.text.StringEscapeUtils;
 
 public final class ChannelServiceImpl extends BaseService<BaseSyncOptions>
     implements ChannelService {
@@ -45,72 +36,8 @@ public final class ChannelServiceImpl extends BaseService<BaseSyncOptions>
   @Nonnull
   @Override
   public CompletionStage<Map<String, String>> cacheKeysToIds(
-      @Nonnull final Set<String> keysToCache) {
-    final Set<String> keysNotCached = getKeysNotCached(keysToCache);
-
-    if (keysNotCached.isEmpty()) {
-      return CompletableFuture.completedFuture(keyToIdCache.asMap());
-    }
-
-    final List<List<String>> chunkedKeys = ChunkUtils.chunk(keysNotCached, CHUNK_SIZE);
-
-    String query =
-        "query fetchIdKeyPairs($where: String, $limit: Int) {\n"
-            + "  channels(limit: $limit, where: $where) {\n"
-            + "    results {\n"
-            + "      id\n"
-            + "      key\n"
-            + "    }\n"
-            + "  }\n"
-            + "}";
-
-    final List<GraphQLRequest> graphQLRequests =
-        chunkedKeys.stream()
-            .map(
-                keys ->
-                    keys.stream()
-                        .filter(key -> !isBlank(key))
-                        .map(StringEscapeUtils::escapeJava)
-                        .map(s -> "\"" + s + "\"")
-                        .collect(Collectors.joining(", ")))
-            .map(commaSeparatedKeys -> format("key in (%s)", commaSeparatedKeys))
-            .map(
-                whereQuery ->
-                    GraphQLVariablesMapBuilder.of()
-                        .addValue("where", whereQuery)
-                        .addValue("limit", CHUNK_SIZE)
-                        .build())
-            .map(variables -> GraphQLRequestBuilder.of().query(query).variables(variables).build())
-            .collect(Collectors.toList());
-
-    return collectionOfFuturesToFutureOfCollection(
-            graphQLRequests.stream()
-                .map(
-                    graphQLRequest ->
-                        syncOptions.getCtpClient().graphql().post(graphQLRequest).execute())
-                .collect(Collectors.toList()),
-            Collectors.toList())
-        .thenApply(
-            graphQlResults -> {
-              graphQlResults.stream()
-                  .map(r -> r.getBody().getData())
-                  // todo: set limit to -1, the payload will have errors object but what to do with
-                  // it ?
-                  //                  .filter(Objects::nonNull)
-                  .forEach(
-                      data -> {
-                        ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
-                        final JsonNode jsonNode = objectMapper.convertValue(data, JsonNode.class);
-                        final Iterator<JsonNode> elements =
-                            jsonNode.get("channels").get("results").elements();
-                        while (elements.hasNext()) {
-                          JsonNode idAndKey = elements.next();
-                          keyToIdCache.put(
-                              idAndKey.get("key").asText(), idAndKey.get("id").asText());
-                        }
-                      });
-              return keyToIdCache.asMap();
-            });
+      @Nonnull final Set<String> channelKeys) {
+    return super.cacheKeysToIds(channelKeys, GraphQlQueryResource.CHANNELS);
   }
 
   @Nonnull
