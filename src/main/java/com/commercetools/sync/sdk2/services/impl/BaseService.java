@@ -1,5 +1,8 @@
 package com.commercetools.sync.sdk2.services.impl;
 
+import com.commercetools.api.client.QueryUtils;
+import com.commercetools.api.models.DomainResource;
+import com.commercetools.api.models.PagedQueryResourceRequest;
 import com.commercetools.api.models.graph_ql.GraphQLRequest;
 import com.commercetools.api.models.graph_ql.GraphQLRequestBuilder;
 import com.commercetools.api.models.graph_ql.GraphQLVariablesMapBuilder;
@@ -15,12 +18,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
@@ -28,7 +35,7 @@ import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /** @param <S> Subclass of {@link BaseSyncOptions} */
-abstract class BaseService<S extends BaseSyncOptions> {
+abstract class BaseService<S extends BaseSyncOptions, T extends DomainResource<T>, U extends PagedQueryResourceRequest> {
 
   final S syncOptions;
   protected final Cache<String, String> keyToIdCache;
@@ -139,4 +146,33 @@ abstract class BaseService<S extends BaseSyncOptions> {
               return keyToIdCache.asMap();
             });
   }
+
+    @Nonnull
+    CompletionStage<Optional<String>> fetchCachedResourceId(
+            @Nullable final String key,
+            @Nonnull final Function<T, String> keyMapper,
+            @Nonnull final U query) {
+
+        if (isBlank(key)) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
+
+        final String id = keyToIdCache.getIfPresent(key);
+        if (id != null) {
+            return CompletableFuture.completedFuture(Optional.of(id));
+        }
+        return fetchAndCache(key, keyMapper, query);
+    }
+
+    private CompletionStage<Optional<String>> fetchAndCache(
+            @Nullable final String key,
+            @Nonnull final Function<T, String> keyMapper,
+            @Nonnull final U query) {
+        final Consumer<List<T>> pageConsumer =
+                page ->
+                        page.forEach(resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
+
+        return QueryUtils.queryAll(query, pageConsumer)
+                .thenApply(result -> Optional.ofNullable(keyToIdCache.getIfPresent(key)));
+    }
 }

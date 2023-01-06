@@ -37,7 +37,7 @@ import javax.annotation.Nullable;
 import org.apache.commons.text.StringEscapeUtils;
 
 /** Implementation of CategoryService interface. */
-public final class CategoryServiceImpl extends BaseService<CategorySyncOptions>
+public final class CategoryServiceImpl extends BaseService<CategorySyncOptions, Category, ByProjectKeyCategoriesGet>
     implements CategoryService {
 
   public CategoryServiceImpl(@Nonnull final CategorySyncOptions syncOptions) {
@@ -137,42 +137,13 @@ public final class CategoryServiceImpl extends BaseService<CategorySyncOptions>
             .withWhere("key in :keys")
             .withPredicateVar("keys", Collections.singletonList(key));
 
-    return fetchCachedResourceId(key, query);
+    return this.fetchCachedResourceId(key, query);
   }
 
   @Nonnull
   CompletionStage<Optional<String>> fetchCachedResourceId(
-      @Nullable final String key, @Nonnull final ByProjectKeyCategoriesGet query) {
+          @Nullable final String key, @Nonnull final ByProjectKeyCategoriesGet query) {
     return fetchCachedResourceId(key, resource -> resource.getKey(), query);
-  }
-
-  @Nonnull
-  CompletionStage<Optional<String>> fetchCachedResourceId(
-      @Nullable final String key,
-      @Nonnull final Function<Category, String> keyMapper,
-      @Nonnull final ByProjectKeyCategoriesGet query) {
-
-    if (isBlank(key)) {
-      return CompletableFuture.completedFuture(Optional.empty());
-    }
-
-    final String id = keyToIdCache.getIfPresent(key);
-    if (id != null) {
-      return CompletableFuture.completedFuture(Optional.of(id));
-    }
-    return fetchAndCache(key, keyMapper, query);
-  }
-
-  private CompletionStage<Optional<String>> fetchAndCache(
-      @Nullable final String key,
-      @Nonnull final Function<Category, String> keyMapper,
-      @Nonnull final ByProjectKeyCategoriesGet query) {
-    final Consumer<List<Category>> pageConsumer =
-        page ->
-            page.forEach(resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
-
-    return QueryUtils.queryAll(query, pageConsumer)
-        .thenApply(result -> Optional.ofNullable(keyToIdCache.getIfPresent(key)));
   }
 
   @Nonnull

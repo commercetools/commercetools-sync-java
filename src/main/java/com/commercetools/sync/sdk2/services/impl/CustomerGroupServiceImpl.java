@@ -2,6 +2,8 @@ package com.commercetools.sync.sdk2.services.impl;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import com.commercetools.api.client.ByProjectKeyCustomerGroupsGet;
+import com.commercetools.api.client.ByProjectKeyProductTypesGet;
 import com.commercetools.api.models.customer_group.CustomerGroup;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
@@ -9,6 +11,8 @@ import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.services.CustomerGroupService;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.NotFoundException;
+
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -18,7 +22,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 // todo: reuse duplicated code between TypeService and CustomerService
-public final class CustomerGroupServiceImpl extends BaseService<BaseSyncOptions>
+public final class CustomerGroupServiceImpl extends BaseService<BaseSyncOptions, CustomerGroup, ByProjectKeyCustomerGroupsGet>
     implements CustomerGroupService {
 
   public CustomerGroupServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
@@ -33,49 +37,22 @@ public final class CustomerGroupServiceImpl extends BaseService<BaseSyncOptions>
   }
 
   @Nonnull
-  public CompletionStage<Optional<CustomerGroup>> fetchCustomerGroupByKey(
-      @Nullable final String key) {
+  @Override
+  public CompletionStage<Optional<String>> fetchCachedCustomerGroupId(@Nonnull final String key) {
+    ByProjectKeyCustomerGroupsGet query =
+            syncOptions
+                    .getCtpClient()
+                    .customerGroups()
+                    .get()
+                    .withWhere("key in :keys")
+                    .withPredicateVar("keys", Collections.singletonList(key));
 
-    if (isBlank(key)) {
-      return CompletableFuture.completedFuture(null);
-    }
-
-    return syncOptions
-        .getCtpClient()
-        .customerGroups()
-        .withKey(key)
-        .get()
-        .execute()
-        .thenApply(ApiHttpResponse::getBody)
-        .thenApply(
-            customerGroup -> {
-              keyToIdCache.put(customerGroup.getKey(), customerGroup.getId());
-              return Optional.of(customerGroup);
-            })
-        .exceptionally(
-            throwable -> {
-              if (throwable instanceof NotFoundException) {
-                return Optional.empty();
-              }
-              // todo: what is the best way to handle this ?
-              syncOptions.applyErrorCallback(new SyncException(throwable));
-              return Optional.empty();
-            });
+    return fetchCachedResourceId(key, query);
   }
 
   @Nonnull
-  @Override
-  public CompletionStage<Optional<String>> fetchCachedCustomerGroupId(@Nonnull final String key) {
-    if (isBlank(key)) {
-      return CompletableFuture.completedFuture(Optional.empty());
-    }
-
-    final String id = keyToIdCache.getIfPresent(key);
-    if (id != null) {
-      return CompletableFuture.completedFuture(Optional.of(id));
-    }
-
-    return fetchCustomerGroupByKey(key)
-        .thenApply(customerGroup -> customerGroup.map(CustomerGroup::getId));
+  CompletionStage<Optional<String>> fetchCachedResourceId(
+          @Nullable final String key, @Nonnull final ByProjectKeyCustomerGroupsGet query) {
+    return super.fetchCachedResourceId(key, resource -> resource.getKey(), query);
   }
 }

@@ -1,10 +1,6 @@
 package com.commercetools.sync.sdk2.services.impl;
 
-import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-
 import com.commercetools.api.client.ByProjectKeyChannelsGet;
-import com.commercetools.api.client.QueryUtils;
 import com.commercetools.api.models.channel.Channel;
 import com.commercetools.api.models.channel.ChannelDraft;
 import com.commercetools.api.models.channel.ChannelDraftBuilder;
@@ -13,15 +9,17 @@ import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.services.ChannelService;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
-public final class ChannelServiceImpl extends BaseService<BaseSyncOptions>
+import javax.annotation.Nonnull;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletionStage;
+
+import static java.lang.String.format;
+
+public final class ChannelServiceImpl extends BaseService<BaseSyncOptions, Channel, ByProjectKeyChannelsGet>
     implements ChannelService {
 
   private final Set<ChannelRoleEnum> channelRoles;
@@ -52,35 +50,6 @@ public final class ChannelServiceImpl extends BaseService<BaseSyncOptions>
             .withPredicateVar("key", key);
 
     return fetchCachedResourceId(key, resource -> resource.getKey(), query);
-  }
-
-  @Nonnull
-  CompletionStage<Optional<String>> fetchCachedResourceId(
-      @Nullable final String key,
-      @Nonnull final Function<Channel, String> keyMapper,
-      @Nonnull final ByProjectKeyChannelsGet query) {
-
-    if (isBlank(key)) {
-      return CompletableFuture.completedFuture(Optional.empty());
-    }
-
-    final String id = keyToIdCache.getIfPresent(key);
-    if (id != null) {
-      return CompletableFuture.completedFuture(Optional.of(id));
-    }
-    return fetchAndCache(key, keyMapper, query);
-  }
-
-  private CompletionStage<Optional<String>> fetchAndCache(
-      @Nullable final String key,
-      @Nonnull final Function<Channel, String> keyMapper,
-      @Nonnull final ByProjectKeyChannelsGet query) {
-    final Consumer<List<Channel>> pageConsumer =
-        page ->
-            page.forEach(resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
-
-    return QueryUtils.queryAll(query, pageConsumer)
-        .thenApply(result -> Optional.ofNullable(keyToIdCache.getIfPresent(key)));
   }
 
   @Nonnull

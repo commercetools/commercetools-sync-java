@@ -2,6 +2,8 @@ package com.commercetools.sync.sdk2.services.impl;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import com.commercetools.api.client.ByProjectKeyTypesGet;
+import com.commercetools.api.client.ByProjectKeyTypesKeyByKeyGet;
 import com.commercetools.api.models.type.Type;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
@@ -9,6 +11,8 @@ import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.services.TypeService;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.NotFoundException;
+
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -18,7 +22,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 // todo: reuse duplicated code between TypeService and CustomerService
-public final class TypeServiceImpl extends BaseService<BaseSyncOptions> implements TypeService {
+public final class TypeServiceImpl extends BaseService<BaseSyncOptions, Type, ByProjectKeyTypesGet> implements TypeService {
 
   public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
     super(syncOptions);
@@ -31,7 +35,7 @@ public final class TypeServiceImpl extends BaseService<BaseSyncOptions> implemen
   }
 
   @Nonnull
-  public CompletionStage<Optional<Type>> fetchTypeByKey(@Nullable final String key) {
+  private CompletionStage<Optional<Type>> fetchTypeByKey(@Nullable final String key) {
 
     if (isBlank(key)) {
       return CompletableFuture.completedFuture(null);
@@ -63,15 +67,13 @@ public final class TypeServiceImpl extends BaseService<BaseSyncOptions> implemen
   @Nonnull
   @Override
   public CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull String key) {
-    if (isBlank(key)) {
-      return CompletableFuture.completedFuture(Optional.empty());
-    }
+    ByProjectKeyTypesGet query = syncOptions
+            .getCtpClient()
+            .types()
+            .get()
+            .withWhere("key in :keys")
+            .withPredicateVar("keys", Collections.singletonList(key));
 
-    final String id = keyToIdCache.getIfPresent(key);
-    if (id != null) {
-      return CompletableFuture.completedFuture(Optional.of(id));
-    }
-
-    return fetchTypeByKey(key).thenApply(type -> type.map(Type::getId));
+    return super.fetchCachedResourceId(key, (resource) -> resource.getKey(), query);
   }
 }

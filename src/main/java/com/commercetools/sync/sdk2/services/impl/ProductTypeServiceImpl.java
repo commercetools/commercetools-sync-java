@@ -33,7 +33,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.text.StringEscapeUtils;
 
-public final class ProductTypeServiceImpl extends BaseService<ProductTypeSyncOptions>
+public final class ProductTypeServiceImpl extends BaseService<ProductTypeSyncOptions, ProductType, ByProjectKeyProductTypesGet>
     implements ProductTypeService {
 
   private final Map<String, Map<String, AttributeMetaData>> productsAttributesMetaData =
@@ -253,35 +253,6 @@ public final class ProductTypeServiceImpl extends BaseService<ProductTypeSyncOpt
   @Nonnull
   CompletionStage<Optional<String>> fetchCachedResourceId(
       @Nullable final String key, @Nonnull final ByProjectKeyProductTypesGet query) {
-    return fetchCachedResourceId(key, resource -> resource.getKey(), query);
-  }
-
-  @Nonnull
-  CompletionStage<Optional<String>> fetchCachedResourceId(
-      @Nullable final String key,
-      @Nonnull final Function<ProductType, String> keyMapper,
-      @Nonnull final ByProjectKeyProductTypesGet query) {
-
-    if (isBlank(key)) {
-      return CompletableFuture.completedFuture(Optional.empty());
-    }
-
-    final String id = keyToIdCache.getIfPresent(key);
-    if (id != null) {
-      return CompletableFuture.completedFuture(Optional.of(id));
-    }
-    return fetchAndCache(key, keyMapper, query);
-  }
-
-  private CompletionStage<Optional<String>> fetchAndCache(
-      @Nullable final String key,
-      @Nonnull final Function<ProductType, String> keyMapper,
-      @Nonnull final ByProjectKeyProductTypesGet query) {
-    final Consumer<List<ProductType>> pageConsumer =
-        page ->
-            page.forEach(resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
-
-    return QueryUtils.queryAll(query, pageConsumer)
-        .thenApply(result -> Optional.ofNullable(keyToIdCache.getIfPresent(key)));
+    return super.fetchCachedResourceId(key, resource -> resource.getKey(), query);
   }
 }
