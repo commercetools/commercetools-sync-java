@@ -7,7 +7,6 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.client.ByProjectKeyCategoriesGet;
-import com.commercetools.api.client.QueryUtils;
 import com.commercetools.api.models.category.Category;
 import com.commercetools.api.models.category.CategoryDraft;
 import com.commercetools.api.models.category.CategoryPagedQueryResponse;
@@ -29,15 +28,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.text.StringEscapeUtils;
 
 /** Implementation of CategoryService interface. */
-public final class CategoryServiceImpl extends BaseService<CategorySyncOptions, Category, ByProjectKeyCategoriesGet>
+public final class CategoryServiceImpl
+    extends BaseService<CategorySyncOptions, Category, ByProjectKeyCategoriesGet>
     implements CategoryService {
 
   public CategoryServiceImpl(@Nonnull final CategorySyncOptions syncOptions) {
@@ -142,7 +140,7 @@ public final class CategoryServiceImpl extends BaseService<CategorySyncOptions, 
 
   @Nonnull
   CompletionStage<Optional<String>> fetchCachedResourceId(
-          @Nullable final String key, @Nonnull final ByProjectKeyCategoriesGet query) {
+      @Nullable final String key, @Nonnull final ByProjectKeyCategoriesGet query) {
     return fetchCachedResourceId(key, resource -> resource.getKey(), query);
   }
 

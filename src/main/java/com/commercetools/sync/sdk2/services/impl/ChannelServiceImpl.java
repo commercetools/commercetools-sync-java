@@ -1,5 +1,7 @@
 package com.commercetools.sync.sdk2.services.impl;
 
+import static java.lang.String.format;
+
 import com.commercetools.api.client.ByProjectKeyChannelsGet;
 import com.commercetools.api.models.channel.Channel;
 import com.commercetools.api.models.channel.ChannelDraft;
@@ -9,17 +11,15 @@ import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.services.ChannelService;
-
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import javax.annotation.Nonnull;
 
-import static java.lang.String.format;
-
-public final class ChannelServiceImpl extends BaseService<BaseSyncOptions, Channel, ByProjectKeyChannelsGet>
+public final class ChannelServiceImpl
+    extends BaseService<BaseSyncOptions, Channel, ByProjectKeyChannelsGet>
     implements ChannelService {
 
   private final Set<ChannelRoleEnum> channelRoles;

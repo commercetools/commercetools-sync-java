@@ -6,9 +6,7 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-import com.commercetools.api.client.ByProjectKeyCustomerGroupsGet;
 import com.commercetools.api.client.ByProjectKeyCustomersGet;
-import com.commercetools.api.client.ByProjectKeyProductTypesGet;
 import com.commercetools.api.models.customer.Customer;
 import com.commercetools.api.models.customer.CustomerDraft;
 import com.commercetools.api.models.customer.CustomerPagedQueryResponse;
@@ -35,7 +33,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.text.StringEscapeUtils;
 
-public final class CustomerServiceImpl extends BaseService<CustomerSyncOptions, Customer, ByProjectKeyCustomersGet>
+public final class CustomerServiceImpl
+    extends BaseService<CustomerSyncOptions, Customer, ByProjectKeyCustomersGet>
     implements CustomerService {
 
   public CustomerServiceImpl(@Nonnull final CustomerSyncOptions syncOptions) {

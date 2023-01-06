@@ -27,13 +27,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.text.StringEscapeUtils;
 
-public final class ProductTypeServiceImpl extends BaseService<ProductTypeSyncOptions, ProductType, ByProjectKeyProductTypesGet>
+public final class ProductTypeServiceImpl
+    extends BaseService<ProductTypeSyncOptions, ProductType, ByProjectKeyProductTypesGet>
     implements ProductTypeService {
 
   private final Map<String, Map<String, AttributeMetaData>> productsAttributesMetaData =

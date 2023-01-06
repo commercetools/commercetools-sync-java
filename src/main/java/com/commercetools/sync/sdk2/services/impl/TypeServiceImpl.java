@@ -3,7 +3,6 @@ package com.commercetools.sync.sdk2.services.impl;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.client.ByProjectKeyTypesGet;
-import com.commercetools.api.client.ByProjectKeyTypesKeyByKeyGet;
 import com.commercetools.api.models.type.Type;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
@@ -11,7 +10,6 @@ import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.services.TypeService;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.NotFoundException;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -22,7 +20,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 // todo: reuse duplicated code between TypeService and CustomerService
-public final class TypeServiceImpl extends BaseService<BaseSyncOptions, Type, ByProjectKeyTypesGet> implements TypeService {
+public final class TypeServiceImpl extends BaseService<BaseSyncOptions, Type, ByProjectKeyTypesGet>
+    implements TypeService {
 
   public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
     super(syncOptions);
@@ -67,7 +66,8 @@ public final class TypeServiceImpl extends BaseService<BaseSyncOptions, Type, By
   @Nonnull
   @Override
   public CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull String key) {
-    ByProjectKeyTypesGet query = syncOptions
+    ByProjectKeyTypesGet query =
+        syncOptions
             .getCtpClient()
             .types()
             .get()
