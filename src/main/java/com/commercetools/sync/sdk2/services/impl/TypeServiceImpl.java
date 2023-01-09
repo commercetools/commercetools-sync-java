@@ -3,7 +3,9 @@ package com.commercetools.sync.sdk2.services.impl;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.client.ByProjectKeyTypesGet;
+import com.commercetools.api.client.ByProjectKeyTypesPost;
 import com.commercetools.api.models.type.Type;
+import com.commercetools.api.models.type.TypeDraft;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
@@ -20,7 +22,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 // todo: reuse duplicated code between TypeService and CustomerService
-public final class TypeServiceImpl extends BaseService<BaseSyncOptions, Type, ByProjectKeyTypesGet>
+public final class TypeServiceImpl
+    extends BaseService<
+        BaseSyncOptions, Type, TypeDraft, ByProjectKeyTypesGet, Type, ByProjectKeyTypesPost>
     implements TypeService {
 
   public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
@@ -75,5 +79,20 @@ public final class TypeServiceImpl extends BaseService<BaseSyncOptions, Type, By
             .withPredicateVar("keys", Collections.singletonList(key));
 
     return super.fetchCachedResourceId(key, (resource) -> resource.getKey(), query);
+  }
+
+  @Nonnull
+  @Override
+  public CompletionStage<Set<Type>> fetchMatchingTypesByKeys(@Nonnull final Set<String> keys) {
+    return fetchMatchingResources(
+        keys,
+        type -> type.getKey(),
+        (keysNotCached) ->
+            syncOptions
+                .getCtpClient()
+                .types()
+                .get()
+                .withWhere("key in :keys")
+                .withPredicateVar("keys", keysNotCached));
   }
 }

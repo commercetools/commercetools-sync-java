@@ -38,4 +38,7 @@ public interface TypeService {
    */
   @Nonnull
   CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull String key);
+
+  @Nonnull
+  CompletionStage<Set<Type>> fetchMatchingTypesByKeys(@Nonnull Set<String> keys);
 }

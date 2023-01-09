@@ -7,6 +7,7 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.client.ByProjectKeyCategoriesGet;
+import com.commercetools.api.client.ByProjectKeyCategoriesPost;
 import com.commercetools.api.models.category.Category;
 import com.commercetools.api.models.category.CategoryDraft;
 import com.commercetools.api.models.category.CategoryPagedQueryResponse;
@@ -28,6 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,7 +37,13 @@ import org.apache.commons.text.StringEscapeUtils;
 
 /** Implementation of CategoryService interface. */
 public final class CategoryServiceImpl
-    extends BaseService<CategorySyncOptions, Category, ByProjectKeyCategoriesGet>
+    extends BaseService<
+        CategorySyncOptions,
+        Category,
+        CategoryDraft,
+        ByProjectKeyCategoriesGet,
+        Category,
+        ByProjectKeyCategoriesPost>
     implements CategoryService {
 
   public CategoryServiceImpl(@Nonnull final CategorySyncOptions syncOptions) {
@@ -148,39 +156,12 @@ public final class CategoryServiceImpl
   @Override
   public CompletionStage<Optional<Category>> createCategory(
       @Nonnull final CategoryDraft categoryDraft) {
-    final String draftKey = categoryDraft.getKey();
-
-    if (isBlank(draftKey)) {
-      syncOptions.applyErrorCallback(
-          new SyncException(format(CREATE_FAILED, draftKey, "Draft key is blank!")),
-          null,
-          categoryDraft,
-          null);
-      return CompletableFuture.completedFuture(Optional.empty());
-    } else {
-      return syncOptions
-          .getCtpClient()
-          .categories()
-          .post(categoryDraft)
-          .execute()
-          .handle(
-              ((resource, exception) -> {
-                if (exception == null && resource.getBody() != null) {
-                  keyToIdCache.put(draftKey, resource.getBody().getId());
-                  return Optional.of(resource.getBody());
-                } else if (exception != null) {
-                  syncOptions.applyErrorCallback(
-                      new SyncException(
-                          format(CREATE_FAILED, draftKey, exception.getMessage()), exception),
-                      null,
-                      categoryDraft,
-                      null);
-                  return Optional.empty();
-                } else {
-                  return Optional.empty();
-                }
-              }));
-    }
+    return super.executeCreateCommand(
+        categoryDraft,
+        CategoryDraft::getKey,
+        Category::getId,
+        Function.identity(),
+        syncOptions.getCtpClient().categories().post(categoryDraft));
   }
 
   @Nonnull

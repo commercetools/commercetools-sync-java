@@ -7,9 +7,11 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.client.ByProjectKeyCustomersGet;
+import com.commercetools.api.client.ByProjectKeyCustomersPost;
 import com.commercetools.api.models.customer.Customer;
 import com.commercetools.api.models.customer.CustomerDraft;
 import com.commercetools.api.models.customer.CustomerPagedQueryResponse;
+import com.commercetools.api.models.customer.CustomerSignInResult;
 import com.commercetools.api.models.customer.CustomerUpdateAction;
 import com.commercetools.api.models.customer.CustomerUpdateBuilder;
 import com.commercetools.sync.commons.utils.ChunkUtils;
@@ -34,7 +36,13 @@ import javax.annotation.Nullable;
 import org.apache.commons.text.StringEscapeUtils;
 
 public final class CustomerServiceImpl
-    extends BaseService<CustomerSyncOptions, Customer, ByProjectKeyCustomersGet>
+    extends BaseService<
+        CustomerSyncOptions,
+        Customer,
+        CustomerDraft,
+        ByProjectKeyCustomersGet,
+        CustomerSignInResult,
+        ByProjectKeyCustomersPost>
     implements CustomerService {
 
   public CustomerServiceImpl(@Nonnull final CustomerSyncOptions syncOptions) {

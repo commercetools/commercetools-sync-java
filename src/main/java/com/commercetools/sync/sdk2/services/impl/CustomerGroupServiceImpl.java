@@ -1,7 +1,9 @@
 package com.commercetools.sync.sdk2.services.impl;
 
 import com.commercetools.api.client.ByProjectKeyCustomerGroupsGet;
+import com.commercetools.api.client.ByProjectKeyCustomerGroupsPost;
 import com.commercetools.api.models.customer_group.CustomerGroup;
+import com.commercetools.api.models.customer_group.CustomerGroupDraft;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.services.CustomerGroupService;
@@ -15,7 +17,13 @@ import javax.annotation.Nullable;
 
 // todo: reuse duplicated code between TypeService and CustomerService
 public final class CustomerGroupServiceImpl
-    extends BaseService<BaseSyncOptions, CustomerGroup, ByProjectKeyCustomerGroupsGet>
+    extends BaseService<
+        BaseSyncOptions,
+        CustomerGroup,
+        CustomerGroupDraft,
+        ByProjectKeyCustomerGroupsGet,
+        CustomerGroup,
+        ByProjectKeyCustomerGroupsPost>
     implements CustomerGroupService {
 
   public CustomerGroupServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {

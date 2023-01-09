@@ -7,6 +7,7 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.client.ByProjectKeyProductTypesGet;
+import com.commercetools.api.client.ByProjectKeyProductTypesPost;
 import com.commercetools.api.client.QueryUtils;
 import com.commercetools.api.models.product_type.ProductType;
 import com.commercetools.api.models.product_type.ProductTypeDraft;
@@ -33,7 +34,13 @@ import javax.annotation.Nullable;
 import org.apache.commons.text.StringEscapeUtils;
 
 public final class ProductTypeServiceImpl
-    extends BaseService<ProductTypeSyncOptions, ProductType, ByProjectKeyProductTypesGet>
+    extends BaseService<
+        ProductTypeSyncOptions,
+        ProductType,
+        ProductTypeDraft,
+        ByProjectKeyProductTypesGet,
+        ProductType,
+        ByProjectKeyProductTypesPost>
     implements ProductTypeService {
 
   private final Map<String, Map<String, AttributeMetaData>> productsAttributesMetaData =

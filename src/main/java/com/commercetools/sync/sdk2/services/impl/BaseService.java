@@ -2,6 +2,7 @@ package com.commercetools.sync.sdk2.services.impl;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.client.QueryUtils;
@@ -10,14 +11,20 @@ import com.commercetools.api.models.PagedQueryResourceRequest;
 import com.commercetools.api.models.graph_ql.GraphQLRequest;
 import com.commercetools.api.models.graph_ql.GraphQLRequestBuilder;
 import com.commercetools.api.models.graph_ql.GraphQLVariablesMapBuilder;
-import com.commercetools.sync.commons.utils.ChunkUtils;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
+import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
+import com.commercetools.sync.sdk2.commons.utils.ChunkUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.BodyApiMethod;
+import io.vrap.rmf.base.client.Draft;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +41,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
 abstract class BaseService<
-    SyncOptionsT extends BaseSyncOptions, ResourceT extends DomainResource<ResourceT>, QueryT extends PagedQueryResourceRequest> {
+    SyncOptionsT extends BaseSyncOptions,
+    ResourceT extends DomainResource<ResourceT>,
+    ResourceDraftT extends Draft<ResourceDraftT>,
+    QueryT extends PagedQueryResourceRequest,
+    QueryResultT,
+    PostRequestT extends BodyApiMethod<PostRequestT, QueryResultT, ResourceDraftT>> {
 
   final SyncOptionsT syncOptions;
   protected final Cache<String, String> keyToIdCache;
@@ -173,5 +185,84 @@ abstract class BaseService<
 
     return QueryUtils.queryAll(query, pageConsumer)
         .thenApply(result -> Optional.ofNullable(keyToIdCache.getIfPresent(key)));
+  }
+
+  @Nonnull
+  CompletionStage<Optional<ResourceT>> executeCreateCommand(
+      @Nonnull final ResourceDraftT draft,
+      @Nonnull final Function<ResourceDraftT, String> keyMapper,
+      @Nonnull final Function<QueryResultT, String> idMapper,
+      @Nonnull final Function<QueryResultT, ResourceT> resourceMapper,
+      @Nonnull final PostRequestT createCommand) {
+    final String draftKey = keyMapper.apply(draft);
+
+    if (isBlank(draftKey)) {
+      syncOptions.applyErrorCallback(
+          new SyncException(format(CREATE_FAILED, draftKey, "Draft key is blank!")),
+          null,
+          draft,
+          null);
+      return CompletableFuture.completedFuture(Optional.empty());
+    } else {
+      return createCommand
+          .execute()
+          .handle(
+              ((result, exception) -> {
+                QueryResultT resultBody = result.getBody();
+                if (exception == null && resultBody != null) {
+                  keyToIdCache.put(draftKey, idMapper.apply(resultBody));
+                  return Optional.of(resourceMapper.apply(resultBody));
+                } else if (exception != null) {
+                  syncOptions.applyErrorCallback(
+                      new SyncException(
+                          format(CREATE_FAILED, draftKey, exception.getMessage()), exception),
+                      null,
+                      draft,
+                      null);
+                  return Optional.empty();
+                } else {
+                  return Optional.empty();
+                }
+              }));
+    }
+  }
+
+  CompletionStage<Set<ResourceT>> fetchMatchingResources(
+      @Nonnull final Set<String> keys,
+      @Nonnull final Function<ResourceT, String> keyMapper,
+      @Nonnull final Function<Set<String>, QueryT> keysQueryMapper) {
+    if (keys.isEmpty()) {
+      return CompletableFuture.completedFuture(Collections.emptySet());
+    }
+
+    return fetchWithChunks(keysQueryMapper, keys)
+        .thenApply(
+            chunk -> {
+              chunk.forEach(
+                  resource -> {
+                    ResourceT resourceBody = resource.getBody();
+                    keyToIdCache.put(keyMapper.apply(resourceBody), resourceBody.getId());
+                  });
+              return new HashSet<>();
+            });
+  }
+
+  private CompletableFuture<List<ApiHttpResponse<ResourceT>>> fetchWithChunks(
+      @Nonnull final Function<Set<String>, QueryT> keysQueryMapper,
+      @Nonnull final Set<String> keysNotCached) {
+
+    final List<List<String>> chunkedKeys = ChunkUtils.chunk(keysNotCached, CHUNK_SIZE);
+
+    final List<PagedQueryResourceRequest> keysQueryMapperList =
+        chunkedKeys.stream()
+            .map(
+                _keys ->
+                    keysQueryMapper
+                        .apply(new HashSet<>(_keys))
+                        .withLimit(CHUNK_SIZE)
+                        .withWithTotal(false))
+            .collect(toList());
+
+    return ChunkUtils.executeChunks(keysQueryMapperList);
   }
 }
