@@ -19,7 +19,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import io.sphere.sdk.client.NotFoundException;
 import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.ApiMethod;
 import io.vrap.rmf.base.client.BodyApiMethod;
 import io.vrap.rmf.base.client.Draft;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
@@ -44,7 +46,8 @@ abstract class BaseService<
     SyncOptionsT extends BaseSyncOptions,
     ResourceT extends DomainResource<ResourceT>,
     ResourceDraftT extends Draft<ResourceDraftT>,
-    QueryT extends PagedQueryResourceRequest,
+    PagedQueryT extends PagedQueryResourceRequest,
+    GetOneResourceQueryT extends ApiMethod<GetOneResourceQueryT, ResourceT>,
     QueryResultT,
     PostRequestT extends BodyApiMethod<PostRequestT, QueryResultT, ResourceDraftT>> {
 
@@ -162,7 +165,7 @@ abstract class BaseService<
   CompletionStage<Optional<String>> fetchCachedResourceId(
       @Nullable final String key,
       @Nonnull final Function<ResourceT, String> keyMapper,
-      @Nonnull final QueryT query) {
+      @Nonnull final PagedQueryT query) {
 
     if (isBlank(key)) {
       return CompletableFuture.completedFuture(Optional.empty());
@@ -178,7 +181,7 @@ abstract class BaseService<
   private CompletionStage<Optional<String>> fetchAndCache(
       @Nullable final String key,
       @Nonnull final Function<ResourceT, String> keyMapper,
-      @Nonnull final QueryT query) {
+      @Nonnull final PagedQueryT query) {
     final Consumer<List<ResourceT>> pageConsumer =
         page ->
             page.forEach(resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
@@ -240,7 +243,7 @@ abstract class BaseService<
   CompletionStage<Set<ResourceT>> fetchMatchingResources(
       @Nonnull final Set<String> keys,
       @Nonnull final Function<ResourceT, String> keyMapper,
-      @Nonnull final Function<Set<String>, QueryT> keysQueryMapper) {
+      @Nonnull final Function<Set<String>, PagedQueryT> keysQueryMapper) {
     if (keys.isEmpty()) {
       return CompletableFuture.completedFuture(Collections.emptySet());
     }
@@ -258,7 +261,7 @@ abstract class BaseService<
   }
 
   private CompletableFuture<List<ApiHttpResponse<ResourceT>>> fetchWithChunks(
-      @Nonnull final Function<Set<String>, QueryT> keysQueryMapper,
+      @Nonnull final Function<Set<String>, PagedQueryT> keysQueryMapper,
       @Nonnull final Set<String> keysNotCached) {
 
     final List<List<String>> chunkedKeys = ChunkUtils.chunk(keysNotCached, CHUNK_SIZE);
@@ -274,5 +277,43 @@ abstract class BaseService<
             .collect(toList());
 
     return ChunkUtils.executeChunks(keysQueryMapperList);
+  }
+
+  /**
+   * Given a resource key, this method fetches a resource that matches this given key in the CTP
+   * project defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}. If there
+   * is no matching resource an empty {@link Optional} will be returned in the returned future. A
+   * mapping of the key to the id of the fetched resource is persisted in an in -memory map.
+   *
+   * @param key the key of the resource to fetch
+   * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion
+   *     contains an {@link Optional} that contains the matching {@code T} if exists, otherwise
+   *     empty.
+   */
+  @Nonnull
+  CompletionStage<Optional<ResourceT>> fetchResource(
+      @Nullable final String key, @Nonnull final GetOneResourceQueryT query) {
+
+    if (isBlank(key)) {
+      return CompletableFuture.completedFuture(null);
+    }
+
+    return query
+        .execute()
+        .thenApply(ApiHttpResponse::getBody)
+        .thenApply(
+            resource -> {
+              keyToIdCache.put(key, resource.getId());
+              return Optional.of(resource);
+            })
+        .exceptionally(
+            throwable -> {
+              if (throwable.getCause() instanceof NotFoundException) {
+                return Optional.empty();
+              }
+              // todo - to check with the team: what is the best way to handle this ?
+              syncOptions.applyErrorCallback(new SyncException(throwable));
+              return Optional.empty();
+            });
   }
 }

@@ -1,19 +1,17 @@
 package com.commercetools.sync.sdk2.services.impl;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.client.ByProjectKeyCategoriesGet;
+import com.commercetools.api.client.ByProjectKeyCategoriesKeyByKeyGet;
 import com.commercetools.api.client.ByProjectKeyCategoriesPost;
 import com.commercetools.api.models.category.Category;
 import com.commercetools.api.models.category.CategoryDraft;
 import com.commercetools.api.models.category.CategoryUpdateAction;
 import com.commercetools.api.models.category.CategoryUpdateBuilder;
 import com.commercetools.sync.sdk2.categories.CategorySyncOptions;
-import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.services.CategoryService;
-import io.sphere.sdk.client.NotFoundException;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.Collections;
 import java.util.List;
@@ -33,6 +31,7 @@ public final class CategoryServiceImpl
         Category,
         CategoryDraft,
         ByProjectKeyCategoriesGet,
+        ByProjectKeyCategoriesKeyByKeyGet,
         Category,
         ByProjectKeyCategoriesPost>
     implements CategoryService {
@@ -65,33 +64,10 @@ public final class CategoryServiceImpl
   }
 
   @Nonnull
-  @Override
   public CompletionStage<Optional<Category>> fetchCategory(@Nullable final String key) {
-    if (isBlank(key)) {
-      return CompletableFuture.completedFuture(null);
-    }
-
-    return syncOptions
-        .getCtpClient()
-        .categories()
-        .withKey(key)
-        .get()
-        .execute()
-        .thenApply(ApiHttpResponse::getBody)
-        .thenApply(
-            category -> {
-              keyToIdCache.put(category.getKey(), category.getId());
-              return Optional.of(category);
-            })
-        .exceptionally(
-            throwable -> {
-              if (throwable.getCause() instanceof NotFoundException) {
-                return Optional.empty();
-              }
-              // todo - to check with the team: what is the best way to handle this ?
-              syncOptions.applyErrorCallback(new SyncException(throwable));
-              return Optional.empty();
-            });
+    ByProjectKeyCategoriesKeyByKeyGet byProjectKeyCategoriesKeyByKeyGet =
+        syncOptions.getCtpClient().categories().withKey(key).get();
+    return super.fetchResource(key, byProjectKeyCategoriesKeyByKeyGet);
   }
 
   @Nonnull

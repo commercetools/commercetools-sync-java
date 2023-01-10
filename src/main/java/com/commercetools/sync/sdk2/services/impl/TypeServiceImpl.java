@@ -1,22 +1,17 @@
 package com.commercetools.sync.sdk2.services.impl;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
-
 import com.commercetools.api.client.ByProjectKeyTypesGet;
+import com.commercetools.api.client.ByProjectKeyTypesKeyByKeyGet;
 import com.commercetools.api.client.ByProjectKeyTypesPost;
 import com.commercetools.api.models.type.Type;
 import com.commercetools.api.models.type.TypeDraft;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
-import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.services.TypeService;
-import io.vrap.rmf.base.client.ApiHttpResponse;
-import io.vrap.rmf.base.client.error.NotFoundException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -24,7 +19,13 @@ import javax.annotation.Nullable;
 // todo: reuse duplicated code between TypeService and CustomerService
 public final class TypeServiceImpl
     extends BaseService<
-        BaseSyncOptions, Type, TypeDraft, ByProjectKeyTypesGet, Type, ByProjectKeyTypesPost>
+        BaseSyncOptions,
+        Type,
+        TypeDraft,
+        ByProjectKeyTypesGet,
+        ByProjectKeyTypesKeyByKeyGet,
+        Type,
+        ByProjectKeyTypesPost>
     implements TypeService {
 
   public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
@@ -39,32 +40,7 @@ public final class TypeServiceImpl
 
   @Nonnull
   private CompletionStage<Optional<Type>> fetchTypeByKey(@Nullable final String key) {
-
-    if (isBlank(key)) {
-      return CompletableFuture.completedFuture(null);
-    }
-
-    return syncOptions
-        .getCtpClient()
-        .types()
-        .withKey(key)
-        .get()
-        .execute()
-        .thenApply(ApiHttpResponse::getBody)
-        .thenApply(
-            type -> {
-              keyToIdCache.put(type.getKey(), type.getId());
-              return Optional.of(type);
-            })
-        .exceptionally(
-            throwable -> {
-              if (throwable instanceof NotFoundException) {
-                return Optional.empty();
-              }
-              // todo: what is the best way to handle this ?
-              syncOptions.applyErrorCallback(new SyncException(throwable));
-              return Optional.empty();
-            });
+    return super.fetchResource(key, syncOptions.getCtpClient().types().withKey(key).get());
   }
 
   @Nonnull

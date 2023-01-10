@@ -1,9 +1,9 @@
 package com.commercetools.sync.sdk2.services.impl;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.client.ByProjectKeyProductTypesGet;
+import com.commercetools.api.client.ByProjectKeyProductTypesKeyByKeyGet;
 import com.commercetools.api.client.ByProjectKeyProductTypesPost;
 import com.commercetools.api.client.QueryUtils;
 import com.commercetools.api.models.product_type.ProductType;
@@ -11,12 +11,10 @@ import com.commercetools.api.models.product_type.ProductTypeDraft;
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
 import com.commercetools.api.models.product_type.ProductTypeUpdateBuilder;
 import com.commercetools.sync.products.AttributeMetaData;
-import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.sdk2.services.ProductTypeService;
 import io.vrap.rmf.base.client.ApiHttpResponse;
-import io.vrap.rmf.base.client.error.NotFoundException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -33,6 +31,7 @@ public final class ProductTypeServiceImpl
         ProductType,
         ProductTypeDraft,
         ByProjectKeyProductTypesGet,
+        ByProjectKeyProductTypesKeyByKeyGet,
         ProductType,
         ByProjectKeyProductTypesPost>
     implements ProductTypeService {
@@ -167,31 +166,7 @@ public final class ProductTypeServiceImpl
   @Nonnull
   @Override
   public CompletionStage<Optional<ProductType>> fetchProductType(@Nullable final String key) {
-    if (isBlank(key)) {
-      return CompletableFuture.completedFuture(null);
-    }
-
-    return syncOptions
-        .getCtpClient()
-        .productTypes()
-        .withKey(key)
-        .get()
-        .execute()
-        .thenApply(ApiHttpResponse::getBody)
-        .thenApply(
-            productType -> {
-              keyToIdCache.put(productType.getKey(), productType.getId());
-              return Optional.of(productType);
-            })
-        .exceptionally(
-            throwable -> {
-              if (throwable.getCause() instanceof NotFoundException) {
-                return Optional.empty();
-              }
-              // todo - to check with the team: what is the best way to handle this ?
-              syncOptions.applyErrorCallback(new SyncException(throwable));
-              return Optional.empty();
-            });
+    return super.fetchResource(key, syncOptions.getCtpClient().productTypes().withKey(key).get());
   }
 
   @Nonnull

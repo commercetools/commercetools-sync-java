@@ -4,18 +4,17 @@ import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.client.ByProjectKeyCustomersGet;
+import com.commercetools.api.client.ByProjectKeyCustomersKeyByKeyGet;
 import com.commercetools.api.client.ByProjectKeyCustomersPost;
 import com.commercetools.api.models.customer.Customer;
 import com.commercetools.api.models.customer.CustomerDraft;
 import com.commercetools.api.models.customer.CustomerSignInResult;
 import com.commercetools.api.models.customer.CustomerUpdateAction;
 import com.commercetools.api.models.customer.CustomerUpdateBuilder;
-import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.customers.CustomerSyncOptions;
 import com.commercetools.sync.sdk2.services.CustomerService;
 import io.vrap.rmf.base.client.ApiHttpResponse;
-import io.vrap.rmf.base.client.error.NotFoundException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,6 +30,7 @@ public final class CustomerServiceImpl
         Customer,
         CustomerDraft,
         ByProjectKeyCustomersGet,
+        ByProjectKeyCustomersKeyByKeyGet,
         CustomerSignInResult,
         ByProjectKeyCustomersPost>
     implements CustomerService {
@@ -65,32 +65,7 @@ public final class CustomerServiceImpl
   @Nonnull
   @Override
   public CompletionStage<Optional<Customer>> fetchCustomerByKey(@Nullable final String key) {
-
-    if (isBlank(key)) {
-      return CompletableFuture.completedFuture(null);
-    }
-
-    return syncOptions
-        .getCtpClient()
-        .customers()
-        .withKey(key)
-        .get()
-        .execute()
-        .thenApply(ApiHttpResponse::getBody)
-        .thenApply(
-            customer -> {
-              keyToIdCache.put(customer.getKey(), customer.getId());
-              return Optional.of(customer);
-            })
-        .exceptionally(
-            throwable -> {
-              if (throwable.getCause() instanceof NotFoundException) {
-                return Optional.empty();
-              }
-              // todo - to check with the team: what is the best way to handle this ?
-              syncOptions.applyErrorCallback(new SyncException(throwable));
-              return Optional.empty();
-            });
+    return super.fetchResource(key, syncOptions.getCtpClient().customers().withKey(key).get());
   }
 
   @Nonnull

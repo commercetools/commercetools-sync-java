@@ -1,5 +1,6 @@
 package com.commercetools.sync.sdk2.services.impl;
 
+import com.commercetools.api.client.ByProjectKeyChannelsByIDGet;
 import com.commercetools.api.client.ByProjectKeyChannelsGet;
 import com.commercetools.api.client.ByProjectKeyChannelsPost;
 import com.commercetools.api.models.channel.Channel;
@@ -23,6 +24,7 @@ public final class ChannelServiceImpl
         Channel,
         ChannelDraft,
         ByProjectKeyChannelsGet,
+        ByProjectKeyChannelsByIDGet,
         Channel,
         ByProjectKeyChannelsPost>
     implements ChannelService {

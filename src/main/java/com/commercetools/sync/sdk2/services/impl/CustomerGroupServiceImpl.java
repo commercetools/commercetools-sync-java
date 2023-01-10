@@ -1,6 +1,7 @@
 package com.commercetools.sync.sdk2.services.impl;
 
 import com.commercetools.api.client.ByProjectKeyCustomerGroupsGet;
+import com.commercetools.api.client.ByProjectKeyCustomerGroupsKeyByKeyGet;
 import com.commercetools.api.client.ByProjectKeyCustomerGroupsPost;
 import com.commercetools.api.models.customer_group.CustomerGroup;
 import com.commercetools.api.models.customer_group.CustomerGroupDraft;
@@ -22,6 +23,7 @@ public final class CustomerGroupServiceImpl
         CustomerGroup,
         CustomerGroupDraft,
         ByProjectKeyCustomerGroupsGet,
+        ByProjectKeyCustomerGroupsKeyByKeyGet,
         CustomerGroup,
         ByProjectKeyCustomerGroupsPost>
     implements CustomerGroupService {
