@@ -1,9 +1,6 @@
 package com.commercetools.sync.sdk2.services.impl;
 
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
-import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.client.ByProjectKeyProductTypesGet;
@@ -11,17 +8,14 @@ import com.commercetools.api.client.ByProjectKeyProductTypesPost;
 import com.commercetools.api.client.QueryUtils;
 import com.commercetools.api.models.product_type.ProductType;
 import com.commercetools.api.models.product_type.ProductTypeDraft;
-import com.commercetools.api.models.product_type.ProductTypePagedQueryResponse;
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
 import com.commercetools.api.models.product_type.ProductTypeUpdateBuilder;
-import com.commercetools.sync.commons.utils.ChunkUtils;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.sdk2.services.ProductTypeService;
 import io.vrap.rmf.base.client.ApiHttpResponse;
-import io.vrap.rmf.base.client.ApiMethod;
 import io.vrap.rmf.base.client.error.NotFoundException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -32,7 +26,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.apache.commons.text.StringEscapeUtils;
 
 public final class ProductTypeServiceImpl
     extends BaseService<
@@ -113,47 +106,17 @@ public final class ProductTypeServiceImpl
   @Nonnull
   @Override
   public CompletionStage<Set<ProductType>> fetchMatchingProductTypesByKeys(
-      @Nonnull final Set<String> productTypeKeys) {
-    if (productTypeKeys.isEmpty()) {
-      return CompletableFuture.completedFuture(Collections.emptySet());
-    }
-
-    final List<List<String>> chunkedKeys = ChunkUtils.chunk(productTypeKeys, CHUNK_SIZE);
-
-    final List<ByProjectKeyProductTypesGet> fetchByKeysRequests =
-        chunkedKeys.stream()
-            .map(
-                keys ->
-                    keys.stream()
-                        .filter(key -> !isBlank(key))
-                        .map(StringEscapeUtils::escapeJava)
-                        .map(s -> "\"" + s + "\"")
-                        .collect(Collectors.joining(", ")))
-            .map(commaSeparatedKeys -> format("key in (%s)", commaSeparatedKeys))
-            .map(
-                whereQuery ->
-                    syncOptions
-                        .getCtpClient()
-                        .productTypes()
-                        .get()
-                        .addWhere(whereQuery)
-                        .withLimit(CHUNK_SIZE)
-                        .withWithTotal(false))
-            .collect(toList());
-
-    // todo: what happens on error ?
-    return collectionOfFuturesToFutureOfCollection(
-            fetchByKeysRequests.stream().map(ApiMethod::execute).collect(Collectors.toList()),
-            Collectors.toList())
-        .thenApply(
-            pagedProductTypeResponses ->
-                pagedProductTypeResponses.stream()
-                    .map(ApiHttpResponse::getBody)
-                    .map(ProductTypePagedQueryResponse::getResults)
-                    .flatMap(Collection::stream)
-                    .peek(
-                        productType -> keyToIdCache.put(productType.getKey(), productType.getId()))
-                    .collect(Collectors.toSet()));
+      @Nonnull final Set<String> keys) {
+    return fetchMatchingResources(
+        keys,
+        productType -> productType.getKey(),
+        (keysNotCached) ->
+            syncOptions
+                .getCtpClient()
+                .productTypes()
+                .get()
+                .withWhere("key in :keys")
+                .withPredicateVar("keys", keysNotCached));
   }
 
   @Nonnull

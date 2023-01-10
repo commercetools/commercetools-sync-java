@@ -1,39 +1,29 @@
 package com.commercetools.sync.sdk2.services.impl;
 
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
-import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.client.ByProjectKeyCustomersGet;
 import com.commercetools.api.client.ByProjectKeyCustomersPost;
 import com.commercetools.api.models.customer.Customer;
 import com.commercetools.api.models.customer.CustomerDraft;
-import com.commercetools.api.models.customer.CustomerPagedQueryResponse;
 import com.commercetools.api.models.customer.CustomerSignInResult;
 import com.commercetools.api.models.customer.CustomerUpdateAction;
 import com.commercetools.api.models.customer.CustomerUpdateBuilder;
-import com.commercetools.sync.commons.utils.ChunkUtils;
 import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.customers.CustomerSyncOptions;
 import com.commercetools.sync.sdk2.services.CustomerService;
 import io.vrap.rmf.base.client.ApiHttpResponse;
-import io.vrap.rmf.base.client.ApiMethod;
 import io.vrap.rmf.base.client.error.NotFoundException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.apache.commons.text.StringEscapeUtils;
 
 public final class CustomerServiceImpl
     extends BaseService<
@@ -59,47 +49,17 @@ public final class CustomerServiceImpl
   @Nonnull
   @Override
   public CompletionStage<Set<Customer>> fetchMatchingCustomersByKeys(
-      @Nonnull final Set<String> customerKeys) {
-
-    if (customerKeys.isEmpty()) {
-      return CompletableFuture.completedFuture(Collections.emptySet());
-    }
-
-    final List<List<String>> chunkedKeys = ChunkUtils.chunk(customerKeys, CHUNK_SIZE);
-
-    final List<ByProjectKeyCustomersGet> fetchByKeysRequests =
-        chunkedKeys.stream()
-            .map(
-                keys ->
-                    keys.stream()
-                        .filter(key -> !isBlank(key))
-                        .map(StringEscapeUtils::escapeJava)
-                        .map(s -> "\"" + s + "\"")
-                        .collect(Collectors.joining(", ")))
-            .map(commaSeparatedKeys -> format("key in (%s)", commaSeparatedKeys))
-            .map(
-                whereQuery ->
-                    syncOptions
-                        .getCtpClient()
-                        .customers()
-                        .get()
-                        .addWhere(whereQuery)
-                        .withLimit(CHUNK_SIZE)
-                        .withWithTotal(false))
-            .collect(toList());
-
-    // todo: what happens on error ?
-    return collectionOfFuturesToFutureOfCollection(
-            fetchByKeysRequests.stream().map(ApiMethod::execute).collect(Collectors.toList()),
-            Collectors.toList())
-        .thenApply(
-            pagedCustomerResponses ->
-                pagedCustomerResponses.stream()
-                    .map(ApiHttpResponse::getBody)
-                    .map(CustomerPagedQueryResponse::getResults)
-                    .flatMap(Collection::stream)
-                    .peek(customer -> keyToIdCache.put(customer.getKey(), customer.getId()))
-                    .collect(Collectors.toSet()));
+      @Nonnull final Set<String> keys) {
+    return fetchMatchingResources(
+        keys,
+        customer -> customer.getKey(),
+        (keysNotCached) ->
+            syncOptions
+                .getCtpClient()
+                .customers()
+                .get()
+                .withWhere("key in :keys")
+                .withPredicateVar("keys", keysNotCached));
   }
 
   @Nonnull
