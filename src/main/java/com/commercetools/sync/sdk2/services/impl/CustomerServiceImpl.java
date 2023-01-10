@@ -152,42 +152,12 @@ public final class CustomerServiceImpl
   @Override
   public CompletionStage<Optional<Customer>> createCustomer(
       @Nonnull final CustomerDraft customerDraft) {
-
-    final String draftKey = customerDraft.getKey();
-
-    if (isBlank(draftKey)) {
-      syncOptions.applyErrorCallback(
-          new SyncException(format(CREATE_FAILED, draftKey, "Draft key is blank!")),
-          null,
-          customerDraft,
-          null);
-      return CompletableFuture.completedFuture(Optional.empty());
-    } else {
-      return syncOptions
-          .getCtpClient()
-          .customers()
-          .post(customerDraft)
-          .execute()
-          .handle(
-              ((resource, exception) -> {
-                if (exception == null
-                    && resource.getBody() != null
-                    && resource.getBody().getCustomer() != null) {
-                  keyToIdCache.put(draftKey, resource.getBody().getCustomer().getId());
-                  return Optional.of(resource.getBody().getCustomer());
-                } else if (exception != null) {
-                  syncOptions.applyErrorCallback(
-                      new SyncException(
-                          format(CREATE_FAILED, draftKey, exception.getMessage()), exception),
-                      null,
-                      customerDraft,
-                      null);
-                  return Optional.empty();
-                } else {
-                  return Optional.empty();
-                }
-              }));
-    }
+    return super.createResource(
+        customerDraft,
+        CustomerDraft::getKey,
+        customerSignInResult -> customerSignInResult.getCustomer().getId(),
+        CustomerSignInResult::getCustomer,
+        syncOptions.getCtpClient().customers().post(customerDraft));
   }
 
   @Nonnull

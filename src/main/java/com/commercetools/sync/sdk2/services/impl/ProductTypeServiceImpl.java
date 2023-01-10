@@ -28,6 +28,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -159,39 +160,12 @@ public final class ProductTypeServiceImpl
   @Override
   public CompletionStage<Optional<ProductType>> createProductType(
       @Nonnull final ProductTypeDraft productTypeDraft) {
-    final String draftKey = productTypeDraft.getKey();
-
-    if (isBlank(draftKey)) {
-      syncOptions.applyErrorCallback(
-          new SyncException(format(CREATE_FAILED, draftKey, "Draft key is blank!")),
-          null,
-          productTypeDraft,
-          null);
-      return CompletableFuture.completedFuture(Optional.empty());
-    } else {
-      return syncOptions
-          .getCtpClient()
-          .productTypes()
-          .post(productTypeDraft)
-          .execute()
-          .handle(
-              ((resource, exception) -> {
-                if (exception == null && resource.getBody() != null) {
-                  keyToIdCache.put(draftKey, resource.getBody().getId());
-                  return Optional.of(resource.getBody());
-                } else if (exception != null) {
-                  syncOptions.applyErrorCallback(
-                      new SyncException(
-                          format(CREATE_FAILED, draftKey, exception.getMessage()), exception),
-                      null,
-                      productTypeDraft,
-                      null);
-                  return Optional.empty();
-                } else {
-                  return Optional.empty();
-                }
-              }));
-    }
+    return super.createResource(
+        productTypeDraft,
+        ProductTypeDraft::getKey,
+        ProductType::getId,
+        Function.identity(),
+        syncOptions.getCtpClient().productTypes().post(productTypeDraft));
   }
 
   @Nonnull

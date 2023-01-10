@@ -188,7 +188,7 @@ abstract class BaseService<
   }
 
   @Nonnull
-  CompletionStage<Optional<ResourceT>> executeCreateCommand(
+  CompletionStage<Optional<ResourceT>> createResource(
       @Nonnull final ResourceDraftT draft,
       @Nonnull final Function<ResourceDraftT, String> keyMapper,
       @Nonnull final Function<QueryResultT, String> idMapper,
@@ -204,27 +204,37 @@ abstract class BaseService<
           null);
       return CompletableFuture.completedFuture(Optional.empty());
     } else {
-      return createCommand
-          .execute()
-          .handle(
-              ((result, exception) -> {
-                QueryResultT resultBody = result.getBody();
-                if (exception == null && resultBody != null) {
-                  keyToIdCache.put(draftKey, idMapper.apply(resultBody));
-                  return Optional.of(resourceMapper.apply(resultBody));
-                } else if (exception != null) {
-                  syncOptions.applyErrorCallback(
-                      new SyncException(
-                          format(CREATE_FAILED, draftKey, exception.getMessage()), exception),
-                      null,
-                      draft,
-                      null);
-                  return Optional.empty();
-                } else {
-                  return Optional.empty();
-                }
-              }));
+      return this.executeCreateCommand(draft, draftKey, idMapper, resourceMapper, createCommand);
     }
+  }
+
+  @Nonnull
+  CompletionStage<Optional<ResourceT>> executeCreateCommand(
+      @Nonnull final ResourceDraftT draft,
+      @Nonnull final String key,
+      @Nonnull final Function<QueryResultT, String> idMapper,
+      @Nonnull final Function<QueryResultT, ResourceT> resourceMapper,
+      @Nonnull final PostRequestT createCommand) {
+    return createCommand
+        .execute()
+        .handle(
+            ((result, exception) -> {
+              QueryResultT resultBody = result.getBody();
+              if (exception == null && resultBody != null) {
+                keyToIdCache.put(key, idMapper.apply(resultBody));
+                return Optional.of(resourceMapper.apply(resultBody));
+              } else if (exception != null) {
+                syncOptions.applyErrorCallback(
+                    new SyncException(
+                        format(CREATE_FAILED, key, exception.getMessage()), exception),
+                    null,
+                    draft,
+                    null);
+                return Optional.empty();
+              } else {
+                return Optional.empty();
+              }
+            }));
   }
 
   CompletionStage<Set<ResourceT>> fetchMatchingResources(

@@ -63,7 +63,7 @@ public final class ChannelServiceImpl
     ChannelDraft channelDraft =
         ChannelDraftBuilder.of().key(key).roles(List.copyOf(channelRoles)).build();
 
-    return super.executeCreateCommand(
+    return super.createResource(
         channelDraft,
         ChannelDraft::getKey,
         Channel::getId,

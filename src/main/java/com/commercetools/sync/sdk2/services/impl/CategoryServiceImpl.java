@@ -156,7 +156,7 @@ public final class CategoryServiceImpl
   @Override
   public CompletionStage<Optional<Category>> createCategory(
       @Nonnull final CategoryDraft categoryDraft) {
-    return super.executeCreateCommand(
+    return super.createResource(
         categoryDraft,
         CategoryDraft::getKey,
         Category::getId,
