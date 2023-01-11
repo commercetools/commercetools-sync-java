@@ -35,7 +35,7 @@ public final class TypeServiceImpl
   @Nonnull
   @Override
   public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> typeKeys) {
-    return super.cacheKeysToIds(typeKeys, GraphQlQueryResource.TYPES);
+    return super.cacheKeysToIdsUsingGraphQl(typeKeys, GraphQlQueryResource.TYPES);
   }
 
   @Nonnull

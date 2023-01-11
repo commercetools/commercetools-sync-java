@@ -36,7 +36,8 @@ public final class CustomerGroupServiceImpl
   @Override
   public CompletionStage<Map<String, String>> cacheKeysToIds(
       @Nonnull final Set<String> customerGroupKeys) {
-    return super.cacheKeysToIds(customerGroupKeys, GraphQlQueryResource.CUSTOMER_GROUPS);
+    return super.cacheKeysToIdsUsingGraphQl(
+        customerGroupKeys, GraphQlQueryResource.CUSTOMER_GROUPS);
   }
 
   @Nonnull

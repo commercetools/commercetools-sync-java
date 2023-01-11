@@ -90,8 +90,8 @@ abstract class BaseService<
   }
 
   @Nonnull
-  public CompletionStage<Map<String, String>> cacheKeysToIds(
-      @Nonnull Set<String> keysToCache, GraphQlQueryResource queryResource) {
+  public CompletionStage<Map<String, String>> cacheKeysToIdsUsingGraphQl(
+      @Nonnull final Set<String> keysToCache, @Nonnull final GraphQlQueryResource queryResource) {
     final Set<String> keysNotCached = getKeysNotCached(keysToCache);
 
     if (keysNotCached.isEmpty()) {

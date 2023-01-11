@@ -42,7 +42,7 @@ public final class ChannelServiceImpl
   @Override
   public CompletionStage<Map<String, String>> cacheKeysToIds(
       @Nonnull final Set<String> channelKeys) {
-    return super.cacheKeysToIds(channelKeys, GraphQlQueryResource.CHANNELS);
+    return super.cacheKeysToIdsUsingGraphQl(channelKeys, GraphQlQueryResource.CHANNELS);
   }
 
   @Nonnull

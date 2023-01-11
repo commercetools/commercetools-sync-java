@@ -44,7 +44,7 @@ public final class CategoryServiceImpl
   @Override
   public CompletionStage<Map<String, String>> cacheKeysToIds(
       @Nonnull final Set<String> categoryKeys) {
-    return super.cacheKeysToIds(categoryKeys, GraphQlQueryResource.CATEGORIES);
+    return super.cacheKeysToIdsUsingGraphQl(categoryKeys, GraphQlQueryResource.CATEGORIES);
   }
 
   @Nonnull

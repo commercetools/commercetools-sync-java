@@ -47,7 +47,7 @@ public final class ProductTypeServiceImpl
   @Override
   public CompletionStage<Map<String, String>> cacheKeysToIds(
       @Nonnull final Set<String> categoryKeys) {
-    return super.cacheKeysToIds(categoryKeys, GraphQlQueryResource.PRODUCT_TYPES);
+    return super.cacheKeysToIdsUsingGraphQl(categoryKeys, GraphQlQueryResource.PRODUCT_TYPES);
   }
 
   @Nonnull

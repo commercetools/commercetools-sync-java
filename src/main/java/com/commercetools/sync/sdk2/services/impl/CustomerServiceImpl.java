@@ -43,7 +43,7 @@ public final class CustomerServiceImpl
   @Override
   public CompletionStage<Map<String, String>> cacheKeysToIds(
       @Nonnull final Set<String> customerKeys) {
-    return super.cacheKeysToIds(customerKeys, GraphQlQueryResource.CUSTOMERS);
+    return super.cacheKeysToIdsUsingGraphQl(customerKeys, GraphQlQueryResource.CUSTOMERS);
   }
 
   @Nonnull
