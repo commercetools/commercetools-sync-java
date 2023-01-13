@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
 abstract class BaseServiceWithKey<
         SyncOptionsT extends BaseSyncOptions,
         ResourceT extends DomainResource<ResourceT> & WithKey,
-        ResourceDraftT extends Draft<ResourceDraftT>,
+        ResourceDraftT extends Draft<ResourceDraftT> & WithKey,
         PagedQueryT extends PagedQueryResourceRequest,
         GetOneResourceQueryT extends ApiMethod<GetOneResourceQueryT, ResourceT>,
         QueryResultT,
