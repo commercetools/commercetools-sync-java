@@ -6,17 +6,30 @@ import com.commercetools.api.models.category.CategoryResourceIdentifier;
 import com.commercetools.api.models.category.CategoryResourceIdentifierBuilder;
 import com.commercetools.api.models.channel.Channel;
 import com.commercetools.api.models.channel.ChannelReference;
+import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
 import com.commercetools.api.models.common.Asset;
-import com.commercetools.api.models.product.Attribute;
-import com.commercetools.api.models.product.AttributeBuilder;
+import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.api.models.common.AssetDraftBuilder;
+import com.commercetools.api.models.common.DiscountedPrice;
+import com.commercetools.api.models.common.DiscountedPriceDraft;
+import com.commercetools.api.models.common.DiscountedPriceDraftBuilder;
 import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.common.Price;
+import com.commercetools.api.models.common.PriceDraft;
+import com.commercetools.api.models.common.PriceDraftBuilder;
+import com.commercetools.api.models.common.PriceTier;
+import com.commercetools.api.models.common.PriceTierDraft;
+import com.commercetools.api.models.common.PriceTierDraftBuilder;
 import com.commercetools.api.models.common.Reference;
 import com.commercetools.api.models.customer_group.CustomerGroup;
 import com.commercetools.api.models.customer_group.CustomerGroupReference;
+import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
+import com.commercetools.api.models.product.Attribute;
+import com.commercetools.api.models.product.AttributeBuilder;
 import com.commercetools.api.models.product.CategoryOrderHints;
 import com.commercetools.api.models.product.CategoryOrderHintsBuilder;
 import com.commercetools.api.models.product.Product;
+import com.commercetools.api.models.product.ProductData;
 import com.commercetools.api.models.product.ProductDraft;
 import com.commercetools.api.models.product.ProductDraftBuilder;
 import com.commercetools.api.models.product.ProductProjection;
@@ -33,13 +46,14 @@ import com.commercetools.api.models.tax_category.TaxCategoryReference;
 import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifier;
 import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifierBuilder;
 import com.commercetools.api.models.type.CustomFields;
+import com.commercetools.api.models.type.CustomFieldsDraft;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.api.models.type.Type;
 import com.commercetools.api.models.type.TypeReference;
 import com.commercetools.sync.sdk2.services.CategoryService;
 import com.commercetools.sync.sdk2.services.CustomerGroupService;
 import com.commercetools.sync.sdk2.services.CustomerService;
 import com.commercetools.sync.sdk2.services.ProductTypeService;
-// TODO: Migration needed - Please replace below services with package sdk2 services
 import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.StateService;
@@ -63,6 +77,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
@@ -74,6 +89,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+// TODO: Migration needed - Please replace below services with package sdk2 services
 
 public class ProductSyncMockUtils {
   public static final String PRODUCT_KEY_1_RESOURCE_PATH = "product-key-1.json";
@@ -140,34 +157,35 @@ public class ProductSyncMockUtils {
       @Nonnull final ProductTypeResourceIdentifier productTypeReference) {
     final InputStream resourceAsStream =
         Thread.currentThread().getContextClassLoader().getResourceAsStream(jsonResourcePath);
-    final ProductProjection productFromJson =
-        fromInputStream(resourceAsStream, ProductProjection.class); //STAGED
+    final Product productFromJson =
+        fromInputStream(resourceAsStream, Product.class);
+    final ProductData stagedProductData = productFromJson.getMasterData().getStaged();
 
     @SuppressWarnings("ConstantConditions")
     final List<ProductVariantDraft> allVariants =
-        productFromJson.getAllVariants().stream()
-            .map(productVariant -> ProductVariantDraftBuilder.of()..build())
+        stagedProductData.getAllVariants().stream()
+            .map(productVariant -> createProductVariantDraft(productVariant))
             .collect(toList());
 
     return ProductDraftBuilder.of()
         .productType(productTypeReference)
-        .name(productFromJson.getName())
-        .slug(productFromJson.getSlug())
+        .name(stagedProductData.getName())
+        .slug(stagedProductData.getSlug())
         .variants(allVariants)
-        .metaDescription(productFromJson.getMetaDescription())
-        .metaKeywords(productFromJson.getMetaKeywords())
-        .metaTitle(productFromJson.getMetaTitle())
-        .description(productFromJson.getDescription())
-        .searchKeywords(productFromJson.getSearchKeywords())
+        .metaDescription(stagedProductData.getMetaDescription())
+        .metaKeywords(stagedProductData.getMetaKeywords())
+        .metaTitle(stagedProductData.getMetaTitle())
+        .description(stagedProductData.getDescription())
+        .searchKeywords(stagedProductData.getSearchKeywords())
         .taxCategory(TaxCategoryResourceIdentifierBuilder.of().id(productFromJson.getTaxCategory().getId()).build())
         .state(StateResourceIdentifierBuilder.of().id(productFromJson.getState().getId()).build())
         .key(productFromJson.getKey())
         .categories(
-            productFromJson.getCategories().stream()
+            stagedProductData.getCategories().stream()
                 .map(categoryReference -> CategoryResourceIdentifierBuilder.of().id(categoryReference.getId()).build())
                 .collect(toList()))
-        .categoryOrderHints(productFromJson.getCategoryOrderHints())
-        .publish(productFromJson.getPublished());
+        .categoryOrderHints(stagedProductData.getCategoryOrderHints())
+        .publish(productFromJson.getMasterData().getPublished());
   }
 
   /**
@@ -220,6 +238,67 @@ public class ProductSyncMockUtils {
               resourceIdentifier.getId(), ORDER_HINT_FORMAT.format(randomDouble));
         });
     return CategoryOrderHintsBuilder.of().values(categoryOrderHints).build();
+  }
+
+  public static ProductVariantDraft createProductVariantDraft(final ProductVariant productVariant) {
+    List<AssetDraft> assetDrafts = createAssetDraft(productVariant.getAssets());
+    List<PriceDraft> priceDrafts = createPriceDraft(productVariant.getPrices());
+    return ProductVariantDraftBuilder.of()
+                                     .assets(assetDrafts)
+                                     .attributes(productVariant.getAttributes())
+                                     .images(productVariant.getImages())
+                                     .prices(priceDrafts)
+                                     .sku(productVariant.getSku())
+                                     .key(productVariant.getKey())
+        .build();
+  }
+
+  public static List<AssetDraft> createAssetDraft(List<Asset> assets) {
+    return assets.stream()
+        .map(asset -> AssetDraftBuilder.of()
+                                       .custom(createCustomFieldsDraft(asset.getCustom()))
+                                       .description(asset.getDescription())
+                                       .name(asset.getName())
+                                       .key(asset.getKey())
+                                       .sources(asset.getSources())
+                                       .tags(asset.getTags()).build())
+        .collect(Collectors.toList());
+  }
+
+  public static List<PriceDraft> createPriceDraft(List<Price> prices) {
+    return prices.stream().map(price -> PriceDraftBuilder.of()
+    .channel(ChannelResourceIdentifierBuilder.of().id(price.getChannel().getId()).build())
+    .country(price.getCountry())
+    .custom(createCustomFieldsDraft(price.getCustom()))
+    .customerGroup(CustomerGroupResourceIdentifierBuilder.of().id(price.getId()).build())
+    .discounted(createDiscountedPriceDraft(price.getDiscounted()))
+    .key(price.getKey())
+    .validFrom(price.getValidFrom())
+    .validUntil(price.getValidUntil())
+    .tiers(createPriceTierDraft(price.getTiers()))
+    .value(price.getValue()).build()).collect(Collectors.toList());
+  }
+
+  public static DiscountedPriceDraft createDiscountedPriceDraft(DiscountedPrice discountedPrice) {
+    return DiscountedPriceDraftBuilder.of()
+    .discount(discountedPrice.getDiscount())
+    .value(discountedPrice.getValue())
+    .build();
+  }
+
+  public static List<PriceTierDraft> createPriceTierDraft(List<PriceTier> priceTiers) {
+    return priceTiers.stream().map(priceTier -> PriceTierDraftBuilder.of()
+                                                                     .minimumQuantity(priceTier.getMinimumQuantity())
+                                                                     .value(priceTier.getValue())
+                                                                     .build())
+        .collect(Collectors.toList());
+  }
+
+  public static CustomFieldsDraft createCustomFieldsDraft(CustomFields customFields) {
+    return CustomFieldsDraftBuilder.of()
+                            .fields(customFields.getFields())
+                            .type(customFields.getType().toResourceIdentifier())
+                            .build();
   }
 
   public static ProductDraft createProductDraft(
@@ -277,7 +356,7 @@ public class ProductSyncMockUtils {
   public static ProductProjection createProductFromJson(@Nonnull final String jsonResourcePath) {
     final InputStream resourceAsStream =
         Thread.currentThread().getContextClassLoader().getResourceAsStream(jsonResourcePath);
-    return fromInputStream(resourceAsStream, ProductProjection.class); //STAGED
+    return fromInputStream(resourceAsStream, ProductProjection.class);
   }
 
   public static ProductDraft createProductDraftFromJson(@Nonnull final String jsonResourcePath) {
