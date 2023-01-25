@@ -6,24 +6,14 @@ import com.commercetools.api.models.category.CategoryResourceIdentifier;
 import com.commercetools.api.models.category.CategoryResourceIdentifierBuilder;
 import com.commercetools.api.models.channel.Channel;
 import com.commercetools.api.models.channel.ChannelReference;
-import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
 import com.commercetools.api.models.common.Asset;
 import com.commercetools.api.models.common.AssetDraft;
-import com.commercetools.api.models.common.AssetDraftBuilder;
-import com.commercetools.api.models.common.DiscountedPrice;
-import com.commercetools.api.models.common.DiscountedPriceDraft;
-import com.commercetools.api.models.common.DiscountedPriceDraftBuilder;
 import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.common.Price;
 import com.commercetools.api.models.common.PriceDraft;
-import com.commercetools.api.models.common.PriceDraftBuilder;
-import com.commercetools.api.models.common.PriceTier;
-import com.commercetools.api.models.common.PriceTierDraft;
-import com.commercetools.api.models.common.PriceTierDraftBuilder;
 import com.commercetools.api.models.common.Reference;
 import com.commercetools.api.models.customer_group.CustomerGroup;
 import com.commercetools.api.models.customer_group.CustomerGroupReference;
-import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
 import com.commercetools.api.models.product.Attribute;
 import com.commercetools.api.models.product.AttributeBuilder;
 import com.commercetools.api.models.product.CategoryOrderHints;
@@ -46,8 +36,6 @@ import com.commercetools.api.models.tax_category.TaxCategoryReference;
 import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifier;
 import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifierBuilder;
 import com.commercetools.api.models.type.CustomFields;
-import com.commercetools.api.models.type.CustomFieldsDraft;
-import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.api.models.type.Type;
 import com.commercetools.api.models.type.TypeReference;
 import com.commercetools.sync.sdk2.services.CategoryService;
@@ -77,10 +65,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
+import static com.commercetools.sync.sdk2.products.utils.AssetUtils.createAssetDraft;
+import static com.commercetools.sync.sdk2.products.utils.PriceUtils.createPriceDraft;
 import static io.vrap.rmf.base.client.utils.json.JsonUtils.fromInputStream;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -251,54 +240,6 @@ public class ProductSyncMockUtils {
                                      .sku(productVariant.getSku())
                                      .key(productVariant.getKey())
         .build();
-  }
-
-  public static List<AssetDraft> createAssetDraft(List<Asset> assets) {
-    return assets.stream()
-        .map(asset -> AssetDraftBuilder.of()
-                                       .custom(createCustomFieldsDraft(asset.getCustom()))
-                                       .description(asset.getDescription())
-                                       .name(asset.getName())
-                                       .key(asset.getKey())
-                                       .sources(asset.getSources())
-                                       .tags(asset.getTags()).build())
-        .collect(Collectors.toList());
-  }
-
-  public static List<PriceDraft> createPriceDraft(List<Price> prices) {
-    return prices.stream().map(price -> PriceDraftBuilder.of()
-    .channel(ChannelResourceIdentifierBuilder.of().id(price.getChannel().getId()).build())
-    .country(price.getCountry())
-    .custom(createCustomFieldsDraft(price.getCustom()))
-    .customerGroup(CustomerGroupResourceIdentifierBuilder.of().id(price.getId()).build())
-    .discounted(createDiscountedPriceDraft(price.getDiscounted()))
-    .key(price.getKey())
-    .validFrom(price.getValidFrom())
-    .validUntil(price.getValidUntil())
-    .tiers(createPriceTierDraft(price.getTiers()))
-    .value(price.getValue()).build()).collect(Collectors.toList());
-  }
-
-  public static DiscountedPriceDraft createDiscountedPriceDraft(DiscountedPrice discountedPrice) {
-    return DiscountedPriceDraftBuilder.of()
-    .discount(discountedPrice.getDiscount())
-    .value(discountedPrice.getValue())
-    .build();
-  }
-
-  public static List<PriceTierDraft> createPriceTierDraft(List<PriceTier> priceTiers) {
-    return priceTiers.stream().map(priceTier -> PriceTierDraftBuilder.of()
-                                                                     .minimumQuantity(priceTier.getMinimumQuantity())
-                                                                     .value(priceTier.getValue())
-                                                                     .build())
-        .collect(Collectors.toList());
-  }
-
-  public static CustomFieldsDraft createCustomFieldsDraft(CustomFields customFields) {
-    return CustomFieldsDraftBuilder.of()
-                            .fields(customFields.getFields())
-                            .type(customFields.getType().toResourceIdentifier())
-                            .build();
   }
 
   public static ProductDraft createProductDraft(
