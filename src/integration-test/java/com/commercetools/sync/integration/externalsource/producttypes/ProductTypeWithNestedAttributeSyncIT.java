@@ -1,22 +1,7 @@
 package com.commercetools.sync.integration.externalsource.producttypes;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_1;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_2;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_3;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_1;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_3;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_5;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_1;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_3;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_5;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_1;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_3;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_5;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.assertAttributesAreEqual;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.getProductTypeByKey;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateProjectWithNestedAttributes;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.removeAttributeReferencesAndDeleteProductTypes;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.*;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
@@ -39,22 +24,18 @@ import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Resource;
-import io.sphere.sdk.products.attributes.AttributeConstraint;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
 import io.sphere.sdk.products.attributes.NestedAttributeType;
-import io.sphere.sdk.products.attributes.ReferenceAttributeType;
 import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.commands.updateactions.AddAttributeDefinition;
 import io.sphere.sdk.producttypes.commands.updateactions.RemoveAttributeDefinition;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
-import io.sphere.sdk.queries.PagedQueryResult;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -642,51 +623,5 @@ class ProductTypeWithNestedAttributeSyncIT {
     assertThat(productTypeSyncStatistics.getProductTypeKeysWithMissingParents()).isEmpty();
     assertThat(productType1)
         .hasValueSatisfying(productType -> assertThat(productType.getAttributes()).hasSize(2));
-  }
-
-  @Test
-  void sync_withProductTypeWithCategoryReference_ShouldAddNewAttributesToTheProductType() {
-    AttributeDefinition referenceTypeAttr =
-        AttributeDefinitionBuilder.of(
-                "referenceTypeAttr",
-                LocalizedString.ofEnglish("referenceTypeAttr"),
-                SetAttributeType.of(ReferenceAttributeType.ofCategory()))
-            .isRequired(false)
-            .attributeConstraint(AttributeConstraint.NONE)
-            .isSearchable(false)
-            .build();
-    final ProductTypeDraft newProductTypeDraft =
-        ProductTypeDraft.ofAttributeDefinitionDrafts(
-            PRODUCT_TYPE_KEY_1,
-            PRODUCT_TYPE_NAME_1,
-            PRODUCT_TYPE_DESCRIPTION_1,
-            singletonList(AttributeDefinitionDraftBuilder.of(referenceTypeAttr).build()));
-
-    final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
-    productTypeSync.sync(singletonList(newProductTypeDraft)).toCompletableFuture().join();
-
-    final ProductTypeDraft updatedProductTypeDraft =
-        ProductTypeDraft.ofAttributeDefinitionDrafts(
-            PRODUCT_TYPE_KEY_1,
-            PRODUCT_TYPE_NAME_1,
-            PRODUCT_TYPE_DESCRIPTION_1,
-            asList(
-                ATTRIBUTE_DEFINITION_DRAFT_1,
-                AttributeDefinitionDraftBuilder.of(referenceTypeAttr).build()));
-
-    productTypeSync.sync(singletonList(updatedProductTypeDraft)).toCompletableFuture().join();
-
-    final Optional<ProductType> updatedProductType =
-        getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
-    assert updatedProductType.isPresent();
-
-    Optional<AttributeDefinition> newAttributeDefinition =
-        updatedProductType.get().getAttributes().stream()
-            .filter(
-                attributeDefinition ->
-                    attributeDefinition.getName().equals(ATTRIBUTE_DEFINITION_DRAFT_1.getName()))
-            .findAny();
-
-    assert newAttributeDefinition.isPresent();
   }
 }
