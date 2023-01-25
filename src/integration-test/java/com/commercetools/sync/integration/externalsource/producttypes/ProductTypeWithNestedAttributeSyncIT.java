@@ -39,12 +39,15 @@ import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Resource;
+import io.sphere.sdk.products.attributes.AttributeConstraint;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
 import io.sphere.sdk.products.attributes.NestedAttributeType;
+import io.sphere.sdk.products.attributes.ReferenceAttributeType;
 import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
@@ -638,5 +641,51 @@ class ProductTypeWithNestedAttributeSyncIT {
     assertThat(productTypeSyncStatistics.getProductTypeKeysWithMissingParents()).isEmpty();
     assertThat(productType1)
         .hasValueSatisfying(productType -> assertThat(productType.getAttributes()).hasSize(2));
+  }
+
+  @Test
+  void sync_withProductTypeWithCategoryReference_ShouldAddNewAttributesToTheProductType() {
+    AttributeDefinition nestedTypeAttr =
+        AttributeDefinitionBuilder.of(
+                "nestedTypeAttr",
+                LocalizedString.ofEnglish("nestedTypeAttr"),
+                SetAttributeType.of(ReferenceAttributeType.of("category")))
+            .isRequired(false)
+            .attributeConstraint(AttributeConstraint.NONE)
+            .isSearchable(false)
+            .build();
+    final ProductTypeDraft newProductTypeDraft =
+        ProductTypeDraft.ofAttributeDefinitionDrafts(
+            PRODUCT_TYPE_KEY_1,
+            PRODUCT_TYPE_NAME_1,
+            PRODUCT_TYPE_DESCRIPTION_1,
+            singletonList(AttributeDefinitionDraftBuilder.of(nestedTypeAttr).build()));
+
+    final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
+    productTypeSync.sync(singletonList(newProductTypeDraft)).toCompletableFuture().join();
+
+    final ProductTypeDraft updatedProductTypeDraft =
+        ProductTypeDraft.ofAttributeDefinitionDrafts(
+            PRODUCT_TYPE_KEY_1,
+            PRODUCT_TYPE_NAME_1,
+            PRODUCT_TYPE_DESCRIPTION_1,
+            asList(
+                ATTRIBUTE_DEFINITION_DRAFT_1,
+                AttributeDefinitionDraftBuilder.of(nestedTypeAttr).build()));
+
+    productTypeSync.sync(singletonList(updatedProductTypeDraft)).toCompletableFuture().join();
+
+    final Optional<ProductType> updatedProductType =
+        getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
+    assert updatedProductType.isPresent();
+
+    Optional<AttributeDefinition> newAttributeDefinition =
+        updatedProductType.get().getAttributes().stream()
+            .filter(
+                attributeDefinition ->
+                    attributeDefinition.getName().equals(ATTRIBUTE_DEFINITION_DRAFT_1.getName()))
+            .findAny();
+
+    assert newAttributeDefinition.isPresent();
   }
 }
