@@ -147,14 +147,14 @@ public class ProductSyncMockUtils {
    * resource located at the {@code jsonResourcePath} and based on the supplied {@code productType}.
    *
    * @param jsonResourcePath the path of the JSON resource to build the product draft from.
-   * @param productTypeReference the reference of the product type that the product draft belongs
+   * @param productTypeResourceIdentifier the reference of the product type that the product draft belongs
    *     to.
    * @return a {@link ProductDraftBuilder} instance containing the data from the current projection
    *     of the specified JSON resource and the product type.
    */
   public static ProductDraftBuilder createProductDraftBuilder(
       @Nonnull final String jsonResourcePath,
-      @Nonnull final ProductTypeResourceIdentifier productTypeReference) {
+      @Nonnull final ProductTypeResourceIdentifier productTypeResourceIdentifier) {
     final InputStream resourceAsStream =
         Thread.currentThread().getContextClassLoader().getResourceAsStream(jsonResourcePath);
     final Product productFromJson =
@@ -168,7 +168,7 @@ public class ProductSyncMockUtils {
             .collect(toList());
 
     return ProductDraftBuilder.of()
-        .productType(productTypeReference)
+        .productType(productTypeResourceIdentifier)
         .name(stagedProductData.getName())
         .slug(stagedProductData.getSlug())
         .variants(allVariants)
