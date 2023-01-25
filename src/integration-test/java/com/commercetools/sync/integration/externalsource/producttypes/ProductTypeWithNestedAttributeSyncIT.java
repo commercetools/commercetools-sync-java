@@ -54,6 +54,7 @@ import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.commands.updateactions.AddAttributeDefinition;
 import io.sphere.sdk.producttypes.commands.updateactions.RemoveAttributeDefinition;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
+import io.sphere.sdk.queries.PagedQueryResult;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -645,11 +646,11 @@ class ProductTypeWithNestedAttributeSyncIT {
 
   @Test
   void sync_withProductTypeWithCategoryReference_ShouldAddNewAttributesToTheProductType() {
-    AttributeDefinition nestedTypeAttr =
+    AttributeDefinition referenceTypeAttr =
         AttributeDefinitionBuilder.of(
-                "nestedTypeAttr",
-                LocalizedString.ofEnglish("nestedTypeAttr"),
-                SetAttributeType.of(ReferenceAttributeType.of("category")))
+                "referenceTypeAttr",
+                LocalizedString.ofEnglish("referenceTypeAttr"),
+                SetAttributeType.of(ReferenceAttributeType.ofCategory()))
             .isRequired(false)
             .attributeConstraint(AttributeConstraint.NONE)
             .isSearchable(false)
@@ -659,7 +660,7 @@ class ProductTypeWithNestedAttributeSyncIT {
             PRODUCT_TYPE_KEY_1,
             PRODUCT_TYPE_NAME_1,
             PRODUCT_TYPE_DESCRIPTION_1,
-            singletonList(AttributeDefinitionDraftBuilder.of(nestedTypeAttr).build()));
+            singletonList(AttributeDefinitionDraftBuilder.of(referenceTypeAttr).build()));
 
     final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
     productTypeSync.sync(singletonList(newProductTypeDraft)).toCompletableFuture().join();
@@ -671,7 +672,7 @@ class ProductTypeWithNestedAttributeSyncIT {
             PRODUCT_TYPE_DESCRIPTION_1,
             asList(
                 ATTRIBUTE_DEFINITION_DRAFT_1,
-                AttributeDefinitionDraftBuilder.of(nestedTypeAttr).build()));
+                AttributeDefinitionDraftBuilder.of(referenceTypeAttr).build()));
 
     productTypeSync.sync(singletonList(updatedProductTypeDraft)).toCompletableFuture().join();
 
