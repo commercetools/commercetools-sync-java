@@ -956,7 +956,7 @@ class ProductTypeSyncIT {
     final ProductTypeSyncOptions productTypeSyncOptions =
         ProductTypeSyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
 
-    AttributeDefinition referenceTypeAttr =
+    final AttributeDefinition referenceTypeAttr =
         AttributeDefinitionBuilder.of(
                 "referenceTypeAttr",
                 LocalizedString.ofEnglish("referenceTypeAttr"),
@@ -990,7 +990,7 @@ class ProductTypeSyncIT {
         getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
     assert updatedProductType.isPresent();
 
-    Optional<AttributeDefinition> newAttributeDefinition =
+    final Optional<AttributeDefinition> newAttributeDefinition =
         updatedProductType.get().getAttributes().stream()
             .filter(
                 attributeDefinition ->
