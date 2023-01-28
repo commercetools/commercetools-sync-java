@@ -15,7 +15,7 @@ ext{
     mockitoJunitJupiterVersion = '5.0.0'
     jupiterApiVersion = '5.9.2'
     assertjVersion = '3.24.2'
-    pmdVersion = '6.53.0'
+    pmdVersion = '6.54.0'
     jacocoVersion = '0.8.8'
     caffeineVersion = '3.1.2'
     nexusStagingPluginVersion = '0.22.0'
