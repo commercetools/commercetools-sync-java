@@ -2,12 +2,11 @@ package com.commercetools.sync.sdk2.services;
 
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
-
-import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import javax.annotation.Nonnull;
 
 public interface ChannelService {
 

@@ -8,7 +8,9 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 
-/** @param <S> Subclass of {@link BaseSyncOptions} */
+/**
+ * @param <S> Subclass of {@link BaseSyncOptions}
+ */
 abstract class BaseService<S extends BaseSyncOptions> {
 
   final S syncOptions;

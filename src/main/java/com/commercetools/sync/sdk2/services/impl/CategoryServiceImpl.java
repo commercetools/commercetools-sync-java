@@ -1,5 +1,7 @@
 package com.commercetools.sync.sdk2.services.impl;
 
+import static java.util.Collections.singleton;
+
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
@@ -14,27 +16,24 @@ import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.categories.queries.CategoryQueryBuilder;
 import io.sphere.sdk.categories.queries.CategoryQueryModel;
 import io.sphere.sdk.commands.UpdateAction;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
-
-import static java.util.Collections.singleton;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /** Implementation of CategoryService interface. */
 public final class CategoryServiceImpl
     extends BaseServiceWithKey<
-            CategoryDraft,
-            Category,
-            Category,
-            CategorySyncOptions,
-            CategoryQuery,
-            CategoryQueryModel,
-            CategoryExpansionModel<Category>>
+        CategoryDraft,
+        Category,
+        Category,
+        CategorySyncOptions,
+        CategoryQuery,
+        CategoryQueryModel,
+        CategoryExpansionModel<Category>>
     implements CategoryService {
 
   public CategoryServiceImpl(@Nonnull final CategorySyncOptions syncOptions) {

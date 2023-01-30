@@ -18,10 +18,14 @@ public interface ReferenceIdToKeyCache {
    */
   void add(@Nonnull final String key, @Nonnull final String value);
 
-  /** @param key key whose mapping is to be removed from the map */
+  /**
+   * @param key key whose mapping is to be removed from the map
+   */
   void remove(@Nonnull final String key);
 
-  /** @param idToKeyValues mappings to be stored in this cache. */
+  /**
+   * @param idToKeyValues mappings to be stored in this cache.
+   */
   void addAll(@Nonnull final Map<String, String> idToKeyValues);
 
   /**

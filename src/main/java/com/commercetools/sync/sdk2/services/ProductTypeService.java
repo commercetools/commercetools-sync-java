@@ -5,14 +5,13 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public interface ProductTypeService {
 
@@ -77,8 +76,8 @@ public interface ProductTypeService {
   /**
    * Given a {@link Set} of ProductType keys, this method fetches a set of all the ProductTypes,
    * matching this given set of keys in the CTP project, defined in an injected {@link
-   * SphereClient}. A mapping of the key to the id of the fetched ProductType
-   * is persisted in an in-memory map.
+   * SphereClient}. A mapping of the key to the id of the fetched ProductType is persisted in an
+   * in-memory map.
    *
    * @param keys set of ProductType keys to fetch matching ProductTypes by.
    * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion

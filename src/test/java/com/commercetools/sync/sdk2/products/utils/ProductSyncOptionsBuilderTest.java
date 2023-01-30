@@ -1,27 +1,5 @@
 package com.commercetools.sync.sdk2.products.utils;
 
-import com.commercetools.api.client.ProjectApiRoot;
-import com.commercetools.api.models.common.LocalizedString;
-import com.commercetools.api.models.product.ProductChangeNameActionBuilder;
-import com.commercetools.api.models.product.ProductDraft;
-import com.commercetools.api.models.product.ProductDraftBuilder;
-import com.commercetools.api.models.product.ProductProjection;
-import com.commercetools.api.models.product.ProductUpdateAction;
-import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
-import com.commercetools.sync.sdk2.commons.utils.QuadConsumer;
-import com.commercetools.sync.sdk2.commons.utils.TriConsumer;
-import com.commercetools.sync.sdk2.commons.utils.TriFunction;
-import com.commercetools.sync.sdk2.products.ProductSyncOptions;
-// TODO: Not migrated yet - replace with com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
-import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import com.commercetools.sync.sdk2.products.SyncFilter;
-import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
-
 import static com.commercetools.sync.products.ActionGroup.IMAGES;
 import static com.commercetools.sync.products.SyncFilter.ofWhiteList;
 import static java.util.Collections.emptyList;
@@ -31,6 +9,28 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.product.ProductChangeNameActionBuilder;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductDraftBuilder;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductUpdateAction;
+import com.commercetools.sync.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
+import com.commercetools.sync.sdk2.commons.utils.QuadConsumer;
+import com.commercetools.sync.sdk2.commons.utils.TriConsumer;
+import com.commercetools.sync.sdk2.commons.utils.TriFunction;
+import com.commercetools.sync.sdk2.products.ProductSyncOptions;
+// TODO: Not migrated yet - replace with
+// com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.sdk2.products.SyncFilter;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import org.junit.jupiter.api.Test;
 
 class ProductSyncOptionsBuilderTest {
   private static final ProjectApiRoot CTP_CLIENT = mock(ProjectApiRoot.class);
@@ -77,10 +77,7 @@ class ProductSyncOptionsBuilderTest {
   @Test
   void beforeUpdateCallback_WithFilterAsCallback_ShouldSetCallback() {
     final TriFunction<
-            List<ProductUpdateAction>,
-            ProductDraft,
-            ProductProjection,
-            List<ProductUpdateAction>>
+            List<ProductUpdateAction>, ProductDraft, ProductProjection, List<ProductUpdateAction>>
         beforeUpdateCallback = (updateActions, newProduct, oldProduct) -> emptyList();
     productSyncOptionsBuilder.beforeUpdateCallback(beforeUpdateCallback);
 
@@ -165,7 +162,8 @@ class ProductSyncOptionsBuilderTest {
     assertThat(productSyncOptions.getBeforeUpdateCallback()).isNull();
 
     final List<ProductUpdateAction> updateActions =
-        Collections.singletonList(ProductChangeNameActionBuilder.of().name(LocalizedString.ofEnglish("name")).build());
+        Collections.singletonList(
+            ProductChangeNameActionBuilder.of().name(LocalizedString.ofEnglish("name")).build());
     final List<ProductUpdateAction> filteredList =
         productSyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(ProductDraft.class), mock(ProductProjection.class));
@@ -175,17 +173,15 @@ class ProductSyncOptionsBuilderTest {
   @Test
   void applyBeforeUpdateCallBack_WithNullReturnCallback_ShouldReturnEmptyList() {
     final TriFunction<
-            List<ProductUpdateAction>,
-            ProductDraft,
-            ProductProjection,
-            List<ProductUpdateAction>>
+            List<ProductUpdateAction>, ProductDraft, ProductProjection, List<ProductUpdateAction>>
         beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> null;
     final ProductSyncOptions productSyncOptions =
         ProductSyncOptionsBuilder.of(CTP_CLIENT).beforeUpdateCallback(beforeUpdateCallback).build();
     assertThat(productSyncOptions.getBeforeUpdateCallback()).isNotNull();
 
     final List<ProductUpdateAction> updateActions =
-        Collections.singletonList(ProductChangeNameActionBuilder.of().name(LocalizedString.ofEnglish("name")).build());
+        Collections.singletonList(
+            ProductChangeNameActionBuilder.of().name(LocalizedString.ofEnglish("name")).build());
     final List<ProductUpdateAction> filteredList =
         productSyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(ProductDraft.class), mock(ProductProjection.class));
@@ -195,10 +191,7 @@ class ProductSyncOptionsBuilderTest {
 
   private interface MockTriFunction
       extends TriFunction<
-          List<ProductUpdateAction>,
-          ProductDraft,
-          ProductProjection,
-          List<ProductUpdateAction>> {}
+          List<ProductUpdateAction>, ProductDraft, ProductProjection, List<ProductUpdateAction>> {}
 
   @Test
   void applyBeforeUpdateCallBack_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
@@ -221,17 +214,15 @@ class ProductSyncOptionsBuilderTest {
   @Test
   void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
     final TriFunction<
-            List<ProductUpdateAction>,
-            ProductDraft,
-            ProductProjection,
-            List<ProductUpdateAction>>
+            List<ProductUpdateAction>, ProductDraft, ProductProjection, List<ProductUpdateAction>>
         beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> emptyList();
     final ProductSyncOptions productSyncOptions =
         ProductSyncOptionsBuilder.of(CTP_CLIENT).beforeUpdateCallback(beforeUpdateCallback).build();
     assertThat(productSyncOptions.getBeforeUpdateCallback()).isNotNull();
 
     final List<ProductUpdateAction> updateActions =
-        Collections.singletonList(ProductChangeNameActionBuilder.of().name(LocalizedString.ofEnglish("name")).build());
+        Collections.singletonList(
+            ProductChangeNameActionBuilder.of().name(LocalizedString.ofEnglish("name")).build());
     final List<ProductUpdateAction> filteredList =
         productSyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(ProductDraft.class), mock(ProductProjection.class));

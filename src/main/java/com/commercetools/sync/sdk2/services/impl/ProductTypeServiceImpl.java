@@ -1,5 +1,7 @@
 package com.commercetools.sync.sdk2.services.impl;
 
+import static java.util.Collections.singleton;
+
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
@@ -15,9 +17,6 @@ import io.sphere.sdk.producttypes.expansion.ProductTypeExpansionModel;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.producttypes.queries.ProductTypeQueryBuilder;
 import io.sphere.sdk.producttypes.queries.ProductTypeQueryModel;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,18 +26,18 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import static java.util.Collections.singleton;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public final class ProductTypeServiceImpl
     extends BaseServiceWithKey<
-                ProductTypeDraft,
-                ProductType,
-                ProductType,
-                BaseSyncOptions,
-                ProductTypeQuery,
-                ProductTypeQueryModel,
-                ProductTypeExpansionModel<ProductType>>
+        ProductTypeDraft,
+        ProductType,
+        ProductType,
+        BaseSyncOptions,
+        ProductTypeQuery,
+        ProductTypeQueryModel,
+        ProductTypeExpansionModel<ProductType>>
     implements ProductTypeService {
 
   private final Map<String, Map<String, AttributeMetaData>> productsAttributesMetaData =

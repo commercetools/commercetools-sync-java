@@ -6,11 +6,10 @@ import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 
 public class CustomFieldsUtils {
 
-    public static CustomFieldsDraft createCustomFieldsDraft(CustomFields customFields) {
-        return CustomFieldsDraftBuilder.of()
-                                       .fields(customFields.getFields())
-                                       .type(customFields.getType().toResourceIdentifier())
-                                       .build();
-    }
-
+  public static CustomFieldsDraft createCustomFieldsDraft(CustomFields customFields) {
+    return CustomFieldsDraftBuilder.of()
+        .fields(customFields.getFields())
+        .type(customFields.getType().toResourceIdentifier())
+        .build();
+  }
 }

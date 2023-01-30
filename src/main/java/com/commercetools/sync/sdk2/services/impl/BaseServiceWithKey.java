@@ -8,9 +8,6 @@ import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.models.ResourceView;
 import io.sphere.sdk.models.WithKey;
 import io.sphere.sdk.queries.MetaModelQueryDsl;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -18,6 +15,8 @@ import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @param <T> Resource Draft (e.g. {@link io.sphere.sdk.products.ProductDraft}, {@link

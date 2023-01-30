@@ -1,5 +1,18 @@
 package com.commercetools.sync.sdk2.products.utils;
 
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
+import static com.commercetools.sync.sdk2.products.utils.AssetUtils.createAssetDraft;
+import static com.commercetools.sync.sdk2.products.utils.PriceUtils.createPriceDraft;
+import static io.vrap.rmf.base.client.utils.json.JsonUtils.fromInputStream;
+import static java.util.Optional.ofNullable;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.stream.Collectors.toList;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.commercetools.api.models.category.CategoryReference;
 import com.commercetools.api.models.category.CategoryReferenceBuilder;
 import com.commercetools.api.models.category.CategoryResourceIdentifier;
@@ -49,9 +62,6 @@ import com.commercetools.sync.services.TaxCategoryService;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -65,19 +75,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
-
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
-import static com.commercetools.sync.sdk2.products.utils.AssetUtils.createAssetDraft;
-import static com.commercetools.sync.sdk2.products.utils.PriceUtils.createPriceDraft;
-import static io.vrap.rmf.base.client.utils.json.JsonUtils.fromInputStream;
-import static java.util.Optional.ofNullable;
-import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.stream.Collectors.toList;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 // TODO: Migration needed - Please replace below services with package sdk2 services
 
@@ -136,8 +135,8 @@ public class ProductSyncMockUtils {
    * resource located at the {@code jsonResourcePath} and based on the supplied {@code productType}.
    *
    * @param jsonResourcePath the path of the JSON resource to build the product draft from.
-   * @param productTypeResourceIdentifier the reference of the product type that the product draft belongs
-   *     to.
+   * @param productTypeResourceIdentifier the reference of the product type that the product draft
+   *     belongs to.
    * @return a {@link ProductDraftBuilder} instance containing the data from the current projection
    *     of the specified JSON resource and the product type.
    */
@@ -146,8 +145,7 @@ public class ProductSyncMockUtils {
       @Nonnull final ProductTypeResourceIdentifier productTypeResourceIdentifier) {
     final InputStream resourceAsStream =
         Thread.currentThread().getContextClassLoader().getResourceAsStream(jsonResourcePath);
-    final Product productFromJson =
-        fromInputStream(resourceAsStream, Product.class);
+    final Product productFromJson = fromInputStream(resourceAsStream, Product.class);
     final ProductData stagedProductData = productFromJson.getMasterData().getStaged();
 
     @SuppressWarnings("ConstantConditions")
@@ -166,22 +164,29 @@ public class ProductSyncMockUtils {
         .metaTitle(stagedProductData.getMetaTitle())
         .description(stagedProductData.getDescription())
         .searchKeywords(stagedProductData.getSearchKeywords())
-        .taxCategory(TaxCategoryResourceIdentifierBuilder.of().id(productFromJson.getTaxCategory().getId()).build())
+        .taxCategory(
+            TaxCategoryResourceIdentifierBuilder.of()
+                .id(productFromJson.getTaxCategory().getId())
+                .build())
         .state(StateResourceIdentifierBuilder.of().id(productFromJson.getState().getId()).build())
         .key(productFromJson.getKey())
         .categories(
             stagedProductData.getCategories().stream()
-                .map(categoryReference -> CategoryResourceIdentifierBuilder.of().id(categoryReference.getId()).build())
+                .map(
+                    categoryReference ->
+                        CategoryResourceIdentifierBuilder.of()
+                            .id(categoryReference.getId())
+                            .build())
                 .collect(toList()))
         .categoryOrderHints(stagedProductData.getCategoryOrderHints())
         .publish(productFromJson.getMasterData().getPublished());
   }
 
   /**
-   * Given a {@link Set} of {@link CategoryResourceIdentifier}, this method returns an
-   * instance of {@link CategoryOrderHints} containing a {@link Map}, in which each entry has
-   * category id from the supplied {@link Set} as a key and a random categoryOrderHint which is a
-   * {@link String} containing a random double value between 0 and 1 (exclusive).
+   * Given a {@link Set} of {@link CategoryResourceIdentifier}, this method returns an instance of
+   * {@link CategoryOrderHints} containing a {@link Map}, in which each entry has category id from
+   * the supplied {@link Set} as a key and a random categoryOrderHint which is a {@link String}
+   * containing a random double value between 0 and 1 (exclusive).
    *
    * <p>Note: The random double value is generated by the {@link ThreadLocalRandom#current()}
    * nextDouble method.
@@ -233,12 +238,12 @@ public class ProductSyncMockUtils {
     List<AssetDraft> assetDrafts = createAssetDraft(productVariant.getAssets());
     List<PriceDraft> priceDrafts = createPriceDraft(productVariant.getPrices());
     return ProductVariantDraftBuilder.of()
-                                     .assets(assetDrafts)
-                                     .attributes(productVariant.getAttributes())
-                                     .images(productVariant.getImages())
-                                     .prices(priceDrafts)
-                                     .sku(productVariant.getSku())
-                                     .key(productVariant.getKey())
+        .assets(assetDrafts)
+        .attributes(productVariant.getAttributes())
+        .images(productVariant.getImages())
+        .prices(priceDrafts)
+        .sku(productVariant.getSku())
+        .key(productVariant.getKey())
         .build();
   }
 
@@ -283,13 +288,17 @@ public class ProductSyncMockUtils {
     ProductTypeResourceIdentifier productTypeRI =
         ProductTypeResourceIdentifierBuilder.of().id(productTypeReference.getId()).build();
     return createProductDraftBuilder(jsonResourcePath, productTypeRI)
-        .taxCategory(TaxCategoryResourceIdentifierBuilder.of().id(taxCategoryReference.getId()).build())
+        .taxCategory(
+            TaxCategoryResourceIdentifierBuilder.of().id(taxCategoryReference.getId()).build())
         .state(StateResourceIdentifierBuilder.of().id(stateReference.getId()).build())
         .categories(
             categoryReferences.stream()
-                              .map(categoryReference -> CategoryResourceIdentifierBuilder.of().id(
-                                  categoryReference.getId()).build())
-                              .collect(toList()))
+                .map(
+                    categoryReference ->
+                        CategoryResourceIdentifierBuilder.of()
+                            .id(categoryReference.getId())
+                            .build())
+                .collect(toList()))
         .categoryOrderHints(categoryOrderHints)
         .build();
   }
@@ -509,13 +518,11 @@ public class ProductSyncMockUtils {
   }
 
   /**
-   * Creates an {@link Attribute} with the supplied {@code attributeName} and {@code
-   * references}.
+   * Creates an {@link Attribute} with the supplied {@code attributeName} and {@code references}.
    *
    * @param attributeName the name to set on the {@link Attribute}.
    * @param references the references to set on the {@link Attribute}.
-   * @return an {@link Attribute} with the supplied {@code attributeName} and {@code
-   *     references}.
+   * @return an {@link Attribute} with the supplied {@code attributeName} and {@code references}.
    */
   @Nonnull
   public static Attribute getReferenceSetAttributeDraft(
@@ -571,10 +578,9 @@ public class ProductSyncMockUtils {
   @Nonnull
   public static ProductDraftBuilder getBuilderWithProductTypeRefKey(@Nullable final String refKey) {
     return ProductDraftBuilder.of()
-                              .productType(ProductTypeResourceIdentifierBuilder.of().key(refKey).build())
-                              .name(LocalizedString.ofEnglish("testName"))
-        .slug(
-        LocalizedString.ofEnglish("testSlug"));
+        .productType(ProductTypeResourceIdentifierBuilder.of().key(refKey).build())
+        .name(LocalizedString.ofEnglish("testName"))
+        .slug(LocalizedString.ofEnglish("testSlug"));
   }
 
   @Nonnull
