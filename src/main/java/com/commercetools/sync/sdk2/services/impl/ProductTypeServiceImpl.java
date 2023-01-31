@@ -8,10 +8,11 @@ import com.commercetools.api.client.ByProjectKeyProductTypesPost;
 import com.commercetools.api.client.QueryUtils;
 import com.commercetools.api.models.product_type.ProductType;
 import com.commercetools.api.models.product_type.ProductTypeDraft;
+import com.commercetools.api.models.product_type.ProductTypePagedQueryResponse;
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
 import com.commercetools.api.models.product_type.ProductTypeUpdateBuilder;
-import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
+import com.commercetools.sync.sdk2.products.AttributeMetaData;
 import com.commercetools.sync.sdk2.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.sdk2.services.ProductTypeService;
 import io.vrap.rmf.base.client.ApiHttpResponse;
@@ -31,6 +32,7 @@ public final class ProductTypeServiceImpl
         ProductType,
         ProductTypeDraft,
         ByProjectKeyProductTypesGet,
+        ProductTypePagedQueryResponse,
         ByProjectKeyProductTypesKeyByKeyGet,
         ProductType,
         ByProjectKeyProductTypesPost>
@@ -108,7 +110,7 @@ public final class ProductTypeServiceImpl
       @Nonnull final Set<String> keys) {
     return fetchMatchingResources(
         keys,
-        productType -> productType.getKey(),
+        ProductType::getKey,
         (keysNotCached) ->
             syncOptions
                 .getCtpClient()

@@ -5,6 +5,7 @@ import com.commercetools.api.client.ByProjectKeyCustomerGroupsKeyByKeyGet;
 import com.commercetools.api.client.ByProjectKeyCustomerGroupsPost;
 import com.commercetools.api.models.customer_group.CustomerGroup;
 import com.commercetools.api.models.customer_group.CustomerGroupDraft;
+import com.commercetools.api.models.customer_group.CustomerGroupPagedQueryResponse;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.services.CustomerGroupService;
@@ -23,6 +24,7 @@ public final class CustomerGroupServiceImpl
         CustomerGroup,
         CustomerGroupDraft,
         ByProjectKeyCustomerGroupsGet,
+        CustomerGroupPagedQueryResponse,
         ByProjectKeyCustomerGroupsKeyByKeyGet,
         CustomerGroup,
         ByProjectKeyCustomerGroupsPost>

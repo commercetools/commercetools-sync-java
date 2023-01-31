@@ -7,6 +7,7 @@ import com.commercetools.api.client.ByProjectKeyCategoriesKeyByKeyGet;
 import com.commercetools.api.client.ByProjectKeyCategoriesPost;
 import com.commercetools.api.models.category.Category;
 import com.commercetools.api.models.category.CategoryDraft;
+import com.commercetools.api.models.category.CategoryPagedQueryResponse;
 import com.commercetools.api.models.category.CategoryUpdateAction;
 import com.commercetools.api.models.category.CategoryUpdateBuilder;
 import com.commercetools.sync.sdk2.categories.CategorySyncOptions;
@@ -31,6 +32,7 @@ public final class CategoryServiceImpl
         Category,
         CategoryDraft,
         ByProjectKeyCategoriesGet,
+        CategoryPagedQueryResponse,
         ByProjectKeyCategoriesKeyByKeyGet,
         Category,
         ByProjectKeyCategoriesPost>

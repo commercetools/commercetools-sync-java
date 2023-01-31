@@ -8,6 +8,7 @@ import com.commercetools.api.client.ByProjectKeyCustomersKeyByKeyGet;
 import com.commercetools.api.client.ByProjectKeyCustomersPost;
 import com.commercetools.api.models.customer.Customer;
 import com.commercetools.api.models.customer.CustomerDraft;
+import com.commercetools.api.models.customer.CustomerPagedQueryResponse;
 import com.commercetools.api.models.customer.CustomerSignInResult;
 import com.commercetools.api.models.customer.CustomerUpdateAction;
 import com.commercetools.api.models.customer.CustomerUpdateBuilder;
@@ -30,6 +31,7 @@ public final class CustomerServiceImpl
         Customer,
         CustomerDraft,
         ByProjectKeyCustomersGet,
+        CustomerPagedQueryResponse,
         ByProjectKeyCustomersKeyByKeyGet,
         CustomerSignInResult,
         ByProjectKeyCustomersPost>

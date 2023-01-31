@@ -3,7 +3,7 @@ package com.commercetools.sync.sdk2.services;
 import com.commercetools.api.models.product_type.ProductType;
 import com.commercetools.api.models.product_type.ProductTypeDraft;
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
-import com.commercetools.sync.products.AttributeMetaData;
+import com.commercetools.sync.sdk2.products.AttributeMetaData;
 import io.sphere.sdk.client.SphereClient;
 import java.util.List;
 import java.util.Map;

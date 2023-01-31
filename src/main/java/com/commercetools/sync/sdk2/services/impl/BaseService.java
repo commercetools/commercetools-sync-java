@@ -8,6 +8,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import com.commercetools.api.client.QueryUtils;
 import com.commercetools.api.models.DomainResource;
 import com.commercetools.api.models.PagedQueryResourceRequest;
+import com.commercetools.api.models.ResourcePagedQueryResponse;
 import com.commercetools.api.models.graph_ql.GraphQLRequest;
 import com.commercetools.api.models.graph_ql.GraphQLRequestBuilder;
 import com.commercetools.api.models.graph_ql.GraphQLVariablesMapBuilder;
@@ -46,7 +47,8 @@ abstract class BaseService<
     SyncOptionsT extends BaseSyncOptions,
     ResourceT extends DomainResource<ResourceT>,
     ResourceDraftT extends Draft<ResourceDraftT>,
-    PagedQueryT extends PagedQueryResourceRequest,
+    PagedQueryRequestT extends PagedQueryResourceRequest,
+    PagedQueryResponseT extends ResourcePagedQueryResponse<ResourceT>,
     GetOneResourceQueryT extends ApiMethod<GetOneResourceQueryT, ResourceT>,
     QueryResultT,
     PostRequestT extends BodyApiMethod<PostRequestT, QueryResultT, ResourceDraftT>> {
@@ -165,7 +167,7 @@ abstract class BaseService<
   CompletionStage<Optional<String>> fetchCachedResourceId(
       @Nullable final String key,
       @Nonnull final Function<ResourceT, String> keyMapper,
-      @Nonnull final PagedQueryT query) {
+      @Nonnull final PagedQueryRequestT query) {
 
     if (isBlank(key)) {
       return CompletableFuture.completedFuture(Optional.empty());
@@ -181,7 +183,7 @@ abstract class BaseService<
   private CompletionStage<Optional<String>> fetchAndCache(
       @Nullable final String key,
       @Nonnull final Function<ResourceT, String> keyMapper,
-      @Nonnull final PagedQueryT query) {
+      @Nonnull final PagedQueryRequestT query) {
     final Consumer<List<ResourceT>> pageConsumer =
         page ->
             page.forEach(resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
@@ -243,7 +245,7 @@ abstract class BaseService<
   CompletionStage<Set<ResourceT>> fetchMatchingResources(
       @Nonnull final Set<String> keys,
       @Nonnull final Function<ResourceT, String> keyMapper,
-      @Nonnull final Function<Set<String>, PagedQueryT> keysQueryMapper) {
+      @Nonnull final Function<Set<String>, PagedQueryRequestT> keysQueryMapper) {
     if (keys.isEmpty()) {
       return CompletableFuture.completedFuture(Collections.emptySet());
     }
@@ -251,17 +253,21 @@ abstract class BaseService<
     return fetchWithChunks(keysQueryMapper, keys)
         .thenApply(
             chunk -> {
+                final Set<ResourceT> returnedSet = new HashSet<>();
               chunk.forEach(
-                  resource -> {
-                    ResourceT resourceBody = resource.getBody();
-                    keyToIdCache.put(keyMapper.apply(resourceBody), resourceBody.getId());
+                  response -> {
+                    PagedQueryResponseT responseBody = response.getBody();
+                    responseBody.getResults().forEach(resource -> {
+                        returnedSet.add(resource);
+                        keyToIdCache.put(keyMapper.apply(resource), resource.getId());
+                    });
                   });
-              return new HashSet<>();
+              return returnedSet;
             });
   }
 
-  private CompletableFuture<List<ApiHttpResponse<ResourceT>>> fetchWithChunks(
-      @Nonnull final Function<Set<String>, PagedQueryT> keysQueryMapper,
+  private CompletableFuture<List<ApiHttpResponse<PagedQueryResponseT>>> fetchWithChunks(
+      @Nonnull final Function<Set<String>, PagedQueryRequestT> keysQueryMapper,
       @Nonnull final Set<String> keysNotCached) {
 
     final List<List<String>> chunkedKeys = ChunkUtils.chunk(keysNotCached, CHUNK_SIZE);

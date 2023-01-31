@@ -6,6 +6,7 @@ import com.commercetools.api.client.ByProjectKeyChannelsPost;
 import com.commercetools.api.models.channel.Channel;
 import com.commercetools.api.models.channel.ChannelDraft;
 import com.commercetools.api.models.channel.ChannelDraftBuilder;
+import com.commercetools.api.models.channel.ChannelPagedQueryResponse;
 import com.commercetools.api.models.channel.ChannelRoleEnum;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
@@ -24,6 +25,7 @@ public final class ChannelServiceImpl
         Channel,
         ChannelDraft,
         ByProjectKeyChannelsGet,
+        ChannelPagedQueryResponse,
         ByProjectKeyChannelsByIDGet,
         Channel,
         ByProjectKeyChannelsPost>

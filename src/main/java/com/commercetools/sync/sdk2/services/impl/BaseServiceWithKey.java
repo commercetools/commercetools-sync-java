@@ -2,6 +2,7 @@ package com.commercetools.sync.sdk2.services.impl;
 
 import com.commercetools.api.models.DomainResource;
 import com.commercetools.api.models.PagedQueryResourceRequest;
+import com.commercetools.api.models.ResourcePagedQueryResponse;
 import com.commercetools.api.models.WithKey;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import io.vrap.rmf.base.client.ApiMethod;
@@ -19,6 +20,7 @@ abstract class BaseServiceWithKey<
         ResourceT extends DomainResource<ResourceT> & WithKey,
         ResourceDraftT extends Draft<ResourceDraftT> & WithKey,
         PagedQueryT extends PagedQueryResourceRequest,
+        PagedQueryResponseT extends ResourcePagedQueryResponse<ResourceT>,
         GetOneResourceQueryT extends ApiMethod<GetOneResourceQueryT, ResourceT>,
         QueryResultT,
         PostRequestT extends BodyApiMethod<PostRequestT, QueryResultT, ResourceDraftT>>
@@ -27,6 +29,7 @@ abstract class BaseServiceWithKey<
         ResourceT,
         ResourceDraftT,
         PagedQueryT,
+        PagedQueryResponseT,
         GetOneResourceQueryT,
         QueryResultT,
         PostRequestT> {

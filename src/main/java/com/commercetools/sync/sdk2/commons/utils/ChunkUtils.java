@@ -31,7 +31,7 @@ public class ChunkUtils {
    * @param <Q> the type of the request model.
    * @return a list of lists where each list represents the results of passed {@link SphereRequest}.
    */
-  public static <QueryT extends PagedQueryResourceRequest, ResourceT>
+  public static <QueryT extends PagedQueryResourceRequest<QueryT, ResourceT>, ResourceT>
       CompletableFuture<List<ApiHttpResponse<ResourceT>>> executeChunks(
           @Nonnull final List<QueryT> requests) {
 

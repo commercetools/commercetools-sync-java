@@ -5,6 +5,7 @@ import com.commercetools.api.client.ByProjectKeyTypesKeyByKeyGet;
 import com.commercetools.api.client.ByProjectKeyTypesPost;
 import com.commercetools.api.models.type.Type;
 import com.commercetools.api.models.type.TypeDraft;
+import com.commercetools.api.models.type.TypePagedQueryResponse;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.services.TypeService;
@@ -23,6 +24,7 @@ public final class TypeServiceImpl
         Type,
         TypeDraft,
         ByProjectKeyTypesGet,
+        TypePagedQueryResponse,
         ByProjectKeyTypesKeyByKeyGet,
         Type,
         ByProjectKeyTypesPost>
