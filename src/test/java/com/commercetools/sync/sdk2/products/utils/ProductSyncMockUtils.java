@@ -1,42 +1,68 @@
 package com.commercetools.sync.sdk2.products.utils;
 
-import com.commercetools.sync.services.CategoryService;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
+import static com.commercetools.sync.sdk2.products.utils.AssetUtils.createAssetDraft;
+import static com.commercetools.sync.sdk2.products.utils.PriceUtils.createPriceDraft;
+import static io.vrap.rmf.base.client.utils.json.JsonUtils.fromInputStream;
+import static java.util.Optional.ofNullable;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.stream.Collectors.toList;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import com.commercetools.api.models.category.CategoryReference;
+import com.commercetools.api.models.category.CategoryReferenceBuilder;
+import com.commercetools.api.models.category.CategoryResourceIdentifier;
+import com.commercetools.api.models.category.CategoryResourceIdentifierBuilder;
+import com.commercetools.api.models.channel.Channel;
+import com.commercetools.api.models.channel.ChannelReference;
+import com.commercetools.api.models.common.Asset;
+import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.common.Price;
+import com.commercetools.api.models.common.PriceDraft;
+import com.commercetools.api.models.common.Reference;
+import com.commercetools.api.models.customer_group.CustomerGroup;
+import com.commercetools.api.models.customer_group.CustomerGroupReference;
+import com.commercetools.api.models.product.Attribute;
+import com.commercetools.api.models.product.AttributeBuilder;
+import com.commercetools.api.models.product.CategoryOrderHints;
+import com.commercetools.api.models.product.CategoryOrderHintsBuilder;
+import com.commercetools.api.models.product.Product;
+import com.commercetools.api.models.product.ProductData;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductDraftBuilder;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductVariant;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.product_type.ProductTypeReference;
+import com.commercetools.api.models.product_type.ProductTypeResourceIdentifier;
+import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
+import com.commercetools.api.models.state.StateReference;
+import com.commercetools.api.models.state.StateResourceIdentifier;
+import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
+import com.commercetools.api.models.tax_category.TaxCategoryReference;
+import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifier;
+import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifierBuilder;
+import com.commercetools.api.models.type.CustomFields;
+import com.commercetools.api.models.type.Type;
+import com.commercetools.api.models.type.TypeReference;
+import com.commercetools.sync.sdk2.services.CategoryService;
+import com.commercetools.sync.sdk2.services.CustomerGroupService;
+import com.commercetools.sync.sdk2.services.CustomerService;
+import com.commercetools.sync.sdk2.services.ProductTypeService;
 import com.commercetools.sync.services.CustomObjectService;
-import com.commercetools.sync.services.CustomerGroupService;
-import com.commercetools.sync.services.CustomerService;
 import com.commercetools.sync.services.ProductService;
-import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.customergroups.CustomerGroup;
-import io.sphere.sdk.models.Asset;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifiable;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.CategoryOrderHints;
-import io.sphere.sdk.products.Price;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.ProductVariant;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.ProductVariantDraftBuilder;
-import io.sphere.sdk.products.attributes.AttributeDraft;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.taxcategories.TaxCategory;
-import io.sphere.sdk.types.CustomFields;
-import io.sphere.sdk.types.Type;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Arrays;
@@ -49,19 +75,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
-import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
-import static io.sphere.sdk.products.ProductProjectionType.STAGED;
-import static java.util.Optional.ofNullable;
-import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.stream.Collectors.toList;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+// TODO: Migration needed - Please replace below services with package sdk2 services
 
 public class ProductSyncMockUtils {
   public static final String PRODUCT_KEY_1_RESOURCE_PATH = "product-key-1.json";
@@ -118,46 +135,58 @@ public class ProductSyncMockUtils {
    * resource located at the {@code jsonResourcePath} and based on the supplied {@code productType}.
    *
    * @param jsonResourcePath the path of the JSON resource to build the product draft from.
-   * @param productTypeReference the reference of the product type that the product draft belongs
-   *     to.
+   * @param productTypeResourceIdentifier the reference of the product type that the product draft
+   *     belongs to.
    * @return a {@link ProductDraftBuilder} instance containing the data from the current projection
    *     of the specified JSON resource and the product type.
    */
   public static ProductDraftBuilder createProductDraftBuilder(
       @Nonnull final String jsonResourcePath,
-      @Nonnull final ResourceIdentifiable<ProductType> productTypeReference) {
-    final ProductProjection productFromJson =
-        readObjectFromResource(jsonResourcePath, Product.class).toProjection(STAGED);
+      @Nonnull final ProductTypeResourceIdentifier productTypeResourceIdentifier) {
+    final InputStream resourceAsStream =
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(jsonResourcePath);
+    final Product productFromJson = fromInputStream(resourceAsStream, Product.class);
+    final ProductData stagedProductData = productFromJson.getMasterData().getStaged();
 
     @SuppressWarnings("ConstantConditions")
     final List<ProductVariantDraft> allVariants =
-        productFromJson.getAllVariants().stream()
-            .map(productVariant -> ProductVariantDraftBuilder.of(productVariant).build())
+        stagedProductData.getAllVariants().stream()
+            .map(productVariant -> createProductVariantDraft(productVariant))
             .collect(toList());
 
-    return ProductDraftBuilder.of(
-            productTypeReference, productFromJson.getName(), productFromJson.getSlug(), allVariants)
-        .metaDescription(productFromJson.getMetaDescription())
-        .metaKeywords(productFromJson.getMetaKeywords())
-        .metaTitle(productFromJson.getMetaTitle())
-        .description(productFromJson.getDescription())
-        .searchKeywords(productFromJson.getSearchKeywords())
-        .taxCategory(productFromJson.getTaxCategory())
-        .state(productFromJson.getState())
+    return ProductDraftBuilder.of()
+        .productType(productTypeResourceIdentifier)
+        .name(stagedProductData.getName())
+        .slug(stagedProductData.getSlug())
+        .variants(allVariants)
+        .metaDescription(stagedProductData.getMetaDescription())
+        .metaKeywords(stagedProductData.getMetaKeywords())
+        .metaTitle(stagedProductData.getMetaTitle())
+        .description(stagedProductData.getDescription())
+        .searchKeywords(stagedProductData.getSearchKeywords())
+        .taxCategory(
+            TaxCategoryResourceIdentifierBuilder.of()
+                .id(productFromJson.getTaxCategory().getId())
+                .build())
+        .state(StateResourceIdentifierBuilder.of().id(productFromJson.getState().getId()).build())
         .key(productFromJson.getKey())
         .categories(
-            productFromJson.getCategories().stream()
-                .map(Reference::toResourceIdentifier)
-                .collect(Collectors.toSet()))
-        .categoryOrderHints(productFromJson.getCategoryOrderHints())
-        .publish(productFromJson.isPublished());
+            stagedProductData.getCategories().stream()
+                .map(
+                    categoryReference ->
+                        CategoryResourceIdentifierBuilder.of()
+                            .id(categoryReference.getId())
+                            .build())
+                .collect(toList()))
+        .categoryOrderHints(stagedProductData.getCategoryOrderHints())
+        .publish(productFromJson.getMasterData().getPublished());
   }
 
   /**
-   * Given a {@link Set} of {@link Category} {@link ResourceIdentifier}, this method returns an
-   * instance of {@link CategoryOrderHints} containing a {@link Map}, in which each entry has
-   * category id from the supplied {@link Set} as a key and a random categoryOrderHint which is a
-   * {@link String} containing a random double value between 0 and 1 (exclusive).
+   * Given a {@link Set} of {@link CategoryResourceIdentifier}, this method returns an instance of
+   * {@link CategoryOrderHints} containing a {@link Map}, in which each entry has category id from
+   * the supplied {@link Set} as a key and a random categoryOrderHint which is a {@link String}
+   * containing a random double value between 0 and 1 (exclusive).
    *
    * <p>Note: The random double value is generated by the {@link ThreadLocalRandom#current()}
    * nextDouble method.
@@ -168,19 +197,19 @@ public class ProductSyncMockUtils {
    *     category in the supplied set of category resource identifiers.
    */
   public static CategoryOrderHints createRandomCategoryOrderHints(
-      @Nonnull final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers) {
+      @Nonnull final Set<CategoryResourceIdentifier> categoryResourceIdentifiers) {
 
-    final List<Reference<Category>> references =
+    final List<CategoryReference> references =
         categoryResourceIdentifiers.stream()
             .map(
                 categoryResourceIdentifier ->
-                    Category.referenceOfId(categoryResourceIdentifier.getId()))
+                    CategoryReferenceBuilder.of().id(categoryResourceIdentifier.getId()).build())
             .collect(toList());
     return createRandomCategoryOrderHints(references);
   }
 
   /**
-   * Given a {@link List} of {@link Category}, this method returns an instance of {@link
+   * Given a {@link List} of {@link CategoryReference}, this method returns an instance of {@link
    * CategoryOrderHints} containing a {@link Map}, in which each entry has category id from the
    * supplied {@link List} as a key and a random categoryOrderHint which is a {@link String}
    * containing a random double value between 0 and 1 (exclusive).
@@ -193,7 +222,7 @@ public class ProductSyncMockUtils {
    *     category in the supplied list of categories.
    */
   public static CategoryOrderHints createRandomCategoryOrderHints(
-      @Nonnull final List<Reference<Category>> categoryResources) {
+      @Nonnull final List<CategoryReference> categoryResources) {
 
     final Map<String, String> categoryOrderHints = new HashMap<>();
     categoryResources.forEach(
@@ -202,15 +231,28 @@ public class ProductSyncMockUtils {
           categoryOrderHints.put(
               resourceIdentifier.getId(), ORDER_HINT_FORMAT.format(randomDouble));
         });
-    return CategoryOrderHints.of(categoryOrderHints);
+    return CategoryOrderHintsBuilder.of().values(categoryOrderHints).build();
+  }
+
+  public static ProductVariantDraft createProductVariantDraft(final ProductVariant productVariant) {
+    List<AssetDraft> assetDrafts = createAssetDraft(productVariant.getAssets());
+    List<PriceDraft> priceDrafts = createPriceDraft(productVariant.getPrices());
+    return ProductVariantDraftBuilder.of()
+        .assets(assetDrafts)
+        .attributes(productVariant.getAttributes())
+        .images(productVariant.getImages())
+        .prices(priceDrafts)
+        .sku(productVariant.getSku())
+        .key(productVariant.getKey())
+        .build();
   }
 
   public static ProductDraft createProductDraft(
       @Nonnull final String jsonResourcePath,
-      @Nonnull final ResourceIdentifiable<ProductType> productTypeReference,
-      @Nullable final ResourceIdentifier<TaxCategory> taxCategoryReference,
-      @Nullable final ResourceIdentifier<State> stateReference,
-      @Nonnull final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers,
+      @Nonnull final ProductTypeResourceIdentifier productTypeReference,
+      @Nullable final TaxCategoryResourceIdentifier taxCategoryReference,
+      @Nullable final StateResourceIdentifier stateReference,
+      @Nonnull final List<CategoryResourceIdentifier> categoryResourceIdentifiers,
       @Nullable final CategoryOrderHints categoryOrderHints) {
     return createProductDraftBuilder(jsonResourcePath, productTypeReference)
         .taxCategory(taxCategoryReference)
@@ -238,25 +280,39 @@ public class ProductSyncMockUtils {
    */
   public static ProductDraft createProductDraft(
       @Nonnull final String jsonResourcePath,
-      @Nonnull final Reference<ProductType> productTypeReference,
-      @Nullable final Reference<TaxCategory> taxCategoryReference,
-      @Nullable final Reference<State> stateReference,
-      @Nonnull final List<Reference<Category>> categoryReferences,
+      @Nonnull final ProductTypeReference productTypeReference,
+      @Nullable final TaxCategoryReference taxCategoryReference,
+      @Nullable final StateReference stateReference,
+      @Nonnull final List<CategoryReference> categoryReferences,
       @Nullable final CategoryOrderHints categoryOrderHints) {
-    return createProductDraftBuilder(jsonResourcePath, productTypeReference)
-        .taxCategory(taxCategoryReference)
-        .state(stateReference)
-        .categories(categoryReferences)
+    ProductTypeResourceIdentifier productTypeRI =
+        ProductTypeResourceIdentifierBuilder.of().id(productTypeReference.getId()).build();
+    return createProductDraftBuilder(jsonResourcePath, productTypeRI)
+        .taxCategory(
+            TaxCategoryResourceIdentifierBuilder.of().id(taxCategoryReference.getId()).build())
+        .state(StateResourceIdentifierBuilder.of().id(stateReference.getId()).build())
+        .categories(
+            categoryReferences.stream()
+                .map(
+                    categoryReference ->
+                        CategoryResourceIdentifierBuilder.of()
+                            .id(categoryReference.getId())
+                            .build())
+                .collect(toList()))
         .categoryOrderHints(categoryOrderHints)
         .build();
   }
 
   public static ProductProjection createProductFromJson(@Nonnull final String jsonResourcePath) {
-    return readObjectFromResource(jsonResourcePath, Product.class).toProjection(STAGED);
+    final InputStream resourceAsStream =
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(jsonResourcePath);
+    return fromInputStream(resourceAsStream, ProductProjection.class);
   }
 
   public static ProductDraft createProductDraftFromJson(@Nonnull final String jsonResourcePath) {
-    return readObjectFromResource(jsonResourcePath, ProductDraft.class);
+    final InputStream resourceAsStream =
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(jsonResourcePath);
+    return fromInputStream(resourceAsStream, ProductDraft.class);
   }
 
   /**
@@ -398,9 +454,9 @@ public class ProductSyncMockUtils {
    */
   @Nonnull
   public static Price getPriceMockWithReferences(
-      @Nullable final Reference<Channel> channelReference,
-      @Nullable final Reference<Type> customTypeReference,
-      @Nullable final Reference<CustomerGroup> customerGroupReference) {
+      @Nullable final ChannelReference channelReference,
+      @Nullable final TypeReference customTypeReference,
+      @Nullable final CustomerGroupReference customerGroupReference) {
     final Price price = mock(Price.class);
     when(price.getChannel()).thenReturn(channelReference);
     when(price.getCustomerGroup()).thenReturn(customerGroupReference);
@@ -462,20 +518,18 @@ public class ProductSyncMockUtils {
   }
 
   /**
-   * Creates an {@link AttributeDraft} with the supplied {@code attributeName} and {@code
-   * references}.
+   * Creates an {@link Attribute} with the supplied {@code attributeName} and {@code references}.
    *
-   * @param attributeName the name to set on the {@link AttributeDraft}.
-   * @param references the references to set on the {@link AttributeDraft}.
-   * @return an {@link AttributeDraft} with the supplied {@code attributeName} and {@code
-   *     references}.
+   * @param attributeName the name to set on the {@link Attribute}.
+   * @param references the references to set on the {@link Attribute}.
+   * @return an {@link Attribute} with the supplied {@code attributeName} and {@code references}.
    */
   @Nonnull
-  public static AttributeDraft getReferenceSetAttributeDraft(
+  public static Attribute getReferenceSetAttributeDraft(
       @Nonnull final String attributeName, @Nonnull final ObjectNode... references) {
     final ArrayNode referenceSet = JsonNodeFactory.instance.arrayNode();
     referenceSet.addAll(Arrays.asList(references));
-    return AttributeDraft.of(attributeName, referenceSet);
+    return AttributeBuilder.of().name(attributeName).value(referenceSet).build();
   }
 
   /**
@@ -502,7 +556,7 @@ public class ProductSyncMockUtils {
    */
   @Nonnull
   public static ObjectNode getProductReferenceWithId(@Nonnull final String id) {
-    return createReferenceObject(id, Product.referenceTypeId());
+    return createReferenceObject(id, Product.typeReference().getType().getTypeName());
   }
 
   /**
@@ -523,11 +577,10 @@ public class ProductSyncMockUtils {
 
   @Nonnull
   public static ProductDraftBuilder getBuilderWithProductTypeRefKey(@Nullable final String refKey) {
-    return ProductDraftBuilder.of(
-        ResourceIdentifier.ofKey(refKey),
-        LocalizedString.ofEnglish("testName"),
-        LocalizedString.ofEnglish("testSlug"),
-        (ProductVariantDraft) null);
+    return ProductDraftBuilder.of()
+        .productType(ProductTypeResourceIdentifierBuilder.of().key(refKey).build())
+        .name(LocalizedString.ofEnglish("testName"))
+        .slug(LocalizedString.ofEnglish("testSlug"));
   }
 
   @Nonnull

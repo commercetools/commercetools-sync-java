@@ -14,22 +14,21 @@ import io.sphere.sdk.channels.expansion.ChannelExpansionModel;
 import io.sphere.sdk.channels.queries.ChannelQuery;
 import io.sphere.sdk.channels.queries.ChannelQueryBuilder;
 import io.sphere.sdk.channels.queries.ChannelQueryModel;
-
-import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import javax.annotation.Nonnull;
 
 public final class ChannelServiceImpl
     extends BaseServiceWithKey<
-            ChannelDraft,
-            Channel,
-            Channel,
-            BaseSyncOptions,
-            ChannelQuery,
-            ChannelQueryModel,
-            ChannelExpansionModel<Channel>>
+        ChannelDraft,
+        Channel,
+        Channel,
+        BaseSyncOptions,
+        ChannelQuery,
+        ChannelQueryModel,
+        ChannelExpansionModel<Channel>>
     implements ChannelService {
 
   private final Set<ChannelRole> channelRoles;

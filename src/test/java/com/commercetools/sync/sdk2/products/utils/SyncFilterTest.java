@@ -1,22 +1,21 @@
 package com.commercetools.sync.sdk2.products.utils;
 
-import com.commercetools.sync.products.ActionGroup;
-import com.commercetools.sync.products.SyncFilter;
-import org.junit.jupiter.api.Test;
-
-import java.util.EnumSet;
-
-import static com.commercetools.sync.products.ActionGroup.ASSETS;
-import static com.commercetools.sync.products.ActionGroup.ATTRIBUTES;
-import static com.commercetools.sync.products.ActionGroup.CATEGORIES;
-import static com.commercetools.sync.products.ActionGroup.DESCRIPTION;
-import static com.commercetools.sync.products.ActionGroup.IMAGES;
-import static com.commercetools.sync.products.ActionGroup.METADESCRIPTION;
-import static com.commercetools.sync.products.ActionGroup.NAME;
-import static com.commercetools.sync.products.ActionGroup.PRICES;
-import static com.commercetools.sync.products.SyncFilter.ofBlackList;
-import static com.commercetools.sync.products.SyncFilter.ofWhiteList;
+import static com.commercetools.sync.sdk2.products.ActionGroup.ASSETS;
+import static com.commercetools.sync.sdk2.products.ActionGroup.ATTRIBUTES;
+import static com.commercetools.sync.sdk2.products.ActionGroup.CATEGORIES;
+import static com.commercetools.sync.sdk2.products.ActionGroup.DESCRIPTION;
+import static com.commercetools.sync.sdk2.products.ActionGroup.IMAGES;
+import static com.commercetools.sync.sdk2.products.ActionGroup.METADESCRIPTION;
+import static com.commercetools.sync.sdk2.products.ActionGroup.NAME;
+import static com.commercetools.sync.sdk2.products.ActionGroup.PRICES;
+import static com.commercetools.sync.sdk2.products.SyncFilter.ofBlackList;
+import static com.commercetools.sync.sdk2.products.SyncFilter.ofWhiteList;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import com.commercetools.sync.sdk2.products.ActionGroup;
+import com.commercetools.sync.sdk2.products.SyncFilter;
+import java.util.EnumSet;
+import org.junit.jupiter.api.Test;
 
 class SyncFilterTest {
 

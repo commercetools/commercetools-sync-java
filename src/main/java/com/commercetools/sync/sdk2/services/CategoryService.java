@@ -4,14 +4,13 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public interface CategoryService {
 
@@ -29,9 +28,8 @@ public interface CategoryService {
 
   /**
    * Given a {@link Set} of category keys, this method fetches a set of all the categories, matching
-   * this given set of keys in the CTP project, defined in an injected {@link
-   * SphereClient}. A mapping of the key to the id of the fetched categories is
-   * persisted in an in-memory map.
+   * this given set of keys in the CTP project, defined in an injected {@link SphereClient}. A
+   * mapping of the key to the id of the fetched categories is persisted in an in-memory map.
    *
    * @param categoryKeys set of category keys to fetch matching categories by.
    * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion
@@ -98,10 +96,9 @@ public interface CategoryService {
   /**
    * Given a {@link Category} and a {@link List}&lt;{@link UpdateAction}&lt;{@link
    * Category}&gt;&gt;, this method issues an update request with these update actions on this
-   * {@link Category} in the CTP project defined in a potentially injected {@link
-   * SphereClient}. This method returns {@link CompletionStage}&lt;{@link
-   * Category}&gt; in which the result of it's completion contains an instance of the {@link
-   * Category} which was updated in the CTP project.
+   * {@link Category} in the CTP project defined in a potentially injected {@link SphereClient}.
+   * This method returns {@link CompletionStage}&lt;{@link Category}&gt; in which the result of it's
+   * completion contains an instance of the {@link Category} which was updated in the CTP project.
    *
    * @param category the {@link Category} to update.
    * @param updateActions the update actions to update the {@link Category} with.

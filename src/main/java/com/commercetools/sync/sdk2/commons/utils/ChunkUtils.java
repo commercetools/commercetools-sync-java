@@ -20,7 +20,8 @@ import javax.annotation.Nonnull;
 
 public class ChunkUtils {
 
-  // TODO : Please migrate SphereClient, SphereRequest and PagedQueryResult when migrating BaseService class to SDK-v2
+  // TODO : Please migrate SphereClient, SphereRequest and PagedQueryResult when migrating
+  // BaseService class to SDK-v2
   /**
    * Executes the given {@link List} of {@link SphereRequest}s, and collects results in a list.
    *
