@@ -227,8 +227,7 @@ final class AttributeDefinitionsUpdateActionUtils {
     if (attributeTypeA instanceof ReferenceAttributeType
         && attributeTypeB instanceof ReferenceAttributeType) {
       return ((ReferenceAttributeType) attributeTypeA)
-          .getReferenceTypeId()
-          .equals(((ReferenceAttributeType) attributeTypeB).getReferenceTypeId());
+          .equalsIgnoreTypeRef((ReferenceAttributeType) attributeTypeB);
     }
 
     if (attributeTypeA instanceof EnumAttributeType
