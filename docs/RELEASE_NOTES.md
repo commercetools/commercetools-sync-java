@@ -27,6 +27,18 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
+### 9.2.1 - Feb 10, 2023
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/9.2.0...9.2.1) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.2.1/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.2.1/jar)
+
+- 🐞 **Bug Fixes**
+  - Fix rich type reference issue in porduct type [#893](https://github.com/commercetools/commercetools-sync-java/pull/893)
+
+- 🛠️ **Dependency Updates**
+  - Migrated `com.commercetools.sdk.jvm.core` to [`2.12.0`](https://github.com/commercetools/commercetools-jvm-sdk/releases/tag/v2.12.0)
+
+
 ### 9.2.0 - Dec 06, 2022
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/9.1.0...9.2.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.2.0/) |
