@@ -29,32 +29,7 @@ gitPublish {
 
 gitPublishReset {
     doFirst {
-        /* try to find github publish token in the next order:
-             1) -Dorg.ajoberstar.grgit.auth.username
-             2) $GRGIT_USER
-             3) $GH_TOKEN
-         interrupt the task if neither of them is set.
-        */
 
-        final authProperty = 'org.ajoberstar.grgit.auth.username'
-        if (!System.getProperty(authProperty)?.trim()) {
-            def githubToken =
-                    System.getProperty(authProperty) ?:
-                            (project.hasProperty(authProperty) ? project.property(authProperty) :
-                                    (System.getenv('GRGIT_USER') ?:
-                                            System.getenv('GH_TOKEN')))
-
-            if (!githubToken?.trim()) {
-                throw new InvalidUserDataException("Unable to authorise git publish. To authorise, please" +
-                        " make sure one of the following is set:\n" +
-                        "1. GRGIT_USER environment variable.\n" +
-                        "2. GH_TOKEN environment variable.\n" +
-                        "3. -D$authProperty Java runtime property is set.\n" +
-                        "4. $authProperty in gradle.properties file.")
-            }
-
-            System.setProperty(authProperty, githubToken)
-        }
 
         validateVersion('Documentation publishing could be performed only with a valid release version')
     }
