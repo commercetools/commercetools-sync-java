@@ -1,4 +1,6 @@
 gitPublish {
+    repoUri = 'git@github.com:commercetools/commercetools-sync-java.git'
+
     // NOTE:
     // 1) $GRGIT_USER environment variable must be set to actual github token
     //    see http://ajoberstar.org/grgit/docs/groovydoc/index.html?org/ajoberstar/grgit/auth/AuthConfig.html
