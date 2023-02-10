@@ -29,6 +29,10 @@ gitPublish {
     commitMessage = "Publish a new java doc for $rootProject.version version.".toString()
 }
 
+gitPublishPush {
+    repoUri = 'git@github.com:commercetools/commercetools-sync-java.git'
+}
+
 gitPublishReset {
     doFirst {
 
