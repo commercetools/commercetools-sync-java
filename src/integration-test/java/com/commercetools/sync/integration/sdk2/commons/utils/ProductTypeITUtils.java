@@ -395,15 +395,16 @@ public final class ProductTypeITUtils {
 
   private static boolean productTypeExists(
       @Nonnull final String productTypeKey, @Nonnull final ProjectApiRoot ctpClient) {
-      try {
-        final ProductType productType = ctpClient.productTypes().withKey(productTypeKey).get().execute().join().getBody();
-        return productType != null;
-      } catch (Exception e) {
-          if (e.getCause() instanceof NotFoundException) {
-            return false;
-          }
-          throw e;
+    try {
+      final ProductType productType =
+          ctpClient.productTypes().withKey(productTypeKey).get().execute().join().getBody();
+      return productType != null;
+    } catch (Exception e) {
+      if (e.getCause() instanceof NotFoundException) {
+        return false;
       }
+      throw e;
+    }
   }
 
   /**

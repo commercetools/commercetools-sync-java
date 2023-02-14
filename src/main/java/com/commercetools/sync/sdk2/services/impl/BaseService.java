@@ -224,11 +224,7 @@ abstract class BaseService<
         .execute()
         .handle(
             ((result, exception) -> {
-              QueryResultT resultBody = result.getBody();
-              if (exception == null && resultBody != null) {
-                keyToIdCache.put(key, idMapper.apply(resultBody));
-                return Optional.of(resourceMapper.apply(resultBody));
-              } else if (exception != null) {
+              if (exception != null) {
                 syncOptions.applyErrorCallback(
                     new SyncException(
                         format(CREATE_FAILED, key, exception.getMessage()), exception),
@@ -236,6 +232,10 @@ abstract class BaseService<
                     draft,
                     null);
                 return Optional.empty();
+              } else if (result != null) {
+                QueryResultT resultBody = result.getBody();
+                keyToIdCache.put(key, idMapper.apply(resultBody));
+                return Optional.of(resourceMapper.apply(resultBody));
               } else {
                 return Optional.empty();
               }
@@ -253,14 +253,17 @@ abstract class BaseService<
     return fetchWithChunks(keysQueryMapper, keys)
         .thenApply(
             chunk -> {
-                final Set<ResourceT> returnedSet = new HashSet<>();
+              final Set<ResourceT> returnedSet = new HashSet<>();
               chunk.forEach(
                   response -> {
                     PagedQueryResponseT responseBody = response.getBody();
-                    responseBody.getResults().forEach(resource -> {
-                        returnedSet.add(resource);
-                        keyToIdCache.put(keyMapper.apply(resource), resource.getId());
-                    });
+                    responseBody
+                        .getResults()
+                        .forEach(
+                            resource -> {
+                              returnedSet.add(resource);
+                              keyToIdCache.put(keyMapper.apply(resource), resource.getId());
+                            });
                   });
               return returnedSet;
             });

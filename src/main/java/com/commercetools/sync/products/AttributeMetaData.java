@@ -27,7 +27,7 @@ public final class AttributeMetaData {
    */
   public static AttributeMetaData of(@Nonnull final AttributeDefinition attributeDefinition) {
     boolean isSameForAll =
-            attributeDefinition.getAttributeConstraint().equals(AttributeConstraint.SAME_FOR_ALL);
+        attributeDefinition.getAttributeConstraint().equals(AttributeConstraint.SAME_FOR_ALL);
     return new AttributeMetaData(attributeDefinition.getName(), isSameForAll);
   }
 
