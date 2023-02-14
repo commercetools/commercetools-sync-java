@@ -3,16 +3,21 @@ package com.commercetools.sync.integration.sdk2.services.impl;
 import static com.commercetools.sync.integration.sdk2.commons.utils.ProductTypeITUtils.createProductType;
 import static com.commercetools.sync.integration.sdk2.commons.utils.ProductTypeITUtils.deleteProductTypes;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
+import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.api.models.customer.Customer;
 import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.product_type.ProductTypeSetKeyAction;
+import com.commercetools.api.models.product_type.ProductTypeSetKeyActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
 import com.commercetools.sync.sdk2.products.AttributeMetaData;
 import com.commercetools.sync.sdk2.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.sdk2.producttypes.ProductTypeSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.services.ProductTypeService;
 import com.commercetools.sync.sdk2.services.impl.ProductTypeServiceImpl;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -188,49 +193,47 @@ class ProductTypeServiceImplIT {
 //          .withThrowableOfType(ExecutionException.class)
 //          .withCauseExactlyInstanceOf(BadGatewayException.class);
 //    }
-//
-//    @Test
-//    void
-//   fetchMatchingProductTypesByKeys_WithAllExistingSetOfKeys_ShouldCacheFetchedProductTypeIds() {
-//      final Set<ProductType> fetchedProductTypes =
-//          productTypeService
-//              .fetchMatchingProductTypesByKeys(singleton(OLD_PRODUCT_TYPE_KEY))
-//              .toCompletableFuture()
-//              .join();
-//      assertThat(fetchedProductTypes).hasSize(1);
-//
-//      final Optional<ProductType> productTypeOptional =
-//          CTP_TARGET_CLIENT
-//              .execute(
-//                  ProductTypeQuery.of()
-//                      .withPredicates(
-//                          productTypeQueryModel ->
-//                              productTypeQueryModel.key().is(OLD_PRODUCT_TYPE_KEY)))
-//              .toCompletableFuture()
-//              .join()
-//              .head();
-//      assertThat(productTypeOptional).isNotNull();
-//
-//      // Change product oldKey on ctp
-//      final String newKey = "newKey";
-//      productTypeService
-//          .updateProductType(productTypeOptional.get(),
-//   Collections.singletonList(SetKey.of(newKey)))
-//          .toCompletableFuture()
-//          .join();
-//
-//      // Fetch cached id by old key
-//      final Optional<String> cachedProductTypeId =
-//          productTypeService
-//              .fetchCachedProductTypeId(OLD_PRODUCT_TYPE_KEY)
-//              .toCompletableFuture()
-//              .join();
-//
-//      assertThat(cachedProductTypeId).isNotEmpty();
-//      assertThat(cachedProductTypeId).contains(productTypeOptional.get().getId());
-//      assertThat(errorCallBackExceptions).isEmpty();
-//      assertThat(errorCallBackMessages).isEmpty();
-//    }
+
+    @Test
+    void
+   fetchMatchingProductTypesByKeys_WithAllExistingSetOfKeys_ShouldCacheFetchedProductTypeIds() {
+      final Set<ProductType> fetchedProductTypes =
+          productTypeService
+              .fetchMatchingProductTypesByKeys(singleton(OLD_PRODUCT_TYPE_KEY))
+              .toCompletableFuture()
+              .join();
+      assertThat(fetchedProductTypes).hasSize(1);
+
+
+        ProductType productType = CTP_TARGET_CLIENT
+                .productTypes()
+                .withKey(OLD_PRODUCT_TYPE_KEY)
+                .get()
+                .execute()
+                .thenApply(ApiHttpResponse::getBody)
+                .join();
+        assertThat(productType).isNotNull();
+
+      // Change product oldKey on ctp
+      final String newKey = "newKey";
+      productTypeService
+          .updateProductType(productType,
+                  Collections.singletonList(ProductTypeUpdateAction.setKeyBuilder().key(newKey).build()))
+          .toCompletableFuture()
+          .join();
+
+      // Fetch cached id by old key
+      final Optional<String> cachedProductTypeId =
+          productTypeService
+              .fetchCachedProductTypeId(OLD_PRODUCT_TYPE_KEY)
+              .toCompletableFuture()
+              .join();
+
+      assertThat(cachedProductTypeId).isNotEmpty();
+      assertThat(cachedProductTypeId).contains(productType.getId());
+      assertThat(errorCallBackExceptions).isEmpty();
+      assertThat(errorCallBackMessages).isEmpty();
+    }
 //
 //    @Test
 //    void createProductType_WithValidProductType_ShouldCreateProductTypeAndCacheId() {
