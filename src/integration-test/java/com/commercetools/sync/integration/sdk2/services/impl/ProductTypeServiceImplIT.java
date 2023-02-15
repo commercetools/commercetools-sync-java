@@ -15,7 +15,6 @@ import com.commercetools.api.client.ByProjectKeyProductTypesGet;
 import com.commercetools.api.client.ByProjectKeyProductTypesRequestBuilder;
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.client.error.BadRequestException;
-import com.commercetools.api.models.customer.Customer;
 import com.commercetools.api.models.error.DuplicateFieldError;
 import com.commercetools.api.models.product_type.ProductType;
 import com.commercetools.api.models.product_type.ProductTypeChangeNameAction;
