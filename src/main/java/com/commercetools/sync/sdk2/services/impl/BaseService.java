@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import io.sphere.sdk.client.NotFoundException;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.ApiMethod;
 import io.vrap.rmf.base.client.BodyApiMethod;
@@ -304,7 +303,7 @@ abstract class BaseService<
       @Nullable final String key, @Nonnull final GetOneResourceQueryT query) {
 
     if (isBlank(key)) {
-      return CompletableFuture.completedFuture(null);
+      return CompletableFuture.completedFuture(Optional.empty());
     }
 
     return query
@@ -314,15 +313,6 @@ abstract class BaseService<
             resource -> {
               keyToIdCache.put(key, resource.getId());
               return Optional.of(resource);
-            })
-        .exceptionally(
-            throwable -> {
-              if (throwable.getCause() instanceof NotFoundException) {
-                return Optional.empty();
-              }
-              // todo - to check with the team: what is the best way to handle this ?
-              syncOptions.applyErrorCallback(new SyncException(throwable));
-              return Optional.empty();
             });
   }
 }

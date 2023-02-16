@@ -5,12 +5,15 @@ import com.commercetools.api.models.category.Category;
 import com.commercetools.api.models.category.CategoryDraft;
 import com.commercetools.api.models.category.CategoryUpdateAction;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptionsBuilder;
-
 import javax.annotation.Nonnull;
 
 public final class CategorySyncOptionsBuilder
     extends BaseSyncOptionsBuilder<
-            CategorySyncOptionsBuilder, CategorySyncOptions, Category, CategoryDraft, CategoryUpdateAction> {
+        CategorySyncOptionsBuilder,
+        CategorySyncOptions,
+        Category,
+        CategoryDraft,
+        CategoryUpdateAction> {
   public static final int BATCH_SIZE_DEFAULT = 50;
 
   private CategorySyncOptionsBuilder(@Nonnull final ProjectApiRoot ctpClient) {
@@ -18,13 +21,15 @@ public final class CategorySyncOptionsBuilder
   }
 
   /**
-   * Creates a new instance of {@link com.commercetools.sync.sdk2.categories.CategorySyncOptionsBuilder} given a {@link io.sphere.sdk.client.SphereClient}
-   * responsible for interaction with the target CTP project, with the default batch size ({@code
-   * BATCH_SIZE_DEFAULT} = 50).
+   * Creates a new instance of {@link
+   * com.commercetools.sync.sdk2.categories.CategorySyncOptionsBuilder} given a {@link
+   * io.sphere.sdk.client.SphereClient} responsible for interaction with the target CTP project,
+   * with the default batch size ({@code BATCH_SIZE_DEFAULT} = 50).
    *
-   * @param ctpClient instance of the {@link io.sphere.sdk.client.SphereClient} responsible for interaction with the
-   *     target CTP project.
-   * @return new instance of {@link com.commercetools.sync.sdk2.categories.CategorySyncOptionsBuilder}
+   * @param ctpClient instance of the {@link io.sphere.sdk.client.SphereClient} responsible for
+   *     interaction with the target CTP project.
+   * @return new instance of {@link
+   *     com.commercetools.sync.sdk2.categories.CategorySyncOptionsBuilder}
    */
   public static CategorySyncOptionsBuilder of(@Nonnull final ProjectApiRoot ctpClient) {
     return new CategorySyncOptionsBuilder(ctpClient).batchSize(BATCH_SIZE_DEFAULT);

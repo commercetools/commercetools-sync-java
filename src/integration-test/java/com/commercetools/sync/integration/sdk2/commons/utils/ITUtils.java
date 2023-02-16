@@ -3,6 +3,7 @@ package com.commercetools.sync.integration.sdk2.commons.utils;
 import static java.util.Arrays.asList;
 
 import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.client.QueryUtils;
 import com.commercetools.api.models.common.LocalizedStringBuilder;
 import com.commercetools.api.models.type.CustomFieldBooleanType;
 import com.commercetools.api.models.type.CustomFieldBooleanTypeBuilder;
@@ -197,6 +198,30 @@ public final class ITUtils {
         LOCALISED_STRING_CUSTOM_FIELD_NAME,
         JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
     return customFields.build();
+  }
+
+  /**
+   * Deletes all Types from CTP projects defined by the {@code ctpClient}
+   *
+   * @param ctpClient defines the CTP project to delete the Types from.
+   */
+  public static void deleteTypes(@Nonnull final ProjectApiRoot ctpClient) {
+    QueryUtils.queryAll(
+        ctpClient.types().get(),
+        types -> {
+          return CompletableFuture.allOf(
+              types.stream()
+                  .map(
+                      type -> {
+                        return ctpClient
+                            .types()
+                            .delete(type)
+                            .execute()
+                            .thenApply(ApiHttpResponse::getBody);
+                      })
+                  .map(CompletionStage::toCompletableFuture)
+                  .toArray(CompletableFuture[]::new));
+        });
   }
 
   private ITUtils() {}

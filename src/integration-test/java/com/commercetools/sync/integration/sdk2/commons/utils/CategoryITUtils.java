@@ -1,5 +1,10 @@
 package com.commercetools.sync.integration.sdk2.commons.utils;
 
+import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
+import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
+import static java.lang.String.format;
+import static java.util.Collections.singletonList;
+
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.client.QueryUtils;
 import com.commercetools.api.models.category.Category;
@@ -19,9 +24,6 @@ import com.commercetools.api.models.type.Type;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.vrap.rmf.base.client.ApiHttpResponse;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -33,11 +35,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-
-import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
-import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
-import static java.lang.String.format;
-import static java.util.Collections.singletonList;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public final class CategoryITUtils {
   public static final String OLD_CATEGORY_CUSTOM_TYPE_KEY = "oldCategoryCustomTypeKey";
@@ -53,25 +52,28 @@ public final class CategoryITUtils {
    * @return a list of CategoryDrafts.
    */
   public static List<CategoryDraft> getCategoryDrafts(
-          @Nullable final Category parentCategory, final int numberOfCategories) {
+      @Nullable final Category parentCategory, final int numberOfCategories) {
     List<CategoryDraft> categoryDrafts = new ArrayList<>();
     for (int i = 0; i < numberOfCategories; i++) {
       final LocalizedString name = LocalizedString.of(Locale.ENGLISH, format("draft%s", i + 1));
       final LocalizedString slug = LocalizedString.of(Locale.ENGLISH, format("slug%s", i + 1));
       final LocalizedString description =
-              LocalizedString.of(Locale.ENGLISH, format("desc%s", i + 1));
+          LocalizedString.of(Locale.ENGLISH, format("desc%s", i + 1));
       final String key = format("key%s", i + 1);
       final String orderHint = format("0.%s", i + 1);
       final CategoryDraft categoryDraft =
-              CategoryDraftBuilder.of()
-                      .name(name)
-                      .slug(slug)
-                      .parent(parentCategory != null ? CategoryResourceIdentifierBuilder.of().key(parentCategory.getKey()).build() : null)
-                      .description(description)
-                      .key(key)
-                      .orderHint(orderHint)
-                      .custom(getCustomFieldsDraft())
-                      .build();
+          CategoryDraftBuilder.of()
+              .name(name)
+              .slug(slug)
+              .parent(
+                  parentCategory != null
+                      ? CategoryResourceIdentifierBuilder.of().key(parentCategory.getKey()).build()
+                      : null)
+              .description(description)
+              .key(key)
+              .orderHint(orderHint)
+              .custom(getCustomFieldsDraft())
+              .build();
       categoryDrafts.add(categoryDraft);
     }
     return categoryDrafts;
@@ -115,11 +117,11 @@ public final class CategoryITUtils {
 
   /**
    * This method creates {@code numberOfChildren} categories as children to the supplied {@code
-   * parent} category in the supplied {@link ProjectApiRoot} project in a blocking fashion. It assigns
-   * them a key, and an {@code Locale.ENGLISH} name and slug of the value of the supplied {@code
-   * prefix} appended to the (index of the child + 1). For example, if the prefix supplied is {@code
-   * "cat"}, the key and the english locales of the name and the slug would be {@code "cat1"} for
-   * the first child.
+   * parent} category in the supplied {@link ProjectApiRoot} project in a blocking fashion. It
+   * assigns them a key, and an {@code Locale.ENGLISH} name and slug of the value of the supplied
+   * {@code prefix} appended to the (index of the child + 1). For example, if the prefix supplied is
+   * {@code "cat"}, the key and the english locales of the name and the slug would be {@code "cat1"}
+   * for the first child.
    *
    * @param numberOfChildren the number of children categories to create.
    * @param parent the parent category to assign these children to.
@@ -139,19 +141,24 @@ public final class CategoryITUtils {
       final String categoryName = prefix + (i + 1);
       CategoryDraftBuilder childBuilder =
           CategoryDraftBuilder.of()
-                          .name(LocalizedString.of(Locale.ENGLISH, categoryName))
-                  .slug(LocalizedString.of(Locale.ENGLISH, categoryName))
+              .name(LocalizedString.of(Locale.ENGLISH, categoryName))
+              .slug(LocalizedString.of(Locale.ENGLISH, categoryName))
               .key(categoryName)
               .custom(getCustomFieldsDraft())
               .orderHint("sameOrderHint");
       if (parent != null) {
-        childBuilder = childBuilder.parent(CategoryResourceIdentifierBuilder.of().key(parent.getKey()).build());
+        childBuilder =
+            childBuilder.parent(
+                CategoryResourceIdentifierBuilder.of().key(parent.getKey()).build());
       }
       CategoryDraft child = childBuilder.build();
       final CompletableFuture<Category> future =
-              ctpClient.categories().create(child).execute()
-                      .thenApply(ApiHttpResponse::getBody)
-                      .toCompletableFuture();
+          ctpClient
+              .categories()
+              .create(child)
+              .execute()
+              .thenApply(ApiHttpResponse::getBody)
+              .toCompletableFuture();
       futures.add(future);
     }
     CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
@@ -178,9 +185,9 @@ public final class CategoryITUtils {
    */
   public static CustomFieldsDraft getCustomFieldsDraft() {
     return CustomFieldsDraftBuilder.of()
-            .type(TypeResourceIdentifierBuilder.of().key(OLD_CATEGORY_CUSTOM_TYPE_KEY).build())
-            .fields(ITUtils.createCustomFieldsJsonMap())
-            .build();
+        .type(TypeResourceIdentifierBuilder.of().key(OLD_CATEGORY_CUSTOM_TYPE_KEY).build())
+        .fields(ITUtils.createCustomFieldsJsonMap())
+        .build();
   }
 
   /**
@@ -198,7 +205,12 @@ public final class CategoryITUtils {
     final List<CompletableFuture<Category>> futures = new ArrayList<>();
     for (CategoryDraft categoryDraft : categoryDrafts) {
       final CompletableFuture<Category> categoryCompletableFuture =
-          ctpClient.categories().create(categoryDraft).execute().thenApply(ApiHttpResponse::getBody).toCompletableFuture();
+          ctpClient
+              .categories()
+              .create(categoryDraft)
+              .execute()
+              .thenApply(ApiHttpResponse::getBody)
+              .toCompletableFuture();
       futures.add(categoryCompletableFuture);
     }
 
@@ -237,9 +249,7 @@ public final class CategoryITUtils {
   public static void deleteAllCategories(@Nonnull final ProjectApiRoot ctpClient) {
     final Set<String> keys = new HashSet<>();
     final List<Category> categories =
-        QueryUtils.queryAll(
-                ctpClient.categories().get(),
-                categories1 -> categories1)
+        QueryUtils.queryAll(ctpClient.categories().get(), categories1 -> categories1)
             .thenApply(
                 fetchedCategories ->
                     fetchedCategories.stream().flatMap(List::stream).collect(Collectors.toList()))
@@ -250,7 +260,10 @@ public final class CategoryITUtils {
         category -> {
           final String categoryKey = category.getKey();
           if (!hasADeletedAncestor(category, keys)) {
-            ctpClient.categories().delete(category).execute()
+            ctpClient
+                .categories()
+                .delete(category)
+                .execute()
                 .thenAccept(deletedCategory -> keys.add(categoryKey))
                 .toCompletableFuture()
                 .join();
@@ -272,13 +285,13 @@ public final class CategoryITUtils {
   }
 
   /**
-   * Builds a {@link java.util.Set} of {@link CategoryResourceIdentifier} with keys in place of ids from the supplied
-   * {@link java.util.List} of {@link Category}.
+   * Builds a {@link java.util.Set} of {@link CategoryResourceIdentifier} with keys in place of ids
+   * from the supplied {@link java.util.List} of {@link Category}.
    *
-   * @param categories a {@link java.util.List} of {@link Category} from which the {@link java.util.Set} of {@link
-   *     ResourceIdentifier} will be built.
-   * @return a {@link java.util.Set} of {@link io.sphere.sdk.models.ResourceIdentifier} with keys in place of ids from the supplied
-   *     {@link java.util.List} of {@link Category}.
+   * @param categories a {@link java.util.List} of {@link Category} from which the {@link
+   *     java.util.Set} of {@link ResourceIdentifier} will be built.
+   * @return a {@link java.util.Set} of {@link io.sphere.sdk.models.ResourceIdentifier} with keys in
+   *     place of ids from the supplied {@link java.util.List} of {@link Category}.
    */
   @Nonnull
   public static Set<CategoryResourceIdentifier> getResourceIdentifiersWithKeys(
@@ -289,13 +302,14 @@ public final class CategoryITUtils {
   }
 
   /**
-   * Builds a {@link java.util.List} of {@link com.commercetools.api.models.category.CategoryReference} built from the supplied {@link java.util.List} of {@link
-   * Category}.
+   * Builds a {@link java.util.List} of {@link
+   * com.commercetools.api.models.category.CategoryReference} built from the supplied {@link
+   * java.util.List} of {@link Category}.
    *
-   * @param categories a {@link java.util.List} of {@link Category} from which the {@link java.util.List} of {@link
-   *     CategoryReference} will be built.
-   * @return a {@link java.util.List} of {@link CategoryReference} built from the supplied {@link java.util.List} of {@link
-   *     Category}.
+   * @param categories a {@link java.util.List} of {@link Category} from which the {@link
+   *     java.util.List} of {@link CategoryReference} will be built.
+   * @return a {@link java.util.List} of {@link CategoryReference} built from the supplied {@link
+   *     java.util.List} of {@link Category}.
    */
   @Nonnull
   public static List<CategoryReference> getReferencesWithIds(
@@ -306,8 +320,8 @@ public final class CategoryITUtils {
   }
 
   /**
-   * Given a {@link CategoryOrderHints} instance and a {@link java.util.List} of {@link Category}, this method
-   * replaces all the categoryOrderHint ids with the {@link Category} keys.
+   * Given a {@link CategoryOrderHints} instance and a {@link java.util.List} of {@link Category},
+   * this method replaces all the categoryOrderHint ids with the {@link Category} keys.
    *
    * @param categoryOrderHints the categoryOrderHints that should have its keys replaced with ids.
    * @param categories the categories that the keys would be taken from to replace on the newly
