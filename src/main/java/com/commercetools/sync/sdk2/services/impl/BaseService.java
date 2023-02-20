@@ -46,7 +46,7 @@ abstract class BaseService<
     SyncOptionsT extends BaseSyncOptions,
     ResourceT extends DomainResource<ResourceT>,
     ResourceDraftT extends Draft<ResourceDraftT>,
-    PagedQueryRequestT extends PagedQueryResourceRequest,
+    PagedQueryRequestT extends PagedQueryResourceRequest<PagedQueryRequestT, PagedQueryResponseT>,
     PagedQueryResponseT extends ResourcePagedQueryResponse<ResourceT>,
     GetOneResourceQueryT extends ApiMethod<GetOneResourceQueryT, ResourceT>,
     QueryResultT,
@@ -103,13 +103,13 @@ abstract class BaseService<
 
     String query =
         format(
-            "query fetchIdKeyPairs($where: String, $limit: Int) {\n"
-                + "  %s(limit: $limit, where: $where) {\n"
-                + "    results {\n"
-                + "      id\n"
-                + "      key\n"
-                + "    }\n"
-                + "  }\n"
+            "query fetchIdKeyPairs($where: String, $limit: Int) {%n"
+                + "  %s(limit: $limit, where: $where) {%n"
+                + "    results {%n"
+                + "      id%n"
+                + "      key%n"
+                + "    }%n"
+                + "  }%n"
                 + "}",
             queryResource.getName());
 

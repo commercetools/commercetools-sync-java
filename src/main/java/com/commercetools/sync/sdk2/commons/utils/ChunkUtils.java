@@ -24,11 +24,10 @@ public class ChunkUtils {
   /**
    * Executes the given {@link List} of {@link SphereRequest}s, and collects results in a list.
    *
-   * @param client {@link SphereClient} responsible for interaction with the target CTP project.
    * @param requests A list of {@link SphereRequest} implementation to allow {@link SphereClient} to
    *     execute queries on CTP.
-   * @param <T> the type of the underlying model.
-   * @param <Q> the type of the request model.
+   * @param <ResourceT> the type of the underlying model.
+   * @param <QueryT> the type of the request model.
    * @return a list of lists where each list represents the results of passed {@link SphereRequest}.
    */
   public static <QueryT extends PagedQueryResourceRequest<QueryT, ResourceT>, ResourceT>

@@ -19,7 +19,7 @@ abstract class BaseServiceWithKey<
         SyncOptionsT extends BaseSyncOptions,
         ResourceT extends DomainResource<ResourceT> & WithKey,
         ResourceDraftT extends Draft<ResourceDraftT> & WithKey,
-        PagedQueryT extends PagedQueryResourceRequest,
+        PagedQueryT extends PagedQueryResourceRequest<PagedQueryT, PagedQueryResponseT>,
         PagedQueryResponseT extends ResourcePagedQueryResponse<ResourceT>,
         GetOneResourceQueryT extends ApiMethod<GetOneResourceQueryT, ResourceT>,
         QueryResultT,

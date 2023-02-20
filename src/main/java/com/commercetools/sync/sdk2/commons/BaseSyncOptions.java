@@ -16,27 +16,50 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * @param <U> Resource (e.g. {@link com.commercetools.api.models.customer.Customer})
- * @param <V> Resource Draft (e.g. {@link com.commercetools.api.models.customer.CustomerDraft})
- * @param <A> extends ResourceUpdateAction (e.g {@link
+ * @param <ResourceT> Resource (e.g. {@link com.commercetools.api.models.customer.Customer})
+ * @param <ResourceDraftT> Resource Draft (e.g. {@link
+ *     com.commercetools.api.models.customer.CustomerDraft})
+ * @param <ResourceUpdateActionT> extends ResourceUpdateAction (e.g {@link
  *     com.commercetools.api.models.customer.CustomerChangeEmailAction}
  */
-public class BaseSyncOptions<U, V, A extends ResourceUpdateAction> {
+public class BaseSyncOptions<
+    ResourceT,
+    ResourceDraftT,
+    ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>> {
   private final ProjectApiRoot ctpClient;
-  private final QuadConsumer<SyncException, Optional<V>, Optional<U>, List<A>> errorCallback;
-  private final TriConsumer<SyncException, Optional<V>, Optional<U>> warningCallback;
+  private final QuadConsumer<
+          SyncException, Optional<ResourceDraftT>, Optional<ResourceT>, List<ResourceUpdateActionT>>
+      errorCallback;
+  private final TriConsumer<SyncException, Optional<ResourceDraftT>, Optional<ResourceT>>
+      warningCallback;
   private final int batchSize;
-  private final TriFunction<List<A>, V, U, List<A>> beforeUpdateCallback;
-  private final Function<V, V> beforeCreateCallback;
+  private final TriFunction<
+          List<ResourceUpdateActionT>, ResourceDraftT, ResourceT, List<ResourceUpdateActionT>>
+      beforeUpdateCallback;
+  private final Function<ResourceDraftT, ResourceDraftT> beforeCreateCallback;
   private final long cacheSize;
 
   protected BaseSyncOptions(
       @Nonnull final ProjectApiRoot ctpClient,
-      @Nullable final QuadConsumer<SyncException, Optional<V>, Optional<U>, List<A>> errorCallback,
-      @Nullable final TriConsumer<SyncException, Optional<V>, Optional<U>> warningCallback,
+      @Nullable
+          final QuadConsumer<
+                  SyncException,
+                  Optional<ResourceDraftT>,
+                  Optional<ResourceT>,
+                  List<ResourceUpdateActionT>>
+              errorCallback,
+      @Nullable
+          final TriConsumer<SyncException, Optional<ResourceDraftT>, Optional<ResourceT>>
+              warningCallback,
       final int batchSize,
-      @Nullable final TriFunction<List<A>, V, U, List<A>> beforeUpdateCallback,
-      @Nullable final Function<V, V> beforeCreateCallback,
+      @Nullable
+          final TriFunction<
+                  List<ResourceUpdateActionT>,
+                  ResourceDraftT,
+                  ResourceT,
+                  List<ResourceUpdateActionT>>
+              beforeUpdateCallback,
+      @Nullable final Function<ResourceDraftT, ResourceDraftT> beforeCreateCallback,
       final long cacheSize) {
     this.ctpClient = ctpClient;
     this.errorCallback = errorCallback;
@@ -69,7 +92,9 @@ public class BaseSyncOptions<U, V, A extends ResourceUpdateAction> {
    *     BaseSyncOptions}
    */
   @Nullable
-  public QuadConsumer<SyncException, Optional<V>, Optional<U>, List<A>> getErrorCallback() {
+  public QuadConsumer<
+          SyncException, Optional<ResourceDraftT>, Optional<ResourceT>, List<ResourceUpdateActionT>>
+      getErrorCallback() {
     return errorCallback;
   }
 
@@ -84,7 +109,8 @@ public class BaseSyncOptions<U, V, A extends ResourceUpdateAction> {
    *     this} {@link BaseSyncOptions}
    */
   @Nullable
-  public TriConsumer<SyncException, Optional<V>, Optional<U>> getWarningCallback() {
+  public TriConsumer<SyncException, Optional<ResourceDraftT>, Optional<ResourceT>>
+      getWarningCallback() {
     return warningCallback;
   }
 
@@ -99,8 +125,8 @@ public class BaseSyncOptions<U, V, A extends ResourceUpdateAction> {
    */
   public void applyWarningCallback(
       @Nonnull final SyncException exception,
-      @Nullable final U oldResource,
-      @Nullable final V newResourceDraft) {
+      @Nullable final ResourceT oldResource,
+      @Nullable final ResourceDraftT newResourceDraft) {
     if (this.warningCallback != null) {
       this.warningCallback.accept(
           exception, Optional.ofNullable(newResourceDraft), Optional.ofNullable(oldResource));
@@ -120,9 +146,9 @@ public class BaseSyncOptions<U, V, A extends ResourceUpdateAction> {
    */
   public void applyErrorCallback(
       @Nonnull final SyncException exception,
-      @Nullable final U oldResource,
-      @Nullable final V newResourceDraft,
-      @Nullable final List<A> updateActions) {
+      @Nullable final ResourceT oldResource,
+      @Nullable final ResourceDraftT newResourceDraft,
+      @Nullable final List<ResourceUpdateActionT> updateActions) {
     if (this.errorCallback != null) {
       this.errorCallback.accept(
           exception,
@@ -194,7 +220,9 @@ public class BaseSyncOptions<U, V, A extends ResourceUpdateAction> {
    *     BaseSyncOptions}.
    */
   @Nullable
-  public TriFunction<List<A>, V, U, List<A>> getBeforeUpdateCallback() {
+  public TriFunction<
+          List<ResourceUpdateActionT>, ResourceDraftT, ResourceT, List<ResourceUpdateActionT>>
+      getBeforeUpdateCallback() {
     return beforeUpdateCallback;
   }
 
@@ -209,7 +237,7 @@ public class BaseSyncOptions<U, V, A extends ResourceUpdateAction> {
    *     Optional}&lt;{@code V}&gt;&gt; function set to {@code this} {@link BaseSyncOptions}.
    */
   @Nullable
-  public Function<V, V> getBeforeCreateCallback() {
+  public Function<ResourceDraftT, ResourceDraftT> getBeforeCreateCallback() {
     return beforeCreateCallback;
   }
 
@@ -231,10 +259,10 @@ public class BaseSyncOptions<U, V, A extends ResourceUpdateAction> {
    *     null, an empty list is returned.
    */
   @Nonnull
-  public List<A> applyBeforeUpdateCallback(
-      @Nonnull final List<A> updateActions,
-      @Nonnull final V newResourceDraft,
-      @Nonnull final U oldResource) {
+  public List<ResourceUpdateActionT> applyBeforeUpdateCallback(
+      @Nonnull final List<ResourceUpdateActionT> updateActions,
+      @Nonnull final ResourceDraftT newResourceDraft,
+      @Nonnull final ResourceT oldResource) {
 
     return ofNullable(beforeUpdateCallback)
         .filter(callback -> !updateActions.isEmpty())
@@ -262,7 +290,8 @@ public class BaseSyncOptions<U, V, A extends ResourceUpdateAction> {
    *     the supplied resource draft is returned as is, wrapped in an optional.
    */
   @Nonnull
-  public Optional<V> applyBeforeCreateCallback(@Nonnull final V newResourceDraft) {
+  public Optional<ResourceDraftT> applyBeforeCreateCallback(
+      @Nonnull final ResourceDraftT newResourceDraft) {
     return ofNullable(
         beforeCreateCallback != null
             ? beforeCreateCallback.apply(newResourceDraft)
