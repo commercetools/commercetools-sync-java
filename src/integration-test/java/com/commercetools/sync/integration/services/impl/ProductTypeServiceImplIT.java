@@ -46,8 +46,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled("Migrated to sdk v2")
 class ProductTypeServiceImplIT {
   private ProductTypeService productTypeService;
   private static final String OLD_PRODUCT_TYPE_KEY = "old_product_type_key";

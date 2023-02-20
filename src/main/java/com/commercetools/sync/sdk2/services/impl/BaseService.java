@@ -24,6 +24,7 @@ import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.ApiMethod;
 import io.vrap.rmf.base.client.BodyApiMethod;
 import io.vrap.rmf.base.client.Draft;
+import io.vrap.rmf.base.client.error.NotFoundException;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.Collections;
 import java.util.HashSet;
@@ -39,6 +40,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.swing.text.html.Option;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -57,6 +60,7 @@ abstract class BaseService<
 
   protected static final int MAXIMUM_ALLOWED_UPDATE_ACTIONS = 500;
   static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
+  static final String FETCH_FAILED = "Failed to fetch resource with key: '%s'. Reason: %s";
 
   /*
    * To be more practical, considering 41 characters as an average for key and sku fields
@@ -313,6 +317,21 @@ abstract class BaseService<
             resource -> {
               keyToIdCache.put(key, resource.getId());
               return Optional.of(resource);
-            });
+            })
+            .handle(((result, exception) -> {
+                if (exception != null) {
+                    if (!(exception.getCause() instanceof NotFoundException)) {
+                        syncOptions.applyErrorCallback(
+                                new SyncException(
+                                        format(FETCH_FAILED, key, exception.getMessage()), exception),
+                                null,
+                                null,
+                                null);
+                    }
+                    return Optional.empty();
+                } else {
+                    return result;
+                }
+            }));
   }
 }

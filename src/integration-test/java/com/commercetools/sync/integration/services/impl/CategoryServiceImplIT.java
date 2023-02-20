@@ -48,8 +48,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled("Migrated to sdk v2")
 class CategoryServiceImplIT {
   private CategoryService categoryService;
   private Category oldCategory;

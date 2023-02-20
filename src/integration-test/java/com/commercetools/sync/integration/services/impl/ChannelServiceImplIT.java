@@ -21,8 +21,10 @@ import io.sphere.sdk.channels.queries.ChannelQuery;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled("Migrated to sdk v2")
 class ChannelServiceImplIT {
   private ChannelService channelService;
   private static final String CHANNEL_KEY = "channel_key";
