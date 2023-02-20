@@ -1,5 +1,7 @@
 package com.commercetools.sync.integration.sdk2.commons.utils;
 
+import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
+import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static java.util.Arrays.asList;
 
 import com.commercetools.api.client.ProjectApiRoot;
@@ -198,6 +200,15 @@ public final class ITUtils {
         LOCALISED_STRING_CUSTOM_FIELD_NAME,
         JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
     return customFields.build();
+  }
+
+  /**
+   * Deletes all Types from CTP projects defined by the {@code CTP_SOURCE_CLIENT} and {@code
+   * CTP_TARGET_CLIENT}.
+   */
+  public static void deleteTypesFromTargetAndSource() {
+    deleteTypes(CTP_TARGET_CLIENT);
+    deleteTypes(CTP_SOURCE_CLIENT);
   }
 
   /**
