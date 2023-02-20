@@ -40,8 +40,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.swing.text.html.Option;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -318,20 +316,21 @@ abstract class BaseService<
               keyToIdCache.put(key, resource.getId());
               return Optional.of(resource);
             })
-            .handle(((result, exception) -> {
-                if (exception != null) {
-                    if (!(exception.getCause() instanceof NotFoundException)) {
-                        syncOptions.applyErrorCallback(
-                                new SyncException(
-                                        format(FETCH_FAILED, key, exception.getMessage()), exception),
-                                null,
-                                null,
-                                null);
-                    }
-                    return Optional.empty();
-                } else {
-                    return result;
+        .handle(
+            ((result, exception) -> {
+              if (exception != null) {
+                if (!(exception.getCause() instanceof NotFoundException)) {
+                  syncOptions.applyErrorCallback(
+                      new SyncException(
+                          format(FETCH_FAILED, key, exception.getMessage()), exception),
+                      null,
+                      null,
+                      null);
                 }
+                return Optional.empty();
+              } else {
+                return result;
+              }
             }));
   }
 }
