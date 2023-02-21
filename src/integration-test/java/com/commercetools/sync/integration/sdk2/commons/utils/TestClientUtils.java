@@ -7,6 +7,7 @@ import com.commercetools.api.defaultconfig.ServiceRegion;
 import com.commercetools.sync.sdk2.commons.utils.ClientConfigurationUtils;
 import io.vrap.rmf.base.client.oauth2.ClientCredentials;
 import java.io.InputStream;
+import java.util.InvalidPropertiesFormatException;
 import java.util.Properties;
 import javax.annotation.Nonnull;
 
@@ -43,7 +44,7 @@ public class TestClientUtils {
         properties = loadFromEnvVars(propertiesPrefix);
       }
       if (properties.isEmpty()) {
-        throw new Exception("Please provide CTP credentials for testing");
+        throw new InvalidPropertiesFormatException("Please provide CTP credentials for testing");
       }
 
       final String projectKey =
