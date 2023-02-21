@@ -32,6 +32,7 @@ class ChannelServiceImplIT {
    */
   @BeforeEach
   void setup() {
+    System.out.println("cyvxn,mxycvn,");
     deleteInventoryEntriesFromTargetAndSource();
     deleteTypesFromTargetAndSource();
     deleteChannelsFromTargetAndSource();
