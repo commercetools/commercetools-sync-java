@@ -35,6 +35,7 @@ public class TestClientUtils {
     try {
       InputStream propStream =
           TestClientUtils.class.getClassLoader().getResourceAsStream(IT_PROPERTIES);
+      System.out.println("reuuoweirouierwqouiuq" + propStream);
       if (propStream != null) {
         Properties properties = new Properties();
         properties.load(propStream);
@@ -76,6 +77,7 @@ public class TestClientUtils {
         return ClientConfigurationUtils.createClient(projectKey, credentials, authUrl, apiUrl);
       }
     } catch (Exception exception) {
+      System.out.println("cxvncvx,m,cnxmn,mcvx,mn" + exception);
       throw new IllegalStateException(
           format(
               "IT properties file \"%s\" found, but CTP properties"
