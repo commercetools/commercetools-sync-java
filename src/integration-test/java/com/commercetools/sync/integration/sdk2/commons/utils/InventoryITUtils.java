@@ -72,9 +72,12 @@ public final class InventoryITUtils {
    * @param ctpClient represents the CTP project the inventory entries will be deleted from.
    */
   public static void deleteInventoryEntries(@Nonnull final ProjectApiRoot ctpClient) {
+    System.out.println("adsfjldfsldfaskj");
+    System.out.println(ctpClient);
     QueryUtils.queryAll(
             ctpClient.inventory().get(),
             inventoryEntries -> {
+              System.out.println("qweqwrqewet");
               System.out.println(inventoryEntries);
 //              CompletableFuture.allOf(
 //                      inventoryEntries.stream()
