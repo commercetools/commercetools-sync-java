@@ -13,6 +13,7 @@ import com.commercetools.api.models.product.Product;
 import com.commercetools.api.models.product.ProductVariantDraft;
 import com.commercetools.api.models.type.CustomFields;
 import com.commercetools.api.models.type.CustomFieldsDraft;
+import com.commercetools.api.models.type.FieldContainer;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import com.commercetools.sync.sdk2.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
@@ -312,7 +313,11 @@ public final class CustomUpdateActionUtils {
     // Object is JsonNode
     final Map<String, Object> oldCustomFieldsJsonMap = oldCustomFields.getFields().values();
     final String newCustomTypeId = newCustomFields.getType().getId();
-    final Map<String, Object> newCustomFieldsJsonMap = newCustomFields.getFields().values();
+    final FieldContainer fields = newCustomFields.getFields();
+    Map<String, Object> newCustomFieldsJsonMap = Collections.emptyMap();
+    if (fields != null) {
+      newCustomFieldsJsonMap = fields.values();
+    }
 
     if (Objects.equals(oldCustomTypeId, newCustomTypeId)) {
       if (isBlank(oldCustomTypeId)) {

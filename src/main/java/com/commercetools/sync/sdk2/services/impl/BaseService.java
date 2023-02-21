@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -316,21 +317,17 @@ abstract class BaseService<
               keyToIdCache.put(key, resource.getId());
               return Optional.of(resource);
             })
-        .handle(
-            ((result, exception) -> {
-              if (exception != null) {
-                if (!(exception.getCause() instanceof NotFoundException)) {
-                  syncOptions.applyErrorCallback(
-                      new SyncException(
-                          format(FETCH_FAILED, key, exception.getMessage()), exception),
-                      null,
-                      null,
-                      null);
+            .exceptionally(exception -> {
+                if (exception != null && exception.getCause() instanceof NotFoundException) {
+                    // if resource is not found, return empty optional
+                   return Optional.empty();
                 }
-                return Optional.empty();
-              } else {
-                return result;
-              }
-            }));
+                if (exception instanceof RuntimeException){
+                    // if exception can be rethrown, cast it to runtime exception and rethrow
+                    throw (RuntimeException) exception;
+                }
+                // if exception is checked, it cannot be rethrown per se and must be wrapped
+                throw new CompletionException(exception);
+            });
   }
 }
