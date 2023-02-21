@@ -15,6 +15,9 @@ configurations {
 }
 
 task integrationTest(type: Test) {
+    testLogging {
+        showStandardStreams = true
+    }
     useJUnitPlatform {
         includeEngines 'junit-jupiter', 'junit-vintage'
     }
