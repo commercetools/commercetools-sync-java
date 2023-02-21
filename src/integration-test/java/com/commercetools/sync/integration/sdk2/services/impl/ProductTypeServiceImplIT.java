@@ -1,6 +1,11 @@
 package com.commercetools.sync.integration.sdk2.services.impl;
 
-import static com.commercetools.sync.integration.sdk2.commons.utils.ProductTypeITUtils.*;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_1;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_1;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_1;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_1;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ProductTypeITUtils.createProductType;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ProductTypeITUtils.deleteProductTypes;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
@@ -9,7 +14,11 @@ import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.commercetools.api.client.ByProjectKeyProductTypesGet;
 import com.commercetools.api.client.ByProjectKeyProductTypesRequestBuilder;
