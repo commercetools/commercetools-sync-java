@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.sdk2.commons.utils;
 
-import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
 import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -15,7 +14,6 @@ import com.commercetools.api.models.customer_group.CustomerGroup;
 import com.commercetools.api.models.customer_group.CustomerGroupDraft;
 import com.commercetools.api.models.customer_group.CustomerGroupDraftBuilder;
 import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
-import com.commercetools.api.models.inventory.InventoryEntry;
 import com.commercetools.api.models.store.Store;
 import com.commercetools.api.models.store.StoreDraft;
 import com.commercetools.api.models.store.StoreDraftBuilder;
@@ -25,9 +23,6 @@ import com.commercetools.api.models.type.ResourceTypeId;
 import com.commercetools.api.models.type.Type;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.neovisionaries.i18n.CountryCode;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.customers.commands.CustomerDeleteCommand;
-import io.sphere.sdk.customers.queries.CustomerQuery;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.NotFoundException;
 import java.time.LocalDate;
@@ -261,26 +256,22 @@ public final class CustomerITUtils {
    */
   public static void deleteCustomers(@Nonnull final ProjectApiRoot ctpClient) {
     QueryUtils.queryAll(
-                    ctpClient.customers().get(),
-                    customers -> {
-                      CompletableFuture.allOf(
-                                      customers.stream()
-                                              .map(customer -> deleteCustomer(ctpClient, customer))
-                                              .map(CompletionStage::toCompletableFuture)
-                                              .toArray(CompletableFuture[]::new))
-                              .join();
-                    })
-            .toCompletableFuture()
-            .join();
+            ctpClient.customers().get(),
+            customers -> {
+              CompletableFuture.allOf(
+                      customers.stream()
+                          .map(customer -> deleteCustomer(ctpClient, customer))
+                          .map(CompletionStage::toCompletableFuture)
+                          .toArray(CompletableFuture[]::new))
+                  .join();
+            })
+        .toCompletableFuture()
+        .join();
   }
 
   private static CompletionStage<Customer> deleteCustomer(
-          ProjectApiRoot ctpClient, Customer customer) {
-    return ctpClient
-            .customers()
-            .delete(customer)
-            .execute()
-            .thenApply(ApiHttpResponse::getBody);
+      ProjectApiRoot ctpClient, Customer customer) {
+    return ctpClient.customers().delete(customer).execute().thenApply(ApiHttpResponse::getBody);
   }
 
   private CustomerITUtils() {}

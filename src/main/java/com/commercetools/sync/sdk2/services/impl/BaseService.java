@@ -317,17 +317,18 @@ abstract class BaseService<
               keyToIdCache.put(key, resource.getId());
               return Optional.of(resource);
             })
-            .exceptionally(exception -> {
-                if (exception != null && exception.getCause() instanceof NotFoundException) {
-                    // if resource is not found, return empty optional
-                   return Optional.empty();
-                }
-                if (exception instanceof RuntimeException){
-                    // if exception can be rethrown, cast it to runtime exception and rethrow
-                    throw (RuntimeException) exception;
-                }
-                // if exception is checked, it cannot be rethrown per se and must be wrapped
-                throw new CompletionException(exception);
+        .exceptionally(
+            exception -> {
+              if (exception != null && exception.getCause() instanceof NotFoundException) {
+                // if resource is not found, return empty optional
+                return Optional.empty();
+              }
+              if (exception instanceof RuntimeException) {
+                // if exception can be rethrown, cast it to runtime exception and rethrow
+                throw (RuntimeException) exception;
+              }
+              // if exception is checked, it cannot be rethrown per se and must be wrapped
+              throw new CompletionException(exception);
             });
   }
 }
