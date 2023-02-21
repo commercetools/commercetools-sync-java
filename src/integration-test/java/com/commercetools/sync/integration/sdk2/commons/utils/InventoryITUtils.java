@@ -75,12 +75,13 @@ public final class InventoryITUtils {
     QueryUtils.queryAll(
             ctpClient.inventory().get(),
             inventoryEntries -> {
-              CompletableFuture.allOf(
-                      inventoryEntries.stream()
-                          .map(inventoryEntry -> deleteInventoryEntry(ctpClient, inventoryEntry))
-                          .map(CompletionStage::toCompletableFuture)
-                          .toArray(CompletableFuture[]::new))
-                  .join();
+              System.out.println(inventoryEntries);
+//              CompletableFuture.allOf(
+//                      inventoryEntries.stream()
+//                          .map(inventoryEntry -> deleteInventoryEntry(ctpClient, inventoryEntry))
+//                          .map(CompletionStage::toCompletableFuture)
+//                          .toArray(CompletableFuture[]::new))
+//                  .join();
             })
         .toCompletableFuture()
         .join();
