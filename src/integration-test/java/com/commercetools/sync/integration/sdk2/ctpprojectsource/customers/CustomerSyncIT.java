@@ -24,6 +24,7 @@ import com.commercetools.sync.sdk2.customers.utils.CustomerTransformUtils;
 import com.neovisionaries.i18n.CountryCode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.junit.jupiter.api.AfterAll;
@@ -82,9 +83,9 @@ class CustomerSyncIT {
 
   @Test
   void sync_WithUpdates_ShouldReturnProperStatistics() {
-    ensureSampleCustomerJaneDoe(CTP_SOURCE_CLIENT);
+    ensureSampleCustomerJaneDoe(CTP_TARGET_CLIENT);
     final List<Customer> customers =
-        CTP_SOURCE_CLIENT.customers().get().execute().join().getBody().getResults();
+        CTP_TARGET_CLIENT.customers().get().execute().join().getBody().getResults();
 
     final List<CustomerDraft> updatedCustomerDrafts = prepareUpdatedCustomerDrafts(customers);
     final CustomerSyncStatistics customerSyncStatistics =
@@ -104,8 +105,11 @@ class CustomerSyncIT {
 
     final Store storeCologne = ensureStore(CTP_TARGET_CLIENT, "store-cologne");
 
+    ensureCustomerCustomType(
+        "customer-type-gold", Locale.ENGLISH, "gold customers", CTP_TARGET_CLIENT);
+
     final List<CustomerDraft> customerDrafts =
-        CustomerTransformUtils.toCustomerDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, customers)
+        CustomerTransformUtils.toCustomerDrafts(CTP_TARGET_CLIENT, referenceIdToKeyCache, customers)
             .join();
 
     return customerDrafts.stream()
