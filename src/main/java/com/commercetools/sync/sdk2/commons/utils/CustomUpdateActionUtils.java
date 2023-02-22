@@ -486,7 +486,7 @@ public final class CustomUpdateActionUtils {
   }
 
   private static boolean isNullJsonValue(@Nullable final Object value) {
-    return !Objects.nonNull(value) || ((JsonNode) value).isNull();
+    return !Objects.nonNull(value) || (value instanceof JsonNode && ((JsonNode) value).isNull());
   }
 
   /**
