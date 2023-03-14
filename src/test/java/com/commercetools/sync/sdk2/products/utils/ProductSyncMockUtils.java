@@ -281,8 +281,8 @@ public class ProductSyncMockUtils {
   public static ProductDraft createProductDraft(
       @Nonnull final String jsonResourcePath,
       @Nonnull final ProductTypeReference productTypeReference,
-      @Nullable final TaxCategoryReference taxCategoryReference,
-      @Nullable final StateReference stateReference,
+      @Nonnull final TaxCategoryReference taxCategoryReference,
+      @Nonnull final StateReference stateReference,
       @Nonnull final List<CategoryReference> categoryReferences,
       @Nullable final CategoryOrderHints categoryOrderHints) {
     ProductTypeResourceIdentifier productTypeRI =

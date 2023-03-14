@@ -1,7 +1,8 @@
 package com.commercetools.sync.sdk2.services;
 
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.CategoryDraft;
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryDraft;
+import com.commercetools.api.models.category.CategoryUpdateAction;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import java.util.List;
@@ -108,5 +109,5 @@ public interface CategoryService {
    */
   @Nonnull
   CompletionStage<Category> updateCategory(
-      @Nonnull Category category, @Nonnull List<UpdateAction<Category>> updateActions);
+      @Nonnull Category category, @Nonnull List<CategoryUpdateAction> updateActions);
 }

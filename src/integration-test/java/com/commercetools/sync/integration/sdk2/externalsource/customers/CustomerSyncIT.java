@@ -1,6 +1,7 @@
 package com.commercetools.sync.integration.sdk2.externalsource.customers;
 
 import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUtils.deleteCustomer;
+import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUtils.deleteCustomers;
 import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUtils.ensureCustomerGroup;
 import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUtils.ensureSampleCustomerJohnDoe;
 import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUtils.ensureStore;
@@ -59,6 +60,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -79,6 +81,11 @@ class CustomerSyncIT {
     customerJohnDoe = sampleCustomerJohnDoe.getLeft();
     customerDraftJohnDoe = sampleCustomerJohnDoe.getRight();
     setUpCustomerSync();
+  }
+
+  @AfterEach
+  void tearDown() {
+    deleteCustomers(CTP_TARGET_CLIENT);
   }
 
   private void setUpCustomerSync() {

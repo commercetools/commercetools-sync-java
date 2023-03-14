@@ -1,36 +1,34 @@
 package com.commercetools.sync.sdk2.services.impl;
 
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
-import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-
-import com.commercetools.api.models.graph_ql.GraphQLRequest;
-import com.commercetools.api.models.graph_ql.GraphQLRequestBuilder;
-import com.commercetools.api.models.graph_ql.GraphQLVariablesMapBuilder;
+import com.commercetools.api.client.ByProjectKeyTypesGet;
+import com.commercetools.api.client.ByProjectKeyTypesKeyByKeyGet;
+import com.commercetools.api.client.ByProjectKeyTypesPost;
 import com.commercetools.api.models.type.Type;
-import com.commercetools.sync.commons.utils.ChunkUtils;
+import com.commercetools.api.models.type.TypeDraft;
+import com.commercetools.api.models.type.TypePagedQueryResponse;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
-import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
+import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.services.TypeService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vrap.rmf.base.client.ApiHttpResponse;
-import io.vrap.rmf.base.client.error.NotFoundException;
-import io.vrap.rmf.base.client.utils.json.JsonUtils;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.apache.commons.text.StringEscapeUtils;
 
 // todo: reuse duplicated code between TypeService and CustomerService
-public final class TypeServiceImpl extends BaseService<BaseSyncOptions> implements TypeService {
+public final class TypeServiceImpl
+    extends BaseService<
+        BaseSyncOptions,
+        Type,
+        TypeDraft,
+        ByProjectKeyTypesGet,
+        TypePagedQueryResponse,
+        ByProjectKeyTypesKeyByKeyGet,
+        Type,
+        ByProjectKeyTypesPost>
+    implements TypeService {
 
   public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
     super(syncOptions);
@@ -38,116 +36,41 @@ public final class TypeServiceImpl extends BaseService<BaseSyncOptions> implemen
 
   @Nonnull
   @Override
-  public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull Set<String> keysToCache) {
-    final Set<String> keysNotCached = getKeysNotCached(keysToCache);
-
-    if (keysNotCached.isEmpty()) {
-      return CompletableFuture.completedFuture(keyToIdCache.asMap());
-    }
-
-    final List<List<String>> chunkedKeys = ChunkUtils.chunk(keysNotCached, CHUNK_SIZE);
-
-    String query =
-        "query fetchIdKeyPairs($where: String, $limit: Int) {\n"
-            + "  typeDefinitions(limit: $limit, where: $where) {\n"
-            + "    results {\n"
-            + "      id\n"
-            + "      key\n"
-            + "    }\n"
-            + "  }\n"
-            + "}";
-
-    final List<GraphQLRequest> graphQLRequests =
-        chunkedKeys.stream()
-            .map(
-                keys ->
-                    keys.stream()
-                        .filter(key -> !isBlank(key))
-                        .map(StringEscapeUtils::escapeJava)
-                        .map(s -> "\"" + s + "\"")
-                        .collect(Collectors.joining(", ")))
-            .map(commaSeparatedKeys -> format("key in (%s)", commaSeparatedKeys))
-            .map(
-                whereQuery ->
-                    GraphQLVariablesMapBuilder.of()
-                        .addValue("where", whereQuery)
-                        .addValue("limit", CHUNK_SIZE)
-                        .build())
-            .map(variables -> GraphQLRequestBuilder.of().query(query).variables(variables).build())
-            .collect(Collectors.toList());
-
-    return collectionOfFuturesToFutureOfCollection(
-            graphQLRequests.stream()
-                .map(
-                    graphQLRequest ->
-                        syncOptions.getCtpClient().graphql().post(graphQLRequest).execute())
-                .collect(Collectors.toList()),
-            Collectors.toList())
-        .thenApply(
-            graphQlResults -> {
-              graphQlResults.stream()
-                  .map(r -> r.getBody().getData())
-                  // todo: set limit to -1, the payload will have errors object but what to do with
-                  // it ?
-                  //                  .filter(Objects::nonNull)
-                  .forEach(
-                      data -> {
-                        ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
-                        final JsonNode jsonNode = objectMapper.convertValue(data, JsonNode.class);
-                        final Iterator<JsonNode> elements =
-                            jsonNode.get("typeDefinitions").get("results").elements();
-                        while (elements.hasNext()) {
-                          JsonNode idAndKey = elements.next();
-                          keyToIdCache.put(
-                              idAndKey.get("key").asText(), idAndKey.get("id").asText());
-                        }
-                      });
-              return keyToIdCache.asMap();
-            });
+  public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> typeKeys) {
+    return super.cacheKeysToIdsUsingGraphQl(typeKeys, GraphQlQueryResource.TYPES);
   }
 
   @Nonnull
-  public CompletionStage<Optional<Type>> fetchTypeByKey(@Nullable final String key) {
-
-    if (isBlank(key)) {
-      return CompletableFuture.completedFuture(null);
-    }
-
-    return syncOptions
-        .getCtpClient()
-        .types()
-        .withKey(key)
-        .get()
-        .execute()
-        .thenApply(ApiHttpResponse::getBody)
-        .thenApply(
-            type -> {
-              keyToIdCache.put(type.getKey(), type.getId());
-              return Optional.of(type);
-            })
-        .exceptionally(
-            throwable -> {
-              if (throwable instanceof NotFoundException) {
-                return Optional.empty();
-              }
-              // todo: what is the best way to handle this ?
-              syncOptions.applyErrorCallback(new SyncException(throwable));
-              return Optional.empty();
-            });
+  private CompletionStage<Optional<Type>> fetchTypeByKey(@Nullable final String key) {
+    return super.fetchResource(key, syncOptions.getCtpClient().types().withKey(key).get());
   }
 
   @Nonnull
   @Override
   public CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull String key) {
-    if (isBlank(key)) {
-      return CompletableFuture.completedFuture(Optional.empty());
-    }
+    ByProjectKeyTypesGet query =
+        syncOptions
+            .getCtpClient()
+            .types()
+            .get()
+            .withWhere("key in :keys")
+            .withPredicateVar("keys", Collections.singletonList(key));
 
-    final String id = keyToIdCache.getIfPresent(key);
-    if (id != null) {
-      return CompletableFuture.completedFuture(Optional.of(id));
-    }
+    return super.fetchCachedResourceId(key, (resource) -> resource.getKey(), query);
+  }
 
-    return fetchTypeByKey(key).thenApply(type -> type.map(Type::getId));
+  @Nonnull
+  @Override
+  public CompletionStage<Set<Type>> fetchMatchingTypesByKeys(@Nonnull final Set<String> keys) {
+    return fetchMatchingResources(
+        keys,
+        type -> type.getKey(),
+        (keysNotCached) ->
+            syncOptions
+                .getCtpClient()
+                .types()
+                .get()
+                .withWhere("key in :keys")
+                .withPredicateVar("keys", keysNotCached));
   }
 }

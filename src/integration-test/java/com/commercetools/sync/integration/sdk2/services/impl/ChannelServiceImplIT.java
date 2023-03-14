@@ -1,30 +1,27 @@
-package com.commercetools.sync.integration.services.impl;
+package com.commercetools.sync.integration.sdk2.services.impl;
 
-import static com.commercetools.sync.integration.commons.utils.ChannelITUtils.deleteChannelsFromTargetAndSource;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteInventoryEntriesFromTargetAndSource;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.populateTargetProject;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ChannelITUtils.deleteChannelsFromTargetAndSource;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ChannelITUtils.getChannelByKey;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
+import static com.commercetools.sync.integration.sdk2.commons.utils.InventoryITUtils.deleteInventoryEntriesFromTargetAndSource;
+import static com.commercetools.sync.integration.sdk2.commons.utils.InventoryITUtils.populateTargetProject;
+import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.commercetools.sync.inventories.InventorySyncOptions;
-import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
-import com.commercetools.sync.services.ChannelService;
-import com.commercetools.sync.services.impl.ChannelServiceImpl;
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.channels.ChannelDraft;
-import io.sphere.sdk.channels.ChannelDraftBuilder;
-import io.sphere.sdk.channels.ChannelRole;
-import io.sphere.sdk.channels.commands.ChannelCreateCommand;
-import io.sphere.sdk.channels.queries.ChannelQuery;
+import com.commercetools.api.models.channel.Channel;
+import com.commercetools.api.models.channel.ChannelDraft;
+import com.commercetools.api.models.channel.ChannelDraftBuilder;
+import com.commercetools.api.models.channel.ChannelRoleEnum;
+import com.commercetools.sync.sdk2.inventories.InventorySyncOptions;
+import com.commercetools.sync.sdk2.inventories.InventorySyncOptionsBuilder;
+import com.commercetools.sync.sdk2.services.ChannelService;
+import com.commercetools.sync.sdk2.services.impl.ChannelServiceImpl;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled("Migrated to sdk v2")
 class ChannelServiceImplIT {
   private ChannelService channelService;
   private static final String CHANNEL_KEY = "channel_key";
@@ -42,7 +39,7 @@ class ChannelServiceImplIT {
     final InventorySyncOptions inventorySyncOptions =
         InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
     channelService =
-        new ChannelServiceImpl(inventorySyncOptions, singleton(ChannelRole.INVENTORY_SUPPLY));
+        new ChannelServiceImpl(inventorySyncOptions, singleton(ChannelRoleEnum.INVENTORY_SUPPLY));
   }
 
   /** Cleans up the target and source test data that were built in this test class. */
@@ -63,8 +60,8 @@ class ChannelServiceImplIT {
   @Test
   void fetchCachedChannelId_WithExistingChannel_ShouldFetchChannelAndCache() {
     final ChannelDraft draft =
-        ChannelDraftBuilder.of(CHANNEL_KEY).roles(singleton(ChannelRole.INVENTORY_SUPPLY)).build();
-    CTP_TARGET_CLIENT.execute(ChannelCreateCommand.of(draft)).toCompletableFuture().join();
+        ChannelDraftBuilder.of().key(CHANNEL_KEY).roles(ChannelRoleEnum.INVENTORY_SUPPLY).build();
+    CTP_TARGET_CLIENT.channels().create(draft).execute().toCompletableFuture().join();
     assertThat(channelService.fetchCachedChannelId(CHANNEL_KEY).toCompletableFuture().join())
         .isNotEmpty();
   }
@@ -82,17 +79,13 @@ class ChannelServiceImplIT {
     assertThat(result)
         .hasValueSatisfying(
             channel -> {
-              assertThat(channel.getRoles()).containsExactly(ChannelRole.INVENTORY_SUPPLY);
+              assertThat(channel.getRoles()).containsExactly(ChannelRoleEnum.INVENTORY_SUPPLY);
               assertThat(channel.getKey()).isEqualTo(newChannelKey);
             });
 
     // assert CTP state
     final Optional<Channel> createdChannelOptional =
-        CTP_TARGET_CLIENT
-            .execute(ChannelQuery.of().byKey(newChannelKey))
-            .toCompletableFuture()
-            .join()
-            .head();
+        getChannelByKey(CTP_TARGET_CLIENT, newChannelKey);
     assertThat(createdChannelOptional).isEqualTo(result);
   }
 
@@ -109,17 +102,13 @@ class ChannelServiceImplIT {
     assertThat(result)
         .hasValueSatisfying(
             channel -> {
-              assertThat(channel.getRoles()).containsExactly(ChannelRole.INVENTORY_SUPPLY);
+              assertThat(channel.getRoles()).containsExactly(ChannelRoleEnum.INVENTORY_SUPPLY);
               assertThat(channel.getKey()).isEqualTo(newChannelKey);
             });
 
     // assert CTP state
     final Optional<Channel> createdChannelOptional =
-        CTP_TARGET_CLIENT
-            .execute(ChannelQuery.of().byKey(newChannelKey))
-            .toCompletableFuture()
-            .join()
-            .head();
+        getChannelByKey(CTP_TARGET_CLIENT, newChannelKey);
     assertThat(createdChannelOptional).isEqualTo(result);
 
     // assert cache state

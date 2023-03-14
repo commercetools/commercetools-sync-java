@@ -1,10 +1,10 @@
 package com.commercetools.sync.sdk2.services;
 
-import com.commercetools.sync.products.AttributeMetaData;
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.product_type.ProductTypeDraft;
+import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
+import com.commercetools.sync.sdk2.products.AttributeMetaData;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -120,7 +120,7 @@ public interface ProductTypeService {
    */
   @Nonnull
   CompletionStage<ProductType> updateProductType(
-      @Nonnull ProductType productType, @Nonnull List<UpdateAction<ProductType>> updateActions);
+      @Nonnull ProductType productType, @Nonnull List<ProductTypeUpdateAction> updateActions);
 
   /**
    * Given a productType key, this method fetches a productType that matches this given key in the
