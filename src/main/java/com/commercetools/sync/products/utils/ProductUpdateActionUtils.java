@@ -49,6 +49,7 @@ import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
+import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.updateactions.AddToCategory;
 import io.sphere.sdk.products.commands.updateactions.AddVariant;
 import io.sphere.sdk.products.commands.updateactions.ChangeMasterVariant;
@@ -441,7 +442,8 @@ public final class ProductUpdateActionUtils {
 
     final List<ProductVariantDraft> newAllProductVariants =
         new ArrayList<>(newProduct.getVariants());
-    newAllProductVariants.add(newProduct.getMasterVariant());
+    final ProductVariantDraft newMasterVariant = newProduct.getMasterVariant();
+    newAllProductVariants.add(newMasterVariant);
 
     // Remove missing variants, but keep master variant (MV can't be removed)
     final List<UpdateAction<Product>> updateActions =
@@ -486,6 +488,14 @@ public final class ProductUpdateActionUtils {
             });
 
     updateActions.addAll(buildChangeMasterVariantUpdateAction(oldProduct, newProduct, syncOptions));
+    if (newMasterVariant != null
+        && hasAddVariantUpdateAction(updateActions)
+        && hasChangeMasterVariantUpdateAction(updateActions)) {
+      updateActions.addAll(
+          0,
+          buildSetAttributeInAllVariantsAction(
+              attributesMetaData, oldProduct.getMasterVariant(), newMasterVariant));
+    }
     return updateActions;
   }
 
@@ -836,6 +846,45 @@ public final class ProductUpdateActionUtils {
           }
           return updateActions;
         });
+  }
+
+  private static List<UpdateAction<Product>> buildSetAttributeInAllVariantsAction(
+      @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
+      @Nonnull final ProductVariant oldMasterVariant,
+      @Nonnull final ProductVariantDraft newMasterVariant) {
+    final List<UpdateAction<Product>> updateActions = new ArrayList<>();
+    final List<AttributeDraft> attributes = newMasterVariant.getAttributes();
+    if (attributes != null) {
+      attributes.forEach(
+          attributeDraft -> {
+            final AttributeMetaData attributeMetaData =
+                attributesMetaData.get(attributeDraft.getName());
+            final Boolean isAttributesEqual =
+                oldMasterVariant.getAttributes().stream()
+                    .filter(oldAttribute -> oldAttribute.getName().equals(attributeDraft.getName()))
+                    .findAny()
+                    .map(
+                        attribute ->
+                            attribute.getValueAsJsonNode().equals(attributeDraft.getValue()))
+                    .orElse(false);
+            if (attributeMetaData.isSameForAll() && !isAttributesEqual) {
+              updateActions.add(0, SetAttributeInAllVariants.of(attributeDraft));
+            }
+          });
+    }
+
+    return updateActions;
+  }
+
+  private static boolean hasChangeMasterVariantUpdateAction(
+      final List<UpdateAction<Product>> updateActions) {
+    return updateActions.stream()
+        .anyMatch(updateAction -> updateAction instanceof ChangeMasterVariant);
+  }
+
+  private static boolean hasAddVariantUpdateAction(
+      final List<UpdateAction<Product>> updateActions) {
+    return updateActions.stream().anyMatch(updateAction -> updateAction instanceof AddVariant);
   }
 
   /**
