@@ -16,7 +16,6 @@ import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
-import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
@@ -38,8 +37,6 @@ public class ProductSyncMultipleVariantsIT {
   private List<String> warningCallBackMessages;
 
   private List<Throwable> errorCallBackExceptions;
-
-  private Product product;
 
   private ProductSyncOptions syncOptions;
 
@@ -70,7 +67,7 @@ public class ProductSyncMultipleVariantsIT {
                 PRODUCT_KEY_1_MULTIPLE_VARIANTS_RESOURCE_PATH, productType.toReference())
             .build();
 
-    product = executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft)));
+    executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft)));
   }
 
   @AfterAll
