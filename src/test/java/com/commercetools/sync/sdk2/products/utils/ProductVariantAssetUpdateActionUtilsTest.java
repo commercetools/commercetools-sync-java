@@ -17,12 +17,16 @@ import com.commercetools.api.models.common.AssetSourceBuilder;
 import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.product.Product;
 import com.commercetools.api.models.product.ProductChangeAssetNameAction;
+import com.commercetools.api.models.product.ProductChangeAssetNameActionBuilder;
 import com.commercetools.api.models.product.ProductDraft;
 import com.commercetools.api.models.product.ProductSetAssetCustomFieldAction;
-import com.commercetools.api.models.product.ProductSetAssetCustomTypeAction;
+import com.commercetools.api.models.product.ProductSetAssetCustomFieldActionBuilder;
+import com.commercetools.api.models.product.ProductSetAssetCustomTypeActionBuilder;
 import com.commercetools.api.models.product.ProductSetAssetDescriptionAction;
 import com.commercetools.api.models.product.ProductSetAssetSourcesAction;
+import com.commercetools.api.models.product.ProductSetAssetSourcesActionBuilder;
 import com.commercetools.api.models.product.ProductSetAssetTagsAction;
+import com.commercetools.api.models.product.ProductSetAssetTagsActionBuilder;
 import com.commercetools.api.models.product.ProductUpdateAction;
 import com.commercetools.api.models.type.CustomFields;
 import com.commercetools.api.models.type.CustomFieldsDraft;
@@ -104,33 +108,32 @@ class ProductVariantAssetUpdateActionUtilsTest {
     assertThat(updateActions).hasSize(5);
     assertThat(updateActions)
         .containsExactlyInAnyOrder(
-            ProductChangeAssetNameAction.builder()
-                .of()
+            ProductChangeAssetNameActionBuilder.of()
                 .assetKey(null)
                 .variantId(1L)
                 .name(newName)
                 .staged(true)
                 .build(),
-            ProductSetAssetTagsAction.builder()
+            ProductSetAssetTagsActionBuilder.of()
                 .variantId(1l)
                 .assetKey(null)
                 .tags(newTags)
                 .staged(true)
                 .build(),
-            ProductSetAssetSourcesAction.builder()
+            ProductSetAssetSourcesActionBuilder.of()
                 .variantId(1l)
                 .assetKey(null)
                 .sources(newAssetSources)
                 .staged(true)
                 .build(),
-            ProductSetAssetCustomFieldAction.builder()
+            ProductSetAssetCustomFieldActionBuilder.of()
                 .variantId(1l)
                 .assetKey(null)
                 .name("invisibleInShop")
                 .value(newCustomFieldsMap.get("invisibleInShop"))
                 .staged(true)
                 .build(),
-            ProductSetAssetCustomFieldAction.builder()
+            ProductSetAssetCustomFieldActionBuilder.of()
                 .variantId(1l)
                 .assetKey(null)
                 .name("backgroundColor")
@@ -509,8 +512,7 @@ class ProductVariantAssetUpdateActionUtilsTest {
 
     assertThat(updateActions)
         .containsExactly(
-            ProductSetAssetCustomTypeAction.builder()
-                .of()
+            ProductSetAssetCustomTypeActionBuilder.of()
                 .variantId(1L)
                 .assetKey(newAssetDraft.getKey())
                 .fields(newCustomFieldContainer)
@@ -695,8 +697,7 @@ class ProductVariantAssetUpdateActionUtilsTest {
     assertThat(errors).isEmpty();
     assertThat(updateActions)
         .containsExactly(
-            ProductSetAssetCustomFieldAction.builder()
-                .of()
+            ProductSetAssetCustomFieldActionBuilder.of()
                 .variantId(1L)
                 .assetKey(oldAsset.getKey())
                 .value(null)

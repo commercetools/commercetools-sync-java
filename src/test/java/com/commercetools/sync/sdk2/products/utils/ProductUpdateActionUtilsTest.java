@@ -19,6 +19,7 @@ import com.commercetools.api.models.common.PriceDraft;
 import com.commercetools.api.models.product.Attribute;
 import com.commercetools.api.models.product.ProductAddExternalImageAction;
 import com.commercetools.api.models.product.ProductAddVariantAction;
+import com.commercetools.api.models.product.ProductAddVariantActionBuilder;
 import com.commercetools.api.models.product.ProductChangeMasterVariantAction;
 import com.commercetools.api.models.product.ProductDraft;
 import com.commercetools.api.models.product.ProductDraftBuilder;
@@ -27,7 +28,7 @@ import com.commercetools.api.models.product.ProductRemoveImageAction;
 import com.commercetools.api.models.product.ProductRemoveVariantAction;
 import com.commercetools.api.models.product.ProductSetAttributeAction;
 import com.commercetools.api.models.product.ProductSetAttributeInAllVariantsAction;
-import com.commercetools.api.models.product.ProductSetSkuAction;
+import com.commercetools.api.models.product.ProductSetSkuActionBuilder;
 import com.commercetools.api.models.product.ProductUpdateAction;
 import com.commercetools.api.models.product.ProductVariant;
 import com.commercetools.api.models.product.ProductVariantDraft;
@@ -114,8 +115,7 @@ class ProductUpdateActionUtilsTest {
 
     assertThat(updateActions)
         .contains(
-            ProductAddVariantAction.builder()
-                .of()
+            ProductAddVariantActionBuilder.of()
                 .attributes(draftMaster.getAttributes())
                 .prices(draftMaster.getPrices())
                 .sku(draftMaster.getSku())
@@ -123,8 +123,7 @@ class ProductUpdateActionUtilsTest {
                 .images(draftMaster.getImages())
                 .key(draftMaster.getKey())
                 .build(),
-            ProductAddVariantAction.builder()
-                .of()
+            ProductAddVariantActionBuilder.of()
                 .attributes(draft5.getAttributes())
                 .prices(draft5.getPrices())
                 .sku(draft5.getSku())
@@ -132,8 +131,7 @@ class ProductUpdateActionUtilsTest {
                 .key(draft5.getKey())
                 .images(draft5.getImages())
                 .build(),
-            ProductAddVariantAction.builder()
-                .of()
+            ProductAddVariantActionBuilder.of()
                 .attributes(draft6.getAttributes())
                 .prices(draft6.getPrices())
                 .sku(draft6.getSku())
@@ -141,8 +139,7 @@ class ProductUpdateActionUtilsTest {
                 .key(draft6.getKey())
                 .images(draft6.getImages())
                 .build(),
-            ProductAddVariantAction.builder()
-                .of()
+            ProductAddVariantActionBuilder.of()
                 .attributes(draft7.getAttributes())
                 .prices(draft7.getPrices())
                 .sku(draft7.getSku())
@@ -155,12 +152,7 @@ class ProductUpdateActionUtilsTest {
     // variant 4 sku change
     assertThat(updateActions)
         .containsOnlyOnce(
-            ProductSetSkuAction.builder()
-                .of()
-                .variantId(4L)
-                .sku("var-44-sku")
-                .staged(true)
-                .build());
+            ProductSetSkuActionBuilder.of().variantId(4L).sku("var-44-sku").staged(true).build());
 
     // verify image update of variant 4
     ProductRemoveImageAction removeImageAction =
