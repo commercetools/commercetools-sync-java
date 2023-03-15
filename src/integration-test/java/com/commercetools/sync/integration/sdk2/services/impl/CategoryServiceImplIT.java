@@ -1,38 +1,43 @@
-package com.commercetools.sync.integration.services.impl;
+package com.commercetools.sync.integration.sdk2.services.impl;
 
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsDraft;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.sdk2.commons.utils.CategoryITUtils.*;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.deleteTypes;
+import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.commercetools.sync.categories.CategorySyncOptions;
-import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
-import com.commercetools.sync.services.CategoryService;
-import com.commercetools.sync.services.impl.CategoryServiceImpl;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.categories.CategoryDraftBuilder;
-import io.sphere.sdk.categories.commands.CategoryCreateCommand;
-import io.sphere.sdk.categories.commands.updateactions.ChangeName;
-import io.sphere.sdk.categories.commands.updateactions.ChangeSlug;
-import io.sphere.sdk.categories.queries.CategoryQuery;
-import io.sphere.sdk.client.BadGatewayException;
-import io.sphere.sdk.client.ErrorResponseException;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.errors.DuplicateFieldError;
-import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
+import com.commercetools.api.client.ByProjectKeyCategoriesGet;
+import com.commercetools.api.client.ByProjectKeyCategoriesKeyByKeyGet;
+import com.commercetools.api.client.ByProjectKeyCategoriesKeyByKeyRequestBuilder;
+import com.commercetools.api.client.ByProjectKeyCategoriesRequestBuilder;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.client.error.BadRequestException;
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryChangeNameAction;
+import com.commercetools.api.models.category.CategoryChangeNameActionBuilder;
+import com.commercetools.api.models.category.CategoryChangeSlugAction;
+import com.commercetools.api.models.category.CategoryChangeSlugActionBuilder;
+import com.commercetools.api.models.category.CategoryDraft;
+import com.commercetools.api.models.category.CategoryDraftBuilder;
+import com.commercetools.api.models.category.CategoryPagedQueryResponse;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.common.LocalizedStringBuilder;
+import com.commercetools.api.models.error.DuplicateFieldError;
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.sync.sdk2.categories.CategorySyncOptions;
+import com.commercetools.sync.sdk2.categories.CategorySyncOptionsBuilder;
+import com.commercetools.sync.sdk2.services.CategoryService;
+import com.commercetools.sync.sdk2.services.impl.CategoryServiceImpl;
 import io.sphere.sdk.utils.CompletableFutureUtils;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.error.BadGatewayException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -41,6 +46,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -48,10 +54,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled("Migrated to sdk v2")
 class CategoryServiceImplIT {
   private CategoryService categoryService;
   private Category oldCategory;
@@ -99,15 +103,24 @@ class CategoryServiceImplIT {
     // Create a mock new category in the target project.
 
     final CategoryDraft oldCategoryDraft =
-        CategoryDraftBuilder.of(
-                LocalizedString.of(Locale.ENGLISH, "furniture"),
-                LocalizedString.of(Locale.ENGLISH, "furniture"))
+        CategoryDraftBuilder.of()
+            .name(
+                LocalizedStringBuilder.of()
+                    .addValue(Locale.ENGLISH.toLanguageTag(), "furniture")
+                    .build())
+            .slug(
+                LocalizedStringBuilder.of()
+                    .addValue(Locale.ENGLISH.toLanguageTag(), "furniture")
+                    .build())
             .key(oldCategoryKey)
             .custom(getCustomFieldsDraft())
             .build();
     oldCategory =
         CTP_TARGET_CLIENT
-            .execute(CategoryCreateCommand.of(oldCategoryDraft))
+            .categories()
+            .post(oldCategoryDraft)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join();
 
@@ -133,14 +146,22 @@ class CategoryServiceImplIT {
     // Create new category without caching
     final String newCategoryKey = "newCategoryKey";
     final CategoryDraft categoryDraft =
-        CategoryDraftBuilder.of(
-                LocalizedString.of(Locale.ENGLISH, "classic furniture"),
-                LocalizedString.of(
-                    Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
+        CategoryDraftBuilder.of()
+            .name(
+                localizedStringBuilder ->
+                    localizedStringBuilder.addValue(
+                        Locale.ENGLISH.toLanguageTag(), "classic furniture"))
+            .slug(
+                localizedStringBuilder ->
+                    localizedStringBuilder.addValue(
+                        Locale.ENGLISH.toLanguageTag(), "classic-furniture"))
+            .slug(
+                localizedStringBuilder ->
+                    localizedStringBuilder.addValue(
+                        Locale.GERMAN.toLanguageTag(), "klassische-moebel"))
             .key(newCategoryKey)
             .build();
-
-    CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(categoryDraft)).toCompletableFuture().join();
+    CTP_TARGET_CLIENT.categories().create(categoryDraft).execute().toCompletableFuture().join();
 
     cache =
         categoryService
@@ -178,9 +199,19 @@ class CategoryServiceImplIT {
   @Test
   void fetchMatchingCategoriesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
     // Mock sphere client to return BadGatewayException on any request.
-    final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-    when(spyClient.execute(any(CategoryQuery.class)))
-        .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
+
+    final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
+    when(spyClient.categories()).thenReturn(mock(ByProjectKeyCategoriesRequestBuilder.class));
+    final ByProjectKeyCategoriesGet getMock = mock(ByProjectKeyCategoriesGet.class);
+    when(spyClient.categories().get()).thenReturn(getMock);
+    when(getMock.withWhere(any(String.class))).thenReturn(getMock);
+    when(getMock.withPredicateVar(any(String.class), any())).thenReturn(getMock);
+    when(getMock.withLimit(any(Integer.class))).thenReturn(getMock);
+    when(getMock.withWithTotal(any(Boolean.class))).thenReturn(getMock);
+    when(getMock.execute())
+        .thenReturn(
+            CompletableFutureUtils.exceptionallyCompletedFuture(
+                new BadGatewayException(500, "", null, "", null)))
         .thenCallRealMethod();
     final CategorySyncOptions spyOptions =
         CategorySyncOptionsBuilder.of(spyClient)
@@ -190,7 +221,8 @@ class CategoryServiceImplIT {
                   errorCallBackExceptions.add(exception.getCause());
                 })
             .build();
-    final CategoryService spyCategoryService = new CategoryServiceImpl(spyOptions);
+
+    final CategoryService categoryService = new CategoryServiceImpl(spyOptions);
 
     final Set<String> keys = new HashSet<>();
     keys.add(oldCategoryKey);
@@ -198,7 +230,7 @@ class CategoryServiceImplIT {
     // test and assert
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
-    assertThat(spyCategoryService.fetchMatchingCategoriesByKeys(keys))
+    assertThat(categoryService.fetchMatchingCategoriesByKeys(keys))
         .failsWithin(10, TimeUnit.SECONDS)
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(BadGatewayException.class);
@@ -254,15 +286,24 @@ class CategoryServiceImplIT {
     // preparation
     final String newCategoryKey = "newCategoryKey";
     final CategoryDraft categoryDraft =
-        CategoryDraftBuilder.of(
-                LocalizedString.of(Locale.ENGLISH, "classic furniture"),
-                LocalizedString.of(
-                    Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
+        CategoryDraftBuilder.of()
+            .name(
+                localizedStringBuilder ->
+                    localizedStringBuilder.addValue(
+                        Locale.ENGLISH.toLanguageTag(), "classic furniture"))
+            .slug(
+                localizedStringBuilder ->
+                    localizedStringBuilder.addValue(
+                        Locale.ENGLISH.toLanguageTag(), "classic-furniture"))
+            .slug(
+                localizedStringBuilder ->
+                    localizedStringBuilder.addValue(
+                        Locale.GERMAN.toLanguageTag(), "klassische-moebel"))
             .key(newCategoryKey)
             .custom(getCustomFieldsDraft())
             .build();
 
-    final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+    final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
     final CategorySyncOptions spyOptions =
         CategorySyncOptionsBuilder.of(spyClient)
             .errorCallback(
@@ -275,41 +316,43 @@ class CategoryServiceImplIT {
     final CategoryService spyProductService = new CategoryServiceImpl(spyOptions);
 
     // test
-    final Optional<Category> createdOptional =
-        categoryService.createCategory(categoryDraft).toCompletableFuture().join();
+    final Category createdCategory =
+        categoryService.createCategory(categoryDraft).toCompletableFuture().join().get();
 
     // assertion
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
 
     // assert CTP state
-    final Optional<Category> queriedOptional =
+    final Category fetchedCategory =
         CTP_TARGET_CLIENT
-            .execute(
-                CategoryQuery.of()
-                    .withPredicates(
-                        categoryQueryModel -> categoryQueryModel.key().is(newCategoryKey)))
-            .toCompletableFuture()
-            .join()
-            .head();
+            .categories()
+            .withKey(newCategoryKey)
+            .get()
+            .execute()
+            .thenApply(categoryApiHttpResponse -> categoryApiHttpResponse.getBody())
+            .join();
 
-    assertThat(queriedOptional)
-        .hasValueSatisfying(
-            queried ->
-                assertThat(createdOptional)
-                    .hasValueSatisfying(
-                        created -> {
-                          assertThat(queried.getName()).isEqualTo(created.getName());
-                          assertThat(queried.getSlug()).isEqualTo(created.getSlug());
-                          assertThat(queried.getCustom()).isNotNull();
-                          assertThat(queried.getKey()).isEqualTo(newCategoryKey);
-                        }));
+    assertThat(fetchedCategory.getName()).isEqualTo(createdCategory.getName());
+    assertThat(fetchedCategory.getSlug()).isEqualTo(createdCategory.getSlug());
+    assertThat(fetchedCategory.getCustom()).isNotNull();
+    assertThat(fetchedCategory.getKey()).isEqualTo(newCategoryKey);
 
-    // Assert that the created category is cached
-    final Optional<String> productId =
-        spyProductService.fetchCachedCategoryId(newCategoryKey).toCompletableFuture().join();
-    assertThat(productId).isPresent();
-    verify(spyClient, times(0)).execute(any(ProductTypeQuery.class));
+    final ByProjectKeyCategoriesRequestBuilder mock1 =
+        mock(ByProjectKeyCategoriesRequestBuilder.class);
+    when(spyClient.categories()).thenReturn(mock1);
+    final ByProjectKeyCategoriesGet mock2 = mock(ByProjectKeyCategoriesGet.class);
+    when(mock1.get()).thenReturn(mock2);
+    when(mock2.withWhere(any(String.class))).thenReturn(mock2);
+    when(mock2.withPredicateVar(any(String.class), any())).thenReturn(mock2);
+    final CompletableFuture<ApiHttpResponse<ProductType>> mock3 = mock(CompletableFuture.class);
+    final CompletableFuture<ApiHttpResponse<ProductType>> spy = spy(mock3);
+
+    // Assert that the created product type is cached
+    final Optional<String> productTypeId =
+        categoryService.fetchCachedCategoryId(newCategoryKey).toCompletableFuture().join();
+    assertThat(productTypeId).isPresent();
+    verify(spy, times(0)).handle(any());
   }
 
   @Test
@@ -317,10 +360,19 @@ class CategoryServiceImplIT {
     // preparation
     final String newCategoryKey = "";
     final CategoryDraft categoryDraft =
-        CategoryDraftBuilder.of(
-                LocalizedString.of(Locale.ENGLISH, "classic furniture"),
-                LocalizedString.of(
-                    Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
+        CategoryDraftBuilder.of()
+            .name(
+                localizedStringBuilder ->
+                    localizedStringBuilder.addValue(
+                        Locale.ENGLISH.toLanguageTag(), "classic furniture"))
+            .slug(
+                localizedStringBuilder ->
+                    localizedStringBuilder.addValue(
+                        Locale.ENGLISH.toLanguageTag(), "classic-furniture"))
+            .slug(
+                localizedStringBuilder ->
+                    localizedStringBuilder.addValue(
+                        Locale.GERMAN.toLanguageTag(), "klassische-moebel"))
             .key(newCategoryKey)
             .custom(getCustomFieldsDraft())
             .build();
@@ -340,9 +392,13 @@ class CategoryServiceImplIT {
     // preparation
     final String newCategoryKey = "newCat";
     final CategoryDraft categoryDraft =
-        CategoryDraftBuilder.of(
-                LocalizedString.of(Locale.ENGLISH, "furniture"),
-                LocalizedString.of(Locale.ENGLISH, "furniture"))
+        CategoryDraftBuilder.of()
+            .name(
+                localizedStringBuilder ->
+                    localizedStringBuilder.addValue(Locale.ENGLISH.toLanguageTag(), "furniture"))
+            .slug(
+                localizedStringBuilder ->
+                    localizedStringBuilder.addValue(Locale.ENGLISH.toLanguageTag(), "furniture"))
             .key(newCategoryKey)
             .custom(getCustomFieldsDraft())
             .build();
@@ -357,15 +413,15 @@ class CategoryServiceImplIT {
         .hasSize(1)
         .allSatisfy(
             exception -> {
-              assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
-              final ErrorResponseException errorResponse = ((ErrorResponseException) exception);
+              BadRequestException badRequestException = (BadRequestException) exception.getCause();
 
               final List<DuplicateFieldError> fieldErrors =
-                  errorResponse.getErrors().stream()
+                  badRequestException.getErrorResponse().getErrors().stream()
                       .map(
-                          sphereError -> {
-                            assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
-                            return sphereError.as(DuplicateFieldError.class);
+                          ctpError -> {
+                            assertThat(ctpError.getCode())
+                                .isEqualTo(DuplicateFieldError.DUPLICATE_FIELD);
+                            return (DuplicateFieldError) ctpError;
                           })
                       .collect(toList());
               assertThat(fieldErrors).hasSize(1);
@@ -387,57 +443,61 @@ class CategoryServiceImplIT {
             });
 
     // assert CTP state
-    final Optional<Category> categoryOptional =
+
+    final CategoryPagedQueryResponse response =
         CTP_TARGET_CLIENT
-            .execute(
-                CategoryQuery.of()
-                    .withPredicates(
-                        categoryQueryModel -> categoryQueryModel.key().is(newCategoryKey)))
+            .categories()
+            .get()
+            .withWhere("key = :key")
+            .withPredicateVar("key", newCategoryKey)
+            .execute()
             .toCompletableFuture()
-            .join()
-            .head();
-    assertThat(categoryOptional).isEmpty();
+            .thenApply(ApiHttpResponse::getBody)
+            .join();
+    assertThat(response.getCount()).isEqualTo(0L);
   }
 
   @Test
   void updateCategory_WithValidChanges_ShouldUpdateCategoryCorrectly() {
-    final Optional<Category> categoryOptional =
+    final Category category =
         CTP_TARGET_CLIENT
-            .execute(
-                CategoryQuery.of()
-                    .withPredicates(
-                        categoryQueryModel -> categoryQueryModel.key().is(oldCategory.getKey())))
+            .categories()
+            .withKey(oldCategory.getKey())
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
-            .join()
-            .head();
+            .join();
 
     final String newCategoryName = "This is my new name!";
-    final ChangeName changeNameUpdateAction =
-        ChangeName.of(LocalizedString.of(Locale.GERMAN, newCategoryName));
+    CategoryChangeNameAction changeNameAction =
+        CategoryChangeNameActionBuilder.of()
+            .name(
+                LocalizedStringBuilder.of()
+                    .addValue(Locale.GERMAN.toLanguageTag(), newCategoryName)
+                    .build())
+            .build();
 
     final Category updatedCategory =
         categoryService
-            .updateCategory(
-                categoryOptional.get(), Collections.singletonList(changeNameUpdateAction))
+            .updateCategory(category, Collections.singletonList(changeNameAction))
             .toCompletableFuture()
             .join();
     assertThat(updatedCategory).isNotNull();
 
     // assert CTP state
-    final Optional<Category> fetchedCategoryOptional =
+    final Category fetchedCategory =
         CTP_TARGET_CLIENT
-            .execute(
-                CategoryQuery.of()
-                    .withPredicates(
-                        categoryQueryModel -> categoryQueryModel.key().is(oldCategory.getKey())))
+            .categories()
+            .withKey(oldCategory.getKey())
+            .get()
+            .execute()
+            .thenApply(categoryApiHttpResponse -> categoryApiHttpResponse.getBody())
             .toCompletableFuture()
-            .join()
-            .head();
+            .join();
 
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
-    assertThat(fetchedCategoryOptional).isNotEmpty();
-    final Category fetchedCategory = fetchedCategoryOptional.get();
     assertThat(fetchedCategory.getName()).isEqualTo(updatedCategory.getName());
     assertThat(fetchedCategory.getSlug()).isEqualTo(updatedCategory.getSlug());
     assertThat(fetchedCategory.getParent()).isEqualTo(updatedCategory.getParent());
@@ -449,36 +509,49 @@ class CategoryServiceImplIT {
   void updateCategory_WithInvalidChanges_ShouldNotUpdateCategory() {
     // Create a mock new category in the target project.
     final CategoryDraft newCategoryDraft =
-        CategoryDraftBuilder.of(
-                LocalizedString.of(Locale.ENGLISH, "furniture"),
-                LocalizedString.of(Locale.ENGLISH, "furniture1"))
+        CategoryDraftBuilder.of()
+            .name(
+                LocalizedStringBuilder.of()
+                    .addValue(Locale.ENGLISH.toLanguageTag(), "furniture")
+                    .build())
+            .slug(
+                LocalizedStringBuilder.of()
+                    .addValue(Locale.ENGLISH.toLanguageTag(), "furniture1")
+                    .build())
             .key("newCategory")
             .custom(getCustomFieldsDraft())
             .build();
+
     final Category newCategory =
         CTP_TARGET_CLIENT
-            .execute(CategoryCreateCommand.of(newCategoryDraft))
+            .categories()
+            .create(newCategoryDraft)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join();
 
-    final LocalizedString newSlug = LocalizedString.of(Locale.ENGLISH, "furniture");
-    final ChangeSlug changeSlugUpdateAction = ChangeSlug.of(newSlug);
+    LocalizedString newSlug =
+        LocalizedStringBuilder.of().addValue(Locale.ENGLISH.toLanguageTag(), "furniture").build();
+    final CategoryChangeSlugAction changeSlugAction =
+        CategoryChangeSlugActionBuilder.of().slug(newSlug).build();
 
     categoryService
-        .updateCategory(newCategory, Collections.singletonList(changeSlugUpdateAction))
+        .updateCategory(newCategory, Collections.singletonList(changeSlugAction))
         .exceptionally(
             exception -> {
               assertThat(exception).isExactlyInstanceOf(CompletionException.class);
-              assertThat(exception.getCause()).isExactlyInstanceOf(ErrorResponseException.class);
-              final ErrorResponseException errorResponse =
-                  ((ErrorResponseException) exception.getCause());
+
+              final BadRequestException badRequestException =
+                  ((BadRequestException) exception.getCause());
 
               final List<DuplicateFieldError> fieldErrors =
-                  errorResponse.getErrors().stream()
+                  badRequestException.getErrorResponse().getErrors().stream()
                       .map(
                           sphereError -> {
-                            assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
-                            return sphereError.as(DuplicateFieldError.class);
+                            assertThat(sphereError.getCode())
+                                .isEqualTo(DuplicateFieldError.DUPLICATE_FIELD);
+                            return (DuplicateFieldError) sphereError;
                           })
                       .collect(toList());
               assertThat(fieldErrors).hasSize(1);
@@ -494,18 +567,16 @@ class CategoryServiceImplIT {
         .join();
 
     // assert CTP state
-    final Optional<Category> fetchedCategoryOptional =
+    final Category fetchedCategory =
         CTP_TARGET_CLIENT
-            .execute(
-                CategoryQuery.of()
-                    .withPredicates(
-                        categoryQueryModel -> categoryQueryModel.key().is(newCategory.getKey())))
+            .categories()
+            .withKey(newCategory.getKey())
+            .get()
+            .execute()
             .toCompletableFuture()
-            .join()
-            .head();
+            .thenApply(ApiHttpResponse::getBody)
+            .join();
 
-    assertThat(fetchedCategoryOptional).isNotEmpty();
-    final Category fetchedCategory = fetchedCategoryOptional.get();
     assertThat(fetchedCategory.getSlug()).isNotEqualTo(newSlug);
   }
 
@@ -533,9 +604,20 @@ class CategoryServiceImplIT {
   @Test
   void fetchCategory_WithBadGateWayExceptionAlways_ShouldFail() {
     // Mock sphere client to return BadGatewayException on any request.
-    final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-    when(spyClient.execute(any(CategoryQuery.class)))
-        .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
+    final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
+    when(spyClient.categories()).thenReturn(mock(ByProjectKeyCategoriesRequestBuilder.class));
+
+    final ByProjectKeyCategoriesKeyByKeyRequestBuilder builder =
+        mock(ByProjectKeyCategoriesKeyByKeyRequestBuilder.class);
+    when(spyClient.categories().withKey(any())).thenReturn(builder);
+
+    final ByProjectKeyCategoriesKeyByKeyGet getMock = mock(ByProjectKeyCategoriesKeyByKeyGet.class);
+    when(builder.get()).thenReturn(getMock);
+
+    when(getMock.execute())
+        .thenReturn(
+            CompletableFutureUtils.exceptionallyCompletedFuture(
+                new BadGatewayException(500, "", null, "", null)))
         .thenCallRealMethod();
     final CategorySyncOptions spyOptions =
         CategorySyncOptionsBuilder.of(spyClient)
@@ -545,9 +627,10 @@ class CategoryServiceImplIT {
                   errorCallBackExceptions.add(exception.getCause());
                 })
             .build();
+
     final CategoryService spyCategoryService = new CategoryServiceImpl(spyOptions);
 
-    // test and assertion
+    // test and assert
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(spyCategoryService.fetchCategory(oldCategoryKey))

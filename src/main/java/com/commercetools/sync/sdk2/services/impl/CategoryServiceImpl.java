@@ -1,40 +1,41 @@
 package com.commercetools.sync.sdk2.services.impl;
 
-import com.commercetools.sync.categories.CategorySyncOptions;
-import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
-import com.commercetools.sync.commons.models.GraphQlQueryResources;
-import com.commercetools.sync.services.CategoryService;
-import com.commercetools.sync.services.impl.BaseServiceWithKey;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.categories.commands.CategoryCreateCommand;
-import io.sphere.sdk.categories.commands.CategoryUpdateCommand;
-import io.sphere.sdk.categories.expansion.CategoryExpansionModel;
-import io.sphere.sdk.categories.queries.CategoryQuery;
-import io.sphere.sdk.categories.queries.CategoryQueryBuilder;
-import io.sphere.sdk.categories.queries.CategoryQueryModel;
-import io.sphere.sdk.commands.UpdateAction;
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import com.commercetools.api.client.ByProjectKeyCategoriesGet;
+import com.commercetools.api.client.ByProjectKeyCategoriesKeyByKeyGet;
+import com.commercetools.api.client.ByProjectKeyCategoriesPost;
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryDraft;
+import com.commercetools.api.models.category.CategoryPagedQueryResponse;
+import com.commercetools.api.models.category.CategoryUpdateAction;
+import com.commercetools.api.models.category.CategoryUpdateBuilder;
+import com.commercetools.sync.sdk2.categories.CategorySyncOptions;
+import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
+import com.commercetools.sync.sdk2.services.CategoryService;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-
-import static java.util.Collections.singleton;
+import java.util.function.Function;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /** Implementation of CategoryService interface. */
 public final class CategoryServiceImpl
-    extends BaseServiceWithKey<
-            CategoryDraft,
-            Category,
-            Category,
-            CategorySyncOptions,
-            CategoryQuery,
-            CategoryQueryModel,
-            CategoryExpansionModel<Category>>
+    extends BaseService<
+        CategorySyncOptions,
+        Category,
+        CategoryDraft,
+        ByProjectKeyCategoriesGet,
+        CategoryPagedQueryResponse,
+        ByProjectKeyCategoriesKeyByKeyGet,
+        Category,
+        ByProjectKeyCategoriesPost>
     implements CategoryService {
 
   public CategoryServiceImpl(@Nonnull final CategorySyncOptions syncOptions) {
@@ -45,59 +46,92 @@ public final class CategoryServiceImpl
   @Override
   public CompletionStage<Map<String, String>> cacheKeysToIds(
       @Nonnull final Set<String> categoryKeys) {
-    return cacheKeysToIds(
-        categoryKeys,
-        keysNotCached ->
-            new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.CATEGORIES));
+    return super.cacheKeysToIdsUsingGraphQl(categoryKeys, GraphQlQueryResource.CATEGORIES);
   }
 
   @Nonnull
   @Override
   public CompletionStage<Set<Category>> fetchMatchingCategoriesByKeys(
-      @Nonnull final Set<String> categoryKeys) {
-
+      @Nonnull final Set<String> keys) {
     return fetchMatchingResources(
-        categoryKeys,
+        keys,
+        categories -> categories.getKey(),
         (keysNotCached) ->
-            CategoryQuery.of()
-                .plusPredicates(
-                    categoryQueryModel -> categoryQueryModel.key().isIn(keysNotCached)));
+            syncOptions
+                .getCtpClient()
+                .categories()
+                .get()
+                .withWhere("key in :keys")
+                .withPredicateVar("keys", keysNotCached));
   }
 
   @Nonnull
-  @Override
   public CompletionStage<Optional<Category>> fetchCategory(@Nullable final String key) {
-
-    return fetchResource(
-        key,
-        () ->
-            CategoryQuery.of()
-                .plusPredicates(categoryQueryModel -> categoryQueryModel.key().is(key)));
+    ByProjectKeyCategoriesKeyByKeyGet byProjectKeyCategoriesKeyByKeyGet =
+        syncOptions.getCtpClient().categories().withKey(key).get();
+    return super.fetchResource(key, byProjectKeyCategoriesKeyByKeyGet);
   }
 
   @Nonnull
   @Override
   public CompletionStage<Optional<String>> fetchCachedCategoryId(@Nonnull final String key) {
+    ByProjectKeyCategoriesGet query =
+        syncOptions
+            .getCtpClient()
+            .categories()
+            .get()
+            .withWhere("key in :keys")
+            .withPredicateVar("keys", Collections.singletonList(key));
 
-    return fetchCachedResourceId(
-        key,
-        () ->
-            CategoryQueryBuilder.of()
-                .plusPredicates(queryModel -> queryModel.key().isIn(singleton(key)))
-                .build());
+    return this.fetchCachedResourceId(key, query);
+  }
+
+  @Nonnull
+  CompletionStage<Optional<String>> fetchCachedResourceId(
+      @Nullable final String key, @Nonnull final ByProjectKeyCategoriesGet query) {
+    return fetchCachedResourceId(key, resource -> resource.getKey(), query);
   }
 
   @Nonnull
   @Override
   public CompletionStage<Optional<Category>> createCategory(
       @Nonnull final CategoryDraft categoryDraft) {
-    return createResource(categoryDraft, CategoryCreateCommand::of);
+    return super.createResource(
+        categoryDraft,
+        CategoryDraft::getKey,
+        Category::getId,
+        Function.identity(),
+        syncOptions.getCtpClient().categories().post(categoryDraft));
   }
 
   @Nonnull
   @Override
   public CompletionStage<Category> updateCategory(
-      @Nonnull final Category category, @Nonnull final List<UpdateAction<Category>> updateActions) {
-    return updateResource(category, CategoryUpdateCommand::of, updateActions);
+      @Nonnull final Category category, @Nonnull final List<CategoryUpdateAction> updateActions) {
+    final List<List<CategoryUpdateAction>> actionBatches =
+        batchElements(updateActions, MAXIMUM_ALLOWED_UPDATE_ACTIONS);
+
+    CompletionStage<ApiHttpResponse<Category>> resultStage =
+        CompletableFuture.completedFuture(new ApiHttpResponse<>(200, null, category));
+
+    for (final List<CategoryUpdateAction> batch : actionBatches) {
+      resultStage =
+          resultStage
+              .thenApply(ApiHttpResponse::getBody)
+              .thenCompose(
+                  updatedCategory ->
+                      syncOptions
+                          .getCtpClient()
+                          .categories()
+                          .withId(updatedCategory.getId())
+                          .post(
+                              CategoryUpdateBuilder.of()
+                                  .actions(batch)
+                                  .version(updatedCategory.getVersion())
+                                  .build())
+                          .execute());
+    }
+
+    return resultStage.thenApply(ApiHttpResponse::getBody);
   }
 }

@@ -1,8 +1,6 @@
 package com.commercetools.sync.integration.sdk2.ctpprojectsource.customers;
 
-import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUtils.ensureSampleCustomerJaneDoe;
-import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUtils.ensureSampleCustomerJohnDoe;
-import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUtils.ensureStore;
+import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUtils.*;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static java.util.Collections.singletonList;
@@ -26,8 +24,10 @@ import com.commercetools.sync.sdk2.customers.utils.CustomerTransformUtils;
 import com.neovisionaries.i18n.CountryCode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -39,11 +39,6 @@ class CustomerSyncIT {
 
   @BeforeEach
   void setup() {
-    ensureSampleCustomerJohnDoe(CTP_TARGET_CLIENT);
-    ensureSampleCustomerJaneDoe(CTP_SOURCE_CLIENT);
-
-    ensureSampleCustomerJohnDoe(CTP_TARGET_CLIENT);
-
     errorMessages = new ArrayList<>();
     exceptions = new ArrayList<>();
     final CustomerSyncOptions customerSyncOptions =
@@ -58,14 +53,21 @@ class CustomerSyncIT {
     referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
   }
 
+  @AfterAll
+  static void tearDown() {
+    deleteCustomers(CTP_TARGET_CLIENT);
+    deleteCustomers(CTP_SOURCE_CLIENT);
+  }
+
   @Test
   void sync_WithoutUpdates_ShouldReturnProperStatistics() {
-
+    ensureSampleCustomerJohnDoe(CTP_TARGET_CLIENT);
+    ensureSampleCustomerJaneDoe(CTP_TARGET_CLIENT);
     final List<Customer> customers =
-        CTP_SOURCE_CLIENT.customers().get().execute().join().getBody().getResults();
+        CTP_TARGET_CLIENT.customers().get().execute().join().getBody().getResults();
 
     final List<CustomerDraft> customerDrafts =
-        CustomerTransformUtils.toCustomerDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, customers)
+        CustomerTransformUtils.toCustomerDrafts(CTP_TARGET_CLIENT, referenceIdToKeyCache, customers)
             .join();
 
     final CustomerSyncStatistics customerSyncStatistics =
@@ -74,16 +76,16 @@ class CustomerSyncIT {
     assertThat(errorMessages).isEmpty();
     assertThat(exceptions).isEmpty();
 
-    // assertThat(customerSyncStatistics).hasValues(2, 1, 0, 0);
     assertThat(customerSyncStatistics.getReportMessage())
         .isEqualTo(
-            "Summary: 2 customers were processed in total (1 created, 0 updated and 0 failed to sync).");
+            "Summary: 2 customers were processed in total (0 created, 2 updated and 0 failed to sync).");
   }
 
   @Test
   void sync_WithUpdates_ShouldReturnProperStatistics() {
+    ensureSampleCustomerJaneDoe(CTP_TARGET_CLIENT);
     final List<Customer> customers =
-        CTP_SOURCE_CLIENT.customers().get().execute().join().getBody().getResults();
+        CTP_TARGET_CLIENT.customers().get().execute().join().getBody().getResults();
 
     final List<CustomerDraft> updatedCustomerDrafts = prepareUpdatedCustomerDrafts(customers);
     final CustomerSyncStatistics customerSyncStatistics =
@@ -95,7 +97,7 @@ class CustomerSyncIT {
     // AssertionsForStatistics.assertThat(customerSyncStatistics).hasValues(2, 1, 1, 0);
     assertThat(customerSyncStatistics.getReportMessage())
         .isEqualTo(
-            "Summary: 2 customers were processed in total (1 created, 1 updated and 0 failed to sync).");
+            "Summary: 1 customers were processed in total (0 created, 1 updated and 0 failed to sync).");
   }
 
   private List<CustomerDraft> prepareUpdatedCustomerDrafts(
@@ -103,8 +105,11 @@ class CustomerSyncIT {
 
     final Store storeCologne = ensureStore(CTP_TARGET_CLIENT, "store-cologne");
 
+    ensureCustomerCustomType(
+        "customer-type-gold", Locale.ENGLISH, "gold customers", CTP_TARGET_CLIENT);
+
     final List<CustomerDraft> customerDrafts =
-        CustomerTransformUtils.toCustomerDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, customers)
+        CustomerTransformUtils.toCustomerDrafts(CTP_TARGET_CLIENT, referenceIdToKeyCache, customers)
             .join();
 
     return customerDrafts.stream()

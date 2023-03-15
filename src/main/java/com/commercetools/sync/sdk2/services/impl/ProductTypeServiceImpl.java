@@ -1,73 +1,69 @@
 package com.commercetools.sync.sdk2.services.impl;
 
-import com.commercetools.sync.commons.BaseSyncOptions;
-import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
-import com.commercetools.sync.commons.models.GraphQlQueryResources;
-import com.commercetools.sync.commons.utils.CtpQueryUtils;
-import com.commercetools.sync.products.AttributeMetaData;
-import com.commercetools.sync.services.ProductTypeService;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
-import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
-import io.sphere.sdk.producttypes.commands.ProductTypeUpdateCommand;
-import io.sphere.sdk.producttypes.expansion.ProductTypeExpansionModel;
-import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
-import io.sphere.sdk.producttypes.queries.ProductTypeQueryBuilder;
-import io.sphere.sdk.producttypes.queries.ProductTypeQueryModel;
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import com.commercetools.api.client.ByProjectKeyProductTypesGet;
+import com.commercetools.api.client.ByProjectKeyProductTypesKeyByKeyGet;
+import com.commercetools.api.client.ByProjectKeyProductTypesPost;
+import com.commercetools.api.client.QueryUtils;
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.product_type.ProductTypeDraft;
+import com.commercetools.api.models.product_type.ProductTypePagedQueryResponse;
+import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
+import com.commercetools.api.models.product_type.ProductTypeUpdateBuilder;
+import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
+import com.commercetools.sync.sdk2.products.AttributeMetaData;
+import com.commercetools.sync.sdk2.producttypes.ProductTypeSyncOptions;
+import com.commercetools.sync.sdk2.services.ProductTypeService;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static java.util.Collections.singleton;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public final class ProductTypeServiceImpl
-    extends BaseServiceWithKey<
-                ProductTypeDraft,
-                ProductType,
-                ProductType,
-                BaseSyncOptions,
-                ProductTypeQuery,
-                ProductTypeQueryModel,
-                ProductTypeExpansionModel<ProductType>>
+    extends BaseService<
+        ProductTypeSyncOptions,
+        ProductType,
+        ProductTypeDraft,
+        ByProjectKeyProductTypesGet,
+        ProductTypePagedQueryResponse,
+        ByProjectKeyProductTypesKeyByKeyGet,
+        ProductType,
+        ByProjectKeyProductTypesPost>
     implements ProductTypeService {
 
   private final Map<String, Map<String, AttributeMetaData>> productsAttributesMetaData =
       new ConcurrentHashMap<>();
 
-  public ProductTypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
+  public ProductTypeServiceImpl(@Nonnull final ProductTypeSyncOptions syncOptions) {
     super(syncOptions);
   }
 
   @Nonnull
   @Override
-  public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> keys) {
-
-    return cacheKeysToIds(
-        keys,
-        keysNotCached ->
-            new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.PRODUCT_TYPES));
+  public CompletionStage<Map<String, String>> cacheKeysToIds(
+      @Nonnull final Set<String> categoryKeys) {
+    return super.cacheKeysToIdsUsingGraphQl(categoryKeys, GraphQlQueryResource.PRODUCT_TYPES);
   }
 
   @Nonnull
   @Override
   public CompletionStage<Optional<String>> fetchCachedProductTypeId(@Nonnull final String key) {
+    ByProjectKeyProductTypesGet query =
+        syncOptions
+            .getCtpClient()
+            .productTypes()
+            .get()
+            .withWhere("key in :keys")
+            .withPredicateVar("keys", Collections.singletonList(key));
 
-    return fetchCachedResourceId(
-        key,
-        () ->
-            ProductTypeQueryBuilder.of()
-                .plusPredicates(queryModel -> queryModel.key().isIn(singleton(key)))
-                .build());
+    return fetchCachedResourceId(key, query);
   }
 
   @Nonnull
@@ -94,7 +90,6 @@ public final class ProductTypeServiceImpl
   @Nonnull
   private CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchAndCacheProductMetaData(
       @Nonnull final String productTypeId) {
-
     final Consumer<List<ProductType>> productTypePageConsumer =
         productTypePage ->
             productTypePage.forEach(
@@ -102,9 +97,10 @@ public final class ProductTypeServiceImpl
                   final String id = type.getId();
                   productsAttributesMetaData.put(id, getAttributeMetaDataMap(type));
                 });
+    ByProjectKeyProductTypesGet byProjectKeyProductTypesGet =
+        this.syncOptions.getCtpClient().productTypes().get();
 
-    return CtpQueryUtils.queryAll(
-            syncOptions.getCtpClient(), ProductTypeQuery.of(), productTypePageConsumer)
+    return QueryUtils.queryAll(byProjectKeyProductTypesGet, productTypePageConsumer)
         .thenApply(result -> Optional.ofNullable(productsAttributesMetaData.get(productTypeId)));
   }
 
@@ -114,37 +110,70 @@ public final class ProductTypeServiceImpl
       @Nonnull final Set<String> keys) {
     return fetchMatchingResources(
         keys,
+        ProductType::getKey,
         (keysNotCached) ->
-            ProductTypeQueryBuilder.of()
-                .plusPredicates(queryModel -> queryModel.key().isIn(keysNotCached))
-                .build());
+            syncOptions
+                .getCtpClient()
+                .productTypes()
+                .get()
+                .withWhere("key in :keys")
+                .withPredicateVar("keys", keysNotCached));
   }
 
   @Nonnull
   @Override
   public CompletionStage<Optional<ProductType>> createProductType(
       @Nonnull final ProductTypeDraft productTypeDraft) {
-    return createResource(productTypeDraft, ProductTypeCreateCommand::of);
+    return super.createResource(
+        productTypeDraft,
+        ProductTypeDraft::getKey,
+        ProductType::getId,
+        Function.identity(),
+        syncOptions.getCtpClient().productTypes().post(productTypeDraft));
   }
 
   @Nonnull
   @Override
   public CompletionStage<ProductType> updateProductType(
       @Nonnull final ProductType productType,
-      @Nonnull final List<UpdateAction<ProductType>> updateActions) {
+      @Nonnull final List<ProductTypeUpdateAction> updateActions) {
 
-    return updateResource(productType, ProductTypeUpdateCommand::of, updateActions);
+    final List<List<ProductTypeUpdateAction>> actionBatches =
+        batchElements(updateActions, MAXIMUM_ALLOWED_UPDATE_ACTIONS);
+
+    CompletionStage<ApiHttpResponse<ProductType>> resultStage =
+        CompletableFuture.completedFuture(new ApiHttpResponse<>(200, null, productType));
+
+    for (final List<ProductTypeUpdateAction> batch : actionBatches) {
+      resultStage =
+          resultStage
+              .thenApply(ApiHttpResponse::getBody)
+              .thenCompose(
+                  updatedProductType ->
+                      syncOptions
+                          .getCtpClient()
+                          .productTypes()
+                          .withId(updatedProductType.getId())
+                          .post(
+                              ProductTypeUpdateBuilder.of()
+                                  .actions(batch)
+                                  .version(updatedProductType.getVersion())
+                                  .build())
+                          .execute());
+    }
+
+    return resultStage.thenApply(ApiHttpResponse::getBody);
   }
 
   @Nonnull
   @Override
   public CompletionStage<Optional<ProductType>> fetchProductType(@Nullable final String key) {
+    return super.fetchResource(key, syncOptions.getCtpClient().productTypes().withKey(key).get());
+  }
 
-    return fetchResource(
-        key,
-        () ->
-            ProductTypeQueryBuilder.of()
-                .plusPredicates(queryModel -> queryModel.key().is(key))
-                .build());
+  @Nonnull
+  CompletionStage<Optional<String>> fetchCachedResourceId(
+      @Nullable final String key, @Nonnull final ByProjectKeyProductTypesGet query) {
+    return super.fetchCachedResourceId(key, resource -> resource.getKey(), query);
   }
 }

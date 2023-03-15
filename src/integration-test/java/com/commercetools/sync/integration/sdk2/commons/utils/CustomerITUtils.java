@@ -5,6 +5,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
 import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.client.QueryUtils;
 import com.commercetools.api.models.common.AddressBuilder;
 import com.commercetools.api.models.customer.Customer;
 import com.commercetools.api.models.customer.CustomerDraft;
@@ -22,9 +23,12 @@ import com.commercetools.api.models.type.ResourceTypeId;
 import com.commercetools.api.models.type.Type;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.neovisionaries.i18n.CountryCode;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.NotFoundException;
 import java.time.LocalDate;
 import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -243,6 +247,31 @@ public final class CustomerITUtils {
       ctpClient.customers().withKey(key).delete().withVersion(version).executeBlocking();
     } catch (NotFoundException ignored) {
     }
+  }
+
+  /**
+   * Deletes all customers from CTP project, represented by provided {@code ctpClient}.
+   *
+   * @param ctpClient represents the CTP project the customers will be deleted from.
+   */
+  public static void deleteCustomers(@Nonnull final ProjectApiRoot ctpClient) {
+    QueryUtils.queryAll(
+            ctpClient.customers().get(),
+            customers -> {
+              CompletableFuture.allOf(
+                      customers.stream()
+                          .map(customer -> deleteCustomer(ctpClient, customer))
+                          .map(CompletionStage::toCompletableFuture)
+                          .toArray(CompletableFuture[]::new))
+                  .join();
+            })
+        .toCompletableFuture()
+        .join();
+  }
+
+  private static CompletionStage<Customer> deleteCustomer(
+      ProjectApiRoot ctpClient, Customer customer) {
+    return ctpClient.customers().delete(customer).execute().thenApply(ApiHttpResponse::getBody);
   }
 
   private CustomerITUtils() {}

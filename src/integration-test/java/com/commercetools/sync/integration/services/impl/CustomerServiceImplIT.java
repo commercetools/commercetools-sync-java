@@ -31,8 +31,10 @@ import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled("Migrated to sdk v2")
 class CustomerServiceImplIT {
   private static final String EXISTING_CUSTOMER_KEY = "existing-customer-key";
   private CustomerService customerService;
