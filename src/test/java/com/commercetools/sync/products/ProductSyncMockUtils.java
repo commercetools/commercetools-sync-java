@@ -65,7 +65,8 @@ import javax.annotation.Nullable;
 public class ProductSyncMockUtils {
   public static final String PRODUCT_KEY_1_RESOURCE_PATH = "product-key-1.json";
 
-  public static final String PRODUCT_KEY_1_MULTIPLE_VARIANTS_RESOURCE_PATH = "product-key-1-multiple-variants.json";
+  public static final String PRODUCT_KEY_1_MULTIPLE_VARIANTS_RESOURCE_PATH =
+      "product-key-1-multiple-variants.json";
   public static final String PRODUCT_KEY_1_NO_ATTRIBUTES_RESOURCE_PATH =
       "product-key-1-no-attributes.json";
   public static final String PRODUCT_KEY_SPECIAL_CHARS_RESOURCE_PATH =
@@ -79,7 +80,8 @@ public class ProductSyncMockUtils {
       "product-key-1-changed-with-prices.json";
   public static final String PRODUCT_KEY_2_RESOURCE_PATH = "product-key-2.json";
 
-  public static final String PRODUCT_KEY_2_MULTIPLE_VARIANTS_RESOURCE_PATH = "product-key-2-multiple-variants.json";
+  public static final String PRODUCT_KEY_2_MULTIPLE_VARIANTS_RESOURCE_PATH =
+      "product-key-2-multiple-variants.json";
 
   public static final String PRODUCT_WITH_VARS_RESOURCE_PATH = "product-with-variants.json";
   public static final String PRODUCT_NO_VARS_RESOURCE_PATH = "product-with-no-variants.json";
