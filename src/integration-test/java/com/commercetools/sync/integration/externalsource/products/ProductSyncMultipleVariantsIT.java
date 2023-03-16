@@ -8,6 +8,7 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.products.ProductSyncMockUtils.*;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
 import com.commercetools.sync.commons.exceptions.SyncException;
@@ -16,9 +17,13 @@ import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
+import io.sphere.sdk.products.ProductProjectionType;
+import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
+import io.sphere.sdk.products.queries.ProductProjectionByIdGet;
 import io.sphere.sdk.producttypes.ProductType;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +44,8 @@ public class ProductSyncMultipleVariantsIT {
   private List<Throwable> errorCallBackExceptions;
 
   private ProductSyncOptions syncOptions;
+
+  private Product product;
 
   /**
    * Delete all product related test data from the target project. Then creates for the target CTP
@@ -67,7 +74,7 @@ public class ProductSyncMultipleVariantsIT {
                 PRODUCT_KEY_1_MULTIPLE_VARIANTS_RESOURCE_PATH, productType.toReference())
             .build();
 
-    executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft)));
+    product = executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft)));
   }
 
   @AfterAll
@@ -88,6 +95,18 @@ public class ProductSyncMultipleVariantsIT {
         executeBlocking(productSync.sync(singletonList(productDraft)));
 
     AssertionsForStatistics.assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
+    assertThat(errorCallBackExceptions).isEmpty();
+    assertThat(errorCallBackMessages).isEmpty();
+    assertThat(warningCallBackMessages).isEmpty();
+
+    final ProductVariant fetchedMasterVariant =
+        CTP_TARGET_CLIENT
+            .execute(ProductProjectionByIdGet.of(product.getId(), ProductProjectionType.STAGED))
+            .thenApply(ProductProjection::getMasterVariant)
+            .toCompletableFuture()
+            .join();
+
+    assertThat(fetchedMasterVariant.getSku()).isEqualTo(productDraft.getMasterVariant().getSku());
   }
 
   private void clearSyncTestCollections() {
