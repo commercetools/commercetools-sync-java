@@ -98,7 +98,10 @@ class ProductUpdateActionUtilsTest {
     final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
     final AttributeMetaData priceInfo =
         AttributeMetaData.of(AttributeDefinitionBuilder.of("priceInfo", null, null).build());
+    final AttributeMetaData sizeAttributeMetaData =
+        AttributeMetaData.of(AttributeDefinitionBuilder.of("size", null, null).build());
     attributesMetaData.put("priceInfo", priceInfo);
+    attributesMetaData.put("size", sizeAttributeMetaData);
 
     final List<UpdateAction<Product>> updateActions =
         buildVariantsUpdateActions(
@@ -215,7 +218,10 @@ class ProductUpdateActionUtilsTest {
 
     final AttributeMetaData priceInfo =
         AttributeMetaData.of(AttributeDefinitionBuilder.of("priceInfo", null, null).build());
+    final AttributeMetaData size =
+        AttributeMetaData.of(AttributeDefinitionBuilder.of("size", null, null).build());
     attributesMetaData.put("priceInfo", priceInfo);
+    attributesMetaData.put("size", size);
 
     final List<UpdateAction<Product>> updateActions =
         buildVariantsUpdateActions(
