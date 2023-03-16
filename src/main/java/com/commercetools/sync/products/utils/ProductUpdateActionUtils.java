@@ -508,7 +508,7 @@ public final class ProductUpdateActionUtils {
       }
 
       updateActions.addAll(
-          buildSetAttributeInAllVariantsAction(
+          buildSetAttributeInAllVariantsUpdateAction(
               attributesMetaData, oldProduct.getMasterVariant(), newMasterVariant));
     }
     return updateActions;
@@ -873,7 +873,7 @@ public final class ProductUpdateActionUtils {
         });
   }
 
-  private static List<UpdateAction<Product>> buildSetAttributeInAllVariantsAction(
+  private static List<UpdateAction<Product>> buildSetAttributeInAllVariantsUpdateAction(
       @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
       @Nonnull final ProductVariant oldMasterVariant,
       @Nonnull final ProductVariantDraft newMasterVariant) {
