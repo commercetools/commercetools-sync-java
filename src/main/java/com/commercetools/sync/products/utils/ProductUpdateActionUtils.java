@@ -495,7 +495,8 @@ public final class ProductUpdateActionUtils {
         && hasChangeMasterVariantUpdateAction(updateActions)) {
 
       // Following update actions helps with the changing of master variants.
-      // The details are described here: https://github.com/commercetools/commercetools-project-sync/issues/447
+      // The details are described here:
+      // https://github.com/commercetools/commercetools-project-sync/issues/447
       final String oldMasterVariantSku = oldMasterVariant.getSku();
       final boolean hasConflictingAddVariant =
           hasConflictingAddVariantUpdateAction(updateActions, oldMasterVariantSku);
