@@ -415,10 +415,11 @@ class ProductSyncUtilsTest {
             oldProduct, newProductDraft, productSyncOptions, attributesMetaData);
 
     // check the generated attribute update actions
-    assertThat(updateActions.size()).isEqualTo(9);
+    assertThat(updateActions.size()).isEqualTo(10);
     assertThat(updateActions)
         .containsSequence(
             RemoveVariant.ofVariantId(5, true),
+            SetSku.of(1, "1065833-temp"),
             AddVariant.of(
                     Arrays.asList(
                         AttributeDraft.of("priceInfo", "64,90/kg"),

@@ -14,6 +14,7 @@ import static com.commercetools.sync.products.ActionGroup.ATTRIBUTES;
 import static com.commercetools.sync.products.ActionGroup.IMAGES;
 import static com.commercetools.sync.products.ActionGroup.PRICES;
 import static com.commercetools.sync.products.ActionGroup.SKU;
+import static com.commercetools.sync.products.utils.ProductSyncUtils.TEMPORARY_MASTER_SKU_SUFFIX;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions;
@@ -65,6 +66,7 @@ import io.sphere.sdk.products.commands.updateactions.SetMetaDescription;
 import io.sphere.sdk.products.commands.updateactions.SetMetaKeywords;
 import io.sphere.sdk.products.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.products.commands.updateactions.SetSearchKeywords;
+import io.sphere.sdk.products.commands.updateactions.SetSku;
 import io.sphere.sdk.products.commands.updateactions.SetTaxCategory;
 import io.sphere.sdk.products.commands.updateactions.TransitionState;
 import io.sphere.sdk.products.commands.updateactions.Unpublish;
@@ -491,12 +493,34 @@ public final class ProductUpdateActionUtils {
     if (newMasterVariant != null
         && hasAddVariantUpdateAction(updateActions)
         && hasChangeMasterVariantUpdateAction(updateActions)) {
+
+      // Following update actions helps with the changing of master variants.
+      // The details are described here: https://github.com/commercetools/commercetools-project-sync/issues/447
+      final String oldMasterVariantSku = oldMasterVariant.getSku();
+      final boolean hasConflictingAddVariant =
+          hasConflictingAddVariantUpdateAction(updateActions, oldMasterVariantSku);
+
+      if (hasConflictingAddVariant) {
+        updateActions.add(
+            SetSku.of(
+                oldMasterVariant.getId(), oldMasterVariant.getSku() + TEMPORARY_MASTER_SKU_SUFFIX));
+      }
+
       updateActions.addAll(
-          0,
           buildSetAttributeInAllVariantsAction(
               attributesMetaData, oldProduct.getMasterVariant(), newMasterVariant));
     }
     return updateActions;
+  }
+
+  private static boolean hasConflictingAddVariantUpdateAction(
+      final List<UpdateAction<Product>> updateActions, final String oldMasterVariantSku) {
+    return updateActions.stream()
+        .anyMatch(
+            productUpdateAction ->
+                productUpdateAction instanceof AddVariant
+                    && ((AddVariant) productUpdateAction).getSku() != null
+                    && ((AddVariant) productUpdateAction).getSku().equals(oldMasterVariantSku));
   }
 
   private static List<UpdateAction<Product>> getSameForAllUpdateActions(
