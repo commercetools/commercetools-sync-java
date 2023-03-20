@@ -17,6 +17,7 @@ import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeType;
 import io.sphere.sdk.products.attributes.EnumAttributeType;
 import io.sphere.sdk.products.attributes.LocalizedEnumAttributeType;
+import io.sphere.sdk.products.attributes.ReferenceAttributeType;
 import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.commands.updateactions.AddAttributeDefinition;
@@ -221,6 +222,12 @@ final class AttributeDefinitionsUpdateActionUtils {
       return haveSameAttributeType(
           ((SetAttributeType) attributeTypeA).getElementType(),
           ((SetAttributeType) attributeTypeB).getElementType());
+    }
+
+    if (attributeTypeA instanceof ReferenceAttributeType
+        && attributeTypeB instanceof ReferenceAttributeType) {
+      return ((ReferenceAttributeType) attributeTypeA)
+          .equalsIgnoreTypeRef((ReferenceAttributeType) attributeTypeB);
     }
 
     if (attributeTypeA instanceof EnumAttributeType

@@ -74,6 +74,7 @@ public final class StateReferenceResolutionUtils {
         .collect(Collectors.toList());
   }
 
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   private static Set<Reference<State>> replaceTransitionIdsWithKeys(
       @Nonnull final State state, @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     final Set<Reference<State>> transitions = state.getTransitions();

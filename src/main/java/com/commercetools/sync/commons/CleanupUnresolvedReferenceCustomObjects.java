@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class CleanupUnresolvedReferenceCustomObjects {
+public final class CleanupUnresolvedReferenceCustomObjects {
 
   private final SphereClient sphereClient;
   private final Statistics statistics;
