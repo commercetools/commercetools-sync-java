@@ -51,6 +51,10 @@ public final class TaxCategoryServiceImpl
   @Nonnull
   @Override
   public CompletionStage<Optional<String>> fetchCachedTaxCategoryId(@Nullable final String key) {
+    if (key == null) {
+      return CompletableFuture.completedFuture(Optional.empty());
+    }
+
     final ByProjectKeyTaxCategoriesGet query =
         syncOptions
             .getCtpClient()

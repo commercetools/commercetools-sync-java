@@ -317,7 +317,7 @@ class CategoryServiceImplIT {
 
     // test
     final Category createdCategory =
-        categoryService.createCategory(categoryDraft).toCompletableFuture().join().get();
+        spyProductService.createCategory(categoryDraft).toCompletableFuture().join().get();
 
     // assertion
     assertThat(errorCallBackExceptions).isEmpty();
@@ -350,7 +350,7 @@ class CategoryServiceImplIT {
 
     // Assert that the created product type is cached
     final Optional<String> productTypeId =
-        categoryService.fetchCachedCategoryId(newCategoryKey).toCompletableFuture().join();
+        spyProductService.fetchCachedCategoryId(newCategoryKey).toCompletableFuture().join();
     assertThat(productTypeId).isPresent();
     verify(spy, times(0)).handle(any());
   }

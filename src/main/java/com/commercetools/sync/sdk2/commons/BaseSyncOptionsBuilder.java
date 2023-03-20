@@ -12,18 +12,29 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 
 public abstract class BaseSyncOptionsBuilder<
-    T extends BaseSyncOptionsBuilder<T, S, U, V, A>,
-    S extends BaseSyncOptions,
-    U,
-    V,
-    A extends ResourceUpdateAction> {
+    SyncOptionsBuilderT extends
+        BaseSyncOptionsBuilder<
+                SyncOptionsBuilderT,
+                BaseSyncOptionsT,
+                ResourceT,
+                ResourceDraftT,
+                ResourceUpdateActionT>,
+    BaseSyncOptionsT extends BaseSyncOptions,
+    ResourceT,
+    ResourceDraftT,
+    ResourceUpdateActionT extends ResourceUpdateAction> {
 
   protected ProjectApiRoot ctpClient;
-  protected QuadConsumer<SyncException, Optional<V>, Optional<U>, List<A>> errorCallback;
-  protected TriConsumer<SyncException, Optional<V>, Optional<U>> warningCallback;
+  protected QuadConsumer<
+          SyncException, Optional<ResourceDraftT>, Optional<ResourceT>, List<ResourceUpdateActionT>>
+      errorCallback;
+  protected TriConsumer<SyncException, Optional<ResourceDraftT>, Optional<ResourceT>>
+      warningCallback;
   protected int batchSize = 30;
-  protected TriFunction<List<A>, V, U, List<A>> beforeUpdateCallback;
-  protected Function<V, V> beforeCreateCallback;
+  protected TriFunction<
+          List<ResourceUpdateActionT>, ResourceDraftT, ResourceT, List<ResourceUpdateActionT>>
+      beforeUpdateCallback;
+  protected Function<ResourceDraftT, ResourceDraftT> beforeCreateCallback;
   protected long cacheSize = 10_000;
 
   /**
@@ -33,8 +44,14 @@ public abstract class BaseSyncOptionsBuilder<
    * @param errorCallback the new value to set to the error callback.
    * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
    */
-  public T errorCallback(
-      @Nonnull final QuadConsumer<SyncException, Optional<V>, Optional<U>, List<A>> errorCallback) {
+  public SyncOptionsBuilderT errorCallback(
+      @Nonnull
+          final QuadConsumer<
+                  SyncException,
+                  Optional<ResourceDraftT>,
+                  Optional<ResourceT>,
+                  List<ResourceUpdateActionT>>
+              errorCallback) {
     this.errorCallback = errorCallback;
     return getThis();
   }
@@ -46,8 +63,10 @@ public abstract class BaseSyncOptionsBuilder<
    * @param warningCallback the new value to set to the warning callback.
    * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
    */
-  public T warningCallback(
-      @Nonnull final TriConsumer<SyncException, Optional<V>, Optional<U>> warningCallback) {
+  public SyncOptionsBuilderT warningCallback(
+      @Nonnull
+          final TriConsumer<SyncException, Optional<ResourceDraftT>, Optional<ResourceT>>
+              warningCallback) {
     this.warningCallback = warningCallback;
     return getThis();
   }
@@ -66,7 +85,7 @@ public abstract class BaseSyncOptionsBuilder<
    *     else will be ignored and default value of 30 would be used.
    * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
    */
-  public T batchSize(final int batchSize) {
+  public SyncOptionsBuilderT batchSize(final int batchSize) {
     if (batchSize > 0) {
       this.batchSize = batchSize;
     }
@@ -86,7 +105,7 @@ public abstract class BaseSyncOptionsBuilder<
    *     10.000 would be used.
    * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
    */
-  public T cacheSize(final long cacheSize) {
+  public SyncOptionsBuilderT cacheSize(final long cacheSize) {
     if (cacheSize > 0) {
       this.cacheSize = cacheSize;
     }
@@ -106,8 +125,14 @@ public abstract class BaseSyncOptionsBuilder<
    * @param beforeUpdateCallback function which can be applied on generated list of update actions.
    * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
    */
-  public T beforeUpdateCallback(
-      @Nonnull final TriFunction<List<A>, V, U, List<A>> beforeUpdateCallback) {
+  public SyncOptionsBuilderT beforeUpdateCallback(
+      @Nonnull
+          final TriFunction<
+                  List<ResourceUpdateActionT>,
+                  ResourceDraftT,
+                  ResourceT,
+                  List<ResourceUpdateActionT>>
+              beforeUpdateCallback) {
     this.beforeUpdateCallback = beforeUpdateCallback;
     return getThis();
   }
@@ -124,7 +149,8 @@ public abstract class BaseSyncOptionsBuilder<
    *     the sync.
    * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
    */
-  public T beforeCreateCallback(@Nonnull final Function<V, V> beforeCreateCallback) {
+  public SyncOptionsBuilderT beforeCreateCallback(
+      @Nonnull final Function<ResourceDraftT, ResourceDraftT> beforeCreateCallback) {
     this.beforeCreateCallback = beforeCreateCallback;
     return getThis();
   }
@@ -135,7 +161,7 @@ public abstract class BaseSyncOptionsBuilder<
    *
    * @return new instance of S which extends {@link BaseSyncOptions}
    */
-  protected abstract S build();
+  protected abstract BaseSyncOptionsT build();
 
   /**
    * Returns {@code this} instance of {@code T}, which extends {@link BaseSyncOptionsBuilder}. The
@@ -146,5 +172,5 @@ public abstract class BaseSyncOptionsBuilder<
    *
    * @return an instance of the class that overrides this method.
    */
-  protected abstract T getThis();
+  protected abstract SyncOptionsBuilderT getThis();
 }
