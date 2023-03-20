@@ -1,0 +1,9 @@
+{
+  "key": "productToSyncKey",
+  "masterVariant":{
+    "id": 1,
+    "key": "var-1-key",
+    "sku": "var-1-sku"
+  },
+  "variants": [null]
+}
