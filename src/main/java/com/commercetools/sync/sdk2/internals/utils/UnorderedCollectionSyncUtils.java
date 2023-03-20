@@ -1,7 +1,7 @@
 package com.commercetools.sync.sdk2.internals.utils;
 
-import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToMap;
-import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
+import static com.commercetools.sync.sdk2.commons.utils.CollectionUtils.collectionToMap;
+import static com.commercetools.sync.sdk2.commons.utils.CollectionUtils.emptyIfNull;
 import static java.util.stream.Collectors.toList;
 
 import com.commercetools.api.models.ResourceUpdateAction;
