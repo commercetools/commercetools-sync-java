@@ -28,6 +28,7 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
+import io.sphere.sdk.products.commands.updateactions.SetSku;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ public final class ProductSyncUtils {
       "setAttributeInAllVariants";
   private static final String ADD_VARIANT_ACTION_NAME = "addVariant";
   private static final String CHANGE_MASTER_VARIANT_ACTION_NAME = "changeMasterVariant";
+  public static final String TEMPORARY_MASTER_SKU_SUFFIX = "-temp";
 
   /**
    * Compares all the fields (including the variants see {@link
@@ -130,7 +132,10 @@ public final class ProductSyncUtils {
     buildPublishOrUnpublishUpdateAction(oldProduct, newProduct, hasNewUpdateActions)
         .ifPresent(updateActions::add);
 
-    return prioritizeUpdateActions(updateActions, oldProduct.getMasterVariant().getId());
+    return prioritizeUpdateActions(
+        updateActions,
+        oldProduct.getMasterVariant().getId(),
+        oldProduct.getMasterVariant().getSku());
   }
 
   /**
@@ -141,7 +146,9 @@ public final class ProductSyncUtils {
    *     actions 4 changeMasterVariant if any 5 removeVariant for old master 6 the rest comes in
    */
   private static List<UpdateAction<Product>> prioritizeUpdateActions(
-      final List<UpdateAction<Product>> updateActions, final Integer oldMasterVariantId) {
+      final List<UpdateAction<Product>> updateActions,
+      final Integer oldMasterVariantId,
+      final String oldMasterVariantSku) {
 
     final RemoveVariant removeMasterVariantUpdateAction =
         RemoveVariant.ofVariantId(oldMasterVariantId);
@@ -173,9 +180,19 @@ public final class ProductSyncUtils {
                 action.getAction().equals(REMOVE_VARIANT_ACTION_NAME)
                     && action.equals(removeMasterVariantUpdateAction));
 
+    final List<UpdateAction<Product>> temporarySetSkuUpdateAction =
+        getActionsByActionName(
+            updateActions,
+            action ->
+                action instanceof SetSku
+                    && ((SetSku) action)
+                        .getSku()
+                        .equals(oldMasterVariantSku + TEMPORARY_MASTER_SKU_SUFFIX));
+
     final List<UpdateAction<Product>> updateActionList =
         new ArrayList<>(removeVariantUpdateActionsNoMaster);
     updateActionList.addAll(sameForAllUpdateActions);
+    updateActionList.addAll(temporarySetSkuUpdateAction);
     updateActionList.addAll(addVariantUpdateActions);
     updateActionList.addAll(changeMasterUpdateActions);
     updateActionList.addAll(removeOldMasterVariantUpdateAction);
