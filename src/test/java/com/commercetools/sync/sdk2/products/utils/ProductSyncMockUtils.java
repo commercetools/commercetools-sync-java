@@ -318,7 +318,8 @@ public class ProductSyncMockUtils {
   public static ProductProjection createProductFromJson(@Nonnull final String jsonResourcePath) {
     final InputStream resourceAsStream =
         Thread.currentThread().getContextClassLoader().getResourceAsStream(jsonResourcePath);
-    return fromInputStream(resourceAsStream, ProductProjection.class);
+    final Product productFromJson = fromInputStream(resourceAsStream, Product.class);
+    return new ProductToProductProjectionWrapper(productFromJson, true);
   }
 
   public static ProductDraft createProductDraftFromJson(@Nonnull final String jsonResourcePath) {

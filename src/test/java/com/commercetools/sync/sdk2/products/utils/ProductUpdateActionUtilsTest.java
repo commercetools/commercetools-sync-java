@@ -17,6 +17,7 @@ import com.commercetools.api.models.common.Image;
 import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.common.PriceDraft;
 import com.commercetools.api.models.product.Attribute;
+import com.commercetools.api.models.product.AttributeBuilder;
 import com.commercetools.api.models.product.ProductAddExternalImageAction;
 import com.commercetools.api.models.product.ProductAddVariantAction;
 import com.commercetools.api.models.product.ProductAddVariantActionBuilder;
@@ -35,8 +36,9 @@ import com.commercetools.api.models.product.ProductVariantDraft;
 import com.commercetools.api.models.product.ProductVariantDraftBuilder;
 import com.commercetools.api.models.product_type.AttributeConstraintEnum;
 import com.commercetools.api.models.product_type.AttributeDefinitionBuilder;
-import com.commercetools.api.models.product_type.AttributeType;
+import com.commercetools.api.models.product_type.AttributeTypeBuilder;
 import com.commercetools.api.models.product_type.ProductTypeResourceIdentifier;
+import com.commercetools.api.models.product_type.TextInputHint;
 import com.commercetools.sync.sdk2.products.AttributeMetaData;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
@@ -91,8 +93,12 @@ class ProductUpdateActionUtilsTest {
         AttributeMetaData.of(
             AttributeDefinitionBuilder.of()
                 .name("priceInfo")
-                .label((LocalizedString) null)
-                .type((AttributeType) null)
+                .label(LocalizedString.ofEnglish("priceInfo"))
+                .attributeConstraint(AttributeConstraintEnum.NONE)
+                .type(AttributeTypeBuilder::textBuilder)
+                .isRequired(false)
+                .isSearchable(true)
+                .inputHint(TextInputHint.SINGLE_LINE)
                 .build());
     attributesMetaData.put("priceInfo", priceInfo);
 
@@ -180,7 +186,7 @@ class ProductUpdateActionUtilsTest {
             ProductSetAttributeAction.builder()
                 .variantId(4L)
                 .name("priceInfo")
-                .value("44/kg")
+                .value(AttributeBuilder.of().name("priceInfo").value("44/kg").build())
                 .staged(true)
                 .build());
 
@@ -193,9 +199,7 @@ class ProductUpdateActionUtilsTest {
     assertThat(updateActions.subList(size - 2, size))
         .containsExactly(
             ProductChangeMasterVariantAction.builder().sku("var-7-sku").staged(true).build(),
-            ProductRemoveVariantAction.builder()
-                .sku(productOld.getMasterVariant().getSku())
-                .build());
+            ProductRemoveVariantAction.builder().id(productOld.getMasterVariant().getId()).build());
   }
 
   @Test
@@ -215,16 +219,23 @@ class ProductUpdateActionUtilsTest {
         AttributeMetaData.of(
             AttributeDefinitionBuilder.of()
                 .name("priceInfo")
-                .label((LocalizedString) null)
-                .type((AttributeType) null)
+                .label(LocalizedString.ofEnglish("priceInfo"))
                 .attributeConstraint(AttributeConstraintEnum.SAME_FOR_ALL)
+                .type(AttributeTypeBuilder::textBuilder)
+                .isRequired(false)
+                .isSearchable(true)
+                .inputHint(TextInputHint.SINGLE_LINE)
                 .build());
     final AttributeMetaData size =
         AttributeMetaData.of(
             AttributeDefinitionBuilder.of()
                 .name("size")
-                .label((LocalizedString) null)
-                .type((AttributeType) null)
+                .label(LocalizedString.ofEnglish("size"))
+                .attributeConstraint(AttributeConstraintEnum.NONE)
+                .type(AttributeTypeBuilder::textBuilder)
+                .isRequired(false)
+                .isSearchable(true)
+                .inputHint(TextInputHint.SINGLE_LINE)
                 .build());
     attributesMetaData.put("priceInfo", priceInfo);
     attributesMetaData.put("size", size);
@@ -239,7 +250,7 @@ class ProductUpdateActionUtilsTest {
         .containsOnlyOnce(
             ProductSetAttributeInAllVariantsAction.builder()
                 .name("priceInfo")
-                .value("74,90/kg")
+                .value(AttributeBuilder.of().name("priceInfo").value("74,90/kg").build())
                 .staged(true)
                 .build());
     // Other update actions can be duplicated per variant
@@ -248,7 +259,7 @@ class ProductUpdateActionUtilsTest {
             ProductSetAttributeAction.builder()
                 .variantId(2L)
                 .name("size")
-                .value("ca. 1 x 1200 g")
+                .value(AttributeBuilder.of().name("size").value("ca. 1 x 1200 g").build())
                 .staged(true)
                 .build());
     assertThat(updateActions)
@@ -256,7 +267,7 @@ class ProductUpdateActionUtilsTest {
             ProductSetAttributeAction.builder()
                 .variantId(3L)
                 .name("size")
-                .value("ca. 1 x 1200 g")
+                .value(AttributeBuilder.of().name("size").value("ca. 1 x 1200 g").build())
                 .staged(true)
                 .build());
   }
@@ -278,8 +289,12 @@ class ProductUpdateActionUtilsTest {
         AttributeMetaData.of(
             AttributeDefinitionBuilder.of()
                 .name("priceInfo")
-                .label((LocalizedString) null)
-                .type((AttributeType) null)
+                .label(LocalizedString.ofEnglish("priceInfo"))
+                .attributeConstraint(AttributeConstraintEnum.NONE)
+                .type(AttributeTypeBuilder::textBuilder)
+                .isRequired(false)
+                .isSearchable(true)
+                .inputHint(TextInputHint.SINGLE_LINE)
                 .build());
     attributesMetaData.put("priceInfo", priceInfo);
 
@@ -307,7 +322,7 @@ class ProductUpdateActionUtilsTest {
         .filteredOn(
             action -> {
               // verify old master variant is not removed
-              if (action instanceof ProductChangeMasterVariantAction) {
+              if (action instanceof ProductRemoveVariantAction) {
                 ProductRemoveVariantAction removeVariantAction =
                     (ProductRemoveVariantAction) action;
                 return Objects.equals(oldMasterVariant.getId(), removeVariantAction.getId())
@@ -392,9 +407,7 @@ class ProductUpdateActionUtilsTest {
                 .build());
     assertThat(changeMasterVariant.get(1))
         .isEqualTo(
-            ProductRemoveVariantAction.builder()
-                .sku(productOld.getMasterVariant().getSku())
-                .build());
+            ProductRemoveVariantAction.builder().id(productOld.getMasterVariant().getId()).build());
   }
 
   @Test
@@ -472,13 +485,7 @@ class ProductUpdateActionUtilsTest {
 
     // assertion
     assertThat(action)
-        .isEqualTo(
-            ProductAddVariantAction.builder()
-                .attributes((Attribute) null)
-                .prices((PriceDraft) null)
-                .sku("foo")
-                .staged(true)
-                .build());
+        .isEqualTo(ProductAddVariantActionBuilder.of().sku("foo").staged(true).build());
   }
 
   @Test
@@ -504,9 +511,7 @@ class ProductUpdateActionUtilsTest {
     // assertion
     assertThat(action)
         .isEqualTo(
-            ProductAddVariantAction.builder()
-                .attributes((Attribute) null)
-                .prices((PriceDraft) null)
+            ProductAddVariantActionBuilder.of()
                 .sku("foo")
                 .assets(assetDrafts)
                 .staged(true)
@@ -514,18 +519,19 @@ class ProductUpdateActionUtilsTest {
   }
 
   @Test
-  void getAllVariants_WithNoVariants_ShouldReturnListWithNullMasterVariant() {
+  void getAllVariants_WithNoVariants_ShouldReturnEmptyList() {
     final ProductDraft productDraft =
         ProductDraftBuilder.of()
             .productType(mock(ProductTypeResourceIdentifier.class))
             .name(LocalizedString.of(Locale.ENGLISH, "name"))
             .slug(LocalizedString.of(Locale.ENGLISH, "slug"))
+            .masterVariant((ProductVariantDraft) null)
             .variants(emptyList())
             .build();
 
     final List<ProductVariantDraft> allVariants = getAllVariants(productDraft);
 
-    assertThat(allVariants).hasSize(1).containsOnlyNulls();
+    assertThat(allVariants).hasSize(0);
   }
 
   @Test
@@ -537,7 +543,7 @@ class ProductUpdateActionUtilsTest {
             .productType(mock(ProductTypeResourceIdentifier.class))
             .name(LocalizedString.of(Locale.ENGLISH, "name"))
             .slug(LocalizedString.of(Locale.ENGLISH, "slug"))
-            .variants(masterVariant)
+            .masterVariant(masterVariant)
             .build();
 
     final List<ProductVariantDraft> allVariants = getAllVariants(productDraft);
@@ -556,7 +562,8 @@ class ProductUpdateActionUtilsTest {
             .productType(mock(ProductTypeResourceIdentifier.class))
             .name(LocalizedString.of(Locale.ENGLISH, "name"))
             .slug(LocalizedString.of(Locale.ENGLISH, "slug"))
-            .variants(variants)
+            .masterVariant(variant1)
+            .variants(variant2)
             .build();
 
     final List<ProductVariantDraft> allVariants = getAllVariants(productDraft);
@@ -575,7 +582,8 @@ class ProductUpdateActionUtilsTest {
             .productType(mock(ProductTypeResourceIdentifier.class))
             .name(LocalizedString.of(Locale.ENGLISH, "name"))
             .slug(LocalizedString.of(Locale.ENGLISH, "slug"))
-            .variants(variants)
+            .masterVariant(variant1)
+            .variants(variant2, null)
             .build();
 
     final List<ProductVariantDraft> allVariants = getAllVariants(productDraft);

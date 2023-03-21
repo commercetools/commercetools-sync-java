@@ -15,7 +15,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.commercetools.api.client.ProjectApiRoot;
-import com.commercetools.api.models.common.Money;
+import com.commercetools.api.models.common.CentPrecisionMoneyBuilder;
 import com.commercetools.api.models.common.Price;
 import com.commercetools.api.models.common.PriceBuilder;
 import com.commercetools.api.models.common.PriceDraft;
@@ -25,7 +25,6 @@ import com.commercetools.api.models.common.PriceTierBuilder;
 import com.commercetools.api.models.common.PriceTierDraft;
 import com.commercetools.api.models.common.PriceTierDraftBuilder;
 import com.commercetools.api.models.common.TypedMoney;
-import com.commercetools.api.models.common.TypedMoneyBuilder;
 import com.commercetools.api.models.product.Product;
 import com.commercetools.api.models.product.ProductChangePriceAction;
 import com.commercetools.api.models.product.ProductDraft;
@@ -60,16 +59,16 @@ class ProductVariantPriceUpdateActionUtilsTest {
   final ProductDraft mainProductDraft = mock(ProductDraft.class);
 
   private static final TypedMoney EUR_10 =
-      TypedMoneyBuilder.of()
-          .centPrecisionBuilder()
+      CentPrecisionMoneyBuilder.of()
           .centAmount(BigDecimal.valueOf(1000).longValue())
           .currencyCode("EUR")
+          .fractionDigits(2)
           .build();
   private static final TypedMoney EUR_20 =
-      TypedMoneyBuilder.of()
-          .centPrecisionBuilder()
+      CentPrecisionMoneyBuilder.of()
           .centAmount(BigDecimal.valueOf(2000).longValue())
           .currencyCode("EUR")
+          .fractionDigits(2)
           .build();
   private static final PriceTier TIER_1_EUR_10 =
       PriceTierBuilder.of().value(EUR_10).minimumQuantity(1L).build();
@@ -109,8 +108,7 @@ class ProductVariantPriceUpdateActionUtilsTest {
           .tiers(asList(TIER_2_EUR_10_DRAFT, TIER_1_EUR_10_DRAFT))
           .build();
 
-  private static final PriceDraft DRAFT_NULL_VALUE =
-      PriceDraftBuilder.of().value((Money) null).build();
+  private static final PriceDraft DRAFT_NULL_VALUE = PriceDraft.of();
 
   private static final Price PRICE_EUR_10_NULL_TIERS =
       PriceBuilder.of()
@@ -228,16 +226,16 @@ class ProductVariantPriceUpdateActionUtilsTest {
                     .price(DRAFT_DE_100_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDX)
                     .priceId(DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDY.getId())
                     .staged(true)
+                    .build(),
+                ProductSetProductPriceCustomFieldAction.builder()
+                    .name("foo")
+                    .priceId(DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDY.getId())
+                    .value(
+                        DRAFT_DE_100_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDX
+                            .getCustom()
+                            .getFields())
+                    .staged(true)
                     .build()),
-            ProductSetProductPriceCustomFieldAction.builder()
-                .name("foo")
-                .priceId(DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDY.getId())
-                .value(
-                    DRAFT_DE_100_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDX
-                        .getCustom()
-                        .getFields())
-                .staged(true)
-                .build(),
             emptyList()),
         Arguments.of(
             case9,

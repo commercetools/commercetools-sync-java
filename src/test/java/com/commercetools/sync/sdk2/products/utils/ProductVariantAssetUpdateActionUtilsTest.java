@@ -35,6 +35,7 @@ import com.commercetools.api.models.type.FieldContainer;
 import com.commercetools.api.models.type.FieldContainerBuilder;
 import com.commercetools.api.models.type.TypeReference;
 import com.commercetools.api.models.type.TypeReferenceBuilder;
+import com.commercetools.api.models.type.TypeResourceIdentifier;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -491,9 +492,11 @@ class ProductVariantAssetUpdateActionUtilsTest {
         "backgroundColor", JsonNodeFactory.instance.objectNode().put("es", "rojo"));
     final FieldContainer newCustomFieldContainer =
         FieldContainerBuilder.of().values(newCustomFieldsMap).build();
+    final TypeResourceIdentifier typeResourceIdentifier =
+        TypeReferenceBuilder.of().id("1").build().toResourceIdentifier();
     final CustomFieldsDraft newCustomFieldsDraft =
         CustomFieldsDraftBuilder.of()
-            .type(TypeReferenceBuilder.of().id("1").build().toResourceIdentifier())
+            .type(typeResourceIdentifier)
             .fields(newCustomFieldContainer)
             .build();
 
@@ -513,6 +516,7 @@ class ProductVariantAssetUpdateActionUtilsTest {
     assertThat(updateActions)
         .containsExactly(
             ProductSetAssetCustomTypeActionBuilder.of()
+                .type(typeResourceIdentifier)
                 .variantId(1L)
                 .assetKey(newAssetDraft.getKey())
                 .fields(newCustomFieldContainer)

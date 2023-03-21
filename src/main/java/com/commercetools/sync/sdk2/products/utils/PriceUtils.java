@@ -1,7 +1,5 @@
 package com.commercetools.sync.sdk2.products.utils;
 
-import static com.commercetools.sync.sdk2.products.utils.CustomFieldsUtils.createCustomFieldsDraft;
-
 import com.commercetools.api.models.channel.ChannelReference;
 import com.commercetools.api.models.channel.ChannelResourceIdentifier;
 import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
@@ -31,7 +29,7 @@ public class PriceUtils {
                 PriceDraftBuilder.of()
                     .channel(createChannelResourceIdentifier(price.getChannel()))
                     .country(price.getCountry())
-                    .custom(createCustomFieldsDraft(price.getCustom()))
+                    .custom(CustomFieldsUtils.createCustomFieldsDraft(price.getCustom()))
                     .customerGroup(createCustomerGroupResourceIdentifier(price.getCustomerGroup()))
                     .discounted(createDiscountedPriceDraft(price.getDiscounted()))
                     .key(price.getKey())
@@ -69,17 +67,21 @@ public class PriceUtils {
         .orElse(null);
   }
 
-  private static List<PriceTierDraft> createPriceTierDraft(@Nullable List<PriceTier> priceTiers) {
+  public static List<PriceTierDraft> createPriceTierDraft(@Nullable List<PriceTier> priceTiers) {
     if (priceTiers == null) {
       return null;
     }
     return priceTiers.stream()
         .map(
             priceTier ->
-                PriceTierDraftBuilder.of()
-                    .minimumQuantity(priceTier.getMinimumQuantity())
-                    .value(priceTier.getValue())
-                    .build())
+                Optional.ofNullable(priceTier)
+                    .map(
+                        tier ->
+                            PriceTierDraftBuilder.of()
+                                .minimumQuantity(tier.getMinimumQuantity())
+                                .value(tier.getValue())
+                                .build())
+                    .orElse(null))
         .collect(Collectors.toList());
   }
 }
