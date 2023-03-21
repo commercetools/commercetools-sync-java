@@ -2,8 +2,10 @@ name: CI
 
 on:
   push:
-    tags-ignore:
-      - '**'
+    branches:
+      - "**"
+    tags:
+      - "!**"
 
 jobs:
   checks:
