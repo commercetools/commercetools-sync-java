@@ -2,9 +2,11 @@ name: CI
 
 on:
   push:
-    branches:
+    tags-ignore:
       - "*"
-
+  pull_request:
+    tags-ignore:
+      - "*"
 jobs:
   checks:
     name: Code Checks
