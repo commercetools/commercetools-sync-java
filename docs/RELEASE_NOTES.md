@@ -27,10 +27,10 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
-### 9.2.2 - Mar 21, 2023
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/9.2.1...9.2.2) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.2.2/) |
-[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.2.2/jar)
+### 9.2.3 - Mar 21, 2023
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/9.2.1...9.2.3) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.2.3/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.2.3/jar)
 
 - 🐞 **Bug Fixes**
   - Fix the problem when switching master variants [#918](https://github.com/commercetools/commercetools-sync-java/pull/918)
