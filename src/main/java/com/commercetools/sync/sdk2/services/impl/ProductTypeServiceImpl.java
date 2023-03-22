@@ -55,7 +55,7 @@ public final class ProductTypeServiceImpl
   @Nonnull
   @Override
   public CompletionStage<Optional<String>> fetchCachedProductTypeId(@Nonnull final String key) {
-    ByProjectKeyProductTypesGet query =
+    final ByProjectKeyProductTypesGet query =
         syncOptions
             .getCtpClient()
             .productTypes()
@@ -97,7 +97,7 @@ public final class ProductTypeServiceImpl
                   final String id = type.getId();
                   productsAttributesMetaData.put(id, getAttributeMetaDataMap(type));
                 });
-    ByProjectKeyProductTypesGet byProjectKeyProductTypesGet =
+    final ByProjectKeyProductTypesGet byProjectKeyProductTypesGet =
         this.syncOptions.getCtpClient().productTypes().get();
 
     return QueryUtils.queryAll(byProjectKeyProductTypesGet, productTypePageConsumer)

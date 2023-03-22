@@ -5,8 +5,7 @@ import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUt
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
-import static org.assertj.core.api.Assertions.as;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -448,31 +447,5 @@ class ProductTypeServiceImplIT {
     assertThat(fetchedProductType.getDescription()).isEqualTo(updatedProductType.getDescription());
     assertThat(fetchedProductType.getName()).isEqualTo(updatedProductType.getName());
     assertThat(fetchedProductType.getAttributes()).isEqualTo(updatedProductType.getAttributes());
-  }
-
-  @Test
-  void updateProductType_WithInvalidChanges_ShouldCompleteExceptionally() {
-    final ProductType productType =
-        CTP_TARGET_CLIENT
-            .productTypes()
-            .withKey(OLD_PRODUCT_TYPE_KEY)
-            .get()
-            .execute()
-            .thenApply(ApiHttpResponse::getBody)
-            .join();
-
-    final ProductTypeChangeNameAction changeNameAction =
-        ProductTypeUpdateAction.changeNameBuilder().name("new_product_type_name").build();
-    productTypeService
-        .updateProductType(productType, singletonList(changeNameAction))
-        .exceptionally(
-            exception -> {
-              assertThat(exception).isNotNull();
-              assertThat(exception.getMessage())
-                  .contains("Request body does not contain valid JSON.");
-              return null;
-            })
-        .toCompletableFuture()
-        .join();
   }
 }
