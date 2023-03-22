@@ -543,13 +543,10 @@ public final class ProductUpdateActionUtils {
    */
   @Nonnull
   public static List<ProductVariantDraft> getAllVariants(@Nonnull final ProductDraft productDraft) {
-    final Integer variantsSize = ofNullable(productDraft.getVariants()).map(List::size).orElse(0);
-    final Integer masterSize =
-        ofNullable(productDraft.getMasterVariant()).map(master -> 1).orElse(0);
-    final List<ProductVariantDraft> allVariants = new ArrayList<>(masterSize + variantsSize);
-    if (masterSize == 1) {
+    final List<ProductVariantDraft> allVariants = new ArrayList<>();
+    if (productDraft.getMasterVariant() != null) {
       allVariants.add(productDraft.getMasterVariant());
-      if (variantsSize > 0) {
+      if (productDraft.getVariants() != null && productDraft.getVariants().size() > 0) {
         allVariants.addAll(productDraft.getVariants());
       }
     }
