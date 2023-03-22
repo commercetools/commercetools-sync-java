@@ -4,6 +4,7 @@ import com.commercetools.api.models.product.ProductSetAssetCustomFieldAction;
 import com.commercetools.api.models.product.ProductSetAssetCustomTypeAction;
 import com.commercetools.api.models.product.ProductUpdateAction;
 import com.commercetools.api.models.type.FieldContainer;
+import com.commercetools.api.models.type.FieldContainerBuilder;
 import com.commercetools.api.models.type.TypeResourceIdentifier;
 import com.commercetools.sync.sdk2.commons.helpers.GenericCustomActionBuilder;
 import java.util.Map;
@@ -52,7 +53,7 @@ public class AssetCustomActionBuilder implements GenericCustomActionBuilder {
         .variantId(variantId)
         .assetKey(assetKey)
         .name(customFieldName)
-        .value(customFieldValue)
+        .value(FieldContainerBuilder.of().addValue(customFieldName, customFieldValue).build())
         .staged(true)
         .build();
   }

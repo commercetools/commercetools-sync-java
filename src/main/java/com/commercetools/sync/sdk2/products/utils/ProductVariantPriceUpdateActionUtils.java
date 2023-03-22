@@ -1,6 +1,7 @@
 package com.commercetools.sync.sdk2.products.utils;
 
 import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.sdk2.products.utils.PriceUtils.createPriceTierDraft;
 import static java.lang.String.format;
 
 import com.commercetools.api.models.ResourceUpdateAction;
@@ -112,7 +113,7 @@ public final class ProductVariantPriceUpdateActionUtils {
             () ->
                 // If values are not different, compare tiers.
                 buildUpdateAction(
-                    oldPrice.getTiers(),
+                    createPriceTierDraft(oldPrice.getTiers()),
                     newPrice.getTiers(),
                     () ->
                         ProductChangePriceAction.builder()

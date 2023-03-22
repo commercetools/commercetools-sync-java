@@ -5,7 +5,9 @@ import static java.lang.String.format;
 
 import com.commercetools.api.models.product.Attribute;
 import com.commercetools.api.models.product.ProductSetAttributeAction;
+import com.commercetools.api.models.product.ProductSetAttributeActionBuilder;
 import com.commercetools.api.models.product.ProductSetAttributeInAllVariantsAction;
+import com.commercetools.api.models.product.ProductSetAttributeInAllVariantsActionBuilder;
 import com.commercetools.api.models.product.ProductUpdateAction;
 import com.commercetools.sync.sdk2.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.sdk2.products.AttributeMetaData;
@@ -68,17 +70,19 @@ public final class ProductVariantAttributeUpdateActionUtils {
             oldProductVariantAttributeValue,
             newProductVariantAttributeValue,
             () ->
-                ProductSetAttributeInAllVariantsAction.builder()
+                ProductSetAttributeInAllVariantsActionBuilder.of()
                     .value(newProductVariantAttribute)
+                    .name(newProductVariantAttributeName)
                     .staged(true)
                     .build())
         : buildUpdateAction(
             oldProductVariantAttributeValue,
             newProductVariantAttributeValue,
             () ->
-                ProductSetAttributeAction.builder()
+                ProductSetAttributeActionBuilder.of()
                     .variantId(variantId)
                     .value(newProductVariantAttribute)
+                    .name(newProductVariantAttributeName)
                     .staged(true)
                     .build());
   }

@@ -32,7 +32,6 @@ import com.commercetools.api.models.product.AttributeBuilder;
 import com.commercetools.api.models.product.CategoryOrderHints;
 import com.commercetools.api.models.product.CategoryOrderHintsBuilder;
 import com.commercetools.api.models.product.Product;
-import com.commercetools.api.models.product.ProductData;
 import com.commercetools.api.models.product.ProductDraft;
 import com.commercetools.api.models.product.ProductDraftBuilder;
 import com.commercetools.api.models.product.ProductProjection;
@@ -75,6 +74,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -146,19 +146,25 @@ public class ProductSyncMockUtils {
     final InputStream resourceAsStream =
         Thread.currentThread().getContextClassLoader().getResourceAsStream(jsonResourcePath);
     final Product productFromJson = fromInputStream(resourceAsStream, Product.class);
-    final ProductData stagedProductData = productFromJson.getMasterData().getStaged();
+    final ProductProjection stagedProductData =
+        new ProductToProductProjectionWrapper(productFromJson, true);
 
     @SuppressWarnings("ConstantConditions")
     final List<ProductVariantDraft> allVariants =
         stagedProductData.getAllVariants().stream()
-            .map(productVariant -> createProductVariantDraft(productVariant))
+            .map(productVariant -> createProductVariantDraftBuilder(productVariant).build())
             .collect(toList());
+
+    final ProductVariantDraft masterVariant = allVariants.stream().findFirst().orElse(null);
+    final List<ProductVariantDraft> variants =
+        allVariants.stream().skip(1).collect(Collectors.toList());
 
     return ProductDraftBuilder.of()
         .productType(productTypeResourceIdentifier)
         .name(stagedProductData.getName())
         .slug(stagedProductData.getSlug())
-        .variants(allVariants)
+        .masterVariant(masterVariant)
+        .variants(variants)
         .metaDescription(stagedProductData.getMetaDescription())
         .metaKeywords(stagedProductData.getMetaKeywords())
         .metaTitle(stagedProductData.getMetaTitle())
@@ -166,10 +172,9 @@ public class ProductSyncMockUtils {
         .searchKeywords(stagedProductData.getSearchKeywords())
         .taxCategory(
             TaxCategoryResourceIdentifierBuilder.of()
-                .id(productFromJson.getTaxCategory().getId())
+                .id(stagedProductData.getTaxCategory().getId())
                 .build())
-        .state(StateResourceIdentifierBuilder.of().id(productFromJson.getState().getId()).build())
-        .key(productFromJson.getKey())
+        .key(stagedProductData.getKey())
         .categories(
             stagedProductData.getCategories().stream()
                 .map(
@@ -179,7 +184,7 @@ public class ProductSyncMockUtils {
                             .build())
                 .collect(toList()))
         .categoryOrderHints(stagedProductData.getCategoryOrderHints())
-        .publish(productFromJson.getMasterData().getPublished());
+        .publish(stagedProductData.getPublished());
   }
 
   /**
@@ -234,17 +239,24 @@ public class ProductSyncMockUtils {
     return CategoryOrderHintsBuilder.of().values(categoryOrderHints).build();
   }
 
-  public static ProductVariantDraft createProductVariantDraft(final ProductVariant productVariant) {
+  public static ProductVariantDraftBuilder createProductVariantDraftBuilder(
+      final ProductVariant productVariant) {
     List<AssetDraft> assetDrafts = createAssetDraft(productVariant.getAssets());
     List<PriceDraft> priceDrafts = createPriceDraft(productVariant.getPrices());
+    List<Attribute> attributes = createAttributes(productVariant.getAttributes());
     return ProductVariantDraftBuilder.of()
         .assets(assetDrafts)
-        .attributes(productVariant.getAttributes())
+        .attributes(attributes)
         .images(productVariant.getImages())
         .prices(priceDrafts)
         .sku(productVariant.getSku())
-        .key(productVariant.getKey())
-        .build();
+        .key(productVariant.getKey());
+  }
+
+  public static List<Attribute> createAttributes(List<Attribute> attributes) {
+    return attributes.stream()
+        .map(attribute -> AttributeBuilder.of(attribute).build())
+        .collect(Collectors.toList());
   }
 
   public static ProductDraft createProductDraft(
@@ -306,7 +318,8 @@ public class ProductSyncMockUtils {
   public static ProductProjection createProductFromJson(@Nonnull final String jsonResourcePath) {
     final InputStream resourceAsStream =
         Thread.currentThread().getContextClassLoader().getResourceAsStream(jsonResourcePath);
-    return fromInputStream(resourceAsStream, ProductProjection.class);
+    final Product productFromJson = fromInputStream(resourceAsStream, Product.class);
+    return new ProductToProductProjectionWrapper(productFromJson, true);
   }
 
   public static ProductDraft createProductDraftFromJson(@Nonnull final String jsonResourcePath) {

@@ -28,6 +28,7 @@ import com.commercetools.api.models.product.ProductMoveImageToPositionAction;
 import com.commercetools.api.models.product.ProductProjection;
 import com.commercetools.api.models.product.ProductRemoveImageAction;
 import com.commercetools.api.models.product.ProductRemovePriceAction;
+import com.commercetools.api.models.product.ProductRemovePriceActionBuilder;
 import com.commercetools.api.models.product.ProductSetAttributeAction;
 import com.commercetools.api.models.product.ProductSetAttributeInAllVariantsAction;
 import com.commercetools.api.models.product.ProductSetSkuAction;
@@ -130,7 +131,7 @@ public final class ProductVariantUpdateActionUtils {
             PriceCompositeId::of,
 
             price ->
-                ProductRemovePriceAction.builder().priceId(price.getId()).staged(true).build());
+                ProductRemovePriceActionBuilder.of().priceId(price.getId()).staged(true).build());
 
     final Long variantId = oldProductVariant.getId();
 

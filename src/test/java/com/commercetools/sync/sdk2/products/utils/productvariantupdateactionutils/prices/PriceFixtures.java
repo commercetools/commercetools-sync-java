@@ -13,10 +13,10 @@ import static com.neovisionaries.i18n.CountryCode.US;
 import static java.util.Optional.ofNullable;
 
 import com.commercetools.api.models.channel.ChannelReferenceBuilder;
+import com.commercetools.api.models.common.CentPrecisionMoneyBuilder;
 import com.commercetools.api.models.common.Price;
 import com.commercetools.api.models.common.PriceBuilder;
 import com.commercetools.api.models.common.TypedMoney;
-import com.commercetools.api.models.common.TypedMoneyBuilder;
 import com.commercetools.api.models.customer_group.CustomerGroupReferenceBuilder;
 import com.commercetools.api.models.type.CustomFields;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -231,10 +231,10 @@ public final class PriceFixtures {
       @Nullable final CustomFields customFields) {
 
     final TypedMoney typedMoney =
-        TypedMoneyBuilder.of()
-            .centPrecisionBuilder()
+        CentPrecisionMoneyBuilder.of()
             .centAmount(value.multiply(BigDecimal.valueOf(100)).longValue())
             .currencyCode(currencyUnits.getCurrencyCode())
+            .fractionDigits(2)
             .build();
 
     return PriceBuilder.of()

@@ -6,10 +6,10 @@ import static io.sphere.sdk.models.DefaultCurrencyUnits.USD;
 import static java.util.Optional.ofNullable;
 
 import com.commercetools.api.models.channel.ChannelResourceIdentifier;
+import com.commercetools.api.models.common.CentPrecisionMoneyBuilder;
 import com.commercetools.api.models.common.PriceDraft;
 import com.commercetools.api.models.common.PriceDraftBuilder;
 import com.commercetools.api.models.common.TypedMoney;
-import com.commercetools.api.models.common.TypedMoneyBuilder;
 import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifier;
 import com.commercetools.api.models.type.CustomFieldsDraft;
 import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
@@ -23,8 +23,6 @@ import io.sphere.sdk.utils.MoneyImpl;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -286,7 +284,6 @@ public final class PriceDraftFixtures {
   @Nonnull
   public static FieldContainer createCustomFieldsContainer(
       @Nonnull final String fieldName, @Nonnull final JsonNode fieldValue) {
-    final Map<String, Object> customFields = new HashMap<>();
     return FieldContainerBuilder.of().addValue(fieldName, fieldValue).build();
   }
 
@@ -302,10 +299,10 @@ public final class PriceDraftFixtures {
       @Nullable final CustomFieldsDraft customFieldsDraft) {
 
     final TypedMoney typedMoney =
-        TypedMoneyBuilder.of()
-            .centPrecisionBuilder()
+        CentPrecisionMoneyBuilder.of()
             .centAmount(value.multiply(BigDecimal.valueOf(100)).longValue())
             .currencyCode(currencyUnits.getCurrencyCode())
+            .fractionDigits(2)
             .build();
     return PriceDraftBuilder.of()
         .value(typedMoney)
@@ -336,10 +333,10 @@ public final class PriceDraftFixtures {
       @Nullable final CustomFieldsDraft customFieldsDraft) {
 
     final TypedMoney typedMoney =
-        TypedMoneyBuilder.of()
-            .centPrecisionBuilder()
+        CentPrecisionMoneyBuilder.of()
             .centAmount(value.multiply(BigDecimal.valueOf(100)).longValue())
             .currencyCode(currencyUnits.getCurrencyCode())
+            .fractionDigits(2)
             .build();
     return PriceDraftBuilder.of()
         .value(typedMoney)

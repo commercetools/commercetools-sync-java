@@ -52,7 +52,7 @@ public class PriceCustomActionBuilder implements GenericCustomActionBuilder {
     return ProductSetProductPriceCustomFieldAction.builder()
         .priceId(priceId)
         .name(customFieldName)
-        .value(customFieldValue)
+        .value(FieldContainerBuilder.of().addValue(customFieldName, customFieldValue).build())
         .staged(true)
         .build();
   }

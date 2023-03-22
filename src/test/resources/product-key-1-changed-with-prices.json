@@ -57,9 +57,12 @@
         "key": "v1",
         "prices": [
           {
+            "id": "4dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f",
             "value": {
-              "currencyCode": "EUR",
-              "centAmount": 118
+              "type" : "centPrecision",
+              "currencyCode" : "EUR",
+              "centAmount" : 118,
+              "fractionDigits" : 2
             },
             "channel": {
               "typeId": "channel",
@@ -67,9 +70,12 @@
             }
           },
           {
+            "id": "4dfc8bea-84f2-45bc-b3c2-r9e7wv99vfb",
             "value": {
-              "currencyCode": "EGP",
-              "centAmount": 100
+              "type" : "centPrecision",
+              "currencyCode" : "EGP",
+              "centAmount" : 100,
+              "fractionDigits" : 2
             },
             "channel": {
               "typeId": "channel",

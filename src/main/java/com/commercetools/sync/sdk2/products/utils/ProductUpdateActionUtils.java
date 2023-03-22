@@ -24,11 +24,13 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.models.category.CategoryReference;
 import com.commercetools.api.models.category.CategoryResourceIdentifier;
+import com.commercetools.api.models.category.CategoryResourceIdentifierBuilder;
 import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.product.CategoryOrderHints;
 import com.commercetools.api.models.product.Product;
 import com.commercetools.api.models.product.ProductAddToCategoryAction;
 import com.commercetools.api.models.product.ProductAddVariantAction;
+import com.commercetools.api.models.product.ProductAddVariantActionBuilder;
 import com.commercetools.api.models.product.ProductChangeMasterVariantAction;
 import com.commercetools.api.models.product.ProductChangeNameAction;
 import com.commercetools.api.models.product.ProductChangeSlugAction;
@@ -36,6 +38,7 @@ import com.commercetools.api.models.product.ProductDraft;
 import com.commercetools.api.models.product.ProductProjection;
 import com.commercetools.api.models.product.ProductPublishAction;
 import com.commercetools.api.models.product.ProductRemoveFromCategoryAction;
+import com.commercetools.api.models.product.ProductRemoveFromCategoryActionBuilder;
 import com.commercetools.api.models.product.ProductRemoveVariantAction;
 import com.commercetools.api.models.product.ProductSetAttributeInAllVariantsAction;
 import com.commercetools.api.models.product.ProductSetCategoryOrderHintAction;
@@ -44,6 +47,7 @@ import com.commercetools.api.models.product.ProductSetMetaDescriptionAction;
 import com.commercetools.api.models.product.ProductSetMetaKeywordsAction;
 import com.commercetools.api.models.product.ProductSetMetaTitleAction;
 import com.commercetools.api.models.product.ProductSetSearchKeywordsAction;
+import com.commercetools.api.models.product.ProductSetSearchKeywordsActionBuilder;
 import com.commercetools.api.models.product.ProductSetTaxCategoryAction;
 import com.commercetools.api.models.product.ProductTransitionStateAction;
 import com.commercetools.api.models.product.ProductUnpublishAction;
@@ -296,10 +300,11 @@ public final class ProductUpdateActionUtils {
               .forEach(
                   categoryReference ->
                       updateActions.add(
-                          ProductRemoveFromCategoryAction.builder()
+                          ProductRemoveFromCategoryActionBuilder.of()
                               .category(
-                                  (CategoryResourceIdentifier)
-                                      categoryReference.toResourceIdentifier())
+                                  CategoryResourceIdentifierBuilder.of()
+                                      .id(categoryReference.getId())
+                                      .build())
                               .staged(true)
                               .build()));
           return updateActions;
@@ -329,7 +334,7 @@ public final class ProductUpdateActionUtils {
         oldSearchKeywords,
         newSearchKeywords,
         () ->
-            ProductSetSearchKeywordsAction.builder()
+            ProductSetSearchKeywordsActionBuilder.of()
                 .searchKeywords(newSearchKeywords)
                 .staged(true)
                 .build());
@@ -538,10 +543,13 @@ public final class ProductUpdateActionUtils {
    */
   @Nonnull
   public static List<ProductVariantDraft> getAllVariants(@Nonnull final ProductDraft productDraft) {
-    final List<ProductVariantDraft> allVariants =
-        new ArrayList<>(1 + productDraft.getVariants().size());
-    allVariants.add(productDraft.getMasterVariant());
-    allVariants.addAll(productDraft.getVariants());
+    final List<ProductVariantDraft> allVariants = new ArrayList<>();
+    if (productDraft.getMasterVariant() != null) {
+      allVariants.add(productDraft.getMasterVariant());
+      if (productDraft.getVariants() != null && productDraft.getVariants().size() > 0) {
+        allVariants.addAll(productDraft.getVariants());
+      }
+    }
     return allVariants;
   }
 
@@ -953,7 +961,7 @@ public final class ProductUpdateActionUtils {
   static ProductUpdateAction buildAddVariantUpdateActionFromDraft(
       @Nonnull final ProductVariantDraft draft) {
 
-    return ProductAddVariantAction.builder()
+    return ProductAddVariantActionBuilder.of()
         .prices(draft.getPrices())
         .sku(draft.getSku())
         .attributes(draft.getAttributes())
