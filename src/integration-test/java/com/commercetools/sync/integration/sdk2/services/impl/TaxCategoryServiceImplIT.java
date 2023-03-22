@@ -174,9 +174,7 @@ class TaxCategoryServiceImplIT {
     when(getMock.withLimit(any(Integer.class))).thenReturn(getMock);
     when(getMock.withWithTotal(any(Boolean.class))).thenReturn(getMock);
     when(getMock.execute())
-        .thenReturn(
-            exceptionallyCompletedFuture(
-                new BadGatewayException(500, "", null, "", null)))
+        .thenReturn(exceptionallyCompletedFuture(new BadGatewayException(500, "", null, "", null)))
         .thenCallRealMethod();
 
     final TaxCategorySyncOptions spyOptions =
