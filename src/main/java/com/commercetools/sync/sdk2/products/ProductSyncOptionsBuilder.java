@@ -28,8 +28,8 @@ public final class ProductSyncOptionsBuilder
   }
 
   /**
-   * Set option that defines {@link com.commercetools.sync.sdk2.products.SyncFilter} for the sync, which
-   * defines either a blacklist or a whitelist for filtering certain update action groups.
+   * Set option that defines {@link com.commercetools.sync.sdk2.products.SyncFilter} for the sync,
+   * which defines either a blacklist or a whitelist for filtering certain update action groups.
    *
    * <p>The action groups can be a list of any of the values of the enum {@link ActionGroup},
    * namely:
