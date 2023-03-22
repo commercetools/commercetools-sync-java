@@ -15,9 +15,9 @@ public interface TaxCategoryService {
 
   /**
    * Filters out the keys which are already cached and fetches only the not-cached tax category keys
-   * from the CTP project defined in an injected {@link com.commercetools.api.client.ProjectApiRoot} and
-   * stores a mapping for every tax category to id in the cached map of keys -&gt; ids and returns
-   * this cached map.
+   * from the CTP project defined in an injected {@link com.commercetools.api.client.ProjectApiRoot}
+   * and stores a mapping for every tax category to id in the cached map of keys -&gt; ids and
+   * returns this cached map.
    *
    * @param taxCategoryKeys - a set of tax category keys to fetch and cache the ids for
    * @return {@link java.util.concurrent.CompletionStage}&lt;{@link java.util.Map}&gt; in which the
@@ -36,11 +36,9 @@ public interface TaxCategoryService {
    * <p>After that, the method returns a {@link java.util.concurrent.CompletionStage}&lt;{@link
    * java.util.Optional}&lt;{@link String}&gt;&gt; in which the result of it's completion could
    * contain an {@link java.util.Optional} with the id inside of it or an empty {@link
-   * java.util.Optional} if no {@link TaxCategory} was found in the CTP
-   * project with this key.
+   * java.util.Optional} if no {@link TaxCategory} was found in the CTP project with this key.
    *
-   * @param key the key by which a {@link TaxCategory} id should be
-   *     fetched from the CTP project.
+   * @param key the key by which a {@link TaxCategory} id should be fetched from the CTP project.
    * @return {@link java.util.concurrent.CompletionStage}&lt;{@link java.util.Optional}&lt;{@link
    *     String}&gt;&gt; in which the result of its completion could contain an {@link
    *     java.util.Optional} with the id inside of it or an empty {@link java.util.Optional} if no
@@ -52,8 +50,8 @@ public interface TaxCategoryService {
   /**
    * Given a {@link java.util.Set} of tax category keys, this method fetches a set of all the
    * taxCategories, matching given set of keys in the CTP project, defined in an injected {@link
-   * com.commercetools.api.client.ProjectApiRoot}. A mapping of the key to the id of the fetched taxCategories
-   * is persisted in an in-memory map. <br>
+   * com.commercetools.api.client.ProjectApiRoot}. A mapping of the key to the id of the fetched
+   * taxCategories is persisted in an in-memory map. <br>
    * One must remember key is not required to create TaxCategory but is required to synchronize tax
    * categories.
    *
@@ -67,9 +65,9 @@ public interface TaxCategoryService {
 
   /**
    * Given a tax category key, this method fetches a tax category that matches given key in the CTP
-   * project defined in a potentially injected {@link com.commercetools.api.client.ProjectApiRoot}. If there
-   * is no matching tax category an empty {@link java.util.Optional} will be returned in the
-   * returned future. A mapping of the key to the id of the fetched category is persisted in an
+   * project defined in a potentially injected {@link com.commercetools.api.client.ProjectApiRoot}.
+   * If there is no matching tax category an empty {@link java.util.Optional} will be returned in
+   * the returned future. A mapping of the key to the id of the fetched category is persisted in an
    * in-memory map.
    *
    * @param key the key of the tax category to fetch.
@@ -81,9 +79,8 @@ public interface TaxCategoryService {
   CompletionStage<Optional<TaxCategory>> fetchTaxCategory(@Nullable final String key);
 
   /**
-   * Given a resource draft of {@link TaxCategoryDraft}, this method
-   * attempts to create a resource {@link TaxCategory} based on it in
-   * the CTP project defined by the sync options.
+   * Given a resource draft of {@link TaxCategoryDraft}, this method attempts to create a resource
+   * {@link TaxCategory} based on it in the CTP project defined by the sync options.
    *
    * <p>A completion stage containing an empty option and the error callback will be triggered in
    * those cases:
@@ -109,20 +106,17 @@ public interface TaxCategoryService {
   /**
    * Given a {@link TaxCategory} and a {@link java.util.List}&lt;{@link
    * com.commercetools.api.models.tax_category.TaxCategoryUpdateAction}&lt;{@link
-   * TaxCategory}&gt;&gt;, this method issues an update request with
-   * these update actions on this {@link TaxCategory} in the CTP project
-   * defined in a potentially injected {@link com.commercetools.api.client.ProjectApiRoot}. This method
-   * returns {@link java.util.concurrent.CompletionStage}&lt;{@link
-   * TaxCategory}&gt; in which the result of it's completion contains an
-   * instance of the {@link TaxCategory} which was updated in the CTP
+   * TaxCategory}&gt;&gt;, this method issues an update request with these update actions on this
+   * {@link TaxCategory} in the CTP project defined in a potentially injected {@link
+   * com.commercetools.api.client.ProjectApiRoot}. This method returns {@link
+   * java.util.concurrent.CompletionStage}&lt;{@link TaxCategory}&gt; in which the result of it's
+   * completion contains an instance of the {@link TaxCategory} which was updated in the CTP
    * project.
    *
    * @param taxCategory the {@link TaxCategory} to update.
-   * @param updateActions the update actions to update the {@link
-   *     TaxCategory} with.
-   * @return {@link java.util.concurrent.CompletionStage}&lt;{@link
-   *     TaxCategory}&gt; containing as a result of it's completion an
-   *     instance of the {@link TaxCategory} which was updated in the
+   * @param updateActions the update actions to update the {@link TaxCategory} with.
+   * @return {@link java.util.concurrent.CompletionStage}&lt;{@link TaxCategory}&gt; containing as a
+   *     result of it's completion an instance of the {@link TaxCategory} which was updated in the
    *     CTP project or a {@link java.util.concurrent.CompletionException}.
    */
   @Nonnull
