@@ -63,14 +63,14 @@ public final class TaxCategoryServiceImpl
             .withWhere("key in :keys")
             .withPredicateVar("keys", Collections.singletonList(key));
 
-    return fetchCachedResourceId(key, query);
+    return super.fetchCachedResourceId(key, query);
   }
 
   @Nonnull
   @Override
   public CompletionStage<Set<TaxCategory>> fetchMatchingTaxCategoriesByKeys(
       @Nonnull final Set<String> keys) {
-    return fetchMatchingResources(
+    return super.fetchMatchingResources(
         keys,
         TaxCategory::getKey,
         (keysNotCached) ->
