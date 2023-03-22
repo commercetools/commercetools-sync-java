@@ -2,6 +2,7 @@ package com.commercetools.sync.integration.sdk2.services.impl;
 
 import static com.commercetools.sync.integration.sdk2.commons.utils.TaxCategoryITUtils.*;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
+import static com.spotify.futures.CompletableFutures.exceptionallyCompletedFuture;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
@@ -27,7 +28,6 @@ import com.commercetools.sync.sdk2.services.TaxCategoryService;
 import com.commercetools.sync.sdk2.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.sdk2.taxcategories.TaxCategorySyncOptions;
 import com.commercetools.sync.sdk2.taxcategories.TaxCategorySyncOptionsBuilder;
-import io.sphere.sdk.utils.CompletableFutureUtils;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;
 import java.util.ArrayList;
@@ -175,7 +175,7 @@ class TaxCategoryServiceImplIT {
     when(getMock.withWithTotal(any(Boolean.class))).thenReturn(getMock);
     when(getMock.execute())
         .thenReturn(
-            CompletableFutureUtils.exceptionallyCompletedFuture(
+            exceptionallyCompletedFuture(
                 new BadGatewayException(500, "", null, "", null)))
         .thenCallRealMethod();
 
