@@ -71,7 +71,7 @@ public final class ProductVariantAttributeUpdateActionUtils {
             newProductVariantAttributeValue,
             () ->
                 ProductSetAttributeInAllVariantsActionBuilder.of()
-                    .value(newProductVariantAttribute)
+                    .value(newProductVariantAttributeValue)
                     .name(newProductVariantAttributeName)
                     .staged(true)
                     .build())
@@ -81,7 +81,7 @@ public final class ProductVariantAttributeUpdateActionUtils {
             () ->
                 ProductSetAttributeActionBuilder.of()
                     .variantId(variantId)
-                    .value(newProductVariantAttribute)
+                    .value(newProductVariantAttributeValue)
                     .name(newProductVariantAttributeName)
                     .staged(true)
                     .build());

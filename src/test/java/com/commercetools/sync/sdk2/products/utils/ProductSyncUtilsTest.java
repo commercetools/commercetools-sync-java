@@ -486,14 +486,14 @@ class ProductSyncUtilsTest {
         .containsOnlyOnce(
             ProductSetAttributeInAllVariantsActionBuilder.of()
                 .name("brandName")
-                .value(brandNameAttribute)
+                .value(brandNameAttribute.getValue())
                 .staged(true)
                 .build());
     assertThat(updateActions.get(0))
         .isEqualTo(
             ProductSetAttributeInAllVariantsActionBuilder.of()
                 .name("brandName")
-                .value(brandNameAttribute)
+                .value(brandNameAttribute.getValue())
                 .staged(true)
                 .build());
     assertThat(updateActions.get(1))
@@ -614,19 +614,19 @@ class ProductSyncUtilsTest {
             ProductSetAttributeActionBuilder.of()
                 .variantId(2L)
                 .name("orderLimit")
-                .value(orderLimitAttribute)
+                .value(orderLimitAttribute.getValue())
                 .staged(true)
                 .build(),
             ProductSetAttributeActionBuilder.of()
                 .variantId(2L)
                 .name("priceInfo")
-                .value(priceInfoAttribute)
+                .value(priceInfoAttribute.getValue())
                 .staged(true)
                 .build(),
             ProductSetAttributeActionBuilder.of()
                 .variantId(2L)
                 .name("brandName")
-                .value(brandNameAttribute)
+                .value(brandNameAttribute.getValue())
                 .staged(true)
                 .build(),
             ProductPublishActionBuilder.of().build());

@@ -17,7 +17,6 @@ import com.commercetools.api.models.common.Image;
 import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.common.PriceDraft;
 import com.commercetools.api.models.product.Attribute;
-import com.commercetools.api.models.product.AttributeBuilder;
 import com.commercetools.api.models.product.ProductAddExternalImageAction;
 import com.commercetools.api.models.product.ProductAddVariantAction;
 import com.commercetools.api.models.product.ProductAddVariantActionBuilder;
@@ -186,7 +185,7 @@ class ProductUpdateActionUtilsTest {
             ProductSetAttributeAction.builder()
                 .variantId(4L)
                 .name("priceInfo")
-                .value(AttributeBuilder.of().name("priceInfo").value("44/kg").build())
+                .value("44/kg")
                 .staged(true)
                 .build());
 
@@ -250,7 +249,7 @@ class ProductUpdateActionUtilsTest {
         .containsOnlyOnce(
             ProductSetAttributeInAllVariantsAction.builder()
                 .name("priceInfo")
-                .value(AttributeBuilder.of().name("priceInfo").value("74,90/kg").build())
+                .value("74,90/kg")
                 .staged(true)
                 .build());
     // Other update actions can be duplicated per variant
@@ -259,7 +258,7 @@ class ProductUpdateActionUtilsTest {
             ProductSetAttributeAction.builder()
                 .variantId(2L)
                 .name("size")
-                .value(AttributeBuilder.of().name("size").value("ca. 1 x 1200 g").build())
+                .value("ca. 1 x 1200 g")
                 .staged(true)
                 .build());
     assertThat(updateActions)
@@ -267,7 +266,7 @@ class ProductUpdateActionUtilsTest {
             ProductSetAttributeAction.builder()
                 .variantId(3L)
                 .name("size")
-                .value(AttributeBuilder.of().name("size").value("ca. 1 x 1200 g").build())
+                .value("ca. 1 x 1200 g")
                 .staged(true)
                 .build());
   }
