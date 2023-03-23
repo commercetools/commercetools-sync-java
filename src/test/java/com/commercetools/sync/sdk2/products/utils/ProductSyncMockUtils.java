@@ -143,11 +143,7 @@ public class ProductSyncMockUtils {
   public static ProductDraftBuilder createProductDraftBuilder(
       @Nonnull final String jsonResourcePath,
       @Nonnull final ProductTypeResourceIdentifier productTypeResourceIdentifier) {
-    final InputStream resourceAsStream =
-        Thread.currentThread().getContextClassLoader().getResourceAsStream(jsonResourcePath);
-    final Product productFromJson = fromInputStream(resourceAsStream, Product.class);
-    final ProductProjection stagedProductData =
-        new ProductToProductProjectionWrapper(productFromJson, true);
+    final ProductProjection stagedProductData = createProductFromJson(jsonResourcePath);
 
     @SuppressWarnings("ConstantConditions")
     final List<ProductVariantDraft> allVariants =
@@ -316,9 +312,7 @@ public class ProductSyncMockUtils {
   }
 
   public static ProductProjection createProductFromJson(@Nonnull final String jsonResourcePath) {
-    final InputStream resourceAsStream =
-        Thread.currentThread().getContextClassLoader().getResourceAsStream(jsonResourcePath);
-    final Product productFromJson = fromInputStream(resourceAsStream, Product.class);
+    final Product productFromJson = createObjectFromResource(jsonResourcePath, Product.class);
     return new ProductToProductProjectionWrapper(productFromJson, true);
   }
 
@@ -326,6 +320,14 @@ public class ProductSyncMockUtils {
     final InputStream resourceAsStream =
         Thread.currentThread().getContextClassLoader().getResourceAsStream(jsonResourcePath);
     return fromInputStream(resourceAsStream, ProductDraft.class);
+  }
+
+  public static <T> T createObjectFromResource(
+      final String resourcePath, final Class<T> objectType) {
+    final InputStream resourceAsStream =
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath);
+    final T resourceFromJson = fromInputStream(resourceAsStream, objectType);
+    return resourceFromJson;
   }
 
   /**

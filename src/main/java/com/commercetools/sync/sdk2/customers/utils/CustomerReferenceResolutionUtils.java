@@ -206,6 +206,7 @@ public final class CustomerReferenceResolutionUtils {
   }
 
   @Nullable
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   private static List<Integer> getAddressIndexList(
       @Nullable final List<Address> allAddresses, @Nullable final List<String> addressIds) {
     if (allAddresses == null || addressIds == null) {
@@ -240,6 +241,7 @@ public final class CustomerReferenceResolutionUtils {
   }
 
   @Nullable
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   private static List<StoreResourceIdentifier> mapToStores(@Nonnull final Customer customer) {
     final List<StoreKeyReference> storeReferences = customer.getStores();
     if (storeReferences != null) {
