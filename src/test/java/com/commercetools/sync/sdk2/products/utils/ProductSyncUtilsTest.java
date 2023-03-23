@@ -2,12 +2,12 @@ package com.commercetools.sync.sdk2.products.utils;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static com.commercetools.sync.sdk2.commons.helpers.DefaultCurrencyUnits.EUR;
-import static com.commercetools.sync.sdk2.products.utils.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH;
-import static com.commercetools.sync.sdk2.products.utils.ProductSyncMockUtils.PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH;
-import static com.commercetools.sync.sdk2.products.utils.ProductSyncMockUtils.SIMPLE_PRODUCT_WITH_MASTER_VARIANT_RESOURCE_PATH;
-import static com.commercetools.sync.sdk2.products.utils.ProductSyncMockUtils.SIMPLE_PRODUCT_WITH_MULTIPLE_VARIANTS_RESOURCE_PATH;
-import static com.commercetools.sync.sdk2.products.utils.ProductSyncMockUtils.createProductDraftBuilder;
-import static com.commercetools.sync.sdk2.products.utils.ProductSyncMockUtils.createProductVariantDraftBuilder;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.SIMPLE_PRODUCT_WITH_MASTER_VARIANT_RESOURCE_PATH;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.SIMPLE_PRODUCT_WITH_MULTIPLE_VARIANTS_RESOURCE_PATH;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createProductDraftBuilder;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createProductVariantDraftBuilder;
 import static io.vrap.rmf.base.client.utils.json.JsonUtils.fromInputStream;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -76,6 +76,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import com.commercetools.sync.sdk2.products.ProductToProductProjectionWrapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

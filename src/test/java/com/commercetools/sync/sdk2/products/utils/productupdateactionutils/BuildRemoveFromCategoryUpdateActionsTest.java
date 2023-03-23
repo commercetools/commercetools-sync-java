@@ -1,7 +1,7 @@
 package com.commercetools.sync.sdk2.products.utils.productupdateactionutils;
 
-import static com.commercetools.sync.sdk2.products.utils.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
-import static com.commercetools.sync.sdk2.products.utils.ProductSyncMockUtils.createProductFromJson;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createProductFromJson;
 import static com.commercetools.sync.sdk2.products.utils.ProductUpdateActionUtils.buildRemoveFromCategoryUpdateActions;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;

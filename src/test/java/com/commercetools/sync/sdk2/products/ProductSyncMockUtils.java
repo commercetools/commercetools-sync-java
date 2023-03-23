@@ -1,8 +1,8 @@
-package com.commercetools.sync.sdk2.products.utils;
+package com.commercetools.sync.sdk2.products;
 
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
-import static com.commercetools.sync.sdk2.products.utils.AssetUtils.createAssetDraft;
+import static com.commercetools.sync.sdk2.products.AssetUtils.createAssetDraft;
 import static com.commercetools.sync.sdk2.products.utils.PriceUtils.createPriceDraft;
 import static io.vrap.rmf.base.client.utils.json.JsonUtils.fromInputStream;
 import static java.util.Optional.ofNullable;
