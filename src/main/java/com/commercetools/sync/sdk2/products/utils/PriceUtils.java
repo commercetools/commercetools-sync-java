@@ -15,7 +15,6 @@ import com.commercetools.api.models.common.PriceTierDraftBuilder;
 import com.commercetools.api.models.customer_group.CustomerGroupReference;
 import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifier;
 import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -68,9 +67,10 @@ public class PriceUtils {
         .orElse(null);
   }
 
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   public static List<PriceTierDraft> createPriceTierDraft(@Nullable List<PriceTier> priceTiers) {
     if (priceTiers == null) {
-      return Collections.emptyList();
+      return null;
     }
     return priceTiers.stream()
         .map(
