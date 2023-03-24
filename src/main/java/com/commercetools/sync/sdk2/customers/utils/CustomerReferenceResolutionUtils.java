@@ -205,11 +205,10 @@ public final class CustomerReferenceResolutionUtils {
     return null;
   }
 
-  @Nullable
   private static List<Integer> getAddressIndexList(
       @Nullable final List<Address> allAddresses, @Nullable final List<String> addressIds) {
     if (allAddresses == null || addressIds == null) {
-      return null;
+      return Collections.emptyList();
     }
     final List<Integer> indexes = new ArrayList<>();
     for (String addressId : addressIds) {
@@ -239,7 +238,6 @@ public final class CustomerReferenceResolutionUtils {
     return null;
   }
 
-  @Nullable
   private static List<StoreResourceIdentifier> mapToStores(@Nonnull final Customer customer) {
     final List<StoreKeyReference> storeReferences = customer.getStores();
     if (storeReferences != null) {
@@ -249,7 +247,7 @@ public final class CustomerReferenceResolutionUtils {
                   StoreResourceIdentifierBuilder.of().key(storeKeyReference.getKey()).build())
           .collect(toList());
     }
-    return null;
+    return Collections.emptyList();
   }
 
   private CustomerReferenceResolutionUtils() {}
