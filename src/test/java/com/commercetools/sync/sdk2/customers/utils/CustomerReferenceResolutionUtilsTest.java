@@ -210,6 +210,6 @@ class CustomerReferenceResolutionUtilsTest {
     assertThat(customerDraft.getDefaultBillingAddress()).isEqualTo(0);
     assertThat(customerDraft.getDefaultShippingAddress()).isNull();
     assertThat(customerDraft.getBillingAddresses()).isEqualTo(asList(0, 2));
-    assertThat(customerDraft.getShippingAddresses()).isNull();
+    assertThat(customerDraft.getShippingAddresses()).isEmpty();
   }
 }
