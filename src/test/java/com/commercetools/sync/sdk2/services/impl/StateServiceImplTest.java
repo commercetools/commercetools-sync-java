@@ -32,6 +32,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import io.vrap.rmf.base.client.ApiHttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -265,7 +266,11 @@ class StateServiceImplTest {
         .thenReturn(
             CompletableFuture.failedFuture(
                 new ConcurrentModificationException(
-                    409, "", null, "", new ApiHttpResponse<>(409, null, json.getBytes()))));
+                    409,
+                    "",
+                    null,
+                    "",
+                    new ApiHttpResponse<>(409, null, json.getBytes(StandardCharsets.UTF_8)))));
 
     final StateDraft draft = mock(StateDraft.class);
     when(draft.getKey()).thenReturn(stateKey);
