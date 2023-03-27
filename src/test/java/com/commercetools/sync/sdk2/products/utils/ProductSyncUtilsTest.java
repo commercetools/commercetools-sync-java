@@ -71,13 +71,12 @@ import com.commercetools.api.models.product_type.TextInputHint;
 import com.commercetools.sync.sdk2.products.AttributeMetaData;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.sdk2.products.ProductToProductProjectionWrapper;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import com.commercetools.sync.sdk2.products.ProductToProductProjectionWrapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
