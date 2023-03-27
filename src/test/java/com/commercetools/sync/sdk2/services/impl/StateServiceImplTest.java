@@ -63,6 +63,25 @@ class StateServiceImplTest {
 
   @BeforeEach
   void setup() {
+    createMockRequests();
+
+    stateId = RandomStringUtils.random(15);
+    stateKey = RandomStringUtils.random(15);
+
+    errorMessages = new ArrayList<>();
+    errorExceptions = new ArrayList<>();
+    StateSyncOptions stateSyncOptions =
+        StateSyncOptionsBuilder.of(client)
+            .errorCallback(
+                (exception, oldResource, newResource, updateActions) -> {
+                  errorMessages.add(exception.getMessage());
+                  errorExceptions.add(exception.getCause());
+                })
+            .build();
+    service = new StateServiceImpl(stateSyncOptions);
+  }
+
+  private void createMockRequests() {
     final ByProjectKeyStatesRequestBuilder byProjectKeyStatesRequestBuilder =
         mock(ByProjectKeyStatesRequestBuilder.class);
     when(client.states()).thenReturn(byProjectKeyStatesRequestBuilder);
@@ -94,21 +113,6 @@ class StateServiceImplTest {
     byProjectKeyStatesPost = mock(ByProjectKeyStatesPost.class);
     when(byProjectKeyStatesRequestBuilder.post(any(StateDraft.class)))
         .thenReturn(byProjectKeyStatesPost);
-
-    stateId = RandomStringUtils.random(15);
-    stateKey = RandomStringUtils.random(15);
-
-    errorMessages = new ArrayList<>();
-    errorExceptions = new ArrayList<>();
-    StateSyncOptions stateSyncOptions =
-        StateSyncOptionsBuilder.of(client)
-            .errorCallback(
-                (exception, oldResource, newResource, updateActions) -> {
-                  errorMessages.add(exception.getMessage());
-                  errorExceptions.add(exception.getCause());
-                })
-            .build();
-    service = new StateServiceImpl(stateSyncOptions);
   }
 
   @AfterEach
