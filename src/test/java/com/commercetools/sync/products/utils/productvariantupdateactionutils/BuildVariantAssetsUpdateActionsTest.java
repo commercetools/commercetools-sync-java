@@ -262,7 +262,7 @@ class BuildVariantAssetsUpdateActionsTest {
                 "a",
                 asList(
                     AssetSourceBuilder.ofUri("new uri").build(),
-                    AssetSourceBuilder.ofUri(null).key("new source").build()),
+                    AssetSourceBuilder.ofUri("new source").build()),
                 true),
             SetAssetSources.ofVariantIdAndAssetKey(
                 oldMasterVariant.getId(),
