@@ -26,7 +26,6 @@ import com.commercetools.api.models.type.TypeResourceIdentifier;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -205,7 +204,7 @@ public final class CustomerReferenceResolutionUtils {
     }
     return null;
   }
-  
+
   private static List<Integer> getAddressIndexList(
       @Nullable final List<Address> allAddresses, @Nullable final List<String> addressIds) {
     if (allAddresses == null || addressIds == null) {
