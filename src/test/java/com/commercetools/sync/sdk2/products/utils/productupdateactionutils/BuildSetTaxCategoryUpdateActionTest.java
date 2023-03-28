@@ -3,6 +3,7 @@ package com.commercetools.sync.sdk2.products.utils.productupdateactionutils;
 import static com.commercetools.sync.sdk2.products.utils.ProductUpdateActionUtils.buildSetTaxCategoryUpdateAction;
 import static io.vrap.rmf.base.client.utils.json.JsonUtils.fromJsonString;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.commercetools.api.models.product.ProductDraft;
@@ -11,16 +12,12 @@ import com.commercetools.api.models.product.ProductSetTaxCategoryActionBuilder;
 import com.commercetools.api.models.tax_category.TaxCategoryReference;
 import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifier;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
 class BuildSetTaxCategoryUpdateActionTest {
 
-  @Mock private ProductProjection oldProduct;
+  private ProductProjection oldProduct = mock(ProductProjection.class);
 
-  @Mock private ProductDraft newProduct;
+  private ProductDraft newProduct = mock(ProductDraft.class);
 
   @SuppressWarnings("unchecked")
   private static final TaxCategoryReference oldTaxCategory =
