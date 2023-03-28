@@ -1,5 +1,6 @@
 package com.commercetools.sync.sdk2.customers.utils;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -25,7 +26,6 @@ import com.commercetools.api.models.type.TypeResourceIdentifier;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -145,7 +145,7 @@ public final class CustomerReferenceResolutionUtils {
 
   private static List<BaseAddress> mapToAddressesDraft(@Nonnull List<Address> addresses) {
     if (addresses.isEmpty()) {
-      return Collections.emptyList();
+      return emptyList();
     }
 
     return addresses.stream()
@@ -205,11 +205,10 @@ public final class CustomerReferenceResolutionUtils {
     return null;
   }
 
-  @Nullable
   private static List<Integer> getAddressIndexList(
       @Nullable final List<Address> allAddresses, @Nullable final List<String> addressIds) {
     if (allAddresses == null || addressIds == null) {
-      return null;
+      return emptyList();
     }
     final List<Integer> indexes = new ArrayList<>();
     for (String addressId : addressIds) {
@@ -239,7 +238,6 @@ public final class CustomerReferenceResolutionUtils {
     return null;
   }
 
-  @Nullable
   private static List<StoreResourceIdentifier> mapToStores(@Nonnull final Customer customer) {
     final List<StoreKeyReference> storeReferences = customer.getStores();
     if (storeReferences != null) {
@@ -249,7 +247,7 @@ public final class CustomerReferenceResolutionUtils {
                   StoreResourceIdentifierBuilder.of().key(storeKeyReference.getKey()).build())
           .collect(toList());
     }
-    return null;
+    return emptyList();
   }
 
   private CustomerReferenceResolutionUtils() {}

@@ -1,4 +1,4 @@
-package com.commercetools.sync.sdk2.products.utils;
+package com.commercetools.sync.sdk2.products;
 
 import com.commercetools.api.models.category.CategoryReference;
 import com.commercetools.api.models.common.LocalizedString;
@@ -17,11 +17,11 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import javax.annotation.Nullable;
 
-class ProductToProductProjectionWrapper implements ProductProjection {
+public class ProductToProductProjectionWrapper implements ProductProjection {
   private final Product product;
   private final ProductData productData;
 
-  ProductToProductProjectionWrapper(final Product product, final boolean staged) {
+  public ProductToProductProjectionWrapper(final Product product, final boolean staged) {
     this.product = product;
     this.productData =
         staged ? product.getMasterData().getStaged() : product.getMasterData().getCurrent();

@@ -1,4 +1,4 @@
-package com.commercetools.sync.sdk2.products.utils;
+package com.commercetools.sync.sdk2.products;
 
 import static com.commercetools.sync.sdk2.products.ActionGroup.ASSETS;
 import static com.commercetools.sync.sdk2.products.ActionGroup.ATTRIBUTES;
@@ -12,8 +12,6 @@ import static com.commercetools.sync.sdk2.products.SyncFilter.ofBlackList;
 import static com.commercetools.sync.sdk2.products.SyncFilter.ofWhiteList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.commercetools.sync.sdk2.products.ActionGroup;
-import com.commercetools.sync.sdk2.products.SyncFilter;
 import java.util.EnumSet;
 import org.junit.jupiter.api.Test;
 

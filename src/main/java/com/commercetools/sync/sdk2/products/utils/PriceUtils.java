@@ -67,6 +67,7 @@ public class PriceUtils {
         .orElse(null);
   }
 
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   public static List<PriceTierDraft> createPriceTierDraft(@Nullable List<PriceTier> priceTiers) {
     if (priceTiers == null) {
       return null;
