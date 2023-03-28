@@ -2,12 +2,12 @@ package com.commercetools.sync.sdk2.products.utils;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static com.commercetools.sync.sdk2.commons.helpers.DefaultCurrencyUnits.EUR;
-import static com.commercetools.sync.sdk2.products.utils.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH;
-import static com.commercetools.sync.sdk2.products.utils.ProductSyncMockUtils.PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH;
-import static com.commercetools.sync.sdk2.products.utils.ProductSyncMockUtils.SIMPLE_PRODUCT_WITH_MASTER_VARIANT_RESOURCE_PATH;
-import static com.commercetools.sync.sdk2.products.utils.ProductSyncMockUtils.SIMPLE_PRODUCT_WITH_MULTIPLE_VARIANTS_RESOURCE_PATH;
-import static com.commercetools.sync.sdk2.products.utils.ProductSyncMockUtils.createProductDraftBuilder;
-import static com.commercetools.sync.sdk2.products.utils.ProductSyncMockUtils.createProductVariantDraftBuilder;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.SIMPLE_PRODUCT_WITH_MASTER_VARIANT_RESOURCE_PATH;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.SIMPLE_PRODUCT_WITH_MULTIPLE_VARIANTS_RESOURCE_PATH;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createProductDraftBuilder;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createProductVariantDraftBuilder;
 import static io.vrap.rmf.base.client.utils.json.JsonUtils.fromInputStream;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -71,6 +71,7 @@ import com.commercetools.api.models.product_type.TextInputHint;
 import com.commercetools.sync.sdk2.products.AttributeMetaData;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.sdk2.products.ProductToProductProjectionWrapper;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
@@ -486,14 +487,14 @@ class ProductSyncUtilsTest {
         .containsOnlyOnce(
             ProductSetAttributeInAllVariantsActionBuilder.of()
                 .name("brandName")
-                .value(brandNameAttribute)
+                .value(brandNameAttribute.getValue())
                 .staged(true)
                 .build());
     assertThat(updateActions.get(0))
         .isEqualTo(
             ProductSetAttributeInAllVariantsActionBuilder.of()
                 .name("brandName")
-                .value(brandNameAttribute)
+                .value(brandNameAttribute.getValue())
                 .staged(true)
                 .build());
     assertThat(updateActions.get(1))
@@ -614,19 +615,19 @@ class ProductSyncUtilsTest {
             ProductSetAttributeActionBuilder.of()
                 .variantId(2L)
                 .name("orderLimit")
-                .value(orderLimitAttribute)
+                .value(orderLimitAttribute.getValue())
                 .staged(true)
                 .build(),
             ProductSetAttributeActionBuilder.of()
                 .variantId(2L)
                 .name("priceInfo")
-                .value(priceInfoAttribute)
+                .value(priceInfoAttribute.getValue())
                 .staged(true)
                 .build(),
             ProductSetAttributeActionBuilder.of()
                 .variantId(2L)
                 .name("brandName")
-                .value(brandNameAttribute)
+                .value(brandNameAttribute.getValue())
                 .staged(true)
                 .build(),
             ProductPublishActionBuilder.of().build());
