@@ -85,7 +85,7 @@ public final class StateServiceImpl
 
   private CompletionStage<Set<State>> fetchMatchingStates(
       @Nonnull final Set<String> stateKeys, final boolean withTransitions) {
-    return fetchMatchingResources(
+    return super.fetchMatchingResources(
         stateKeys,
         State::getKey,
         (keysNotCached) -> {
