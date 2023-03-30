@@ -237,9 +237,9 @@ public class ProductSyncMockUtils {
 
   public static ProductVariantDraftBuilder createProductVariantDraftBuilder(
       final ProductVariant productVariant) {
-    List<AssetDraft> assetDrafts = createAssetDraft(productVariant.getAssets());
-    List<PriceDraft> priceDrafts = createPriceDraft(productVariant.getPrices());
-    List<Attribute> attributes = createAttributes(productVariant.getAttributes());
+    final List<AssetDraft> assetDrafts = createAssetDraft(productVariant.getAssets());
+    final List<PriceDraft> priceDrafts = createPriceDraft(productVariant.getPrices());
+    final List<Attribute> attributes = createAttributes(productVariant.getAttributes());
     return ProductVariantDraftBuilder.of()
         .assets(assetDrafts)
         .attributes(attributes)
@@ -289,26 +289,38 @@ public class ProductSyncMockUtils {
   public static ProductDraft createProductDraft(
       @Nonnull final String jsonResourcePath,
       @Nonnull final ProductTypeReference productTypeReference,
-      @Nonnull final TaxCategoryReference taxCategoryReference,
-      @Nonnull final StateReference stateReference,
+      @Nullable final TaxCategoryReference taxCategoryReference,
+      @Nullable final StateReference stateReference,
       @Nonnull final List<CategoryReference> categoryReferences,
       @Nullable final CategoryOrderHints categoryOrderHints) {
-    ProductTypeResourceIdentifier productTypeRI =
+    final ProductTypeResourceIdentifier productTypeRI =
         ProductTypeResourceIdentifierBuilder.of().id(productTypeReference.getId()).build();
-    return createProductDraftBuilder(jsonResourcePath, productTypeRI)
-        .taxCategory(
-            TaxCategoryResourceIdentifierBuilder.of().id(taxCategoryReference.getId()).build())
-        .state(StateResourceIdentifierBuilder.of().id(stateReference.getId()).build())
-        .categories(
-            categoryReferences.stream()
-                .map(
-                    categoryReference ->
-                        CategoryResourceIdentifierBuilder.of()
-                            .id(categoryReference.getId())
-                            .build())
-                .collect(toList()))
-        .categoryOrderHints(categoryOrderHints)
-        .build();
+    final ProductDraftBuilder productDraftBuilder =
+        createProductDraftBuilder(jsonResourcePath, productTypeRI)
+            .categories(
+                categoryReferences.stream()
+                    .map(
+                        categoryReference ->
+                            CategoryResourceIdentifierBuilder.of()
+                                .id(categoryReference.getId())
+                                .build())
+                    .collect(toList()))
+            .categoryOrderHints(categoryOrderHints);
+
+    if (taxCategoryReference == null) {
+      productDraftBuilder.taxCategory((TaxCategoryResourceIdentifier) null);
+    } else {
+      productDraftBuilder.taxCategory(
+          TaxCategoryResourceIdentifierBuilder.of().id(taxCategoryReference.getId()).build());
+    }
+    if (stateReference == null) {
+      productDraftBuilder.state((StateResourceIdentifier) null);
+    } else {
+      productDraftBuilder.state(
+          StateResourceIdentifierBuilder.of().id(stateReference.getId()).build());
+    }
+
+    return productDraftBuilder.build();
   }
 
   public static ProductProjection createProductFromJson(@Nonnull final String jsonResourcePath) {
