@@ -1,5 +1,13 @@
 {
   "key": "product-without-assets",
+  "id": "product-without-assets",
+  "version": 1,
+  "createdAt": "2023-03-22T20:49:42.955Z",
+  "lastModifiedAt":"2023-03-22T20:49:42.955Z",
+  "productType": {
+    "typeId": "product-type",
+    "id": "479635d2-393f-4096-a506-d430cec250ee"
+  },
   "masterData": {
     "staged": {
       "name": {
