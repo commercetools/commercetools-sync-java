@@ -68,7 +68,11 @@ abstract class BaseServiceWithKey<
       @Nonnull final PostRequestT createCommand) {
 
     return super.createResource(
-        draft, resourceDraftT -> resourceDraftT.getKey(), idMapper, resourceMapper, createCommand);
+        draft,
+        resourceDraftT -> resourceDraftT.getKey(),
+        idMapper,
+        resourceMapper,
+        () -> createCommand);
   }
 
   @Nonnull

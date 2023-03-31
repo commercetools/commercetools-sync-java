@@ -118,7 +118,7 @@ public final class StateServiceImpl
         StateDraft::getKey,
         State::getId,
         Function.identity(),
-        syncOptions.getCtpClient().states().post(stateDraft));
+        () -> syncOptions.getCtpClient().states().post(stateDraft));
   }
 
   @Nonnull

@@ -129,7 +129,7 @@ public final class ProductTypeServiceImpl
         ProductTypeDraft::getKey,
         ProductType::getId,
         Function.identity(),
-        syncOptions.getCtpClient().productTypes().post(productTypeDraft));
+        () -> syncOptions.getCtpClient().productTypes().post(productTypeDraft));
   }
 
   @Nonnull

@@ -94,7 +94,7 @@ public final class CustomerServiceImpl
         CustomerDraft::getKey,
         customerSignInResult -> customerSignInResult.getCustomer().getId(),
         CustomerSignInResult::getCustomer,
-        syncOptions.getCtpClient().customers().post(customerDraft));
+        () -> syncOptions.getCtpClient().customers().post(customerDraft));
   }
 
   @Nonnull

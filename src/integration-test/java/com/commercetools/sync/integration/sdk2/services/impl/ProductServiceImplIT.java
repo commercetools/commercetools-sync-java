@@ -33,8 +33,10 @@ import com.commercetools.api.models.product.ProductChangeNameActionBuilder;
 import com.commercetools.api.models.product.ProductChangeSlugAction;
 import com.commercetools.api.models.product.ProductChangeSlugActionBuilder;
 import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductMixin;
 import com.commercetools.api.models.product.ProductProjection;
 import com.commercetools.api.models.product.ProductProjectionPagedQueryResponse;
+import com.commercetools.api.models.product.ProductProjectionType;
 import com.commercetools.api.models.product.ProductSetKeyActionBuilder;
 import com.commercetools.api.models.product.ProductUpdateAction;
 import com.commercetools.api.models.product.ProductVariantDraftBuilder;
@@ -43,7 +45,6 @@ import com.commercetools.api.models.state.StateResourceIdentifier;
 import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifier;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
-import com.commercetools.sync.sdk2.products.ProductToProductProjectionWrapper;
 import com.commercetools.sync.sdk2.services.ProductService;
 import com.commercetools.sync.sdk2.services.impl.ProductServiceImpl;
 import io.vrap.rmf.base.client.ApiHttpResponse;
@@ -134,7 +135,7 @@ class ProductServiceImplIT {
             .create(productDraft)
             .execute()
             .thenApply(ApiHttpResponse::getBody)
-            .thenApply(p -> new ProductToProductProjectionWrapper(p, true))
+            .thenApply(p -> ProductMixin.toProjection(p, ProductProjectionType.STAGED))
             .toCompletableFuture()
             .join();
 

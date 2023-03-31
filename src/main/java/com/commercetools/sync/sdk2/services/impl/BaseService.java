@@ -38,6 +38,7 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -200,7 +201,7 @@ abstract class BaseService<
       @Nonnull final Function<ResourceDraftT, String> keyMapper,
       @Nonnull final Function<QueryResultT, String> idMapper,
       @Nonnull final Function<QueryResultT, ResourceT> resourceMapper,
-      @Nonnull final PostRequestT createCommand) {
+      @Nonnull final Supplier<PostRequestT> createCommand) {
     final String draftKey = keyMapper.apply(draft);
 
     if (isBlank(draftKey)) {
@@ -211,7 +212,8 @@ abstract class BaseService<
           null);
       return CompletableFuture.completedFuture(Optional.empty());
     } else {
-      return this.executeCreateCommand(draft, draftKey, idMapper, resourceMapper, createCommand);
+      return this.executeCreateCommand(
+          draft, draftKey, idMapper, resourceMapper, createCommand.get());
     }
   }
 

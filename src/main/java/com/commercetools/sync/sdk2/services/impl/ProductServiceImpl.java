@@ -7,13 +7,14 @@ import com.commercetools.api.client.ByProjectKeyProductProjectionsKeyByKeyGet;
 import com.commercetools.api.client.ByProjectKeyProductsPost;
 import com.commercetools.api.models.product.Product;
 import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductMixin;
 import com.commercetools.api.models.product.ProductProjection;
 import com.commercetools.api.models.product.ProductProjectionPagedQueryResponse;
+import com.commercetools.api.models.product.ProductProjectionType;
 import com.commercetools.api.models.product.ProductUpdateAction;
 import com.commercetools.api.models.product.ProductUpdateBuilder;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
-import com.commercetools.sync.sdk2.products.ProductToProductProjectionWrapper;
 import com.commercetools.sync.sdk2.services.ProductService;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.List;
@@ -98,9 +99,8 @@ public final class ProductServiceImpl
         productDraft,
         ProductDraft::getKey,
         Product::getId,
-        // todo: convert product to productprojection
-        product -> new ProductToProductProjectionWrapper(product, true),
-        syncOptions.getCtpClient().products().create(productDraft));
+        product -> ProductMixin.toProjection(product, ProductProjectionType.STAGED),
+        () -> syncOptions.getCtpClient().products().create(productDraft));
   }
 
   @Nonnull
@@ -138,7 +138,8 @@ public final class ProductServiceImpl
                                   .build())
                           .execute())
               .thenApply(ApiHttpResponse::getBody)
-              .thenApply(product -> new ProductToProductProjectionWrapper(product, true));
+              .thenApply(
+                  product -> ProductMixin.toProjection(product, ProductProjectionType.STAGED));
     }
 
     return resultStage;

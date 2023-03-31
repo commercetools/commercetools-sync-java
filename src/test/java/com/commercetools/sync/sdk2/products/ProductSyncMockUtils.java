@@ -34,7 +34,9 @@ import com.commercetools.api.models.product.CategoryOrderHintsBuilder;
 import com.commercetools.api.models.product.Product;
 import com.commercetools.api.models.product.ProductDraft;
 import com.commercetools.api.models.product.ProductDraftBuilder;
+import com.commercetools.api.models.product.ProductMixin;
 import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductProjectionType;
 import com.commercetools.api.models.product.ProductVariant;
 import com.commercetools.api.models.product.ProductVariantDraft;
 import com.commercetools.api.models.product.ProductVariantDraftBuilder;
@@ -325,7 +327,7 @@ public class ProductSyncMockUtils {
 
   public static ProductProjection createProductFromJson(@Nonnull final String jsonResourcePath) {
     final Product productFromJson = createObjectFromResource(jsonResourcePath, Product.class);
-    return new ProductToProductProjectionWrapper(productFromJson, true);
+    return ProductMixin.toProjection(productFromJson, ProductProjectionType.STAGED);
   }
 
   public static ProductDraft createProductDraftFromJson(@Nonnull final String jsonResourcePath) {
