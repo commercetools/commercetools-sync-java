@@ -10,16 +10,15 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.models.category.CategoryReferenceImpl;
-import com.commercetools.api.models.custom_object.CustomObjectReferenceImpl;
+import com.commercetools.api.models.custom_object.CustomObject;
 import com.commercetools.api.models.product.Attribute;
+import com.commercetools.api.models.product.Product;
 import com.commercetools.api.models.product.ProductDraft;
-import com.commercetools.api.models.product.ProductReferenceImpl;
 import com.commercetools.api.models.product.ProductVariantDraft;
 import com.commercetools.api.models.product_type.ProductTypeReferenceImpl;
-import com.commercetools.sync.commons.utils.SyncUtils;
-import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
-import com.commercetools.sync.products.helpers.VariantReferenceResolver;
 import com.commercetools.sync.sdk2.commons.helpers.BaseBatchValidator;
+import com.commercetools.sync.sdk2.commons.utils.SyncUtils;
+import com.commercetools.sync.sdk2.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
@@ -192,8 +191,7 @@ public class ProductBatchValidator
         getReferencedKeysWithReferenceTypeId(variantDraft, ProductTypeReferenceImpl.PRODUCT_TYPE));
 
     referencedKeys.customObjectCompositeIdentifiers.addAll(
-        getReferencedKeysWithReferenceTypeId(
-            variantDraft, CustomObjectReferenceImpl.KEY_VALUE_DOCUMENT));
+        getReferencedKeysWithReferenceTypeId(variantDraft, CustomObject.referenceTypeId().name()));
   }
 
   @Nonnull
@@ -249,7 +247,8 @@ public class ProductBatchValidator
   @Nonnull
   public static Set<String> getReferencedProductKeys(
       @Nonnull final ProductVariantDraft variantDraft) {
-    return getReferencedKeysWithReferenceTypeId(variantDraft, ProductReferenceImpl.PRODUCT);
+    return getReferencedKeysWithReferenceTypeId(
+        variantDraft, Product.typeReference().getType().getTypeName());
   }
 
   private static Set<String> getReferencedKeysWithReferenceTypeId(
