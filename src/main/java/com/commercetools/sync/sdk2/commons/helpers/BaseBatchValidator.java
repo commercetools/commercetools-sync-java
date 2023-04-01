@@ -17,11 +17,14 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public abstract class BaseBatchValidator<
-    D, O extends BaseSyncOptions, S extends BaseSyncStatistics> {
-  private final O syncOptions;
-  private final S syncStatistics;
+    ResourceDraftT,
+    SyncOptionsT extends BaseSyncOptions,
+    SyncStatisticsT extends BaseSyncStatistics> {
+  private final SyncOptionsT syncOptions;
+  private final SyncStatisticsT syncStatistics;
 
-  public BaseBatchValidator(@Nonnull final O syncOptions, @Nonnull final S syncStatistics) {
+  public BaseBatchValidator(
+      @Nonnull final SyncOptionsT syncOptions, @Nonnull final SyncStatisticsT syncStatistics) {
     this.syncOptions = syncOptions;
     this.syncStatistics = syncStatistics;
   }
@@ -36,8 +39,8 @@ public abstract class BaseBatchValidator<
    * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@code D}&gt;, ?&gt; which contains the {@link
    *     Set} of valid drafts and referenced keys.
    */
-  public abstract ImmutablePair<Set<D>, ?> validateAndCollectReferencedKeys(
-      @Nonnull final List<D> drafts);
+  public abstract ImmutablePair<Set<ResourceDraftT>, ?> validateAndCollectReferencedKeys(
+      @Nonnull final List<ResourceDraftT> drafts);
 
   protected <T> void collectReferencedKeyFromResourceIdentifier(
       @Nullable final ResourceIdentifier resourceIdentifier,
