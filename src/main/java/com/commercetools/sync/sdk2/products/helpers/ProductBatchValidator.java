@@ -12,8 +12,8 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import com.commercetools.api.models.category.CategoryReferenceImpl;
 import com.commercetools.api.models.custom_object.CustomObject;
 import com.commercetools.api.models.product.Attribute;
-import com.commercetools.api.models.product.Product;
 import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductReference;
 import com.commercetools.api.models.product.ProductVariantDraft;
 import com.commercetools.api.models.product_type.ProductTypeReferenceImpl;
 import com.commercetools.sync.sdk2.commons.helpers.BaseBatchValidator;
@@ -247,8 +247,7 @@ public class ProductBatchValidator
   @Nonnull
   public static Set<String> getReferencedProductKeys(
       @Nonnull final ProductVariantDraft variantDraft) {
-    return getReferencedKeysWithReferenceTypeId(
-        variantDraft, Product.typeReference().getType().getTypeName());
+    return getReferencedKeysWithReferenceTypeId(variantDraft, ProductReference.PRODUCT);
   }
 
   private static Set<String> getReferencedKeysWithReferenceTypeId(

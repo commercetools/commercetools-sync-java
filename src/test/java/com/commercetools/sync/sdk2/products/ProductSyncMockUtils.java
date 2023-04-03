@@ -35,6 +35,7 @@ import com.commercetools.api.models.product.Product;
 import com.commercetools.api.models.product.ProductDraft;
 import com.commercetools.api.models.product.ProductDraftBuilder;
 import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductReference;
 import com.commercetools.api.models.product.ProductVariant;
 import com.commercetools.api.models.product.ProductVariantDraft;
 import com.commercetools.api.models.product.ProductVariantDraftBuilder;
@@ -571,7 +572,7 @@ public class ProductSyncMockUtils {
    */
   @Nonnull
   public static ObjectNode getProductReferenceWithId(@Nonnull final String id) {
-    return createReferenceObject(id, Product.typeReference().getType().getTypeName());
+    return createReferenceObject(id, ProductReference.PRODUCT);
   }
 
   /**
