@@ -15,6 +15,7 @@ import com.commercetools.api.models.common.PriceTierDraftBuilder;
 import com.commercetools.api.models.customer_group.CustomerGroupReference;
 import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifier;
 import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,7 +23,10 @@ import javax.annotation.Nullable;
 
 public class PriceUtils {
 
-  public static List<PriceDraft> createPriceDraft(List<Price> prices) {
+  public static List<PriceDraft> createPriceDraft(@Nullable List<Price> prices) {
+    if (prices == null) {
+      return Collections.emptyList();
+    }
     return prices.stream()
         .map(
             price ->

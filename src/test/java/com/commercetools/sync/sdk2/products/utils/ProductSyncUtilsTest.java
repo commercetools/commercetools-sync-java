@@ -42,7 +42,9 @@ import com.commercetools.api.models.product.ProductChangeNameActionBuilder;
 import com.commercetools.api.models.product.ProductChangeSlugActionBuilder;
 import com.commercetools.api.models.product.ProductDraft;
 import com.commercetools.api.models.product.ProductDraftBuilder;
+import com.commercetools.api.models.product.ProductMixin;
 import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductProjectionType;
 import com.commercetools.api.models.product.ProductPublishActionBuilder;
 import com.commercetools.api.models.product.ProductRemoveFromCategoryActionBuilder;
 import com.commercetools.api.models.product.ProductRemoveImageActionBuilder;
@@ -71,7 +73,6 @@ import com.commercetools.api.models.product_type.TextInputHint;
 import com.commercetools.sync.sdk2.products.AttributeMetaData;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
-import com.commercetools.sync.sdk2.products.ProductToProductProjectionWrapper;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
@@ -94,7 +95,7 @@ class ProductSyncUtilsTest {
             .getContextClassLoader()
             .getResourceAsStream(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH);
     final Product productFromJson = fromInputStream(resourceAsStream, Product.class);
-    oldProduct = new ProductToProductProjectionWrapper(productFromJson, true);
+    oldProduct = ProductMixin.toProjection(productFromJson, ProductProjectionType.STAGED);
   }
 
   @Test
@@ -517,7 +518,7 @@ class ProductSyncUtilsTest {
             .getContextClassLoader()
             .getResourceAsStream(SIMPLE_PRODUCT_WITH_MULTIPLE_VARIANTS_RESOURCE_PATH);
     final Product productFromJson = fromInputStream(resourceAsStream, Product.class);
-    oldProduct = new ProductToProductProjectionWrapper(productFromJson, true);
+    oldProduct = ProductMixin.toProjection(productFromJson, ProductProjectionType.STAGED);
 
     final Attribute brandNameAttribute =
         AttributeBuilder.of().name("brandName").value("myBrand").build();

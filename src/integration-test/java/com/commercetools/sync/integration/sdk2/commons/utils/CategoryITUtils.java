@@ -24,6 +24,7 @@ import com.commercetools.api.models.type.Type;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.error.NotFoundException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -265,6 +266,13 @@ public final class CategoryITUtils {
                 .delete(category)
                 .execute()
                 .thenAccept(deletedCategory -> keys.add(categoryKey))
+                .handle(
+                    (result, throwable) -> {
+                      if (throwable != null && !(throwable instanceof NotFoundException)) {
+                        return throwable;
+                      }
+                      return result;
+                    })
                 .toCompletableFuture()
                 .join();
           }
