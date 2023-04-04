@@ -101,7 +101,7 @@ public final class CategoryServiceImpl
         CategoryDraft::getKey,
         Category::getId,
         Function.identity(),
-        syncOptions.getCtpClient().categories().post(categoryDraft));
+        () -> syncOptions.getCtpClient().categories().post(categoryDraft));
   }
 
   @Nonnull

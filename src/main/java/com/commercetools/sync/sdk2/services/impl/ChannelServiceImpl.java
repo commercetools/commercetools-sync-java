@@ -72,7 +72,7 @@ public final class ChannelServiceImpl
         ChannelDraft::getKey,
         Channel::getId,
         Function.identity(),
-        syncOptions.getCtpClient().channels().post(channelDraft));
+        () -> syncOptions.getCtpClient().channels().post(channelDraft));
   }
 
   @Nonnull

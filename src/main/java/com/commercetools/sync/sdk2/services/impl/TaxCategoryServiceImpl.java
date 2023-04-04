@@ -97,7 +97,7 @@ public final class TaxCategoryServiceImpl
         TaxCategoryDraft::getKey,
         TaxCategory::getId,
         Function.identity(),
-        syncOptions.getCtpClient().taxCategories().post(taxCategoryDraft));
+        () -> syncOptions.getCtpClient().taxCategories().post(taxCategoryDraft));
   }
 
   @Nonnull
