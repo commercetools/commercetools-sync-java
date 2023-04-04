@@ -9,13 +9,13 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-import com.commercetools.api.models.category.CategoryReferenceImpl;
-import com.commercetools.api.models.custom_object.CustomObject;
+import com.commercetools.api.models.category.CategoryReference;
+import com.commercetools.api.models.custom_object.CustomObjectReference;
 import com.commercetools.api.models.product.Attribute;
 import com.commercetools.api.models.product.ProductDraft;
 import com.commercetools.api.models.product.ProductReference;
 import com.commercetools.api.models.product.ProductVariantDraft;
-import com.commercetools.api.models.product_type.ProductTypeReferenceImpl;
+import com.commercetools.api.models.product_type.ProductTypeReference;
 import com.commercetools.sync.sdk2.commons.helpers.BaseBatchValidator;
 import com.commercetools.sync.sdk2.commons.utils.SyncUtils;
 import com.commercetools.sync.sdk2.customobjects.helpers.CustomObjectCompositeIdentifier;
@@ -185,13 +185,14 @@ public class ProductBatchValidator
     referencedKeys.productKeys.addAll(getReferencedProductKeys(variantDraft));
 
     referencedKeys.categoryKeys.addAll(
-        getReferencedKeysWithReferenceTypeId(variantDraft, CategoryReferenceImpl.CATEGORY));
+        getReferencedKeysWithReferenceTypeId(variantDraft, CategoryReference.CATEGORY));
 
     referencedKeys.productTypeKeys.addAll(
-        getReferencedKeysWithReferenceTypeId(variantDraft, ProductTypeReferenceImpl.PRODUCT_TYPE));
+        getReferencedKeysWithReferenceTypeId(variantDraft, ProductTypeReference.PRODUCT_TYPE));
 
     referencedKeys.customObjectCompositeIdentifiers.addAll(
-        getReferencedKeysWithReferenceTypeId(variantDraft, CustomObject.referenceTypeId().name()));
+        getReferencedKeysWithReferenceTypeId(
+            variantDraft, CustomObjectReference.KEY_VALUE_DOCUMENT));
   }
 
   @Nonnull

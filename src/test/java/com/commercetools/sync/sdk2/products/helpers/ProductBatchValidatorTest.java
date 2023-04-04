@@ -15,7 +15,7 @@ import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
 import com.commercetools.api.models.common.MoneyBuilder;
 import com.commercetools.api.models.common.PriceDraft;
 import com.commercetools.api.models.common.PriceDraftBuilder;
-import com.commercetools.api.models.custom_object.CustomObject;
+import com.commercetools.api.models.custom_object.CustomObjectReference;
 import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
 import com.commercetools.api.models.product.Attribute;
 import com.commercetools.api.models.product.AttributeBuilder;
@@ -496,9 +496,9 @@ class ProductBatchValidatorTest {
     final Attribute referenceSetAttributeDraft =
         getReferenceSetAttributeDraft(
             "foo",
-            createReferenceObject(validIdentifier, CustomObject.referenceTypeId().name()),
-            createReferenceObject(uuid, CustomObject.referenceTypeId().name()),
-            createReferenceObject(invalidIdentifier, CustomObject.referenceTypeId().name()));
+            createReferenceObject(validIdentifier, CustomObjectReference.KEY_VALUE_DOCUMENT),
+            createReferenceObject(uuid, CustomObjectReference.KEY_VALUE_DOCUMENT),
+            createReferenceObject(invalidIdentifier, CustomObjectReference.KEY_VALUE_DOCUMENT));
 
     final List<Attribute> attributes = asList(referenceSetAttributeDraft);
 

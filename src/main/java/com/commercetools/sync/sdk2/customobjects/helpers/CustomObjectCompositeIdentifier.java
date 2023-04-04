@@ -3,8 +3,8 @@ package com.commercetools.sync.sdk2.customobjects.helpers;
 import static java.lang.String.format;
 
 import com.commercetools.api.models.custom_object.CustomObject;
-import com.commercetools.api.models.custom_object.CustomObjectDraftBuilder;
 import com.commercetools.api.models.custom_object.CustomObjectDraft;
+import com.commercetools.api.models.custom_object.CustomObjectDraftBuilder;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
@@ -31,20 +31,17 @@ public final class CustomObjectCompositeIdentifier {
   }
 
   /**
-   * Given a {@link CustomObjectDraft}, creates a {@link
-   * CustomObjectCompositeIdentifier} using the following fields from the supplied {@link
-   * CustomObjectDraft}:
+   * Given a {@link CustomObjectDraft}, creates a {@link CustomObjectCompositeIdentifier} using the
+   * following fields from the supplied {@link CustomObjectDraft}:
    *
    * <ol>
-   *   <li>{@link CustomObjectCompositeIdentifier#key}: key of {@link
-   *       CustomObjectDraft#getKey()}
+   *   <li>{@link CustomObjectCompositeIdentifier#key}: key of {@link CustomObjectDraft#getKey()}
    *   <li>{@link CustomObjectCompositeIdentifier#container}: container of {@link
    *       CustomObjectDraft#getContainer()}
    * </ol>
    *
    * @param customObjectDraftBuilder a composite id is built using its fields.
-   * @return a composite id comprised of the fields of the supplied {@link
-   *     CustomObjectDraft}.
+   * @return a composite id comprised of the fields of the supplied {@link CustomObjectDraft}.
    */
   @Nonnull
   public static CustomObjectCompositeIdentifier of(
@@ -54,20 +51,17 @@ public final class CustomObjectCompositeIdentifier {
   }
 
   /**
-   * Given a {@link CustomObjectDraft}, creates a {@link
-   * CustomObjectCompositeIdentifier} using the following fields from the supplied {@link
-   * CustomObject}:
+   * Given a {@link CustomObjectDraft}, creates a {@link CustomObjectCompositeIdentifier} using the
+   * following fields from the supplied {@link CustomObject}:
    *
    * <ol>
-   *   <li>{@link CustomObjectCompositeIdentifier#key}: key of {@link
-   *       CustomObject#getKey()}
+   *   <li>{@link CustomObjectCompositeIdentifier#key}: key of {@link CustomObject#getKey()}
    *   <li>{@link CustomObjectCompositeIdentifier#container}: container of {@link
    *       CustomObject#getContainer()}
    * </ol>
    *
    * @param customObject a composite id is built using its fields.
-   * @return a composite id comprised of the fields of the supplied {@link
-   *     CustomObject}.
+   * @return a composite id comprised of the fields of the supplied {@link CustomObject}.
    */
   @Nonnull
   public static CustomObjectCompositeIdentifier of(@Nonnull final CustomObject customObject) {
