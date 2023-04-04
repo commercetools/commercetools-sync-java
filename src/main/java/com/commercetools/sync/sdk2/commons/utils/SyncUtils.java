@@ -1,15 +1,28 @@
 package com.commercetools.sync.sdk2.commons.utils;
 
-import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.models.WithKey;
+import com.commercetools.api.models.channel.ChannelReference;
+import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
+import com.commercetools.api.models.common.Reference;
+import com.commercetools.api.models.common.ResourceIdentifier;
+import com.commercetools.api.models.customer_group.CustomerGroupReference;
+import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
+import com.commercetools.api.models.product_type.ProductTypeReference;
+import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
+import com.commercetools.api.models.state.StateReference;
+import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
+import com.commercetools.api.models.tax_category.TaxCategoryReference;
+import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifierBuilder;
+import com.commercetools.api.models.type.TypeReference;
+import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringUtils;
 
 public final class SyncUtils {
   private static final String UUID_REGEX =
@@ -44,7 +57,6 @@ public final class SyncUtils {
    * <p>This method expects the passed supplier to either
    *
    * @param reference the reference of the resource to check if it's cached.
-   * @param <T> the type of the resource.
    * @param keyInReferenceSupplier the supplier to execute and return its result if the {@code
    *     reference} was cached.
    * @param referenceIdToKeyCache the instance that manages cache.
@@ -52,9 +64,9 @@ public final class SyncUtils {
    *     was in cache. Otherwise, it returns the supplied reference as is.
    */
   @Nullable
-  public static <T> Reference<T> getReferenceWithKeyReplaced(
-      @Nullable final Reference<T> reference,
-      @Nonnull final Supplier<Reference<T>> keyInReferenceSupplier,
+  public static Reference getReferenceWithKeyReplaced(
+      @Nullable final Reference reference,
+      @Nonnull final Supplier<Reference> keyInReferenceSupplier,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
     if (reference != null) {
@@ -73,25 +85,67 @@ public final class SyncUtils {
    * return null if the reference id was not in the map.
    *
    * @param reference the reference of the resource to check if it's cached.
-   * @param <T> the type of the resource.
    * @param referenceIdToKeyCache the instance that manages cache.
    * @return returns the resource identifier with key if the {@code reference} id was in cache.
    *     Otherwise, it returns the resource identifier with id.
    */
   @Nullable
-  public static <T extends WithKey> ResourceIdentifier<T> getResourceIdentifierWithKey(
-      @Nullable final Reference<T> reference,
-      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
+  public static ResourceIdentifier getResourceIdentifierWithKey(
+      @Nullable final Reference reference, @Nonnull ReferenceIdToKeyCache referenceIdToKeyCache) {
+    return Optional.ofNullable(reference)
+        .map(
+            ref -> {
+              final String id = ref.getId();
+              if (ref instanceof ProductTypeReference) {
+                return getResourceIdentifierWithKey(
+                    id,
+                    referenceIdToKeyCache.get(id),
+                    (i, k) -> ProductTypeResourceIdentifierBuilder.of().id(i).key(k).build());
+              }
+              if (ref instanceof TaxCategoryReference) {
+                return getResourceIdentifierWithKey(
+                    id,
+                    referenceIdToKeyCache.get(id),
+                    (i, k) -> TaxCategoryResourceIdentifierBuilder.of().id(i).key(k).build());
+              }
+              if (ref instanceof StateReference) {
+                return getResourceIdentifierWithKey(
+                    id,
+                    referenceIdToKeyCache.get(id),
+                    (i, k) -> StateResourceIdentifierBuilder.of().id(i).key(k).build());
+              }
+              if (ref instanceof TypeReference) {
+                return getResourceIdentifierWithKey(
+                    id,
+                    referenceIdToKeyCache.get(id),
+                    (i, k) -> TypeResourceIdentifierBuilder.of().id(i).key(k).build());
+              }
+              if (ref instanceof ChannelReference) {
+                return getResourceIdentifierWithKey(
+                    id,
+                    referenceIdToKeyCache.get(id),
+                    (i, k) -> ChannelResourceIdentifierBuilder.of().id(i).key(k).build());
+              }
+              if (ref instanceof CustomerGroupReference) {
+                return getResourceIdentifierWithKey(
+                    id,
+                    referenceIdToKeyCache.get(id),
+                    (i, k) -> CustomerGroupResourceIdentifierBuilder.of().id(i).key(k).build());
+              }
+              return ref.toResourceIdentifier();
+            })
+        .orElse(null);
+  }
 
-    if (reference != null) {
-      final String id = reference.getId();
-      if (referenceIdToKeyCache.containsKey(id)) {
-        return ResourceIdentifier.ofKey(referenceIdToKeyCache.get(id));
-      }
-      return ResourceIdentifier.ofId(id);
+  private static ResourceIdentifier getResourceIdentifierWithKey(
+      @Nonnull final String id,
+      @Nullable final String key,
+      final BiFunction<String, String, ResourceIdentifier> toResourceIdentifier) {
+
+    if (!StringUtils.isEmpty(key)) {
+      return toResourceIdentifier.apply(null, key);
     }
-
-    return null;
+    return toResourceIdentifier.apply(id, null);
   }
 
   /**

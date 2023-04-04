@@ -1,4 +1,4 @@
-package com.commercetools.sync.sdk2.products;
+package com.commercetools.sync.sdk2.products.utils;
 
 import static com.commercetools.sync.sdk2.products.utils.CustomFieldsUtils.createCustomFieldsDraft;
 
