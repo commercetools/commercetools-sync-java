@@ -15,14 +15,14 @@ public abstract class BaseSyncOptionsBuilder<
     SyncOptionsBuilderT extends
         BaseSyncOptionsBuilder<
                 SyncOptionsBuilderT,
-                BaseSyncOptionsT,
+                SyncOptionsT,
                 ResourceT,
                 ResourceDraftT,
                 ResourceUpdateActionT>,
-    BaseSyncOptionsT extends BaseSyncOptions,
+    SyncOptionsT extends BaseSyncOptions<ResourceT, ResourceDraftT, ResourceUpdateActionT>,
     ResourceT,
     ResourceDraftT,
-    ResourceUpdateActionT extends ResourceUpdateAction> {
+    ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>> {
 
   protected ProjectApiRoot ctpClient;
   protected QuadConsumer<
@@ -161,7 +161,7 @@ public abstract class BaseSyncOptionsBuilder<
    *
    * @return new instance of S which extends {@link BaseSyncOptions}
    */
-  protected abstract BaseSyncOptionsT build();
+  protected abstract SyncOptionsT build();
 
   /**
    * Returns {@code this} instance of {@code T}, which extends {@link BaseSyncOptionsBuilder}. The
