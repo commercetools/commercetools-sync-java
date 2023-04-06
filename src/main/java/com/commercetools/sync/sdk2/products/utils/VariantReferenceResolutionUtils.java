@@ -113,7 +113,7 @@ public final class VariantReferenceResolutionUtils {
                     .filter(
                         attribute ->
                             attribute.getValue() instanceof List
-                                && Arrays.asList(attribute.getValue()).stream()
+                                && ((List) attribute.getValue()).stream()
                                     .anyMatch(
                                         setAttr -> setAttr instanceof ProductTypeReferenceImpl))
                     .map(
@@ -122,7 +122,7 @@ public final class VariantReferenceResolutionUtils {
                                 .map(
                                     productReference ->
                                         getResourceIdentifierWithKey(
-                                            (ProductTypeReference) productReference,
+                                            productReference,
                                             referenceIdToKeyCache))
                                 .collect(toList()))
                     .map(
