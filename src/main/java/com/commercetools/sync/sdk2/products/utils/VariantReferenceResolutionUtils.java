@@ -6,12 +6,7 @@ import static com.commercetools.sync.sdk2.products.utils.PriceUtils.createPriceD
 import static java.util.stream.Collectors.toList;
 
 import com.commercetools.api.models.common.PriceDraft;
-import com.commercetools.api.models.product.Attribute;
-import com.commercetools.api.models.product.AttributeAccessor;
-import com.commercetools.api.models.product.AttributeBuilder;
-import com.commercetools.api.models.product.ProductVariant;
-import com.commercetools.api.models.product.ProductVariantDraft;
-import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.product.*;
 import com.commercetools.api.models.product_type.ProductTypeReference;
 import com.commercetools.api.models.product_type.ProductTypeReferenceImpl;
 import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
@@ -101,7 +96,10 @@ public final class VariantReferenceResolutionUtils {
             .map(attribute -> (ProductTypeReference) attribute.getValue())
             .map(
                 productReference ->
-                    getResourceIdentifierWithKey(productReference, referenceIdToKeyCache))
+                    getResourceIdentifierWithKey(
+                        productReference,
+                        referenceIdToKeyCache,
+                        (id, key) -> ProductResourceIdentifierBuilder.of().id(id).key(key).build()))
             .map(
                 productTypeResourceIdentifier ->
                     AttributeBuilder.of().value(productTypeResourceIdentifier).build())
@@ -122,7 +120,13 @@ public final class VariantReferenceResolutionUtils {
                                 .map(
                                     productReference ->
                                         getResourceIdentifierWithKey(
-                                            productReference, referenceIdToKeyCache))
+                                            productReference,
+                                            referenceIdToKeyCache,
+                                            (id, key) ->
+                                                ProductResourceIdentifierBuilder.of()
+                                                    .id(id)
+                                                    .key(key)
+                                                    .build()))
                                 .collect(toList()))
                     .map(
                         productTypeResourceIdentifiers ->

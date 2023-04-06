@@ -25,6 +25,7 @@ import com.commercetools.api.models.product_type.ProductTypeReference;
 import com.commercetools.api.models.product_type.ProductTypeResourceIdentifier;
 import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
 import com.commercetools.api.models.state.StateResourceIdentifier;
+import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
 import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifier;
 import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifierBuilder;
 import com.commercetools.sync.sdk2.commons.helpers.CategoryResourceIdentifierPair;
@@ -148,16 +149,32 @@ public final class ProductReferenceResolutionUtils {
                   .productType(
                       (ProductTypeResourceIdentifier)
                           getResourceIdentifierWithKey(
-                              product.getProductType(), referenceIdToKeyCache))
+                              product.getProductType(),
+                              referenceIdToKeyCache,
+                              (id, key) ->
+                                  ProductTypeResourceIdentifierBuilder.of()
+                                      .id(id)
+                                      .key(key)
+                                      .build()))
                   .categories(categoryResourceIdentifiers)
                   .categoryOrderHints(categoryOrderHintsWithKeys)
                   .taxCategory(
                       (TaxCategoryResourceIdentifier)
                           getResourceIdentifierWithKey(
-                              product.getTaxCategory(), referenceIdToKeyCache))
+                              product.getTaxCategory(),
+                              referenceIdToKeyCache,
+                              (id, key) ->
+                                  TaxCategoryResourceIdentifierBuilder.of()
+                                      .id(id)
+                                      .key(key)
+                                      .build()))
                   .state(
                       (StateResourceIdentifier)
-                          getResourceIdentifierWithKey(product.getState(), referenceIdToKeyCache))
+                          getResourceIdentifierWithKey(
+                              product.getState(),
+                              referenceIdToKeyCache,
+                              (id, key) ->
+                                  StateResourceIdentifierBuilder.of().id(id).key(key).build()))
                   .build();
             })
         .collect(Collectors.toList());

@@ -1,19 +1,7 @@
 package com.commercetools.sync.sdk2.commons.utils;
 
-import com.commercetools.api.models.channel.ChannelReference;
-import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
 import com.commercetools.api.models.common.Reference;
 import com.commercetools.api.models.common.ResourceIdentifier;
-import com.commercetools.api.models.customer_group.CustomerGroupReference;
-import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
-import com.commercetools.api.models.product_type.ProductTypeReference;
-import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
-import com.commercetools.api.models.state.StateReference;
-import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
-import com.commercetools.api.models.tax_category.TaxCategoryReference;
-import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifierBuilder;
-import com.commercetools.api.models.type.TypeReference;
-import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -86,53 +74,22 @@ public final class SyncUtils {
    *
    * @param reference the reference of the resource to check if it's cached.
    * @param referenceIdToKeyCache the instance that manages cache.
+   * @param toResourceIdentifierWithIdAndKey
    * @return returns the resource identifier with key if the {@code reference} id was in cache.
    *     Otherwise, it returns the resource identifier with id.
    */
   @Nullable
   public static ResourceIdentifier getResourceIdentifierWithKey(
-      @Nullable final Reference reference, @Nonnull ReferenceIdToKeyCache referenceIdToKeyCache) {
+      @Nullable final Reference reference,
+      @Nonnull ReferenceIdToKeyCache referenceIdToKeyCache,
+      final @Nonnull BiFunction<String, String, ResourceIdentifier>
+              toResourceIdentifierWithIdAndKey) {
     return Optional.ofNullable(reference)
         .map(
             ref -> {
               final String id = ref.getId();
-              if (ref instanceof ProductTypeReference) {
-                return getResourceIdentifierWithKey(
-                    id,
-                    referenceIdToKeyCache.get(id),
-                    (i, k) -> ProductTypeResourceIdentifierBuilder.of().id(i).key(k).build());
-              }
-              if (ref instanceof TaxCategoryReference) {
-                return getResourceIdentifierWithKey(
-                    id,
-                    referenceIdToKeyCache.get(id),
-                    (i, k) -> TaxCategoryResourceIdentifierBuilder.of().id(i).key(k).build());
-              }
-              if (ref instanceof StateReference) {
-                return getResourceIdentifierWithKey(
-                    id,
-                    referenceIdToKeyCache.get(id),
-                    (i, k) -> StateResourceIdentifierBuilder.of().id(i).key(k).build());
-              }
-              if (ref instanceof TypeReference) {
-                return getResourceIdentifierWithKey(
-                    id,
-                    referenceIdToKeyCache.get(id),
-                    (i, k) -> TypeResourceIdentifierBuilder.of().id(i).key(k).build());
-              }
-              if (ref instanceof ChannelReference) {
-                return getResourceIdentifierWithKey(
-                    id,
-                    referenceIdToKeyCache.get(id),
-                    (i, k) -> ChannelResourceIdentifierBuilder.of().id(i).key(k).build());
-              }
-              if (ref instanceof CustomerGroupReference) {
-                return getResourceIdentifierWithKey(
-                    id,
-                    referenceIdToKeyCache.get(id),
-                    (i, k) -> CustomerGroupResourceIdentifierBuilder.of().id(i).key(k).build());
-              }
-              return ref.toResourceIdentifier();
+              return getResourceIdentifierWithKey(
+                  id, referenceIdToKeyCache.get(id), toResourceIdentifierWithIdAndKey);
             })
         .orElse(null);
   }

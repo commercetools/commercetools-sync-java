@@ -3,10 +3,7 @@ package com.commercetools.sync.sdk2.commons.utils;
 import static com.commercetools.sync.sdk2.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 
 import com.commercetools.api.models.Customizable;
-import com.commercetools.api.models.type.CustomFields;
-import com.commercetools.api.models.type.CustomFieldsDraft;
-import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
-import com.commercetools.api.models.type.TypeResourceIdentifier;
+import com.commercetools.api.models.type.*;
 import com.commercetools.sync.sdk2.commons.models.Custom;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -71,7 +68,13 @@ public final class CustomTypeReferenceResolutionUtils {
                                 typeReference ->
                                     (TypeResourceIdentifier)
                                         getResourceIdentifierWithKey(
-                                            typeReference, referenceIdToKeyCache))
+                                            typeReference,
+                                            referenceIdToKeyCache,
+                                            (id, key) ->
+                                                TypeResourceIdentifierBuilder.of()
+                                                    .id(id)
+                                                    .key(key)
+                                                    .build()))
                             .orElse(null))
                     .build())
         .orElse(null);
