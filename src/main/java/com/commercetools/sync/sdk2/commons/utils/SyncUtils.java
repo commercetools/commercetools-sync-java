@@ -1,15 +1,16 @@
 package com.commercetools.sync.sdk2.commons.utils;
 
-import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.models.WithKey;
+import com.commercetools.api.models.common.Reference;
+import com.commercetools.api.models.common.ResourceIdentifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringUtils;
 
 public final class SyncUtils {
   private static final String UUID_REGEX =
@@ -44,7 +45,6 @@ public final class SyncUtils {
    * <p>This method expects the passed supplier to either
    *
    * @param reference the reference of the resource to check if it's cached.
-   * @param <T> the type of the resource.
    * @param keyInReferenceSupplier the supplier to execute and return its result if the {@code
    *     reference} was cached.
    * @param referenceIdToKeyCache the instance that manages cache.
@@ -52,9 +52,9 @@ public final class SyncUtils {
    *     was in cache. Otherwise, it returns the supplied reference as is.
    */
   @Nullable
-  public static <T> Reference<T> getReferenceWithKeyReplaced(
-      @Nullable final Reference<T> reference,
-      @Nonnull final Supplier<Reference<T>> keyInReferenceSupplier,
+  public static Reference getReferenceWithKeyReplaced(
+      @Nullable final Reference reference,
+      @Nonnull final Supplier<Reference> keyInReferenceSupplier,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
     if (reference != null) {
@@ -73,25 +73,36 @@ public final class SyncUtils {
    * return null if the reference id was not in the map.
    *
    * @param reference the reference of the resource to check if it's cached.
-   * @param <T> the type of the resource.
    * @param referenceIdToKeyCache the instance that manages cache.
+   * @param toResourceIdentifierWithIdAndKey
    * @return returns the resource identifier with key if the {@code reference} id was in cache.
    *     Otherwise, it returns the resource identifier with id.
    */
   @Nullable
-  public static <T extends WithKey> ResourceIdentifier<T> getResourceIdentifierWithKey(
-      @Nullable final Reference<T> reference,
-      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
+  public static ResourceIdentifier getResourceIdentifierWithKey(
+      @Nullable final Reference reference,
+      @Nonnull ReferenceIdToKeyCache referenceIdToKeyCache,
+      final @Nonnull BiFunction<String, String, ResourceIdentifier>
+              toResourceIdentifierWithIdAndKey) {
+    return Optional.ofNullable(reference)
+        .map(
+            ref -> {
+              final String id = ref.getId();
+              return getResourceIdentifierWithKey(
+                  id, referenceIdToKeyCache.get(id), toResourceIdentifierWithIdAndKey);
+            })
+        .orElse(null);
+  }
 
-    if (reference != null) {
-      final String id = reference.getId();
-      if (referenceIdToKeyCache.containsKey(id)) {
-        return ResourceIdentifier.ofKey(referenceIdToKeyCache.get(id));
-      }
-      return ResourceIdentifier.ofId(id);
+  private static ResourceIdentifier getResourceIdentifierWithKey(
+      @Nonnull final String id,
+      @Nullable final String key,
+      final BiFunction<String, String, ResourceIdentifier> toResourceIdentifier) {
+
+    if (!StringUtils.isEmpty(key)) {
+      return toResourceIdentifier.apply(null, key);
     }
-
-    return null;
+    return toResourceIdentifier.apply(id, null);
   }
 
   /**
