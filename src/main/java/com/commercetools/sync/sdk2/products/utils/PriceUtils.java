@@ -43,12 +43,12 @@ public class PriceUtils {
                 PriceDraftBuilder.of()
                     .channel(
                         createChannelResourceIdentifier(
-                            price.getChannel(), Optional.ofNullable(referenceIdToKeyCache)))
+                            price.getChannel(), referenceIdToKeyCache))
                     .country(price.getCountry())
                     .custom(createCustomFieldsDraft(price.getCustom(), referenceIdToKeyCache))
                     .customerGroup(
                         createCustomerGroupResourceIdentifier(
-                            price.getCustomerGroup(), Optional.ofNullable(referenceIdToKeyCache)))
+                            price.getCustomerGroup(), referenceIdToKeyCache))
                     .discounted(createDiscountedPriceDraft(price.getDiscounted()))
                     .key(price.getKey())
                     .validFrom(price.getValidFrom())
@@ -60,33 +60,33 @@ public class PriceUtils {
   }
 
   private static ChannelResourceIdentifier createChannelResourceIdentifier(
-      @Nullable ChannelReference channelReference,
-      Optional<ReferenceIdToKeyCache> referenceIdToKeyCacheOptional) {
-    return (ChannelResourceIdentifier)
-        referenceIdToKeyCacheOptional
-            .map(cache -> getResourceIdentifierWithKey(channelReference, cache))
-            .orElse(
-                channelReference != null
-                    ? ChannelResourceIdentifierBuilder.of().id(channelReference.getId()).build()
-                    : null);
+      @Nullable final ChannelReference channelReference,
+      @Nullable final ReferenceIdToKeyCache referenceIdToKeyCache) {
+    ChannelResourceIdentifier channelResourceIdentifier = null;
+    if (referenceIdToKeyCache !=null) {
+      channelResourceIdentifier =
+          (ChannelResourceIdentifier) getResourceIdentifierWithKey(channelReference, referenceIdToKeyCache);
+    } else if (channelReference != null) {
+      channelResourceIdentifier = ChannelResourceIdentifierBuilder.of().id(channelReference.getId()).build();
+    }
+    return channelResourceIdentifier;
   }
 
   private static CustomerGroupResourceIdentifier createCustomerGroupResourceIdentifier(
-      @Nullable CustomerGroupReference customerGroupReference,
-      Optional<ReferenceIdToKeyCache> referenceIdToKeyCacheOptional) {
-    return (CustomerGroupResourceIdentifier)
-        referenceIdToKeyCacheOptional
-            .map(cache -> getResourceIdentifierWithKey(customerGroupReference, cache))
-            .orElse(
-                customerGroupReference != null
-                    ? CustomerGroupResourceIdentifierBuilder.of()
-                        .id(customerGroupReference.getId())
-                        .build()
-                    : null);
+      @Nullable final CustomerGroupReference customerGroupReference,
+      @Nullable final ReferenceIdToKeyCache referenceIdToKeyCache) {
+    CustomerGroupResourceIdentifier customerGroupResourceIdentifier = null;
+    if (referenceIdToKeyCache !=null) {
+      customerGroupResourceIdentifier =
+          (CustomerGroupResourceIdentifier) getResourceIdentifierWithKey(customerGroupReference, referenceIdToKeyCache);
+    } else if (customerGroupReference != null) {
+      customerGroupResourceIdentifier = CustomerGroupResourceIdentifierBuilder.of().id(customerGroupReference.getId()).build();
+    }
+    return customerGroupResourceIdentifier;
   }
 
   private static DiscountedPriceDraft createDiscountedPriceDraft(
-      @Nullable DiscountedPrice discountedPrice) {
+      @Nullable final DiscountedPrice discountedPrice) {
     return Optional.ofNullable(discountedPrice)
         .map(
             price ->
@@ -98,7 +98,7 @@ public class PriceUtils {
   }
 
   @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
-  public static List<PriceTierDraft> createPriceTierDraft(@Nullable List<PriceTier> priceTiers) {
+  public static List<PriceTierDraft> createPriceTierDraft(@Nullable final List<PriceTier> priceTiers) {
     if (priceTiers == null) {
       return null;
     }
