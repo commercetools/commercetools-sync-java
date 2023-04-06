@@ -35,7 +35,7 @@ public final class CustomTypeReferenceResolutionUtils {
    *     has no or null {@link Custom}, then it returns {@code null}.
    */
   @Nullable
-  public static <T extends Customizable> CustomFieldsDraft mapToCustomFieldsDraft(
+  public static <T extends Customizable<T>> CustomFieldsDraft mapToCustomFieldsDraft(
       @Nonnull final T resource, @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     final CustomFields custom = resource.getCustom();
     return mapToCustomFieldsDraft(custom, referenceIdToKeyCache);
