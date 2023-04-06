@@ -13,7 +13,8 @@ import javax.annotation.Nullable;
 public class CustomFieldsUtils {
 
   public static CustomFieldsDraft createCustomFieldsDraft(
-      @Nullable final CustomFields customFields, @Nullable final ReferenceIdToKeyCache referenceIdToKeyCache) {
+      @Nullable final CustomFields customFields,
+      @Nullable final ReferenceIdToKeyCache referenceIdToKeyCache) {
     return referenceIdToKeyCache != null
         ? mapToCustomFieldsDraft(customFields, referenceIdToKeyCache)
         : createCustomFieldsDraft(customFields);

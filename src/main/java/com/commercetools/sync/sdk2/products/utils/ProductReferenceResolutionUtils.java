@@ -125,7 +125,8 @@ public final class ProductReferenceResolutionUtils {
         .filter(Objects::nonNull)
         .map(
             product -> {
-              final ProductDraftBuilder productDraftBuilder = getDraftBuilderFromStagedProduct(product);
+              final ProductDraftBuilder productDraftBuilder =
+                  getDraftBuilderFromStagedProduct(product);
 
               final CategoryResourceIdentifierPair categoryResourceIdentifierPair =
                   mapToCategoryReferencePair(product, referenceIdToKeyCache);

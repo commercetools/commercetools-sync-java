@@ -42,8 +42,7 @@ public class PriceUtils {
             price ->
                 PriceDraftBuilder.of()
                     .channel(
-                        createChannelResourceIdentifier(
-                            price.getChannel(), referenceIdToKeyCache))
+                        createChannelResourceIdentifier(price.getChannel(), referenceIdToKeyCache))
                     .country(price.getCountry())
                     .custom(createCustomFieldsDraft(price.getCustom(), referenceIdToKeyCache))
                     .customerGroup(
@@ -63,11 +62,13 @@ public class PriceUtils {
       @Nullable final ChannelReference channelReference,
       @Nullable final ReferenceIdToKeyCache referenceIdToKeyCache) {
     ChannelResourceIdentifier channelResourceIdentifier = null;
-    if (referenceIdToKeyCache !=null) {
+    if (referenceIdToKeyCache != null) {
       channelResourceIdentifier =
-          (ChannelResourceIdentifier) getResourceIdentifierWithKey(channelReference, referenceIdToKeyCache);
+          (ChannelResourceIdentifier)
+              getResourceIdentifierWithKey(channelReference, referenceIdToKeyCache);
     } else if (channelReference != null) {
-      channelResourceIdentifier = ChannelResourceIdentifierBuilder.of().id(channelReference.getId()).build();
+      channelResourceIdentifier =
+          ChannelResourceIdentifierBuilder.of().id(channelReference.getId()).build();
     }
     return channelResourceIdentifier;
   }
@@ -76,11 +77,13 @@ public class PriceUtils {
       @Nullable final CustomerGroupReference customerGroupReference,
       @Nullable final ReferenceIdToKeyCache referenceIdToKeyCache) {
     CustomerGroupResourceIdentifier customerGroupResourceIdentifier = null;
-    if (referenceIdToKeyCache !=null) {
+    if (referenceIdToKeyCache != null) {
       customerGroupResourceIdentifier =
-          (CustomerGroupResourceIdentifier) getResourceIdentifierWithKey(customerGroupReference, referenceIdToKeyCache);
+          (CustomerGroupResourceIdentifier)
+              getResourceIdentifierWithKey(customerGroupReference, referenceIdToKeyCache);
     } else if (customerGroupReference != null) {
-      customerGroupResourceIdentifier = CustomerGroupResourceIdentifierBuilder.of().id(customerGroupReference.getId()).build();
+      customerGroupResourceIdentifier =
+          CustomerGroupResourceIdentifierBuilder.of().id(customerGroupReference.getId()).build();
     }
     return customerGroupResourceIdentifier;
   }
@@ -98,7 +101,8 @@ public class PriceUtils {
   }
 
   @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
-  public static List<PriceTierDraft> createPriceTierDraft(@Nullable final List<PriceTier> priceTiers) {
+  public static List<PriceTierDraft> createPriceTierDraft(
+      @Nullable final List<PriceTier> priceTiers) {
     if (priceTiers == null) {
       return null;
     }

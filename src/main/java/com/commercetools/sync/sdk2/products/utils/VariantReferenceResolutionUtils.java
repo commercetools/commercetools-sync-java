@@ -16,7 +16,6 @@ import com.commercetools.api.models.product_type.ProductTypeReference;
 import com.commercetools.api.models.product_type.ProductTypeReferenceImpl;
 import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -113,17 +112,17 @@ public final class VariantReferenceResolutionUtils {
                     .filter(
                         attribute ->
                             attribute.getValue() instanceof List
-                                && ((List) attribute.getValue()).stream()
-                                    .anyMatch(
-                                        setAttr -> setAttr instanceof ProductTypeReferenceImpl))
+                                && ((List) attribute.getValue())
+                                    .stream()
+                                        .anyMatch(
+                                            setAttr -> setAttr instanceof ProductTypeReferenceImpl))
                     .map(
                         attribute ->
                             AttributeAccessor.asSetReference(attribute).stream()
                                 .map(
                                     productReference ->
                                         getResourceIdentifierWithKey(
-                                            productReference,
-                                            referenceIdToKeyCache))
+                                            productReference, referenceIdToKeyCache))
                                 .collect(toList()))
                     .map(
                         productTypeResourceIdentifiers ->
