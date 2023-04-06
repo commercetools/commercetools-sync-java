@@ -125,7 +125,7 @@ public final class ProductReferenceResolutionUtils {
         .filter(Objects::nonNull)
         .map(
             product -> {
-              final ProductDraft productDraft = getDraftBuilderFromStagedProduct(product).build();
+              final ProductDraftBuilder productDraftBuilder = getDraftBuilderFromStagedProduct(product);
 
               final CategoryResourceIdentifierPair categoryResourceIdentifierPair =
                   mapToCategoryReferencePair(product, referenceIdToKeyCache);
@@ -141,7 +141,7 @@ public final class ProductReferenceResolutionUtils {
               final ProductVariantDraft masterVariantDraftWithKeys =
                   variantDraftsWithKeys.remove(0);
 
-              return ProductDraftBuilder.of(productDraft)
+              return productDraftBuilder
                   .masterVariant(masterVariantDraftWithKeys)
                   .variants(variantDraftsWithKeys)
                   .productType(
@@ -207,9 +207,9 @@ public final class ProductReferenceResolutionUtils {
   }
 
   static ProductVariantDraft getProductVariantDraft(@Nonnull final ProductVariant productVariant) {
-    List<AssetDraft> assetDrafts = createAssetDraft(productVariant.getAssets());
-    List<PriceDraft> priceDrafts = createPriceDraft(productVariant.getPrices());
-    List<Attribute> attributes = createAttributes(productVariant.getAttributes());
+    final List<AssetDraft> assetDrafts = createAssetDraft(productVariant.getAssets());
+    final List<PriceDraft> priceDrafts = createPriceDraft(productVariant.getPrices());
+    final List<Attribute> attributes = createAttributes(productVariant.getAttributes());
     return ProductVariantDraftBuilder.of()
         .assets(assetDrafts)
         .attributes(attributes)
@@ -220,7 +220,7 @@ public final class ProductReferenceResolutionUtils {
         .build();
   }
 
-  public static List<Attribute> createAttributes(List<Attribute> attributes) {
+  public static List<Attribute> createAttributes(final List<Attribute> attributes) {
     return attributes.stream()
         .map(attribute -> AttributeBuilder.of(attribute).build())
         .collect(Collectors.toList());
