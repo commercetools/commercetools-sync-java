@@ -9,8 +9,6 @@ import static org.mockito.Mockito.when;
 
 import com.commercetools.api.models.channel.Channel;
 import com.commercetools.api.models.channel.ChannelReference;
-import com.commercetools.api.models.channel.ChannelReferenceBuilder;
-import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
 import com.commercetools.api.models.channel.ChannelRoleEnum;
 import com.commercetools.api.models.inventory.InventoryEntry;
 import com.commercetools.api.models.type.CustomFields;
@@ -38,9 +36,6 @@ public class InventorySyncMockUtils {
     when(channel.getId()).thenReturn(id);
     when(channel.getKey()).thenReturn(key);
     when(channel.getRoles()).thenReturn(singletonList(ChannelRoleEnum.INVENTORY_SUPPLY));
-    when(channel.toReference()).thenReturn(ChannelReferenceBuilder.of().id(id).build());
-    when(channel.toResourceIdentifier())
-        .thenReturn(ChannelResourceIdentifierBuilder.of().id(id).key(key).build());
     return channel;
   }
 
