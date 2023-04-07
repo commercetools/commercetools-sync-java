@@ -4,8 +4,9 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.models.common.Reference;
 import com.commercetools.api.models.common.ResourceIdentifier;
-import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
+import com.commercetools.sync.sdk2.commons.exceptions.ReferenceResolutionException;
+import io.vrap.rmf.base.client.Draft;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
 
@@ -14,19 +15,20 @@ import javax.annotation.Nonnull;
  * different CTP resources. For concrete reference resolution implementation of the CTP resources,
  * this class should be extended.
  *
- * @param <S> a subclass implementation of {@link BaseSyncOptions} that is used to allow/deny some
- *     specific options, specified by the user, on reference resolution.
+ * @param <SyncOptionsT> a subclass implementation of {@link BaseSyncOptions} that is used to
+ *     allow/deny some specific options, specified by the user, on reference resolution.
  */
-public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
+public abstract class BaseReferenceResolver<
+    ResourceDraftT extends Draft<ResourceDraftT>, SyncOptionsT extends BaseSyncOptions> {
   public static final String BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER =
       "The value of the 'key' field of the "
           + "Resource Identifier is blank (null/empty). Expecting the key of the referenced resource.";
   public static final String BLANK_ID_VALUE_ON_REFERENCE =
       "The value of the 'id' field of the Reference"
           + " is blank (null/empty). Expecting the key of the referenced resource.";
-  protected S options;
+  protected SyncOptionsT options;
 
-  protected BaseReferenceResolver(@Nonnull final S options) {
+  protected BaseReferenceResolver(@Nonnull final SyncOptionsT options) {
     this.options = options;
   }
 
@@ -40,7 +42,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
    *     references or, in case an error occurs during reference resolution, a {@link
    *     ReferenceResolutionException}.
    */
-  public abstract CompletionStage<T> resolveReferences(@Nonnull T draft);
+  public abstract CompletionStage<ResourceDraftT> resolveReferences(@Nonnull ResourceDraftT draft);
 
   /**
    * This method gets the key value on the passed {@link Reference} from the id field, if valid. If
@@ -84,12 +86,11 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
    *
    * @param resourceIdentifier the resource identifier from which the key value is validated and
    *     returned.
-   * @param <T> the type of the reference.
    * @return the key value on the {@link ResourceIdentifier}
    * @throws ReferenceResolutionException if any of the validation checks fail.
    */
   @Nonnull
-  protected static <T> String getKeyFromResourceIdentifier(
+  protected static String getKeyFromResourceIdentifier(
       @Nonnull final ResourceIdentifier resourceIdentifier) throws ReferenceResolutionException {
 
     final String key = resourceIdentifier.getKey();

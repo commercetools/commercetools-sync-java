@@ -6,23 +6,20 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.models.category.Category;
 import com.commercetools.api.models.common.Asset;
 import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.customer.Customer;
 import com.commercetools.api.models.type.CustomFields;
+import com.commercetools.api.models.type.CustomFieldsDraft;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.api.models.type.FieldContainerBuilder;
+import com.commercetools.api.models.type.Type;
 import com.commercetools.api.models.type.TypeReference;
 import com.commercetools.api.models.type.TypeReferenceBuilder;
-import com.commercetools.sync.services.CategoryService;
-import com.commercetools.sync.services.CustomerService;
-import com.commercetools.sync.services.TypeService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.customergroups.CustomerGroup;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.Type;
+import com.commercetools.sync.sdk2.services.CategoryService;
+import com.commercetools.sync.sdk2.services.CustomerService;
+import com.commercetools.sync.sdk2.services.TypeService;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -41,17 +38,23 @@ public class MockUtils {
    * @return a mock instance of {@link CustomFieldsDraft} with some hardcoded custom fields and key.
    */
   public static CustomFieldsDraft getMockCustomFieldsDraft() {
-    final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
-    customFieldsJsons.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
-    customFieldsJsons.put(
-        "backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
-    return CustomFieldsDraft.ofTypeIdAndJson("StepCategoryTypeId", customFieldsJsons);
+    return CustomFieldsDraftBuilder.of()
+        .type(
+            typeResourceIdentifierBuilder ->
+                typeResourceIdentifierBuilder.key("StepCategoryTypeId"))
+        .fields(
+            fieldContainerBuilder ->
+                fieldContainerBuilder
+                    .addValue("invisibleInShop", false)
+                    .addValue("backgroundColor", Map.of("de", "rot", "en", "red")))
+        .build();
   }
 
   /**
    * Returns mock {@link CustomFields} instance. Executing {@link CustomFields#getType()} on
-   * returned instance will return {@link Reference} of given {@code typeId} with mock {@link Type}
-   * instance of {@code typeId} and {@code typeKey} (getters of key and id would return given
+   * returned instance will return {@link com.commercetools.api.models.common.Reference} of given
+   * {@code typeId} with mock {@link Type} instance of {@code typeId} and {@code typeKey} (getters
+   * of key and id would return given
    *
    * <p>values). Executing {@link CustomFields#getFields()} on returned instance will return {@link
    * Map} populated with given {@code fieldName} and {@code fieldValue}
@@ -183,7 +186,8 @@ public class MockUtils {
    * Creates a mock {@link Customer} with the supplied {@code id} and {@code key}.
    *
    * @param id the id of the created mock {@link Customer}.
-   * @param key the key of the created mock {@link CustomerGroup}.
+   * @param key the key of the created mock {@link
+   *     com.commercetools.api.models.customer_group.CustomerGroup}.
    * @return a mock customerGroup with the supplied id and key.
    */
   public static Customer getMockCustomer(final String id, final String key) {
