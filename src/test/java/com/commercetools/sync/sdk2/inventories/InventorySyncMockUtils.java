@@ -26,13 +26,12 @@ import javax.annotation.Nonnull;
 public class InventorySyncMockUtils {
 
   /**
-   * Returns mock {@link io.sphere.sdk.channels.Channel} instance. Returned instance represents
-   * channel of passed {@code id}, {@code key} and of role {@link
-   * io.sphere.sdk.channels.ChannelRole#INVENTORY_SUPPLY}.
+   * Returns mock {@link Channel} instance. Returned instance represents channel of passed {@code
+   * id}, {@code key} and of role {@link ChannelRoleEnum#INVENTORY_SUPPLY}.
    *
-   * @param id result of calling {@link io.sphere.sdk.channels.Channel#getId()}
-   * @param key result of calling {@link io.sphere.sdk.channels.Channel#getKey()}
-   * @return mock instance of {@link io.sphere.sdk.channels.Channel}
+   * @param id result of calling {@link Channel#getId()}
+   * @param key result of calling {@link Channel#getKey()}
+   * @return mock instance of {@link Channel}
    */
   public static Channel getMockSupplyChannel(final String id, final String key) {
     final Channel channel = mock(Channel.class);
@@ -46,21 +45,16 @@ public class InventorySyncMockUtils {
   }
 
   /**
-   * Returns mock {@link io.sphere.sdk.inventory.InventoryEntry} instance. Executing getters on
-   * returned instance will return values passed in parameters.
+   * Returns mock {@link InventoryEntry} instance. Executing getters on returned instance will
+   * return values passed in parameters.
    *
-   * @param sku result of calling {@link io.sphere.sdk.inventory.InventoryEntry#getSku()}
-   * @param quantityOnStock result of calling {@link
-   *     io.sphere.sdk.inventory.InventoryEntry#getQuantityOnStock()}
-   * @param restockableInDays result of calling {@link
-   *     io.sphere.sdk.inventory.InventoryEntry#getRestockableInDays()}
-   * @param expectedDelivery result of calling {@link
-   *     io.sphere.sdk.inventory.InventoryEntry#getExpectedDelivery()}
-   * @param supplyChannel result of calling {@link
-   *     io.sphere.sdk.inventory.InventoryEntry#getSupplyChannel()}
-   * @param customFields result of calling {@link
-   *     io.sphere.sdk.inventory.InventoryEntry#getCustom()}
-   * @return mock instance of {@link io.sphere.sdk.inventory.InventoryEntry}
+   * @param sku result of calling {@link InventoryEntry#getSku()}
+   * @param quantityOnStock result of calling {@link InventoryEntry#getQuantityOnStock()}
+   * @param restockableInDays result of calling {@link InventoryEntry#getRestockableInDays()}
+   * @param expectedDelivery result of calling {@link InventoryEntry#getExpectedDelivery()}
+   * @param supplyChannel result of calling {@link InventoryEntry#getSupplyChannel()}
+   * @param customFields result of calling {@link InventoryEntry#getCustom()}
+   * @return mock instance of {@link InventoryEntry}
    */
   public static InventoryEntry getMockInventoryEntry(
       final String sku,

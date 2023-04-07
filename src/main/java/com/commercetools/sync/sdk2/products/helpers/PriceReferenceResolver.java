@@ -4,6 +4,7 @@ import static com.spotify.futures.CompletableFutures.exceptionallyCompletedFutur
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import com.commercetools.api.models.channel.Channel;
 import com.commercetools.api.models.channel.ChannelReference;
 import com.commercetools.api.models.channel.ChannelResourceIdentifier;
 import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
@@ -63,9 +64,9 @@ public final class PriceReferenceResolver
   }
 
   /**
-   * Given a {@link io.sphere.sdk.products.PriceDraft} this method attempts to resolve the custom
-   * type and channel references to return a {@link java.util.concurrent.CompletionStage} which
-   * contains a new instance of the draft with the resolved references.
+   * Given a {@link PriceDraft} this method attempts to resolve the custom type and channel
+   * references to return a {@link java.util.concurrent.CompletionStage} which contains a new
+   * instance of the draft with the resolved references.
    *
    * <p>The method then tries to fetch the key of the customer group, optimistically from a cache.
    * If the id is not found in cache nor the CTP project the {@link ReferenceResolutionException}
@@ -100,9 +101,9 @@ public final class PriceReferenceResolver
   }
 
   /**
-   * Given a {@link io.sphere.sdk.products.PriceDraftBuilder} this method attempts to resolve the
-   * supply channel reference to return a {@link java.util.concurrent.CompletionStage} which
-   * contains the same instance of draft builder with the resolved supply channel reference.
+   * Given a {@link PriceDraftBuilder} this method attempts to resolve the supply channel reference
+   * to return a {@link java.util.concurrent.CompletionStage} which contains the same instance of
+   * draft builder with the resolved supply channel reference.
    *
    * <p>The method then tries to fetch the key of the supply channel, optimistically from a cache.
    * If the id is not found in cache nor the CTP project and {@code ensureChannel} option is set to
@@ -181,19 +182,19 @@ public final class PriceReferenceResolver
   }
 
   /**
-   * Helper method that creates a new {@link io.sphere.sdk.channels.Channel} on the CTP project with
-   * the specified {@code channelKey} and of the role {@code "InventorySupply"}. Only if the {@code
-   * ensureChannels} options is set to {@code true} on the {@code options} instance of {@code this}
-   * class. Then it resolves the supply channel reference on the supplied {@code
-   * inventoryEntryDraft} by setting the id of it's supply channel reference with the newly created
-   * Channel.
+   * Helper method that creates a new {@link com.commercetools.api.models.channel.Channel} on the
+   * CTP project with the specified {@code channelKey} and of the role {@code "InventorySupply"}.
+   * Only if the {@code ensureChannels} options is set to {@code true} on the {@code options}
+   * instance of {@code this} class. Then it resolves the supply channel reference on the supplied
+   * {@code inventoryEntryDraft} by setting the id of it's supply channel reference with the newly
+   * created Channel.
    *
    * <p>If the {@code ensureChannels} options is set to {@code false} on the {@code options}
    * instance of {@code this} class, the future is completed exceptionally with a {@link
    * ReferenceResolutionException}.
    *
    * <p>The method then returns a CompletionStage with a resolved channel reference {@link
-   * io.sphere.sdk.products.PriceDraftBuilder} object.
+   * PriceDraftBuilder} object.
    *
    * @param channelKey the key to create the new channel with.
    * @param draftBuilder the inventory entry draft builder where to resolve it's supply channel
@@ -227,10 +228,9 @@ public final class PriceReferenceResolver
   }
 
   /**
-   * Given a {@link io.sphere.sdk.products.PriceDraftBuilder} this method attempts to resolve the
-   * customer group resource identifier to return a {@link java.util.concurrent.CompletionStage}
-   * which contains the same instance of draft builder with the resolved customer group resource
-   * identifier.
+   * Given a {@link PriceDraftBuilder} this method attempts to resolve the customer group resource
+   * identifier to return a {@link java.util.concurrent.CompletionStage} which contains the same
+   * instance of draft builder with the resolved customer group resource identifier.
    *
    * @param draftBuilder the priceDraftBuilder to resolve its customer group reference.
    * @return a {@link java.util.concurrent.CompletionStage} that contains as a result a new price
