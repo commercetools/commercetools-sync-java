@@ -212,8 +212,13 @@ public final class PriceReferenceResolver
           .thenCompose(
               createdChannelOptional -> {
                 if (createdChannelOptional.isPresent()) {
+                  final Channel channel = createdChannelOptional.get();
                   return completedFuture(
-                      draftBuilder.channel(createdChannelOptional.get().toResourceIdentifier()));
+                      draftBuilder.channel(
+                          ChannelResourceIdentifierBuilder.of()
+                              .key(channel.getKey())
+                              .id(channel.getId())
+                              .build()));
                 } else {
                   final ReferenceResolutionException referenceResolutionException =
                       new ReferenceResolutionException(format(CHANNEL_DOES_NOT_EXIST, channelKey));
