@@ -1,7 +1,6 @@
 package com.commercetools.sync.sdk2.products.utils;
 
 import static com.commercetools.sync.sdk2.commons.MockUtils.getAssetMockWithCustomFields;
-import static com.commercetools.sync.sdk2.commons.utils.TestUtils.readObjectFromResource;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
 import static com.commercetools.sync.sdk2.products.utils.VariantReferenceResolutionUtils.*;
 import static com.commercetools.sync.sdk2.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.*;
@@ -21,6 +20,7 @@ import com.commercetools.api.models.customer_group.CustomerGroupReference;
 import com.commercetools.api.models.customer_group.CustomerGroupReferenceBuilder;
 import com.commercetools.api.models.product.Attribute;
 import com.commercetools.api.models.product.AttributeBuilder;
+import com.commercetools.api.models.product.Product;
 import com.commercetools.api.models.product.ProductMixin;
 import com.commercetools.api.models.product.ProductProjection;
 import com.commercetools.api.models.product.ProductProjectionType;
@@ -309,9 +309,7 @@ class VariantReferenceResolutionUtilsTest {
       replaceAttributesReferencesIdsWithKeys_WithAttributesWithNoReferences_ShouldNotChangeAttributes() {
     final ProductProjection product =
         ProductMixin.toProjection(
-            readObjectFromResource(
-                PRODUCT_KEY_1_RESOURCE_PATH,
-                new com.fasterxml.jackson.core.type.TypeReference<>() {}),
+            createObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class),
             ProductProjectionType.STAGED);
     final ProductVariant masterVariant = product.getMasterVariant();
     final List<Attribute> replacedDrafts =

@@ -2,7 +2,7 @@ package com.commercetools.sync.integration.sdk2.commons.utils;
 
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.integration.sdk2.commons.utils.TestUtils.readObjectFromResource;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createObjectFromResource;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,7 +30,6 @@ import com.commercetools.api.models.product_type.ProductTypeReferenceBuilder;
 import com.commercetools.api.models.product_type.ProductTypeRemoveAttributeDefinitionActionBuilder;
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
 import com.commercetools.api.models.product_type.TextInputHint;
-import com.fasterxml.jackson.core.type.TypeReference;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.NotFoundException;
 import java.util.ArrayList;
@@ -351,7 +350,7 @@ public final class ProductTypeITUtils {
   public static ProductType createProductType(
       @Nonnull final String jsonResourcePath, @Nonnull final ProjectApiRoot ctpClient) {
     final ProductTypeDraft productTypeDraft =
-        readObjectFromResource(jsonResourcePath, new TypeReference<>() {});
+        createObjectFromResource(jsonResourcePath, ProductTypeDraft.class);
 
     return ctpClient
         .productTypes()
