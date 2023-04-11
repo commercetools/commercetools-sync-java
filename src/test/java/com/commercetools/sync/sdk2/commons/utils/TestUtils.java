@@ -1,4 +1,4 @@
-package com.commercetools.sync.integration.sdk2.commons.utils;
+package com.commercetools.sync.sdk2.commons.utils;
 
 import static io.vrap.rmf.base.client.utils.json.JsonUtils.fromJsonString;
 
