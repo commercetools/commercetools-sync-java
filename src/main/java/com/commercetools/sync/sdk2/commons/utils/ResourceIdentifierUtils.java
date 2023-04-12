@@ -15,20 +15,19 @@ public final class ResourceIdentifierUtils {
   public static final String REFERENCE_ID_FIELD = "id";
 
   /**
-   * Given a {@link ResourceIdentifiable} {@code resource}, if
-   * it is not null, this method applies the {@link
-   * ResourceIdentifiable#toResourceIdentifier()} method to return it as a {@link
-   * ResourceIdentifiable}. If it is {@code null}, this
-   * method returns {@code null}.
+   * Given a {@link ResourceIdentifiable} {@code resource}, if it is not null, this method applies
+   * the {@link ResourceIdentifiable#toResourceIdentifier()} method to return it as a {@link
+   * ResourceIdentifiable}. If it is {@code null}, this method returns {@code null}.
    *
-   * @param resource represents the resource to return as a {@link
-   *     ResourceIdentifier} if not {@code null}.
-   * @return the supplied resource in the as a {@link ResourceIdentifier} if
-   *     not {@code null}. If it is {@code null}, this method returns {@code null}.
+   * @param resource represents the resource to return as a {@link ResourceIdentifier} if not {@code
+   *     null}.
+   * @return the supplied resource in the as a {@link ResourceIdentifier} if not {@code null}. If it
+   *     is {@code null}, this method returns {@code null}.
    */
   @Nullable
   public static <ResourceIdentifiableT extends ResourceIdentifiable>
-      ResourceIdentifier toResourceIdentifierIfNotNull(@Nullable final ResourceIdentifiableT resource) {
+      ResourceIdentifier toResourceIdentifierIfNotNull(
+          @Nullable final ResourceIdentifiableT resource) {
     return ofNullable(resource).map(ResourceIdentifiable::toResourceIdentifier).orElse(null);
   }
 
