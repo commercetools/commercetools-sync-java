@@ -139,7 +139,8 @@ class ShoppingListSyncIT {
     final List<ShoppingListDraft> updatedShoppingListDrafts =
         ShoppingListTransformUtils.toShoppingListDrafts(
                 CTP_SOURCE_CLIENT, referenceIdToKeyCache, shoppingLists)
-            .join().stream()
+            .join()
+            .stream()
             .map(
                 shoppingListDraft ->
                     ShoppingListDraftBuilder.of(shoppingListDraft)

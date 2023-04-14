@@ -1,6 +1,6 @@
 spotless {
     java {
         removeUnusedImports()
-        googleJavaFormat('1.7')
+        googleJavaFormat('1.8')
     }
 }

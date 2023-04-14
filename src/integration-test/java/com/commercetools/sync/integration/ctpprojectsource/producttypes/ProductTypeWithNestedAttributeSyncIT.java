@@ -194,7 +194,8 @@ class ProductTypeWithNestedAttributeSyncIT {
     final List<ProductTypeDraft> productTypeDrafts =
         ProductTypeTransformUtils.toProductTypeDrafts(
                 CTP_SOURCE_CLIENT, referenceIdToKeyCache, productTypes)
-            .join().stream()
+            .join()
+            .stream()
             .map(
                 productType -> {
                   final List<AttributeDefinitionDraft> attributeDefinitionDrafts =
