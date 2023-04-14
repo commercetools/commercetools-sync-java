@@ -3,6 +3,7 @@ package com.commercetools.sync.integration.sdk2.services.impl;
 import static com.commercetools.sync.integration.sdk2.commons.utils.CustomObjectITUtils.createCustomObject;
 import static com.commercetools.sync.integration.sdk2.commons.utils.CustomObjectITUtils.deleteCustomObject;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
+import static com.spotify.futures.CompletableFutures.exceptionallyCompletedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -20,7 +21,6 @@ import com.commercetools.sync.sdk2.services.CustomObjectService;
 import com.commercetools.sync.sdk2.services.impl.CustomObjectServiceImpl;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.sphere.sdk.utils.CompletableFutureUtils;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;
 import java.util.ArrayList;
@@ -203,9 +203,7 @@ class CustomObjectServiceImplIT {
     when(getMock.withLimit(any(Integer.class))).thenReturn(getMock);
     when(getMock.withWithTotal(any(Boolean.class))).thenReturn(getMock);
     when(getMock.execute())
-        .thenReturn(
-            CompletableFutureUtils.exceptionallyCompletedFuture(
-                new BadGatewayException(500, "", null, "", null)))
+        .thenReturn(exceptionallyCompletedFuture(new BadGatewayException(500, "", null, "", null)))
         .thenCallRealMethod();
 
     final CustomObjectSyncOptions spyOptions =

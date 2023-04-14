@@ -24,11 +24,11 @@ public final class CustomObjectSyncOptionsBuilder
   /**
    * Creates a new instance of {@link
    * com.commercetools.sync.sdk2.customobjects.CustomObjectSyncOptionsBuilder} given a {@link
-   * io.sphere.sdk.client.SphereClient} responsible for interaction with the target CTP project,
-   * with the default batch size ({@code BATCH_SIZE_DEFAULT} = 50).
+   * com.commercetools.api.client.ProjectApiRoot} responsible for interaction with the target CTP
+   * project, with the default batch size ({@code BATCH_SIZE_DEFAULT} = 50).
    *
-   * @param ctpClient instance of the {@link io.sphere.sdk.client.SphereClient} responsible for
-   *     interaction with the target CTP project.
+   * @param ctpClient instance of the {@link com.commercetools.api.client.ProjectApiRoot}
+   *     responsible for interaction with the target CTP project.
    * @return new instance of {@link
    *     com.commercetools.sync.sdk2.customobjects.CustomObjectSyncOptionsBuilder}
    */
