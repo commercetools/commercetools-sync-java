@@ -125,6 +125,9 @@ public abstract class BaseTransformServiceImpl {
             case (TypeReference.TYPE):
               typedReferenceMap.get(GraphQlQueryResource.TYPES).add(ref.getId());
               break;
+            default:
+              // Nothing to do
+              break;
           }
         });
     return typedReferenceMap;
