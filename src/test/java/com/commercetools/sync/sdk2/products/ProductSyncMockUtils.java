@@ -494,15 +494,6 @@ public class ProductSyncMockUtils {
     final Price price = mock(Price.class);
     when(price.getChannel()).thenReturn(channelReference);
     when(price.getCustomerGroup()).thenReturn(customerGroupReference);
-    when(price.getValue())
-        .thenReturn(
-            TypedMoneyBuilder.of()
-                .centPrecisionBuilder()
-                .centAmount(1L)
-                .fractionDigits(0)
-                .currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode())
-                .build());
-
     final CentPrecisionMoney money =
         CentPrecisionMoneyBuilder.of()
             .centAmount(100L)
