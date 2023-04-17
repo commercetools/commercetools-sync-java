@@ -12,7 +12,7 @@ import com.commercetools.api.models.customer.CustomerDraftBuilder;
 import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
 import com.commercetools.api.models.store.StoreResourceIdentifier;
 import com.commercetools.api.models.store.StoreResourceIdentifierBuilder;
-import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.sdk2.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.sdk2.commons.helpers.CustomReferenceResolver;
 import com.commercetools.sync.sdk2.customers.CustomerSyncOptions;
 import com.commercetools.sync.sdk2.services.CustomerGroupService;

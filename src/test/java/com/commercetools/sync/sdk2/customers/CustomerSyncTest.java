@@ -37,7 +37,7 @@ import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifi
 import com.commercetools.api.models.store.StoreResourceIdentifierBuilder;
 import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
-import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.sdk2.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.commons.statistics.AssertionsForStatistics;
 import com.commercetools.sync.sdk2.customers.helpers.CustomerSyncStatistics;
