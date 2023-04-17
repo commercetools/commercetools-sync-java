@@ -35,6 +35,7 @@ import io.sphere.sdk.client.BadGatewayException;
 import io.vrap.rmf.base.client.ApiHttpMethod;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -281,6 +282,7 @@ class ProductTransformServiceImplTest {
                 request -> {
                   final String uri = request.getUri() != null ? request.getUri().toString() : "";
                   final ApiHttpMethod method = request.getMethod();
+                  final Charset charsetUTF8 = Charset.forName(StandardCharsets.UTF_8.name());
                   if (uri.contains("graphql") && ApiHttpMethod.POST.equals(method)) {
                     final String encodedRequestBody =
                         new String(request.getBody(), StandardCharsets.UTF_8);
@@ -299,39 +301,40 @@ class ProductTransformServiceImplTest {
                       case "productTypesQuery":
                         result = String.format(bodyData, jsonStringProductTypes);
                         return CompletableFuture.completedFuture(
-                            new ApiHttpResponse<>(200, null, result.getBytes()));
+                            new ApiHttpResponse<>(200, null, result.getBytes(charsetUTF8)));
                       case "statesQuery":
                         result = String.format(bodyData, jsonStringState);
                         return CompletableFuture.completedFuture(
-                            new ApiHttpResponse<>(200, null, result.getBytes()));
+                            new ApiHttpResponse<>(200, null, result.getBytes(charsetUTF8)));
                       case "taxCategoriesQuery":
                         result = String.format(bodyData, jsonStringTaxCategory);
                         return CompletableFuture.completedFuture(
-                            new ApiHttpResponse<>(200, null, result.getBytes()));
+                            new ApiHttpResponse<>(200, null, result.getBytes(charsetUTF8)));
                       case "customerGroupsQuery":
                         result = String.format(bodyData, jsonStringCustomerGroup);
                         return CompletableFuture.completedFuture(
-                            new ApiHttpResponse<>(200, null, result.getBytes()));
+                            new ApiHttpResponse<>(200, null, result.getBytes(charsetUTF8)));
                       case "channelsQuery":
                         result = String.format(bodyData, jsonStringChannel);
                         return CompletableFuture.completedFuture(
-                            new ApiHttpResponse<>(200, null, result.getBytes()));
+                            new ApiHttpResponse<>(200, null, result.getBytes(charsetUTF8)));
                       case "categoriesQuery":
                         result = String.format(bodyData, jsonStringCategories);
                         return CompletableFuture.completedFuture(
-                            new ApiHttpResponse<>(200, null, result.getBytes()));
+                            new ApiHttpResponse<>(200, null, result.getBytes(charsetUTF8)));
                       case "typeDefinitionsQuery":
                         result = String.format(bodyData, jsonStringCustomTypes);
                         return CompletableFuture.completedFuture(
-                            new ApiHttpResponse<>(200, null, result.getBytes()));
+                            new ApiHttpResponse<>(200, null, result.getBytes(charsetUTF8)));
                       default:
                         return CompletableFuture.completedFuture(
-                            new ApiHttpResponse<>(200, null, result.getBytes()));
+                            new ApiHttpResponse<>(200, null, result.getBytes(charsetUTF8)));
                     }
                   }
                   if (uri.contains("custom-objects") && ApiHttpMethod.GET.equals(method)) {
                     return CompletableFuture.completedFuture(
-                        new ApiHttpResponse<>(200, null, jsonStringCustomObjects.getBytes()));
+                        new ApiHttpResponse<>(
+                            200, null, jsonStringCustomObjects.getBytes(charsetUTF8)));
                   }
                   return null;
                 })
