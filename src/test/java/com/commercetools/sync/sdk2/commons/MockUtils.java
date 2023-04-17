@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.commercetools.api.models.category.Category;
 import com.commercetools.api.models.common.Asset;
+import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.customer.Customer;
 import com.commercetools.api.models.type.CustomFields;
 import com.commercetools.api.models.type.CustomFieldsDraft;
@@ -157,6 +158,7 @@ public class MockUtils {
     final Asset asset = mock(Asset.class);
 
     when(asset.getCustom()).thenReturn(mockCustomFields);
+    when(asset.getName()).thenReturn(LocalizedString.ofEnglish("asset-name"));
 
     return asset;
   }
