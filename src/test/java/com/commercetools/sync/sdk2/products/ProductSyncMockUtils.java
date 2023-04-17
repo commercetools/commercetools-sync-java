@@ -2,7 +2,8 @@ package com.commercetools.sync.sdk2.products;
 
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
-import static com.commercetools.sync.sdk2.products.AssetUtils.createAssetDraft;
+import static com.commercetools.sync.sdk2.commons.helpers.DefaultCurrencyUnits.EUR;
+import static com.commercetools.sync.sdk2.products.utils.AssetUtils.createAssetDraft;
 import static com.commercetools.sync.sdk2.products.utils.PriceUtils.createPriceDraft;
 import static io.vrap.rmf.base.client.utils.json.JsonUtils.fromInputStream;
 import static java.util.Optional.ofNullable;
@@ -21,6 +22,8 @@ import com.commercetools.api.models.channel.Channel;
 import com.commercetools.api.models.channel.ChannelReference;
 import com.commercetools.api.models.common.Asset;
 import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.api.models.common.CentPrecisionMoney;
+import com.commercetools.api.models.common.CentPrecisionMoneyBuilder;
 import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.common.Price;
 import com.commercetools.api.models.common.PriceDraft;
@@ -152,20 +155,19 @@ public class ProductSyncMockUtils {
 
     @SuppressWarnings("ConstantConditions")
     final List<ProductVariantDraft> allVariants =
-        stagedProductData.getAllVariants().stream()
+        stagedProductData.getVariants().stream()
             .map(productVariant -> createProductVariantDraftBuilder(productVariant).build())
             .collect(toList());
 
-    final ProductVariantDraft masterVariant = allVariants.stream().findFirst().orElse(null);
-    final List<ProductVariantDraft> variants =
-        allVariants.stream().skip(1).collect(Collectors.toList());
+    final ProductVariantDraft masterVariant =
+        createProductVariantDraftBuilder(stagedProductData.getMasterVariant()).build();
 
     return ProductDraftBuilder.of()
         .productType(productTypeResourceIdentifier)
         .name(stagedProductData.getName())
         .slug(stagedProductData.getSlug())
         .masterVariant(masterVariant)
-        .variants(variants)
+        .variants(allVariants)
         .metaDescription(stagedProductData.getMetaDescription())
         .metaKeywords(stagedProductData.getMetaKeywords())
         .metaTitle(stagedProductData.getMetaTitle())
@@ -500,6 +502,14 @@ public class ProductSyncMockUtils {
                 .fractionDigits(0)
                 .currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode())
                 .build());
+
+    final CentPrecisionMoney money =
+        CentPrecisionMoneyBuilder.of()
+            .centAmount(100L)
+            .currencyCode(EUR.getCurrencyCode())
+            .fractionDigits(2)
+            .build();
+    when(price.getValue()).thenReturn(money);
 
     return ofNullable(customTypeReference)
         .map(
