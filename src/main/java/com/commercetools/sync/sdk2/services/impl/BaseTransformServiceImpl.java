@@ -181,13 +181,7 @@ public abstract class BaseTransformServiceImpl {
                         .addValue("where", whereQuery)
                         .addValue("limit", CHUNK_SIZE)
                         .build())
-            .map(
-                variables ->
-                    GraphQLRequestBuilder.of()
-                        .operationName(requestType.getName() + "Query")
-                        .query(query)
-                        .variables(variables)
-                        .build())
+            .map(variables -> GraphQLRequestBuilder.of().query(query).variables(variables).build())
             .collect(Collectors.toList());
     return graphQLRequests;
   }

@@ -294,41 +294,43 @@ class ProductTransformServiceImplTest {
                     } catch (JsonProcessingException e) {
                       graphQLRequest = GraphQLRequestBuilder.of().build();
                     }
-                    final String name = graphQLRequest.getOperationName();
+                    final String graphQLRequestQuery = graphQLRequest.getQuery();
                     final String bodyData = "{\"data\": %s}";
                     String result = String.format(bodyData, "{}");
-                    switch (name) {
-                      case "productTypesQuery":
+                    if (graphQLRequestQuery != null
+                        && graphQLRequestQuery.contains("fetchKeyToIdPairs")) {
+                      if (graphQLRequestQuery.contains("productTypes")) {
                         result = String.format(bodyData, jsonStringProductTypes);
                         return CompletableFuture.completedFuture(
                             new ApiHttpResponse<>(200, null, result.getBytes(charsetUTF8)));
-                      case "statesQuery":
+                      } else if (graphQLRequestQuery.contains("states")) {
                         result = String.format(bodyData, jsonStringState);
                         return CompletableFuture.completedFuture(
                             new ApiHttpResponse<>(200, null, result.getBytes(charsetUTF8)));
-                      case "taxCategoriesQuery":
+                      } else if (graphQLRequestQuery.contains("taxCategories")) {
                         result = String.format(bodyData, jsonStringTaxCategory);
                         return CompletableFuture.completedFuture(
                             new ApiHttpResponse<>(200, null, result.getBytes(charsetUTF8)));
-                      case "customerGroupsQuery":
+                      } else if (graphQLRequestQuery.contains("customerGroups")) {
                         result = String.format(bodyData, jsonStringCustomerGroup);
                         return CompletableFuture.completedFuture(
                             new ApiHttpResponse<>(200, null, result.getBytes(charsetUTF8)));
-                      case "channelsQuery":
+                      } else if (graphQLRequestQuery.contains("channels")) {
                         result = String.format(bodyData, jsonStringChannel);
                         return CompletableFuture.completedFuture(
                             new ApiHttpResponse<>(200, null, result.getBytes(charsetUTF8)));
-                      case "categoriesQuery":
+                      } else if (graphQLRequestQuery.contains("categories")) {
                         result = String.format(bodyData, jsonStringCategories);
                         return CompletableFuture.completedFuture(
                             new ApiHttpResponse<>(200, null, result.getBytes(charsetUTF8)));
-                      case "typeDefinitionsQuery":
+                      } else if (graphQLRequestQuery.contains("typeDefinitions")) {
                         result = String.format(bodyData, jsonStringCustomTypes);
                         return CompletableFuture.completedFuture(
                             new ApiHttpResponse<>(200, null, result.getBytes(charsetUTF8)));
-                      default:
+                      } else {
                         return CompletableFuture.completedFuture(
                             new ApiHttpResponse<>(200, null, result.getBytes(charsetUTF8)));
+                      }
                     }
                   }
                   if (uri.contains("custom-objects") && ApiHttpMethod.GET.equals(method)) {
