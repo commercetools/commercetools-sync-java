@@ -28,6 +28,7 @@ import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.common.Price;
 import com.commercetools.api.models.common.PriceDraft;
 import com.commercetools.api.models.common.Reference;
+import com.commercetools.api.models.common.TypedMoneyBuilder;
 import com.commercetools.api.models.customer_group.CustomerGroup;
 import com.commercetools.api.models.customer_group.CustomerGroupReference;
 import com.commercetools.api.models.product.Attribute;
@@ -56,6 +57,7 @@ import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifierBu
 import com.commercetools.api.models.type.CustomFields;
 import com.commercetools.api.models.type.Type;
 import com.commercetools.api.models.type.TypeReference;
+import com.commercetools.sync.sdk2.commons.helpers.DefaultCurrencyUnits;
 import com.commercetools.sync.sdk2.services.CategoryService;
 import com.commercetools.sync.sdk2.services.CustomObjectService;
 import com.commercetools.sync.sdk2.services.CustomerGroupService;
@@ -492,7 +494,6 @@ public class ProductSyncMockUtils {
     final Price price = mock(Price.class);
     when(price.getChannel()).thenReturn(channelReference);
     when(price.getCustomerGroup()).thenReturn(customerGroupReference);
-
     final CentPrecisionMoney money =
         CentPrecisionMoneyBuilder.of()
             .centAmount(100L)
