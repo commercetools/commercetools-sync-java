@@ -40,14 +40,14 @@ public final class CustomObjectCompositeIdentifier {
    *       CustomObjectDraft#getContainer()}
    * </ol>
    *
-   * @param customObjectDraftBuilder a composite id is built using its fields.
+   * @param customObjectDraft a composite id is built using its fields.
    * @return a composite id comprised of the fields of the supplied {@link CustomObjectDraft}.
    */
   @Nonnull
   public static CustomObjectCompositeIdentifier of(
-      @Nonnull final CustomObjectDraftBuilder customObjectDraftBuilder) {
+      @Nonnull final CustomObjectDraft customObjectDraft) {
     return new CustomObjectCompositeIdentifier(
-        customObjectDraftBuilder.getKey(), customObjectDraftBuilder.getContainer());
+        customObjectDraft.getKey(), customObjectDraft.getContainer());
   }
 
   /**
@@ -81,7 +81,7 @@ public final class CustomObjectCompositeIdentifier {
   public static CustomObjectCompositeIdentifier of(
       @Nonnull final String key, @Nonnull final String container) {
     return CustomObjectCompositeIdentifier.of(
-        CustomObjectDraftBuilder.of().container(container).key(key));
+        CustomObjectDraftBuilder.of().container(container).key(key).value("").build());
   }
 
   /**
