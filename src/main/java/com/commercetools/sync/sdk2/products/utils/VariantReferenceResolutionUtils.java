@@ -1,14 +1,13 @@
 package com.commercetools.sync.sdk2.products.utils;
 
 import static com.commercetools.sync.sdk2.commons.utils.AssetReferenceResolutionUtils.mapToAssetDrafts;
-import static com.commercetools.sync.sdk2.commons.utils.SyncUtils.getResourceIdentifierWithKey;
+import static com.commercetools.sync.sdk2.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
 import static com.commercetools.sync.sdk2.products.utils.PriceUtils.createPriceDraft;
 import static java.util.stream.Collectors.toList;
 
 import com.commercetools.api.models.common.PriceDraft;
+import com.commercetools.api.models.common.Reference;
 import com.commercetools.api.models.product.*;
-import com.commercetools.api.models.product_type.ProductTypeReference;
-import com.commercetools.api.models.product_type.ProductTypeReferenceImpl;
 import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,7 +56,7 @@ public final class VariantReferenceResolutionUtils {
         .sku(productVariant.getSku())
         .key(productVariant.getKey())
         .prices(mapToPriceDrafts(productVariant, referenceIdToKeyCache))
-        .attributes(replaceAttributesReferencesIdsWithKeys(productVariant, referenceIdToKeyCache))
+        .attributes(productVariant.getAttributes())
         .assets(mapToAssetDrafts(productVariant.getAssets(), referenceIdToKeyCache))
         .build();
   }
@@ -86,25 +85,29 @@ public final class VariantReferenceResolutionUtils {
    * @return a {@link List} of {@link Attribute} that has all product references with keys replacing
    *     the ids.
    */
+  // TODO: Is this method required in SDK2 or not??
   @Nonnull
   static List<Attribute> replaceAttributesReferencesIdsWithKeys(
       @Nonnull final ProductVariant productVariant,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
-    final List<Attribute> productTypeReferenceAttributes =
+    final List<Attribute> productReferenceAttributes =
         productVariant.getAttributes().stream()
-            .filter(attribute -> attribute.getValue() instanceof ProductTypeReferenceImpl)
-            .map(attribute -> (ProductTypeReference) attribute.getValue())
+            .filter(attribute -> attribute.getValue() instanceof ProductReference)
+            .map(attribute -> (ProductReference) attribute.getValue())
             .map(
                 productReference ->
-                    getResourceIdentifierWithKey(
+                    getReferenceWithKeyReplaced(
                         productReference,
-                        referenceIdToKeyCache,
-                        (id, key) -> ProductResourceIdentifierBuilder.of().id(id).key(key).build()))
+                        () ->
+                            ProductReferenceBuilder.of()
+                                .id(referenceIdToKeyCache.get(productReference.getId()))
+                                .build(),
+                        referenceIdToKeyCache))
             .map(
-                productTypeResourceIdentifier ->
-                    AttributeBuilder.of().value(productTypeResourceIdentifier).build())
+                productReferenceWithKey ->
+                    AttributeBuilder.of().value(productReferenceWithKey).build())
             .collect(toList());
-    final List<Attribute> productSetTypeReferenceAttributes =
+    final List<Attribute> productSetReferenceAttributes =
         Optional.of(
                 productVariant.getAttributes().stream()
                     .filter(
@@ -112,31 +115,34 @@ public final class VariantReferenceResolutionUtils {
                             attribute.getValue() instanceof List
                                 && ((List) attribute.getValue())
                                     .stream()
-                                        .anyMatch(
-                                            setAttr -> setAttr instanceof ProductTypeReferenceImpl))
+                                        .anyMatch(setAttr -> setAttr instanceof ProductReference))
                     .map(
-                        attribute ->
-                            AttributeAccessor.asSetReference(attribute).stream()
-                                .map(
-                                    productReference ->
-                                        getResourceIdentifierWithKey(
-                                            productReference,
-                                            referenceIdToKeyCache,
-                                            (id, key) ->
-                                                ProductResourceIdentifierBuilder.of()
-                                                    .id(id)
-                                                    .key(key)
-                                                    .build()))
-                                .collect(toList()))
-                    .map(
-                        productTypeResourceIdentifiers ->
-                            AttributeBuilder.of().value(productTypeResourceIdentifiers).build())
+                        attribute -> {
+                          List<Reference> productReferencesWithKey =
+                              AttributeAccessor.asSetReference(attribute).stream()
+                                  .map(
+                                      productReference ->
+                                          getReferenceWithKeyReplaced(
+                                              productReference,
+                                              () ->
+                                                  ProductReferenceBuilder.of()
+                                                      .id(
+                                                          referenceIdToKeyCache.get(
+                                                              productReference.getId()))
+                                                      .build(),
+                                              referenceIdToKeyCache))
+                                  .collect(toList());
+                          return AttributeBuilder.of()
+                              .name(attribute.getName())
+                              .value(productReferencesWithKey)
+                              .build();
+                        })
                     .collect(toList()))
             .orElse(Collections.emptyList());
 
     final List<Attribute> joined = new ArrayList<>();
-    joined.addAll(productTypeReferenceAttributes);
-    joined.addAll(productSetTypeReferenceAttributes);
+    joined.addAll(productReferenceAttributes);
+    joined.addAll(productSetReferenceAttributes);
     return joined;
   }
 
