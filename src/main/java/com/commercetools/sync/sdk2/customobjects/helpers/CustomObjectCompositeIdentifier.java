@@ -40,14 +40,14 @@ public final class CustomObjectCompositeIdentifier {
    *       CustomObjectDraft#getContainer()}
    * </ol>
    *
-   * @param customObjectDraftBuilder a composite id is built using its fields.
+   * @param customObjectDraft a composite id is built using its fields.
    * @return a composite id comprised of the fields of the supplied {@link CustomObjectDraft}.
    */
   @Nonnull
   public static CustomObjectCompositeIdentifier of(
-      @Nonnull final CustomObjectDraft customObjectDraftBuilder) {
+      @Nonnull final CustomObjectDraft customObjectDraft) {
     return new CustomObjectCompositeIdentifier(
-        customObjectDraftBuilder.getKey(), customObjectDraftBuilder.getContainer());
+        customObjectDraft.getKey(), customObjectDraft.getContainer());
   }
 
   /**
