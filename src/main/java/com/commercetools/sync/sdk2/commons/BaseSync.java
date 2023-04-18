@@ -25,9 +25,10 @@ public abstract class BaseSync<
    * doesn't.
    *
    * @param resourceDrafts the list of new resources as drafts.
-   * @return an instance of {@link CompletionStage}&lt;{@code U}&gt; which contains as a result an
-   *     instance of {@code U} which is a subclass of {@link BaseSyncStatistics} representing the
-   *     {@code statistics} instance attribute of {@code this} {@link BaseSync}.
+   * @return an instance of {@link CompletionStage}&lt;{@code SyncStatisticsT}&gt; which contains as
+   *     a result an instance of {@code SyncStatisticsT} which is a subclass of {@link
+   *     BaseSyncStatistics} representing the {@code statistics} instance attribute of {@code this}
+   *     {@link BaseSync}.
    */
   protected abstract CompletionStage<SyncStatisticsT> process(@Nonnull List<DraftT> resourceDrafts);
 
@@ -41,9 +42,10 @@ public abstract class BaseSync<
    * BaseSyncStatistics} container so that the total processing time is computed in the statistics.
    *
    * @param resourceDrafts the list of new resources as drafts.
-   * @return an instance of {@link CompletionStage}&lt;{@code U}&gt; which contains as a result an
-   *     instance of {@code U} which is a subclass of {@link BaseSyncStatistics} representing the
-   *     {@code statistics} instance attribute of {@code this} {@link BaseSync}.
+   * @return an instance of {@link CompletionStage}&lt;{@code SyncStatisticsT}&gt; which contains as
+   *     a result an instance of {@code SyncStatisticsT} which is a subclass of {@link
+   *     BaseSyncStatistics} representing the {@code statistics} instance attribute of {@code this}
+   *     {@link BaseSync}.
    */
   public CompletionStage<SyncStatisticsT> sync(@Nonnull final List<DraftT> resourceDrafts) {
     statistics.startTimer();
@@ -82,9 +84,9 @@ public abstract class BaseSync<
    * @param result in the first call of this recursive method, this result is normally a completed
    *     future, it used from within the method to recursively sync each batch once the previous
    *     batch has finished syncing.
-   * @return an instance of {@link CompletionStage}&lt;{@code U}&gt; which contains as a result an
-   *     instance of {@link BaseSyncStatistics} representing the {@code statistics} of the sync
-   *     process executed on the given list of batches.
+   * @return an instance of {@link CompletionStage}&lt;{@code SyncStatisticsT}&gt; which contains as
+   *     a result an instance of {@link BaseSyncStatistics} representing the {@code statistics} of
+   *     the sync process executed on the given list of batches.
    */
   protected CompletionStage<SyncStatisticsT> syncBatches(
       @Nonnull final List<List<DraftT>> batches,
