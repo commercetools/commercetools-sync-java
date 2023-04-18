@@ -83,7 +83,7 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
 
     return CompletableFuture.allOf(
             transformReferencesToRunParallel.stream().toArray(CompletableFuture[]::new))
-        .thenApply(ignore -> mapToProductDrafts(products, referenceIdToKeyCache));
+        .thenApply(ignore -> mapToProductDrafts(products, this.referenceIdToKeyCache));
   }
 
   @Nonnull
@@ -133,7 +133,7 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
 
     final Set<String> categoryIds =
         products.stream()
-            .map(product -> product.getCategories())
+            .map(ProductProjection::getCategories)
             .filter(Objects::nonNull)
             .map(
                 categories ->
@@ -267,8 +267,8 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
 
     return getIdToKeys(allAttributeReferences)
         .thenApply(
-            referenceIdToKeyCache -> {
-              replaceReferences(getAllReferences(products), referenceIdToKeyCache);
+            ignored -> {
+              replaceReferences(allAttributeReferences);
               return products;
             });
   }
@@ -311,11 +311,9 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
     return Collections.emptyList();
   }
 
-  private static void replaceReferences(
-      @Nonnull final List<Reference> references,
-      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
-
-    references.forEach(reference -> reference.setId(referenceIdToKeyCache.get(reference.getId())));
+  private void replaceReferences(
+      @Nonnull final List<Reference> references) {
+    references.forEach(reference -> reference.setId(this.referenceIdToKeyCache.get(reference.getId())));
   }
 
   /**
@@ -335,7 +333,7 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
    *     {@code ctpClient}.
    */
   @Nonnull
-  CompletableFuture<ReferenceIdToKeyCache> getIdToKeys(
+  CompletableFuture<Void> getIdToKeys(
       @Nonnull final List<Reference> allAttributeReferences) {
 
     final Set<Reference> nonCachedReferences = getNonCachedReferences(allAttributeReferences);
@@ -360,20 +358,16 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
             .collect(toList());
 
     return ChunkUtils.executeChunks(getCtpClient(), collectedRequests)
-        .thenApply(
-            results -> {
-              cacheResourceReferenceKeys(results);
-              return referenceIdToKeyCache;
-            })
+        .thenAccept(this::cacheResourceReferenceKeys)
         .thenCompose(ignored -> fetchCustomObjectKeys(nonCachedCustomObjectIds));
   }
 
   @Nonnull
-  private CompletableFuture<ReferenceIdToKeyCache> fetchCustomObjectKeys(
+  private CompletableFuture<Void> fetchCustomObjectKeys(
       @Nullable final Set<String> nonCachedCustomObjectIds) {
 
     if (nonCachedCustomObjectIds == null || nonCachedCustomObjectIds.isEmpty()) {
-      return CompletableFuture.completedFuture(referenceIdToKeyCache);
+      return CompletableFuture.completedFuture(null);
     }
 
     final List<List<String>> chunkedIds = ChunkUtils.chunk(nonCachedCustomObjectIds, CHUNK_SIZE);
@@ -396,7 +390,7 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
             .collect(toList());
 
     return ChunkUtils.executeChunks(chunkedRequests)
-        .thenApply(
+        .thenAccept(
             chunk -> {
               chunk.forEach(
                   response -> {
@@ -405,12 +399,11 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
                         .getResults()
                         .forEach(
                             customObject -> {
-                              referenceIdToKeyCache.add(
+                              this.referenceIdToKeyCache.add(
                                   customObject.getId(),
                                   CustomObjectCompositeIdentifier.of(customObject).toString());
                             });
                   });
-              return referenceIdToKeyCache;
             });
   }
 }
