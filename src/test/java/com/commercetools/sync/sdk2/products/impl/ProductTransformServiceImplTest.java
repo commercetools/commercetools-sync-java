@@ -1,13 +1,5 @@
 package com.commercetools.sync.sdk2.products.impl;
 
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createProductFromJson;
-import static com.commercetools.sync.sdk2.services.impl.BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER;
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 import com.commercetools.api.client.ByProjectKeyCustomObjectsGet;
 import com.commercetools.api.client.ByProjectKeyGraphqlPost;
 import com.commercetools.api.client.ProjectApiRoot;
@@ -31,10 +23,14 @@ import com.commercetools.sync.sdk2.products.service.impl.ProductTransformService
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spotify.futures.CompletableFutures;
-import io.sphere.sdk.client.BadGatewayException;
 import io.vrap.rmf.base.client.ApiHttpMethod;
 import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.error.BadGatewayException;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -44,9 +40,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
+
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createProductFromJson;
+import static com.commercetools.sync.sdk2.services.impl.BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @SuppressWarnings("unchecked")
 class ProductTransformServiceImplTest {
@@ -67,19 +68,19 @@ class ProductTransformServiceImplTest {
         new ProductTransformServiceImpl(sourceClient, referenceIdToKeyCache);
     final List<ProductProjection> productPage = asList(createProductFromJson("product-key-4.json"));
 
-    String jsonStringProducts =
+    final String jsonStringProducts =
         "{ \"products\": {\"results\":[{\"id\":\"53c4a8b4-754f-4b95-b6f2-3e1e70e3d0d2\",\"key\":\"prod1\"},"
             + "{\"id\":\"53c4a8b4-754f-4b95-b6f2-3e1e70e3d0d6\",\"key\":\"prod2\"}]}}";
     final ApiHttpResponse<GraphQLResponse> productsResponse =
         mockGraphQLResponse(jsonStringProducts);
 
-    String jsonStringProductTypes =
+    final String jsonStringProductTypes =
         "{ \"productTypes\": {\"results\":[{\"id\":\"53c4a8b4-754f-4b95-b6f2-3e1e70e3d0d3\","
             + "\"key\":\"prodType1\"}]}}";
     final ApiHttpResponse<GraphQLResponse> productTypesResponse =
         mockGraphQLResponse(jsonStringProductTypes);
 
-    String jsonStringCategories =
+    final String jsonStringCategories =
         "{ \"categories\": {\"results\":[{\"id\":\"53c4a8b4-754f-4b95-b6f2-3e1e70e3d0d4\",\"key\":\"cat1\"},"
             + "{\"id\":\"53c4a8b4-754f-4b95-b6f2-3e1e70e3d0d5\",\"key\":\"cat2\"}]}}";
     final ApiHttpResponse<GraphQLResponse> categoriesResponse =
@@ -488,7 +489,7 @@ class ProductTransformServiceImplTest {
             createProductFromJson("product-key-6.json"));
 
     final BadGatewayException badGatewayException =
-        new BadGatewayException("Failed Graphql request");
+        new BadGatewayException(500, "", null, "Failed Graphql request", null);
     final ByProjectKeyGraphqlPost byProjectKeyGraphQlPost = mock(ByProjectKeyGraphqlPost.class);
     when(sourceClient.graphql()).thenReturn(mock());
     when(sourceClient.graphql().post(any(GraphQLRequest.class)))
