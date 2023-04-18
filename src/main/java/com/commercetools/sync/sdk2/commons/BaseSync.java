@@ -7,11 +7,13 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 
-public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSyncOptions> {
-  protected final U statistics;
-  protected final V syncOptions;
+public abstract class BaseSync<
+    DraftT, SyncStatisticsT extends BaseSyncStatistics, SyncOptionsT extends BaseSyncOptions> {
+  protected final SyncStatisticsT statistics;
+  protected final SyncOptionsT syncOptions;
 
-  protected BaseSync(@Nonnull final U statistics, @Nonnull final V syncOptions) {
+  protected BaseSync(
+      @Nonnull final SyncStatisticsT statistics, @Nonnull final SyncOptionsT syncOptions) {
     this.statistics = statistics;
     this.syncOptions = syncOptions;
   }
@@ -23,11 +25,12 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
    * doesn't.
    *
    * @param resourceDrafts the list of new resources as drafts.
-   * @return an instance of {@link CompletionStage}&lt;{@code U}&gt; which contains as a result an
-   *     instance of {@code U} which is a subclass of {@link BaseSyncStatistics} representing the
-   *     {@code statistics} instance attribute of {@code this} {@link BaseSync}.
+   * @return an instance of {@link CompletionStage}&lt;{@code SyncStatisticsT}&gt; which contains as
+   *     a result an instance of {@code SyncStatisticsT} which is a subclass of {@link
+   *     BaseSyncStatistics} representing the {@code statistics} instance attribute of {@code this}
+   *     {@link BaseSync}.
    */
-  protected abstract CompletionStage<U> process(@Nonnull List<T> resourceDrafts);
+  protected abstract CompletionStage<SyncStatisticsT> process(@Nonnull List<DraftT> resourceDrafts);
 
   /**
    * Given a list of resource (e.g. categories, products, etc..) drafts. This method compares each
@@ -39,11 +42,12 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
    * BaseSyncStatistics} container so that the total processing time is computed in the statistics.
    *
    * @param resourceDrafts the list of new resources as drafts.
-   * @return an instance of {@link CompletionStage}&lt;{@code U}&gt; which contains as a result an
-   *     instance of {@code U} which is a subclass of {@link BaseSyncStatistics} representing the
-   *     {@code statistics} instance attribute of {@code this} {@link BaseSync}.
+   * @return an instance of {@link CompletionStage}&lt;{@code SyncStatisticsT}&gt; which contains as
+   *     a result an instance of {@code SyncStatisticsT} which is a subclass of {@link
+   *     BaseSyncStatistics} representing the {@code statistics} instance attribute of {@code this}
+   *     {@link BaseSync}.
    */
-  public CompletionStage<U> sync(@Nonnull final List<T> resourceDrafts) {
+  public CompletionStage<SyncStatisticsT> sync(@Nonnull final List<DraftT> resourceDrafts) {
     statistics.startTimer();
     return process(resourceDrafts)
         .thenApply(
@@ -62,11 +66,11 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
    * @return a statistics object for the sync process.
    */
   @Nonnull
-  public U getStatistics() {
+  public SyncStatisticsT getStatistics() {
     return statistics;
   }
 
-  public V getSyncOptions() {
+  public SyncOptionsT getSyncOptions() {
     return syncOptions;
   }
 
@@ -80,20 +84,21 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
    * @param result in the first call of this recursive method, this result is normally a completed
    *     future, it used from within the method to recursively sync each batch once the previous
    *     batch has finished syncing.
-   * @return an instance of {@link CompletionStage}&lt;{@code U}&gt; which contains as a result an
-   *     instance of {@link BaseSyncStatistics} representing the {@code statistics} of the sync
-   *     process executed on the given list of batches.
+   * @return an instance of {@link CompletionStage}&lt;{@code SyncStatisticsT}&gt; which contains as
+   *     a result an instance of {@link BaseSyncStatistics} representing the {@code statistics} of
+   *     the sync process executed on the given list of batches.
    */
-  protected CompletionStage<U> syncBatches(
-      @Nonnull final List<List<T>> batches, @Nonnull final CompletionStage<U> result) {
+  protected CompletionStage<SyncStatisticsT> syncBatches(
+      @Nonnull final List<List<DraftT>> batches,
+      @Nonnull final CompletionStage<SyncStatisticsT> result) {
     if (batches.isEmpty()) {
       return result;
     }
-    final List<T> firstBatch = batches.remove(0);
+    final List<DraftT> firstBatch = batches.remove(0);
     return syncBatches(batches, result.thenCompose(subResult -> processBatch(firstBatch)));
   }
 
-  protected abstract CompletionStage<U> processBatch(@Nonnull List<T> batch);
+  protected abstract CompletionStage<SyncStatisticsT> processBatch(@Nonnull List<DraftT> batch);
 
   /**
    * This method checks if the supplied {@code exception} is an instance of {@link
@@ -109,13 +114,13 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
    *     {@link ConcurrentModificationException}.
    * @param onOtherExceptionSupplier the supplier to execute if the {@code exception} is not a
    *     {@link ConcurrentModificationException}.
-   * @param <S> the type of the result of the suppliers and this method.
+   * @param <ResultT> the type of the result of the suppliers and this method.
    * @return the result of the executed supplier.
    */
-  protected static <S> S executeSupplierIfConcurrentModificationException(
+  protected static <ResultT> ResultT executeSupplierIfConcurrentModificationException(
       @Nonnull final Throwable exception,
-      @Nonnull final Supplier<S> onConcurrentModificationSupplier,
-      @Nonnull final Supplier<S> onOtherExceptionSupplier) {
+      @Nonnull final Supplier<ResultT> onConcurrentModificationSupplier,
+      @Nonnull final Supplier<ResultT> onOtherExceptionSupplier) {
 
     final Throwable completionExceptionCause = exception.getCause();
     if (completionExceptionCause instanceof ConcurrentModificationException) {
