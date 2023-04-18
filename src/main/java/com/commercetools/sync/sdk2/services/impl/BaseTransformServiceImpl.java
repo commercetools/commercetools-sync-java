@@ -201,12 +201,10 @@ public abstract class BaseTransformServiceImpl {
         .map(r -> r.getBody())
         .filter(Objects::nonNull)
         .map(body -> body.getData())
-        // todo: set limit to -1, the payload will have errors object but what to do with
-        // it ?
         .filter(Objects::nonNull)
         .forEach(
             data -> {
-              ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
+              final ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
               final JsonNode jsonNode = objectMapper.convertValue(data, JsonNode.class);
               final String requestTypeName = requestType.getName();
               if (jsonNode.get(requestTypeName) != null
