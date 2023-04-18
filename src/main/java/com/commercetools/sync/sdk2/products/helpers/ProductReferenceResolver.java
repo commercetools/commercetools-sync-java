@@ -10,6 +10,7 @@ import static java.util.stream.Collectors.*;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryReference;
 import com.commercetools.api.models.category.CategoryResourceIdentifier;
 import com.commercetools.api.models.category.CategoryResourceIdentifierBuilder;
 import com.commercetools.api.models.product.CategoryOrderHints;
@@ -17,13 +18,13 @@ import com.commercetools.api.models.product.CategoryOrderHintsBuilder;
 import com.commercetools.api.models.product.ProductDraft;
 import com.commercetools.api.models.product.ProductDraftBuilder;
 import com.commercetools.api.models.product.ProductVariantDraft;
-import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.product_type.ProductTypeReference;
 import com.commercetools.api.models.product_type.ProductTypeResourceIdentifier;
 import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
-import com.commercetools.api.models.state.State;
+import com.commercetools.api.models.state.StateReference;
 import com.commercetools.api.models.state.StateResourceIdentifier;
 import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
-import com.commercetools.api.models.tax_category.TaxCategory;
+import com.commercetools.api.models.tax_category.TaxCategoryReference;
 import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifier;
 import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifierBuilder;
 import com.commercetools.sync.sdk2.commons.exceptions.ReferenceResolutionException;
@@ -185,7 +186,7 @@ public final class ProductReferenceResolver
    * @return a {@link java.util.concurrent.CompletionStage} that contains as a result a new builder
    *     instance with resolved product type reference or, in case an error occurs during reference
    *     resolution, a {@link
-   *     com.commercetools.sync.commons.exceptions.ReferenceResolutionException}.
+   *     com.commercetools.sync.sdk2.commons.exceptions.ReferenceResolutionException}.
    */
   @Nonnull
   public CompletionStage<ProductDraftBuilder> resolveProductTypeReference(
@@ -201,7 +202,7 @@ public final class ProductReferenceResolver
             new ReferenceResolutionException(
                 format(
                     FAILED_TO_RESOLVE_REFERENCE,
-                    ProductType.referenceTypeId(),
+                    ProductTypeReference.PRODUCT_TYPE,
                     draftBuilder.getKey(),
                     referenceResolutionException.getMessage())));
       }
@@ -235,7 +236,7 @@ public final class ProductReferenceResolver
                               new ReferenceResolutionException(
                                   format(
                                       FAILED_TO_RESOLVE_REFERENCE,
-                                      ProductType.referenceTypeId(),
+                                      ProductTypeReference.PRODUCT_TYPE,
                                       draftBuilder.getKey(),
                                       errorMessage)));
                         }));
@@ -269,7 +270,7 @@ public final class ProductReferenceResolver
               new ReferenceResolutionException(
                   format(
                       FAILED_TO_RESOLVE_REFERENCE,
-                      Category.referenceTypeId(),
+                      CategoryReference.CATEGORY,
                       draftBuilder.getKey(),
                       referenceResolutionException.getMessage())));
         }
@@ -324,7 +325,7 @@ public final class ProductReferenceResolver
                     new ReferenceResolutionException(
                         format(
                             FAILED_TO_RESOLVE_REFERENCE,
-                            Category.referenceTypeId(),
+                            CategoryReference.CATEGORY,
                             draftBuilder.getKey(),
                             errorMessage)));
               }
@@ -348,7 +349,7 @@ public final class ProductReferenceResolver
    * @return a {@link java.util.concurrent.CompletionStage} that contains as a result a new builder
    *     instance with resolved tax category reference or, in case an error occurs during reference
    *     resolution, a {@link
-   *     com.commercetools.sync.commons.exceptions.ReferenceResolutionException}.
+   *     com.commercetools.sync.sdk2.commons.exceptions.ReferenceResolutionException}.
    */
   @Nonnull
   public CompletionStage<ProductDraftBuilder> resolveTaxCategoryReference(
@@ -364,7 +365,7 @@ public final class ProductReferenceResolver
             new ReferenceResolutionException(
                 format(
                     FAILED_TO_RESOLVE_REFERENCE,
-                    TaxCategory.referenceTypeId(),
+                    TaxCategoryReference.TAX_CATEGORY,
                     draftBuilder.getKey(),
                     referenceResolutionException.getMessage())));
       }
@@ -398,7 +399,7 @@ public final class ProductReferenceResolver
                               new ReferenceResolutionException(
                                   format(
                                       FAILED_TO_RESOLVE_REFERENCE,
-                                      TaxCategory.referenceTypeId(),
+                                      TaxCategoryReference.TAX_CATEGORY,
                                       draftBuilder.getKey(),
                                       errorMessage)));
                         }));
@@ -415,7 +416,7 @@ public final class ProductReferenceResolver
    * @return a {@link java.util.concurrent.CompletionStage} that contains as a result a new builder
    *     instance with resolved state reference or, in case an error occurs during reference
    *     resolution, the future is completed exceptionally with a {@link
-   *     com.commercetools.sync.commons.exceptions.ReferenceResolutionException}.
+   *     com.commercetools.sync.sdk2.commons.exceptions.ReferenceResolutionException}.
    */
   @Nonnull
   public CompletionStage<ProductDraftBuilder> resolveStateReference(
@@ -430,7 +431,7 @@ public final class ProductReferenceResolver
             new ReferenceResolutionException(
                 format(
                     FAILED_TO_RESOLVE_REFERENCE,
-                    State.referenceTypeId(),
+                    StateReference.STATE,
                     draftBuilder.getKey(),
                     referenceResolutionException.getMessage())));
       }
@@ -463,7 +464,7 @@ public final class ProductReferenceResolver
                               new ReferenceResolutionException(
                                   format(
                                       FAILED_TO_RESOLVE_REFERENCE,
-                                      State.referenceTypeId(),
+                                      StateReference.STATE,
                                       draftBuilder.getKey(),
                                       errorMessage)));
                         }));

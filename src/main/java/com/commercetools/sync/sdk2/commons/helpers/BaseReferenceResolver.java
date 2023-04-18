@@ -6,6 +6,7 @@ import com.commercetools.api.models.common.Reference;
 import com.commercetools.api.models.common.ResourceIdentifier;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import com.commercetools.sync.sdk2.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.sdk2.services.impl.BaseTransformServiceImpl;
 import io.vrap.rmf.base.client.Draft;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
@@ -94,8 +95,7 @@ public abstract class BaseReferenceResolver<
       @Nonnull final ResourceIdentifier resourceIdentifier) throws ReferenceResolutionException {
 
     final String key = resourceIdentifier.getKey();
-    // todo: we not usign transformers at here
-    if (isBlank(key) /*|| BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER.equals(key)*/) {
+    if (isBlank(key) || BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER.equals(key)) {
       throw new ReferenceResolutionException(BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER);
     }
     return key;
