@@ -7,7 +7,6 @@ import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.getPrice
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.getProductVariantMock;
 import static com.commercetools.sync.sdk2.products.utils.VariantReferenceResolutionUtils.mapToPriceDrafts;
 import static com.commercetools.sync.sdk2.products.utils.VariantReferenceResolutionUtils.mapToProductVariantDrafts;
-import static com.commercetools.sync.sdk2.products.utils.VariantReferenceResolutionUtils.replaceAttributesReferencesIdsWithKeys;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -232,22 +231,21 @@ class VariantReferenceResolutionUtilsTest {
   }
 
   @Test
-  void replaceAttributesReferencesIdsWithKeys_WithNoAttributes_ShouldNotReplaceIds() {
+  void mapToVariantDraft_WithNoAttributes_ShouldNotReplaceIds() {
     final ProductVariant variant = mock(ProductVariant.class);
     when(variant.getAttributes()).thenReturn(new ArrayList<>());
-    final List<Attribute> replacedDrafts =
-        replaceAttributesReferencesIdsWithKeys(variant, referenceIdToKeyCache);
-    assertThat(replacedDrafts).isEmpty();
+    final List<ProductVariantDraft> replacedDrafts =
+            mapToProductVariantDrafts(singletonList(variant), referenceIdToKeyCache);
+    assertThat(replacedDrafts.get(0).getAttributes()).isEmpty();
   }
 
   @Test
   void
-      replaceAttributesReferencesIdsWithKeys_WithAttributesWithNoReferences_ShouldNotChangeAttributes() {
+      mapToVariantDraft_WithAttributesWithNoReferences_ShouldNotChangeAttributes() {
     final ProductProjection product = createProductFromJson(PRODUCT_KEY_1_RESOURCE_PATH);
     final ProductVariant masterVariant = product.getMasterVariant();
-    final List<Attribute> replacedDrafts =
-        replaceAttributesReferencesIdsWithKeys(masterVariant, referenceIdToKeyCache);
-    replacedDrafts.forEach(
+    final List<ProductVariantDraft> replacedDrafts = mapToProductVariantDrafts(singletonList(masterVariant), referenceIdToKeyCache);
+    replacedDrafts.get(0).getAttributes().forEach(
         attributeDraft -> {
           final String name = attributeDraft.getName();
           final Attribute originalAttribute =
