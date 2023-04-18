@@ -311,9 +311,9 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
     return Collections.emptyList();
   }
 
-  private void replaceReferences(
-      @Nonnull final List<Reference> references) {
-    references.forEach(reference -> reference.setId(this.referenceIdToKeyCache.get(reference.getId())));
+  private void replaceReferences(@Nonnull final List<Reference> references) {
+    references.forEach(
+        reference -> reference.setId(this.referenceIdToKeyCache.get(reference.getId())));
   }
 
   /**
@@ -333,8 +333,7 @@ public class ProductTransformServiceImpl extends BaseTransformServiceImpl
    *     {@code ctpClient}.
    */
   @Nonnull
-  CompletableFuture<Void> getIdToKeys(
-      @Nonnull final List<Reference> allAttributeReferences) {
+  CompletableFuture<Void> getIdToKeys(@Nonnull final List<Reference> allAttributeReferences) {
 
     final Set<Reference> nonCachedReferences = getNonCachedReferences(allAttributeReferences);
     final Map<GraphQlQueryResource, Set<String>> map =

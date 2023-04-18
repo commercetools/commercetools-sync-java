@@ -1,5 +1,13 @@
 package com.commercetools.sync.sdk2.products.impl;
 
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createProductFromJson;
+import static com.commercetools.sync.sdk2.services.impl.BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import com.commercetools.api.client.ByProjectKeyCustomObjectsGet;
 import com.commercetools.api.client.ByProjectKeyGraphqlPost;
 import com.commercetools.api.client.ProjectApiRoot;
@@ -27,10 +35,6 @@ import io.vrap.rmf.base.client.ApiHttpMethod;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -40,14 +44,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createProductFromJson;
-import static com.commercetools.sync.sdk2.services.impl.BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER;
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("unchecked")
 class ProductTransformServiceImplTest {

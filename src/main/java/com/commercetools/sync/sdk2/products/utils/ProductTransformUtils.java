@@ -7,10 +7,9 @@ import com.commercetools.api.models.product.ProductProjection;
 import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.sdk2.products.service.ProductTransformService;
 import com.commercetools.sync.sdk2.products.service.impl.ProductTransformServiceImpl;
-
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import javax.annotation.Nonnull;
 
 public final class ProductTransformUtils {
 

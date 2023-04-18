@@ -235,26 +235,29 @@ class VariantReferenceResolutionUtilsTest {
     final ProductVariant variant = mock(ProductVariant.class);
     when(variant.getAttributes()).thenReturn(new ArrayList<>());
     final List<ProductVariantDraft> replacedDrafts =
-            mapToProductVariantDrafts(singletonList(variant), referenceIdToKeyCache);
+        mapToProductVariantDrafts(singletonList(variant), referenceIdToKeyCache);
     assertThat(replacedDrafts.get(0).getAttributes()).isEmpty();
   }
 
   @Test
-  void
-      mapToVariantDraft_WithAttributesWithNoReferences_ShouldNotChangeAttributes() {
+  void mapToVariantDraft_WithAttributesWithNoReferences_ShouldNotChangeAttributes() {
     final ProductProjection product = createProductFromJson(PRODUCT_KEY_1_RESOURCE_PATH);
     final ProductVariant masterVariant = product.getMasterVariant();
-    final List<ProductVariantDraft> replacedDrafts = mapToProductVariantDrafts(singletonList(masterVariant), referenceIdToKeyCache);
-    replacedDrafts.get(0).getAttributes().forEach(
-        attributeDraft -> {
-          final String name = attributeDraft.getName();
-          final Attribute originalAttribute =
-              masterVariant.getAttributes().stream()
-                  .filter(attribute -> attribute.getName().equals(name))
-                  .findFirst()
-                  .orElse(null);
-          assertThat(originalAttribute).isNotNull();
-          assertThat(originalAttribute.getValue()).isEqualTo(attributeDraft.getValue());
-        });
+    final List<ProductVariantDraft> replacedDrafts =
+        mapToProductVariantDrafts(singletonList(masterVariant), referenceIdToKeyCache);
+    replacedDrafts
+        .get(0)
+        .getAttributes()
+        .forEach(
+            attributeDraft -> {
+              final String name = attributeDraft.getName();
+              final Attribute originalAttribute =
+                  masterVariant.getAttributes().stream()
+                      .filter(attribute -> attribute.getName().equals(name))
+                      .findFirst()
+                      .orElse(null);
+              assertThat(originalAttribute).isNotNull();
+              assertThat(originalAttribute.getValue()).isEqualTo(attributeDraft.getValue());
+            });
   }
 }
