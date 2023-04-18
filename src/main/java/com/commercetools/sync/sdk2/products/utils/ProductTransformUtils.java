@@ -1,15 +1,16 @@
 package com.commercetools.sync.sdk2.products.utils;
 
-import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import com.commercetools.sync.products.service.ProductTransformService;
-import com.commercetools.sync.products.service.impl.ProductTransformServiceImpl;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductProjection;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.product.Product;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
+import com.commercetools.sync.sdk2.products.service.ProductTransformService;
+import com.commercetools.sync.sdk2.products.service.impl.ProductTransformServiceImpl;
+
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import javax.annotation.Nonnull;
 
 public final class ProductTransformUtils {
 
@@ -36,7 +37,7 @@ public final class ProductTransformUtils {
    */
   @Nonnull
   public static CompletableFuture<List<ProductDraft>> toProductDrafts(
-      @Nonnull final SphereClient client,
+      @Nonnull final ProjectApiRoot client,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache,
       @Nonnull final List<ProductProjection> products) {
 
