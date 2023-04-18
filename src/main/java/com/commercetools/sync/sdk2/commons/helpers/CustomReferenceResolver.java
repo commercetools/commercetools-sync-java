@@ -28,7 +28,7 @@ import javax.annotation.Nullable;
  *
  * @param <ResourceDraftT> the resource draft type for which reference resolution has to be done on.
  * @param <BuilderT> the resource draft builder where resolved values should be set. The builder
- *     type should correspond the {@code D} type.
+ *     type should correspond the {@code ResourceDraftT} type.
  * @param <SyncOptionsT> a subclass implementation of {@link BaseSyncOptions} that is used to
  *     allow/deny some specific options, specified by the user, on reference resolution.
  */

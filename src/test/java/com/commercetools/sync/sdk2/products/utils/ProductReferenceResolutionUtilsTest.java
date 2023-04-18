@@ -1,7 +1,7 @@
 package com.commercetools.sync.sdk2.products.utils;
 
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createObjectFromResource;
-import static com.commercetools.sync.sdk2.products.utils.ProductReferenceResolutionUtils.mapToProductDrafts;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createProductFromJson;
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -10,14 +10,12 @@ import static org.mockito.Mockito.when;
 import com.commercetools.api.models.category.CategoryReference;
 import com.commercetools.api.models.category.CategoryReferenceBuilder;
 import com.commercetools.api.models.category.CategoryResourceIdentifier;
+import com.commercetools.api.models.common.ResourceIdentifier;
 import com.commercetools.api.models.product.CategoryOrderHints;
 import com.commercetools.api.models.product.CategoryOrderHintsBuilder;
-import com.commercetools.api.models.product.Product;
 import com.commercetools.api.models.product.ProductDraft;
-import com.commercetools.api.models.product.ProductMixin;
 import com.commercetools.api.models.product.ProductProjection;
-import com.commercetools.api.models.product.ProductProjectionType;
-import com.commercetools.sync.sdk2.commons.helpers.CategoryReferencePair;
+import com.commercetools.sync.sdk2.commons.helpers.CategoryResourceIdentifierPair;
 import com.commercetools.sync.sdk2.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
 import java.util.Collections;
@@ -45,10 +43,7 @@ class ProductReferenceResolutionUtilsTest {
   void mapToProductDrafts_WithNonExpandedReferences_ShouldUseCacheAndReplaceReferences() {
 
     final List<ProductProjection> products =
-        singletonList(
-            ProductMixin.toProjection(
-                createObjectFromResource("product-with-unresolved-references.json", Product.class),
-                ProductProjectionType.STAGED));
+        asList(createProductFromJson("product-with-unresolved-references.json"));
 
     referenceIdToKeyCache.add("cda0dbf7-b42e-40bf-8453-241d5b587f93", "productTypeKey");
     referenceIdToKeyCache.add("1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f", "categoryKey1");
@@ -60,7 +55,7 @@ class ProductReferenceResolutionUtilsTest {
     referenceIdToKeyCache.add("custom_type_id", "typeKey");
 
     final List<ProductDraft> productDraftsWithKeysOnReferences =
-        mapToProductDrafts(products, referenceIdToKeyCache);
+        ProductReferenceResolutionUtils.mapToProductDrafts(products, referenceIdToKeyCache);
 
     // assertions
 
@@ -106,7 +101,7 @@ class ProductReferenceResolutionUtilsTest {
 
     final ProductProjection product = getProductMock(categoryReferences, categoryOrderHints);
 
-    final CategoryReferencePair categoryReferencePair =
+    final CategoryResourceIdentifierPair categoryReferencePair =
         ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, referenceIdToKeyCache);
 
     assertThat(categoryReferencePair).isNotNull();
@@ -117,7 +112,7 @@ class ProductReferenceResolutionUtilsTest {
         categoryReferencePair.getCategoryOrderHints();
 
     assertThat(categoryReferencesWithKeys)
-        .extracting(CategoryResourceIdentifier::getId)
+        .extracting(ResourceIdentifier::getId)
         .containsExactlyInAnyOrder(categoryId);
     assertThat(categoryOrderHintsWithKeys).isEqualTo(product.getCategoryOrderHints());
   }
@@ -130,7 +125,7 @@ class ProductReferenceResolutionUtilsTest {
         singletonList(CategoryReferenceBuilder.of().id(categoryId).build());
     final ProductProjection product = getProductMock(categoryReferences, null);
 
-    final CategoryReferencePair categoryReferencePair =
+    final CategoryResourceIdentifierPair categoryReferencePair =
         ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, referenceIdToKeyCache);
 
     assertThat(categoryReferencePair).isNotNull();
@@ -141,7 +136,7 @@ class ProductReferenceResolutionUtilsTest {
         categoryReferencePair.getCategoryOrderHints();
 
     assertThat(categoryReferencesWithKeys)
-        .extracting(CategoryResourceIdentifier::getId)
+        .extracting(ResourceIdentifier::getId)
         .containsExactlyInAnyOrder(categoryId);
     assertThat(categoryOrderHintsWithKeys).isEqualTo(product.getCategoryOrderHints());
   }
@@ -150,7 +145,7 @@ class ProductReferenceResolutionUtilsTest {
   void mapToCategoryReferencePair_WithNoReferences_ShouldNotReplaceIds() {
     final ProductProjection product = getProductMock(Collections.emptyList(), null);
 
-    final CategoryReferencePair categoryReferencePair =
+    final CategoryResourceIdentifierPair categoryReferencePair =
         ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, referenceIdToKeyCache);
 
     assertThat(categoryReferencePair).isNotNull();
@@ -167,7 +162,7 @@ class ProductReferenceResolutionUtilsTest {
   void mapToCategoryReferencePair_WithNullReferences_ShouldNotReplaceIds() {
     final ProductProjection product = getProductMock(singletonList(null), null);
 
-    final CategoryReferencePair categoryReferencePair =
+    final CategoryResourceIdentifierPair categoryReferencePair =
         ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, referenceIdToKeyCache);
 
     assertThat(categoryReferencePair).isNotNull();

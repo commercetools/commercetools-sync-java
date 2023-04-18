@@ -7,25 +7,24 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Container for a {@link java.util.List} of {@link
- * com.commercetools.api.models.category.CategoryResourceIdentifier}s and a {@link
+ * Container for a {@link List} of {@link CategoryResourceIdentifier} and a {@link
  * CategoryOrderHints}.
  */
-public final class CategoryReferencePair {
+public final class CategoryResourceIdentifierPair {
   private List<CategoryResourceIdentifier> categoryResourceIdentifiers;
   private CategoryOrderHints categoryOrderHints;
 
-  private CategoryReferencePair(
+  private CategoryResourceIdentifierPair(
       @Nonnull final List<CategoryResourceIdentifier> categoryResourceIdentifiers,
       @Nullable final CategoryOrderHints categoryOrderHints) {
     this.categoryResourceIdentifiers = categoryResourceIdentifiers;
     this.categoryOrderHints = categoryOrderHints;
   }
 
-  public static CategoryReferencePair of(
-      @Nonnull final List<CategoryResourceIdentifier> categoryReferences,
+  public static CategoryResourceIdentifierPair of(
+      @Nonnull final List<CategoryResourceIdentifier> categoryResourceIdentifiers,
       @Nullable final CategoryOrderHints categoryOrderHints) {
-    return new CategoryReferencePair(categoryReferences, categoryOrderHints);
+    return new CategoryResourceIdentifierPair(categoryResourceIdentifiers, categoryOrderHints);
   }
 
   public List<CategoryResourceIdentifier> getCategoryResourceIdentifiers() {

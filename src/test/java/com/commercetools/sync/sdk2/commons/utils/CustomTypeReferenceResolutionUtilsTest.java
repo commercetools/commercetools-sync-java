@@ -10,7 +10,6 @@ import com.commercetools.api.models.type.CustomFields;
 import com.commercetools.api.models.type.CustomFieldsDraft;
 import com.commercetools.api.models.type.TypeReference;
 import com.commercetools.api.models.type.TypeReferenceBuilder;
-import com.commercetools.sync.sdk2.categories.models.CategoryCustomTypeAdapter;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +23,7 @@ class CustomTypeReferenceResolutionUtilsTest {
     final Category mockCategory = mock(Category.class);
 
     final CustomFieldsDraft customFieldsDraft =
-        mapToCustomFieldsDraft(CategoryCustomTypeAdapter.of(mockCategory), referenceIdToKeyCache);
+        mapToCustomFieldsDraft(mockCategory, referenceIdToKeyCache);
 
     assertThat(customFieldsDraft).isNull();
   }
@@ -46,7 +45,7 @@ class CustomTypeReferenceResolutionUtilsTest {
 
     // test
     final CustomFieldsDraft customFieldsDraft =
-        mapToCustomFieldsDraft(CategoryCustomTypeAdapter.of(mockCategory), referenceIdToKeyCache);
+        mapToCustomFieldsDraft(mockCategory, referenceIdToKeyCache);
 
     // assertion
     assertThat(customFieldsDraft).isNotNull();
@@ -67,7 +66,7 @@ class CustomTypeReferenceResolutionUtilsTest {
 
     // test
     final CustomFieldsDraft customFieldsDraft =
-        mapToCustomFieldsDraft(CategoryCustomTypeAdapter.of(mockCategory), referenceIdToKeyCache);
+        mapToCustomFieldsDraft(mockCategory, referenceIdToKeyCache);
 
     // assertion
     assertThat(customFieldsDraft).isNotNull();
