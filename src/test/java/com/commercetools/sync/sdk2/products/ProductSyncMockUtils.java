@@ -1,7 +1,5 @@
 package com.commercetools.sync.sdk2.products;
 
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.sync.sdk2.commons.helpers.DefaultCurrencyUnits.EUR;
 import static com.commercetools.sync.sdk2.products.utils.AssetUtils.createAssetDraft;
 import static com.commercetools.sync.sdk2.products.utils.PriceUtils.createPriceDraft;
@@ -20,35 +18,20 @@ import com.commercetools.api.models.category.CategoryResourceIdentifier;
 import com.commercetools.api.models.category.CategoryResourceIdentifierBuilder;
 import com.commercetools.api.models.channel.Channel;
 import com.commercetools.api.models.channel.ChannelReference;
-import com.commercetools.api.models.common.Asset;
-import com.commercetools.api.models.common.AssetDraft;
-import com.commercetools.api.models.common.CentPrecisionMoney;
-import com.commercetools.api.models.common.CentPrecisionMoneyBuilder;
-import com.commercetools.api.models.common.LocalizedString;
-import com.commercetools.api.models.common.Price;
-import com.commercetools.api.models.common.PriceDraft;
-import com.commercetools.api.models.common.Reference;
-import com.commercetools.api.models.common.TypedMoneyBuilder;
+import com.commercetools.api.models.common.*;
+import com.commercetools.api.models.custom_object.CustomObjectReference;
+import com.commercetools.api.models.custom_object.CustomObjectReferenceBuilder;
+import com.commercetools.api.models.customer.CustomerReference;
+import com.commercetools.api.models.customer.CustomerReferenceBuilder;
 import com.commercetools.api.models.customer_group.CustomerGroup;
 import com.commercetools.api.models.customer_group.CustomerGroupReference;
-import com.commercetools.api.models.product.Attribute;
-import com.commercetools.api.models.product.AttributeBuilder;
-import com.commercetools.api.models.product.CategoryOrderHints;
-import com.commercetools.api.models.product.CategoryOrderHintsBuilder;
-import com.commercetools.api.models.product.Product;
-import com.commercetools.api.models.product.ProductDraft;
-import com.commercetools.api.models.product.ProductDraftBuilder;
-import com.commercetools.api.models.product.ProductMixin;
-import com.commercetools.api.models.product.ProductProjection;
-import com.commercetools.api.models.product.ProductProjectionType;
-import com.commercetools.api.models.product.ProductReference;
-import com.commercetools.api.models.product.ProductVariant;
-import com.commercetools.api.models.product.ProductVariantDraft;
-import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.product.*;
 import com.commercetools.api.models.product_type.ProductTypeReference;
+import com.commercetools.api.models.product_type.ProductTypeReferenceBuilder;
 import com.commercetools.api.models.product_type.ProductTypeResourceIdentifier;
 import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
 import com.commercetools.api.models.state.StateReference;
+import com.commercetools.api.models.state.StateReferenceBuilder;
 import com.commercetools.api.models.state.StateResourceIdentifier;
 import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
 import com.commercetools.api.models.tax_category.TaxCategoryReference;
@@ -57,7 +40,6 @@ import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifierBu
 import com.commercetools.api.models.type.CustomFields;
 import com.commercetools.api.models.type.Type;
 import com.commercetools.api.models.type.TypeReference;
-import com.commercetools.sync.sdk2.commons.helpers.DefaultCurrencyUnits;
 import com.commercetools.sync.sdk2.services.CategoryService;
 import com.commercetools.sync.sdk2.services.CustomObjectService;
 import com.commercetools.sync.sdk2.services.CustomerGroupService;
@@ -66,9 +48,6 @@ import com.commercetools.sync.sdk2.services.ProductService;
 import com.commercetools.sync.sdk2.services.ProductTypeService;
 import com.commercetools.sync.sdk2.services.StateService;
 import com.commercetools.sync.sdk2.services.TaxCategoryService;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -567,53 +546,61 @@ public class ProductSyncMockUtils {
    */
   @Nonnull
   public static Attribute getReferenceSetAttributeDraft(
-      @Nonnull final String attributeName, @Nonnull final ObjectNode... references) {
-    final ArrayNode referenceSet = JsonNodeFactory.instance.arrayNode();
-    referenceSet.addAll(Arrays.asList(references));
+      @Nonnull final String attributeName, @Nonnull final Reference... references) {
+    final List<Reference> referenceSet = Arrays.asList(references);
     return AttributeBuilder.of().name(attributeName).value(referenceSet).build();
   }
 
   /**
-   * Creates an {@link ObjectNode} that represents a product reference with a random uuid in the id
-   * field.
+   * Creates an {@link ProductReference} that represents a product reference with a random uuid in
+   * the id field.
    *
-   * @return an {@link ObjectNode} that represents a product reference with a random uuid in the id
-   *     field.
+   * @return an {@link ProductReference} that represents a product reference with a random uuid in
+   *     the id field.
    */
   @Nonnull
-  public static ObjectNode getProductReferenceWithRandomId() {
-    final ObjectNode productReference = JsonNodeFactory.instance.objectNode();
-    productReference.put("typeId", "product");
-    productReference.put("id", UUID.randomUUID().toString());
-    return productReference;
+  public static ProductReference getProductReferenceWithRandomId() {
+    return ProductReferenceBuilder.of().id(UUID.randomUUID().toString()).build();
   }
 
   /**
-   * Creates an {@link ObjectNode} that represents a product reference with the supplied {@code id}
-   * in the id field.
+   * Creates an {@link ProductReference} that represents a product reference with the supplied
+   * {@code id} in the id field.
    *
-   * @return an {@link ObjectNode} that represents a product reference with the supplied {@code id}
-   *     in the id field.
+   * @return an {@link ProductReference} that represents a product reference with the supplied
+   *     {@code id} in the id field.
    */
   @Nonnull
-  public static ObjectNode getProductReferenceWithId(@Nonnull final String id) {
-    return createReferenceObject(id, ProductReference.PRODUCT);
+  public static ProductReference getProductReferenceWithId(@Nonnull final String id) {
+    return (ProductReference) createReferenceObject(id, ProductReference.PRODUCT);
   }
 
   /**
-   * Creates an {@link ObjectNode} that represents a reference with the supplied {@code id} in the
-   * id field and {@code typeId} field in the typeId field.
+   * Creates an {@link Reference} that represents a reference with the supplied {@code id} in the id
+   * field and {@code typeId} field in the typeId field.
    *
-   * @return an {@link ObjectNode} that represents a product reference with the supplied {@code id}
+   * @return an {@link Reference} that represents a product reference with the supplied {@code id}
    *     in the id field and {@code typeId} field in the typeId field.
    */
   @Nonnull
-  public static ObjectNode createReferenceObject(
+  public static Reference createReferenceObject(
       @Nonnull final String id, @Nonnull final String typeId) {
-    final ObjectNode reference = JsonNodeFactory.instance.objectNode();
-    reference.put(REFERENCE_TYPE_ID_FIELD, typeId);
-    reference.put(REFERENCE_ID_FIELD, id);
-    return reference;
+    switch (typeId) {
+      case ProductReference.PRODUCT:
+        return ProductReferenceBuilder.of().id(id).build();
+      case ProductTypeReference.PRODUCT_TYPE:
+        return ProductTypeReferenceBuilder.of().id(id).build();
+      case CategoryReference.CATEGORY:
+        return CategoryReferenceBuilder.of().id(id).build();
+      case CustomerReference.CUSTOMER:
+        return CustomerReferenceBuilder.of().id(id).build();
+      case CustomObjectReference.KEY_VALUE_DOCUMENT:
+        return CustomObjectReferenceBuilder.of().id(id).build();
+      case StateReference.STATE:
+        return StateReferenceBuilder.of().id(id).build();
+      default:
+        return new ReferenceImpl();
+    }
   }
 
   @Nonnull

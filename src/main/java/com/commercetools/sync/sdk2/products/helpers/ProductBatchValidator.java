@@ -1,8 +1,7 @@
 package com.commercetools.sync.sdk2.products.helpers;
 
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.isReferenceOfType;
+import static com.commercetools.sync.sdk2.commons.utils.ResourceIdentifierUtils.isReferenceOfType;
+import static com.commercetools.sync.sdk2.products.utils.AttributeUtils.getAttributeReference;
 import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static java.util.Objects.requireNonNull;
@@ -10,6 +9,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.models.category.CategoryReference;
+import com.commercetools.api.models.common.Reference;
 import com.commercetools.api.models.custom_object.CustomObjectReference;
 import com.commercetools.api.models.product.Attribute;
 import com.commercetools.api.models.product.ProductDraft;
@@ -20,7 +20,6 @@ import com.commercetools.sync.sdk2.commons.helpers.BaseBatchValidator;
 import com.commercetools.sync.sdk2.commons.utils.SyncUtils;
 import com.commercetools.sync.sdk2.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
-import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -240,7 +239,7 @@ public class ProductBatchValidator
    * Draft.
    *
    * <p>Note: Null attributes are skipped since they are validated at a later stage in ({@link
-   * com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils})
+   * com.commercetools.sync.sdk2.products.utils.ProductVariantUpdateActionUtils})
    *
    * @param variantDraft the variant draft to get the referenced product keys from.
    * @return the set of referenced product keys.
@@ -269,17 +268,15 @@ public class ProductBatchValidator
   private static Set<String> getReferencedKeysWithReferenceTypeId(
       @Nonnull final Attribute attribute, @Nonnull final String referenceTypeId) {
 
-    final JsonNode attributeValue = (JsonNode) attribute.getValue();
-    if (attributeValue == null) {
+    final List<Reference> allAttributeReferences = getAttributeReference(attribute);
+
+    if (allAttributeReferences.isEmpty()) {
       return emptySet();
     }
 
-    final List<JsonNode> allAttributeReferences =
-        attributeValue.findParents(REFERENCE_TYPE_ID_FIELD);
-
     return allAttributeReferences.stream()
         .filter(reference -> isReferenceOfType(reference, referenceTypeId))
-        .map(reference -> reference.get(REFERENCE_ID_FIELD).asText())
+        .map(reference -> reference.getId())
         .filter(Objects::nonNull)
         .collect(Collectors.toSet());
   }
