@@ -11,9 +11,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * This class provides as a container of the unique identifier of an {@link
- * io.sphere.sdk.inventory.InventoryEntry} for the sync which is a combination of the SKU and the
- * supply channel id of this inventory entry.
+ * This class provides as a container of the unique identifier of an {@link InventoryEntry} for the
+ * sync which is a combination of the SKU and the supply channel id of this inventory entry.
  */
 public final class InventoryEntryIdentifier {
   private final String sku;
@@ -27,8 +26,7 @@ public final class InventoryEntryIdentifier {
 
   /**
    * Builds an {@link com.commercetools.sync.sdk2.inventories.helpers.InventoryEntryIdentifier}
-   * instance given an {@link io.sphere.sdk.inventory.InventoryEntryDraft} using its sku and supply
-   * channel id.
+   * instance given an {@link InventoryEntryDraft} using its sku and supply channel id.
    *
    * @param inventoryEntryDraft the draft to take the sku and supply channel id value from.
    * @return an instance of {@link
@@ -47,8 +45,7 @@ public final class InventoryEntryIdentifier {
 
   /**
    * Builds an {@link com.commercetools.sync.sdk2.inventories.helpers.InventoryEntryIdentifier}
-   * instance given an {@link io.sphere.sdk.inventory.InventoryEntry} using it's sku and supply
-   * channel id.
+   * instance given an {@link InventoryEntry} using it's sku and supply channel id.
    *
    * @param inventoryEntry the entry to take the sku and channel id value from.
    * @return an instance of {@link

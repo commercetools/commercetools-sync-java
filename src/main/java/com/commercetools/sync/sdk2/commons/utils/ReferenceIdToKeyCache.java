@@ -1,10 +1,11 @@
 package com.commercetools.sync.sdk2.commons.utils;
 
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import java.util.Map;
 import javax.annotation.Nonnull;
 
 /**
- * An interface used to manage cache to store reference id to key pairs.
+ * A Interface used to manage cache to store reference id to key pairs.
  *
  * <p>The cache can be implemented by any caching library and override the methods to perform
  * caching operations. Default cache implementation is provided in the library class

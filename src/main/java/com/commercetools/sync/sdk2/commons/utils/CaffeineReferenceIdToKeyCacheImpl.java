@@ -1,5 +1,6 @@
 package com.commercetools.sync.sdk2.commons.utils;
 
+import com.commercetools.sync.sdk2.services.impl.BaseTransformServiceImpl;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.Map;
@@ -8,8 +9,7 @@ import java.util.Map;
  * A Caffeine cache to store reference id to key pairs.
  *
  * <p>Designed to be used as an reference in memory cache as a part of {@link
- * com.commercetools.sync.services.impl.BaseTransformServiceImpl} instances, such as {@link
- * com.commercetools.sync.products.service.ProductTransformService}.
+ * BaseTransformServiceImpl} instances.
  *
  * <p>The cache is implemented by the caffeine library which implements a LRU based cache eviction
  * strategy. It means unused id to key pairs will be evicted, also it stores max 10000 pairs to

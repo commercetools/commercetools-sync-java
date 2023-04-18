@@ -1,23 +1,21 @@
 package com.commercetools.sync.sdk2.commons.utils;
 
-import static com.commercetools.sync.sdk2.categories.CategorySyncMockUtils.getMockCategoryDraft;
 import static com.commercetools.sync.sdk2.commons.utils.SyncUtils.*;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.commercetools.api.models.category.CategoryDraft;
-import com.commercetools.api.models.category.CategoryReference;
-import com.commercetools.api.models.category.CategoryReferenceBuilder;
-import com.commercetools.api.models.category.CategoryResourceIdentifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
+import com.commercetools.api.models.category.*;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.common.Reference;
+import com.commercetools.api.models.common.ResourceIdentifier;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.FieldContainerBuilder;
+import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -125,6 +123,14 @@ class SyncUtilsTest {
   }
 
   @Test
+  void getReferenceWithKeyReplaced_WithNullReference_ShouldReturnNullReference() {
+    final Reference keyReplacedReference =
+        getReferenceWithKeyReplaced(
+            null, () -> CategoryReferenceBuilder.of().id("id").build(), referenceIdToKeyCache);
+    assertThat(keyReplacedReference).isNull();
+  }
+
+  @Test
   void
       getReferenceWithKeyReplaced_WithCachedCategoryReference_ShouldReturnCategoryReferenceWithKey() {
     final String categoryKey = "categoryKey";
@@ -135,7 +141,7 @@ class SyncUtilsTest {
     final CategoryReference categoryReference =
         CategoryReferenceBuilder.of().id(categoryId).build();
 
-    final CategoryReference keyReplacedReference =
+    final Reference keyReplacedReference =
         getReferenceWithKeyReplaced(
             categoryReference,
             () ->
@@ -159,8 +165,11 @@ class SyncUtilsTest {
     final CategoryReference categoryReference =
         CategoryReferenceBuilder.of().id(categoryId).build();
 
-    final CategoryResourceIdentifier resourceIdentifier =
-        getResourceIdentifierWithKey(categoryReference, referenceIdToKeyCache);
+    final ResourceIdentifier resourceIdentifier =
+        getResourceIdentifierWithKey(
+            categoryReference,
+            referenceIdToKeyCache,
+            (id, key) -> CategoryResourceIdentifierBuilder.of().id(id).key(key).build());
 
     assertThat(resourceIdentifier).isNotNull();
     assertThat(resourceIdentifier.getKey()).isEqualTo(categoryKey);
@@ -172,7 +181,7 @@ class SyncUtilsTest {
     final CategoryReference categoryReference =
         CategoryReferenceBuilder.of().id(categoryUuid).build();
 
-    final CategoryReference keyReplacedReference =
+    final Reference keyReplacedReference =
         getReferenceWithKeyReplaced(
             categoryReference,
             () ->
@@ -191,8 +200,11 @@ class SyncUtilsTest {
     final CategoryReference categoryReference =
         CategoryReferenceBuilder.of().id(categoryUuid).build();
 
-    final CategoryResourceIdentifier resourceIdentifier =
-        getResourceIdentifierWithKey(categoryReference, referenceIdToKeyCache);
+    final ResourceIdentifier resourceIdentifier =
+        getResourceIdentifierWithKey(
+            categoryReference,
+            referenceIdToKeyCache,
+            (id, key) -> CategoryResourceIdentifierBuilder.of().id(id).key(key).build());
 
     assertThat(resourceIdentifier).isNotNull();
     assertThat(resourceIdentifier.getId()).isEqualTo(categoryUuid);
@@ -200,8 +212,32 @@ class SyncUtilsTest {
 
   @Test
   void getResourceIdentifierWithKey_WithNullReference_ShouldReturnNull() {
-    final CategoryResourceIdentifier resourceIdentifier =
-        getResourceIdentifierWithKey((CategoryReference) null, referenceIdToKeyCache);
+    final ResourceIdentifier resourceIdentifier =
+        getResourceIdentifierWithKey(
+            null,
+            referenceIdToKeyCache,
+            (id, key) -> CategoryResourceIdentifierBuilder.of().id(id).key(key).build());
     assertThat(resourceIdentifier).isNull();
+  }
+
+  // TODO: Replace with CategorySyncMockUtils when CategorySync was migrated
+  private CategoryDraft getMockCategoryDraft(
+      @Nonnull final Locale locale,
+      @Nonnull final String name,
+      @Nonnull final String key,
+      @Nullable final String parentKey,
+      @Nonnull final String customTypeKey,
+      @Nonnull final Map<String, Object> customFields) {
+    return CategoryDraftBuilder.of()
+        .name(LocalizedString.of(locale, name))
+        .slug(LocalizedString.of(locale, "testSlug"))
+        .key(key)
+        .parent(CategoryResourceIdentifierBuilder.of().key(parentKey).build())
+        .custom(
+            CustomFieldsDraftBuilder.of()
+                .type(TypeResourceIdentifierBuilder.of().key(customTypeKey).build())
+                .fields(FieldContainerBuilder.of().values(customFields).build())
+                .build())
+        .build();
   }
 }
