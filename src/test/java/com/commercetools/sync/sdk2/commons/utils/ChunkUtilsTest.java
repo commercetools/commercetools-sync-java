@@ -1,37 +1,23 @@
 package com.commercetools.sync.sdk2.commons.utils;
 
-import com.commercetools.api.client.ApiRoot;
-import com.commercetools.api.client.ByProjectKeyCategoriesGet;
-import com.commercetools.api.client.ByProjectKeyGraphqlPost;
-import com.commercetools.api.client.ProjectApiRoot;
-import com.commercetools.api.defaultconfig.ApiRootBuilder;
-import com.commercetools.api.models.PagedQueryResourceRequest;
-import com.commercetools.api.models.category.Category;
-import com.commercetools.api.models.category.CategoryPagedQueryResponse;
-import com.commercetools.api.models.graph_ql.GraphQLRequest;
-import com.commercetools.api.models.graph_ql.GraphQLResponse;
-import com.commercetools.api.models.graph_ql.GraphQLResponseBuilder;
-import com.commercetools.sync.commons.models.ResourceKeyId;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.sphere.sdk.client.SphereClient;
-import io.vrap.rmf.base.client.ApiHttpClientImpl;
-import io.vrap.rmf.base.client.ApiHttpResponse;
-import io.vrap.rmf.base.client.utils.json.JsonUtils;
-import org.junit.jupiter.api.Test;
-
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+
+import com.commercetools.api.client.ByProjectKeyCategoriesGet;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.defaultconfig.ApiRootBuilder;
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryPagedQueryResponse;
+import com.commercetools.api.models.graph_ql.GraphQLRequest;
+import com.commercetools.api.models.graph_ql.GraphQLResponse;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
+import org.junit.jupiter.api.Test;
 
 class ChunkUtilsTest {
 
@@ -76,12 +62,20 @@ class ChunkUtilsTest {
 
     final List<ApiHttpResponse<CategoryPagedQueryResponse>> results =
         ChunkUtils.executeChunks(
-                asList(getCategoryQueryGetWithWhereKeyInList(asList("1", "2", "3"), jsonStringCategories),
-                    getCategoryQueryGetWithWhereKeyInList(asList("4", "5", "6"), jsonStringCategories)))
+                asList(
+                    getCategoryQueryGetWithWhereKeyInList(
+                        asList("1", "2", "3"), jsonStringCategories),
+                    getCategoryQueryGetWithWhereKeyInList(
+                        asList("4", "5", "6"), jsonStringCategories)))
             .join();
 
     assertThat(results).hasSize(2);
-    List<Category> categories = results.stream().map(ApiHttpResponse::getBody).map(CategoryPagedQueryResponse::getResults).flatMap(Collection::stream).collect(Collectors.toList());
+    List<Category> categories =
+        results.stream()
+            .map(ApiHttpResponse::getBody)
+            .map(CategoryPagedQueryResponse::getResults)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
     assertThat(categories).hasSize(6);
   }
 
@@ -92,28 +86,44 @@ class ChunkUtilsTest {
         "{\"data\": {\"categories\": {\"results\":[{\"id\":\"coId1\", \"key\":\"coKey1\"},"
             + "{\"id\":\"coId2\", \"key\":\"coKey2\"}]}}}";
 
-    ProjectApiRoot client = ApiRootBuilder.of(request -> {
-      if (request.getUri() != null && request.getUri().toString().contains("graphql")) {
-        return completedFuture(new ApiHttpResponse<>(200, null, jsonStringKeyToId.getBytes(StandardCharsets.UTF_8)));
-      }
-      return completedFuture(new ApiHttpResponse<>(404, null, "".getBytes(StandardCharsets.UTF_8)));
-    }).withApiBaseUrl("baseUrl").build("testClient");
+    ProjectApiRoot client =
+        ApiRootBuilder.of(
+                request -> {
+                  if (request.getUri() != null && request.getUri().toString().contains("graphql")) {
+                    return completedFuture(
+                        new ApiHttpResponse<>(
+                            200, null, jsonStringKeyToId.getBytes(StandardCharsets.UTF_8)));
+                  }
+                  return completedFuture(
+                      new ApiHttpResponse<>(404, null, "".getBytes(StandardCharsets.UTF_8)));
+                })
+            .withApiBaseUrl("baseUrl")
+            .build("testClient");
 
     final List<ApiHttpResponse<GraphQLResponse>> results =
-        ChunkUtils.executeChunks(client, asList(mock(GraphQLRequest.class), mock(GraphQLRequest.class), mock(GraphQLRequest.class))).join();
+        ChunkUtils.executeChunks(
+                client,
+                asList(
+                    mock(GraphQLRequest.class),
+                    mock(GraphQLRequest.class),
+                    mock(GraphQLRequest.class)))
+            .join();
 
     assertThat(results).hasSize(3);
   }
 
-  private ByProjectKeyCategoriesGet getCategoryQueryGetWithWhereKeyInList(final List<String> keylist, final String response) {
-    return ApiRootBuilder.of(request -> completedFuture(new ApiHttpResponse<>(200, null, response.getBytes(StandardCharsets.UTF_8)))
-    )
-            .withApiBaseUrl("baseURl")
-            .build()
-            .withProjectKey("projectKey")
-            .categories()
-            .get()
-            .withWhere("key in :keys")
-            .withPredicateVar("keys", keylist);
+  private ByProjectKeyCategoriesGet getCategoryQueryGetWithWhereKeyInList(
+      final List<String> keylist, final String response) {
+    return ApiRootBuilder.of(
+            request ->
+                completedFuture(
+                    new ApiHttpResponse<>(200, null, response.getBytes(StandardCharsets.UTF_8))))
+        .withApiBaseUrl("baseURl")
+        .build()
+        .withProjectKey("projectKey")
+        .categories()
+        .get()
+        .withWhere("key in :keys")
+        .withPredicateVar("keys", keylist);
   }
 }
