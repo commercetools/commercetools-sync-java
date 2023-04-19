@@ -1,6 +1,6 @@
 package com.commercetools.sync.sdk2.customers;
 
-import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+import static com.commercetools.sync.sdk2.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.sdk2.customers.utils.CustomerSyncUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
