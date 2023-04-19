@@ -1,20 +1,14 @@
 package com.commercetools.sync.sdk2.products.utils;
 
 import static com.commercetools.sync.sdk2.commons.utils.AssetReferenceResolutionUtils.mapToAssetDrafts;
-import static com.commercetools.sync.sdk2.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static com.commercetools.sync.sdk2.products.utils.PriceUtils.createPriceDraft;
 import static java.util.stream.Collectors.toList;
 
 import com.commercetools.api.models.common.PriceDraft;
 import com.commercetools.api.models.product.*;
-import com.commercetools.api.models.product_type.ProductTypeReference;
-import com.commercetools.api.models.product_type.ProductTypeReferenceImpl;
 import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import javax.annotation.Nonnull;
 
 /**
@@ -57,7 +51,7 @@ public final class VariantReferenceResolutionUtils {
         .sku(productVariant.getSku())
         .key(productVariant.getKey())
         .prices(mapToPriceDrafts(productVariant, referenceIdToKeyCache))
-        .attributes(replaceAttributesReferencesIdsWithKeys(productVariant, referenceIdToKeyCache))
+        .attributes(productVariant.getAttributes())
         .assets(mapToAssetDrafts(productVariant.getAssets(), referenceIdToKeyCache))
         .build();
   }
@@ -68,76 +62,6 @@ public final class VariantReferenceResolutionUtils {
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
     return createPriceDraft(productVariant.getPrices(), referenceIdToKeyCache);
-  }
-
-  /**
-   * Takes a product variant that is supposed to have all its attribute product references and
-   * product set references id's cached(fetch and store key value for the reference id) in order to
-   * be able to replace the reference ids with the corresponding keys for the references. This
-   * method returns as a result a {@link List} of {@link Attribute} that has all product references
-   * with keys replacing the ids.
-   *
-   * <p>Any product reference that is not cached(reference id is not present in the map) will have
-   * it's id in place and not replaced by the key.
-   *
-   * @param productVariant the product variant to replace its attribute product references ids with
-   *     keys.
-   * @param referenceIdToKeyCache the instance that manages cache.
-   * @return a {@link List} of {@link Attribute} that has all product references with keys replacing
-   *     the ids.
-   */
-  @Nonnull
-  static List<Attribute> replaceAttributesReferencesIdsWithKeys(
-      @Nonnull final ProductVariant productVariant,
-      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
-    final List<Attribute> productTypeReferenceAttributes =
-        productVariant.getAttributes().stream()
-            .filter(attribute -> attribute.getValue() instanceof ProductTypeReferenceImpl)
-            .map(attribute -> (ProductTypeReference) attribute.getValue())
-            .map(
-                productReference ->
-                    getResourceIdentifierWithKey(
-                        productReference,
-                        referenceIdToKeyCache,
-                        (id, key) -> ProductResourceIdentifierBuilder.of().id(id).key(key).build()))
-            .map(
-                productTypeResourceIdentifier ->
-                    AttributeBuilder.of().value(productTypeResourceIdentifier).build())
-            .collect(toList());
-    final List<Attribute> productSetTypeReferenceAttributes =
-        Optional.of(
-                productVariant.getAttributes().stream()
-                    .filter(
-                        attribute ->
-                            attribute.getValue() instanceof List
-                                && ((List) attribute.getValue())
-                                    .stream()
-                                        .anyMatch(
-                                            setAttr -> setAttr instanceof ProductTypeReferenceImpl))
-                    .map(
-                        attribute ->
-                            AttributeAccessor.asSetReference(attribute).stream()
-                                .map(
-                                    productReference ->
-                                        getResourceIdentifierWithKey(
-                                            productReference,
-                                            referenceIdToKeyCache,
-                                            (id, key) ->
-                                                ProductResourceIdentifierBuilder.of()
-                                                    .id(id)
-                                                    .key(key)
-                                                    .build()))
-                                .collect(toList()))
-                    .map(
-                        productTypeResourceIdentifiers ->
-                            AttributeBuilder.of().value(productTypeResourceIdentifiers).build())
-                    .collect(toList()))
-            .orElse(Collections.emptyList());
-
-    final List<Attribute> joined = new ArrayList<>();
-    joined.addAll(productTypeReferenceAttributes);
-    joined.addAll(productSetTypeReferenceAttributes);
-    return joined;
   }
 
   private VariantReferenceResolutionUtils() {}

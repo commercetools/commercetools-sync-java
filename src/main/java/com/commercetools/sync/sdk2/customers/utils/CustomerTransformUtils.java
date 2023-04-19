@@ -8,8 +8,8 @@ import com.commercetools.api.models.common.Reference;
 import com.commercetools.api.models.customer.Customer;
 import com.commercetools.api.models.customer.CustomerDraft;
 import com.commercetools.api.models.type.CustomFields;
-import com.commercetools.sync.commons.models.GraphQlQueryResources;
-import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
+import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
+import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.sdk2.services.impl.BaseTransformServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,7 +82,7 @@ public final class CustomerTransformUtils {
               .map(Reference::getId)
               .collect(toSet());
 
-      return fetchAndFillReferenceIdToKeyCache(setOfTypeIds, GraphQlQueryResources.TYPES);
+      return fetchAndFillReferenceIdToKeyCache(setOfTypeIds, GraphQlQueryResource.TYPES);
     }
 
     @Nonnull
@@ -97,7 +97,7 @@ public final class CustomerTransformUtils {
               .collect(toSet());
 
       return fetchAndFillReferenceIdToKeyCache(
-          customerGroupIds, GraphQlQueryResources.CUSTOMER_GROUPS);
+          customerGroupIds, GraphQlQueryResource.CUSTOMER_GROUPS);
     }
   }
 }
