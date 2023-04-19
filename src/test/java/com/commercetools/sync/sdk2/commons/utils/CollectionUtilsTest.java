@@ -1,14 +1,13 @@
 package com.commercetools.sync.sdk2.commons.utils;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.junit.jupiter.api.Test;
-
-import java.util.*;
-
 import static com.commercetools.sync.sdk2.commons.utils.CollectionUtils.*;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
+
+import java.util.*;
+import org.apache.commons.lang3.tuple.Pair;
+import org.junit.jupiter.api.Test;
 
 class CollectionUtilsTest {
 
