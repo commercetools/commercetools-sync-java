@@ -24,7 +24,7 @@ import com.commercetools.api.models.type.Type;
 import com.commercetools.api.models.type.TypeReference;
 import com.commercetools.api.models.type.TypeResourceIdentifier;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
-import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
+import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;

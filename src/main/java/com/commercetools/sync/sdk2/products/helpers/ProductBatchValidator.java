@@ -333,7 +333,8 @@ public class ProductBatchValidator
      * CustomObjectCompositeIdentifier}&gt; to be used for caching purposes.
      *
      * <p>Note: Invalid identifiers and uuid formatted identifiers will be filtered out. Validation
-     * handling will be part of the {@link VariantReferenceResolver}.
+     * handling will be part of the {@link
+     * com.commercetools.sync.products.helpers.VariantReferenceResolver}.
      *
      * @return a result set with valid identifiers mapped to {@link
      *     CustomObjectCompositeIdentifier}.
