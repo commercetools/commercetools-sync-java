@@ -1,9 +1,9 @@
 package com.commercetools.sync.sdk2.commons.asserts.statistics;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.commercetools.sync.sdk2.products.helpers.ProductSyncStatistics;
 import javax.annotation.Nullable;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public final class ProductSyncStatisticsAssert
     extends AbstractSyncStatisticsAssert<ProductSyncStatisticsAssert, ProductSyncStatistics> {
