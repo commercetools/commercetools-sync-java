@@ -26,6 +26,7 @@ import com.commercetools.api.models.product_type.AttributeTextType;
 import com.commercetools.api.models.product_type.ProductType;
 import com.commercetools.api.models.product_type.ProductTypeDraft;
 import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
+import com.commercetools.api.models.product_type.ProductTypePagedQueryResponse;
 import com.commercetools.api.models.product_type.ProductTypeReferenceBuilder;
 import com.commercetools.api.models.product_type.ProductTypeRemoveAttributeDefinitionActionBuilder;
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
@@ -347,18 +348,35 @@ public final class ProductTypeITUtils {
    * @param jsonResourcePath defines the path of the JSON resource of the product type.
    * @param ctpClient defines the CTP project to create the product type on.
    */
-  public static ProductType createProductType(
+  public static ProductType ensureProductType(
       @Nonnull final String jsonResourcePath, @Nonnull final ProjectApiRoot ctpClient) {
     final ProductTypeDraft productTypeDraft =
         createObjectFromResource(jsonResourcePath, ProductTypeDraft.class);
 
-    return ctpClient
-        .productTypes()
-        .create(productTypeDraft)
-        .execute()
-        .thenApply(ApiHttpResponse::getBody)
-        .toCompletableFuture()
-        .join();
+    ProductType productType =
+        ctpClient
+            .productTypes()
+            .get()
+            .withWhere("key=:key")
+            .withPredicateVar("key", productTypeDraft.getKey())
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductTypePagedQueryResponse::getResults)
+            .thenApply(productTypes -> productTypes.isEmpty() ? null : productTypes.get(0))
+            .join();
+
+    if (productType == null) {
+      productType =
+          ctpClient
+              .productTypes()
+              .create(productTypeDraft)
+              .execute()
+              .thenApply(ApiHttpResponse::getBody)
+              .toCompletableFuture()
+              .join();
+    }
+
+    return productType;
   }
 
   /**

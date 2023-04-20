@@ -26,6 +26,7 @@ import com.commercetools.api.models.product_type.ProductTypeResourceIdentifier;
 import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
 import com.commercetools.api.models.state.StateResourceIdentifier;
 import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
+import com.commercetools.api.models.tax_category.TaxCategoryReference;
 import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifier;
 import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifierBuilder;
 import com.commercetools.sync.sdk2.commons.helpers.CategoryResourceIdentifierPair;
@@ -35,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
@@ -210,7 +212,12 @@ public final class ProductReferenceResolutionUtils {
         .description(product.getDescription())
         .searchKeywords(product.getSearchKeywords())
         .taxCategory(
-            TaxCategoryResourceIdentifierBuilder.of().id(product.getTaxCategory().getId()).build())
+            TaxCategoryResourceIdentifierBuilder.of()
+                .id(
+                    Optional.ofNullable(product.getTaxCategory())
+                        .map(TaxCategoryReference::getId)
+                        .orElse(null))
+                .build())
         .key(product.getKey())
         .categories(
             product.getCategories().stream()

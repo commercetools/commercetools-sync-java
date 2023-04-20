@@ -8,6 +8,7 @@ import com.commercetools.api.client.QueryUtils;
 import com.commercetools.api.models.tax_category.TaxCategory;
 import com.commercetools.api.models.tax_category.TaxCategoryDraft;
 import com.commercetools.api.models.tax_category.TaxCategoryDraftBuilder;
+import com.commercetools.api.models.tax_category.TaxCategoryPagedQueryResponse;
 import com.commercetools.api.models.tax_category.TaxRateDraft;
 import com.commercetools.api.models.tax_category.TaxRateDraftBuilder;
 import io.vrap.rmf.base.client.ApiHttpResponse;
@@ -85,21 +86,39 @@ public final class TaxCategoryITUtils {
    * @param ctpClient defines the CTP project to create the tax category in.
    * @return the created tax category.
    */
-  public static TaxCategory createTaxCategory(@Nonnull final ProjectApiRoot ctpClient) {
-    final TaxCategoryDraft taxCategoryDraft =
-        TaxCategoryDraftBuilder.of()
-            .name(TAXCATEGORY_NAME)
-            .rates(createTaxRateDraft())
-            .description(TAXCATEGORY_DESCRIPTION)
-            .key(TAXCATEGORY_KEY)
-            .build();
+  public static TaxCategory ensureTaxCategory(@Nonnull final ProjectApiRoot ctpClient) {
+    TaxCategory taxCategory =
+        ctpClient
+            .taxCategories()
+            .get()
+            .withWhere("key=:key")
+            .withPredicateVar("key", TAXCATEGORY_KEY)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(TaxCategoryPagedQueryResponse::getResults)
+            .thenApply(taxCategories -> taxCategories.isEmpty() ? null : taxCategories.get(0))
+            .join();
 
-    return ctpClient
-        .taxCategories()
-        .post(taxCategoryDraft)
-        .execute()
-        .thenApply(ApiHttpResponse::getBody)
-        .join();
+    if (taxCategory == null) {
+
+      final TaxCategoryDraft taxCategoryDraft =
+          TaxCategoryDraftBuilder.of()
+              .name(TAXCATEGORY_NAME)
+              .rates(createTaxRateDraft())
+              .description(TAXCATEGORY_DESCRIPTION)
+              .key(TAXCATEGORY_KEY)
+              .build();
+
+      taxCategory =
+          ctpClient
+              .taxCategories()
+              .post(taxCategoryDraft)
+              .execute()
+              .thenApply(ApiHttpResponse::getBody)
+              .join();
+    }
+
+    return taxCategory;
   }
 
   /**
