@@ -153,11 +153,15 @@ public final class ProductReferenceResolutionUtils {
                           getResourceIdentifierWithKey(
                               product.getProductType(),
                               referenceIdToKeyCache,
-                              (id, key) ->
-                                  ProductTypeResourceIdentifierBuilder.of()
-                                      .id(id)
-                                      .key(key)
-                                      .build()))
+                              (id, key) -> {
+                                final ProductTypeResourceIdentifierBuilder builder =
+                                    ProductTypeResourceIdentifierBuilder.of();
+                                if (id == null) {
+                                  return builder.key(key).build();
+                                } else {
+                                  return builder.id(id).build();
+                                }
+                              }))
                   .categories(categoryResourceIdentifiers)
                   .categoryOrderHints(categoryOrderHintsWithKeys)
                   .taxCategory(
@@ -165,18 +169,29 @@ public final class ProductReferenceResolutionUtils {
                           getResourceIdentifierWithKey(
                               product.getTaxCategory(),
                               referenceIdToKeyCache,
-                              (id, key) ->
-                                  TaxCategoryResourceIdentifierBuilder.of()
-                                      .id(id)
-                                      .key(key)
-                                      .build()))
+                              (id, key) -> {
+                                final TaxCategoryResourceIdentifierBuilder builder =
+                                    TaxCategoryResourceIdentifierBuilder.of();
+                                if (id == null) {
+                                  return builder.key(key).build();
+                                } else {
+                                  return builder.id(id).build();
+                                }
+                              }))
                   .state(
                       (StateResourceIdentifier)
                           getResourceIdentifierWithKey(
                               product.getState(),
                               referenceIdToKeyCache,
-                              (id, key) ->
-                                  StateResourceIdentifierBuilder.of().id(id).key(key).build()))
+                              (id, key) -> {
+                                final StateResourceIdentifierBuilder builder =
+                                    StateResourceIdentifierBuilder.of();
+                                if (id == null) {
+                                  return builder.key(key).build();
+                                } else {
+                                  return builder.id(id).build();
+                                }
+                              }))
                   .build();
             })
         .collect(Collectors.toList());

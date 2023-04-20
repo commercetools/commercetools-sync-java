@@ -68,7 +68,15 @@ public class PriceUtils {
               getResourceIdentifierWithKey(
                   channelReference,
                   referenceIdToKeyCache,
-                  (id, key) -> ChannelResourceIdentifierBuilder.of().id(id).key(key).build());
+                  (id, key) -> {
+                    final ChannelResourceIdentifierBuilder builder =
+                        ChannelResourceIdentifierBuilder.of();
+                    if (id == null) {
+                      return builder.key(key).build();
+                    } else {
+                      return builder.id(id).build();
+                    }
+                  });
     } else if (channelReference != null) {
       channelResourceIdentifier =
           ChannelResourceIdentifierBuilder.of().id(channelReference.getId()).build();

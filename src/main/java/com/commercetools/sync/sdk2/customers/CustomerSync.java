@@ -350,9 +350,4 @@ public class CustomerSync
                         }))
         .orElseGet(() -> CompletableFuture.completedFuture(null));
   }
-
-  //  private void handleError(@Nonnull final SyncException syncException, final int failedTimes) {
-  //    syncOptions.applyErrorCallback(syncException);
-  //    statistics.incrementFailed(failedTimes);
-  //  }
 }
