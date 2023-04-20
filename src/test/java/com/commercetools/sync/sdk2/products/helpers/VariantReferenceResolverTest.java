@@ -2,8 +2,6 @@ package com.commercetools.sync.sdk2.products.helpers;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static com.commercetools.sync.sdk2.commons.MockUtils.getMockTypeService;
-import static com.commercetools.sync.sdk2.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
-import static com.commercetools.sync.sdk2.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.sync.sdk2.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.sdk2.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
@@ -14,31 +12,23 @@ import static org.mockito.Mockito.mock;
 
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.models.category.CategoryReference;
-import com.commercetools.api.models.common.AssetDraft;
-import com.commercetools.api.models.common.AssetDraftBuilder;
-import com.commercetools.api.models.common.MoneyBuilder;
-import com.commercetools.api.models.common.PriceDraft;
-import com.commercetools.api.models.common.PriceDraftBuilder;
+import com.commercetools.api.models.common.*;
 import com.commercetools.api.models.custom_object.CustomObjectReference;
 import com.commercetools.api.models.customer.CustomerReference;
-import com.commercetools.api.models.product.Attribute;
-import com.commercetools.api.models.product.AttributeBuilder;
-import com.commercetools.api.models.product.ProductReference;
-import com.commercetools.api.models.product.ProductVariantDraft;
-import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
+import com.commercetools.api.models.product.*;
 import com.commercetools.api.models.product_type.ProductTypeReference;
 import com.commercetools.api.models.state.StateReference;
 import com.commercetools.api.models.type.CustomFieldsDraft;
 import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.commercetools.sync.sdk2.commons.helpers.DefaultCurrencyUnits;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.services.ChannelService;
 import com.commercetools.sync.sdk2.services.CustomerGroupService;
 import com.commercetools.sync.sdk2.services.TypeService;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
@@ -177,7 +167,7 @@ class VariantReferenceResolverTest {
   @Test
   void resolveReferences_WithNoPriceReferences_ShouldResolveAttributeReferences() {
     // preparation
-    final ObjectNode productReferenceWithRandomId = getProductReferenceWithRandomId();
+    final ProductReference productReferenceWithRandomId = getProductReferenceWithRandomId();
     final Attribute productReferenceSetAttribute =
         getReferenceSetAttributeDraft("foo", productReferenceWithRandomId);
 
@@ -205,33 +195,32 @@ class VariantReferenceResolverTest {
     final Attribute resolvedProductReferenceSetAttribute = resolvedBuilderAttributes.get(0);
     assertThat(resolvedProductReferenceSetAttribute).isNotNull();
 
-    final JsonNode resolvedProductReferenceSetValue =
-        (JsonNode) resolvedProductReferenceSetAttribute.getValue();
+    final List<Reference> resolvedProductReferenceSetValue =
+        AttributeAccessor.asSetReference(resolvedProductReferenceSetAttribute);
     assertThat(resolvedProductReferenceSetValue).isNotNull();
 
-    final JsonNode resolvedProductReferenceValue = resolvedProductReferenceSetValue.get(0);
+    final Reference resolvedProductReferenceValue = resolvedProductReferenceSetValue.get(0);
     assertThat(resolvedProductReferenceValue).isNotNull();
 
-    final JsonNode resolvedProductReferenceIdTextNode =
-        resolvedProductReferenceValue.get(REFERENCE_ID_FIELD);
-    assertThat(resolvedProductReferenceIdTextNode).isNotNull();
-    assertThat(resolvedProductReferenceIdTextNode.asText()).isEqualTo(PRODUCT_ID);
+    final String resolvedProductReferenceId = resolvedProductReferenceValue.getId();
+    assertThat(resolvedProductReferenceId).isNotNull();
+    assertThat(resolvedProductReferenceId).isEqualTo(PRODUCT_ID);
   }
 
   @Test
   void resolveReferences_WithMixedReferences_ShouldResolveReferenceAttributes() {
     // preparation
-    final ObjectNode productReferenceWithRandomId = getProductReferenceWithRandomId();
+    final ProductReference productReferenceWithRandomId = getProductReferenceWithRandomId();
     final Attribute productReferenceSetAttribute =
         getReferenceSetAttributeDraft("foo", productReferenceWithRandomId);
 
-    final ObjectNode categoryReference = createReferenceObject("foo", CategoryReference.CATEGORY);
-    final ObjectNode productTypeReference =
+    final Reference categoryReference = createReferenceObject("foo", CategoryReference.CATEGORY);
+    final Reference productTypeReference =
         createReferenceObject("foo", ProductTypeReference.PRODUCT_TYPE);
-    final ObjectNode customerReference = createReferenceObject("foo", CustomerReference.CUSTOMER);
-    final ObjectNode customObjectReference =
+    final Reference customerReference = createReferenceObject("foo", CustomerReference.CUSTOMER);
+    final Reference customObjectReference =
         createReferenceObject("container|key", CustomObjectReference.KEY_VALUE_DOCUMENT);
-    final ObjectNode stateReference = createReferenceObject("foo", StateReference.STATE);
+    final Reference stateReference = createReferenceObject("foo", StateReference.STATE);
 
     final Attribute categoryReferenceAttribute =
         AttributeBuilder.of().name("cat-ref").value(categoryReference).build();
@@ -271,81 +260,75 @@ class VariantReferenceResolverTest {
     final Attribute resolvedProductReferenceSetAttribute = resolvedBuilderAttributes.get(0);
     assertThat(resolvedProductReferenceSetAttribute).isNotNull();
 
-    final JsonNode resolvedProductReferenceSetValue =
-        (JsonNode) resolvedProductReferenceSetAttribute.getValue();
+    final List<Reference> resolvedProductReferenceSetValue =
+        AttributeAccessor.asSetReference(resolvedProductReferenceSetAttribute);
     assertThat(resolvedProductReferenceSetValue).isNotNull();
 
-    final JsonNode resolvedProductReferenceValue = resolvedProductReferenceSetValue.get(0);
+    final Reference resolvedProductReferenceValue = resolvedProductReferenceSetValue.get(0);
     assertThat(resolvedProductReferenceValue).isNotNull();
 
-    final JsonNode resolvedProductReferenceIdTextNode =
-        resolvedProductReferenceValue.get(REFERENCE_ID_FIELD);
-    assertThat(resolvedProductReferenceIdTextNode).isNotNull();
-    assertThat(resolvedProductReferenceIdTextNode.asText()).isEqualTo(PRODUCT_ID);
+    final String resolvedProductReferenceId = resolvedProductReferenceValue.getId();
+    assertThat(resolvedProductReferenceId).isNotNull();
+    assertThat(resolvedProductReferenceId).isEqualTo(PRODUCT_ID);
 
     final Attribute resolvedCategoryReferenceAttribute = resolvedBuilderAttributes.get(1);
     assertThat(resolvedCategoryReferenceAttribute).isNotNull();
 
-    final JsonNode resolvedCategoryReferenceAttributeValue =
-        (JsonNode) resolvedCategoryReferenceAttribute.getValue();
+    final Reference resolvedCategoryReferenceAttributeValue =
+        AttributeAccessor.asReference(resolvedCategoryReferenceAttribute);
     assertThat(resolvedCategoryReferenceAttributeValue).isNotNull();
 
-    assertThat(resolvedCategoryReferenceAttributeValue.get(REFERENCE_ID_FIELD).asText())
-        .isEqualTo(CATEGORY_ID);
-    assertThat(resolvedCategoryReferenceAttributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
+    assertThat(resolvedCategoryReferenceAttributeValue.getId()).isEqualTo(CATEGORY_ID);
+    assertThat(resolvedCategoryReferenceAttributeValue.getTypeId().getJsonName())
         .isEqualTo(CategoryReference.CATEGORY);
 
     final Attribute resolvedProductTypeReferenceAttribute = resolvedBuilderAttributes.get(2);
     assertThat(resolvedProductTypeReferenceAttribute).isNotNull();
 
-    final JsonNode resolvedProductTypeReferenceAttributeValue =
-        (JsonNode) resolvedProductTypeReferenceAttribute.getValue();
+    final Reference resolvedProductTypeReferenceAttributeValue =
+        AttributeAccessor.asReference(resolvedProductTypeReferenceAttribute);
     assertThat(resolvedProductTypeReferenceAttributeValue).isNotNull();
 
-    assertThat(resolvedProductTypeReferenceAttributeValue.get(REFERENCE_ID_FIELD).asText())
-        .isEqualTo(PRODUCT_TYPE_ID);
-    assertThat(resolvedProductTypeReferenceAttributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
+    assertThat(resolvedProductTypeReferenceAttributeValue.getId()).isEqualTo(PRODUCT_TYPE_ID);
+    assertThat(resolvedProductTypeReferenceAttributeValue.getTypeId().getJsonName())
         .isEqualTo(ProductTypeReference.PRODUCT_TYPE);
 
     final Attribute resolvedCustomerReferenceAttribute = resolvedBuilderAttributes.get(3);
     assertThat(resolvedCustomerReferenceAttribute).isNotNull();
 
-    final JsonNode resolvedCustomerReferenceAttributeValue =
-        (JsonNode) resolvedCustomerReferenceAttribute.getValue();
+    final Reference resolvedCustomerReferenceAttributeValue =
+        AttributeAccessor.asReference(resolvedCustomerReferenceAttribute);
     assertThat(resolvedCustomerReferenceAttributeValue).isNotNull();
 
-    assertThat(resolvedCustomerReferenceAttributeValue.get(REFERENCE_ID_FIELD).asText())
-        .isEqualTo(CUSTOMER_ID);
-    assertThat(resolvedCustomerReferenceAttributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
+    assertThat(resolvedCustomerReferenceAttributeValue.getId()).isEqualTo(CUSTOMER_ID);
+    assertThat(resolvedCustomerReferenceAttributeValue.getTypeId().getJsonName())
         .isEqualTo(CustomerReference.CUSTOMER);
 
     final Attribute resolvedCustomObjectReferenceAttribute = resolvedBuilderAttributes.get(5);
     assertThat(resolvedCustomObjectReferenceAttribute).isNotNull();
 
-    final JsonNode resolvedCustomObjectAttributeValue =
-        (JsonNode) resolvedCustomObjectReferenceAttribute.getValue();
+    final Reference resolvedCustomObjectAttributeValue =
+        AttributeAccessor.asReference(resolvedCustomObjectReferenceAttribute);
     assertThat(resolvedCustomObjectAttributeValue).isNotNull();
 
-    assertThat(resolvedCustomObjectAttributeValue.get(REFERENCE_ID_FIELD).asText())
-        .isEqualTo(CUSTOM_OBJECT_ID);
-    assertThat(resolvedCustomObjectAttributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
+    assertThat(resolvedCustomObjectAttributeValue.getId()).isEqualTo(CUSTOM_OBJECT_ID);
+    assertThat(resolvedCustomObjectAttributeValue.getTypeId().getJsonName())
         .isEqualTo(CustomObjectReference.KEY_VALUE_DOCUMENT);
 
     final Attribute resolvedStateReferenceAttribute = resolvedBuilderAttributes.get(6);
     assertThat(resolvedStateReferenceAttribute).isNotNull();
 
-    final JsonNode resolvedStateReferenceAttributeValue =
-        (JsonNode) resolvedStateReferenceAttribute.getValue();
-    assertThat(resolvedStateReferenceAttributeValue.get(REFERENCE_ID_FIELD).asText())
-        .isEqualTo(STATE_ID);
-    assertThat(resolvedStateReferenceAttributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
+    final Reference resolvedStateReferenceAttributeValue =
+        AttributeAccessor.asReference(resolvedStateReferenceAttribute);
+    assertThat(resolvedStateReferenceAttributeValue.getId()).isEqualTo(STATE_ID);
+    assertThat(resolvedStateReferenceAttributeValue.getTypeId().getJsonName())
         .isEqualTo(StateReference.STATE);
   }
 
   @Test
   void resolveReferences_WithNullReferenceInSetAttribute_ShouldResolveReferences() {
     // preparation
-    final ObjectNode productReference = getProductReferenceWithRandomId();
+    final ProductReference productReference = getProductReferenceWithRandomId();
     final Attribute productReferenceAttribute =
         getReferenceSetAttributeDraft("foo", productReference, null);
 
@@ -365,18 +348,16 @@ class VariantReferenceResolverTest {
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
 
-    final Spliterator<JsonNode> attributeReferencesIterator =
-        ((JsonNode) resolvedAttributeDraft.getValue()).spliterator();
+    final Spliterator<Reference> attributeReferencesIterator =
+        AttributeAccessor.asSetReference(resolvedAttributeDraft).spliterator();
     assertThat(attributeReferencesIterator).isNotNull();
-    final Set<JsonNode> resolvedSet =
+    final Set<Reference> resolvedSet =
         StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toSet());
 
     assertThat(resolvedSet).isNotEmpty();
-    final ObjectNode resolvedReference = JsonNodeFactory.instance.objectNode();
-    resolvedReference.put(REFERENCE_TYPE_ID_FIELD, ProductReference.PRODUCT);
-    resolvedReference.put(REFERENCE_ID_FIELD, PRODUCT_ID);
-    assertThat(resolvedSet)
-        .containsExactlyInAnyOrder(resolvedReference, JsonNodeFactory.instance.nullNode());
+    final ProductReference resolvedReference =
+        ReferenceBuilder.of().productBuilder().id(PRODUCT_ID).build();
+    assertThat(resolvedSet).containsExactlyInAnyOrder(resolvedReference, null);
   }
 
   @Test
@@ -427,8 +408,7 @@ class VariantReferenceResolverTest {
   void resolveAssetsReferences_WithAssetReferences_ShouldResolveAssets() {
     final CustomFieldsDraft customFieldsDraft =
         CustomFieldsDraftBuilder.of()
-            .type(
-                typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.key("customTypeId"))
+            .type(TypeResourceIdentifierBuilder.of().id("customTypeId").build())
             .build();
 
     final AssetDraft assetDraft =
@@ -452,7 +432,7 @@ class VariantReferenceResolverTest {
     final AssetDraft resolvedAssetDraft = resolvedBuilderAssets.get(0);
     assertThat(resolvedAssetDraft).isNotNull();
     assertThat(resolvedAssetDraft.getCustom()).isNotNull();
-    assertThat(resolvedAssetDraft.getCustom().getType().getId()).isEqualTo(REFERENCE_TYPE_ID_FIELD);
+    assertThat(resolvedAssetDraft.getCustom().getType().getId()).isEqualTo("customTypeId");
   }
 
   @Test
@@ -488,8 +468,7 @@ class VariantReferenceResolverTest {
   void resolvePricesReferences_WithPriceReferences_ShouldResolvePrices() {
     final CustomFieldsDraft customFieldsDraft =
         CustomFieldsDraftBuilder.of()
-            .type(
-                typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.key("customTypeId"))
+            .type(TypeResourceIdentifierBuilder.of().id("customTypeId").build())
             .build();
 
     final PriceDraft priceDraft =
@@ -500,6 +479,8 @@ class VariantReferenceResolverTest {
                     .currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode())
                     .build())
             .custom(customFieldsDraft)
+            .customerGroup(
+                CustomerGroupResourceIdentifierBuilder.of().id("customerGroupId").build())
             .build();
 
     final ProductVariantDraftBuilder productVariantDraftBuilder =
@@ -515,7 +496,8 @@ class VariantReferenceResolverTest {
     assertThat(resolvedBuilderPrices).isNotEmpty();
     final PriceDraft resolvedPriceDraft = resolvedBuilderPrices.get(0);
     assertThat(resolvedPriceDraft).isNotNull();
+    assertThat(resolvedPriceDraft.getCustomerGroup().getId()).isEqualTo("customerGroupId");
     assertThat(resolvedPriceDraft.getCustom()).isNotNull();
-    assertThat(resolvedPriceDraft.getCustom().getType().getId()).isEqualTo(REFERENCE_TYPE_ID_FIELD);
+    assertThat(resolvedPriceDraft.getCustom().getType().getId()).isEqualTo("customTypeId");
   }
 }

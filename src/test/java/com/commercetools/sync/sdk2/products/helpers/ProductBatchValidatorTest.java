@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.category.CategoryReference;
 import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
 import com.commercetools.api.models.common.MoneyBuilder;
 import com.commercetools.api.models.common.PriceDraft;
@@ -169,12 +170,12 @@ class ProductBatchValidatorTest {
 
   @Test
   void getReferencedProductKeysFromSet_WithNullAndOtherRefsInSet_ShouldReturnSetOfNonNullIds() {
-    final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
-    objectNode.put("key", "value");
-
     final Attribute productReferenceSetAttribute =
         getReferenceSetAttributeDraft(
-            "foo", getProductReferenceWithId("foo"), getProductReferenceWithId("bar"), objectNode);
+            "foo",
+            getProductReferenceWithId("foo"),
+            getProductReferenceWithId("bar"),
+            createReferenceObject("any", CategoryReference.CATEGORY));
 
     final ProductVariantDraft productVariantDraft =
         ProductVariantDraftBuilder.of().attributes(productReferenceSetAttribute).build();

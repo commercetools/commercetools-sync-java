@@ -2,19 +2,17 @@ package com.commercetools.sync.sdk2.products.helpers;
 
 import static com.commercetools.sync.sdk2.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static com.commercetools.sync.sdk2.commons.utils.ResourceIdentifierUtils.*;
+import static com.commercetools.sync.sdk2.products.utils.AttributeUtils.getAttributeReference;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 
 import com.commercetools.api.models.category.CategoryReference;
 import com.commercetools.api.models.common.AssetDraft;
 import com.commercetools.api.models.common.PriceDraft;
+import com.commercetools.api.models.common.Reference;
 import com.commercetools.api.models.custom_object.CustomObjectReference;
 import com.commercetools.api.models.customer.CustomerReference;
-import com.commercetools.api.models.product.Attribute;
-import com.commercetools.api.models.product.AttributeBuilder;
-import com.commercetools.api.models.product.ProductReference;
-import com.commercetools.api.models.product.ProductVariantDraft;
-import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.product.*;
 import com.commercetools.api.models.product_type.ProductTypeReference;
 import com.commercetools.api.models.state.StateReference;
 import com.commercetools.sync.sdk2.commons.helpers.AssetReferenceResolver;
@@ -31,16 +29,13 @@ import com.commercetools.sync.sdk2.services.ProductService;
 import com.commercetools.sync.sdk2.services.ProductTypeService;
 import com.commercetools.sync.sdk2.services.StateService;
 import com.commercetools.sync.sdk2.services.TypeService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
+import org.apache.commons.lang3.StringUtils;
 
 public final class VariantReferenceResolver
     extends BaseReferenceResolver<ProductVariantDraft, ProductSyncOptions> {
@@ -54,9 +49,9 @@ public final class VariantReferenceResolver
   private final CustomerService customerService;
 
   /**
-   * Instantiates a {@link com.commercetools.sync.sdk2.products.helpers.VariantReferenceResolver}
-   * instance that could be used to resolve the variants of product drafts in the CTP project
-   * specified in the injected {@link com.commercetools.sync.products.ProductSyncOptions} instance.
+   * Instantiates a {@link VariantReferenceResolver} instance that could be used to resolve the
+   * variants of product drafts in the CTP project specified in the injected {@link
+   * com.commercetools.sync.sdk2.products.ProductSyncOptions} instance.
    *
    * @param productSyncOptions the container of all the options of the sync process including the
    *     CTP project client and/or configuration and other sync-specific options.
@@ -95,9 +90,9 @@ public final class VariantReferenceResolver
   }
 
   /**
-   * Given a {@link io.sphere.sdk.products.ProductVariantDraft} this method attempts to resolve the
-   * prices, assets and attributes to return a {@link java.util.concurrent.CompletionStage} which
-   * contains a new instance of the draft with the resolved references.
+   * Given a {@link ProductVariantDraft} this method attempts to resolve the prices, assets and
+   * attributes to return a {@link java.util.concurrent.CompletionStage} which contains a new
+   * instance of the draft with the resolved references.
    *
    * <p>Note: this method will filter out any null sub resources (e.g. prices, attributes or assets)
    * under the returned resolved variant.
@@ -106,7 +101,7 @@ public final class VariantReferenceResolver
    * @return a {@link java.util.concurrent.CompletionStage} that contains as a result a new
    *     productDraft instance with resolved references or, in case an error occurs during reference
    *     resolution, a {@link
-   *     com.commercetools.sync.commons.exceptions.ReferenceResolutionException}.
+   *     com.commercetools.sync.sdk2.commons.exceptions.ReferenceResolutionException}.
    */
   @Override
   public CompletionStage<ProductVariantDraft> resolveReferences(
@@ -162,43 +157,30 @@ public final class VariantReferenceResolver
   @Nonnull
   private CompletionStage<Attribute> resolveAttributeReference(
       @Nonnull final Attribute attributeDraft) {
-    final Object value = attributeDraft.getValue();
+    final List<Reference> allAttributeReferences = getAttributeReference(attributeDraft);
 
-    if (!(value instanceof JsonNode)) {
+    if (allAttributeReferences.isEmpty()) {
       return CompletableFuture.completedFuture(attributeDraft);
     }
 
-    final JsonNode attributeDraftValue = (JsonNode) value;
-    final JsonNode attributeDraftValueClone = attributeDraftValue.deepCopy();
-
-    final List<JsonNode> allAttributeReferences =
-        attributeDraftValueClone.findParents(REFERENCE_TYPE_ID_FIELD);
-
-    if (!allAttributeReferences.isEmpty()) {
-      return mapValuesToFutureOfCompletedValues(
-              allAttributeReferences, this::resolveReference, toList())
-          .thenApply(
-              ignoredResult ->
-                  AttributeBuilder.of()
-                      .name(attributeDraft.getName())
-                      .value(attributeDraftValueClone)
-                      .build());
-    }
-
-    return CompletableFuture.completedFuture(attributeDraft);
+    return mapValuesToFutureOfCompletedValues(
+            allAttributeReferences, this::resolveReference, toList())
+        .thenApply(
+            ignoredResult ->
+                AttributeBuilder.of()
+                    .name(attributeDraft.getName())
+                    .value(attributeDraft.getValue())
+                    .build());
   }
 
   @Nonnull
-  private CompletionStage<Void> resolveReference(@Nonnull final JsonNode referenceValue) {
+  private CompletionStage<Void> resolveReference(@Nonnull final Reference referenceValue) {
     return getResolvedId(referenceValue)
-        .thenAccept(
-            optionalId ->
-                optionalId.ifPresent(
-                    id -> ((ObjectNode) referenceValue).put(REFERENCE_ID_FIELD, id)));
+        .thenAccept(optionalId -> optionalId.ifPresent(id -> referenceValue.setId(id)));
   }
 
   @Nonnull
-  private CompletionStage<Optional<String>> getResolvedId(@Nonnull final JsonNode referenceValue) {
+  private CompletionStage<Optional<String>> getResolvedId(@Nonnull final Reference referenceValue) {
 
     if (isReferenceOfType(referenceValue, ProductReference.PRODUCT)) {
       return getResolvedIdFromKeyInReference(referenceValue, productService::getIdFromCacheOrFetch);
@@ -232,12 +214,12 @@ public final class VariantReferenceResolver
 
   @Nonnull
   private CompletionStage<Optional<String>> getResolvedIdFromKeyInReference(
-      @Nonnull final JsonNode referenceValue,
+      @Nonnull final Reference referenceValue,
       @Nonnull final Function<String, CompletionStage<Optional<String>>> resolvedIdFetcher) {
 
-    final JsonNode idField = referenceValue.get(REFERENCE_ID_FIELD);
-    return idField != null && !Objects.equals(idField, NullNode.getInstance())
-        ? resolvedIdFetcher.apply(idField.asText())
+    final String id = referenceValue.getId();
+    return StringUtils.isNotBlank(id)
+        ? resolvedIdFetcher.apply(id)
         : CompletableFuture.completedFuture(Optional.empty());
   }
 
