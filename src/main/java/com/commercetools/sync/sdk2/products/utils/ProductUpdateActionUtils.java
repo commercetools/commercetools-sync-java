@@ -227,9 +227,9 @@ public final class ProductUpdateActionUtils {
           final List<ProductUpdateAction> updateActions = new ArrayList<>();
 
           final Map<String, String> newMap =
-              nonNull(newCategoryOrderHints) ? newCategoryOrderHints.values() : emptyMap();
+              nonNull(newCategoryOrderHints) && nonNull(newCategoryOrderHints.values()) ? newCategoryOrderHints.values() : emptyMap();
           final Map<String, String> oldMap =
-              nonNull(oldCategoryOrderHints) ? oldCategoryOrderHints.values() : emptyMap();
+              nonNull(oldCategoryOrderHints) && nonNull(oldCategoryOrderHints.values()) ? oldCategoryOrderHints.values() : emptyMap();
 
           // remove category hints present in old product if they are absent in draft but only if
           // product
