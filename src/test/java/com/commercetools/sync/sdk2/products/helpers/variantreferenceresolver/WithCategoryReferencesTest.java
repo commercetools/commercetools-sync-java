@@ -1,32 +1,30 @@
 package com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver;
 
-import com.commercetools.sync.products.ProductSyncOptions;
-import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import com.commercetools.sync.products.helpers.VariantReferenceResolver;
-import com.commercetools.sync.services.*;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.ProductVariantDraftBuilder;
-import io.sphere.sdk.products.attributes.AttributeDraft;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
-import static com.commercetools.sync.products.ProductSyncMockUtils.*;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.category.CategoryReference;
+import com.commercetools.api.models.category.CategoryReferenceBuilder;
+import com.commercetools.api.models.common.Reference;
+import com.commercetools.api.models.common.ReferenceImpl;
+import com.commercetools.api.models.product.Attribute;
+import com.commercetools.api.models.product.AttributeBuilder;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.sync.sdk2.products.ProductSyncOptions;
+import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.sdk2.products.helpers.VariantReferenceResolver;
+import com.commercetools.sync.sdk2.services.*;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class WithCategoryReferencesTest {
   private CategoryService categoryService;
@@ -37,7 +35,7 @@ class WithCategoryReferencesTest {
   void setup() {
     categoryService = getMockCategoryService(CATEGORY_ID);
     final ProductSyncOptions syncOptions =
-        ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
     referenceResolver =
         new VariantReferenceResolver(
             syncOptions,
@@ -58,9 +56,10 @@ class WithCategoryReferencesTest {
     when(categoryService.fetchCachedCategoryId("nonExistingCatKey"))
         .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-    final ObjectNode attributeValue =
-        createReferenceObject("nonExistingCatKey", Category.referenceTypeId());
-    final AttributeDraft attributeDraft = AttributeDraft.of("attributeName", attributeValue);
+    final Reference attributeValue =
+        createReferenceObject("nonExistingCatKey", CategoryReference.CATEGORY);
+    final Attribute attributeDraft =
+        AttributeBuilder.of().name("attributeName").value(attributeValue).build();
     final ProductVariantDraft productVariantDraft =
         ProductVariantDraftBuilder.of().attributes(attributeDraft).build();
 
@@ -74,33 +73,11 @@ class WithCategoryReferencesTest {
   @Test
   void resolveReferences_WithNullIdFieldInCategoryReferenceAttribute_ShouldNotResolveReferences() {
     // preparation
-    final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
-    attributeValue.put(REFERENCE_TYPE_ID_FIELD, Category.referenceTypeId());
-    final AttributeDraft categoryReferenceAttribute =
-        AttributeDraft.of("attributeName", attributeValue);
+    final Reference attributeValue = new ReferenceImpl();
+    final Attribute categoryRef =
+        AttributeBuilder.of().name("attributeName").value(attributeValue).build();
     final ProductVariantDraft productVariantDraft =
-        ProductVariantDraftBuilder.of().attributes(categoryReferenceAttribute).build();
-
-    // test
-    final ProductVariantDraft resolvedAttributeDraft =
-        referenceResolver.resolveReferences(productVariantDraft).toCompletableFuture().join();
-    // assertions
-    assertThat(resolvedAttributeDraft).isEqualTo(productVariantDraft);
-  }
-
-  @Test
-  void
-      resolveReferences_WithNullNodeIdFieldInCategoryReferenceAttribute_ShouldNotResolveReferences() {
-    // preparation
-    final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
-    attributeValue.put(REFERENCE_TYPE_ID_FIELD, Category.referenceTypeId());
-    attributeValue.set(REFERENCE_ID_FIELD, JsonNodeFactory.instance.nullNode());
-
-    final AttributeDraft categoryReferenceAttribute =
-        AttributeDraft.of("attributeName", attributeValue);
-
-    final ProductVariantDraft productVariantDraft =
-        ProductVariantDraftBuilder.of().attributes(categoryReferenceAttribute).build();
+        ProductVariantDraftBuilder.of().attributes(categoryRef).build();
 
     // test
     final ProductVariantDraft resolvedAttributeDraft =
@@ -112,9 +89,9 @@ class WithCategoryReferencesTest {
   @Test
   void resolveReferences_WithExistingCategoryReferenceAttribute_ShouldResolveReferences() {
     // preparation
-    final ObjectNode attributeValue = createReferenceObject("foo", Category.referenceTypeId());
-    final AttributeDraft categoryReferenceAttribute =
-        AttributeDraft.of("attributeName", attributeValue);
+    final Reference attributeValue = createReferenceObject("foo", CategoryReference.CATEGORY);
+    final Attribute categoryReferenceAttribute =
+        AttributeBuilder.of().name("attributeName").value(attributeValue).build();
     final ProductVariantDraft productVariantDraft =
         ProductVariantDraftBuilder.of().attributes(categoryReferenceAttribute).build();
 
@@ -123,21 +100,19 @@ class WithCategoryReferencesTest {
         referenceResolver.resolveReferences(productVariantDraft).toCompletableFuture().join();
     // assertions
     assertThat(resolvedAttributeDraft.getAttributes()).isNotNull();
-    final AttributeDraft resolvedAttribute = resolvedAttributeDraft.getAttributes().get(0);
+    final Attribute resolvedAttribute = resolvedAttributeDraft.getAttributes().get(0);
     assertThat(resolvedAttribute).isNotNull();
-    assertThat(resolvedAttribute.getValue().get(REFERENCE_ID_FIELD).asText())
-        .isEqualTo(CATEGORY_ID);
-    assertThat(resolvedAttribute.getValue().get(REFERENCE_TYPE_ID_FIELD).asText())
-        .isEqualTo(Category.referenceTypeId());
+    assertThat(resolvedAttribute.getValue()).isInstanceOf(Reference.class);
+    assertThat(((CategoryReference) resolvedAttribute.getValue()).getId()).isEqualTo(CATEGORY_ID);
   }
 
   @Test
   void resolveReferences_WithCategoryReferenceSetAttribute_ShouldResolveReferences() {
-    final AttributeDraft categoryReferenceSetAttributeDraft =
+    final Attribute categoryReferenceSetAttributeDraft =
         getReferenceSetAttributeDraft(
             "foo",
-            createReferenceObject(UUID.randomUUID().toString(), Category.referenceTypeId()),
-            createReferenceObject(UUID.randomUUID().toString(), Category.referenceTypeId()));
+            createReferenceObject(UUID.randomUUID().toString(), CategoryReference.CATEGORY),
+            createReferenceObject(UUID.randomUUID().toString(), CategoryReference.CATEGORY));
 
     final ProductVariantDraft productVariantDraft =
         ProductVariantDraftBuilder.of().attributes(categoryReferenceSetAttributeDraft).build();
@@ -150,20 +125,17 @@ class WithCategoryReferencesTest {
     assertThat(resolvedProductVariantDraft).isNotNull();
     assertThat(resolvedProductVariantDraft.getAttributes()).isNotNull();
 
-    final AttributeDraft resolvedAttributeDraft =
-        resolvedProductVariantDraft.getAttributes().get(0);
+    final Attribute resolvedAttributeDraft = resolvedProductVariantDraft.getAttributes().get(0);
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
-
-    final Spliterator<JsonNode> attributeReferencesIterator =
-        resolvedAttributeDraft.getValue().spliterator();
+    final List<CategoryReference> referenceList = (List) resolvedAttributeDraft.getValue();
+    final Spliterator<CategoryReference> attributeReferencesIterator = referenceList.spliterator();
     assertThat(attributeReferencesIterator).isNotNull();
-    final List<JsonNode> resolvedSet =
+    final List<CategoryReference> resolvedSet =
         StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toList());
     assertThat(resolvedSet).isNotEmpty();
-    final ObjectNode resolvedReference = JsonNodeFactory.instance.objectNode();
-    resolvedReference.put(REFERENCE_TYPE_ID_FIELD, Category.referenceTypeId());
-    resolvedReference.put(REFERENCE_ID_FIELD, CATEGORY_ID);
+    final CategoryReference resolvedReference =
+        CategoryReferenceBuilder.of().id(CATEGORY_ID).build();
     assertThat(resolvedSet).containsExactlyInAnyOrder(resolvedReference, resolvedReference);
   }
 
@@ -173,9 +145,9 @@ class WithCategoryReferencesTest {
     when(categoryService.fetchCachedCategoryId(anyString()))
         .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-    final ObjectNode categoryReference =
-        createReferenceObject(UUID.randomUUID().toString(), Category.referenceTypeId());
-    final AttributeDraft categoryReferenceAttribute =
+    final Reference categoryReference =
+        createReferenceObject(UUID.randomUUID().toString(), CategoryReference.CATEGORY);
+    final Attribute categoryReferenceAttribute =
         getReferenceSetAttributeDraft("foo", categoryReference);
 
     final ProductVariantDraft productVariantDraft =
@@ -189,18 +161,16 @@ class WithCategoryReferencesTest {
     assertThat(resolvedProductVariantDraft).isNotNull();
     assertThat(resolvedProductVariantDraft.getAttributes()).isNotNull();
 
-    final AttributeDraft resolvedAttributeDraft =
-        resolvedProductVariantDraft.getAttributes().get(0);
+    final Attribute resolvedAttributeDraft = resolvedProductVariantDraft.getAttributes().get(0);
 
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
-
-    final Spliterator<JsonNode> attributeReferencesIterator =
-        resolvedAttributeDraft.getValue().spliterator();
+    final List<CategoryReference> referenceList = (List) resolvedAttributeDraft.getValue();
+    final Spliterator<CategoryReference> attributeReferencesIterator = referenceList.spliterator();
     assertThat(attributeReferencesIterator).isNotNull();
-    final Set<JsonNode> resolvedSet =
+    final Set<CategoryReference> resolvedSet =
         StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toSet());
-    assertThat(resolvedSet).containsExactly(categoryReference);
+    assertThat(resolvedSet).containsExactly((CategoryReference) categoryReference);
   }
 
   @Test
@@ -212,12 +182,12 @@ class WithCategoryReferencesTest {
     when(categoryService.fetchCachedCategoryId("randomKey"))
         .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-    final ObjectNode categoryReference1 =
-        createReferenceObject("existingKey", Category.referenceTypeId());
-    final ObjectNode categoryReference2 =
-        createReferenceObject("randomKey", Category.referenceTypeId());
+    final Reference categoryReference1 =
+        createReferenceObject("existingKey", CategoryReference.CATEGORY);
+    final Reference categoryReference2 =
+        createReferenceObject("randomKey", CategoryReference.CATEGORY);
 
-    final AttributeDraft categoryReferenceAttribute =
+    final Attribute categoryReferenceAttribute =
         getReferenceSetAttributeDraft("foo", categoryReference1, categoryReference2);
 
     final ProductVariantDraft productVariantDraft =
@@ -231,22 +201,20 @@ class WithCategoryReferencesTest {
     assertThat(resolvedProductVariantDraft).isNotNull();
     assertThat(resolvedProductVariantDraft.getAttributes()).isNotNull();
 
-    final AttributeDraft resolvedAttributeDraft =
-        resolvedProductVariantDraft.getAttributes().get(0);
+    final Attribute resolvedAttributeDraft = resolvedProductVariantDraft.getAttributes().get(0);
 
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
-
-    final Spliterator<JsonNode> attributeReferencesIterator =
-        resolvedAttributeDraft.getValue().spliterator();
+    final List<CategoryReference> referenceList = (List) resolvedAttributeDraft.getValue();
+    final Spliterator<CategoryReference> attributeReferencesIterator = referenceList.spliterator();
     assertThat(attributeReferencesIterator).isNotNull();
-    final Set<JsonNode> resolvedSet =
+    final Set<CategoryReference> resolvedSet =
         StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toSet());
 
-    final ObjectNode resolvedReference1 =
-        createReferenceObject("existingId", Category.referenceTypeId());
-    final ObjectNode resolvedReference2 =
-        createReferenceObject("randomKey", Category.referenceTypeId());
+    final CategoryReference resolvedReference1 =
+        (CategoryReference) createReferenceObject("existingId", CategoryReference.CATEGORY);
+    final CategoryReference resolvedReference2 =
+        (CategoryReference) createReferenceObject("randomKey", CategoryReference.CATEGORY);
     assertThat(resolvedSet).containsExactlyInAnyOrder(resolvedReference1, resolvedReference2);
   }
 }

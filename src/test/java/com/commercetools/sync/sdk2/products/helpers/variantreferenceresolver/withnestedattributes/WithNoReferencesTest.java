@@ -1,17 +1,17 @@
 package com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.withnestedattributes;
 
-import com.commercetools.sync.products.ProductSyncOptions;
-import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import com.commercetools.sync.products.helpers.VariantReferenceResolver;
-import com.commercetools.sync.services.*;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.products.ProductVariantDraft;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createObjectFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.sync.sdk2.products.ProductSyncOptions;
+import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.sdk2.products.helpers.VariantReferenceResolver;
+import com.commercetools.sync.sdk2.services.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class WithNoReferencesTest {
   private VariantReferenceResolver referenceResolver;
@@ -27,7 +27,7 @@ class WithNoReferencesTest {
   @BeforeEach
   void setup() {
     final ProductSyncOptions syncOptions =
-        ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
     referenceResolver =
         new VariantReferenceResolver(
             syncOptions,
@@ -46,7 +46,7 @@ class WithNoReferencesTest {
   void resolveReferences_WithNestedTextAttributes_ShouldReturnEqualDraft() {
     // preparation
     final ProductVariantDraft withNestedTextAttributes =
-        readObjectFromResource(NESTED_ATTRIBUTE_WITH_TEXT_ATTRIBUTES, ProductVariantDraft.class);
+        createObjectFromResource(NESTED_ATTRIBUTE_WITH_TEXT_ATTRIBUTES, ProductVariantDraft.class);
 
     // test
     final ProductVariantDraft resolvedAttributeDraft =
@@ -59,7 +59,7 @@ class WithNoReferencesTest {
   void resolveReferences_WithNestedSetOfTextAttributes_ShouldReturnEqualDraft() {
     // preparation
     final ProductVariantDraft withNestedSetOfTextAttributes =
-        readObjectFromResource(
+        createObjectFromResource(
             NESTED_ATTRIBUTE_WITH_SET_OF_TEXT_ATTRIBUTES, ProductVariantDraft.class);
 
     // test

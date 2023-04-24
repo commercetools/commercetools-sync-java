@@ -1,32 +1,29 @@
 package com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.withsetofnestedattributes;
 
-import com.commercetools.sync.products.ProductSyncOptions;
-import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import com.commercetools.sync.products.helpers.VariantReferenceResolver;
-import com.commercetools.sync.services.*;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.products.ProductVariantDraft;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
+import static com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceAttributeValue;
+import static com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceSetAttributeValue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.category.CategoryReference;
+import com.commercetools.api.models.product.Attribute;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.sync.sdk2.products.ProductSyncOptions;
+import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.sdk2.products.helpers.VariantReferenceResolver;
+import com.commercetools.sync.sdk2.services.*;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import static com.commercetools.sync.products.ProductSyncMockUtils.createReferenceObject;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCategoryService;
-import static com.commercetools.sync.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceAttributeValue;
-import static com.commercetools.sync.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceSetAttributeValue;
-import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class WithCategoryReferencesTest {
   private CategoryService categoryService;
@@ -47,7 +44,7 @@ class WithCategoryReferencesTest {
   void setup() {
     categoryService = getMockCategoryService(CATEGORY_ID);
     final ProductSyncOptions syncOptions =
-        ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
     referenceResolver =
         new VariantReferenceResolver(
             syncOptions,
@@ -66,7 +63,7 @@ class WithCategoryReferencesTest {
   void resolveReferences_WithSetOfNestedCategoryReferenceAttributes_ShouldResolveReferences() {
     // preparation
     final ProductVariantDraft withSetOfNestedCategoryReferenceAttributes =
-        readObjectFromResource(
+        createObjectFromResource(
             SET_OF_NESTED_ATTRIBUTE_WITH_CATEGORY_REFERENCE_ATTRIBUTES, ProductVariantDraft.class);
 
     // test
@@ -78,34 +75,35 @@ class WithCategoryReferencesTest {
     // assertions
     assertThat(resolvedAttributeDraft.getAttributes()).isNotNull();
 
-    final JsonNode value = resolvedAttributeDraft.getAttributes().get(0).getValue();
-    assertThat(value).isInstanceOf(ArrayNode.class);
-    final ArrayNode setOfResolvedNestedAttributes = (ArrayNode) value;
+    final Object value = resolvedAttributeDraft.getAttributes().get(0).getValue();
+    assertThat(value).isInstanceOf(List.class);
+    final List setOfResolvedNestedAttributes = (List) value;
 
-    final JsonNode resolvedNestedAttribute = setOfResolvedNestedAttributes.get(0);
-    assertThat(resolvedNestedAttribute).isInstanceOf(ArrayNode.class);
-    final ArrayNode resolvedNestedAttributeAsArray = (ArrayNode) resolvedNestedAttribute;
+    final Object resolvedNestedAttribute = setOfResolvedNestedAttributes.get(0);
+    assertThat(resolvedNestedAttribute).isInstanceOf(List.class);
+    final List<Attribute> resolvedNestedAttributeAsArray = (List) resolvedNestedAttribute;
 
-    final Map<String, JsonNode> resolvedNestedAttributesMap =
+    final Map<String, Object> resolvedNestedAttributesMap =
         StreamSupport.stream(resolvedNestedAttributeAsArray.spliterator(), false)
             .collect(
-                Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
+                Collectors.toMap(
+                    attribute -> attribute.getName(), attribute -> attribute.getValue()));
 
     assertReferenceAttributeValue(
         resolvedNestedAttributesMap,
         "nested-attribute-1-name",
         CATEGORY_ID,
-        Category.referenceTypeId());
+        CategoryReference.CATEGORY);
     assertReferenceAttributeValue(
         resolvedNestedAttributesMap,
         "nested-attribute-2-name",
         CATEGORY_ID,
-        Category.referenceTypeId());
+        CategoryReference.CATEGORY);
     assertReferenceAttributeValue(
         resolvedNestedAttributesMap,
         "nested-attribute-3-name",
         CATEGORY_ID,
-        Category.referenceTypeId());
+        CategoryReference.CATEGORY);
   }
 
   @Test
@@ -113,7 +111,7 @@ class WithCategoryReferencesTest {
       resolveReferences_WithSetOfNestedSetOfCategoryReferenceAttributes_ShouldOnlyResolveExistingReferences() {
     // preparation
     final ProductVariantDraft withSetOfNestedSetOfCategoryReferenceAttributes =
-        readObjectFromResource(
+        createObjectFromResource(
             SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_CATEGORY_REFERENCE_ATTRIBUTES,
             ProductVariantDraft.class);
 
@@ -126,35 +124,36 @@ class WithCategoryReferencesTest {
     // assertions
     assertThat(resolvedAttributeDraft.getAttributes()).isNotNull();
 
-    final JsonNode value = resolvedAttributeDraft.getAttributes().get(0).getValue();
-    assertThat(value).isInstanceOf(ArrayNode.class);
-    final ArrayNode setOfResolvedNestedAttributes = (ArrayNode) value;
+    final Object value = resolvedAttributeDraft.getAttributes().get(0).getValue();
+    assertThat(value).isInstanceOf(List.class);
+    final List setOfResolvedNestedAttributes = (List) value;
 
-    final JsonNode resolvedNestedAttribute = setOfResolvedNestedAttributes.get(0);
-    assertThat(resolvedNestedAttribute).isInstanceOf(ArrayNode.class);
-    final ArrayNode resolvedNestedAttributeAsArray = (ArrayNode) resolvedNestedAttribute;
+    final Object resolvedNestedAttribute = setOfResolvedNestedAttributes.get(0);
+    assertThat(resolvedNestedAttribute).isInstanceOf(List.class);
+    final List<Attribute> resolvedNestedAttributes = (List) resolvedNestedAttribute;
 
-    final Map<String, JsonNode> resolvedNestedAttributesMap =
-        StreamSupport.stream(resolvedNestedAttributeAsArray.spliterator(), false)
+    final Map<String, Object> resolvedNestedAttributesMap =
+        StreamSupport.stream(resolvedNestedAttributes.spliterator(), false)
             .collect(
-                Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
+                Collectors.toMap(
+                    attribute -> attribute.getName(), attribute -> attribute.getValue()));
 
     assertReferenceSetAttributeValue(
         resolvedNestedAttributesMap,
         "nested-attribute-1-name",
         2,
         CATEGORY_ID,
-        Category.referenceTypeId());
+        CategoryReference.CATEGORY);
     assertReferenceAttributeValue(
         resolvedNestedAttributesMap,
         "nested-attribute-2-name",
         CATEGORY_ID,
-        Category.referenceTypeId());
+        CategoryReference.CATEGORY);
     assertReferenceAttributeValue(
         resolvedNestedAttributesMap,
         "nested-attribute-3-name",
         CATEGORY_ID,
-        Category.referenceTypeId());
+        CategoryReference.CATEGORY);
   }
 
   @Test
@@ -167,7 +166,7 @@ class WithCategoryReferencesTest {
         .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
     final ProductVariantDraft withSetOfNestedCategoryReferenceSetWithSomeNonExisting =
-        readObjectFromResource(
+        createObjectFromResource(
             SET_OF_NESTED_ATTRIBUTE_WITH_SOME_NOT_EXISTING_CATEGORY_REFERENCE_ATTRIBUTES,
             ProductVariantDraft.class);
 
@@ -180,35 +179,36 @@ class WithCategoryReferencesTest {
     // assertions
     assertThat(resolvedAttributeDraft.getAttributes()).isNotNull();
 
-    final JsonNode value = resolvedAttributeDraft.getAttributes().get(0).getValue();
-    assertThat(value).isInstanceOf(ArrayNode.class);
-    final ArrayNode setOfResolvedNestedAttributes = (ArrayNode) value;
+    final Object value = resolvedAttributeDraft.getAttributes().get(0).getValue();
+    assertThat(value).isInstanceOf(List.class);
+    final List setOfResolvedNestedAttributes = (List) value;
 
-    final JsonNode resolvedNestedAttribute = setOfResolvedNestedAttributes.get(0);
-    assertThat(resolvedNestedAttribute).isInstanceOf(ArrayNode.class);
-    final ArrayNode resolvedNestedAttributeAsArray = (ArrayNode) resolvedNestedAttribute;
+    final Object resolvedNestedAttribute = setOfResolvedNestedAttributes.get(0);
+    assertThat(resolvedNestedAttribute).isInstanceOf(List.class);
+    final List<Attribute> resolvedNestedAttributes = (List) resolvedNestedAttribute;
 
-    final Map<String, JsonNode> resolvedNestedAttributesMap =
-        StreamSupport.stream(resolvedNestedAttributeAsArray.spliterator(), false)
+    final Map<String, Object> resolvedNestedAttributesMap =
+        StreamSupport.stream(resolvedNestedAttributes.spliterator(), false)
             .collect(
-                Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
+                Collectors.toMap(
+                    attribute -> attribute.getName(), attribute -> attribute.getValue()));
 
     assertReferenceSetAttributeValue(
         resolvedNestedAttributesMap,
         "nested-attribute-1-name",
-        createReferenceObject("nonExistingCategoryKey1", Category.referenceTypeId()),
-        createReferenceObject(CATEGORY_ID, Category.referenceTypeId()));
+        createReferenceObject("nonExistingCategoryKey1", CategoryReference.CATEGORY),
+        createReferenceObject(CATEGORY_ID, CategoryReference.CATEGORY));
 
     assertReferenceAttributeValue(
         resolvedNestedAttributesMap,
         "nested-attribute-2-name",
         CATEGORY_ID,
-        Category.referenceTypeId());
+        CategoryReference.CATEGORY);
 
     assertReferenceAttributeValue(
         resolvedNestedAttributesMap,
         "nested-attribute-3-name",
         "nonExistingCategoryKey3",
-        Category.referenceTypeId());
+        CategoryReference.CATEGORY);
   }
 }

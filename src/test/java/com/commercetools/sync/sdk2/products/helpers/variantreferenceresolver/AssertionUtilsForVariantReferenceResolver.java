@@ -1,65 +1,61 @@
 package com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-
-import javax.annotation.Nonnull;
-import java.util.Arrays;
-import java.util.Map;
-
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import com.commercetools.api.models.common.Reference;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Nonnull;
 
 public final class AssertionUtilsForVariantReferenceResolver {
 
   public static void assertReferenceAttributeValue(
-      @Nonnull final Map<String, JsonNode> attributeDraftMap,
+      @Nonnull final Map<String, Object> attributeDraftMap,
       @Nonnull final String attributeName,
       @Nonnull final String referenceId,
       @Nonnull final String referenceTypeId) {
 
     assertThat(attributeDraftMap.get(attributeName)).isNotNull();
-    assertThat(attributeDraftMap.get(attributeName).get("value")).isNotNull();
-    assertThat(attributeDraftMap.get(attributeName).get("value").get(REFERENCE_ID_FIELD).asText())
-        .isEqualTo(referenceId);
-    assertThat(
-            attributeDraftMap.get(attributeName).get("value").get(REFERENCE_TYPE_ID_FIELD).asText())
-        .isEqualTo(referenceTypeId);
+    if (attributeDraftMap.get(attributeName) instanceof Reference) {
+      final Reference ref = (Reference) attributeDraftMap.get(attributeName);
+      assertThat(ref.getId()).isEqualTo(referenceId);
+      assertThat(ref.getTypeId().getJsonName()).isEqualTo(referenceTypeId);
+    }
   }
 
   public static void assertReferenceSetAttributeValue(
-      @Nonnull final Map<String, JsonNode> attributeDraftMap,
+      @Nonnull final Map<String, Object> attributeDraftMap,
       @Nonnull final String attributeName,
       final int numberOfReferences,
       @Nonnull final String referenceId,
       @Nonnull final String referenceTypeId) {
 
     assertThat(attributeDraftMap.get(attributeName)).isNotNull();
-    final JsonNode value = attributeDraftMap.get(attributeName).get("value");
-    assertThat(value).isInstanceOf(ArrayNode.class);
+    assertThat(attributeDraftMap.get(attributeName)).isInstanceOf(List.class);
+    final List value = (List) attributeDraftMap.get(attributeName);
 
-    final ArrayNode valueAsArrayNode = (ArrayNode) value;
-    assertThat(valueAsArrayNode).hasSize(numberOfReferences);
-    assertThat(valueAsArrayNode)
+    assertThat(value).hasSize(numberOfReferences);
+    assertThat(value)
         .allSatisfy(
-            jsonNode -> {
-              assertThat(jsonNode.get(REFERENCE_ID_FIELD).asText()).isEqualTo(referenceId);
-              assertThat(jsonNode.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo(referenceTypeId);
+            obj -> {
+              assertThat(obj).isInstanceOf(Reference.class);
+              final Reference ref = (Reference) obj;
+              assertThat(ref.getId()).isEqualTo(referenceId);
+              assertThat(ref.getTypeId().getJsonName()).isEqualTo(referenceTypeId);
             });
   }
 
   public static void assertReferenceSetAttributeValue(
-      @Nonnull final Map<String, JsonNode> attributeDraftMap,
+      @Nonnull final Map<String, Object> attributeDraftMap,
       @Nonnull final String attributeName,
-      @Nonnull final JsonNode... expectedReferences) {
+      @Nonnull final Reference... expectedReferences) {
 
     assertThat(attributeDraftMap.get(attributeName)).isNotNull();
-    final JsonNode value = attributeDraftMap.get(attributeName).get("value");
-    assertThat(value).isInstanceOf(ArrayNode.class);
+    assertThat(attributeDraftMap.get(attributeName)).isInstanceOf(List.class);
+    final List<Reference> value = (List) attributeDraftMap.get(attributeName);
 
-    final ArrayNode valueAsArrayNode = (ArrayNode) value;
-    assertThat(valueAsArrayNode).containsAll(Arrays.asList(expectedReferences));
+    assertThat(value).containsAll(Arrays.asList(expectedReferences));
   }
 
   private AssertionUtilsForVariantReferenceResolver() {}

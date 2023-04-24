@@ -1,31 +1,28 @@
 package com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver;
 
-import com.commercetools.sync.products.ProductSyncOptions;
-import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import com.commercetools.sync.products.helpers.VariantReferenceResolver;
-import com.commercetools.sync.services.*;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.ProductVariantDraftBuilder;
-import io.sphere.sdk.products.attributes.AttributeDraft;
-import io.sphere.sdk.states.State;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.common.ReferenceImpl;
+import com.commercetools.api.models.product.Attribute;
+import com.commercetools.api.models.product.AttributeBuilder;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.state.StateReference;
+import com.commercetools.api.models.state.StateReferenceBuilder;
+import com.commercetools.sync.sdk2.products.ProductSyncOptions;
+import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.sdk2.products.helpers.VariantReferenceResolver;
+import com.commercetools.sync.sdk2.services.*;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
-import static com.commercetools.sync.products.ProductSyncMockUtils.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class WithStateReferencesTest {
   private VariantReferenceResolver referenceResolver;
@@ -36,7 +33,7 @@ class WithStateReferencesTest {
   void setup() {
     stateService = getMockStateService(STATE_ID);
     final ProductSyncOptions syncOptions =
-        ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
     referenceResolver =
         new VariantReferenceResolver(
             syncOptions,
@@ -54,30 +51,10 @@ class WithStateReferencesTest {
   @Test
   void resolveReferences_WithNullIdFieldInStateReferenceAttribute_ShouldNotResolveReferences() {
     // preparation
-    final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
-    attributeValue.put(REFERENCE_TYPE_ID_FIELD, State.referenceTypeId());
-    final AttributeDraft stateReferenceAttribute =
-        AttributeDraft.of("attributeName", attributeValue);
+    final Attribute attributeDraft =
+        AttributeBuilder.of().name("attributeName").value(new ReferenceImpl()).build();
     final ProductVariantDraft productVariantDraft =
-        ProductVariantDraftBuilder.of().attributes(stateReferenceAttribute).build();
-
-    // test
-    final ProductVariantDraft resolvedAttributeDraft =
-        referenceResolver.resolveReferences(productVariantDraft).toCompletableFuture().join();
-    // assertions
-    assertThat(resolvedAttributeDraft).isEqualTo(productVariantDraft);
-  }
-
-  @Test
-  void resolveReferences_WithNullNodeIdFieldInStateReferenceAttribute_ShouldNotResolveReferences() {
-    // preparation
-    final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
-    attributeValue.put(REFERENCE_TYPE_ID_FIELD, State.referenceTypeId());
-    attributeValue.set(REFERENCE_ID_FIELD, JsonNodeFactory.instance.nullNode());
-    final AttributeDraft stateReferenceAttribute =
-        AttributeDraft.of("attributeName", attributeValue);
-    final ProductVariantDraft productVariantDraft =
-        ProductVariantDraftBuilder.of().attributes(stateReferenceAttribute).build();
+        ProductVariantDraftBuilder.of().attributes(attributeDraft).build();
 
     // test
     final ProductVariantDraft resolvedAttributeDraft =
@@ -88,11 +65,11 @@ class WithStateReferencesTest {
 
   @Test
   void resolveReferences_WithStateReferenceSetAttribute_ShouldResolveReferences() {
-    final AttributeDraft stateReferenceSetAttributeDraft =
+    final Attribute stateReferenceSetAttributeDraft =
         getReferenceSetAttributeDraft(
             "foo",
-            createReferenceObject(UUID.randomUUID().toString(), State.referenceTypeId()),
-            createReferenceObject(UUID.randomUUID().toString(), State.referenceTypeId()));
+            createReferenceObject(UUID.randomUUID().toString(), StateReference.STATE),
+            createReferenceObject(UUID.randomUUID().toString(), StateReference.STATE));
 
     final ProductVariantDraft productVariantDraft =
         ProductVariantDraftBuilder.of().attributes(stateReferenceSetAttributeDraft).build();
@@ -105,20 +82,17 @@ class WithStateReferencesTest {
     assertThat(resolvedProductVariantDraft).isNotNull();
     assertThat(resolvedProductVariantDraft.getAttributes()).isNotNull();
 
-    final AttributeDraft resolvedAttributeDraft =
-        resolvedProductVariantDraft.getAttributes().get(0);
+    final Attribute resolvedAttributeDraft = resolvedProductVariantDraft.getAttributes().get(0);
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
 
-    final Spliterator<JsonNode> attributeReferencesIterator =
-        resolvedAttributeDraft.getValue().spliterator();
+    final List<StateReference> referenceList = (List) resolvedAttributeDraft.getValue();
+    final Spliterator<StateReference> attributeReferencesIterator = referenceList.spliterator();
     assertThat(attributeReferencesIterator).isNotNull();
-    final List<JsonNode> resolvedSet =
+    final List<StateReference> resolvedSet =
         StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toList());
     assertThat(resolvedSet).isNotEmpty();
-    final ObjectNode resolvedReference = JsonNodeFactory.instance.objectNode();
-    resolvedReference.put(REFERENCE_TYPE_ID_FIELD, State.referenceTypeId());
-    resolvedReference.put(REFERENCE_ID_FIELD, STATE_ID);
+    final StateReference resolvedReference = StateReferenceBuilder.of().id(STATE_ID).build();
     assertThat(resolvedSet).containsExactlyInAnyOrder(resolvedReference, resolvedReference);
   }
 }
