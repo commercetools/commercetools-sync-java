@@ -1,27 +1,5 @@
 package com.commercetools.sync.sdk2.products.helpers;
 
-import com.commercetools.api.client.ProjectApiRoot;
-import com.commercetools.api.models.common.MoneyBuilder;
-import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifier;
-import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
-import com.commercetools.sync.sdk2.commons.exceptions.ReferenceResolutionException;
-import com.commercetools.sync.sdk2.commons.helpers.DefaultCurrencyUnits;
-import com.commercetools.sync.sdk2.products.ProductSyncOptions;
-import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
-import com.commercetools.sync.sdk2.services.ChannelService;
-import com.commercetools.sync.sdk2.services.CustomerGroupService;
-import com.commercetools.sync.sdk2.services.TypeService;
-import com.commercetools.api.models.customer_group.CustomerGroup;
-import com.commercetools.api.models.common.PriceDraftBuilder;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
 import static com.commercetools.sync.sdk2.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.getMockCustomerGroup;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.getMockCustomerGroupService;
@@ -33,6 +11,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.common.MoneyBuilder;
+import com.commercetools.api.models.common.PriceDraftBuilder;
+import com.commercetools.api.models.customer_group.CustomerGroup;
+import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifier;
+import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
+import com.commercetools.sync.sdk2.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.sdk2.commons.helpers.DefaultCurrencyUnits;
+import com.commercetools.sync.sdk2.products.ProductSyncOptions;
+import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.sdk2.services.ChannelService;
+import com.commercetools.sync.sdk2.services.CustomerGroupService;
+import com.commercetools.sync.sdk2.services.TypeService;
+import java.math.BigDecimal;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class PriceCustomerGroupReferenceResolverTest {
   private static final String CUSTOMER_GROUP_KEY = "customer-group-key_1";
@@ -46,7 +45,8 @@ class PriceCustomerGroupReferenceResolverTest {
   void setup() {
     customerGroupService =
         getMockCustomerGroupService(getMockCustomerGroup(CUSTOMER_GROUP_ID, CUSTOMER_GROUP_KEY));
-    ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
+    ProductSyncOptions syncOptions =
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
     referenceResolver =
         new PriceReferenceResolver(
             syncOptions, mock(TypeService.class), mock(ChannelService.class), customerGroupService);
@@ -57,7 +57,12 @@ class PriceCustomerGroupReferenceResolverTest {
     final CustomerGroupResourceIdentifier customerGroupResourceIdentifier =
         CustomerGroupResourceIdentifierBuilder.of().key("anyKey").build();
     final PriceDraftBuilder priceBuilder =
-        PriceDraftBuilder.of().value(MoneyBuilder.of().centAmount(BigDecimal.TEN.longValue()).currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode()).build())
+        PriceDraftBuilder.of()
+            .value(
+                MoneyBuilder.of()
+                    .centAmount(BigDecimal.TEN.longValue())
+                    .currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode())
+                    .build())
             .customerGroup(customerGroupResourceIdentifier);
 
     final PriceDraftBuilder resolvedDraft =
@@ -70,7 +75,12 @@ class PriceCustomerGroupReferenceResolverTest {
   @Test
   void resolveCustomerGroupReference_WithNullCustomerGroup_ShouldNotResolveReference() {
     final PriceDraftBuilder priceBuilder =
-        PriceDraftBuilder.of().value(MoneyBuilder.of().centAmount(BigDecimal.TEN.longValue()).currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode()).build());
+        PriceDraftBuilder.of()
+            .value(
+                MoneyBuilder.of()
+                    .centAmount(BigDecimal.TEN.longValue())
+                    .currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode())
+                    .build());
 
     assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
         .isCompletedWithValueMatching(resolvedDraft -> isNull(resolvedDraft.getCustomerGroup()));
@@ -81,7 +91,12 @@ class PriceCustomerGroupReferenceResolverTest {
     final CustomerGroupResourceIdentifier customerGroupResourceIdentifier =
         CustomerGroupResourceIdentifierBuilder.of().key("nonExistentKey").build();
     final PriceDraftBuilder priceBuilder =
-        PriceDraftBuilder.of().value(MoneyBuilder.of().centAmount(BigDecimal.TEN.longValue()).currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode()).build())
+        PriceDraftBuilder.of()
+            .value(
+                MoneyBuilder.of()
+                    .centAmount(BigDecimal.TEN.longValue())
+                    .currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode())
+                    .build())
             .customerGroup(customerGroupResourceIdentifier);
 
     when(customerGroupService.fetchCachedCustomerGroupId(anyString()))
@@ -107,7 +122,12 @@ class PriceCustomerGroupReferenceResolverTest {
         CustomerGroupResourceIdentifierBuilder.of().key(null).build();
 
     final PriceDraftBuilder priceBuilder =
-        PriceDraftBuilder.of().value(MoneyBuilder.of().centAmount(BigDecimal.TEN.longValue()).currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode()).build())
+        PriceDraftBuilder.of()
+            .value(
+                MoneyBuilder.of()
+                    .centAmount(BigDecimal.TEN.longValue())
+                    .currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode())
+                    .build())
             .customerGroup(customerGroupResourceIdentifier);
 
     assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
@@ -129,7 +149,12 @@ class PriceCustomerGroupReferenceResolverTest {
     final CustomerGroupResourceIdentifier customerGroupResourceIdentifier =
         CustomerGroupResourceIdentifierBuilder.of().key("").build();
     final PriceDraftBuilder priceBuilder =
-        PriceDraftBuilder.of().value(MoneyBuilder.of().centAmount(BigDecimal.TEN.longValue()).currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode()).build())
+        PriceDraftBuilder.of()
+            .value(
+                MoneyBuilder.of()
+                    .centAmount(BigDecimal.TEN.longValue())
+                    .currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode())
+                    .build())
             .customerGroup(customerGroupResourceIdentifier);
 
     assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
@@ -150,12 +175,18 @@ class PriceCustomerGroupReferenceResolverTest {
     final CustomerGroupResourceIdentifier customerGroupResourceIdentifier =
         CustomerGroupResourceIdentifierBuilder.of().key("CustomerGroupKey").build();
     final PriceDraftBuilder priceBuilder =
-        PriceDraftBuilder.of().value(MoneyBuilder.of().centAmount(BigDecimal.TEN.longValue()).currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode()).build())
+        PriceDraftBuilder.of()
+            .value(
+                MoneyBuilder.of()
+                    .centAmount(BigDecimal.TEN.longValue())
+                    .currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode())
+                    .build())
             .customerGroup(customerGroupResourceIdentifier);
 
     final CompletableFuture<Optional<String>> futureThrowingSphereException =
         new CompletableFuture<>();
-    futureThrowingSphereException.completeExceptionally(new ReferenceResolutionException("CTP error on fetch"));
+    futureThrowingSphereException.completeExceptionally(
+        new ReferenceResolutionException("CTP error on fetch"));
     when(customerGroupService.fetchCachedCustomerGroupId(anyString()))
         .thenReturn(futureThrowingSphereException);
 
