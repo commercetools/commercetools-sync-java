@@ -1253,11 +1253,12 @@ class ProductSyncIT {
             .build();
 
     final ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-    final String json;
+    String json;
     try {
       json = ow.writeValueAsString(errorResponse);
     } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
+      // ignore the error
+      json = null;
     }
     return json;
   }
