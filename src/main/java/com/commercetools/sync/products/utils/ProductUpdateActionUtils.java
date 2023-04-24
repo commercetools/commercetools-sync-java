@@ -14,6 +14,7 @@ import static com.commercetools.sync.products.ActionGroup.ATTRIBUTES;
 import static com.commercetools.sync.products.ActionGroup.IMAGES;
 import static com.commercetools.sync.products.ActionGroup.PRICES;
 import static com.commercetools.sync.products.ActionGroup.SKU;
+import static com.commercetools.sync.products.utils.ProductSyncUtils.TEMPORARY_MASTER_SKU_SUFFIX;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions;
@@ -49,6 +50,7 @@ import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
+import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.updateactions.AddToCategory;
 import io.sphere.sdk.products.commands.updateactions.AddVariant;
 import io.sphere.sdk.products.commands.updateactions.ChangeMasterVariant;
@@ -64,6 +66,7 @@ import io.sphere.sdk.products.commands.updateactions.SetMetaDescription;
 import io.sphere.sdk.products.commands.updateactions.SetMetaKeywords;
 import io.sphere.sdk.products.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.products.commands.updateactions.SetSearchKeywords;
+import io.sphere.sdk.products.commands.updateactions.SetSku;
 import io.sphere.sdk.products.commands.updateactions.SetTaxCategory;
 import io.sphere.sdk.products.commands.updateactions.TransitionState;
 import io.sphere.sdk.products.commands.updateactions.Unpublish;
@@ -83,7 +86,7 @@ import javax.annotation.Nonnull;
 
 public final class ProductUpdateActionUtils {
   private static final String BLANK_VARIANT_KEY = "The variant key is blank.";
-  private static final String NULL_VARIANT = "The variant is null.";
+  static final String NULL_VARIANT = "The variant is null.";
   static final String BLANK_OLD_MASTER_VARIANT_KEY = "Old master variant key is blank.";
   static final String BLANK_NEW_MASTER_VARIANT_KEY = "New master variant null or has blank key.";
   static final String BLANK_NEW_MASTER_VARIANT_SKU = "New master variant has blank SKU.";
@@ -441,7 +444,8 @@ public final class ProductUpdateActionUtils {
 
     final List<ProductVariantDraft> newAllProductVariants =
         new ArrayList<>(newProduct.getVariants());
-    newAllProductVariants.add(newProduct.getMasterVariant());
+    final ProductVariantDraft newMasterVariant = newProduct.getMasterVariant();
+    newAllProductVariants.add(newMasterVariant);
 
     // Remove missing variants, but keep master variant (MV can't be removed)
     final List<UpdateAction<Product>> updateActions =
@@ -486,7 +490,38 @@ public final class ProductUpdateActionUtils {
             });
 
     updateActions.addAll(buildChangeMasterVariantUpdateAction(oldProduct, newProduct, syncOptions));
+    if (newMasterVariant != null
+        && hasAddVariantUpdateAction(updateActions)
+        && hasChangeMasterVariantUpdateAction(updateActions)) {
+
+      // Following update actions helps with the changing of master variants.
+      // The details are described here:
+      // https://github.com/commercetools/commercetools-project-sync/issues/447
+      final String oldMasterVariantSku = oldMasterVariant.getSku();
+      final boolean hasConflictingAddVariant =
+          hasConflictingAddVariantUpdateAction(updateActions, oldMasterVariantSku);
+
+      if (hasConflictingAddVariant) {
+        updateActions.add(
+            SetSku.of(
+                oldMasterVariant.getId(), oldMasterVariant.getSku() + TEMPORARY_MASTER_SKU_SUFFIX));
+      }
+
+      updateActions.addAll(
+          buildSetAttributeInAllVariantsUpdateAction(
+              attributesMetaData, oldProduct.getMasterVariant(), newMasterVariant));
+    }
     return updateActions;
+  }
+
+  private static boolean hasConflictingAddVariantUpdateAction(
+      final List<UpdateAction<Product>> updateActions, final String oldMasterVariantSku) {
+    return updateActions.stream()
+        .anyMatch(
+            productUpdateAction ->
+                productUpdateAction instanceof AddVariant
+                    && ((AddVariant) productUpdateAction).getSku() != null
+                    && ((AddVariant) productUpdateAction).getSku().equals(oldMasterVariantSku));
   }
 
   private static List<UpdateAction<Product>> getSameForAllUpdateActions(
@@ -836,6 +871,45 @@ public final class ProductUpdateActionUtils {
           }
           return updateActions;
         });
+  }
+
+  private static List<UpdateAction<Product>> buildSetAttributeInAllVariantsUpdateAction(
+      @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
+      @Nonnull final ProductVariant oldMasterVariant,
+      @Nonnull final ProductVariantDraft newMasterVariant) {
+    final List<UpdateAction<Product>> updateActions = new ArrayList<>();
+    final List<AttributeDraft> attributes = newMasterVariant.getAttributes();
+    if (attributes != null) {
+      attributes.forEach(
+          attributeDraft -> {
+            final AttributeMetaData attributeMetaData =
+                attributesMetaData.get(attributeDraft.getName());
+            final Boolean isAttributesEqual =
+                oldMasterVariant.getAttributes().stream()
+                    .filter(oldAttribute -> oldAttribute.getName().equals(attributeDraft.getName()))
+                    .findAny()
+                    .map(
+                        attribute ->
+                            attribute.getValueAsJsonNode().equals(attributeDraft.getValue()))
+                    .orElse(false);
+            if (attributeMetaData.isSameForAll() && !isAttributesEqual) {
+              updateActions.add(0, SetAttributeInAllVariants.of(attributeDraft));
+            }
+          });
+    }
+
+    return updateActions;
+  }
+
+  private static boolean hasChangeMasterVariantUpdateAction(
+      final List<UpdateAction<Product>> updateActions) {
+    return updateActions.stream()
+        .anyMatch(updateAction -> updateAction instanceof ChangeMasterVariant);
+  }
+
+  private static boolean hasAddVariantUpdateAction(
+      final List<UpdateAction<Product>> updateActions) {
+    return updateActions.stream().anyMatch(updateAction -> updateAction instanceof AddVariant);
   }
 
   /**

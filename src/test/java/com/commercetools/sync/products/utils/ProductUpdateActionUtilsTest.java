@@ -2,13 +2,7 @@ package com.commercetools.sync.products.utils;
 
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftFromJson;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductFromJson;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.BLANK_NEW_MASTER_VARIANT_KEY;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.BLANK_NEW_MASTER_VARIANT_SKU;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.BLANK_OLD_MASTER_VARIANT_KEY;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildAddVariantUpdateActionFromDraft;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeMasterVariantUpdateAction;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildVariantsUpdateActions;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.getAllVariants;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.*;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -61,6 +55,8 @@ class ProductUpdateActionUtilsTest {
   private static final String RES_ROOT =
       "com/commercetools/sync/products/utils/productVariantUpdateActionUtils/";
   private static final String OLD_PROD_WITH_VARIANTS = RES_ROOT + "productOld.json";
+  private static final String OLD_PROD_WITH_MASTER_VARIANT_ONLY =
+      RES_ROOT + "productOld_onlyMasterVariant.json";
   private static final String OLD_PROD_WITHOUT_MV_KEY_SKU =
       RES_ROOT + "productOld_noMasterVariantKeySku.json";
 
@@ -85,6 +81,9 @@ class ProductUpdateActionUtilsTest {
   private static final String NEW_PROD_DRAFT_WITHOUT_MV_SKU =
       RES_ROOT + "productDraftNew_noMasterVariantSku.json";
 
+  private static final String NEW_PROD_DRAFT_WITH_NULL_VARIANT =
+      RES_ROOT + "productDraftNew_nullVariant.json";
+
   @Test
   void buildVariantsUpdateActions_updatesVariants() {
     // preparation
@@ -98,7 +97,10 @@ class ProductUpdateActionUtilsTest {
     final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
     final AttributeMetaData priceInfo =
         AttributeMetaData.of(AttributeDefinitionBuilder.of("priceInfo", null, null).build());
+    final AttributeMetaData sizeAttributeMetaData =
+        AttributeMetaData.of(AttributeDefinitionBuilder.of("size", null, null).build());
     attributesMetaData.put("priceInfo", priceInfo);
+    attributesMetaData.put("size", sizeAttributeMetaData);
 
     final List<UpdateAction<Product>> updateActions =
         buildVariantsUpdateActions(
@@ -215,7 +217,10 @@ class ProductUpdateActionUtilsTest {
 
     final AttributeMetaData priceInfo =
         AttributeMetaData.of(AttributeDefinitionBuilder.of("priceInfo", null, null).build());
+    final AttributeMetaData size =
+        AttributeMetaData.of(AttributeDefinitionBuilder.of("size", null, null).build());
     attributesMetaData.put("priceInfo", priceInfo);
+    attributesMetaData.put("size", size);
 
     final List<UpdateAction<Product>> updateActions =
         buildVariantsUpdateActions(
@@ -275,6 +280,12 @@ class ProductUpdateActionUtilsTest {
         NEW_PROD_DRAFT_WITHOUT_MV_KEY,
         BLANK_OLD_MASTER_VARIANT_KEY,
         BLANK_NEW_MASTER_VARIANT_KEY);
+  }
+
+  @Test
+  void buildVariantsUpdateActions_withNullProductVariant_shouldNotBuildActionAndTriggerCallback() {
+    assertMissingMasterVariantKey(
+        OLD_PROD_WITH_MASTER_VARIANT_ONLY, NEW_PROD_DRAFT_WITH_NULL_VARIANT, NULL_VARIANT);
   }
 
   private void assertMissingMasterVariantKey(
