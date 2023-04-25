@@ -3,7 +3,7 @@ package com.commercetools.sync.integration.sdk2.services.impl;
 import static com.commercetools.sync.integration.sdk2.commons.utils.CustomObjectITUtils.createCustomObject;
 import static com.commercetools.sync.integration.sdk2.commons.utils.CustomObjectITUtils.deleteCustomObject;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.spotify.futures.CompletableFutures.exceptionallyCompletedFuture;
+import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;

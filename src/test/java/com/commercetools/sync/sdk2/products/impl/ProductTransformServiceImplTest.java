@@ -30,10 +30,10 @@ import com.commercetools.sync.sdk2.products.service.ProductTransformService;
 import com.commercetools.sync.sdk2.products.service.impl.ProductTransformServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.spotify.futures.CompletableFutures;
 import io.vrap.rmf.base.client.ApiHttpMethod;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;
+import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -494,7 +494,7 @@ class ProductTransformServiceImplTest {
     when(sourceClient.graphql().post(any(GraphQLRequest.class)))
         .thenReturn(byProjectKeyGraphQlPost);
     when(byProjectKeyGraphQlPost.execute())
-        .thenReturn(CompletableFutures.exceptionallyCompletedFuture(badGatewayException));
+        .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(badGatewayException));
 
     // test
     final CompletionStage<List<ProductDraft>> productDraftsFromPageStage =
