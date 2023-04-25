@@ -319,8 +319,7 @@ public class ProductSyncMockUtils {
     return fromInputStream(resourceAsStream, ProductDraft.class);
   }
 
-  public static <T> T readObjectFromResource(
-      final String resourcePath, final Class<T> objectType) {
+  public static <T> T readObjectFromResource(final String resourcePath, final Class<T> objectType) {
     final InputStream resourceAsStream =
         Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath);
     final T resourceFromJson = fromInputStream(resourceAsStream, objectType);

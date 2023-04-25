@@ -1,6 +1,17 @@
 package com.commercetools.sync.sdk2.products;
 
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
+import static java.util.Collections.*;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static org.assertj.core.api.Assertions.as;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
+import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.Mockito.*;
 
 import com.commercetools.api.client.ByProjectKeyGraphqlPost;
 import com.commercetools.api.client.ProjectApiRoot;
@@ -32,8 +43,6 @@ import com.commercetools.sync.sdk2.services.impl.ProductServiceImpl;
 import com.commercetools.sync.sdk2.services.impl.ProductTypeServiceImpl;
 import io.vrap.rmf.base.client.ApiHttpException;
 import io.vrap.rmf.base.client.ApiHttpHeaders;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,18 +50,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
-
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
-import static java.util.Collections.*;
-import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.concurrent.CompletableFuture.supplyAsync;
-import static org.assertj.core.api.Assertions.as;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
-import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anySet;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.Test;
 
 class ProductSyncTest {
 
@@ -80,9 +78,11 @@ class ProductSyncTest {
             mock(CustomerService.class));
 
     final ProductDraft productDraftWithoutKey =
-        ProductDraftBuilder.of().productType(
-                ProductTypeResourceIdentifierBuilder.of().key("productTypeKey").build()).name(LocalizedString.ofEnglish("name")).slug(
-                        LocalizedString.ofEnglish("slug")).variants(emptyList())
+        ProductDraftBuilder.of()
+            .productType(ProductTypeResourceIdentifierBuilder.of().key("productTypeKey").build())
+            .name(LocalizedString.ofEnglish("name"))
+            .slug(LocalizedString.ofEnglish("slug"))
+            .variants(emptyList())
             .build();
 
     // test
@@ -101,7 +101,8 @@ class ProductSyncTest {
     // preparation
     final ProductDraft productDraft =
         createProductDraftBuilder(
-                PRODUCT_KEY_2_RESOURCE_PATH, ProductTypeResourceIdentifierBuilder.of().key("productTypeKey").build())
+                PRODUCT_KEY_2_RESOURCE_PATH,
+                ProductTypeResourceIdentifierBuilder.of().key("productTypeKey").build())
             .build();
 
     final List<String> errorMessages = new ArrayList<>();
@@ -166,7 +167,8 @@ class ProductSyncTest {
     // preparation
     final ProductDraft productDraft =
         createProductDraftBuilder(
-                PRODUCT_KEY_2_RESOURCE_PATH, ProductTypeResourceIdentifierBuilder.of().key("productTypeKey").build())
+                PRODUCT_KEY_2_RESOURCE_PATH,
+                ProductTypeResourceIdentifierBuilder.of().key("productTypeKey").build())
             .taxCategory((TaxCategoryResourceIdentifier) null)
             .state((StateResourceIdentifier) null)
             .build();
@@ -245,7 +247,8 @@ class ProductSyncTest {
     // preparation
     final ProductDraft productDraft =
         createProductDraftBuilder(
-                PRODUCT_KEY_2_RESOURCE_PATH, ProductTypeResourceIdentifierBuilder.of().key("productTypeKey").build())
+                PRODUCT_KEY_2_RESOURCE_PATH,
+                ProductTypeResourceIdentifierBuilder.of().key("productTypeKey").build())
             .taxCategory((TaxCategoryResourceIdentifier) null)
             .state((StateResourceIdentifier) null)
             .build();
@@ -298,13 +301,16 @@ class ProductSyncTest {
     // preparation
     final ProductDraft productDraft =
         createProductDraftBuilder(
-                PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, ProductTypeResourceIdentifierBuilder.of().key("productTypeKey").build())
+                PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
+                ProductTypeResourceIdentifierBuilder.of().key("productTypeKey").build())
             .taxCategory((TaxCategoryResourceIdentifier) null)
             .state((StateResourceIdentifier) null)
             .build();
 
     final ProductProjection mockedExistingProduct =
-            ProductMixin.toProjection(readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class), ProductProjectionType.STAGED);
+        ProductMixin.toProjection(
+            readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class),
+            ProductProjectionType.STAGED);
 
     final ProductSyncOptions productSyncOptions =
         ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
@@ -359,13 +365,16 @@ class ProductSyncTest {
     // preparation
     final ProductDraft productDraft =
         createProductDraftBuilder(
-                PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, ProductTypeResourceIdentifierBuilder.of().key("productTypeKey").build())
+                PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
+                ProductTypeResourceIdentifierBuilder.of().key("productTypeKey").build())
             .taxCategory((TaxCategoryResourceIdentifier) null)
             .state((StateResourceIdentifier) null)
             .build();
 
     final ProductProjection mockedExistingProduct =
-        ProductMixin.toProjection(readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class), ProductProjectionType.STAGED);
+        ProductMixin.toProjection(
+            readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class),
+            ProductProjectionType.STAGED);
     final List<String> errorMessages = new ArrayList<>();
     final List<Throwable> exceptions = new ArrayList<>();
 
