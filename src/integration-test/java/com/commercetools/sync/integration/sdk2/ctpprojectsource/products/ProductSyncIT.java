@@ -147,7 +147,7 @@ class ProductSyncIT {
 
   /**
    * Deletes Products from the source and target CTP projects, clears the callback collections then
-   * it instantiates a new {@link com.commercetools.sync.products.ProductSync} instance.
+   * it instantiates a new {@link com.commercetools.sync.sdk2.products.ProductSync} instance.
    */
   @BeforeEach
   void setupTest() {
