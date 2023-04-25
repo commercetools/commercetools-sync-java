@@ -2,7 +2,7 @@ package com.commercetools.sync.integration.sdk2.commons.utils;
 
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createObjectFromResource;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.readObjectFromResource;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -351,7 +351,7 @@ public final class ProductTypeITUtils {
   public static ProductType ensureProductType(
       @Nonnull final String jsonResourcePath, @Nonnull final ProjectApiRoot ctpClient) {
     final ProductTypeDraft productTypeDraft =
-        createObjectFromResource(jsonResourcePath, ProductTypeDraft.class);
+        readObjectFromResource(jsonResourcePath, ProductTypeDraft.class);
 
     ProductType productType =
         ctpClient

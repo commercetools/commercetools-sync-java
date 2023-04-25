@@ -309,7 +309,7 @@ public class ProductSyncMockUtils {
   }
 
   public static ProductProjection createProductFromJson(@Nonnull final String jsonResourcePath) {
-    final Product productFromJson = createObjectFromResource(jsonResourcePath, Product.class);
+    final Product productFromJson = readObjectFromResource(jsonResourcePath, Product.class);
     return ProductMixin.toProjection(productFromJson, ProductProjectionType.STAGED);
   }
 
@@ -319,7 +319,7 @@ public class ProductSyncMockUtils {
     return fromInputStream(resourceAsStream, ProductDraft.class);
   }
 
-  public static <T> T createObjectFromResource(
+  public static <T> T readObjectFromResource(
       final String resourcePath, final Class<T> objectType) {
     final InputStream resourceAsStream =
         Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath);
