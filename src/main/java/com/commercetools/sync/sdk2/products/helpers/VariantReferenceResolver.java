@@ -2,7 +2,7 @@ package com.commercetools.sync.sdk2.products.helpers;
 
 import static com.commercetools.sync.sdk2.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static com.commercetools.sync.sdk2.commons.utils.ResourceIdentifierUtils.*;
-import static com.commercetools.sync.sdk2.products.utils.AttributeUtils.getAttributeReference;
+import static com.commercetools.sync.sdk2.products.utils.AttributeUtils.getAttributeReferences;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 
@@ -157,7 +157,7 @@ public final class VariantReferenceResolver
   @Nonnull
   private CompletionStage<Attribute> resolveAttributeReference(
       @Nonnull final Attribute attributeDraft) {
-    final List<Reference> allAttributeReferences = getAttributeReference(attributeDraft);
+    final List<Reference> allAttributeReferences = getAttributeReferences(attributeDraft);
 
     if (allAttributeReferences.isEmpty()) {
       return CompletableFuture.completedFuture(attributeDraft);
