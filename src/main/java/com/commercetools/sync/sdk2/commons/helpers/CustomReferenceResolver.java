@@ -1,6 +1,6 @@
 package com.commercetools.sync.sdk2.commons.helpers;
 
-import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
+import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
