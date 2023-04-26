@@ -1,7 +1,7 @@
 package com.commercetools.sync.integration.sdk2.commons.utils;
 
 import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
-import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
+import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 

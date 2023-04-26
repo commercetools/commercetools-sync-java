@@ -5,7 +5,7 @@ import static com.commercetools.sync.integration.sdk2.commons.utils.ProductITUti
 import static com.commercetools.sync.integration.sdk2.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
-import static com.spotify.futures.CompletableFutures.exceptionallyCompletedFuture;
+import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;

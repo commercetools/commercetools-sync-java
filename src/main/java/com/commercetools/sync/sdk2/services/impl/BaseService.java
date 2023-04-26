@@ -1,6 +1,6 @@
 package com.commercetools.sync.sdk2.services.impl;
 
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
+import static com.commercetools.sync.sdk2.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;

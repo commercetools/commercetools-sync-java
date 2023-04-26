@@ -7,6 +7,7 @@ import com.commercetools.api.models.common.Reference;
 import com.commercetools.api.models.common.ResourceIdentifier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringUtils;
 
 public final class ResourceIdentifierUtils {
 
@@ -28,6 +29,22 @@ public final class ResourceIdentifierUtils {
   }
 
   /**
+   * Given a {@link Reference}, if it is not null, this method applies the {@link
+   * Reference#toResourceIdentifier()} method to return it as a {@link ResourceIdentifiable}. If it
+   * is {@code null}, this method returns {@code null}.
+   *
+   * @param reference represents the reference to return as a {@link ResourceIdentifier} if not
+   *     {@code null}.
+   * @return the supplied reference as a {@link ResourceIdentifier} if not {@code null}. If it is
+   *     {@code null}, this method returns {@code null}.
+   */
+  @Nullable
+  public static <ReferenceT extends Reference> ResourceIdentifier toResourceIdentifierIfNotNull(
+      @Nullable final ReferenceT reference) {
+    return ofNullable(reference).map(ReferenceT::toResourceIdentifier).orElse(null);
+  }
+
+  /**
    * Given a {@link Reference} {@code referenceValue} which is the representation of CTP Reference
    * object, this method checks if it has a {@code typeId} with the value equal to {@code
    * referenceTypeId}.
@@ -39,7 +56,9 @@ public final class ResourceIdentifierUtils {
    */
   public static boolean isReferenceOfType(
       @Nonnull final Reference referenceValue, final String referenceTypeId) {
-    return referenceValue.getTypeId().getJsonName().equals(referenceTypeId);
+    return referenceValue.getTypeId() != null
+        && StringUtils.isNotBlank(referenceValue.getTypeId().getJsonName())
+        && referenceValue.getTypeId().getJsonName().equals(referenceTypeId);
   }
 
   private ResourceIdentifierUtils() {}

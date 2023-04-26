@@ -1,7 +1,7 @@
 package com.commercetools.sync.sdk2.customers.helpers;
 
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
-import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
+import static com.commercetools.sync.sdk2.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
+import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
