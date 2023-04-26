@@ -5,7 +5,7 @@ import static com.commercetools.sync.sdk2.customers.helpers.CustomerBatchValidat
 import static com.commercetools.sync.sdk2.customers.helpers.CustomerBatchValidator.CUSTOMER_DRAFT_IS_NULL;
 import static com.commercetools.sync.sdk2.customers.helpers.CustomerBatchValidator.CUSTOMER_DRAFT_KEY_NOT_SET;
 import static com.commercetools.sync.sdk2.customers.helpers.CustomerReferenceResolver.FAILED_TO_RESOLVE_CUSTOM_TYPE;
-import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
+import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;

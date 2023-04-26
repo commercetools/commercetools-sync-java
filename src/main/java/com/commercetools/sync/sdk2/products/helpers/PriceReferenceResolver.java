@@ -1,6 +1,6 @@
 package com.commercetools.sync.sdk2.products.helpers;
 
-import static com.spotify.futures.CompletableFutures.exceptionallyCompletedFuture;
+import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
