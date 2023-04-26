@@ -16,8 +16,6 @@ import com.commercetools.sync.sdk2.products.helpers.VariantReferenceResolver;
 import com.commercetools.sync.sdk2.services.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -122,13 +120,9 @@ class WithProductReferencesTest {
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
     final List<ProductReference> referenceList = (List) resolvedAttributeDraft.getValue();
 
-    final Spliterator<ProductReference> attributeReferencesIterator = referenceList.spliterator();
-    assertThat(attributeReferencesIterator).isNotNull();
-    final List<ProductReference> resolvedSet =
-        StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toList());
-    assertThat(resolvedSet).isNotEmpty();
+    assertThat(referenceList).isNotEmpty();
     final ProductReference resolvedReference = ProductReferenceBuilder.of().id(PRODUCT_ID).build();
-    assertThat(resolvedSet).containsExactlyInAnyOrder(resolvedReference, resolvedReference);
+    assertThat(referenceList).containsExactlyInAnyOrder(resolvedReference, resolvedReference);
   }
 
   @Test
@@ -158,10 +152,7 @@ class WithProductReferencesTest {
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
 
     final List<ProductReference> referenceList = (List) resolvedAttributeDraft.getValue();
-    final Spliterator<ProductReference> attributeReferencesIterator = referenceList.spliterator();
-    assertThat(attributeReferencesIterator).isNotNull();
-    final Set<ProductReference> resolvedSet =
-        StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toSet());
+    final Set<ProductReference> resolvedSet = new HashSet<>(referenceList);
     assertThat(resolvedSet).containsExactly(productReference);
   }
 
@@ -197,10 +188,7 @@ class WithProductReferencesTest {
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
 
     final List<ProductReference> referenceList = (List) resolvedAttributeDraft.getValue();
-    final Spliterator<ProductReference> attributeReferencesIterator = referenceList.spliterator();
-    assertThat(attributeReferencesIterator).isNotNull();
-    final Set<ProductReference> resolvedSet =
-        StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toSet());
+    final Set<ProductReference> resolvedSet = new HashSet<>(referenceList);
 
     final ProductReference resolvedReference1 = getProductReferenceWithId("existingId");
     final ProductReference resolvedReference2 = getProductReferenceWithId("randomKey");

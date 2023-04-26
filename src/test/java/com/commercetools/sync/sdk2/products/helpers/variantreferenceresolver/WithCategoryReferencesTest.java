@@ -21,8 +21,6 @@ import com.commercetools.sync.sdk2.products.helpers.VariantReferenceResolver;
 import com.commercetools.sync.sdk2.services.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -129,14 +127,10 @@ class WithCategoryReferencesTest {
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
     final List<CategoryReference> referenceList = (List) resolvedAttributeDraft.getValue();
-    final Spliterator<CategoryReference> attributeReferencesIterator = referenceList.spliterator();
-    assertThat(attributeReferencesIterator).isNotNull();
-    final List<CategoryReference> resolvedSet =
-        StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toList());
-    assertThat(resolvedSet).isNotEmpty();
+    assertThat(referenceList).isNotEmpty();
     final CategoryReference resolvedReference =
         CategoryReferenceBuilder.of().id(CATEGORY_ID).build();
-    assertThat(resolvedSet).containsExactlyInAnyOrder(resolvedReference, resolvedReference);
+    assertThat(referenceList).containsExactlyInAnyOrder(resolvedReference, resolvedReference);
   }
 
   @Test
@@ -166,10 +160,8 @@ class WithCategoryReferencesTest {
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
     final List<CategoryReference> referenceList = (List) resolvedAttributeDraft.getValue();
-    final Spliterator<CategoryReference> attributeReferencesIterator = referenceList.spliterator();
-    assertThat(attributeReferencesIterator).isNotNull();
-    final Set<CategoryReference> resolvedSet =
-        StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toSet());
+    final Set<CategoryReference> resolvedSet = new HashSet<>(referenceList);
+    assertThat(resolvedSet).isNotNull();
     assertThat(resolvedSet).containsExactly((CategoryReference) categoryReference);
   }
 
@@ -206,10 +198,8 @@ class WithCategoryReferencesTest {
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
     final List<CategoryReference> referenceList = (List) resolvedAttributeDraft.getValue();
-    final Spliterator<CategoryReference> attributeReferencesIterator = referenceList.spliterator();
-    assertThat(attributeReferencesIterator).isNotNull();
-    final Set<CategoryReference> resolvedSet =
-        StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toSet());
+    final Set<CategoryReference> resolvedSet = new HashSet<>(referenceList);
+    assertThat(resolvedSet).isNotNull();
 
     final CategoryReference resolvedReference1 =
         (CategoryReference) createReferenceObject("existingId", CategoryReference.CATEGORY);

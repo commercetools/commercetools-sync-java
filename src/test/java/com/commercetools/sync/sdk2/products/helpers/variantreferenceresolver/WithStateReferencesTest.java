@@ -16,11 +16,7 @@ import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.products.helpers.VariantReferenceResolver;
 import com.commercetools.sync.sdk2.services.*;
-import java.util.List;
-import java.util.Spliterator;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -87,12 +83,8 @@ class WithStateReferencesTest {
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
 
     final List<StateReference> referenceList = (List) resolvedAttributeDraft.getValue();
-    final Spliterator<StateReference> attributeReferencesIterator = referenceList.spliterator();
-    assertThat(attributeReferencesIterator).isNotNull();
-    final List<StateReference> resolvedSet =
-        StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toList());
-    assertThat(resolvedSet).isNotEmpty();
+    assertThat(referenceList).isNotEmpty();
     final StateReference resolvedReference = StateReferenceBuilder.of().id(STATE_ID).build();
-    assertThat(resolvedSet).containsExactlyInAnyOrder(resolvedReference, resolvedReference);
+    assertThat(referenceList).containsExactlyInAnyOrder(resolvedReference, resolvedReference);
   }
 }

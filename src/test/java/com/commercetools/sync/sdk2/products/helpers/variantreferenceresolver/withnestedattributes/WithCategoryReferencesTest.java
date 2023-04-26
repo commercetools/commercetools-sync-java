@@ -22,7 +22,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -81,7 +80,7 @@ class WithCategoryReferencesTest {
     final List<Attribute> resolvedNestedAttributes = (List) value;
 
     final Map<String, Object> resolvedNestedAttributesMap =
-        StreamSupport.stream(resolvedNestedAttributes.spliterator(), false)
+        resolvedNestedAttributes.stream()
             .collect(
                 Collectors.toMap(
                     attribute -> attribute.getName(), attribute -> attribute.getValue()));
@@ -125,7 +124,7 @@ class WithCategoryReferencesTest {
     final List<Attribute> resolvedNestedAttributes = (List) value;
 
     final Map<String, Object> resolvedNestedAttributesMap =
-        StreamSupport.stream(resolvedNestedAttributes.spliterator(), false)
+        resolvedNestedAttributes.stream()
             .collect(
                 Collectors.toMap(
                     attribute -> attribute.getName(), attribute -> attribute.getValue()));
@@ -176,7 +175,7 @@ class WithCategoryReferencesTest {
     final List<Attribute> resolvedNestedAttributes = (List) value;
 
     final Map<String, Object> resolvedNestedAttributesMap =
-        StreamSupport.stream(resolvedNestedAttributes.spliterator(), false)
+        resolvedNestedAttributes.stream()
             .collect(
                 Collectors.toMap(
                     attribute -> attribute.getName(), attribute -> attribute.getValue()));

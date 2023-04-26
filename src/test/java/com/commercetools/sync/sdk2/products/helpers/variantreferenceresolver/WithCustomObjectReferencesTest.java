@@ -24,8 +24,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -183,15 +181,10 @@ class WithCustomObjectReferencesTest {
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
 
     final List<CustomObjectReference> referenceList = (List) resolvedAttributeDraft.getValue();
-    final Spliterator<CustomObjectReference> attributeReferencesIterator =
-        referenceList.spliterator();
-    assertThat(attributeReferencesIterator).isNotNull();
-    final List<CustomObjectReference> resolvedSet =
-        StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toList());
-    assertThat(resolvedSet).isNotEmpty();
+    assertThat(referenceList).isNotEmpty();
     final CustomObjectReference resolvedReference =
         CustomObjectReferenceBuilder.of().id(CUSTOM_OBJECT_ID).build();
-    assertThat(resolvedSet).containsExactlyInAnyOrder(resolvedReference, resolvedReference);
+    assertThat(referenceList).containsExactlyInAnyOrder(resolvedReference, resolvedReference);
   }
 
   @Test
@@ -222,11 +215,7 @@ class WithCustomObjectReferencesTest {
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
     final List<CustomObjectReference> referenceList = (List) resolvedAttributeDraft.getValue();
-    final Spliterator<CustomObjectReference> attributeReferencesIterator =
-        referenceList.spliterator();
-    assertThat(attributeReferencesIterator).isNotNull();
-    final Set<CustomObjectReference> resolvedSet =
-        StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toSet());
+    final Set<CustomObjectReference> resolvedSet = new HashSet<>(referenceList);
     assertThat(resolvedSet).containsExactly((CustomObjectReference) customObjectReference);
   }
 
@@ -274,11 +263,7 @@ class WithCustomObjectReferencesTest {
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
 
     final List<CustomObjectReference> referenceList = (List) resolvedAttributeDraft.getValue();
-    final Spliterator<CustomObjectReference> attributeReferencesIterator =
-        referenceList.spliterator();
-    assertThat(attributeReferencesIterator).isNotNull();
-    final Set<CustomObjectReference> resolvedSet =
-        StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toSet());
+    final Set<CustomObjectReference> resolvedSet = new HashSet<>(referenceList);
 
     final CustomObjectReference resolvedReference1 =
         (CustomObjectReference)

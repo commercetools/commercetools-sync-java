@@ -18,10 +18,7 @@ import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.products.helpers.VariantReferenceResolver;
 import com.commercetools.sync.sdk2.services.*;
 import java.util.List;
-import java.util.Spliterator;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -88,13 +85,9 @@ class WithCustomerReferencesTest {
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
     final List<CustomerReference> references = (List) resolvedAttributeDraft.getValue();
-    final Spliterator<CustomerReference> attributeReferencesIterator = references.spliterator();
-    assertThat(attributeReferencesIterator).isNotNull();
-    final List<CustomerReference> resolvedSet =
-        StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toList());
-    assertThat(resolvedSet).isNotEmpty();
+    assertThat(references).isNotEmpty();
     final CustomerReference resolvedReference =
         CustomerReferenceBuilder.of().id(CUSTOMER_ID).build();
-    assertThat(resolvedSet).containsExactlyInAnyOrder(resolvedReference, resolvedReference);
+    assertThat(references).containsExactlyInAnyOrder(resolvedReference, resolvedReference);
   }
 }
