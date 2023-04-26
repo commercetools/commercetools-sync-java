@@ -1,4 +1,4 @@
-package com.commercetools.sync.sdk2.products.impl;
+package com.commercetools.sync.sdk2.products.utils;
 
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createProductFromJson;
 import static com.commercetools.sync.sdk2.services.impl.BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER;
@@ -26,8 +26,6 @@ import com.commercetools.api.models.product_type.ProductTypeReference;
 import com.commercetools.sync.sdk2.commons.exceptions.ReferenceTransformException;
 import com.commercetools.sync.sdk2.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
-import com.commercetools.sync.sdk2.products.service.ProductTransformService;
-import com.commercetools.sync.sdk2.products.service.impl.ProductTransformServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spotify.futures.CompletableFutures;
@@ -49,7 +47,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("unchecked")
-class ProductTransformServiceImplTest {
+class ProductTransformUtilsTest {
 
   final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
 
@@ -63,8 +61,6 @@ class ProductTransformServiceImplTest {
       throws Exception {
     // preparation
     final ProjectApiRoot sourceClient = mock(ProjectApiRoot.class);
-    final ProductTransformService productTransformService =
-        new ProductTransformServiceImpl(sourceClient, referenceIdToKeyCache);
     final List<ProductProjection> productPage = asList(createProductFromJson("product-key-4.json"));
 
     final String jsonStringProducts =
@@ -98,7 +94,8 @@ class ProductTransformServiceImplTest {
 
     // test
     final List<ProductDraft> productsResolved =
-        productTransformService.toProductDrafts(productPage).toCompletableFuture().join();
+        ProductTransformUtils.toProductDrafts(sourceClient, referenceIdToKeyCache, productPage)
+            .join();
 
     // assertions
     final Optional<ProductDraft> productKey1 =
@@ -166,8 +163,6 @@ class ProductTransformServiceImplTest {
       throws Exception {
     // preparation
     final ProjectApiRoot sourceClient = mock(ProjectApiRoot.class);
-    final ProductTransformService productTransformService =
-        new ProductTransformServiceImpl(sourceClient, referenceIdToKeyCache);
     final List<ProductProjection> productPage =
         asList(createProductFromJson("product-with-unresolved-references.json"));
 
@@ -191,7 +186,9 @@ class ProductTransformServiceImplTest {
 
     // test
     final List<ProductDraft> productsResolved =
-        productTransformService.toProductDrafts(productPage).join();
+        ProductTransformUtils.toProductDrafts(sourceClient, referenceIdToKeyCache, productPage)
+            .toCompletableFuture()
+            .join();
 
     final Optional<ProductDraft> productKey1 =
         productsResolved.stream()
@@ -343,12 +340,11 @@ class ProductTransformServiceImplTest {
             .withApiBaseUrl("testBaseUrl")
             .build("testClient");
 
-    final ProductTransformService productTransformService =
-        new ProductTransformServiceImpl(testClient, referenceIdToKeyCache);
-
     // test
     final List<ProductDraft> productsResolved =
-        productTransformService.toProductDrafts(productPage).toCompletableFuture().join();
+        ProductTransformUtils.toProductDrafts(testClient, referenceIdToKeyCache, productPage)
+            .toCompletableFuture()
+            .join();
 
     // assertions
 
@@ -388,8 +384,6 @@ class ProductTransformServiceImplTest {
           throws Exception {
     // preparation
     final ProjectApiRoot sourceClient = mock(ProjectApiRoot.class);
-    final ProductTransformService productTransformService =
-        new ProductTransformServiceImpl(sourceClient, referenceIdToKeyCache);
     final List<ProductProjection> productPage =
         asList(createProductFromJson("product-with-unresolved-references.json"));
 
@@ -414,7 +408,9 @@ class ProductTransformServiceImplTest {
 
     // test
     final List<ProductDraft> productsResolved =
-        productTransformService.toProductDrafts(productPage).toCompletableFuture().join();
+        ProductTransformUtils.toProductDrafts(sourceClient, referenceIdToKeyCache, productPage)
+            .toCompletableFuture()
+            .join();
 
     // assertions
 
@@ -437,8 +433,6 @@ class ProductTransformServiceImplTest {
     // preparation
     final ProjectApiRoot sourceClient = mock(ProjectApiRoot.class);
     referenceIdToKeyCache.add("cda0dbf7-b42e-40bf-8453-241d5b587f93", KEY_IS_NOT_SET_PLACE_HOLDER);
-    final ProductTransformService productTransformService =
-        new ProductTransformServiceImpl(sourceClient, referenceIdToKeyCache);
     final List<ProductProjection> productPage =
         asList(createProductFromJson("product-with-unresolved-references.json"));
 
@@ -461,7 +455,9 @@ class ProductTransformServiceImplTest {
 
     // test
     final List<ProductDraft> productsResolved =
-        productTransformService.toProductDrafts(productPage).toCompletableFuture().join();
+        ProductTransformUtils.toProductDrafts(sourceClient, referenceIdToKeyCache, productPage)
+            .toCompletableFuture()
+            .join();
 
     // assertions
 
@@ -480,8 +476,6 @@ class ProductTransformServiceImplTest {
   void transform_WithErrorOnGraphQlRequest_ShouldThrowReferenceTransformException() {
     // preparation
     final ProjectApiRoot sourceClient = mock(ProjectApiRoot.class);
-    final ProductTransformService productTransformService =
-        new ProductTransformServiceImpl(sourceClient, referenceIdToKeyCache);
     final List<ProductProjection> productPage =
         asList(
             createProductFromJson("product-key-5.json"),
@@ -498,7 +492,7 @@ class ProductTransformServiceImplTest {
 
     // test
     final CompletionStage<List<ProductDraft>> productDraftsFromPageStage =
-        productTransformService.toProductDrafts(productPage);
+        ProductTransformUtils.toProductDrafts(sourceClient, referenceIdToKeyCache, productPage);
 
     // assertions
     assertThat(productDraftsFromPageStage)
