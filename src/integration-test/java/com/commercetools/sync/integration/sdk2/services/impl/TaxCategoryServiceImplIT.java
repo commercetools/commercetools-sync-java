@@ -2,7 +2,7 @@ package com.commercetools.sync.integration.sdk2.services.impl;
 
 import static com.commercetools.sync.integration.sdk2.commons.utils.TaxCategoryITUtils.*;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.spotify.futures.CompletableFutures.exceptionallyCompletedFuture;
+import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
