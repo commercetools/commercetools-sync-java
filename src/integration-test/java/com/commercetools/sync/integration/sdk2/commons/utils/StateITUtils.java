@@ -10,6 +10,7 @@ import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.state.State;
 import com.commercetools.api.models.state.StateDraft;
 import com.commercetools.api.models.state.StateDraftBuilder;
+import com.commercetools.api.models.state.StatePagedQueryResponse;
 import com.commercetools.api.models.state.StateTypeEnum;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.Collections;
@@ -92,9 +93,25 @@ public final class StateITUtils {
    * @param stateType defines the state type to create the state with.
    * @return the created state.
    */
-  public static State createState(
+  public static State ensureState(
       @Nonnull final ProjectApiRoot ctpClient, @Nonnull final StateTypeEnum stateType) {
-    return createState(ctpClient, STATE_KEY, stateType, null);
+    State state =
+        ctpClient
+            .states()
+            .get()
+            .withWhere("key=:key")
+            .withPredicateVar("key", STATE_KEY)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(StatePagedQueryResponse::getResults)
+            .thenApply(states -> states.isEmpty() ? null : states.get(0))
+            .join();
+
+    if (state == null) {
+      state = createState(ctpClient, STATE_KEY, stateType, null);
+    }
+
+    return state;
   }
 
   /**

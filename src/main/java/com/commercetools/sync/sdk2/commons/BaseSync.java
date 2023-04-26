@@ -1,14 +1,22 @@
 package com.commercetools.sync.sdk2.commons;
 
+import com.commercetools.api.models.ResourceUpdateAction;
+import com.commercetools.api.models.common.BaseResource;
+import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.commons.helpers.BaseSyncStatistics;
 import io.vrap.rmf.base.client.error.ConcurrentModificationException;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public abstract class BaseSync<
-    DraftT, SyncStatisticsT extends BaseSyncStatistics, SyncOptionsT extends BaseSyncOptions> {
+    ResourceT extends BaseResource,
+    ResourceDraftT,
+    ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>,
+    SyncStatisticsT extends BaseSyncStatistics,
+    SyncOptionsT extends BaseSyncOptions> {
   protected final SyncStatisticsT statistics;
   protected final SyncOptionsT syncOptions;
 
@@ -30,7 +38,8 @@ public abstract class BaseSync<
    *     BaseSyncStatistics} representing the {@code statistics} instance attribute of {@code this}
    *     {@link BaseSync}.
    */
-  protected abstract CompletionStage<SyncStatisticsT> process(@Nonnull List<DraftT> resourceDrafts);
+  protected abstract CompletionStage<SyncStatisticsT> process(
+      @Nonnull List<ResourceDraftT> resourceDrafts);
 
   /**
    * Given a list of resource (e.g. categories, products, etc..) drafts. This method compares each
@@ -47,7 +56,7 @@ public abstract class BaseSync<
    *     BaseSyncStatistics} representing the {@code statistics} instance attribute of {@code this}
    *     {@link BaseSync}.
    */
-  public CompletionStage<SyncStatisticsT> sync(@Nonnull final List<DraftT> resourceDrafts) {
+  public CompletionStage<SyncStatisticsT> sync(@Nonnull final List<ResourceDraftT> resourceDrafts) {
     statistics.startTimer();
     return process(resourceDrafts)
         .thenApply(
@@ -89,16 +98,17 @@ public abstract class BaseSync<
    *     the sync process executed on the given list of batches.
    */
   protected CompletionStage<SyncStatisticsT> syncBatches(
-      @Nonnull final List<List<DraftT>> batches,
+      @Nonnull final List<List<ResourceDraftT>> batches,
       @Nonnull final CompletionStage<SyncStatisticsT> result) {
     if (batches.isEmpty()) {
       return result;
     }
-    final List<DraftT> firstBatch = batches.remove(0);
+    final List<ResourceDraftT> firstBatch = batches.remove(0);
     return syncBatches(batches, result.thenCompose(subResult -> processBatch(firstBatch)));
   }
 
-  protected abstract CompletionStage<SyncStatisticsT> processBatch(@Nonnull List<DraftT> batch);
+  protected abstract CompletionStage<SyncStatisticsT> processBatch(
+      @Nonnull List<ResourceDraftT> batch);
 
   /**
    * This method checks if the supplied {@code exception} is an instance of {@link
@@ -127,5 +137,33 @@ public abstract class BaseSync<
       return onConcurrentModificationSupplier.get();
     }
     return onOtherExceptionSupplier.get();
+  }
+
+  /**
+   * This method calls the optional error callback specified in the {@code syncOptions} and updates
+   * the {@code statistics} instance by incrementing the total number of failed resources S to sync.
+   *
+   * @param errorMessage The error message describing the reason(s) of failure.
+   * @param exception The exception that called caused the failure, if any.
+   * @param oldResource the commercetools resource which could be updated.
+   * @param newResourceDraft the commercetools resource draft where we get the new data.
+   * @param updateActions the update actions to update the resource with.
+   * @param failedTimes The number of times that the failed cart discount statistic counter is
+   *     incremented.
+   */
+  @SuppressWarnings("unchecked")
+  protected void handleError(
+      @Nonnull final String errorMessage,
+      @Nullable final Throwable exception,
+      final ResourceT oldResource,
+      final ResourceDraftT newResourceDraft,
+      final List<ResourceUpdateActionT> updateActions,
+      final int failedTimes) {
+    final SyncException syncException =
+        exception != null
+            ? new SyncException(errorMessage, exception)
+            : new SyncException(errorMessage);
+    syncOptions.applyErrorCallback(syncException, oldResource, newResourceDraft, updateActions);
+    statistics.incrementFailed(failedTimes);
   }
 }

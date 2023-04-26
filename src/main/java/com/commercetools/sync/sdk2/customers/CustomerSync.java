@@ -12,7 +12,6 @@ import com.commercetools.api.models.customer.Customer;
 import com.commercetools.api.models.customer.CustomerDraft;
 import com.commercetools.api.models.customer.CustomerUpdateAction;
 import com.commercetools.sync.sdk2.commons.BaseSync;
-import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.customers.helpers.CustomerBatchValidator;
 import com.commercetools.sync.sdk2.customers.helpers.CustomerReferenceResolver;
 import com.commercetools.sync.sdk2.customers.helpers.CustomerSyncStatistics;
@@ -22,6 +21,7 @@ import com.commercetools.sync.sdk2.services.TypeService;
 import com.commercetools.sync.sdk2.services.impl.CustomerGroupServiceImpl;
 import com.commercetools.sync.sdk2.services.impl.CustomerServiceImpl;
 import com.commercetools.sync.sdk2.services.impl.TypeServiceImpl;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,7 +33,12 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 /** This class syncs customer drafts with the corresponding customers in the CTP project. */
 public class CustomerSync
-    extends BaseSync<CustomerDraft, CustomerSyncStatistics, CustomerSyncOptions> {
+    extends BaseSync<
+        Customer,
+        CustomerDraft,
+        CustomerUpdateAction,
+        CustomerSyncStatistics,
+        CustomerSyncOptions> {
 
   private static final String CTP_CUSTOMER_FETCH_FAILED =
       "Failed to fetch existing customers with keys: '%s'.";
@@ -130,7 +135,11 @@ public class CustomerSync
               final Throwable cachingException = cachingResponse.getValue();
               if (cachingException != null) {
                 handleError(
-                    new SyncException("Failed to build a cache of keys to ids.", cachingException),
+                    "Failed to build a cache of keys to ids.",
+                    cachingException,
+                    null,
+                    null,
+                    Collections.emptyList(),
                     validCustomerDrafts.size());
                 return CompletableFuture.completedFuture(null);
               }
@@ -150,7 +159,12 @@ public class CustomerSync
                           final String errorMessage =
                               format(CTP_CUSTOMER_FETCH_FAILED, validCustomerKeys);
                           handleError(
-                              new SyncException(errorMessage, exception), validCustomerKeys.size());
+                              errorMessage,
+                              exception,
+                              null,
+                              null,
+                              Collections.emptyList(),
+                              validCustomerKeys.size());
                           return CompletableFuture.completedFuture(null);
                         } else {
                           return syncBatch(fetchedCustomers, validCustomerDrafts);
@@ -188,7 +202,13 @@ public class CustomerSync
                                       FAILED_TO_PROCESS,
                                       customerDraft.getKey(),
                                       completionException.getMessage());
-                              handleError(new SyncException(errorMessage, completionException), 1);
+                              handleError(
+                                  errorMessage,
+                                  completionException,
+                                  null,
+                                  customerDraft,
+                                  Collections.emptyList(),
+                                  1);
                               return null;
                             }))
             .map(CompletionStage::toCompletableFuture)
@@ -245,7 +265,13 @@ public class CustomerSync
                               CTP_CUSTOMER_UPDATE_FAILED,
                               newCustomerDraft.getKey(),
                               exception.getMessage());
-                      handleError(new SyncException(errorMessage, exception), 1);
+                      handleError(
+                          errorMessage,
+                          exception,
+                          oldCustomer,
+                          newCustomerDraft,
+                          updateActionsAfterCallback,
+                          1);
                       return CompletableFuture.completedFuture(null);
                     });
               } else {
@@ -274,7 +300,13 @@ public class CustomerSync
                         CTP_CUSTOMER_UPDATE_FAILED,
                         customerKey,
                         "Failed to fetch from CTP while retrying after concurrency modification.");
-                handleError(new SyncException(errorMessage, exception), 1);
+                handleError(
+                    errorMessage,
+                    exception,
+                    oldCustomer,
+                    newCustomerDraft,
+                    Collections.emptyList(),
+                    1);
                 return CompletableFuture.completedFuture(null);
               }
 
@@ -287,7 +319,13 @@ public class CustomerSync
                                 CTP_CUSTOMER_UPDATE_FAILED,
                                 customerKey,
                                 "Not found when attempting to fetch while retrying after concurrency modification.");
-                        handleError(new SyncException(errorMessage, null), 1);
+                        handleError(
+                            errorMessage,
+                            null,
+                            oldCustomer,
+                            newCustomerDraft,
+                            Collections.emptyList(),
+                            1);
                         return CompletableFuture.completedFuture(null);
                       });
             });
@@ -311,10 +349,5 @@ public class CustomerSync
                           }
                         }))
         .orElseGet(() -> CompletableFuture.completedFuture(null));
-  }
-
-  private void handleError(@Nonnull final SyncException syncException, final int failedTimes) {
-    syncOptions.applyErrorCallback(syncException);
-    statistics.incrementFailed(failedTimes);
   }
 }

@@ -26,6 +26,7 @@ import com.commercetools.api.models.product_type.ProductTypeResourceIdentifier;
 import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
 import com.commercetools.api.models.state.StateResourceIdentifier;
 import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
+import com.commercetools.api.models.tax_category.TaxCategoryReference;
 import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifier;
 import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifierBuilder;
 import com.commercetools.sync.sdk2.commons.helpers.CategoryResourceIdentifierPair;
@@ -35,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
@@ -151,11 +153,15 @@ public final class ProductReferenceResolutionUtils {
                           getResourceIdentifierWithKey(
                               product.getProductType(),
                               referenceIdToKeyCache,
-                              (id, key) ->
-                                  ProductTypeResourceIdentifierBuilder.of()
-                                      .id(id)
-                                      .key(key)
-                                      .build()))
+                              (id, key) -> {
+                                final ProductTypeResourceIdentifierBuilder builder =
+                                    ProductTypeResourceIdentifierBuilder.of();
+                                if (id == null) {
+                                  return builder.key(key).build();
+                                } else {
+                                  return builder.id(id).build();
+                                }
+                              }))
                   .categories(categoryResourceIdentifiers)
                   .categoryOrderHints(categoryOrderHintsWithKeys)
                   .taxCategory(
@@ -163,18 +169,29 @@ public final class ProductReferenceResolutionUtils {
                           getResourceIdentifierWithKey(
                               product.getTaxCategory(),
                               referenceIdToKeyCache,
-                              (id, key) ->
-                                  TaxCategoryResourceIdentifierBuilder.of()
-                                      .id(id)
-                                      .key(key)
-                                      .build()))
+                              (id, key) -> {
+                                final TaxCategoryResourceIdentifierBuilder builder =
+                                    TaxCategoryResourceIdentifierBuilder.of();
+                                if (id == null) {
+                                  return builder.key(key).build();
+                                } else {
+                                  return builder.id(id).build();
+                                }
+                              }))
                   .state(
                       (StateResourceIdentifier)
                           getResourceIdentifierWithKey(
                               product.getState(),
                               referenceIdToKeyCache,
-                              (id, key) ->
-                                  StateResourceIdentifierBuilder.of().id(id).key(key).build()))
+                              (id, key) -> {
+                                final StateResourceIdentifierBuilder builder =
+                                    StateResourceIdentifierBuilder.of();
+                                if (id == null) {
+                                  return builder.key(key).build();
+                                } else {
+                                  return builder.id(id).build();
+                                }
+                              }))
                   .build();
             })
         .collect(Collectors.toList());
@@ -210,7 +227,12 @@ public final class ProductReferenceResolutionUtils {
         .description(product.getDescription())
         .searchKeywords(product.getSearchKeywords())
         .taxCategory(
-            TaxCategoryResourceIdentifierBuilder.of().id(product.getTaxCategory().getId()).build())
+            TaxCategoryResourceIdentifierBuilder.of()
+                .id(
+                    Optional.ofNullable(product.getTaxCategory())
+                        .map(TaxCategoryReference::getId)
+                        .orElse(null))
+                .build())
         .key(product.getKey())
         .categories(
             product.getCategories().stream()

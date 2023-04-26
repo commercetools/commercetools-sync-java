@@ -3,7 +3,6 @@ package com.commercetools.sync.integration.sdk2.services.impl;
 import static com.commercetools.sync.integration.sdk2.commons.utils.CategoryITUtils.*;
 import static com.commercetools.sync.integration.sdk2.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.sdk2.commons.utils.ProductITUtils.deleteProductSyncTestData;
-import static com.commercetools.sync.integration.sdk2.commons.utils.ProductTypeITUtils.createProductType;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
 import static com.spotify.futures.CompletableFutures.exceptionallyCompletedFuture;
@@ -43,6 +42,7 @@ import com.commercetools.api.models.product.ProductVariantDraftBuilder;
 import com.commercetools.api.models.product_type.ProductType;
 import com.commercetools.api.models.state.StateResourceIdentifier;
 import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifier;
+import com.commercetools.sync.integration.sdk2.commons.utils.ProductTypeITUtils;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.services.ProductService;
@@ -86,15 +86,16 @@ class ProductServiceImplIT {
   @BeforeAll
   static void setup() {
     deleteProductSyncTestData(CTP_TARGET_CLIENT);
-    createCategoriesCustomType(
+    ensureCategoriesCustomType(
         OLD_CATEGORY_CUSTOM_TYPE_KEY,
         Locale.ENGLISH,
         OLD_CATEGORY_CUSTOM_TYPE_NAME,
         CTP_TARGET_CLIENT);
     final List<Category> categories =
-        createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
+        ensureCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
     categoryReferencesWithIds = getReferencesWithIds(categories);
-    productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
+    productType =
+        ProductTypeITUtils.ensureProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
   }
 
   /**

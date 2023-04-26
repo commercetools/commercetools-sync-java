@@ -10,6 +10,7 @@ import com.commercetools.api.client.QueryUtils;
 import com.commercetools.api.models.category.Category;
 import com.commercetools.api.models.category.CategoryDraft;
 import com.commercetools.api.models.category.CategoryDraftBuilder;
+import com.commercetools.api.models.category.CategoryPagedQueryResponse;
 import com.commercetools.api.models.category.CategoryReference;
 import com.commercetools.api.models.category.CategoryReferenceBuilder;
 import com.commercetools.api.models.category.CategoryResourceIdentifier;
@@ -35,6 +36,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -201,17 +203,33 @@ public final class CategoryITUtils {
    * @param ctpClient defines the CTP project to create the categories on.
    * @param categoryDrafts the drafts to build the categories from.
    */
-  public static List<Category> createCategories(
+  public static List<Category> ensureCategories(
       @Nonnull final ProjectApiRoot ctpClient, @Nonnull final List<CategoryDraft> categoryDrafts) {
     final List<CompletableFuture<Category>> futures = new ArrayList<>();
     for (CategoryDraft categoryDraft : categoryDrafts) {
       final CompletableFuture<Category> categoryCompletableFuture =
           ctpClient
               .categories()
-              .create(categoryDraft)
+              .get()
+              .withWhere("key=:key")
+              .withPredicateVar("key", categoryDraft.getKey())
               .execute()
               .thenApply(ApiHttpResponse::getBody)
-              .toCompletableFuture();
+              .thenApply(CategoryPagedQueryResponse::getResults)
+              .thenApply(
+                  categories -> {
+                    if (categories.isEmpty()) {
+                      return ctpClient
+                          .categories()
+                          .create(categoryDraft)
+                          .execute()
+                          .thenApply(ApiHttpResponse::getBody);
+                    } else {
+                      return CompletableFuture.completedFuture(categories.get(0));
+                    }
+                  })
+              .thenCompose(Function.identity());
+
       futures.add(categoryCompletableFuture);
     }
 
@@ -227,12 +245,11 @@ public final class CategoryITUtils {
    * @param name the name of the custom type.
    * @param ctpClient defines the CTP project to create the type on.
    */
-  public static Type createCategoriesCustomType(
+  public static Type ensureCategoriesCustomType(
       @Nonnull final String typeKey,
       @Nonnull final Locale locale,
       @Nonnull final String name,
       @Nonnull final ProjectApiRoot ctpClient) {
-
     return createTypeIfNotAlreadyExisting(
         typeKey, locale, name, singletonList(ResourceTypeId.CATEGORY), ctpClient);
   }
@@ -324,6 +341,13 @@ public final class CategoryITUtils {
       @Nonnull final List<Category> categories) {
     return categories.stream()
         .map(category -> CategoryReferenceBuilder.of().id(category.getId()).build())
+        .collect(Collectors.toList());
+  }
+
+  public static List<CategoryResourceIdentifier> getResourceIdentifiersWithIds(
+      @Nonnull final List<Category> categories) {
+    return categories.stream()
+        .map(category -> CategoryResourceIdentifierBuilder.of().id(category.getId()).build())
         .collect(Collectors.toList());
   }
 

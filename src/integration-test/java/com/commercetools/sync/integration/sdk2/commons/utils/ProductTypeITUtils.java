@@ -2,7 +2,7 @@ package com.commercetools.sync.integration.sdk2.commons.utils;
 
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createObjectFromResource;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.readObjectFromResource;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,6 +26,7 @@ import com.commercetools.api.models.product_type.AttributeTextType;
 import com.commercetools.api.models.product_type.ProductType;
 import com.commercetools.api.models.product_type.ProductTypeDraft;
 import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
+import com.commercetools.api.models.product_type.ProductTypePagedQueryResponse;
 import com.commercetools.api.models.product_type.ProductTypeReferenceBuilder;
 import com.commercetools.api.models.product_type.ProductTypeRemoveAttributeDefinitionActionBuilder;
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
@@ -347,18 +348,35 @@ public final class ProductTypeITUtils {
    * @param jsonResourcePath defines the path of the JSON resource of the product type.
    * @param ctpClient defines the CTP project to create the product type on.
    */
-  public static ProductType createProductType(
+  public static ProductType ensureProductType(
       @Nonnull final String jsonResourcePath, @Nonnull final ProjectApiRoot ctpClient) {
     final ProductTypeDraft productTypeDraft =
-        createObjectFromResource(jsonResourcePath, ProductTypeDraft.class);
+        readObjectFromResource(jsonResourcePath, ProductTypeDraft.class);
 
-    return ctpClient
-        .productTypes()
-        .create(productTypeDraft)
-        .execute()
-        .thenApply(ApiHttpResponse::getBody)
-        .toCompletableFuture()
-        .join();
+    ProductType productType =
+        ctpClient
+            .productTypes()
+            .get()
+            .withWhere("key=:key")
+            .withPredicateVar("key", productTypeDraft.getKey())
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductTypePagedQueryResponse::getResults)
+            .thenApply(productTypes -> productTypes.isEmpty() ? null : productTypes.get(0))
+            .join();
+
+    if (productType == null) {
+      productType =
+          ctpClient
+              .productTypes()
+              .create(productTypeDraft)
+              .execute()
+              .thenApply(ApiHttpResponse::getBody)
+              .toCompletableFuture()
+              .join();
+    }
+
+    return productType;
   }
 
   /**
