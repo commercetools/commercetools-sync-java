@@ -1,6 +1,6 @@
 package com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.withnestedattributes;
 
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createObjectFromResource;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.readObjectFromResource;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.getMockStateService;
 import static com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceAttributeValue;
 import static com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceSetAttributeValue;
@@ -56,7 +56,7 @@ class WithStateReferencesTest {
   void resolveReferences_WithNestedStateReferenceAttributes_ShouldResolveReferences() {
     // preparation
     final ProductVariantDraft withNestedStateReferenceAttributes =
-        createObjectFromResource(
+        readObjectFromResource(
             NESTED_ATTRIBUTE_WITH_STATE_REFERENCE_ATTRIBUTES, ProductVariantDraft.class);
 
     // test
@@ -88,7 +88,7 @@ class WithStateReferencesTest {
   void resolveReferences_WithNestedSetOfStateReferenceAttributes_ShouldResolveReferences() {
     // preparation
     final ProductVariantDraft withNestedSetOfStateReferenceAttributes =
-        createObjectFromResource(
+        readObjectFromResource(
             NESTED_ATTRIBUTE_WITH_SET_OF_STATE_REFERENCE_ATTRIBUTES, ProductVariantDraft.class);
 
     // test

@@ -63,7 +63,7 @@ class WithCategoryReferencesTest {
   void resolveReferences_WithNestedCategoryReferenceAttributes_ShouldResolveReferences() {
     // preparation
     final ProductVariantDraft withNestedCategoryReferenceAttributes =
-        createObjectFromResource(
+        readObjectFromResource(
             NESTED_ATTRIBUTE_WITH_CATEGORY_REFERENCE_ATTRIBUTES, ProductVariantDraft.class);
 
     // test
@@ -107,7 +107,7 @@ class WithCategoryReferencesTest {
       resolveReferences_WithNestedSetOfCategoryReferenceAttributes_ShouldOnlyResolveExistingReferences() {
     // preparation
     final ProductVariantDraft withNestedSetOfCategoryReferenceAttributes =
-        createObjectFromResource(
+        readObjectFromResource(
             NESTED_ATTRIBUTE_WITH_SET_OF_CATEGORY_REFERENCE_ATTRIBUTES, ProductVariantDraft.class);
 
     // test
@@ -157,7 +157,7 @@ class WithCategoryReferencesTest {
         .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
     final ProductVariantDraft withSomeNonExistingNestedCategoryReferenceAttributes =
-        createObjectFromResource(
+        readObjectFromResource(
             NESTED_ATTRIBUTE_WITH_SOME_NOT_EXISTING_CATEGORY_REFERENCE_ATTRIBUTES,
             ProductVariantDraft.class);
 

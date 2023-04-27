@@ -63,7 +63,7 @@ class WithProductTypeReferencesTest {
   void resolveReferences_WithSetOfNestedProductTypeReferenceAttributes_ShouldResolveReferences() {
     // preparation
     final ProductVariantDraft withSetOfNestedProductTypeReferenceAttributes =
-        createObjectFromResource(
+        readObjectFromResource(
             SET_OF_NESTED_ATTRIBUTE_WITH_PRODUCT_TYPE_REFERENCE_ATTRIBUTES,
             ProductVariantDraft.class);
 
@@ -112,7 +112,7 @@ class WithProductTypeReferencesTest {
       resolveReferences_WithSetOfNestedSetOfProductTypeReferenceAttributes_ShouldOnlyResolveExistingReferences() {
     // preparation
     final ProductVariantDraft withSetOfNestedSetOfProductTypeReferenceAttributes =
-        createObjectFromResource(
+        readObjectFromResource(
             SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_PRODUCT_TYPE_REFERENCE_ATTRIBUTES,
             ProductVariantDraft.class);
 
@@ -167,7 +167,7 @@ class WithProductTypeReferencesTest {
         .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
     final ProductVariantDraft withSetOfNestedProductTypeReferenceSetWithSomeNonExisting =
-        createObjectFromResource(
+        readObjectFromResource(
             SET_OF_NESTED_ATTRIBUTE_WITH_SOME_NOT_EXISTING_PRODUCT_TYPE_REFERENCE_ATTRIBUTES,
             ProductVariantDraft.class);
 

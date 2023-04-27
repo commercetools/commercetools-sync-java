@@ -1,7 +1,7 @@
 package com.commercetools.sync.sdk2.commons.utils;
 
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createObjectFromResource;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.readObjectFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -23,7 +23,7 @@ class TriFunctionTest {
     final TriFunction<List<ProductUpdateAction>, ProductDraft, Product, List<ProductUpdateAction>>
         updateActionFilter = TriFunctionTest::filterEnglishNameChangesOnly;
 
-    final Product oldProduct = createObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
+    final Product oldProduct = readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
     final LocalizedString oldName = oldProduct.getMasterData().getStaged().getName();
 
     final ProductDraft newDraftWithNoEnglishNameChange = mock(ProductDraft.class);
