@@ -83,6 +83,23 @@ public final class ITUtils {
         .join();
   }
 
+  public static Type ensureTypeByTypeDraft(
+      @Nonnull final TypeDraft typeDraft, @Nonnull final ProjectApiRoot ctpClient) {
+    return typeExists(typeDraft.getKey(), ctpClient)
+        .thenCompose(
+            type ->
+                type.map(CompletableFuture::completedFuture)
+                    .orElseGet(
+                        () ->
+                            ctpClient
+                                .types()
+                                .post(typeDraft)
+                                .execute()
+                                .thenApply(ApiHttpResponse::getBody)))
+        .toCompletableFuture()
+        .join();
+  }
+
   private static CompletionStage<Optional<Type>> typeExists(
       @Nonnull final String typeKey, @Nonnull final ProjectApiRoot ctpClient) {
 

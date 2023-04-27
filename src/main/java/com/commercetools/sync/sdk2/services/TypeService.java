@@ -2,6 +2,8 @@ package com.commercetools.sync.sdk2.services;
 
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.models.type.Type;
+import com.commercetools.api.models.type.TypeUpdateAction;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -41,4 +43,20 @@ public interface TypeService {
 
   @Nonnull
   CompletionStage<Set<Type>> fetchMatchingTypesByKeys(@Nonnull Set<String> keys);
+
+  /**
+   * Given a {@link Type} and a {@link List}&lt;{@link TypeUpdateAction}&lt;{@link Type}&gt;&gt;,
+   * this method issues an update request with these update actions on this {@link Type} in the CTP
+   * project defined in an injected {@link ProjectApiRoot}. This method returns {@link
+   * CompletionStage}&lt;{@link Type}&gt; in which the result of its completion contains an instance
+   * of the {@link Type} which was updated in the CTP project.
+   *
+   * @param type the {@link Type} to update.
+   * @param updateActions the update actions to update the {@link Type} with.
+   * @return {@link CompletionStage}&lt;{@link Type}&gt; containing as a result of it's completion
+   *     an instance of the {@link Type} which was updated in the CTP project.
+   */
+  @Nonnull
+  CompletionStage<Type> updateType(
+      @Nonnull Type type, @Nonnull List<TypeUpdateAction> updateActions);
 }
