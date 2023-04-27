@@ -1,7 +1,6 @@
 package com.commercetools.sync.integration.sdk2.services.impl;
 
-import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerGroupITUtils.createCustomerGroup;
-import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerGroupITUtils.deleteCustomerGroups;
+import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerGroupITUtils.ensureCustomerGroup;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -12,7 +11,6 @@ import com.commercetools.sync.sdk2.services.CustomerGroupService;
 import com.commercetools.sync.sdk2.services.impl.CustomerGroupServiceImpl;
 import java.util.ArrayList;
 import java.util.Optional;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -30,22 +28,15 @@ class CustomerGroupServiceImplIT {
    */
   @BeforeEach
   void setup() {
-    deleteCustomerGroups(CTP_TARGET_CLIENT);
     warnings = new ArrayList<>();
     oldCustomerGroup =
-        createCustomerGroup(CTP_TARGET_CLIENT, CUSTOMER_GROUP_NAME, CUSTOMER_GROUP_KEY);
+        ensureCustomerGroup(CTP_TARGET_CLIENT, CUSTOMER_GROUP_NAME, CUSTOMER_GROUP_KEY);
     final ProductSyncOptions productSyncOptions =
         ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
             .warningCallback(
                 (exception, oldResource, newResource) -> warnings.add(exception.getMessage()))
             .build();
     customerGroupService = new CustomerGroupServiceImpl(productSyncOptions);
-  }
-
-  /** Cleans up the target test data that were built in this test class. */
-  @AfterAll
-  static void tearDown() {
-    deleteCustomerGroups(CTP_TARGET_CLIENT);
   }
 
   @Test
