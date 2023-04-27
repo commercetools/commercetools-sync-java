@@ -70,9 +70,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.jetbrains.annotations.NotNull;
-
-// TODO: Migration needed - Please replace below services with package sdk2 services
 
 public class ProductSyncMockUtils {
   public static final String PRODUCT_KEY_1_RESOURCE_PATH = "product-key-1.json";
@@ -659,7 +656,7 @@ public class ProductSyncMockUtils {
     return customerService;
   }
 
-  @NotNull
+  @Nonnull
   public static ApiHttpResponse<GraphQLResponse> mockGraphQLResponse(
       final String jsonResponseString) throws JsonProcessingException {
     ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
