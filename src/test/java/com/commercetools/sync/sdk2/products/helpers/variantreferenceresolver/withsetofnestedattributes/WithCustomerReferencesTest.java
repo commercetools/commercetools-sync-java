@@ -1,7 +1,7 @@
 package com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.withsetofnestedattributes;
 
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.readObjectFromResource;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.getMockCustomerService;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.readObjectFromResource;
 import static com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceAttributeValue;
 import static com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceSetAttributeValue;
 import static org.assertj.core.api.Assertions.assertThat;

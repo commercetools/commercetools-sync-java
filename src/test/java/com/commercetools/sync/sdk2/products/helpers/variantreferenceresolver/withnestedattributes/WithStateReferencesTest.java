@@ -1,7 +1,7 @@
 package com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.withnestedattributes;
 
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.readObjectFromResource;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.getMockStateService;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.readObjectFromResource;
 import static com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceAttributeValue;
 import static com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceSetAttributeValue;
 import static com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.withnestedattributes.WithNoReferencesTest.RES_ROOT;
