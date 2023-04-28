@@ -193,7 +193,7 @@ public final class ProductReferenceResolver
       @Nonnull final ProductDraftBuilder draftBuilder) {
 
     final ProductTypeResourceIdentifier productTypeReference = draftBuilder.getProductType();
-    if (productTypeReference != null && productTypeReference.getId() == null) {
+    if (productTypeReference != null && isBlank(productTypeReference.getId())) {
       String productTypeKey;
       try {
         productTypeKey = getKeyFromResourceIdentifier(productTypeReference);
@@ -261,7 +261,7 @@ public final class ProductReferenceResolver
     final Set<String> categoryKeys = new HashSet<>();
     final List<CategoryResourceIdentifier> directCategoryResourceIdentifiers = new ArrayList<>();
     for (CategoryResourceIdentifier categoryResourceIdentifier : categoryResourceIdentifiers) {
-      if (categoryResourceIdentifier != null && categoryResourceIdentifier.getId() == null) {
+      if (categoryResourceIdentifier != null && isBlank(categoryResourceIdentifier.getId())) {
         try {
           final String categoryKey = getKeyFromResourceIdentifier(categoryResourceIdentifier);
           categoryKeys.add(categoryKey);
@@ -356,7 +356,7 @@ public final class ProductReferenceResolver
       @Nonnull final ProductDraftBuilder draftBuilder) {
     final TaxCategoryResourceIdentifier taxCategoryResourceIdentifier =
         draftBuilder.getTaxCategory();
-    if (taxCategoryResourceIdentifier != null && taxCategoryResourceIdentifier.getId() == null) {
+    if (taxCategoryResourceIdentifier != null && isBlank(taxCategoryResourceIdentifier.getId())) {
       String taxCategoryKey;
       try {
         taxCategoryKey = getKeyFromResourceIdentifier(taxCategoryResourceIdentifier);
@@ -422,7 +422,7 @@ public final class ProductReferenceResolver
   public CompletionStage<ProductDraftBuilder> resolveStateReference(
       @Nonnull final ProductDraftBuilder draftBuilder) {
     final StateResourceIdentifier stateReference = draftBuilder.getState();
-    if (stateReference != null && stateReference.getId() == null) {
+    if (stateReference != null && isBlank(stateReference.getId())) {
       String stateKey;
       try {
         stateKey = getKeyFromResourceIdentifier(stateReference);
