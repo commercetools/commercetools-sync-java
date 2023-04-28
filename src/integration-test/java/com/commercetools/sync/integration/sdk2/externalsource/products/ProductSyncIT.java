@@ -9,9 +9,9 @@ import static com.commercetools.sync.integration.sdk2.commons.utils.TaxCategoryI
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
+import static com.commercetools.sync.sdk2.products.utils.ProductReferenceResolutionUtils.createProductVariantDraft;
 import static com.commercetools.sync.sdk2.products.utils.ProductVariantAttributeUpdateActionUtils.ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA;
 import static com.commercetools.sync.sdk2.products.utils.ProductVariantUpdateActionUtils.FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION;
-import static com.commercetools.sync.sdk2.products.utils.VariantUtils.createProductVariantDraft;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;

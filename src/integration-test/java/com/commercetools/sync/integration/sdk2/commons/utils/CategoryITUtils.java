@@ -267,7 +267,8 @@ public final class CategoryITUtils {
   public static void deleteAllCategories(@Nonnull final ProjectApiRoot ctpClient) {
     final Set<String> keys = new HashSet<>();
     final List<Category> categories =
-        QueryUtils.queryAll(ctpClient.categories().get(), categories1 -> categories1)
+        QueryUtils.queryAll(
+                ctpClient.categories().get().addExpand("ancestors[*]"), categories1 -> categories1)
             .thenApply(
                 fetchedCategories ->
                     fetchedCategories.stream().flatMap(List::stream).collect(Collectors.toList()))

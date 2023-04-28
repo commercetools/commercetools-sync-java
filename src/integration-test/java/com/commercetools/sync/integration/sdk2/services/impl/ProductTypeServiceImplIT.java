@@ -20,6 +20,7 @@ import com.commercetools.api.models.product_type.ProductTypeChangeNameAction;
 import com.commercetools.api.models.product_type.ProductTypeDraft;
 import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
+import com.commercetools.sync.integration.sdk2.commons.utils.ProductTypeITUtils;
 import com.commercetools.sync.sdk2.products.AttributeMetaData;
 import com.commercetools.sync.sdk2.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.sdk2.producttypes.ProductTypeSyncOptionsBuilder;
@@ -63,7 +64,7 @@ class ProductTypeServiceImplIT {
     errorCallBackExceptions = new ArrayList<>();
 
     deleteProductTypes(CTP_TARGET_CLIENT);
-    createProductType(
+    ProductTypeITUtils.ensureProductType(
         OLD_PRODUCT_TYPE_KEY, OLD_PRODUCT_TYPE_LOCALE, OLD_PRODUCT_TYPE_NAME, CTP_TARGET_CLIENT);
     final ProductTypeSyncOptions productTypeSyncOptions =
         ProductTypeSyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();

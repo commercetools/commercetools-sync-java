@@ -210,9 +210,9 @@ public final class ProductReferenceResolutionUtils {
       @Nonnull final ProductProjection product) {
     final List<ProductVariantDraft> allVariants =
         product.getVariants().stream()
-            .map(productVariant -> getProductVariantDraft(productVariant))
+            .map(productVariant -> createProductVariantDraft(productVariant))
             .collect(toList());
-    final ProductVariantDraft masterVariant = getProductVariantDraft(product.getMasterVariant());
+    final ProductVariantDraft masterVariant = createProductVariantDraft(product.getMasterVariant());
 
     return ProductDraftBuilder.of()
         .productType(
@@ -246,7 +246,8 @@ public final class ProductReferenceResolutionUtils {
         .publish(product.getPublished());
   }
 
-  static ProductVariantDraft getProductVariantDraft(@Nonnull final ProductVariant productVariant) {
+  public static ProductVariantDraft createProductVariantDraft(
+      @Nonnull final ProductVariant productVariant) {
     final List<AssetDraft> assetDrafts = createAssetDraft(productVariant.getAssets());
     final List<PriceDraft> priceDrafts = createPriceDraft(productVariant.getPrices());
     final List<Attribute> attributes = createAttributes(productVariant.getAttributes());

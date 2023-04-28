@@ -323,7 +323,7 @@ public final class ProductTypeITUtils {
    * @param name the name of the product type.
    * @param ctpClient defines the CTP project to create the product type on.
    */
-  public static void createProductType(
+  public static void ensureProductType(
       @Nonnull final String productTypeKey,
       @Nonnull final Locale locale,
       @Nonnull final String name,
@@ -377,6 +377,19 @@ public final class ProductTypeITUtils {
     }
 
     return productType;
+  }
+
+  public static ProductType createProductType(
+      @Nonnull final String jsonResourcePath, @Nonnull final ProjectApiRoot ctpClient) {
+    final ProductTypeDraft productTypeDraft =
+        readObjectFromResource(jsonResourcePath, ProductTypeDraft.class);
+    return ctpClient
+        .productTypes()
+        .create(productTypeDraft)
+        .execute()
+        .thenApply(ApiHttpResponse::getBody)
+        .toCompletableFuture()
+        .join();
   }
 
   /**
