@@ -16,7 +16,7 @@ ext{
     jupiterApiVersion = '5.9.2'
     assertjVersion = '3.24.2'
     pmdVersion = '6.55.0'
-    jacocoVersion = '0.8.8'
+    jacocoVersion = '0.8.10'
     caffeineVersion = '3.1.6'
     nexusStagingPluginVersion = '0.22.0'
     commonTextVersion = '1.10.0'
