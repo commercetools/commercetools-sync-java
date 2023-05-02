@@ -1190,6 +1190,8 @@ class ProductSyncIT {
         .thenReturn(byProjectKeyProductProjectionsGet);
     when(byProjectKeyProductProjectionsGet.withWhere(anyString()))
         .thenReturn(byProjectKeyProductProjectionsGet);
+    when(byProjectKeyProductProjectionsGet.withStaged(anyBoolean()))
+        .thenReturn(byProjectKeyProductProjectionsGet);
     when(byProjectKeyProductProjectionsGet.withPredicateVar(anyString(), any(Set.class)))
         .thenReturn(byProjectKeyProductProjectionsGet);
     when(byProjectKeyProductProjectionsGet.withLimit(anyInt()))
