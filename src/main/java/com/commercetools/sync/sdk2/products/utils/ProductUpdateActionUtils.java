@@ -220,9 +220,11 @@ public final class ProductUpdateActionUtils {
         newCategoryOrderHints,
         () -> {
           final Set<String> newCategoryIds =
-              newProduct.getCategories().stream()
-                  .map(CategoryResourceIdentifier::getId)
-                  .collect(toSet());
+              newProduct.getCategories() == null
+                  ? Collections.emptySet()
+                  : newProduct.getCategories().stream()
+                      .map(CategoryResourceIdentifier::getId)
+                      .collect(toSet());
 
           final List<ProductUpdateAction> updateActions = new ArrayList<>();
 
@@ -334,14 +336,18 @@ public final class ProductUpdateActionUtils {
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     final SearchKeywords newSearchKeywords = newProduct.getSearchKeywords();
     final SearchKeywords oldSearchKeywords = oldProduct.getSearchKeywords();
-    return buildUpdateAction(
-        oldSearchKeywords,
-        newSearchKeywords,
-        () ->
-            ProductSetSearchKeywordsActionBuilder.of()
-                .searchKeywords(newSearchKeywords)
-                .staged(true)
-                .build());
+    if (newSearchKeywords == null) {
+      return Optional.empty();
+    } else {
+      return buildUpdateAction(
+          oldSearchKeywords,
+          newSearchKeywords,
+          () ->
+              ProductSetSearchKeywordsActionBuilder.of()
+                  .searchKeywords(newSearchKeywords)
+                  .staged(true)
+                  .build());
+    }
   }
 
   /**
@@ -477,7 +483,8 @@ public final class ProductUpdateActionUtils {
     oldProductVariantsWithMaster.put(oldMasterVariant.getKey(), oldMasterVariant);
 
     final List<ProductVariantDraft> newAllProductVariants =
-        new ArrayList<>(newProduct.getVariants());
+        new ArrayList<>(
+            newProduct.getVariants() == null ? Collections.emptyList() : newProduct.getVariants());
     newAllProductVariants.add(newProduct.getMasterVariant());
 
     // Remove missing variants, but keep master variant (MV can't be removed)

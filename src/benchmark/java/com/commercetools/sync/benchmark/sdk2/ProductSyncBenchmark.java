@@ -171,7 +171,7 @@ class ProductSyncBenchmark {
         .isLessThan(PRODUCT_BENCHMARKS_UPDATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (number of updated products)
-    final CompletableFuture<Long> totalNumberOfUpdatedProducts =
+    final Long totalNumberOfUpdatedProducts =
         CTP_TARGET_CLIENT
             .products()
             .get()
@@ -179,21 +179,22 @@ class ProductSyncBenchmark {
             .withPredicateVar("description", "newDescription")
             .execute()
             .thenApply(ApiHttpResponse::getBody)
-            .thenApply(ProductPagedQueryResponse::getTotal);
+            .thenApply(ProductPagedQueryResponse::getTotal)
+            .join();
 
-    assertThat(totalNumberOfUpdatedProducts)
-        .isCompletedWithValue((long) NUMBER_OF_RESOURCE_UNDER_TEST);
+    assertThat(totalNumberOfUpdatedProducts).isEqualTo(NUMBER_OF_RESOURCE_UNDER_TEST);
 
     // Assert actual state of CTP project (total number of existing products)
-    final CompletableFuture<Long> totalNumberOfProducts =
+    final Long totalNumberOfProducts =
         CTP_TARGET_CLIENT
             .productProjections()
             .get()
             .withStaged(true)
             .execute()
             .thenApply(ApiHttpResponse::getBody)
-            .thenApply(ProductProjectionPagedQueryResponse::getTotal);
-    assertThat(totalNumberOfProducts).isCompletedWithValue((long) NUMBER_OF_RESOURCE_UNDER_TEST);
+            .thenApply(ProductProjectionPagedQueryResponse::getTotal)
+            .join();
+    assertThat(totalNumberOfProducts).isEqualTo(NUMBER_OF_RESOURCE_UNDER_TEST);
 
     // Assert statistics
     assertThat(syncStatistics)
