@@ -276,20 +276,22 @@ public class ProductSyncMockUtils {
       @Nonnull final ProductTypeReference productTypeReference,
       @Nullable final TaxCategoryReference taxCategoryReference,
       @Nullable final StateReference stateReference,
-      @Nonnull final List<CategoryReference> categoryReferences,
+      @Nullable final List<CategoryReference> categoryReferences,
       @Nullable final CategoryOrderHints categoryOrderHints) {
     final ProductTypeResourceIdentifier productTypeRI =
         ProductTypeResourceIdentifierBuilder.of().id(productTypeReference.getId()).build();
     final ProductDraftBuilder productDraftBuilder =
         createProductDraftBuilder(jsonResourcePath, productTypeRI)
             .categories(
-                categoryReferences.stream()
-                    .map(
-                        categoryReference ->
-                            CategoryResourceIdentifierBuilder.of()
-                                .id(categoryReference.getId())
-                                .build())
-                    .collect(toList()))
+                categoryReferences == null
+                    ? null
+                    : categoryReferences.stream()
+                        .map(
+                            categoryReference ->
+                                CategoryResourceIdentifierBuilder.of()
+                                    .id(categoryReference.getId())
+                                    .build())
+                        .collect(toList()))
             .categoryOrderHints(categoryOrderHints);
 
     if (taxCategoryReference == null) {

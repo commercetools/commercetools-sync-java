@@ -19,6 +19,7 @@ import com.commercetools.api.models.category.CategoryReferenceBuilder;
 import com.commercetools.api.models.product.ProductDraft;
 import com.commercetools.api.models.product.ProductProjection;
 import com.commercetools.api.models.product.ProductUpdateAction;
+import com.commercetools.api.models.product.ProductVariantDraft;
 import com.commercetools.api.models.product_type.ProductType;
 import com.commercetools.api.models.product_type.ProductTypeReferenceBuilder;
 import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
@@ -145,5 +146,24 @@ class ProductReferenceResolverIT {
                 + "ProductDraft with key:'productKey1'")
         .hasMessageContaining(
             format("Reason: %s", format(PRODUCT_TYPE_DOES_NOT_EXIST, "non-existing-key")));
+  }
+
+  @Test
+  void sync_withNewProductWithNullVariants_ShouldCreateNewProduct() {
+    final ProductDraft productDraft =
+        createProductDraft(
+            PRODUCT_KEY_1_RESOURCE_PATH,
+            ProductTypeReferenceBuilder.of().id(productType.getId()).build(),
+            null,
+            null,
+            null,
+            null);
+    productDraft.setVariants((List<ProductVariantDraft>) null);
+
+    final ProductSync productSync = new ProductSync(getProductSyncOptions());
+    final ProductSyncStatistics syncStatistics =
+        productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
+
+    assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
   }
 }
