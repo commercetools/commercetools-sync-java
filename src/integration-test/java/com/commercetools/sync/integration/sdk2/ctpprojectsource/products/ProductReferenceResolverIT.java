@@ -92,7 +92,6 @@ class ProductReferenceResolverIT {
         getReferencesWithIds(ensureCategories(CTP_SOURCE_CLIENT, getCategoryDrafts(null, 2)));
 
     ensureProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
-    //    ensureProductType(PRODUCT_TYPE_NO_KEY_RESOURCE_PATH, CTP_TARGET_CLIENT);
     ensureProductType(
         PRODUCT_TYPE_WITH_REFERENCES_FOR_VARIANT_ATTRIBUTES_RESOURCE_PATH, CTP_TARGET_CLIENT);
     productTypeSourceWithReferenceTypeVariantAttribute =
@@ -245,7 +244,7 @@ class ProductReferenceResolverIT {
             .thenApply(ProductProjectionPagedQueryResponse::getResults)
             .join();
 
-    final List<ProductDraft> productDrafts = // mapToProductDrafts(products);
+    final List<ProductDraft> productDrafts =
         ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
@@ -276,7 +275,6 @@ class ProductReferenceResolverIT {
             .join();
 
     final List<ProductDraft> productDrafts =
-        // mapToProductDrafts(products);
         ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
@@ -304,7 +302,7 @@ class ProductReferenceResolverIT {
             .thenApply(ProductProjectionPagedQueryResponse::getResults)
             .join();
 
-    final List<ProductDraft> productDrafts = // mapToProductDrafts(products);
+    final List<ProductDraft> productDrafts =
         ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
@@ -334,7 +332,7 @@ class ProductReferenceResolverIT {
             .thenApply(ProductProjectionPagedQueryResponse::getResults)
             .join();
 
-    final List<ProductDraft> productDrafts = // mapToProductDrafts(products);
+    final List<ProductDraft> productDrafts =
         ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
