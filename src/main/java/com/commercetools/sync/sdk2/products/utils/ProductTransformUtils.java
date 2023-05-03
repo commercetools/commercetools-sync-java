@@ -8,18 +8,15 @@ import com.commercetools.api.client.ByProjectKeyCustomObjectsGet;
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.models.category.CategoryReference;
 import com.commercetools.api.models.channel.ChannelReference;
-import com.commercetools.api.models.common.Asset;
-import com.commercetools.api.models.common.Price;
-import com.commercetools.api.models.common.Reference;
-import com.commercetools.api.models.custom_object.CustomObjectPagedQueryResponse;
+import com.commercetools.api.models.common.*;
+import com.commercetools.api.models.custom_object.*;
 import com.commercetools.api.models.customer_group.CustomerGroupReference;
 import com.commercetools.api.models.graph_ql.GraphQLRequest;
 import com.commercetools.api.models.product.*;
 import com.commercetools.api.models.product_type.ProductTypeReference;
 import com.commercetools.api.models.state.StateReference;
 import com.commercetools.api.models.tax_category.TaxCategoryReference;
-import com.commercetools.api.models.type.CustomFields;
-import com.commercetools.api.models.type.TypeReference;
+import com.commercetools.api.models.type.*;
 import com.commercetools.sync.sdk2.commons.exceptions.ReferenceTransformException;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.commons.utils.ChunkUtils;
@@ -326,21 +323,9 @@ public final class ProductTransformUtils {
       return variants.stream()
           .map(ProductVariant::getAttributes)
           .flatMap(Collection::stream)
-          .map(ProductTransformServiceImpl::getAttributeReference)
+          .map(AttributeUtils::getAttributeReferences)
           .flatMap(Collection::stream)
           .collect(Collectors.toList());
-    }
-
-    private static List<Reference> getAttributeReference(@Nonnull final Attribute attribute) {
-      final Object attrValue = attribute.getValue();
-      if (attrValue instanceof Reference) {
-        return Collections.singletonList(AttributeAccessor.asReference(attribute));
-      }
-      if (attrValue instanceof List
-          && ((List) attrValue).stream().anyMatch(v -> v instanceof Reference)) {
-        return AttributeAccessor.asSetReference(attribute);
-      }
-      return Collections.emptyList();
     }
 
     private void replaceReferences(@Nonnull final List<Reference> references) {
