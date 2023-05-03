@@ -881,8 +881,10 @@ public final class ProductUpdateActionUtils {
           // (if it does not exist in the new variants list).
           // We don't need to include new master variant to the iteration stream iteration,
           // because this body is called only if newKey != oldKey
-          if (newProduct.getVariants().stream()
-              .noneMatch(variant -> Objects.equals(variant.getKey(), oldKey))) {
+          if (newProduct.getVariants() == null
+              || newProduct.getVariants().stream().allMatch(Objects::isNull)
+              || newProduct.getVariants().stream()
+                  .noneMatch(variant -> Objects.equals(variant.getKey(), oldKey))) {
             updateActions.add(
                 ProductRemoveVariantAction.builder()
                     .id(oldProduct.getMasterVariant().getId())
