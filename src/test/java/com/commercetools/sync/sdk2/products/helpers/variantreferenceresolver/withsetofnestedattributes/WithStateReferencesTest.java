@@ -1,7 +1,7 @@
 package com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.withsetofnestedattributes;
 
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createObjectFromResource;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.getMockStateService;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.readObjectFromResource;
 import static com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceAttributeValue;
 import static com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceSetAttributeValue;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,7 +56,7 @@ class WithStateReferencesTest {
   void resolveReferences_WithSetOfNestedStateReferenceAttributes_ShouldResolveReferences() {
     // preparation
     final ProductVariantDraft withSetOfNestedStateReferenceAttributes =
-        createObjectFromResource(
+        readObjectFromResource(
             SET_OF_NESTED_ATTRIBUTE_WITH_STATE_REFERENCE_ATTRIBUTES, ProductVariantDraft.class);
 
     // test
@@ -96,7 +96,7 @@ class WithStateReferencesTest {
       resolveReferences_WithSetOfNestedSetOfStateReferenceAttributes_ShouldOnlyResolveExistingReferences() {
     // preparation
     final ProductVariantDraft withSetOfNestedSetOfStateReferenceAttributes =
-        createObjectFromResource(
+        readObjectFromResource(
             SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_STATE_REFERENCE_ATTRIBUTES,
             ProductVariantDraft.class);
 

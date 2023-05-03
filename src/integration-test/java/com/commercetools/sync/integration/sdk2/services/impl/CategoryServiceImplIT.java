@@ -73,7 +73,7 @@ class CategoryServiceImplIT {
   static void setup() {
     deleteAllCategories(CTP_TARGET_CLIENT);
     deleteTypes(CTP_TARGET_CLIENT);
-    createCategoriesCustomType(
+    ensureCategoriesCustomType(
         OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH, "anyName", CTP_TARGET_CLIENT);
   }
 

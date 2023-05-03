@@ -15,6 +15,9 @@ import static java.util.stream.Collectors.toList;
 
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.client.QueryUtils;
+import com.commercetools.api.models.channel.Channel;
+import com.commercetools.api.models.channel.ChannelDraft;
+import com.commercetools.api.models.channel.ChannelPagedQueryResponse;
 import com.commercetools.api.models.channel.ChannelResourceIdentifier;
 import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
 import com.commercetools.api.models.common.DiscountedPrice;
@@ -229,7 +232,7 @@ public final class ProductITUtils {
    * @param name the name of the custom type.
    * @param ctpClient defines the CTP project to create the type on.
    */
-  public static Type createPricesCustomType(
+  public static Type ensurePricesCustomType(
       @Nonnull final String typeKey,
       @Nonnull final Locale locale,
       @Nonnull final String name,
@@ -284,6 +287,34 @@ public final class ProductITUtils {
         .discounted(discountedPrice)
         .tiers(priceTiers)
         .build();
+  }
+
+  public static Channel ensureChannel(ChannelDraft channelDraft, ProjectApiRoot projectApiRoot) {
+    Channel channel =
+        projectApiRoot
+            .channels()
+            .get()
+            .withWhere("key=:key")
+            .withPredicateVar("key", channelDraft.getKey())
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ChannelPagedQueryResponse::getResults)
+            .thenApply(channels -> channels.isEmpty() ? null : channels.get(0))
+            .join();
+
+    if (channel == null) {
+
+      channel =
+          projectApiRoot
+              .channels()
+              .create(channelDraft)
+              .execute()
+              .thenApply(ApiHttpResponse::getBody)
+              .toCompletableFuture()
+              .join();
+    }
+
+    return channel;
   }
 
   private ProductITUtils() {}
