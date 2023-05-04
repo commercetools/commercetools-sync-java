@@ -54,9 +54,18 @@ class BuildSetSearchKeywordsUpdateActionTest {
     assertThat(setSearchKeywordsUpdateAction).isNotPresent();
   }
 
+  @Test
+  void
+      buildSetSearchKeywordsUpdateAction_WithNewSearchKeywordsNull_ShouldReturnEmptyUpdateAction() {
+    final Optional<ProductUpdateAction> setSearchKeywordsUpdateAction =
+        getSetSearchKeywordsUpdateAction(MOCK_OLD_PUBLISHED_PRODUCT, null);
+
+    assertThat(setSearchKeywordsUpdateAction).isNotNull();
+    assertThat(setSearchKeywordsUpdateAction).isNotPresent();
+  }
+
   private Optional<ProductUpdateAction> getSetSearchKeywordsUpdateAction(
-      @Nonnull final ProductProjection oldProduct,
-      @Nonnull final SearchKeywords newProductSearchKeywords) {
+      @Nonnull final ProductProjection oldProduct, final SearchKeywords newProductSearchKeywords) {
     final ProductDraft newProductDraft = mock(ProductDraft.class);
     when(newProductDraft.getSearchKeywords()).thenReturn(newProductSearchKeywords);
     return buildSetSearchKeywordsUpdateAction(oldProduct, newProductDraft);

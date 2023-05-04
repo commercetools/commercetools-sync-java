@@ -313,6 +313,7 @@ class ProductServiceImplIT {
     when(spyClient.productProjections().get()).thenReturn(getMock);
     when(getMock.withWhere(any(String.class))).thenReturn(getMock);
     when(getMock.withPredicateVar(any(String.class), any())).thenReturn(getMock);
+    when(getMock.withStaged(anyBoolean())).thenReturn(getMock);
     when(getMock.withLimit(any(Integer.class))).thenReturn(getMock);
     when(getMock.withWithTotal(any(Boolean.class))).thenReturn(getMock);
     when(getMock.execute())
