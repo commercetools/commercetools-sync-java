@@ -79,7 +79,7 @@ If you have push access to the repository you can fix them directly otherwise ju
 
 ##### Build and publish to Maven Central
 ````bash
-./gradlew clean setLibraryVersion -Dbuild.version={version} publishToSonatype closeAndReleaseSonatypeStagingRepository
+./gradlew clean -Dbuild.version={version} publishToSonatype closeAndReleaseSonatypeStagingRepository
 ````
 
 For more detailed information on the build and the release process, see [Build and Release](BUILD.md) documentation.

@@ -27,7 +27,7 @@ jobs:
         run: echo ::set-output name=libVersion::${GITHUB_REF#refs/*/}
       - name: benchmark test
         if: ${{ success() }}
-        run: ./gradlew clean setLibraryVersion benchmark
+        run: ./gradlew clean benchmark
         env:
           GITHUB_TAG: ${{ steps.vars.outputs.libVersion }}
   deployment:
@@ -52,7 +52,7 @@ jobs:
       - name: Publish GitHub Pages
         run: ./gradlew --info -Dbuild.version="${{ steps.vars.outputs.tag }}" mkdocsPublish
       - name: deploy to sonatype and publish to maven central
-        run: ./gradlew setLibraryVersion -Dbuild.version="${{ steps.vars.outputs.tag }}" publishToSonatype closeAndReleaseSonatypeStagingRepository
+        run: ./gradlew -Dbuild.version="${{ steps.vars.outputs.tag }}" publishToSonatype closeAndReleaseSonatypeStagingRepository
         env:
           GITHUB_TAG: ${{ steps.vars.outputs.tag }}
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
