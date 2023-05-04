@@ -11,9 +11,9 @@ import com.commercetools.api.models.product_type.ProductTypeDraft;
 import com.commercetools.api.models.product_type.ProductTypePagedQueryResponse;
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
 import com.commercetools.api.models.product_type.ProductTypeUpdateBuilder;
+import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.products.AttributeMetaData;
-import com.commercetools.sync.sdk2.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.sdk2.services.ProductTypeService;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.*;
@@ -28,7 +28,7 @@ import javax.annotation.Nullable;
 
 public final class ProductTypeServiceImpl
     extends BaseService<
-        ProductTypeSyncOptions,
+        BaseSyncOptions,
         ProductType,
         ProductTypeDraft,
         ByProjectKeyProductTypesGet,
@@ -41,7 +41,7 @@ public final class ProductTypeServiceImpl
   private final Map<String, Map<String, AttributeMetaData>> productsAttributesMetaData =
       new ConcurrentHashMap<>();
 
-  public ProductTypeServiceImpl(@Nonnull final ProductTypeSyncOptions syncOptions) {
+  public ProductTypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
     super(syncOptions);
   }
 

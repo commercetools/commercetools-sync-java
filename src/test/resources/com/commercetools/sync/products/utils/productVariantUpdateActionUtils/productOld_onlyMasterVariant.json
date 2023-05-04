@@ -1,0 +1,21 @@
+{
+  "key": "productToSyncKey",
+  "masterData": {
+    "staged": {
+      "masterVariant": {
+        "id": 1,
+        "key": "var-1-key",
+        "sku": "var-1-sku",
+        "prices": [
+        ],
+        "images": [
+        ],
+        "attributes": [
+        ],
+        "assets": []
+      },
+      "variants": []
+    },
+    "published": true
+  }
+}

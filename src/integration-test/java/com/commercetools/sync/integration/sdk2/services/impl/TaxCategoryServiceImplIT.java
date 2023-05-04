@@ -64,7 +64,7 @@ class TaxCategoryServiceImplIT {
 
     deleteTaxCategories(CTP_TARGET_CLIENT);
     warnings = new ArrayList<>();
-    oldTaxCategory = createTaxCategory(CTP_TARGET_CLIENT);
+    oldTaxCategory = ensureTaxCategory(CTP_TARGET_CLIENT);
 
     final TaxCategorySyncOptions taxCategorySyncOptions =
         TaxCategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)

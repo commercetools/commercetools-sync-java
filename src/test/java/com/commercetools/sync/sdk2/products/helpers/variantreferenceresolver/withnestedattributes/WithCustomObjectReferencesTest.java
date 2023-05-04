@@ -64,7 +64,7 @@ class WithCustomObjectReferencesTest {
   void resolveReferences_WithNestedCustomObjectReferenceAttributes_ShouldResolveReferences() {
     // preparation
     final ProductVariantDraft withNestedCustomObjReferenceAttributes =
-        createObjectFromResource(
+        readObjectFromResource(
             NESTED_ATTRIBUTE_WITH_CUSTOM_OBJECT_REFERENCE_ATTRIBUTES, ProductVariantDraft.class);
 
     // test
@@ -108,7 +108,7 @@ class WithCustomObjectReferencesTest {
       resolveReferences_WithNestedSetOfCustomObjectReferenceAttributes_ShouldOnlyResolveExistingReferences() {
     // preparation
     final ProductVariantDraft withNestedSetOfCustomObjReferenceAttributes =
-        createObjectFromResource(
+        readObjectFromResource(
             NESTED_ATTRIBUTE_WITH_SET_OF_CUSTOM_OBJECT_REFERENCE_ATTRIBUTES,
             ProductVariantDraft.class);
 
@@ -166,7 +166,7 @@ class WithCustomObjectReferencesTest {
         .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
     final ProductVariantDraft withSomeNonExistingNestedCustomObjReferenceAttributes =
-        createObjectFromResource(
+        readObjectFromResource(
             NESTED_ATTRIBUTE_WITH_SOME_NOT_EXISTING_CUSTOM_OBJECT_REFERENCE_ATTRIBUTES,
             ProductVariantDraft.class);
 

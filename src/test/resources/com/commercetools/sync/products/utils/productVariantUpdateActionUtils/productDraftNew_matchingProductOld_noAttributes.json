@@ -1,0 +1,57 @@
+{
+  "key": "productToSyncKey",
+  "masterVariant": {
+    "key": "var-1-key",
+    "sku": "var-1-sku",
+    "prices": [
+    ],
+    "images": [
+      {
+        "url": "https://xxx.ggg/1.png"
+      }
+    ],
+    "attributes": [],
+    "assets": []
+  },
+  "variants": [
+    {
+      "key": "var-2-key",
+      "sku": "var-2-sku",
+      "prices": [
+      ],
+      "images": [
+        {
+          "url": "https://xxx.ggg/2.png"
+        }
+      ],
+      "attributes": [],
+      "assets": []
+    },
+    {
+      "key": "var-3-key",
+      "sku": "var-3-sku",
+      "prices": [
+      ],
+      "images": [
+        {
+          "url": "https://xxx.ggg/3.png"
+        }
+      ],
+      "attributes": [],
+      "assets": []
+    },
+    {
+      "key": "var-4-key",
+      "sku": "var-4-sku",
+      "prices": [
+      ],
+      "images": [
+        {
+          "url": "https://xxx.ggg/4.png"
+        }
+      ],
+      "attributes": [],
+      "assets": []
+    }
+  ]
+}

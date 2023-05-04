@@ -67,7 +67,7 @@ class StateServiceImplIT {
     deleteStates(CTP_TARGET_CLIENT, STATE_TYPE);
     deleteStates(CTP_TARGET_CLIENT, TRANSITION_STATE_TYPE);
     warnings = new ArrayList<>();
-    oldState = createState(CTP_TARGET_CLIENT, STATE_TYPE);
+    oldState = ensureState(CTP_TARGET_CLIENT, STATE_TYPE);
 
     final StateSyncOptions StateSyncOptions =
         StateSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
