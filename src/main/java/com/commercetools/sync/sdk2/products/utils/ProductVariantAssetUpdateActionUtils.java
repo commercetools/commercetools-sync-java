@@ -3,7 +3,6 @@ package com.commercetools.sync.sdk2.products.utils;
 import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.sdk2.commons.utils.OptionalUtils.filterEmptyOptionals;
 
-import com.commercetools.api.models.ResourceUpdateAction;
 import com.commercetools.api.models.common.Asset;
 import com.commercetools.api.models.common.AssetDraft;
 import com.commercetools.api.models.common.LocalizedString;
@@ -20,7 +19,6 @@ import com.commercetools.sync.sdk2.products.models.AssetCustomTypeAdapter;
 import com.commercetools.sync.sdk2.products.models.AssetDraftCustomTypeAdapter;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
 public final class ProductVariantAssetUpdateActionUtils {
@@ -205,20 +203,16 @@ public final class ProductVariantAssetUpdateActionUtils {
     AssetCustomTypeAdapter assetCustomTypeAdapter = AssetCustomTypeAdapter.of(oldAsset);
     AssetDraftCustomTypeAdapter assetDraftCustomTypeAdapter =
         AssetDraftCustomTypeAdapter.of(newAsset);
-    final List<ResourceUpdateAction> customUpdateActions =
-        CustomUpdateActionUtils.buildCustomUpdateActions(
-            newResource,
-            assetCustomTypeAdapter,
-            assetDraftCustomTypeAdapter,
-            new AssetCustomActionBuilder(),
-            variantId,
-            AssetCustomTypeAdapter::getId,
-            assetAdapter -> assetAdapter.getTypeId(),
-            AssetCustomTypeAdapter::getKey,
-            syncOptions);
-    return customUpdateActions.stream()
-        .map(customUpdateAction -> (ProductUpdateAction) customUpdateAction)
-        .collect(Collectors.toList());
+    return CustomUpdateActionUtils.buildCustomUpdateActions(
+        newResource,
+        assetCustomTypeAdapter,
+        assetDraftCustomTypeAdapter,
+        new AssetCustomActionBuilder(),
+        variantId,
+        AssetCustomTypeAdapter::getId,
+        AssetCustomTypeAdapter::getTypeId,
+        AssetCustomTypeAdapter::getKey,
+        syncOptions);
   }
 
   private ProductVariantAssetUpdateActionUtils() {}

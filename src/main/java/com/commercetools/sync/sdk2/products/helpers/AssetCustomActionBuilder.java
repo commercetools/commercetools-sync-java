@@ -11,7 +11,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class AssetCustomActionBuilder implements GenericCustomActionBuilder {
+public class AssetCustomActionBuilder implements GenericCustomActionBuilder<ProductUpdateAction> {
 
   @Override
   @Nonnull
