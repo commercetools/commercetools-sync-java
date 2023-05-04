@@ -29,6 +29,12 @@ against a [ProductDraft](https://docs.commercetools.com/api/projects/products#pr
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
 - [Caveats](#caveats)
+- [Migration Guide](#migration-guide)
+  - [Client configuration and creation](#client-configuration-and-creation)
+  - [Signature of ProductSyncOptions](#signature-of-productsyncoptions)
+  - [Build ProductDraft (syncing from external project)](#build-productdraft-syncing-from-external-project)
+  - [Query for Products (syncing from CTP project)](#query-for-products-syncing-from-ctp-project)
+  - [JVM-SDK-V2 migration guide](#jvm-sdk-v2-migration-guide)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -437,7 +443,7 @@ Utility methods provided by the library to compare the specific fields of a Prod
  build the update action. One example is the `buildChangeNameUpdateAction` which compares names:
   
 ````java
-Optional<UpdateAction<Product>> updateAction = buildChangeNameUpdateAction(oldProductProjection, productDraft);
+Optional<ProductUpdateAction> updateAction = buildChangeNameUpdateAction(oldProductProjection, productDraft);
 ````
 More examples of those utils for different fields can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/products/utils).
 
@@ -469,3 +475,104 @@ attributes.
 3. Support for syncing variant attributes with an `AttributeType` of `NestedType` which has an attribute inside of it of 
 `ReferenceType`  with any of the aforementioned `referenceTypeId`, accordingly applies.
 4. Syncing products with cyclic dependencies are not supported yet. An example of a cyclic dependency is a product `a` which references a product `b` and at the same time product `b` references product `a`. Cycles can contain more than 2 products. For example: `a` -> `b` -> `c` -> `a`. If there are such cycles, the sync will consider all the products in the cycle as products with missing parents. They will be persisted as custom objects in the target project.
+
+## Migration Guide
+
+The product-sync uses the [JVM-SDK-V2](http://commercetools.github.io/commercetools-sdk-java-v2), therefore ensure you [Install JVM SDK](https://docs.commercetools.com/sdk/java-sdk-getting-started#install-the-java-sdk) module `commercetools-sdk-java-api` with
+any HTTP client module. The default one is `commercetools-http-client`. 
+
+```maven
+ // Sample maven pom.xml
+ <properties>
+     <commercetools.version>LATEST</commercetools.version>
+ </properties>
+
+ <dependencies>
+     <dependency>
+       <groupId>com.commercetools.sdk</groupId>
+       <artifactId>commercetools-http-client</artifactId>
+       <version>${commercetools.version}</version>
+     </dependency>
+     <dependency>
+       <groupId>com.commercetools.sdk</groupId>
+       <artifactId>commercetools-sdk-java-api</artifactId>
+       <version>${commercetools.version}</version>
+     </dependency>
+ </dependencies>
+
+```
+
+### Client configuration and creation
+
+For client creation use [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/java-sdk-v2-product-sync-migration/src/main/java/com/commercetools/sync/sdk2/commons/utils/ClientConfigurationUtils.java) which apply the best practices for `ProjectApiRoot` creation.
+If you have custom requirements for the client creation make sure to replace `SphereClientFactory` with `ApiRootBuilder` as described in this [Migration Document](https://docs.commercetools.com/sdk/java-sdk-migrate#client-configuration-and-creation).
+
+### Signature of ProductSyncOptions
+
+As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a `ProjectApiRoot` as first argument. The callback functions are signed with `ProductDraft`, `ProductProjection` and `ProductUpdateAction` from `package com.commercetools.api.models.product.*`
+
+> Note: Type `UpdateAction<Product>` has changed to `ProductUpdateAction`. Make sure you create and supply a specific ProductUpdateAction in `beforeUpdateCallback`. Therefore you can use the [library-utilities](https://github.com/commercetools/commercetools-sync-java/blob/java-sdk-v2-product-sync-migration/src/main/java/com/commercetools/sync/sdk2/products/utils/ProductUpdateActionUtils.java) or use a JVM-SDK builder ([see also](https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources)):
+
+```java
+// Example: Create a product update action to change name taking the 'newName' of the productDraft
+    final Function<LocalizedString, ProductUpdateAction> createBeforeUpdateAction =
+        (newName) -> ProductChangeNameAction.builder().name(newName).staged(true).build();
+
+// Add the change name action to the list of update actions before update is executed
+    final TriFunction<
+            List<ProductUpdateAction>, ProductDraft, ProductProjection, List<ProductUpdateAction>>
+        beforeUpdateProductCallback =
+            (updateActions, newProductDraft, oldProduct) -> {
+              final ProductUpdateAction beforeUpdateAction =
+                  createBeforeUpdateAction.apply(newProductDraft.getName());
+              updateActions.add(beforeUpdateAction);
+              return updateActions;
+            };
+```
+
+### Build ProductDraft (syncing from external project)
+
+The product-sync expects a list of `ProductDraft`s to process. If you use java-sync-library to sync your products from any external system into a commercetools platform project you have to convert your data into CTP compatible `ProductDraft` type. This was done in previous version using `DraftBuilder`s. 
+The V2 SDK do not have inheritance for `DraftBuilder` classes but the differences are minor and you can replace it easily. Here's an example:
+
+```java
+// ProductDraftBuilder in v1 takes parameters 'productType', 'name', 'slug' and optional 'masterVariant'
+final ProductDraft productDraft =
+              ProductDraftBuilder
+                      .of(mock(ProductType.class), ofEnglish("name"), ofEnglish("slug"), emptyList())
+                      .key("product-key")
+                      .build();
+
+// ProductDraftBuilder in v2
+final ProductDraft productDraft =
+              ProductDraftBuilder
+                      .of()
+                      .productType(ProductTypeResourceIdentifierBuilder.of().key("product-type-key").build())
+                      .name(LocalizedString.ofEnglish("name"))
+                      .slug(LocalizedString.ofEnglish("slug"))
+                      .masterVariant(masterVariant)
+                      .key("product-key")
+                      .build();
+```
+For more information, see the [Guide to replace DraftBuilders](https://docs.commercetools.com/sdk/java-sdk-migrate#using-draftbuilders).
+
+### Query for Products (syncing from CTP project)
+
+If you sync products between different commercetools projects you probably use [ProductTransformUtils#toProductDrafts](https://github.com/commercetools/commercetools-sync-java/blob/java-sdk-v2-product-sync-migration/src/main/java/com/commercetools/sync/sdk2/products/utils/ProductTransformUtils.java#L59) to transform `ProductProjection` into `ProductDraft` which can be used by the product-sync.
+However, if you need to query `Products` / `ProductProjections` from a commercetools project instead of passing `ProductQuery`s to a `sphereClient`, create (and execute) requests directly from the `apiRoot`.
+Here's an example:
+
+```java
+// SDK v1: ProductProjectionQuery to fetch all staged product projections
+final ProductProjectionQuery query = ProductProjectionQuery.ofStaged();
+
+final PagedQueryResult<ProductProjection> pagedQueryResult = sphereClient.executeBlocking(query);
+
+// SDK v2: Create and execute query to fetch all staged product projections in one line
+final ProductProjectionPagedQueryResponse result = apiRoot.productProjections().get().addStaged(true).executeBlocking().getBody();
+```
+[Read more](https://docs.commercetools.com/sdk/java-sdk-migrate#query-resources) about querying resources.
+
+### JVM-SDK-V2 migration guide
+
+On any other needs to migrate your project using jvm-sdk-v2 please refer to it's [Migration Guide](https://docs.commercetools.com/sdk/java-sdk-migrate). 
