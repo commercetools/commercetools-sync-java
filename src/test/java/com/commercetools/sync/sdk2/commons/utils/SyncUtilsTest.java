@@ -215,5 +215,4 @@ class SyncUtilsTest {
             (id, key) -> CategoryResourceIdentifierBuilder.of().id(id).key(key).build());
     assertThat(resourceIdentifier).isNull();
   }
-
 }
