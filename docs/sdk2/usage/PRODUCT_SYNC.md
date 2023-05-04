@@ -37,7 +37,7 @@ against a [ProductDraft](https://docs.commercetools.com/api/projects/products#pr
 ### Prerequisites
 
 #### ProjectApiRoot 
-
+<!-- TODO Check all github-links in this doc when this was merged to master-branch! -->
 Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/java-sdk-v2-product-sync-migration/src/main/java/com/commercetools/sync/sdk2/commons/utils/ClientConfigurationUtils.java) which apply the best practices for `ProjectApiRoot` creation.
 To create `ClientCredentials` which are required for creating a client please use the `ClientCredentialsBuilder` provided in java-sdk-v2 [Client OAUTH2 package](https://github.com/commercetools/commercetools-sdk-java-v2/blob/main/rmf/rmf-java-base/src/main/java/io/vrap/rmf/base/client/oauth2/ClientCredentialsBuilder.java)
 If you have custom requirements for the client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
@@ -67,17 +67,17 @@ In commercetools, a reference can be created by providing the key instead of the
 When the reference key is provided with a `ResourceIdentifier`, the sync will resolve the resource with the given key and use the ID of the found resource to create or update a reference.
 Therefore, in order to resolve the actual ids of those references in the sync process, `ResourceIdentifier`s with their `key`s have to be supplied. 
 
-|Reference Field|Type|
-|:---|:---|
-| `productType` - **Required** | ProductTypeResourceIdentifier | 
-| `categories` | List of CategoryResourceIdentifier |
-| `taxCategory` | TaxCategoryResourceIdentifier | 
+|Reference Field|Type|Necessity|
+|:---|:---|:---|
+| `productType` | ProductTypeResourceIdentifier | **Required** | 
+| `categories` | List of CategoryResourceIdentifier | Optional |
+| `taxCategory` | TaxCategoryResourceIdentifier | Optional |
 | `state` | StateResourceIdentifier | Optional |
-| `variants.prices.channel` | ChannelResourceIdentifier | 
-| `variants.prices.customerGroup` | CustomerGroupResourceIdentifier | 
-| `variants.prices.custom.type` | TypeResourceIdentifier | 
-| `variants.assets.custom.type` | TypeResourceIdentifier | 
-| `variants.attributes` * | Only the attributes with type [ReferenceType](https://docs.commercetools.com/api/projects/productTypes#referencetype), [SetType](https://docs.commercetools.com/api/projects/productTypes#settype) with `elementType` as [ReferenceType](https://docs.commercetools.com/api/projects/productTypes#referencetype) and [NestedType](https://docs.commercetools.com/api/projects/productTypes#nestedtype) requires `key` on the `id` field of the `ReferenceType`. | 
+| `variants.prices.channel` | ChannelResourceIdentifier | Optional |
+| `variants.prices.customerGroup` | CustomerGroupResourceIdentifier | Optional | 
+| `variants.prices.custom.type` | TypeResourceIdentifier | **Required** for `custom` (CustomFieldsDraft) |
+| `variants.assets.custom.type` | TypeResourceIdentifier | **Required** for `custom` (CustomFieldsDraft) |
+| `variants.attributes` * | Only the attributes with type [ReferenceType](https://docs.commercetools.com/api/projects/productTypes#referencetype), [SetType](https://docs.commercetools.com/api/projects/productTypes#settype) with `elementType` as [ReferenceType](https://docs.commercetools.com/api/projects/productTypes#referencetype) and [NestedType](https://docs.commercetools.com/api/projects/productTypes#nestedtype) requires `key` on the `id` field of the `ReferenceType`. | Optional |
 
 > Note that a reference without the key field will be considered as existing 
 resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.
@@ -156,8 +156,8 @@ final Attribute attr = AttributeBuilder.of().name("attribute-name").value(produc
 
 -  For resolving `key-value-document` (custom object) references on attributes of type `Reference`, `Set` of `Reference`, `NestedType` or `Set` of `NestedType`, The `id` field of the reference in the attribute should be defined in the correct format. 
 The correct format must have a vertical bar `|` character between the values of the container and key.
-For example, if the custom object has a container value `container` and key value `key`, the `id` field should be `container|key"`,  
-also, the key and container value should match the pattern `[-_~.a-zA-Z0-9]+`.
+For example, if the custom object has a container value `container` and key value `key`, the `id` field should be `container|key`,  
+also, the key and container value should match the pattern `[-_~.a-zA-Z0-9]+`. Please also keep in mind that length of the key is limited to 256 characters max: [CustomObject](https://docs.commercetools.com/api/projects/custom-objects#customobject)
 
 ````java
 final CustomObjectReference coReference =
