@@ -58,11 +58,8 @@ jobs:
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3
-      - name: Fetch Library version
-        id: vars
-        run: echo ::set-output name=libVersion::${GITHUB_REF#refs/*/}
       - name: benchmark test
         if: ${{ success() }}
-        run: ./gradlew clean benchmark
+        run: ./gradlew -Dbuild.version="${{ github.ref_name }}" clean benchmark
         env:
-          GITHUB_TAG: ${{ steps.vars.outputs.libVersion }}
+          GITHUB_TAG: ${{ github.ref_name }}

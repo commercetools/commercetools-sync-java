@@ -22,14 +22,11 @@ jobs:
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3
-      - name: Fetch Library version
-        id: vars
-        run: echo ::set-output name=libVersion::${GITHUB_REF#refs/*/}
       - name: benchmark test
         if: ${{ success() }}
-        run: ./gradlew clean benchmark
+        run: ./gradlew -Dbuild.version="${{ github.ref_name }}" clean benchmark
         env:
-          GITHUB_TAG: ${{ steps.vars.outputs.libVersion }}
+          GITHUB_TAG: ${{ github.ref_name }}
   deployment:
     name: deployment
     needs: benchmark_tests
@@ -39,22 +36,19 @@ jobs:
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3
-      - name: Set output
-        id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
           java-version: 11
           distribution: 'zulu'
       - name: status
-        run: echo Build is tagged. Uploading artifact ${{ steps.vars.outputs.tag }} to maven central.
+        run: echo Build is tagged. Uploading artifact ${{ github.ref_name }} to maven central.
       - name: Publish GitHub Pages
-        run: ./gradlew --info -Dbuild.version="${{ steps.vars.outputs.tag }}" mkdocsPublish
+        run: ./gradlew --info -Dbuild.version="${{ github.ref_name }}" mkdocsPublish
       - name: deploy to sonatype and publish to maven central
-        run: ./gradlew -Dbuild.version="${{ steps.vars.outputs.tag }}" publishToSonatype closeAndReleaseSonatypeStagingRepository
+        run: ./gradlew -Dbuild.version="${{ github.ref_name }}" publishToSonatype closeAndReleaseSonatypeStagingRepository
         env:
-          GITHUB_TAG: ${{ steps.vars.outputs.tag }}
+          GITHUB_TAG: ${{ github.ref_name }}
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
           PGP_KEY: ${{ secrets.PGP_KEY }}
