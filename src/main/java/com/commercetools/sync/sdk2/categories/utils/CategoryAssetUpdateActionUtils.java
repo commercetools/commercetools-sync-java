@@ -4,6 +4,7 @@ import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUt
 import static com.commercetools.sync.sdk2.commons.utils.OptionalUtils.filterEmptyOptionals;
 
 import com.commercetools.api.models.category.CategoryChangeAssetNameActionBuilder;
+import com.commercetools.api.models.category.CategoryDraft;
 import com.commercetools.api.models.category.CategorySetAssetDescriptionActionBuilder;
 import com.commercetools.api.models.category.CategorySetAssetSourcesActionBuilder;
 import com.commercetools.api.models.category.CategorySetAssetTagsActionBuilder;
@@ -24,14 +25,11 @@ import javax.annotation.Nonnull;
 public final class CategoryAssetUpdateActionUtils {
 
   /**
-   * Compares all the fields of an {@link io.sphere.sdk.models.Asset} and an {@link
-   * io.sphere.sdk.models.AssetDraft} and returns a list of {@link
-   * io.sphere.sdk.commands.UpdateAction}&lt;{@link io.sphere.sdk.categories.Category}&gt; as a
-   * result. If both the {@link io.sphere.sdk.models.Asset} and the {@link
-   * io.sphere.sdk.models.AssetDraft} have identical fields, then no update action is needed and
-   * hence an empty {@link java.util.List} is returned.
+   * Compares all the fields of an {@link Asset} and an {@link AssetDraft} and returns a list of
+   * {@link com.commercetools.api.models.category.CategoryUpdateAction} as a result. If both the
+   * {@link Asset} and the {@link AssetDraft} have identical fields, then no update action is needed
+   * and hence an empty {@link java.util.List} is returned.
    *
-   * @param <D> Type of the mainresource draft
    * @param newResource new mainresource draft, which contains the asset to update.
    * @param oldAsset the asset which should be updated.
    * @param newAsset the asset draft where we get the new fields.
@@ -40,8 +38,8 @@ public final class CategoryAssetUpdateActionUtils {
    * @return A list with the update actions or an empty list if the asset fields are identical.
    */
   @Nonnull
-  public static <D> List<CategoryUpdateAction> buildActions(
-      @Nonnull final D newResource,
+  public static List<CategoryUpdateAction> buildActions(
+      @Nonnull final CategoryDraft newResource,
       @Nonnull final Asset oldAsset,
       @Nonnull final AssetDraft newAsset,
       @Nonnull final CategorySyncOptions syncOptions) {
@@ -58,12 +56,11 @@ public final class CategoryAssetUpdateActionUtils {
   }
 
   /**
-   * Compares the {@link io.sphere.sdk.models.LocalizedString} names of an {@link
-   * io.sphere.sdk.models.Asset} and an {@link io.sphere.sdk.models.AssetDraft} and returns an
-   * {@link io.sphere.sdk.commands.UpdateAction}&lt;{@link io.sphere.sdk.categories.Category}&gt; as
-   * a result in an {@link java.util.Optional}. If both the {@link io.sphere.sdk.models.Asset} and
-   * the {@link io.sphere.sdk.models.AssetDraft} have the same name, then no update action is needed
-   * and hence an empty {@link java.util.Optional} is returned.
+   * Compares the {@link com.commercetools.api.models.common.LocalizedString} names of an {@link
+   * Asset} and an {@link AssetDraft} and returns an {@link CategoryUpdateAction} as a result in an
+   * {@link java.util.Optional}. If both the {@link Asset} and the {@link AssetDraft} have the same
+   * name, then no update action is needed and hence an empty {@link java.util.Optional} is
+   * returned.
    *
    * @param oldAsset the asset which should be updated.
    * @param newAsset the asset draft where we get the new name.
@@ -84,12 +81,11 @@ public final class CategoryAssetUpdateActionUtils {
   }
 
   /**
-   * Compares the {@link io.sphere.sdk.models.LocalizedString} descriptions of an {@link
-   * io.sphere.sdk.models.Asset} and an {@link io.sphere.sdk.models.AssetDraft} and returns an
-   * {@link io.sphere.sdk.commands.UpdateAction}&lt;{@link io.sphere.sdk.categories.Category}&gt; as
-   * a result in an {@link java.util.Optional}. If both the {@link io.sphere.sdk.models.Asset} and
-   * the {@link io.sphere.sdk.models.AssetDraft} have the same description, then no update action is
-   * needed and hence an empty {@link java.util.Optional} is returned.
+   * Compares the {@link com.commercetools.api.models.common.LocalizedString} descriptions of an
+   * {@link Asset} and an {@link AssetDraft} and returns an {@link CategoryUpdateAction} as a result
+   * in an {@link java.util.Optional}. If both the {@link Asset} and the {@link AssetDraft} have the
+   * same description, then no update action is needed and hence an empty {@link java.util.Optional}
+   * is returned.
    *
    * @param oldAsset the asset which should be updated.
    * @param newAsset the asset draft where we get the new description.
@@ -110,12 +106,10 @@ public final class CategoryAssetUpdateActionUtils {
   }
 
   /**
-   * Compares the tags of an {@link io.sphere.sdk.models.Asset} and an {@link
-   * io.sphere.sdk.models.AssetDraft} and returns an {@link
-   * io.sphere.sdk.commands.UpdateAction}&lt;{@link io.sphere.sdk.categories.Category}&gt; as a
-   * result in an {@link java.util.Optional}. If both the {@link io.sphere.sdk.models.Asset} and the
-   * {@link io.sphere.sdk.models.AssetDraft} have the same tags, then no update action is needed and
-   * hence an empty {@link java.util.Optional} is returned.
+   * Compares the tags of an {@link Asset} and an {@link AssetDraft} and returns an {@link
+   * CategoryUpdateAction} as a result in an {@link java.util.Optional}. If both the {@link Asset}
+   * and the {@link AssetDraft} have the same tags, then no update action is needed and hence an
+   * empty {@link java.util.Optional} is returned.
    *
    * @param oldAsset the asset which should be updated.
    * @param newAsset the asset draft where we get the new tags.
@@ -136,12 +130,10 @@ public final class CategoryAssetUpdateActionUtils {
   }
 
   /**
-   * Compares the sources of an {@link io.sphere.sdk.models.Asset} and an {@link
-   * io.sphere.sdk.models.AssetDraft} and returns an {@link
-   * io.sphere.sdk.commands.UpdateAction}&lt;{@link io.sphere.sdk.categories.Category}&gt; as a
-   * result in an {@link java.util.Optional}. If both the {@link io.sphere.sdk.models.Asset} and the
-   * {@link io.sphere.sdk.models.AssetDraft} have the same sources, then no update action is needed
-   * and hence an empty {@link java.util.Optional} is returned.
+   * Compares the sources of an {@link Asset} and an {@link AssetDraft} and returns an {@link
+   * CategoryUpdateAction} as a result in an {@link java.util.Optional}. If both the {@link Asset}
+   * and the {@link AssetDraft} have the same sources, then no update action is needed and hence an
+   * empty {@link java.util.Optional} is returned.
    *
    * @param oldAsset the asset which should be updated.
    * @param newAsset the asset draft where we get the new sources.
@@ -162,14 +154,11 @@ public final class CategoryAssetUpdateActionUtils {
   }
 
   /**
-   * Compares the custom fields and custom types of an {@link io.sphere.sdk.models.Asset} and an
-   * {@link io.sphere.sdk.models.AssetDraft} and returns a list of {@link
-   * io.sphere.sdk.commands.UpdateAction}&lt;{@link io.sphere.sdk.categories.Category}&gt; as a
-   * result. If both the {@link io.sphere.sdk.models.Asset} and the {@link
-   * io.sphere.sdk.models.AssetDraft} have identical custom fields and types, then no update action
-   * is needed and hence an empty {@link java.util.List} is returned.
+   * Compares the custom fields and custom types of an {@link Asset} and an {@link AssetDraft} and
+   * returns a list of {@link CategoryUpdateAction} as a result. If both the {@link Asset} and the
+   * {@link AssetDraft} have identical custom fields and types, then no update action is needed and
+   * hence an empty {@link java.util.List} is returned.
    *
-   * @param <D> Type of the mainresource draft
    * @param newCategory category in a source project, which contains the updated asset.
    * @param oldAsset the asset which should be updated.
    * @param newAsset the asset draft where we get the new custom fields and types.
@@ -179,8 +168,8 @@ public final class CategoryAssetUpdateActionUtils {
    *     fields/types are identical.
    */
   @Nonnull
-  public static <D> List<CategoryUpdateAction> buildCustomUpdateActions(
-      @Nonnull final D newCategory,
+  public static List<CategoryUpdateAction> buildCustomUpdateActions(
+      @Nonnull final CategoryDraft newCategory,
       @Nonnull final Asset oldAsset,
       @Nonnull final AssetDraft newAsset,
       @Nonnull final CategorySyncOptions syncOptions) {

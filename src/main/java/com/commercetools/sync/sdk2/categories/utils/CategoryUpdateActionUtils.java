@@ -36,13 +36,11 @@ public final class CategoryUpdateActionUtils {
       "Cannot unset 'orderHint' field of category with id '%s'.";
 
   /**
-   * Compares the {@link io.sphere.sdk.models.LocalizedString} names of a {@link
-   * io.sphere.sdk.categories.Category} and a {@link io.sphere.sdk.categories.CategoryDraft} and
-   * returns an {@link io.sphere.sdk.commands.UpdateAction}&lt;{@link
-   * io.sphere.sdk.categories.Category}&gt; as a result in an {@link java.util.Optional}. If both
-   * the {@link io.sphere.sdk.categories.Category} and the {@link
-   * io.sphere.sdk.categories.CategoryDraft} have the same name, then no update action is needed and
-   * hence an empty {@link java.util.Optional} is returned.
+   * Compares the {@link com.commercetools.api.models.common.LocalizedString} names of a {@link
+   * Category} and a {@link CategoryDraft} and returns an {@link CategoryUpdateAction} as a result
+   * in an {@link java.util.Optional}. If both the {@link Category} and the {@link CategoryDraft}
+   * have the same name, then no update action is needed and hence an empty {@link
+   * java.util.Optional} is returned.
    *
    * @param oldCategory the category which should be updated.
    * @param newCategory the category draft where we get the new name.
@@ -59,13 +57,11 @@ public final class CategoryUpdateActionUtils {
   }
 
   /**
-   * Compares the {@link io.sphere.sdk.models.LocalizedString} slugs of a {@link
-   * io.sphere.sdk.categories.Category} and a {@link io.sphere.sdk.categories.CategoryDraft} and
-   * returns an {@link io.sphere.sdk.commands.UpdateAction}&lt;{@link
-   * io.sphere.sdk.categories.Category}&gt; as a result in an {@link java.util.Optional}. If both
-   * the {@link io.sphere.sdk.categories.Category} and the {@link
-   * io.sphere.sdk.categories.CategoryDraft} have the same slug, then no update action is needed and
-   * hence an empty {@link java.util.Optional} is returned.
+   * Compares the {@link com.commercetools.api.models.common.LocalizedString} slugs of a {@link
+   * Category} and a {@link CategoryDraft} and returns an {@link CategoryUpdateAction} as a result
+   * in an {@link java.util.Optional}. If both the {@link Category} and the {@link CategoryDraft}
+   * have the same slug, then no update action is needed and hence an empty {@link
+   * java.util.Optional} is returned.
    *
    * @param oldCategory the category which should be updated.
    * @param newCategory the category draft where we get the new slug.
@@ -82,13 +78,11 @@ public final class CategoryUpdateActionUtils {
   }
 
   /**
-   * Compares the {@link io.sphere.sdk.models.LocalizedString} descriptions of a {@link
-   * io.sphere.sdk.categories.Category} and a {@link io.sphere.sdk.categories.CategoryDraft} and
-   * returns an {@link io.sphere.sdk.commands.UpdateAction}&lt;{@link
-   * io.sphere.sdk.categories.Category}&gt; as a result in an {@link java.util.Optional}. If both
-   * the {@link io.sphere.sdk.categories.Category} and the {@link
-   * io.sphere.sdk.categories.CategoryDraft} have the same description, then no update action is
-   * needed and hence an empty {@link java.util.Optional} is returned.
+   * Compares the {@link com.commercetools.api.models.common.LocalizedString} descriptions of a
+   * {@link Category} and a {@link CategoryDraft} and returns an {@link CategoryUpdateAction} as a
+   * result in an {@link java.util.Optional}. If both the {@link Category} and the {@link
+   * CategoryDraft} have the same description, then no update action is needed and hence an empty
+   * {@link java.util.Optional} is returned.
    *
    * @param oldCategory the category which should be updated.
    * @param newCategory the category draft where we get the new description.
@@ -108,19 +102,16 @@ public final class CategoryUpdateActionUtils {
   }
 
   /**
-   * Compares the parents {@link io.sphere.sdk.models.Reference}&lt;{@link
-   * io.sphere.sdk.categories.Category}&gt; of a {@link io.sphere.sdk.categories.Category} and a
-   * {@link io.sphere.sdk.categories.CategoryDraft} and returns an {@link
-   * io.sphere.sdk.commands.UpdateAction}&lt;{@link io.sphere.sdk.categories.Category}&gt; as a
-   * result in an {@link java.util.Optional}. If both the {@link io.sphere.sdk.categories.Category}
-   * and the {@link io.sphere.sdk.categories.CategoryDraft} have the same parents, then no update
-   * action is needed and hence an empty {@link java.util.Optional} is returned.
+   * Compares the parents {@link CategoryReference} of a {@link Category} and a {@link
+   * CategoryDraft} and returns an {@link io.sphere.sdk.commands.UpdateAction}&lt;{@link
+   * Category}&gt; as a result in an {@link java.util.Optional}. If both the {@link Category} and
+   * the {@link CategoryDraft} have the same parents, then no update action is needed and hence an
+   * empty {@link java.util.Optional} is returned.
    *
-   * <p>Note: If the parent {@link io.sphere.sdk.models.Reference}&lt;{@link
-   * io.sphere.sdk.categories.Category}&gt; of the new {@link
-   * io.sphere.sdk.categories.CategoryDraft} is null, an empty {@link java.util.Optional} is
-   * returned with no update actions and a custom callback function, if set on the supplied {@link
-   * com.commercetools.sync.categories.CategorySyncOptions}, is called.
+   * <p>Note: If the parent {@link CategoryReference} of the new {@link CategoryDraft} is null, an
+   * empty {@link java.util.Optional} is returned with no update actions and a custom callback
+   * function, if set on the supplied {@link com.commercetools.sync.categories.CategorySyncOptions},
+   * is called.
    *
    * @param oldCategory the category which should be updated.
    * @param newCategory the category draft where we get the new parent.
@@ -160,17 +151,14 @@ public final class CategoryUpdateActionUtils {
   }
 
   /**
-   * Compares the orderHint values of a {@link io.sphere.sdk.categories.Category} and a {@link
-   * io.sphere.sdk.categories.CategoryDraft} and returns an {@link
-   * io.sphere.sdk.commands.UpdateAction}&lt;{@link io.sphere.sdk.categories.Category}&gt; as a
-   * result in an {@link java.util.Optional}. If both the {@link io.sphere.sdk.categories.Category}
-   * and the {@link io.sphere.sdk.categories.CategoryDraft} have the same orderHint, then no update
-   * action is needed and hence an empty {@link java.util.Optional} is returned.
+   * Compares the orderHint values of a {@link Category} and a {@link CategoryDraft} and returns an
+   * {@link CategoryUpdateAction} as a result in an {@link java.util.Optional}. If both the {@link
+   * Category} and the {@link CategoryDraft} have the same orderHint, then no update action is
+   * needed and hence an empty {@link java.util.Optional} is returned.
    *
-   * <p>Note: If the orderHint of the new {@link io.sphere.sdk.categories.CategoryDraft} is null, an
-   * empty {@link java.util.Optional} is returned with no update actions and a custom callback
-   * function, if set on the supplied {@link com.commercetools.sync.categories.CategorySyncOptions},
-   * is called.
+   * <p>Note: If the orderHint of the new {@link CategoryDraft} is null, an empty {@link
+   * java.util.Optional} is returned with no update actions and a custom callback function, if set
+   * on the supplied {@link CategorySyncOptions}, is called.
    *
    * @param oldCategory the category which should be updated.
    * @param newCategory the category draft where we get the new orderHint.
@@ -202,13 +190,11 @@ public final class CategoryUpdateActionUtils {
   }
 
   /**
-   * Compares the {@link io.sphere.sdk.models.LocalizedString} meta title of a {@link
-   * io.sphere.sdk.categories.Category} and a {@link io.sphere.sdk.categories.CategoryDraft} and
-   * returns an {@link io.sphere.sdk.commands.UpdateAction}&lt;{@link
-   * io.sphere.sdk.categories.Category}&gt; as a result in an {@link java.util.Optional}. If both
-   * the {@link io.sphere.sdk.categories.Category} and the {@link
-   * io.sphere.sdk.categories.CategoryDraft} have the same meta title, then no update action is
-   * needed and hence an empty {@link java.util.Optional} is returned.
+   * Compares the {@link com.commercetools.api.models.common.LocalizedString} meta title of a {@link
+   * Category} and a {@link CategoryDraft} and returns an {@link CategoryUpdateAction} as a result
+   * in an {@link java.util.Optional}. If both the {@link Category} and the {@link CategoryDraft}
+   * have the same meta title, then no update action is needed and hence an empty {@link
+   * java.util.Optional} is returned.
    *
    * @param oldCategory the category which should be updated.
    * @param newCategory the category draft where we get the new meta title.
@@ -225,13 +211,11 @@ public final class CategoryUpdateActionUtils {
   }
 
   /**
-   * Compares the {@link io.sphere.sdk.models.LocalizedString} meta keywords of a {@link
-   * io.sphere.sdk.categories.Category} and a {@link io.sphere.sdk.categories.CategoryDraft} and
-   * returns an {@link io.sphere.sdk.commands.UpdateAction}&lt;{@link
-   * io.sphere.sdk.categories.Category}&gt; as a result in an {@link java.util.Optional}. If both
-   * the {@link io.sphere.sdk.categories.Category} and the {@link
-   * io.sphere.sdk.categories.CategoryDraft} have the same meta keywords, then no update action is
-   * needed and hence an empty {@link java.util.Optional} is returned.
+   * Compares the {@link com.commercetools.api.models.common.LocalizedString} meta keywords of a
+   * {@link Category} and a {@link CategoryDraft} and returns an {@link CategoryUpdateAction} as a
+   * result in an {@link java.util.Optional}. If both the {@link Category} and the {@link
+   * CategoryDraft} have the same meta keywords, then no update action is needed and hence an empty
+   * {@link java.util.Optional} is returned.
    *
    * @param oldCategory the category which should be updated.
    * @param newCategory the category draft where we get the new meta keywords.
@@ -251,13 +235,11 @@ public final class CategoryUpdateActionUtils {
   }
 
   /**
-   * Compares the {@link io.sphere.sdk.models.LocalizedString} meta description of a {@link
-   * io.sphere.sdk.categories.Category} and a {@link io.sphere.sdk.categories.CategoryDraft} and
-   * returns an {@link io.sphere.sdk.commands.UpdateAction}&lt;{@link
-   * io.sphere.sdk.categories.Category}&gt; as a result in an {@link java.util.Optional}. If both
-   * the {@link io.sphere.sdk.categories.Category} and the {@link
-   * io.sphere.sdk.categories.CategoryDraft} have the same meta description, then no update action
-   * is needed and hence an empty {@link java.util.Optional} is returned.
+   * Compares the {@link com.commercetools.api.models.common.LocalizedString} meta description of a
+   * {@link Category} and a {@link CategoryDraft} and returns an {@link CategoryUpdateAction} as a
+   * result in an {@link java.util.Optional}. If both the {@link Category} and the {@link
+   * CategoryDraft} have the same meta description, then no update action is needed and hence an
+   * empty {@link java.util.Optional} is returned.
    *
    * @param oldCategory the category which should be updated.
    * @param newCategory the category draft where we get the new meta description.
@@ -277,12 +259,10 @@ public final class CategoryUpdateActionUtils {
   }
 
   /**
-   * Compares the externalId values of a {@link io.sphere.sdk.categories.Category} and a {@link
-   * io.sphere.sdk.categories.CategoryDraft} and returns an {@link
-   * io.sphere.sdk.commands.UpdateAction}&lt;{@link io.sphere.sdk.categories.Category}&gt; as a
-   * result in an {@link java.util.Optional}. If both the {@link io.sphere.sdk.categories.Category}
-   * and the {@link io.sphere.sdk.categories.CategoryDraft} have the same externalId, then no update
-   * action is needed and hence an empty {@link java.util.Optional} is returned.
+   * Compares the externalId values of a {@link Category} and a {@link CategoryDraft} and returns an
+   * {@link CategoryUpdateAction} as a result in an {@link java.util.Optional}. If both the {@link
+   * Category} and the {@link CategoryDraft} have the same externalId, then no update action is
+   * needed and hence an empty {@link java.util.Optional} is returned.
    *
    * @param oldCategory the category which should be updated.
    * @param newCategory the category draft where we get the new externalId.
@@ -302,14 +282,11 @@ public final class CategoryUpdateActionUtils {
   }
 
   /**
-   * Compares the assets of a {@link io.sphere.sdk.categories.Category} and a {@link
-   * io.sphere.sdk.categories.CategoryDraft} and returns a list of {@link
-   * io.sphere.sdk.commands.UpdateAction}&lt;{@link io.sphere.sdk.categories.Category}&gt; as a
-   * result. If both the {@link io.sphere.sdk.categories.Category} and the {@link
-   * io.sphere.sdk.categories.CategoryDraft} have the identical assets, then no update action is
-   * needed and hence an empty {@link java.util.List} is returned. In case, the new category draft
-   * has a list of assets in which a duplicate key exists, the error callback is triggered and an
-   * empty list is returned.
+   * Compares the assets of a {@link Category} and a {@link CategoryDraft} and returns a list of
+   * {@link CategoryUpdateAction} as a result. If both the {@link Category} and the {@link
+   * CategoryDraft} have the identical assets, then no update action is needed and hence an empty
+   * {@link java.util.List} is returned. In case, the new category draft has a list of assets in
+   * which a duplicate key exists, the error callback is triggered and an empty list is returned.
    *
    * @param oldCategory the category which should be updated.
    * @param newCategory the category draft where we get the new externalId.
