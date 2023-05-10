@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 
 class CategorySyncOptionsBuilderTest {
   private static final ProjectApiRoot CTP_CLIENT = mock(ProjectApiRoot.class);
-  private CategorySyncOptionsBuilder categorySyncOptionsBuilder =
+  private CategorySyncOptionsBuilder categorySyncOptionsBuilderWithClientOnly =
       CategorySyncOptionsBuilder.of(CTP_CLIENT);
 
   @Test
@@ -33,7 +33,7 @@ class CategorySyncOptionsBuilderTest {
 
   @Test
   void build_WithClient_ShouldBuildCategorySyncOptions() {
-    final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
+    final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT).build();
     assertThat(categorySyncOptions).isNotNull();
     assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNull();
     assertThat(categorySyncOptions.getBeforeCreateCallback()).isNull();
@@ -50,18 +50,18 @@ class CategorySyncOptionsBuilderTest {
     final TriFunction<
             List<CategoryUpdateAction>, CategoryDraft, Category, List<CategoryUpdateAction>>
         beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> emptyList();
-    categorySyncOptionsBuilder.beforeUpdateCallback(beforeUpdateCallback);
+    categorySyncOptionsBuilderWithClientOnly.beforeUpdateCallback(beforeUpdateCallback);
 
-    final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
+    final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilderWithClientOnly.build();
     assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNotNull();
   }
 
   @Test
   void beforeCreateCallback_WithFilterAsCallback_ShouldSetCallback() {
     final Function<CategoryDraft, CategoryDraft> draftFunction = categoryDraft -> null;
-    categorySyncOptionsBuilder.beforeCreateCallback(draftFunction);
+    categorySyncOptionsBuilderWithClientOnly.beforeCreateCallback(draftFunction);
 
-    final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
+    final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilderWithClientOnly.build();
     assertThat(categorySyncOptions.getBeforeCreateCallback()).isNotNull();
   }
 
@@ -70,9 +70,9 @@ class CategorySyncOptionsBuilderTest {
     final QuadConsumer<
             SyncException, Optional<CategoryDraft>, Optional<Category>, List<CategoryUpdateAction>>
         mockErrorCallback = (exception, newDraft, old, actions) -> {};
-    categorySyncOptionsBuilder.errorCallback(mockErrorCallback);
+    categorySyncOptionsBuilderWithClientOnly.errorCallback(mockErrorCallback);
 
-    final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
+    final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilderWithClientOnly.build();
     assertThat(categorySyncOptions.getErrorCallback()).isNotNull();
   }
 
@@ -80,18 +80,18 @@ class CategorySyncOptionsBuilderTest {
   public void warningCallBack_WithCallBack_ShouldSetCallBack() {
     final TriConsumer<SyncException, Optional<CategoryDraft>, Optional<Category>>
         mockWarningCallBack = (exception, newDraft, old) -> {};
-    categorySyncOptionsBuilder.warningCallback(mockWarningCallBack);
+    categorySyncOptionsBuilderWithClientOnly.warningCallback(mockWarningCallBack);
 
-    final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
+    final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilderWithClientOnly.build();
     assertThat(categorySyncOptions.getWarningCallback()).isNotNull();
   }
 
   @Test
   void getThis_ShouldReturnCorrectInstance() {
-    final CategorySyncOptionsBuilder instance = categorySyncOptionsBuilder.getThis();
+    final CategorySyncOptionsBuilder instance = categorySyncOptionsBuilderWithClientOnly.getThis();
     assertThat(instance).isNotNull();
     assertThat(instance).isInstanceOf(CategorySyncOptionsBuilder.class);
-    assertThat(instance).isEqualTo(categorySyncOptionsBuilder);
+    assertThat(instance).isEqualTo(categorySyncOptionsBuilderWithClientOnly);
   }
 
   @Test
