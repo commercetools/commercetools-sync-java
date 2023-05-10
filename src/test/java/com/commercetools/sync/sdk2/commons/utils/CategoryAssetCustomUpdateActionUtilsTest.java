@@ -12,7 +12,7 @@ import com.commercetools.api.models.common.Asset;
 import com.commercetools.api.models.type.ResourceTypeId;
 import com.commercetools.sync.sdk2.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.sdk2.categories.helpers.AssetCustomActionBuilder;
-import com.commercetools.sync.sdk2.products.models.AssetCustomTypeAdapter;
+import com.commercetools.sync.sdk2.commons.models.AssetCustomTypeAdapter;
 import java.util.HashMap;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
