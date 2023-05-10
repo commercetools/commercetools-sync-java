@@ -61,7 +61,7 @@ class CustomUpdateActionUtilsTest {
   private static final ProjectApiRoot CTP_CLIENT = mock(ProjectApiRoot.class);
   private static final CategorySyncOptions CATEGORY_SYNC_OPTIONS =
       CategorySyncOptionsBuilder.of(CTP_CLIENT).build();
-  final ProductDraft maiNewResource = mock(ProductDraft.class);
+  final ProductDraft productDraftMock = mock(ProductDraft.class);
 
   @Test
   void
@@ -86,7 +86,7 @@ class CustomUpdateActionUtilsTest {
 
     final List<ProductUpdateAction> updateActions =
         buildCustomUpdateActions(
-            maiNewResource,
+            productDraftMock,
             AssetCustomTypeAdapter.of(oldAsset),
             AssetDraftCustomTypeAdapter.of(newAssetDraft),
             new AssetCustomActionBuilder(),
@@ -124,7 +124,7 @@ class CustomUpdateActionUtilsTest {
 
     final List<ProductUpdateAction> updateActions =
         buildCustomUpdateActions(
-            maiNewResource,
+            productDraftMock,
             AssetCustomTypeAdapter.of(oldAsset),
             AssetDraftCustomTypeAdapter.of(newAssetDraft),
             new AssetCustomActionBuilder(),
@@ -180,7 +180,7 @@ class CustomUpdateActionUtilsTest {
 
     final List<ProductUpdateAction> updateActions =
         buildCustomUpdateActions(
-            maiNewResource,
+            productDraftMock,
             AssetCustomTypeAdapter.of(oldAsset),
             AssetDraftCustomTypeAdapter.of(newAssetDraft),
             new AssetCustomActionBuilder(),
@@ -213,7 +213,7 @@ class CustomUpdateActionUtilsTest {
 
     final List<ProductUpdateAction> updateActions =
         buildCustomUpdateActions(
-            maiNewResource,
+            productDraftMock,
             AssetCustomTypeAdapter.of(oldAsset),
             AssetDraftCustomTypeAdapter.of(newAssetDraft),
             new AssetCustomActionBuilder(),
@@ -257,7 +257,7 @@ class CustomUpdateActionUtilsTest {
 
     final List<ProductUpdateAction> updateActions =
         buildCustomUpdateActions(
-            maiNewResource,
+            productDraftMock,
             AssetCustomTypeAdapter.of(oldAsset),
             AssetDraftCustomTypeAdapter.of(newAssetDraft),
             new AssetCustomActionBuilder(),
