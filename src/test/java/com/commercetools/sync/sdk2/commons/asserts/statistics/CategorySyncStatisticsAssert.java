@@ -13,9 +13,8 @@ public final class CategorySyncStatisticsAssert
   }
 
   /**
-   * Verifies that the actual {@link
-   * CategorySyncStatistics} value has identical
-   * statistics counters as the ones supplied.
+   * Verifies that the actual {@link CategorySyncStatistics} value has identical statistics counters
+   * as the ones supplied.
    *
    * @param processed the number of processed categories.
    * @param created the number of created categories.
