@@ -30,10 +30,10 @@ public class CategoryBatchValidator
   }
 
   /**
-   * Given the {@link java.util.List}&lt;{@link io.sphere.sdk.categories.CategoryDraft}&gt; of
-   * drafts this method attempts to validate drafts and collect referenced keys from the draft and
-   * return an {@link org.apache.commons.lang3.tuple.ImmutablePair}&lt;{@link
-   * java.util.Set}&lt;{@link io.sphere.sdk.categories.CategoryDraft}&gt;,{@link
+   * Given the {@link java.util.List}&lt;{@link CategoryDraft}&gt; of drafts this method attempts to
+   * validate drafts and collect referenced keys from the draft and return an {@link
+   * org.apache.commons.lang3.tuple.ImmutablePair}&lt;{@link java.util.Set}&lt;{@link
+   * CategoryDraft}&gt;,{@link
    * com.commercetools.sync.sdk2.categories.helpers.CategoryBatchValidator.ReferencedKeys}&gt; which
    * contains the {@link java.util.Set} of valid drafts and referenced keys within a wrapper.
    *
@@ -46,7 +46,7 @@ public class CategoryBatchValidator
    *
    * @param categoryDrafts the category drafts to validate and collect referenced keys.
    * @return {@link org.apache.commons.lang3.tuple.ImmutablePair}&lt;{@link java.util.Set}&lt;{@link
-   *     io.sphere.sdk.categories.CategoryDraft}&gt;,{@link
+   *     CategoryDraft}&gt;,{@link
    *     com.commercetools.sync.sdk2.categories.helpers.CategoryBatchValidator.ReferencedKeys}&gt;
    *     which contains the {@link java.util.Set} of valid drafts and referenced keys within a
    *     wrapper.
