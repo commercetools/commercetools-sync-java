@@ -553,7 +553,13 @@ public final class CustomUpdateActionUtils {
           @Nonnull final Function<CustomT, String> updateIdGetter) {
 
     return oldCustomFields.keySet().stream()
-        .filter(oldCustomFieldsName -> isNullJsonValue(newCustomFields.get(oldCustomFieldsName)))
+        .filter(
+            oldCustomFieldsName -> {
+              final Object newCustomFieldValue = newCustomFields.get(oldCustomFieldsName);
+              final Object oldCustomFieldValue = oldCustomFields.get(oldCustomFieldsName);
+              return isNullJsonValue(newCustomFieldValue)
+                  && oldCustomFieldValue != newCustomFieldValue;
+            })
         .map(
             oldCustomFieldsName ->
                 customActionBuilder.buildSetCustomFieldAction(
