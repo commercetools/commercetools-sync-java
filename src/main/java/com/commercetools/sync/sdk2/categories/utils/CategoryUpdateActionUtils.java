@@ -103,15 +103,15 @@ public final class CategoryUpdateActionUtils {
 
   /**
    * Compares the parents {@link CategoryReference} of a {@link Category} and a {@link
-   * CategoryDraft} and returns an {@link io.sphere.sdk.commands.UpdateAction}&lt;{@link
-   * Category}&gt; as a result in an {@link java.util.Optional}. If both the {@link Category} and
-   * the {@link CategoryDraft} have the same parents, then no update action is needed and hence an
-   * empty {@link java.util.Optional} is returned.
+   * CategoryDraft} and returns an {@link
+   * com.commercetools.api.models.category.CategoryUpdateAction} as a result in an {@link
+   * java.util.Optional}. If both the {@link Category} and the {@link CategoryDraft} have the same
+   * parents, then no update action is needed and hence an empty {@link java.util.Optional} is
+   * returned.
    *
    * <p>Note: If the parent {@link CategoryReference} of the new {@link CategoryDraft} is null, an
    * empty {@link java.util.Optional} is returned with no update actions and a custom callback
-   * function, if set on the supplied {@link com.commercetools.sync.categories.CategorySyncOptions},
-   * is called.
+   * function, if set on the supplied {@link CategorySyncOptions}, is called.
    *
    * @param oldCategory the category which should be updated.
    * @param newCategory the category draft where we get the new parent.
