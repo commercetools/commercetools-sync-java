@@ -21,7 +21,9 @@ final class GenericUpdateActionUtils {
    * blank (null/empty), the error callback is triggered with an error message that the
    * setCustomType update action cannot be built with a blank id, and an empty optional is returned.
    *
-   * @param <T> the type of the resource which has the custom fields.
+   * @param <CustomT> the type of the resource which has the custom fields.
+   * @param <ResourceUpdateActionT> extends ResourceUpdateAction (e.g {@link
+   *     com.commercetools.api.models.customer.CustomerChangeEmailAction}
    * @param customTypeId the id of the new custom type.
    * @param customFieldsJsonMap the custom fields map of JSON values.
    * @param resource the resource which has the custom fields.
@@ -38,16 +40,19 @@ final class GenericUpdateActionUtils {
    *     empty optional if the {@code customTypeId} is blank.
    */
   @Nonnull
-  static <T extends Custom> Optional<ResourceUpdateAction> buildTypedSetCustomTypeUpdateAction(
-      @Nullable final String customTypeId,
-      @Nullable final Map<String, Object> customFieldsJsonMap,
-      @Nonnull final T resource,
-      @Nonnull final GenericCustomActionBuilder customActionBuilder,
-      @Nullable final Long variantId,
-      @Nonnull final Function<T, String> resourceIdGetter,
-      @Nonnull final Function<T, String> resourceTypeIdGetter,
-      @Nonnull final Function<T, String> updateIdGetter,
-      @Nonnull final BaseSyncOptions syncOptions) {
+  static <
+          CustomT extends Custom,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      Optional<ResourceUpdateActionT> buildTypedSetCustomTypeUpdateAction(
+          @Nullable final String customTypeId,
+          @Nullable final Map<String, Object> customFieldsJsonMap,
+          @Nonnull final CustomT resource,
+          @Nonnull final GenericCustomActionBuilder<ResourceUpdateActionT> customActionBuilder,
+          @Nullable final Long variantId,
+          @Nonnull final Function<CustomT, String> resourceIdGetter,
+          @Nonnull final Function<CustomT, String> resourceTypeIdGetter,
+          @Nonnull final Function<CustomT, String> updateIdGetter,
+          @Nonnull final BaseSyncOptions syncOptions) {
 
     if (!isBlank(customTypeId)) {
       return Optional.of(

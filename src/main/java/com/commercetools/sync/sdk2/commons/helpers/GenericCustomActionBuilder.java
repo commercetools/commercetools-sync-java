@@ -9,8 +9,12 @@ import javax.annotation.Nullable;
 /**
  * A generic custom update action builder that creates update actions for example for the type
  * {@link Customer}
+ *
+ * @param <ResourceUpdateActionT> extends ResourceUpdateAction (e.g {@link
+ *     com.commercetools.api.models.customer.CustomerChangeEmailAction}
  */
-public interface GenericCustomActionBuilder {
+public interface GenericCustomActionBuilder<
+    ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>> {
   /**
    * Creates a CTP "setCustomType" update action on the given resource {@code T} that removes the
    * custom type set on the given resource {@code T}. If the resource that has the custom fields is
@@ -26,7 +30,7 @@ public interface GenericCustomActionBuilder {
    *     requested on.
    */
   @Nonnull
-  ResourceUpdateAction buildRemoveCustomTypeAction(
+  ResourceUpdateActionT buildRemoveCustomTypeAction(
       @Nullable Long variantId, @Nullable String objectId);
 
   /**
@@ -44,7 +48,7 @@ public interface GenericCustomActionBuilder {
    * @return a setCustomType update action of the type of the resource it's requested on.
    */
   @Nonnull
-  ResourceUpdateAction buildSetCustomTypeAction(
+  ResourceUpdateActionT buildSetCustomTypeAction(
       @Nullable Long variantId,
       @Nullable String objectId,
       @Nonnull String customTypeId,
@@ -68,7 +72,7 @@ public interface GenericCustomActionBuilder {
    *     the resource it's requested on.
    */
   @Nonnull
-  ResourceUpdateAction buildSetCustomFieldAction(
+  ResourceUpdateActionT buildSetCustomFieldAction(
       @Nullable Long variantId,
       @Nullable String objectId,
       @Nullable String customFieldName,
