@@ -1,8 +1,7 @@
-package com.commercetools.sync.sdk2.products.models;
+package com.commercetools.sync.sdk2.commons.models;
 
 import com.commercetools.api.models.common.Asset;
 import com.commercetools.api.models.type.CustomFields;
-import com.commercetools.sync.sdk2.commons.models.Custom;
 import com.commercetools.sync.sdk2.commons.utils.CustomUpdateActionUtils;
 import javax.annotation.Nullable;
 
