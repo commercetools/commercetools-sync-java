@@ -308,6 +308,26 @@ class CategoryAssetUpdateActionUtilsTest {
   }
 
   @Test
+  void buildSetAssetSourcesUpdateAction_WithEmptyNewAssetSources_ShouldBuildUpdateAction() {
+    final List<AssetSource> oldAssetSources =
+        singletonList(AssetSourceBuilder.of().uri("oldUri").build());
+
+    final Asset oldAsset = mock(Asset.class);
+    when(oldAsset.getSources()).thenReturn(oldAssetSources);
+
+    final AssetDraft newAssetDraft =
+        AssetDraftBuilder.of().name(empty()).sources(emptyList()).build();
+
+    final CategoryUpdateAction productUpdateAction =
+        buildSetAssetSourcesUpdateAction(oldAsset, newAssetDraft).orElse(null);
+
+    assertThat(productUpdateAction).isNotNull();
+    assertThat(productUpdateAction).isInstanceOf(CategorySetAssetSourcesAction.class);
+    assertThat(((CategorySetAssetSourcesAction) productUpdateAction).getSources())
+        .isEqualTo(emptyList());
+  }
+
+  @Test
   void buildSetAssetSourcesUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
     final List<AssetSource> oldAssetSources =
         singletonList(AssetSourceBuilder.of().uri("oldUri").build());
@@ -318,7 +338,7 @@ class CategoryAssetUpdateActionUtilsTest {
     when(oldAsset.getSources()).thenReturn(oldAssetSources);
 
     final AssetDraft newAssetDraft =
-        AssetDraftBuilder.of().sources(emptyList()).name(empty()).sources(newAssetSources).build();
+        AssetDraftBuilder.of().name(empty()).sources(newAssetSources).build();
 
     final CategoryUpdateAction productUpdateAction =
         buildSetAssetSourcesUpdateAction(oldAsset, newAssetDraft).orElse(null);
@@ -338,7 +358,7 @@ class CategoryAssetUpdateActionUtilsTest {
     when(oldAsset.getSources()).thenReturn(oldAssetSources);
 
     final AssetDraft newAssetDraft =
-        AssetDraftBuilder.of().sources(emptyList()).name(empty()).sources(oldAssetSources).build();
+        AssetDraftBuilder.of().name(empty()).sources(oldAssetSources).build();
 
     final Optional<CategoryUpdateAction> productUpdateAction =
         buildSetAssetSourcesUpdateAction(oldAsset, newAssetDraft);
