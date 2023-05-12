@@ -27,7 +27,7 @@ public class CategorySyncMockUtils {
    * the supplied arguments are given as {@link String} and the method internally converts them to
    * their required types. For example, for all the fields that require a {@link LocalizedString} as
    * a value type; the method creates an instance of a {@link LocalizedString} with the given {@link
-   * String} and {@link java.util.Locale}.
+   * String} and {@link Locale}.
    *
    * @param locale the locale to create with all the {@link LocalizedString} instances.
    * @param name the name of the category.
@@ -40,8 +40,7 @@ public class CategorySyncMockUtils {
    * @param metaKeywords the metakeywords of the category.
    * @param orderHint the orderhint of the category.
    * @param parentId the parentId of the category.
-   * @return an instance {@link Category} with all the given fields set in the given {@link
-   *     java.util.Locale}.
+   * @return an instance {@link Category} with all the given fields set in the given {@link Locale}.
    */
   public static Category getMockCategory(
       @Nonnull final Locale locale,
@@ -122,7 +121,7 @@ public class CategorySyncMockUtils {
    * those supplied fields. All the supplied arguments are given as {@link String} and the method
    * internally converts them to their required types. For example, for all the fields that require
    * a {@link LocalizedString} as a value type; the method creates an instance of a {@link
-   * LocalizedString} with the given {@link String} and {@link java.util.Locale}.
+   * LocalizedString} with the given {@link String} and {@link Locale}.
    *
    * @param locale the locale to create with all the {@link LocalizedString} instances.
    * @param name the name of the category.
@@ -136,7 +135,7 @@ public class CategorySyncMockUtils {
    * @param orderHint the orderhint of the category.
    * @param parentId the parentId of the category.
    * @return an instance {@link CategoryDraft} with all the given fields set in the given {@link
-   *     java.util.Locale}.
+   *     Locale}.
    */
   public static CategoryDraft getMockCategoryDraft(
       @Nonnull final Locale locale,
@@ -182,15 +181,14 @@ public class CategorySyncMockUtils {
    * of {@link CategoryDraft} with all those supplied fields. All the supplied arguments are given
    * as {@link String} and the method internally converts them to their required types. For example,
    * for all the fields that require a {@link LocalizedString} as a value type; the method creates
-   * an instance of a {@link LocalizedString} with the given {@link String} and {@link
-   * java.util.Locale}.
+   * an instance of a {@link LocalizedString} with the given {@link String} and {@link Locale}.
    *
    * @param locale the locale to create with all the {@link LocalizedString} instances.
    * @param name the name of the category.
    * @param slug the slug of the category.
    * @param key the key of the category.
    * @return an instance {@link CategoryDraft} with all the given fields set in the given {@link
-   *     java.util.Locale}.
+   *     Locale}.
    */
   public static CategoryDraft getMockCategoryDraft(
       @Nonnull final Locale locale,
@@ -212,7 +210,7 @@ public class CategorySyncMockUtils {
    * fields. All the supplied arguments are given as {@link String} and the method internally
    * converts them to their required types. For example, for all the fields that require a {@link
    * LocalizedString} as a value type; the method creates an instance of a {@link LocalizedString}
-   * with the given {@link String} and {@link java.util.Locale}.
+   * with the given {@link String} and {@link Locale}.
    *
    * @param locale the locale to create with all the {@link LocalizedString} instances.
    * @param name the name of the category.
@@ -221,7 +219,7 @@ public class CategorySyncMockUtils {
    * @param customTypeKey the key of the custom type of category.
    * @param customFields the custom fields of the category.
    * @return an instance {@link CategoryDraftBuilder} with all the given fields set in the given
-   *     {@link java.util.Locale}.
+   *     {@link Locale}.
    */
   public static CategoryDraftBuilder getMockCategoryDraftBuilder(
       @Nonnull final Locale locale,
