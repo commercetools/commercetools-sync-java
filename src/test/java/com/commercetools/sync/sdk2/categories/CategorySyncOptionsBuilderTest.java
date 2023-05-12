@@ -33,7 +33,8 @@ class CategorySyncOptionsBuilderTest {
 
   @Test
   void build_WithClient_ShouldBuildCategorySyncOptions() {
-    final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT).build();
+    final CategorySyncOptions categorySyncOptions =
+        CategorySyncOptionsBuilder.of(CTP_CLIENT).build();
     assertThat(categorySyncOptions).isNotNull();
     assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNull();
     assertThat(categorySyncOptions.getBeforeCreateCallback()).isNull();
@@ -52,7 +53,8 @@ class CategorySyncOptionsBuilderTest {
         beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> emptyList();
     categorySyncOptionsBuilderWithClientOnly.beforeUpdateCallback(beforeUpdateCallback);
 
-    final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilderWithClientOnly.build();
+    final CategorySyncOptions categorySyncOptions =
+        categorySyncOptionsBuilderWithClientOnly.build();
     assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNotNull();
   }
 
@@ -61,7 +63,8 @@ class CategorySyncOptionsBuilderTest {
     final Function<CategoryDraft, CategoryDraft> draftFunction = categoryDraft -> null;
     categorySyncOptionsBuilderWithClientOnly.beforeCreateCallback(draftFunction);
 
-    final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilderWithClientOnly.build();
+    final CategorySyncOptions categorySyncOptions =
+        categorySyncOptionsBuilderWithClientOnly.build();
     assertThat(categorySyncOptions.getBeforeCreateCallback()).isNotNull();
   }
 
@@ -72,7 +75,8 @@ class CategorySyncOptionsBuilderTest {
         mockErrorCallback = (exception, newDraft, old, actions) -> {};
     categorySyncOptionsBuilderWithClientOnly.errorCallback(mockErrorCallback);
 
-    final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilderWithClientOnly.build();
+    final CategorySyncOptions categorySyncOptions =
+        categorySyncOptionsBuilderWithClientOnly.build();
     assertThat(categorySyncOptions.getErrorCallback()).isNotNull();
   }
 
@@ -82,7 +86,8 @@ class CategorySyncOptionsBuilderTest {
         mockWarningCallBack = (exception, newDraft, old) -> {};
     categorySyncOptionsBuilderWithClientOnly.warningCallback(mockWarningCallBack);
 
-    final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilderWithClientOnly.build();
+    final CategorySyncOptions categorySyncOptions =
+        categorySyncOptionsBuilderWithClientOnly.build();
     assertThat(categorySyncOptions.getWarningCallback()).isNotNull();
   }
 
