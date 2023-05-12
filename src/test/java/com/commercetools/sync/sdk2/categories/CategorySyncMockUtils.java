@@ -4,12 +4,18 @@ import static com.commercetools.sync.sdk2.commons.MockUtils.getMockCustomFieldsD
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.commercetools.api.models.category.*;
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryDraft;
+import com.commercetools.api.models.category.CategoryDraftBuilder;
+import com.commercetools.api.models.category.CategoryReferenceBuilder;
+import com.commercetools.api.models.category.CategoryResourceIdentifierBuilder;
 import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
-import com.commercetools.api.models.type.FieldContainerBuilder;
-import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -229,8 +235,10 @@ public class CategorySyncMockUtils {
         .parent(CategoryResourceIdentifierBuilder.of().key(parentKey).build())
         .custom(
             CustomFieldsDraftBuilder.of()
-                .type(TypeResourceIdentifierBuilder.of().key(customTypeKey).build())
-                .fields(FieldContainerBuilder.of().values(customFields).build())
+                .type(
+                    typeResourceIdentifierBuilder ->
+                        typeResourceIdentifierBuilder.key(customTypeKey))
+                .fields(fieldContainerBuilder -> fieldContainerBuilder.values(customFields))
                 .build());
   }
 }
