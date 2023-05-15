@@ -1,6 +1,5 @@
 package com.commercetools.sync.sdk2.categories.utils;
 
-import static com.commercetools.sync.sdk2.categories.utils.CategoryReferenceResolutionUtils.mapToCategoryDrafts;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.readObjectFromResource;
 import static io.vrap.rmf.base.client.utils.json.JsonUtils.fromJsonString;
 import static java.util.Arrays.asList;
@@ -27,22 +26,23 @@ import org.junit.jupiter.api.Test;
 public class CategoryTransformUtilsTest {
 
   @Test
-  void transform_ShouldReplaceCategoryReferenceIdsWithKeys() {
+  void toCategoryDrafts_ShouldReplaceCategoryReferenceIdsWithKeys() {
     // preparation
     final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
     final ProjectApiRoot sourceClient = mock(ProjectApiRoot.class);
     final List<Category> categoryPage =
-        asList(
-            readObjectFromResource("category-key-1.json", Category.class),
-            readObjectFromResource("category-key-2.json", Category.class));
+        asList(readObjectFromResource("category-key-1.json", Category.class));
     final List<String> referenceIds =
         categoryPage.stream()
             .filter(category -> category.getCustom() != null)
             .map(category -> category.getCustom().getType().getId())
             .collect(Collectors.toList());
 
+    final String resolvedKey = "cat1";
     final String jsonStringCategories =
-        "{\"data\":{\"categories\":{\"results\":[{\"id\":\"53c4a8b4-754f-4b95-b6f2-3e1e70e3d0c3\",\"key\":\"cat1\"}]}}}";
+        "{\"data\":{\"categories\":{\"results\":[{\"id\":\"53c4a8b4-754f-4b95-b6f2-3e1e70e3d0c3\",\"key\":\""
+            + resolvedKey
+            + "\"}]}}}";
     final GraphQLResponse categoriesResult =
         fromJsonString(jsonStringCategories, GraphQLResponse.class);
 
@@ -58,16 +58,13 @@ public class CategoryTransformUtilsTest {
     // test
     final CompletionStage<List<CategoryDraft>> draftsFromPageStage =
         CategoryTransformUtils.toCategoryDrafts(sourceClient, referenceIdToKeyCache, categoryPage);
+    final List<CategoryDraft> categoryDrafts = draftsFromPageStage.toCompletableFuture().join();
 
     // assertions
-    final List<CategoryDraft> expectedResult =
-        mapToCategoryDrafts(categoryPage, referenceIdToKeyCache);
-    final List<String> referenceKeys =
-        expectedResult.stream()
-            .filter(category -> category.getCustom() != null)
-            .map(category -> category.getCustom().getType().getId())
-            .collect(Collectors.toList());
-    assertThat(referenceKeys).doesNotContainSequence(referenceIds);
-    assertThat(draftsFromPageStage).isCompletedWithValue(expectedResult);
+    assertThat(categoryDrafts).hasSize(1);
+    final CategoryDraft categoryDraft = categoryDrafts.get(0);
+
+    assertThat(categoryDraft.getCustom().getType().getKey()).isEqualTo(resolvedKey);
+    assertThat(categoryDraft.getParent().getKey()).isEqualTo(resolvedKey);
   }
 }
