@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.api.models.category.*;
 import com.commercetools.api.models.common.Reference;
-import com.commercetools.api.models.common.ResourceIdentifier;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -161,7 +160,7 @@ class SyncUtilsTest {
     final CategoryReference categoryReference =
         CategoryReferenceBuilder.of().id(categoryId).build();
 
-    final ResourceIdentifier resourceIdentifier =
+    final CategoryResourceIdentifier resourceIdentifier =
         getResourceIdentifierWithKey(
             categoryReference,
             referenceIdToKeyCache,
@@ -196,7 +195,7 @@ class SyncUtilsTest {
     final CategoryReference categoryReference =
         CategoryReferenceBuilder.of().id(categoryUuid).build();
 
-    final ResourceIdentifier resourceIdentifier =
+    final CategoryResourceIdentifier resourceIdentifier =
         getResourceIdentifierWithKey(
             categoryReference,
             referenceIdToKeyCache,
@@ -208,7 +207,7 @@ class SyncUtilsTest {
 
   @Test
   void getResourceIdentifierWithKey_WithNullReference_ShouldReturnNull() {
-    final ResourceIdentifier resourceIdentifier =
+    final CategoryResourceIdentifier resourceIdentifier =
         getResourceIdentifierWithKey(
             null,
             referenceIdToKeyCache,
