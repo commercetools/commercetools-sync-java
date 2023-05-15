@@ -80,12 +80,12 @@ class CategoryReferenceResolverTest {
   void resolveAssetsReferences_WithNullAssets_ShouldNotResolveAssets() {
     final CategoryDraftBuilder categoryDraftBuilder =
         getMockCategoryDraftBuilder(
-                Locale.ENGLISH,
-                "myDraft",
-                "key",
-                CACHED_CATEGORY_KEY,
-                "customTypeKey",
-                new HashMap<>());
+            Locale.ENGLISH,
+            "myDraft",
+            "key",
+            CACHED_CATEGORY_KEY,
+            "customTypeKey",
+            new HashMap<>());
 
     final CategoryDraftBuilder resolvedBuilder =
         referenceResolver
