@@ -1,6 +1,6 @@
 package com.commercetools.sync.sdk2.categories.utils;
 
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.readObjectFromResource;
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.readObjectFromResource;
 import static io.vrap.rmf.base.client.utils.json.JsonUtils.fromJsonString;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;

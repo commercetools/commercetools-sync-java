@@ -1,9 +1,9 @@
 package com.commercetools.sync.sdk2.products.utils.productupdateactionutils;
 
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.readObjectFromResource;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.CATEGORY_KEY_1_RESOURCE_PATH;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createProductFromJson;
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.readObjectFromResource;
 import static com.commercetools.sync.sdk2.products.utils.ProductUpdateActionUtils.buildAddToCategoryUpdateActions;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
