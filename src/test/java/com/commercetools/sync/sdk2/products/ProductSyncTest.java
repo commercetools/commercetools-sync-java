@@ -1,6 +1,7 @@
 package com.commercetools.sync.sdk2.products;
 
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.readObjectFromResource;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
 import static java.util.Collections.*;
 import static java.util.concurrent.CompletableFuture.completedFuture;

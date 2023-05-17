@@ -1,6 +1,6 @@
 package com.commercetools.sync.sdk2.products.utils.productvariantupdateactionutils.attributes;
 
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.readObjectFromResource;
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.readObjectFromResource;
 
 import com.commercetools.api.models.product.Attribute;
 

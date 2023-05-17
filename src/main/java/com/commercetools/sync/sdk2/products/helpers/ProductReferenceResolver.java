@@ -172,6 +172,9 @@ public final class ProductReferenceResolver
       @Nonnull final ProductDraftBuilder draftBuilder) {
     final List<ProductVariantDraft> productDraftVariants = draftBuilder.getVariants();
 
+    if (productDraftVariants == null) {
+      return CompletableFuture.completedFuture(draftBuilder);
+    }
     return mapValuesToFutureOfCompletedValues(
             productDraftVariants, variantReferenceResolver::resolveReferences, toList())
         .thenApply(draftBuilder::variants);
@@ -258,6 +261,10 @@ public final class ProductReferenceResolver
 
     final List<CategoryResourceIdentifier> categoryResourceIdentifiers =
         draftBuilder.getCategories();
+    if (categoryResourceIdentifiers == null) {
+      return CompletableFuture.completedFuture(draftBuilder);
+    }
+
     final Set<String> categoryKeys = new HashSet<>();
     final List<CategoryResourceIdentifier> directCategoryResourceIdentifiers = new ArrayList<>();
     for (CategoryResourceIdentifier categoryResourceIdentifier : categoryResourceIdentifiers) {

@@ -2,7 +2,7 @@ package com.commercetools.sync.integration.sdk2.commons.utils;
 
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.readObjectFromResource;
+import static com.commercetools.sync.integration.sdk2.commons.utils.TestUtils.readObjectFromResource;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;

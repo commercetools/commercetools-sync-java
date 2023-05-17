@@ -1,6 +1,6 @@
 package com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.withsetofnestedattributes;
 
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.readObjectFromResource;
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.readObjectFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 

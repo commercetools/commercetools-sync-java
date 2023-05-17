@@ -198,9 +198,9 @@ public abstract class BaseTransformServiceImpl {
       @Nonnull final List<ApiHttpResponse<GraphQLResponse>> graphQLResults,
       @Nonnull final GraphQlQueryResource requestType) {
     graphQLResults.stream()
-        .map(r -> r.getBody())
+        .map(ApiHttpResponse::getBody)
         .filter(Objects::nonNull)
-        .map(body -> body.getData())
+        .map(GraphQLResponse::getData)
         .filter(Objects::nonNull)
         .forEach(
             data -> {
