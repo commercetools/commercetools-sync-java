@@ -77,7 +77,7 @@ When syncing from a source commercetools project, you can use [`toCustomerDrafts
  method that transforms(resolves by querying and caching key-id pairs) and maps from a `Customer` to `CustomerDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
-// Build a CustomerQuery for fetching customers from a source CTP project without any references expanded for the sync:
+// Build ByProjectKeyCustomersGet for fetching customers from a source CTP project without any references expanded for the sync:
 final ByProjectKeyCustomersGet byProjectKeyCustomersGet = client.customers().get();
 
 // Query all customers (NOTE this is just for example, please adjust your logic)
