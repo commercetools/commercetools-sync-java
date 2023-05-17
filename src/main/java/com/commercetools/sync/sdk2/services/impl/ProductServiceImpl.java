@@ -79,6 +79,7 @@ public final class ProductServiceImpl
                 .getCtpClient()
                 .productProjections()
                 .get()
+                .withStaged(true)
                 .withWhere("key in :keys")
                 .withPredicateVar("keys", keysNotCached));
   }

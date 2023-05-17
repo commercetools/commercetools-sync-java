@@ -26,6 +26,7 @@ import com.commercetools.api.models.product.ProductDraftBuilder;
 import com.commercetools.api.models.product.ProductProjection;
 import com.commercetools.api.models.product.ProductRemoveImageAction;
 import com.commercetools.api.models.product.ProductRemoveVariantAction;
+import com.commercetools.api.models.product.ProductRemoveVariantActionBuilder;
 import com.commercetools.api.models.product.ProductSetAttributeAction;
 import com.commercetools.api.models.product.ProductSetAttributeInAllVariantsAction;
 import com.commercetools.api.models.product.ProductSetSkuActionBuilder;
@@ -54,6 +55,8 @@ class ProductUpdateActionUtilsTest {
   private static final String OLD_PROD_WITHOUT_MV_KEY_SKU =
       RES_ROOT + "productOld_noMasterVariantKeySku.json";
 
+  private static final String OLD_PROD_NO_ATTRS = RES_ROOT + "productOld_noAttributes.json";
+
   // this product's variants don't contain old master variant
   private static final String NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER =
       RES_ROOT + "productDraftNew_changeRemoveMasterVariant.json";
@@ -61,6 +64,9 @@ class ProductUpdateActionUtilsTest {
   // this product's variants contain only attribute update
   private static final String NEW_PROD_DRAFT_WITH_MATCHING_VARIANTS_WITH_UPDATED_ATTR_VALUES =
       RES_ROOT + "productDraftNew_matchingVariants.json";
+
+  private static final String NEW_PROD_DRAFT_MATCHING_OLD_PRODUCT_NO_ATTRS =
+      RES_ROOT + "productDraftNew_matchingProductOld_noAttributes.json";
 
   // this product's variants contain old master variant, but not as master any more
   private static final String NEW_PROD_DRAFT_WITH_VARIANTS_MOVE_MASTER =
@@ -419,6 +425,95 @@ class ProductUpdateActionUtilsTest {
   void buildVariantsUpdateActions_withEmptySku_ShouldNotBuildActionAndTriggerCallback() {
     assertChangeMasterVariantEmptyErrorCatcher(
         NEW_PROD_DRAFT_WITHOUT_MV_SKU, BLANK_NEW_MASTER_VARIANT_SKU);
+  }
+
+  @Test
+  void buildVariantsUpdateActions_withNullNewVariants_ShouldRemoveOldVariants() {
+    final ProductProjection productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+    final ProductDraft productDraftNew =
+        createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
+
+    final ProductSyncOptions productSyncOptions =
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
+            .syncFilter(SyncFilter.of())
+            .build();
+
+    productDraftNew.setVariants((List<ProductVariantDraft>) null);
+
+    final List<ProductUpdateAction> updateActions =
+        buildVariantsUpdateActions(
+            productOld, productDraftNew, productSyncOptions, Collections.emptyMap());
+
+    final List<ProductRemoveVariantAction> productRemoveVariantActions =
+        productOld.getVariants().stream()
+            .map(
+                productVariant ->
+                    ProductRemoveVariantActionBuilder.of()
+                        .id(productVariant.getId())
+                        .staged(true)
+                        .build())
+            .collect(toList());
+
+    assertThat(updateActions).containsAll(productRemoveVariantActions);
+  }
+
+  @Test
+  void buildVariantsUpdateActions_withNewVariantsArrayContainingNulls_ShouldRemoveOldVariants() {
+    final ProductProjection productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+    final ProductDraft productDraftNew =
+        createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
+
+    final ProductSyncOptions productSyncOptions =
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
+            .syncFilter(SyncFilter.of())
+            .build();
+
+    productDraftNew.setVariants((ProductVariantDraft) null);
+
+    final List<ProductUpdateAction> updateActions =
+        buildVariantsUpdateActions(
+            productOld, productDraftNew, productSyncOptions, Collections.emptyMap());
+
+    final List<ProductRemoveVariantAction> productRemoveVariantActions =
+        productOld.getVariants().stream()
+            .map(
+                productVariant ->
+                    ProductRemoveVariantActionBuilder.of()
+                        .id(productVariant.getId())
+                        .staged(true)
+                        .build())
+            .collect(toList());
+
+    assertThat(updateActions).containsAll(productRemoveVariantActions);
+  }
+
+  @Test
+  void
+      buildVariantsUpdateActions_withNewVariantsArrayContainingNullsAndOldVariants_ShouldCallErrorCallback() {
+    final ProductProjection productOld = createProductFromJson(OLD_PROD_NO_ATTRS);
+    final ProductDraft productDraftNew =
+        createProductDraftFromJson(NEW_PROD_DRAFT_MATCHING_OLD_PRODUCT_NO_ATTRS);
+    productDraftNew.getVariants().add(null);
+
+    final List<String> errorsCatcher = new ArrayList<>();
+    final ProductSyncOptions productSyncOptions =
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
+            .errorCallback(
+                (exception, oldResource, newResource, updateActions) ->
+                    errorsCatcher.add(exception.getMessage()))
+            .syncFilter(SyncFilter.of())
+            .build();
+
+    final List<ProductUpdateAction> updateActions =
+        buildVariantsUpdateActions(
+            productOld, productDraftNew, productSyncOptions, Collections.emptyMap());
+
+    assertThat(updateActions).isEmpty();
+    assertThat(errorsCatcher).hasSize(1);
+    assertThat(errorsCatcher.get(0))
+        .containsIgnoringCase("failed")
+        .contains(productOld.getKey())
+        .contains(NULL_VARIANT);
   }
 
   private void assertChangeMasterVariantEmptyErrorCatcher(
