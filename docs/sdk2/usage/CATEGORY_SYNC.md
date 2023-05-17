@@ -398,7 +398,7 @@ any HTTP client module. The default one is `commercetools-http-client`.
 For client creation use [ClientConfigurationUtils](#todo) which apply the best practices for `ProjectApiRoot` creation.
 If you have custom requirements for the client creation make sure to replace `SphereClientFactory` with `ApiRootBuilder` as described in this [Migration Document](https://docs.commercetools.com/sdk/java-sdk-migrate#client-configuration-and-creation).
 
-### Signature of ProductSyncOptions
+### Signature of CategorySyncOptions
 
 As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a `ProjectApiRoot` as first argument. The callback functions are signed with `CategoryDraft`, `CategoryProjection` and `CategoryUpdateAction` from `package com.commercetools.api.models.category.*`
 
@@ -423,24 +423,24 @@ As models and update actions have changed in the JVM-SDK-V2 the signature of Syn
 
 ### Build CategoryDraft (syncing from external project)
 
-The product-sync expects a list of `CategoryDraft`s to process. If you use java-sync-library to sync your categories from any external system into a commercetools platform project you have to convert your data into CTP compatible `CategoryDraft` type. This was done in previous version using `DraftBuilder`s.
+The category-sync expects a list of `CategoryDraft`s to process. If you use java-sync-library to sync your categories from any external system into a commercetools platform project you have to convert your data into CTP compatible `CategoryDraft` type. This was done in previous version using `DraftBuilder`s.
 The V2 SDK do not have inheritance for `DraftBuilder` classes but the differences are minor and you can replace it easily. Here's an example:
 
 ```java
 // CategoryDraftBuilder in v1 takes parameters 'name' and 'slug'
-final CategoryDraft productDraft =
+final CategoryDraft categoryDraft =
               CategoryDraftBuilder
                       .of(ofEnglish("name"), ofEnglish("slug"))
-                      .key("product-key")
+                      .key("category-key")
                       .build();
 
 // CategoryDraftBuilder in v2
-final CategoryDraft productDraft =
+final CategoryDraft categoryDraft =
               CategoryDraftBuilder
                       .of()
                       .name(LocalizedString.ofEnglish("name"))
                       .slug(LocalizedString.ofEnglish("slug"))
-                      .key("product-key")
+                      .key("category-key")
                       .build();
 ```
 For more information, see the [Guide to replace DraftBuilders](https://docs.commercetools.com/sdk/java-sdk-migrate#using-draftbuilders).
@@ -457,7 +457,7 @@ final CategoryQuery query = CategoryQuery.of();
 
 final PagedQueryResult<Category> pagedQueryResult = sphereClient.executeBlocking(query);
 
-// SDK v2: Create and execute query to fetch all staged product projections in one line
+// SDK v2: Create and execute query to fetch all categories in one line
 final CategoryPagedQueryResponse result = apiRoot.categories().get().executeBlocking().getBody();
 ```
 [Read more](https://docs.commercetools.com/sdk/java-sdk-migrate#query-resources) about querying resources.
