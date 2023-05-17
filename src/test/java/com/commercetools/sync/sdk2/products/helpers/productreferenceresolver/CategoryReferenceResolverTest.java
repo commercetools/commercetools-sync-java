@@ -56,7 +56,7 @@ class CategoryReferenceResolverTest {
     final List<Category> categories =
         IntStream.range(0, nCategories)
             .mapToObj(i -> i + "")
-            .map(key -> getMockCategory(key, key))
+            .map(key -> getMockCategory(key, key, "name" + key, "slug" + key, Locale.ENGLISH))
             .collect(Collectors.toList());
 
     final CategoryService mockCategoryService =
@@ -109,7 +109,7 @@ class CategoryReferenceResolverTest {
     final List<Category> categories =
         IntStream.range(0, nCategories)
             .mapToObj(i -> i + "")
-            .map(key -> getMockCategory(key, key))
+            .map(key -> getMockCategory(key, key, "name" + key, "slug" + key, Locale.ENGLISH))
             .collect(Collectors.toList());
     final CategoryService mockCategoryService =
         mockCategoryService(new HashSet<>(categories), null);
@@ -153,7 +153,7 @@ class CategoryReferenceResolverTest {
     final List<Category> categories =
         IntStream.range(0, nCategories)
             .mapToObj(i -> i + "")
-            .map(key -> getMockCategory(key, key))
+            .map(key -> getMockCategory(key, key, "name" + key, "slug" + key, Locale.ENGLISH))
             .collect(Collectors.toList());
     final CategoryService mockCategoryService =
         mockCategoryService(new HashSet<>(categories), null);
@@ -326,7 +326,8 @@ class CategoryReferenceResolverTest {
 
   @Test
   void resolveCategoryReferences_WithExceptionCategoryFetch_ShouldNotResolveReference() {
-    final Category category = getMockCategory("categoryKey", "categoryKey");
+    final Category category =
+        getMockCategory("categoryKey", "categoryKey", "name", "slug", Locale.ENGLISH);
     final List<Category> categories = Collections.singletonList(category);
 
     final List<CategoryResourceIdentifier> categoryResourceIdentifiers =

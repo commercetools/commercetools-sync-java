@@ -3,7 +3,7 @@ package com.commercetools.sync.sdk2.categories.utils.categoryupdateactionutils;
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static com.commercetools.sync.sdk2.categories.utils.CategoryUpdateActionUtils.buildAssetsUpdateActions;
 import static com.commercetools.sync.sdk2.commons.utils.AssetsUpdateActionUtils.ASSET_KEY_NOT_SET;
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.readObjectFromResource;
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.readObjectFromResource;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;

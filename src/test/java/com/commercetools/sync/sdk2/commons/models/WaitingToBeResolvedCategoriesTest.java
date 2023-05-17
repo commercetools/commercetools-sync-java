@@ -1,16 +1,15 @@
 package com.commercetools.sync.sdk2.commons.models;
 
-import com.commercetools.api.models.category.CategoryDraft;
-import org.junit.jupiter.api.Test;
-
-import java.util.HashSet;
-
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import com.commercetools.api.models.category.CategoryDraft;
+import java.util.HashSet;
+import org.junit.jupiter.api.Test;
 
 class WaitingToBeResolvedCategoriesTest {
 

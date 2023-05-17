@@ -41,7 +41,7 @@ public final class AssertionsForStatistics {
    */
   @Nonnull
   public static CategorySyncStatisticsAssert assertThat(
-          @Nullable final CategorySyncStatistics statistics) {
+      @Nullable final CategorySyncStatistics statistics) {
     return new CategorySyncStatisticsAssert(statistics);
   }
 }

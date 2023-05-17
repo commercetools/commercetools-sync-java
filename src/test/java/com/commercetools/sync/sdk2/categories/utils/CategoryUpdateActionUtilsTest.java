@@ -2,8 +2,8 @@ package com.commercetools.sync.sdk2.categories.utils;
 
 import static com.commercetools.sync.sdk2.categories.CategorySyncMockUtils.getMockCategory;
 import static com.commercetools.sync.sdk2.categories.utils.CategoryUpdateActionUtils.*;
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.readObjectFromResource;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.CATEGORY_KEY_1_RESOURCE_PATH;
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.readObjectFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

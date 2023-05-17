@@ -1,10 +1,9 @@
 package com.commercetools.sync.sdk2.commons.models;
 
 import com.commercetools.api.models.category.CategoryDraft;
-
-import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nonnull;
 
 public final class WaitingToBeResolvedCategories implements WaitingToBeResolved {
   private CategoryDraft categoryDraft;

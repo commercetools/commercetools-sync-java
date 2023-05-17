@@ -1,44 +1,15 @@
 package com.commercetools.sync.sdk2.categories;
 
-import com.commercetools.api.client.ByProjectKeyGraphqlPost;
-import com.commercetools.api.models.category.*;
-import com.commercetools.api.models.graph_ql.GraphQLRequest;
-import com.commercetools.api.models.graph_ql.GraphQLResponse;
-import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
-import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
-import com.commercetools.sync.commons.models.ResourceKeyId;
-import com.commercetools.sync.sdk2.categories.helpers.CategorySyncStatistics;
-import com.commercetools.sync.sdk2.commons.exceptions.ReferenceResolutionException;
-import com.commercetools.sync.sdk2.commons.models.WaitingToBeResolvedCategories;
-import com.commercetools.sync.sdk2.services.*;
-import com.commercetools.sync.sdk2.services.impl.CategoryServiceImpl;
-import com.commercetools.api.client.ProjectApiRoot;
-import com.commercetools.api.models.common.LocalizedString;
-import io.vrap.rmf.base.client.ApiHttpException;
-import io.vrap.rmf.base.client.ApiHttpHeaders;
-import io.vrap.rmf.base.client.ApiHttpResponse;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import javax.annotation.Nonnull;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import static com.commercetools.sync.sdk2.categories.CategorySyncMockUtils.getMockCategory;
+import static com.commercetools.sync.products.ProductSyncMockUtils.CATEGORY_KEY_1_RESOURCE_PATH;
 import static com.commercetools.sync.sdk2.categories.CategorySyncMockUtils.*;
+import static com.commercetools.sync.sdk2.categories.CategorySyncMockUtils.getMockCategory;
 import static com.commercetools.sync.sdk2.categories.helpers.CategoryBatchValidator.CATEGORY_DRAFT_KEY_NOT_SET;
 import static com.commercetools.sync.sdk2.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.sdk2.commons.MockUtils.mockCategoryService;
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.sdk2.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
-import static com.commercetools.sync.products.ProductSyncMockUtils.CATEGORY_KEY_1_RESOURCE_PATH;
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.mockGraphQLResponse;
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.readObjectFromResource;
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.mockGraphQLResponse;
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.readObjectFromResource;
 import static java.lang.String.format;
 import static java.util.Collections.*;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -50,6 +21,33 @@ import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.*;
+
+import com.commercetools.api.client.ByProjectKeyGraphqlPost;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.category.*;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.graph_ql.GraphQLRequest;
+import com.commercetools.api.models.graph_ql.GraphQLResponse;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
+import com.commercetools.sync.sdk2.categories.helpers.CategorySyncStatistics;
+import com.commercetools.sync.sdk2.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.sdk2.commons.models.WaitingToBeResolvedCategories;
+import com.commercetools.sync.sdk2.services.*;
+import com.commercetools.sync.sdk2.services.impl.CategoryServiceImpl;
+import io.vrap.rmf.base.client.ApiHttpException;
+import io.vrap.rmf.base.client.ApiHttpHeaders;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import javax.annotation.Nonnull;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 @SuppressWarnings("unchecked")
 class CategorySyncTest {
@@ -150,9 +148,9 @@ class CategorySyncTest {
             getMockTypeService(),
             mockCategoryService,
             mockUnresolvedReferencesService);
-    final CategoryDraft categoryDraft = getMockCategoryDraft(Locale.ENGLISH, "noKeyDraft", "no-key-id-draft", null);
-    final List<CategoryDraft> categoryDrafts =
-        singletonList(categoryDraft);
+    final CategoryDraft categoryDraft =
+        getMockCategoryDraft(Locale.ENGLISH, "noKeyDraft", "no-key-id-draft", null);
+    final List<CategoryDraft> categoryDrafts = singletonList(categoryDraft);
 
     final CategorySyncStatistics syncStatistics =
         mockCategorySync.sync(categoryDrafts).toCompletableFuture().join();
@@ -167,8 +165,11 @@ class CategorySyncTest {
 
   @Test
   void sync_WithNoExistingCategory_ShouldCreateCategory() {
-    final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "newKey", "name", "slug", Locale.ENGLISH);
-    final Category mockParentCategory = getMockCategory(UUID.randomUUID().toString(), "parentKey", "parentName", "parentSlug", Locale.ENGLISH);
+    final Category mockCategory =
+        getMockCategory(UUID.randomUUID().toString(), "newKey", "name", "slug", Locale.ENGLISH);
+    final Category mockParentCategory =
+        getMockCategory(
+            UUID.randomUUID().toString(), "parentKey", "parentName", "parentSlug", Locale.ENGLISH);
     final CategoryService mockCategoryService =
         mockCategoryService(singleton(mockParentCategory), mockCategory);
     when(mockCategoryService.fetchCachedCategoryId(Mockito.eq("parentKey")))
@@ -194,8 +195,11 @@ class CategorySyncTest {
 
   @Test
   void sync_WithErrorOnFetchingUnresolvableCategory_ShouldNotCreateCategory() {
-    final Category mockRootCategory = getMockCategory(UUID.randomUUID().toString(), "root", "name", "slug", Locale.ENGLISH);
-    final Category mockParentCategory = getMockCategory(UUID.randomUUID().toString(), "parentKey", "parentName", "parentSlug", Locale.ENGLISH);
+    final Category mockRootCategory =
+        getMockCategory(UUID.randomUUID().toString(), "root", "name", "slug", Locale.ENGLISH);
+    final Category mockParentCategory =
+        getMockCategory(
+            UUID.randomUUID().toString(), "parentKey", "parentName", "parentSlug", Locale.ENGLISH);
     final CategoryService mockCategoryService =
         mockCategoryService(Collections.singleton(mockRootCategory), mockParentCategory);
 
@@ -233,8 +237,11 @@ class CategorySyncTest {
 
   @Test
   void sync_WithExistingCategory_ShouldUpdateCategory() {
-    final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key", "name", "slug", Locale.ENGLISH);
-    final Category mockParentCategory = getMockCategory(UUID.randomUUID().toString(), "parentKey", "parentName", "parentSlug", Locale.ENGLISH);
+    final Category mockCategory =
+        getMockCategory(UUID.randomUUID().toString(), "key", "name", "slug", Locale.ENGLISH);
+    final Category mockParentCategory =
+        getMockCategory(
+            UUID.randomUUID().toString(), "parentKey", "parentName", "parentSlug", Locale.ENGLISH);
     HashSet<Category> existingCategories = new HashSet<>();
     existingCategories.add(mockCategory);
     existingCategories.add(mockParentCategory);
@@ -267,7 +274,8 @@ class CategorySyncTest {
   @Test
   void sync_WithIdenticalExistingCategory_ShouldNotUpdateCategory() {
     final String categoryKey = "key";
-    final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), categoryKey, "name", "slug", Locale.ENGLISH);
+    final Category mockCategory =
+        getMockCategory(UUID.randomUUID().toString(), categoryKey, "name", "slug", Locale.ENGLISH);
     final CategoryDraft identicalCategoryDraft = getCategoryDraftFromCategory(mockCategory);
     final CategoryService mockCategoryService =
         mockCategoryService(singleton(mockCategory), null, mockCategory);
@@ -292,7 +300,8 @@ class CategorySyncTest {
 
   @Test
   void sync_WithExistingCategoryButWithNullParentReference_ShouldFailSync() {
-    final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key", "name", "slug", Locale.ENGLISH);
+    final Category mockCategory =
+        getMockCategory(UUID.randomUUID().toString(), "key", "name", "slug", Locale.ENGLISH);
     final CategoryService mockCategoryService =
         mockCategoryService(singleton(mockCategory), null, mockCategory);
     final CategorySync categorySync =
@@ -317,7 +326,8 @@ class CategorySyncTest {
 
   @Test
   void sync_WithExistingCategoryButWithNoCustomType_ShouldSync() {
-    final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key", "name", "slug", Locale.ENGLISH);
+    final Category mockCategory =
+        getMockCategory(UUID.randomUUID().toString(), "key", "name", "slug", Locale.ENGLISH);
     final CategoryService mockCategoryService =
         mockCategoryService(singleton(mockCategory), null, mockCategory);
     when(mockCategoryService.fetchCategory(Mockito.eq("key")))
@@ -348,7 +358,8 @@ class CategorySyncTest {
 
   @Test
   void sync_WithExistingCategoryButWithEmptyParentReference_ShouldFailSync() {
-    final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key", "name", "slug", Locale.ENGLISH);
+    final Category mockCategory =
+        getMockCategory(UUID.randomUUID().toString(), "key", "name", "slug", Locale.ENGLISH);
     final CategoryService mockCategoryService =
         mockCategoryService(singleton(mockCategory), null, mockCategory);
     when(mockCategoryService.fetchCategory(Mockito.eq("key")))
@@ -375,8 +386,11 @@ class CategorySyncTest {
 
   @Test
   void sync_WithExistingCategoryButWithEmptyCustomTypeReference_ShouldFailSync() {
-    final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key", "name", "slug", Locale.ENGLISH);
-    final Category mockParentCategory = getMockCategory(UUID.randomUUID().toString(), "parentKey", "parentName", "parentSlug", Locale.ENGLISH);
+    final Category mockCategory =
+        getMockCategory(UUID.randomUUID().toString(), "key", "name", "slug", Locale.ENGLISH);
+    final Category mockParentCategory =
+        getMockCategory(
+            UUID.randomUUID().toString(), "parentKey", "parentName", "parentSlug", Locale.ENGLISH);
     Set<Category> existingCategories = new HashSet<>();
     existingCategories.add(mockCategory);
     existingCategories.add(mockParentCategory);
@@ -438,11 +452,11 @@ class CategorySyncTest {
     when(category.getParent()).thenReturn(CategoryReferenceBuilder.of().id(parentId).build());
 
     final CategoryDraft categoryDraft =
-            CategoryDraftBuilder.of()
-                    .name(LocalizedString.of(Locale.ENGLISH, "name"))
-                    .slug(LocalizedString.of(Locale.ENGLISH, "slug"))
-                    .parent(CategoryResourceIdentifierBuilder.of().id(parentId).key(parentKey).build())
-                    .build();
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "name"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "slug"))
+            .parent(CategoryResourceIdentifierBuilder.of().id(parentId).key(parentKey).build())
+            .build();
 
     // checking with ids (on draft reference id will be resolved, but in test it's given)
     final boolean doesRequire =
@@ -456,10 +470,10 @@ class CategorySyncTest {
     when(category.getParent()).thenReturn(null);
 
     final CategoryDraft categoryDraft =
-            CategoryDraftBuilder.of()
-                    .name(LocalizedString.of(Locale.ENGLISH, "name"))
-                    .slug(LocalizedString.of(Locale.ENGLISH, "slug"))
-                    .build();
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "name"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "slug"))
+            .build();
     final boolean doesRequire =
         CategorySync.requiresChangeParentUpdateAction(category, categoryDraft);
     assertThat(doesRequire).isFalse();
@@ -481,7 +495,10 @@ class CategorySyncTest {
     final int numberOfCategoryDrafts = 160;
     final List<Category> mockedCreatedCategories =
         IntStream.range(0, numberOfCategoryDrafts)
-            .mapToObj(i -> getMockCategory(UUID.randomUUID().toString(), "key" + i, "name", "slug", Locale.ENGLISH))
+            .mapToObj(
+                i ->
+                    getMockCategory(
+                        UUID.randomUUID().toString(), "key" + i, "name", "slug", Locale.ENGLISH))
             .collect(Collectors.toList());
     final List<CategoryDraft> categoryDrafts =
         mockedCreatedCategories.stream()
@@ -518,7 +535,10 @@ class CategorySyncTest {
     final int numberOfCategoryDrafts = 160;
     final List<Category> mockedCreatedCategories =
         IntStream.range(0, numberOfCategoryDrafts)
-            .mapToObj(i -> getMockCategory(UUID.randomUUID().toString(), "key" + i, "name", "slug", Locale.ENGLISH))
+            .mapToObj(
+                i ->
+                    getMockCategory(
+                        UUID.randomUUID().toString(), "key" + i, "name", "slug", Locale.ENGLISH))
             .collect(Collectors.toList());
     final List<CategoryDraft> categoryDrafts =
         mockedCreatedCategories.stream()
@@ -563,11 +583,11 @@ class CategorySyncTest {
     final ByProjectKeyGraphqlPost byProjectKeyGraphqlPost = mock();
     when(mockClient.graphql().post(any(GraphQLRequest.class))).thenReturn(byProjectKeyGraphqlPost);
     when(byProjectKeyGraphqlPost.execute())
-            .thenReturn(
-                    supplyAsync(
-                            () -> {
-                              throw new ApiHttpException(500, "", new ApiHttpHeaders());
-                            }));
+        .thenReturn(
+            supplyAsync(
+                () -> {
+                  throw new ApiHttpException(500, "", new ApiHttpHeaders());
+                }));
 
     final CategorySyncOptions syncOptions =
         CategorySyncOptionsBuilder.of(mockClient)
@@ -610,20 +630,23 @@ class CategorySyncTest {
   }
 
   @Test
-  void sync_WithFailOnFetchingCategories_ShouldTriggerErrorCallbackAndReturnProperStats() throws Exception {
+  void sync_WithFailOnFetchingCategories_ShouldTriggerErrorCallbackAndReturnProperStats()
+      throws Exception {
     // preparation
     final ProjectApiRoot mockClient = mock(ProjectApiRoot.class);
 
     final String categoryKey = "key";
-    final String categoryJsonResponse = "{ \"categories\": {\"results\":[{\"id\":\"foo\",\"key\":\"key\"}"
-            + "]}}";;
-    final ApiHttpResponse<GraphQLResponse> graphQLResponseApiHttpResponse = mockGraphQLResponse(categoryJsonResponse);
+    final String categoryJsonResponse =
+        "{ \"categories\": {\"results\":[{\"id\":\"foo\",\"key\":\"key\"}" + "]}}";
+    ;
+    final ApiHttpResponse<GraphQLResponse> graphQLResponseApiHttpResponse =
+        mockGraphQLResponse(categoryJsonResponse);
 
     when(mockClient.graphql()).thenReturn(mock());
     final ByProjectKeyGraphqlPost byProjectKeyGraphqlPost = mock();
     when(mockClient.graphql().post(any(GraphQLRequest.class))).thenReturn(byProjectKeyGraphqlPost);
     when(byProjectKeyGraphqlPost.execute())
-            .thenReturn(CompletableFuture.completedFuture(graphQLResponseApiHttpResponse));
+        .thenReturn(CompletableFuture.completedFuture(graphQLResponseApiHttpResponse));
 
     final CategorySyncOptions syncOptions =
         CategorySyncOptionsBuilder.of(mockClient)
@@ -634,14 +657,15 @@ class CategorySyncTest {
                 })
             .build();
 
-    final CategoryService categoryServiceSpy = mock(CategoryService.class);
+    final CategoryService categoryServiceSpy = spy(new CategoryServiceImpl(syncOptions));
 
-    when(categoryServiceSpy.fetchCategory(Mockito.eq(categoryKey)))
-            .thenReturn(
-                    supplyAsync(
-                            () -> { throw new RuntimeException("Error when fetching category"); }
-                    )
-            );
+    doReturn(
+            supplyAsync(
+                () -> {
+                  throw new RuntimeException("Error when fetching category");
+                }))
+        .when(categoryServiceSpy)
+        .fetchMatchingCategoriesByKeys(anySet());
 
     final CategorySync mockCategorySync =
         new CategorySync(
@@ -672,7 +696,7 @@ class CategorySyncTest {
     assertThat(errorCallBackExceptions)
         .hasSize(1)
         .singleElement(as(THROWABLE))
-        .hasCauseExactlyInstanceOf(ApiHttpException.class);
+        .hasCauseExactlyInstanceOf(RuntimeException.class);
   }
 
   @Test

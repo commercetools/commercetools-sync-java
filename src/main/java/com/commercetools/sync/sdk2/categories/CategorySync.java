@@ -1,5 +1,17 @@
 package com.commercetools.sync.sdk2.categories;
 
+import static com.commercetools.sync.sdk2.categories.utils.CategorySyncUtils.buildActions;
+import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.areResourceIdentifiersEqual;
+import static com.commercetools.sync.sdk2.commons.utils.SyncUtils.batchElements;
+import static com.commercetools.sync.sdk2.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY;
+import static java.lang.String.format;
+import static java.util.concurrent.CompletableFuture.allOf;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
+
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryDraft;
 import com.commercetools.api.models.category.CategoryUpdateAction;
 import com.commercetools.api.models.common.ResourceIdentifier;
 import com.commercetools.sync.sdk2.categories.helpers.CategoryBatchValidator;
@@ -13,30 +25,22 @@ import com.commercetools.sync.sdk2.services.UnresolvedReferencesService;
 import com.commercetools.sync.sdk2.services.impl.CategoryServiceImpl;
 import com.commercetools.sync.sdk2.services.impl.TypeServiceImpl;
 import com.commercetools.sync.sdk2.services.impl.UnresolvedReferencesServiceImpl;
-import com.commercetools.api.models.category.Category;
-import com.commercetools.api.models.category.CategoryDraft;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
-import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
-import static com.commercetools.sync.sdk2.categories.utils.CategorySyncUtils.buildActions;
-import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.areResourceIdentifiersEqual;
-import static com.commercetools.sync.sdk2.commons.utils.SyncUtils.batchElements;
-import static com.commercetools.sync.sdk2.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY;
-import static java.lang.String.format;
-import static java.util.concurrent.CompletableFuture.allOf;
-import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toMap;
+import javax.annotation.Nonnull;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public class CategorySync
-    extends BaseSync<Category, CategoryDraft, CategoryUpdateAction, CategorySyncStatistics, CategorySyncOptions> {
+    extends BaseSync<
+        Category,
+        CategoryDraft,
+        CategoryUpdateAction,
+        CategorySyncStatistics,
+        CategorySyncOptions> {
 
   private static final String FAILED_TO_FETCH =
       "Failed to fetch existing categories with keys: '%s'. Reason: %s";
@@ -321,14 +325,14 @@ public class CategorySync
 
   /**
    * Compares the parent references of a {@link Category} and a {@link CategoryDraft} to check
-   * whether a {@link com.commercetools.api.models.category.CategoryChangeParentAction} update action is
-   * required to sync the draft to the category or not
+   * whether a {@link com.commercetools.api.models.category.CategoryChangeParentAction} update
+   * action is required to sync the draft to the category or not
    *
    * @param category the old category to sync to.
    * @param categoryDraft the new category draft to sync.
    * @return true or false whether a {@link
-   *     com.commercetools.api.models.category.CategoryChangeParentAction} is needed to sync the draft
-   *     to the category.
+   *     com.commercetools.api.models.category.CategoryChangeParentAction} is needed to sync the
+   *     draft to the category.
    */
   static boolean requiresChangeParentUpdateAction(
       @Nonnull final Category category, @Nonnull final CategoryDraft categoryDraft) {
@@ -338,8 +342,7 @@ public class CategorySync
   private CompletionStage<Void> updateCategory(
       @Nonnull final Category oldCategory,
       @Nonnull final CategoryDraft newCategory,
-      @Nonnull final List<CategoryUpdateAction
-              > updateActions) {
+      @Nonnull final List<CategoryUpdateAction> updateActions) {
     final String categoryKey = oldCategory.getKey();
     return categoryService
         .updateCategory(oldCategory, updateActions)

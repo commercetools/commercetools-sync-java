@@ -71,7 +71,12 @@ public class CategorySyncMockUtils {
     return category;
   }
 
-  public static Category getMockCategory(@Nonnull final String id, @Nonnull final String key, @Nonnull String name, @Nonnull String slug, @Nonnull Locale locale) {
+  public static Category getMockCategory(
+      @Nonnull final String id,
+      @Nonnull final String key,
+      @Nonnull String name,
+      @Nonnull String slug,
+      @Nonnull Locale locale) {
     final Category category = mock(Category.class);
     when(category.getKey()).thenReturn(key);
     when(category.getId()).thenReturn(id);
@@ -244,18 +249,17 @@ public class CategorySyncMockUtils {
                 .build());
   }
 
-  public static CategoryDraft getCategoryDraftFromCategory(
-          @Nonnull final Category category) {
+  public static CategoryDraft getCategoryDraftFromCategory(@Nonnull final Category category) {
     return CategoryDraftBuilder.of()
-            .key(category.getKey())
-            .name(category.getName())
-            .slug(category.getSlug())
-            .externalId(category.getExternalId())
-            .description(category.getDescription())
-            .metaDescription(category.getMetaDescription())
-            .metaTitle(category.getMetaTitle())
-            .metaKeywords(category.getMetaKeywords())
-            .orderHint(category.getOrderHint())
-            .build();
+        .key(category.getKey())
+        .name(category.getName())
+        .slug(category.getSlug())
+        .externalId(category.getExternalId())
+        .description(category.getDescription())
+        .metaDescription(category.getMetaDescription())
+        .metaTitle(category.getMetaTitle())
+        .metaKeywords(category.getMetaKeywords())
+        .orderHint(category.getOrderHint())
+        .build();
   }
 }
