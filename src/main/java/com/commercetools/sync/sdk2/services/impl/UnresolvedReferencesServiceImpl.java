@@ -13,6 +13,8 @@ import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.sdk2.commons.utils.ChunkUtils;
 import com.commercetools.sync.sdk2.services.UnresolvedReferencesService;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +30,9 @@ public class UnresolvedReferencesServiceImpl<WaitingToBeResolvedT extends Waitin
     implements UnresolvedReferencesService<WaitingToBeResolvedT> {
 
   private final BaseSyncOptions syncOptions;
+
+  private static final ObjectMapper OBJECT_MAPPER =
+      new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
   private static final String SAVE_FAILED =
       "Failed to save CustomObject with key: '%s' (hash of product key: '%s').";
@@ -85,16 +90,15 @@ public class UnresolvedReferencesServiceImpl<WaitingToBeResolvedT extends Waitin
 
     return ChunkUtils.executeChunks(chunkedRequests)
         .thenApply(
-            apiHttpResponses -> {
-              return apiHttpResponses.stream()
-                  .map(apiHttpResponse -> apiHttpResponse.getBody().getResults())
-                  .flatMap(List::stream)
-                  .collect(toList());
-            })
+            apiHttpResponses ->
+                apiHttpResponses.stream()
+                    .map(apiHttpResponse -> apiHttpResponse.getBody().getResults())
+                    .flatMap(List::stream)
+                    .collect(toList()))
         .thenApply(
             customObjects ->
                 customObjects.stream()
-                    .map(customObject -> (WaitingToBeResolvedT) customObject.getValue())
+                    .map(customObject -> OBJECT_MAPPER.convertValue(customObject.getValue(), clazz))
                     .collect(toSet()));
   }
 
@@ -120,7 +124,7 @@ public class UnresolvedReferencesServiceImpl<WaitingToBeResolvedT extends Waitin
         .handle(
             (resource, exception) -> {
               if (exception == null) {
-                return Optional.of((WaitingToBeResolvedT) resource.getValue());
+                return Optional.of(OBJECT_MAPPER.convertValue(resource.getValue(), clazz));
               } else {
                 syncOptions.applyErrorCallback(
                     new SyncException(
@@ -141,13 +145,14 @@ public class UnresolvedReferencesServiceImpl<WaitingToBeResolvedT extends Waitin
     return syncOptions
         .getCtpClient()
         .customObjects()
-        .withContainerAndKey(containerKey, key)
+        .withContainerAndKey(containerKey, hash(key))
         .delete()
         .execute()
         .handle(
             (resource, exception) -> {
               if (exception == null) {
-                return Optional.of((WaitingToBeResolvedT) resource.getBody().getValue());
+                return Optional.of(
+                    OBJECT_MAPPER.convertValue(resource.getBody().getValue(), clazz));
               } else {
                 syncOptions.applyErrorCallback(
                     new SyncException(format(DELETE_FAILED, hash(key), key), exception));
