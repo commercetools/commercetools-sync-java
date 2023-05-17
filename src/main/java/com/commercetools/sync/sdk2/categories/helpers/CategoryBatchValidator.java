@@ -17,7 +17,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 public class CategoryBatchValidator
     extends BaseBatchValidator<CategoryDraft, CategorySyncOptions, CategorySyncStatistics> {
 
-  static final String CATEGORY_DRAFT_KEY_NOT_SET =
+  public static final String CATEGORY_DRAFT_KEY_NOT_SET =
       "CategoryDraft with name: %s doesn't have a key. "
           + "Please make sure all category drafts have keys.";
   static final String CATEGORY_DRAFT_IS_NULL = "CategoryDraft is null.";
