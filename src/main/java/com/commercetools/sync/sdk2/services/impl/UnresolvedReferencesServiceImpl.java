@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
 
 import com.commercetools.api.client.ByProjectKeyCustomObjectsByContainerGet;
+import com.commercetools.api.models.custom_object.CustomObject;
 import com.commercetools.api.models.custom_object.CustomObjectDraft;
 import com.commercetools.api.models.custom_object.CustomObjectDraftBuilder;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
@@ -15,7 +16,6 @@ import com.commercetools.sync.sdk2.commons.utils.ChunkUtils;
 import com.commercetools.sync.sdk2.services.UnresolvedReferencesService;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -120,11 +120,12 @@ public class UnresolvedReferencesServiceImpl<WaitingToBeResolvedT extends Waitin
         .customObjects()
         .post(customObjectDraft)
         .execute()
-        .thenApply(ApiHttpResponse::getBody)
         .handle(
             (resource, exception) -> {
               if (exception == null) {
-                return Optional.of(OBJECT_MAPPER.convertValue(resource.getValue(), clazz));
+                final CustomObject customObject = resource.getBody();
+                return Optional.ofNullable(customObject)
+                    .map(co -> OBJECT_MAPPER.convertValue(co.getValue(), clazz));
               } else {
                 syncOptions.applyErrorCallback(
                     new SyncException(
