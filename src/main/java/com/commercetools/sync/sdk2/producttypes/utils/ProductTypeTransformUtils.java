@@ -103,14 +103,10 @@ public final class ProductTypeTransformUtils {
       if (attributeType instanceof AttributeNestedType) {
         final ProductTypeReference nestedTypeReference =
             ((AttributeNestedType) attributeType).getTypeReference();
-        if (nestedTypeReference != null) {
-          return nestedTypeReference.getId();
-        }
+        return nestedTypeReference.getId();
       } else if (attributeType instanceof AttributeSetType) {
         final AttributeType elementType = ((AttributeSetType) attributeType).getElementType();
-        if (elementType != null) {
-          return getNestedAttributeId(elementType);
-        }
+        return getNestedAttributeId(elementType);
       }
       return null;
     }

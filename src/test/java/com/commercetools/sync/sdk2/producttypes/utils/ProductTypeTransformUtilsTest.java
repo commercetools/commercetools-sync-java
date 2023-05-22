@@ -100,70 +100,70 @@ class ProductTypeTransformUtilsTest {
             ResourceToDraftConverters.toProductTypeDraft(productTypeBar));
   }
 
-
-
   @Test
-  void mapToProductDrafts_whenProductTypeContainsNestedAttribute_ShouldReplaceProductTypeAttributeNestedTypeIdsWithKeys() {
+  void
+      mapToProductDrafts_whenProductTypeContainsNestedAttribute_ShouldReplaceReferencedTypeIdsWithKeys() {
     // preparation
     final String referencedProductTypeId = UUID.randomUUID().toString();
     final String referencedProductTypeKey = "referencedProductTypeKey";
 
     final ProductTypeReference productTypeReference =
-            ProductTypeReferenceBuilder.of().id(referencedProductTypeId).build();
+        ProductTypeReferenceBuilder.of().id(referencedProductTypeId).build();
 
     final AttributeDefinition nestedTypeAttr =
-            getAttributeDefinitionBuilder()
-                    .name("nestedattr")
-                    .type(attributeTypeBuilder -> attributeTypeBuilder.nestedBuilder()
-                            .typeReference(productTypeReference))
-                    .build();
+        getAttributeDefinitionBuilder()
+            .name("nestedattr")
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder.nestedBuilder().typeReference(productTypeReference))
+            .build();
 
     final String jsonStringProductTypes =
-            "{\"data\":{\"productTypes\":{\"results\":[{\"id\":\""
-                    + referencedProductTypeId
-                    + "\","
-                    + "\"key\":\""
-                    + referencedProductTypeKey
-                    + "\"}]}}}";
+        "{\"data\":{\"productTypes\":{\"results\":[{\"id\":\""
+            + referencedProductTypeId
+            + "\","
+            + "\"key\":\""
+            + referencedProductTypeKey
+            + "\"}]}}}";
     final GraphQLResponse productTypesResult =
-            fromJsonString(jsonStringProductTypes, GraphQLResponse.class);
+        fromJsonString(jsonStringProductTypes, GraphQLResponse.class);
 
     final ProjectApiRoot sourceClient = mock(ProjectApiRoot.class);
     final ByProjectKeyGraphqlRequestBuilder byProjectKeyGraphqlRequestBuilder = mock();
     when(sourceClient.graphql()).thenReturn(byProjectKeyGraphqlRequestBuilder);
     final ByProjectKeyGraphqlPost byProjectKeyGraphqlPost = mock();
     when(byProjectKeyGraphqlRequestBuilder.post(any(GraphQLRequest.class)))
-            .thenReturn(byProjectKeyGraphqlPost);
+        .thenReturn(byProjectKeyGraphqlPost);
     final CompletableFuture<ApiHttpResponse<GraphQLResponse>> apiHttpResponseCompletableFuture =
-            CompletableFuture.completedFuture(new ApiHttpResponse<>(200, null, productTypesResult));
+        CompletableFuture.completedFuture(new ApiHttpResponse<>(200, null, productTypesResult));
     when(byProjectKeyGraphqlPost.execute()).thenReturn(apiHttpResponseCompletableFuture);
 
     final ProductType productType =
-            getProductTypeBuilder()
-                    .key("withNestedTypeAttr")
-                    .attributes(singletonList(nestedTypeAttr))
-                    .build();
+        getProductTypeBuilder()
+            .key("withNestedTypeAttr")
+            .attributes(singletonList(nestedTypeAttr))
+            .build();
 
     // test
     final List<ProductTypeDraft> productTypeDrafts =
-            ProductTypeTransformUtils.toProductTypeDrafts(
-                            sourceClient, referenceIdToKeyCache, singletonList(productType))
-                    .join();
-
+        ProductTypeTransformUtils.toProductTypeDrafts(
+                sourceClient, referenceIdToKeyCache, singletonList(productType))
+            .join();
 
     // assertion
     assertThat(productTypeDrafts)
-            .satisfies(
-                    productTypeDraft -> {
-                      final AttributeNestedType nestedAttributeType =
-                              (AttributeNestedType) productTypeDraft.get(0).getAttributes().get(0).getType();
-                      assertThat(nestedAttributeType.getTypeReference().getId())
-                              .isEqualTo(referencedProductTypeKey);
-                    });
+        .satisfies(
+            productTypeDraft -> {
+              final AttributeNestedType nestedAttributeType =
+                  (AttributeNestedType) productTypeDraft.get(0).getAttributes().get(0).getType();
+              assertThat(nestedAttributeType.getTypeReference().getId())
+                  .isEqualTo(referencedProductTypeKey);
+            });
   }
 
   @Test
-  void mapToProductDrafts_whenProductTypeContainsSetOfNestedAttributes_ShouldReplaceProductTypeNestedAttributeReferenceIdsWithKeys() {
+  void
+      mapToProductDrafts_whenProductTypeContainsSetOfNestedAttributes_ShouldReplaceReferenceIdsWithKeys() {
     // preparation
     final String referencedProductTypeId = UUID.randomUUID().toString();
     final String referencedProductTypeKey = "referencedProductTypeKey";
