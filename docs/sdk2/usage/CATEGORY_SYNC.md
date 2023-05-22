@@ -1,8 +1,8 @@
 # Category Sync
 
 Module used for importing/syncing Categories into a commercetools project. 
-It also provides utilities for generating update actions based on the comparison of a [Category](https://docs.commercetools.com/http-api-projects-categories.html#category) 
-against a [CategoryDraft](https://docs.commercetools.com/http-api-projects-categories.html#categorydraft).
+It also provides utilities for generating update actions based on the comparison of a [Category](https://docs.commercetools.com/api/projects/categories#category) 
+against a [CategoryDraft](https://docs.commercetools.com/api/projects/categories#categorydraft).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -56,7 +56,7 @@ The following fields are **required** to be set in, otherwise they won't be matc
 
 |Draft|Required Fields|Note|
 |---|---|---|
-| [CategoryDraft](https://docs.commercetools.com/http-api-projects-categories.html#categorydraft) | `key` |  Also, the categories in the target project are expected to have the `key` fields set. | 
+| [CategoryDraft](https://docs.commercetools.com/api/projects/categories#categorydraft) | `key` |  Also, the categories in the target project are expected to have the `key` fields set. | 
 
 #### Reference Resolution 
 
