@@ -208,7 +208,7 @@ final CategoryDraft categoryDraft = CategoryDraftBuilder.of()
         .metaTitle(LocalizedString.of(Locale.ENGLISH, "meta-title"))
         .orderHint("order-hint")
         .custom(customFields)
-        .parent()
+        .parent(categoryResourceIdentifier)
         .build()
 ````
 
