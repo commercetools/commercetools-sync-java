@@ -9,10 +9,10 @@ against a [CategoryDraft](https://docs.commercetools.com/api/projects/categories
 
 - [Usage](#usage)
   - [Prerequisites](#prerequisites)
-    - [SphereClient](#sphereclient)
+    - [ProjectApiRoot](#projectapiroot)
     - [Required Fields](#required-fields)
     - [Reference Resolution](#reference-resolution)
-      - [Persistence of category Drafts with irresolvable parent](#persistence-of-category-drafts-with-irresolvable-parent)
+      - [Persistence of Category Drafts with irresolvable parent](#persistence-of-category-drafts-with-irresolvable-parent)
       - [Syncing from a commercetools project](#syncing-from-a-commercetools-project)
       - [Syncing from an external resource](#syncing-from-an-external-resource)
     - [SyncOptions](#syncoptions)
@@ -26,7 +26,12 @@ against a [CategoryDraft](https://docs.commercetools.com/api/projects/categories
       - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
-- [Caveats](#caveats)
+- [Migration Guide](#migration-guide)
+  - [Client configuration and creation](#client-configuration-and-creation)
+  - [Signature of CategorySyncOptions](#signature-of-categorysyncoptions)
+  - [Build CategoryDraft (syncing from external project)](#build-categorydraft-syncing-from-external-project)
+  - [Query for Categories (syncing from CTP project)](#query-for-categories-syncing-from-ctp-project)
+  - [JVM-SDK-V2 migration guide](#jvm-sdk-v2-migration-guide)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -38,7 +43,7 @@ against a [CategoryDraft](https://docs.commercetools.com/api/projects/categories
 
 Use the [ClientConfigurationUtils](#todo) which apply the best practices for `ProjectApiRoot` creation.
 To create `ClientCredentials` which are required for creating a client please use the `ClientCredentialsBuilder` provided in java-sdk-v2 [Client OAUTH2 package](#todo)
-If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
+If you have custom requirements for the client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
 final ClientCredentials clientCredentials =
@@ -165,7 +170,7 @@ Example as shown below:
 final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
 
 //For every reference fetch its key using id, cache it and map from Category to CategoryDraft. With help of the cache same reference keys can be reused.
-CompletableFuture<List<CategoryDraft>> categoryDrafts = CategoryTransformUtils.toCategoryDrafts(client, referenceIdToKeyCache, categories);
+final CompletableFuture<List<CategoryDraft>> categoryDrafts = CategoryTransformUtils.toCategoryDrafts(client, referenceIdToKeyCache, categories);
 ````
 
 ##### Syncing from an external resource
@@ -236,7 +241,7 @@ following context about the error-event:
 ````java
  final Logger logger = LoggerFactory.getLogger(CategorySync.class);
  final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
-         .of(sphereClient)
+         .of(projectApiRoot)
          .errorCallback((syncException, draft, category, updateActions) -> 
             logger.error(new SyncException("My customized message"), syncException)).build();
 ````
@@ -253,7 +258,7 @@ following context about the warning message:
 ````java
  final Logger logger = LoggerFactory.getLogger(CategorySync.class);
  final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
-         .of(sphereClient)
+         .of(projectApiRoot)
          .warningCallback((syncException, draft, category, updateActions) -> 
             logger.warn(new SyncException("My customized message"), syncException)).build();
 ````
@@ -277,7 +282,7 @@ final TriFunction<
                     .collect(Collectors.toList());
                         
 final CategorySyncOptions categorySyncOptions = 
-        CategorySyncOptionsBuilder.of(sphereClient).beforeUpdateCallback(beforeUpdateCategoryCallback).build();
+        CategorySyncOptionsBuilder.of(projectApiRoot).beforeUpdateCallback(beforeUpdateCategoryCallback).build();
 ````
 
 ##### beforeCreateCallback
@@ -293,11 +298,11 @@ A number that could be used to set the batch size with which categories are fetc
 as categories are obtained from the target project on commercetools platform in batches for better performance. The 
 algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding categories
 from the target project on commecetools platform in a single request. Playing with this option can slightly improve or 
-reduce processing speed. If it is not set, the default batch size is 50 for category sync.
+reduce processing speed. If it is not set, the default batch size is **50** for category sync.
 
 ````java                         
 final CategorySyncOptions categorySyncOptions = 
-         CategorySyncOptionsBuilder.of(sphereClient).batchSize(30).build();
+         CategorySyncOptionsBuilder.of(projectApiRoot).batchSize(30).build();
 ````
 
 ##### cacheSize
@@ -308,7 +313,7 @@ which will improve the overall performance of the sync and commercetools API.
 Playing with this option can change the memory usage of the library. If it is not set, the default cache size is `10.000` for category sync.
 ````java
 final CategorySyncOptions categorySyncOptions = 
-         CategorySyncOptionsBuilder.of(sphereClient).cacheSize(5000).build(); 
+         CategorySyncOptionsBuilder.of(projectApiRoot).cacheSize(5000).build(); 
 ````
 
 ### Running the sync
@@ -347,7 +352,7 @@ __Note__ The statistics object contains the processing time of the last batch on
 
 A utility method provided by the library to compare a Category with a new CategoryDraft and results in a list of category update actions. 
 ```java
-List<CategoryUpdateAction> updateActions = CategorySyncUtils.buildActions(category, categoryDraft, categorySyncOptions);
+final List<CategoryUpdateAction> updateActions = CategorySyncUtils.buildActions(category, categoryDraft, categorySyncOptions);
 ```
 
 Examples of its usage can be found in the tests 
@@ -359,13 +364,9 @@ Examples of its usage can be found in the tests
 Utility methods provided by the library to compare the specific fields of a Category and a new CategoryDraft, and in turn, build
  the update action. One example is the `buildChangeNameUpdateAction` which compares names:
 ````java
-Optional<CategoryUpdateAction> updateAction = buildChangeNameUpdateAction(oldCategory, categoryDraft);
+final Optional<CategoryUpdateAction> updateAction = buildChangeNameUpdateAction(oldCategory, categoryDraft);
 ````
 More examples of those utils for different fields can be found [here](#todo).
-
-
-## Caveats   
-1. The library will sync all field types of custom fields, except `ReferenceType`. [#87](https://github.com/commercetools/commercetools-sync-java/issues/87). 
 
 ## Migration Guide
 
