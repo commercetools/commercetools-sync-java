@@ -2,28 +2,25 @@ package com.commercetools.sync.sdk2.producttypes.utils;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static com.commercetools.sync.sdk2.producttypes.helpers.ResourceToDraftConverters.*;
+import static com.commercetools.sync.sdk2.producttypes.utils.ProductTypeMockUtils.getAttributeDefinitionBuilder;
+import static com.commercetools.sync.sdk2.producttypes.utils.ProductTypeMockUtils.getProductTypeBuilder;
 import static com.commercetools.sync.sdk2.producttypes.utils.ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.commercetools.api.models.product_type.AttributeConstraintEnum;
 import com.commercetools.api.models.product_type.AttributeDefinition;
-import com.commercetools.api.models.product_type.AttributeDefinitionBuilder;
 import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
 import com.commercetools.api.models.product_type.AttributeNestedType;
 import com.commercetools.api.models.product_type.AttributeSetType;
 import com.commercetools.api.models.product_type.AttributeTypeBuilder;
 import com.commercetools.api.models.product_type.ProductType;
-import com.commercetools.api.models.product_type.ProductTypeBuilder;
 import com.commercetools.api.models.product_type.ProductTypeDraft;
 import com.commercetools.api.models.product_type.ProductTypeReference;
 import com.commercetools.api.models.product_type.ProductTypeReferenceBuilder;
-import com.commercetools.api.models.product_type.TextInputHint;
 import com.commercetools.sync.sdk2.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -379,28 +376,5 @@ class ProductTypeReferenceResolutionUtilsTest {
               assertThat(nestedAttributeType.getTypeReference().getId())
                   .isEqualTo(referencedProductType.getKey());
             });
-  }
-
-  private static ProductTypeBuilder getProductTypeBuilder() {
-    return ProductTypeBuilder.of()
-        .key("foo")
-        .attributes(emptyList())
-        .id("id")
-        .version(1L)
-        .createdAt(ZonedDateTime.now())
-        .lastModifiedAt(ZonedDateTime.now())
-        .name("name")
-        .description("description");
-  }
-
-  private static AttributeDefinitionBuilder getAttributeDefinitionBuilder() {
-    return AttributeDefinitionBuilder.of()
-        .name("a")
-        .label(ofEnglish("a"))
-        .type(AttributeTypeBuilder::textBuilder)
-        .isRequired(false)
-        .attributeConstraint(AttributeConstraintEnum.NONE)
-        .inputHint(TextInputHint.SINGLE_LINE)
-        .isSearchable(false);
   }
 }
