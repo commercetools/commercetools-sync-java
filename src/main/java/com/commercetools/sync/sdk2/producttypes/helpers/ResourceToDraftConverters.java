@@ -3,7 +3,6 @@ package com.commercetools.sync.sdk2.producttypes.helpers;
 import static java.util.stream.Collectors.toList;
 
 import com.commercetools.api.models.product_type.AttributeDefinition;
-import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
 import com.commercetools.api.models.product_type.AttributeDefinitionDraftBuilder;
 import com.commercetools.api.models.product_type.ProductType;
 import com.commercetools.api.models.product_type.ProductTypeDraft;
@@ -29,11 +28,6 @@ public class ResourceToDraftConverters {
                     attributeDefinition ->
                         toAttributeDefinitionDraftBuilder(attributeDefinition).build())
                 .collect(toList()));
-  }
-
-  public static AttributeDefinitionDraft toAttributeDefinitionDraft(
-      @Nonnull final AttributeDefinition attributeDefinition) {
-    return toAttributeDefinitionDraftBuilder(attributeDefinition).build();
   }
 
   @Nonnull
