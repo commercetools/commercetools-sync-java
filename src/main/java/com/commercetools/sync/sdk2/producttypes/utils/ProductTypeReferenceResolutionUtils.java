@@ -50,8 +50,8 @@ public final class ProductTypeReferenceResolutionUtils {
    *
    * <p><b>Note:</b>If some references are not expanded for an attributeDefinition of a productType,
    * the method will throw a {@link
-   * com.commercetools.sync.commons.exceptions.ReferenceReplacementException} containing the root
-   * causes of the exceptions that occurred in any of the supplied {@code productTypes}.
+   * com.commercetools.sync.sdk2.commons.exceptions.ReferenceReplacementException} containing the
+   * root causes of the exceptions that occurred in any of the supplied {@code productTypes}.
    *
    * @param productTypes the product types with expanded references.
    * @param referenceIdToKeyCache the instance that manages cache.
