@@ -491,7 +491,8 @@ class CategorySyncIT {
                   errorResponse.getErrorResponse().getErrors().stream()
                       .map(
                           sphereError -> {
-                            assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.DUPLICATE_FIELD);
+                            assertThat(sphereError.getCode())
+                                .isEqualTo(DuplicateFieldError.DUPLICATE_FIELD);
                             return DuplicateFieldErrorBuilder.of((DuplicateFieldError) sphereError)
                                 .build();
                           })

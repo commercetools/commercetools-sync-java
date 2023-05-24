@@ -1,6 +1,7 @@
 package com.commercetools.sync.integration.sdk2.externalsource.products;
 
 import static com.commercetools.sync.integration.sdk2.commons.utils.CategoryITUtils.*;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.*;
 import static com.commercetools.sync.integration.sdk2.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.sdk2.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.sdk2.commons.utils.ProductTypeITUtils.ensureProductType;
@@ -29,7 +30,6 @@ import com.commercetools.api.client.ByProjectKeyProductsByIDRequestBuilder;
 import com.commercetools.api.client.ByProjectKeyProductsRequestBuilder;
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.client.error.BadRequestException;
-import com.commercetools.api.client.error.ConcurrentModificationException;
 import com.commercetools.api.models.category.Category;
 import com.commercetools.api.models.category.CategoryDraft;
 import com.commercetools.api.models.category.CategoryReference;
@@ -42,8 +42,6 @@ import com.commercetools.api.models.common.Price;
 import com.commercetools.api.models.common.PriceDraft;
 import com.commercetools.api.models.common.PriceDraftBuilder;
 import com.commercetools.api.models.error.DuplicateFieldError;
-import com.commercetools.api.models.error.ErrorResponse;
-import com.commercetools.api.models.error.ErrorResponseBuilder;
 import com.commercetools.api.models.product.Attribute;
 import com.commercetools.api.models.product.AttributeBuilder;
 import com.commercetools.api.models.product.CategoryOrderHints;
@@ -77,14 +75,9 @@ import com.commercetools.sync.sdk2.products.ProductSync;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.products.helpers.ProductSyncStatistics;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;
-import io.vrap.rmf.base.client.error.NotFoundException;
 import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1224,44 +1217,5 @@ class ProductSyncIT {
         .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(createNotFoundException()));
 
     return spyClient;
-  }
-
-  private NotFoundException createNotFoundException() {
-    final String json = getErrorResponseJsonString(404);
-
-    return new NotFoundException(
-        404, "", null, "", new ApiHttpResponse<>(404, null, json.getBytes(StandardCharsets.UTF_8)));
-  }
-
-  private ConcurrentModificationException createConcurrentModificationException() {
-    final String json = getErrorResponseJsonString(409);
-
-    return new ConcurrentModificationException(
-        409, "", null, "", new ApiHttpResponse<>(409, null, json.getBytes(StandardCharsets.UTF_8)));
-  }
-
-  private BadGatewayException createBadGatewayException() {
-    final String json = getErrorResponseJsonString(500);
-    return new BadGatewayException(
-        500, "", null, "", new ApiHttpResponse<>(500, null, json.getBytes(StandardCharsets.UTF_8)));
-  }
-
-  private String getErrorResponseJsonString(Integer errorCode) {
-    final ErrorResponse errorResponse =
-        ErrorResponseBuilder.of()
-            .statusCode(errorCode)
-            .errors(Collections.emptyList())
-            .message("test")
-            .build();
-
-    final ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-    String json;
-    try {
-      json = ow.writeValueAsString(errorResponse);
-    } catch (JsonProcessingException e) {
-      // ignore the error
-      json = null;
-    }
-    return json;
   }
 }
