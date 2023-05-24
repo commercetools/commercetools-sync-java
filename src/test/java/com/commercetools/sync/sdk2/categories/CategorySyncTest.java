@@ -26,6 +26,8 @@ import com.commercetools.api.client.ByProjectKeyGraphqlPost;
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.models.category.*;
 import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.error.ErrorResponse;
+import com.commercetools.api.models.error.ErrorResponseBuilder;
 import com.commercetools.api.models.graph_ql.GraphQLRequest;
 import com.commercetools.api.models.graph_ql.GraphQLResponse;
 import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
@@ -35,9 +37,14 @@ import com.commercetools.sync.sdk2.commons.exceptions.ReferenceResolutionExcepti
 import com.commercetools.sync.sdk2.commons.models.WaitingToBeResolvedCategories;
 import com.commercetools.sync.sdk2.services.*;
 import com.commercetools.sync.sdk2.services.impl.CategoryServiceImpl;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import io.vrap.rmf.base.client.ApiHttpException;
 import io.vrap.rmf.base.client.ApiHttpHeaders;
 import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.error.BadRequestException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -658,11 +665,32 @@ class CategorySyncTest {
             .build();
 
     final CategoryService categoryServiceSpy = spy(new CategoryServiceImpl(syncOptions));
+    final ErrorResponse errorResponse =
+        ErrorResponseBuilder.of()
+            .statusCode(400)
+            .errors(Collections.emptyList())
+            .message("test")
+            .build();
 
+    final ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+    String json;
+    try {
+      json = ow.writeValueAsString(errorResponse);
+    } catch (JsonProcessingException e) {
+      // ignore the error
+      json = null;
+    }
+
+    final String finalJson = json;
     doReturn(
             supplyAsync(
                 () -> {
-                  throw new RuntimeException("Error when fetching category");
+                  throw new BadRequestException(
+                      500,
+                      "",
+                      null,
+                      "",
+                      new ApiHttpResponse<>(500, null, finalJson.getBytes(StandardCharsets.UTF_8)));
                 }))
         .when(categoryServiceSpy)
         .fetchMatchingCategoriesByKeys(anySet());
@@ -696,7 +724,7 @@ class CategorySyncTest {
     assertThat(errorCallBackExceptions)
         .hasSize(1)
         .singleElement(as(THROWABLE))
-        .hasCauseExactlyInstanceOf(RuntimeException.class);
+        .hasCauseExactlyInstanceOf(BadRequestException.class);
   }
 
   @Test
