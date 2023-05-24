@@ -1,19 +1,7 @@
 package com.commercetools.sync.integration.externalsource.producttypes;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_1;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_2;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_3;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_1;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_2;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_1;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_2;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_1;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_2;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.assertAttributesAreEqual;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.getProductTypeByKey;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateTargetProject;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.*;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
@@ -967,9 +955,9 @@ class ProductTypeSyncIT {
             .build();
     final ProductTypeDraft newProductTypeDraft =
         ProductTypeDraft.ofAttributeDefinitionDrafts(
-            PRODUCT_TYPE_KEY_1,
-            PRODUCT_TYPE_NAME_1,
-            PRODUCT_TYPE_DESCRIPTION_1,
+            PRODUCT_TYPE_KEY_3,
+            PRODUCT_TYPE_NAME_3,
+            PRODUCT_TYPE_DESCRIPTION_3,
             singletonList(AttributeDefinitionDraftBuilder.of(referenceTypeAttr).build()));
 
     final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
@@ -977,9 +965,9 @@ class ProductTypeSyncIT {
 
     final ProductTypeDraft updatedProductTypeDraft =
         ProductTypeDraft.ofAttributeDefinitionDrafts(
-            PRODUCT_TYPE_KEY_1,
-            PRODUCT_TYPE_NAME_1,
-            PRODUCT_TYPE_DESCRIPTION_1,
+            PRODUCT_TYPE_KEY_3,
+            PRODUCT_TYPE_NAME_3,
+            PRODUCT_TYPE_DESCRIPTION_3,
             asList(
                 ATTRIBUTE_DEFINITION_DRAFT_1,
                 AttributeDefinitionDraftBuilder.of(referenceTypeAttr).build()));
@@ -987,7 +975,7 @@ class ProductTypeSyncIT {
     productTypeSync.sync(singletonList(updatedProductTypeDraft)).toCompletableFuture().join();
 
     final Optional<ProductType> updatedProductType =
-        getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
+        getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_3);
     assert updatedProductType.isPresent();
 
     final Optional<AttributeDefinition> newAttributeDefinition =
