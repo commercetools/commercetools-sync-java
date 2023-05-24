@@ -499,7 +499,7 @@ public final class CustomUpdateActionUtils {
             newCustomFieldName -> {
               final Object newCustomFieldValue = newCustomFields.get(newCustomFieldName);
               final Object oldCustomFieldValue = oldCustomFields.get(newCustomFieldName);
-
+              // TODO: This comparison doesn't work when newFieldValue is passed as JSON string.
               return !isNullJsonValue(newCustomFieldValue)
                   && !Objects.equals(newCustomFieldValue, oldCustomFieldValue);
             })
