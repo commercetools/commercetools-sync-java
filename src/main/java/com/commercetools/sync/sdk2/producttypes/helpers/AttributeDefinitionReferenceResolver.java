@@ -163,7 +163,9 @@ public class AttributeDefinitionReferenceResolver
                 optionalResolvedReference
                     .map(
                         resolvedReference ->
-                            AttributeNestedTypeBuilder.of().typeReference(resolvedReference).build())
+                            AttributeNestedTypeBuilder.of()
+                                .typeReference(resolvedReference)
+                                .build())
                     .orElse(nestedAttributeType));
   }
 
