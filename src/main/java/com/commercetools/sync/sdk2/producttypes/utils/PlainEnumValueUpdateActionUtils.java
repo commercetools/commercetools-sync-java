@@ -52,9 +52,7 @@ public final class PlainEnumValueUpdateActionUtils {
                 .attributeName(defintionName)
                 .keys(keysToRemove)
                 .build(),
-        (definitionName, oldEnumValue, newEnumValue) ->
-            PlainEnumValueUpdateActionUtils.buildEnumValueUpdateActions(
-                definitionName, oldEnumValue, newEnumValue),
+        PlainEnumValueUpdateActionUtils::buildEnumValueUpdateActions,
         (definitionName, newEnumValue) ->
             ProductTypeAddPlainEnumValueActionBuilder.of()
                 .attributeName(definitionName)
@@ -104,7 +102,7 @@ public final class PlainEnumValueUpdateActionUtils {
    * @return optional containing update action or empty optional if labels are identical.
    */
   @Nonnull
-  public static Optional<ProductTypeUpdateAction> buildChangeLabelAction(
+  private static Optional<ProductTypeUpdateAction> buildChangeLabelAction(
       @Nonnull final String attributeDefinitionName,
       @Nonnull final AttributePlainEnumValue oldEnumValue,
       @Nonnull final AttributePlainEnumValue newEnumValue) {
