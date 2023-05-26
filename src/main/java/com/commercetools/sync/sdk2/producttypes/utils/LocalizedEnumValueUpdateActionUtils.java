@@ -107,7 +107,7 @@ public final class LocalizedEnumValueUpdateActionUtils {
    * @return optional containing update action or empty optional if labels are identical.
    */
   @Nonnull
-  public static Optional<ProductTypeUpdateAction> buildChangeLabelAction(
+  private static Optional<ProductTypeUpdateAction> buildChangeLabelAction(
       @Nonnull final String attributeDefinitionName,
       @Nonnull final AttributeLocalizedEnumValue oldEnumValue,
       @Nonnull final AttributeLocalizedEnumValue newEnumValue) {

@@ -1,6 +1,6 @@
 package com.commercetools.sync.sdk2.producttypes.utils;
 
-import static com.commercetools.sync.sdk2.producttypes.utils.LocalizedEnumValueUpdateActionUtils.buildChangeLabelAction;
+import static com.commercetools.sync.sdk2.producttypes.utils.LocalizedEnumValueUpdateActionUtils.buildLocalizedEnumValueUpdateActions;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.api.models.common.LocalizedString;
@@ -8,7 +8,7 @@ import com.commercetools.api.models.product_type.AttributeLocalizedEnumValue;
 import com.commercetools.api.models.product_type.AttributeLocalizedEnumValueBuilder;
 import com.commercetools.api.models.product_type.ProductTypeChangeLocalizedEnumValueLabelActionBuilder;
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
-import java.util.Optional;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class LocalizedEnumValueUpdateActionUtilsTest {
@@ -29,9 +29,9 @@ class LocalizedEnumValueUpdateActionUtilsTest {
           .build();
 
   @Test
-  void buildChangeLabelAction_WithDifferentValues_ShouldReturnAction() {
-    final Optional<ProductTypeUpdateAction> result =
-        buildChangeLabelAction("attribute_definition_name_1", old, newDifferent);
+  void buildLocalizedEnumValueUpdateActions_WithDifferentValues_ShouldReturnAction() {
+    final List<ProductTypeUpdateAction> result =
+        buildLocalizedEnumValueUpdateActions("attribute_definition_name_1", old, newDifferent);
 
     assertThat(result)
         .contains(
@@ -42,9 +42,9 @@ class LocalizedEnumValueUpdateActionUtilsTest {
   }
 
   @Test
-  void buildChangeLabelAction_WithSameValues_ShouldReturnEmptyOptional() {
-    final Optional<ProductTypeUpdateAction> result =
-        buildChangeLabelAction("attribute_definition_name_1", old, newSame);
+  void buildLocalizedEnumValueUpdateActions_WithSameValues_ShouldReturnEmptyOptional() {
+    final List<ProductTypeUpdateAction> result =
+        buildLocalizedEnumValueUpdateActions("attribute_definition_name_1", old, newSame);
 
     assertThat(result).isEmpty();
   }
