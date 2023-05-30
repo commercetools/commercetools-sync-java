@@ -90,7 +90,7 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(getCustomFieldsDraft())
             .build();
-    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
+    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     // Category draft coming from external source.
     final CategoryDraft categoryDraft =
@@ -117,7 +117,7 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(getCustomFieldsDraft())
             .build();
-    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
+    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     // Category draft coming from external source.
     final CategoryDraft categoryDraft =
@@ -146,7 +146,7 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(getCustomFieldsDraft())
             .build();
-    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
+    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     // Category draft coming from external source.
     final CategoryDraft categoryDraft =
@@ -173,7 +173,7 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(getCustomFieldsDraft())
             .build();
-    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
+    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     // Category draft coming from external source.
     final CategoryDraft categoryDraft =
@@ -439,7 +439,7 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(getCustomFieldsDraft())
             .build();
-    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
+    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     // Category draft coming from external source.
     final CategoryDraft categoryDraft =
@@ -467,7 +467,7 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(getCustomFieldsDraft())
             .build();
-    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
+    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     // Category draft coming from external source.
     final CategoryDraft categoryDraft =
@@ -493,7 +493,7 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(getCustomFieldsDraft())
             .build();
-    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
+    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     // Existing array of [1, 2, 3, oldCategoryKey]
     final CategoryDraft oldCategoryDraft1 =
@@ -594,7 +594,7 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(getCustomFieldsDraft())
             .build();
-    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
+    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     // Category draft coming from external source.
     CategoryDraft categoryDraft1 =
@@ -648,7 +648,7 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(getCustomFieldsDraft())
             .build();
-    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
+    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
 
@@ -729,7 +729,7 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(getCustomFieldsDraft())
             .build();
-    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
+    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
 
@@ -809,7 +809,7 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(getCustomFieldsDraft())
             .build();
-    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
+    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
     final String newCustomTypeKey = "newKey";
@@ -862,7 +862,7 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(getCustomFieldsDraft())
             .build();
-    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
+    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
 
@@ -906,7 +906,7 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(getCustomFieldsDraft())
             .build();
-    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
+    ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     // Category draft coming from external source.
     final CategoryDraft categoryDraft =
