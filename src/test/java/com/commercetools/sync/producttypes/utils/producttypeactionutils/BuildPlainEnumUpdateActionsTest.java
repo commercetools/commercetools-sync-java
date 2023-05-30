@@ -19,6 +19,9 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
+// NOTE: All the tests were migrated to java SDK v2 already. They're in this test file:
+// PlainEnumValueUpdateActionUtilsTest
+// Reason: it's easier to navigate to the test file if we have 1 unit test file per class.
 class BuildPlainEnumUpdateActionsTest {
 
   @Test
