@@ -475,7 +475,7 @@ class CategorySyncIT {
     assertThat(syncStatistics).hasValues(2, 0, 0, 2, 0);
 
     assertThat(callBackErrorResponses)
-        .hasSize(1)
+        .hasSize(2)
         .allSatisfy(
             errorMessage -> {
               assertThat(errorMessage).contains("\"code\" : \"DuplicateField\"");
