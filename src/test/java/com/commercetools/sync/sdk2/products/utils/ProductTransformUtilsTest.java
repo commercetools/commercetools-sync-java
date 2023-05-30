@@ -1,7 +1,7 @@
 package com.commercetools.sync.sdk2.products.utils;
 
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.mockGraphQLResponse;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createProductFromJson;
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.mockGraphQLResponse;
 import static com.commercetools.sync.sdk2.services.impl.BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;

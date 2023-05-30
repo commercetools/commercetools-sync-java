@@ -71,10 +71,17 @@ public class CategorySyncMockUtils {
     return category;
   }
 
-  public static Category getMockCategory(@Nonnull final String id, @Nonnull final String key) {
+  public static Category getMockCategory(
+      @Nonnull final String id,
+      @Nonnull final String key,
+      @Nonnull String name,
+      @Nonnull String slug,
+      @Nonnull Locale locale) {
     final Category category = mock(Category.class);
     when(category.getKey()).thenReturn(key);
     when(category.getId()).thenReturn(id);
+    when(category.getName()).thenReturn(LocalizedString.of(locale, name));
+    when(category.getSlug()).thenReturn(LocalizedString.of(locale, slug));
     when(category.toReference()).thenReturn(CategoryReferenceBuilder.of().id(id).build());
     return category;
   }
@@ -240,5 +247,19 @@ public class CategorySyncMockUtils {
                         typeResourceIdentifierBuilder.key(customTypeKey))
                 .fields(fieldContainerBuilder -> fieldContainerBuilder.values(customFields))
                 .build());
+  }
+
+  public static CategoryDraft getCategoryDraftFromCategory(@Nonnull final Category category) {
+    return CategoryDraftBuilder.of()
+        .key(category.getKey())
+        .name(category.getName())
+        .slug(category.getSlug())
+        .externalId(category.getExternalId())
+        .description(category.getDescription())
+        .metaDescription(category.getMetaDescription())
+        .metaTitle(category.getMetaTitle())
+        .metaKeywords(category.getMetaKeywords())
+        .orderHint(category.getOrderHint())
+        .build();
   }
 }
