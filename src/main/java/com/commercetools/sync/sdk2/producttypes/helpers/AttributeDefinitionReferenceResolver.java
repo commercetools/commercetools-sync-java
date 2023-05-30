@@ -96,9 +96,9 @@ public class AttributeDefinitionReferenceResolver
 
   @Nonnull
   private CompletionStage<AttributeDefinitionDraftBuilder> resolveNestedAttributeTypeReferences(
-      @Nonnull AttributeDefinitionDraftBuilder attributeDefinitionDraftBuilder,
-      final AtomicInteger maxDepth,
-      @Nonnull AttributeNestedType nestedAttributeType) {
+      @Nonnull final AttributeDefinitionDraftBuilder attributeDefinitionDraftBuilder,
+      @Nonnull final AtomicInteger maxDepth,
+      @Nonnull final AttributeNestedType nestedAttributeType) {
 
     /*
      As SDK types (e.g AttributeDefinitionDraftBuilder) are immutable,
