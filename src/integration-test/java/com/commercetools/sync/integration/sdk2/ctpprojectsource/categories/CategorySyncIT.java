@@ -97,7 +97,7 @@ class CategorySyncIT {
   }
 
   @Test
-  void syncDrafts_withChangesOnly_ShouldUpdateCategories() {
+  void syncDrafts_withChangesInExistingCategories_ShouldUpdate2Categories() {
     ensureCategories(
         CTP_SOURCE_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new", null, 2));
 
@@ -126,7 +126,7 @@ class CategorySyncIT {
   }
 
   @Test
-  void syncDrafts_withNewCategories_ShouldCreateCategories() {
+  void syncDrafts_withChangesInExistingCategoriesAndNewCategories_ShouldUpdate2CategoriesAndCreate1Category() {
     ensureCategories(
         CTP_SOURCE_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new", null, 3));
 
@@ -156,9 +156,10 @@ class CategorySyncIT {
 
   @Test
   void syncDrafts_withNewShuffledBatchOfCategories_ShouldCreateCategories() {
-    // Create a total of 130 categories in the source project
+    // Create 5 categories in the source project
     final List<Category> subFamily = createChildren(5, null, "root", CTP_SOURCE_CLIENT);
 
+    // Create 125 categories in the source project
     for (final Category child : subFamily) {
       final List<Category> subsubFamily =
           createChildren(5, child, child.getName().get(Locale.ENGLISH), CTP_SOURCE_CLIENT);
@@ -166,6 +167,7 @@ class CategorySyncIT {
         createChildren(4, subChild, subChild.getName().get(Locale.ENGLISH), CTP_SOURCE_CLIENT);
       }
     }
+    // Total number of categories in the source project: 130
     // ---------------------------------------------------------------
 
     // Fetch categories from source project
@@ -245,7 +247,7 @@ class CategorySyncIT {
             .join();
     Collections.shuffle(categoryDrafts);
 
-    CategorySync categorySyncWith13BatcheSize = new CategorySync(buildCategorySyncOptions(13));
+    final CategorySync categorySyncWith13BatcheSize = new CategorySync(buildCategorySyncOptions(13));
     final CategorySyncStatistics syncStatistics =
         categorySyncWith13BatcheSize.sync(categoryDrafts).toCompletableFuture().join();
 
@@ -289,7 +291,7 @@ class CategorySyncIT {
             .join();
     Collections.shuffle(categoryDrafts);
 
-    CategorySync categorySyncWith1BatchSize = new CategorySync(buildCategorySyncOptions(1));
+    final CategorySync categorySyncWith1BatchSize = new CategorySync(buildCategorySyncOptions(1));
     final CategorySyncStatistics syncStatistics =
         categorySyncWith1BatchSize.sync(categoryDrafts).toCompletableFuture().join();
 
@@ -301,7 +303,7 @@ class CategorySyncIT {
 
   @Test
   void syncDrafts_withANonExistingNewParent_ShouldUpdateCategories() {
-    String parentKey = "parent";
+    final String parentKey = "parent";
     // Create a total of 2 categories in the target project.
     final CategoryDraft parentDraft =
         CategoryDraftBuilder.of()
@@ -320,11 +322,12 @@ class CategorySyncIT {
 
     CTP_TARGET_CLIENT.categories().create(parentDraft).execute().toCompletableFuture().join();
 
+    final String childKey = "child";
     final CategoryDraft childDraft =
         CategoryDraftBuilder.of()
-            .name(LocalizedString.of(Locale.ENGLISH, "child"))
-            .slug(LocalizedString.of(Locale.ENGLISH, "child"))
-            .key("child")
+            .name(LocalizedString.of(Locale.ENGLISH, childKey))
+            .slug(LocalizedString.of(Locale.ENGLISH, childKey))
+            .key(childKey)
             .parent(CategoryResourceIdentifierBuilder.of().key(parentKey).build())
             .custom(
                 CustomFieldsDraftBuilder.of()
@@ -360,8 +363,8 @@ class CategorySyncIT {
     final CategoryDraft sourceChildDraft =
         CategoryDraftBuilder.of()
             .name(LocalizedString.of(Locale.ENGLISH, "new-child"))
-            .slug(LocalizedString.of(Locale.ENGLISH, "child"))
-            .key("child")
+            .slug(LocalizedString.of(Locale.ENGLISH, childKey))
+            .key(childKey)
             .parent(CategoryResourceIdentifierBuilder.of().key(newParentKey).build())
             .custom(
                 CustomFieldsDraftBuilder.of()
@@ -488,10 +491,10 @@ class CategorySyncIT {
               final List<DuplicateFieldError> fieldErrors =
                   errorResponse.getErrorResponse().getErrors().stream()
                       .map(
-                          sphereError -> {
-                            assertThat(sphereError.getCode())
+                          ctpError -> {
+                            assertThat(ctpError.getCode())
                                 .isEqualTo(DuplicateFieldError.DUPLICATE_FIELD);
-                            return DuplicateFieldErrorBuilder.of((DuplicateFieldError) sphereError)
+                            return DuplicateFieldErrorBuilder.of((DuplicateFieldError) ctpError)
                                 .build();
                           })
                       .collect(toList());
