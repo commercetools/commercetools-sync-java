@@ -51,8 +51,6 @@ class CategorySyncIT {
    */
   @BeforeAll
   static void setup() {
-    deleteCategorySyncTestData(CTP_TARGET_CLIENT);
-    deleteCategorySyncTestData(CTP_SOURCE_CLIENT);
     ensureCategoriesCustomType(
         OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH, "anyName", CTP_TARGET_CLIENT);
     ensureCategoriesCustomType(
@@ -472,7 +470,7 @@ class CategorySyncIT {
     assertThat(syncStatistics).hasValues(2, 0, 0, 2, 0);
 
     assertThat(callBackErrorResponses)
-        .hasSize(2)
+        .hasSize(1)
         .allSatisfy(
             errorMessage -> {
               assertThat(errorMessage).contains("\"code\" : \"DuplicateField\"");

@@ -44,7 +44,6 @@ class CategorySyncIT {
    */
   @BeforeAll
   static void setup() {
-    deleteCategorySyncTestData(CTP_TARGET_CLIENT);
     ensureCategoriesCustomType(
         OLD_CATEGORY_CUSTOM_TYPE_KEY,
         Locale.ENGLISH,
