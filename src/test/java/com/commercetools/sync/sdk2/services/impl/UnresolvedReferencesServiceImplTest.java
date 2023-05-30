@@ -492,7 +492,11 @@ class UnresolvedReferencesServiceImplTest {
             .join();
 
     // assertions
-    verify(requestBuilder).withContainerAndKey(anyString(), requestArgumentCaptor.capture());
+    // Solve spotbugs @ChangeReturnValue violation
+    final ByProjectKeyCustomObjectsByContainerByKeyRequestBuilder
+        byProjectKeyCustomObjectsByContainerByKeyRequestBuilder =
+            verify(requestBuilder)
+                .withContainerAndKey(anyString(), requestArgumentCaptor.capture());
     assertThat(toBeResolvedOptional).contains(waitingDraft);
     assertThat(requestArgumentCaptor.getValue()).contains(sha1Hex(productDraftMock.getKey()));
   }
