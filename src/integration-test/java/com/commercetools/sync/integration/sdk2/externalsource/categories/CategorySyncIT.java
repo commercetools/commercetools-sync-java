@@ -66,7 +66,6 @@ class CategorySyncIT {
                 })
             .build();
     categorySync = new CategorySync(categorySyncOptions);
-
   }
 
   /** Cleans up the target test data that were built in each test. */
@@ -85,12 +84,12 @@ class CategorySyncIT {
   void syncDrafts_WithANewCategoryWithNewSlug_ShouldCreateCategory() {
     // Create a mock in the target project.
     final CategoryDraft oldCategoryDraft =
-            CategoryDraftBuilder.of()
-                    .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .key(oldCategoryKey)
-                    .custom(getCustomFieldsDraft())
-                    .build();
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .key(oldCategoryKey)
+            .custom(getCustomFieldsDraft())
+            .build();
     ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
 
     // Category draft coming from external source.
@@ -112,12 +111,12 @@ class CategorySyncIT {
   void syncDrafts_WithANewCategoryWithDuplicateSlug_ShouldNotCreateCategory() {
     // Create a mock in the target project.
     final CategoryDraft oldCategoryDraft =
-            CategoryDraftBuilder.of()
-                    .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .key(oldCategoryKey)
-                    .custom(getCustomFieldsDraft())
-                    .build();
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .key(oldCategoryKey)
+            .custom(getCustomFieldsDraft())
+            .build();
     ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
 
     // Category draft coming from external source.
@@ -141,12 +140,12 @@ class CategorySyncIT {
   void syncDrafts_WithCategoryWithNoChanges_ShouldNotUpdateCategory() {
     // Create a mock in the target project.
     final CategoryDraft oldCategoryDraft =
-            CategoryDraftBuilder.of()
-                    .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .key(oldCategoryKey)
-                    .custom(getCustomFieldsDraft())
-                    .build();
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .key(oldCategoryKey)
+            .custom(getCustomFieldsDraft())
+            .build();
     ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
 
     // Category draft coming from external source.
@@ -168,12 +167,12 @@ class CategorySyncIT {
   void syncDrafts_WithChangesInExistingCategoryNameAndSlug_ShouldUpdateCategory() {
     // Create a mock in the target project.
     final CategoryDraft oldCategoryDraft =
-            CategoryDraftBuilder.of()
-                    .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .key(oldCategoryKey)
-                    .custom(getCustomFieldsDraft())
-                    .build();
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .key(oldCategoryKey)
+            .custom(getCustomFieldsDraft())
+            .build();
     ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
 
     // Category draft coming from external source.
@@ -195,15 +194,17 @@ class CategorySyncIT {
   void syncDrafts_WithConcurrentModificationException_ShouldRetryToUpdateNewCategoryWithSuccess() {
     // Create a mock in the target project.
     final CategoryDraft oldCategoryDraft =
-            CategoryDraftBuilder.of()
-                    .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .key(oldCategoryKey)
-                    .custom(getCustomFieldsDraft())
-                    .build();
-    final Category oldCategory = ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .key(oldCategoryKey)
+            .custom(getCustomFieldsDraft())
+            .build();
+    final Category oldCategory =
+        ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
     // Preparation
-    final ProjectApiRoot mockClient = buildClientWithConcurrentModificationUpdate(oldCategory.getId());
+    final ProjectApiRoot mockClient =
+        buildClientWithConcurrentModificationUpdate(oldCategory.getId());
 
     final LocalizedString newCategoryName = LocalizedString.of(Locale.ENGLISH, "Modern Furniture");
     final CategoryDraft categoryDraft =
@@ -242,7 +243,8 @@ class CategorySyncIT {
   }
 
   @Nonnull
-  private ProjectApiRoot buildClientWithConcurrentModificationUpdate(@Nonnull final String oldCategoryId) {
+  private ProjectApiRoot buildClientWithConcurrentModificationUpdate(
+      @Nonnull final String oldCategoryId) {
 
     // Helps to count invocation of a request and used to decide execution or mocking response
     final AtomicInteger requestInvocationCounter = new AtomicInteger(0);
@@ -269,13 +271,14 @@ class CategorySyncIT {
   void syncDrafts_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
     // Create a mock in the target project.
     final CategoryDraft oldCategoryDraft =
-            CategoryDraftBuilder.of()
-                    .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .key(oldCategoryKey)
-                    .custom(getCustomFieldsDraft())
-                    .build();
-    final Category oldCategory = ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .key(oldCategoryKey)
+            .custom(getCustomFieldsDraft())
+            .build();
+    final Category oldCategory =
+        ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
 
     // Preparation
     final ProjectApiRoot mockClient =
@@ -332,8 +335,7 @@ class CategorySyncIT {
                       return CompletableFutureUtils.exceptionallyCompletedFuture(
                           createBadGatewayException());
                     }
-                  }
-                  else if (uri.contains("categories/" + oldCategory.getId())
+                  } else if (uri.contains("categories/" + oldCategory.getId())
                       && ApiHttpMethod.POST.equals(method)) {
                     return CompletableFutureUtils.exceptionallyCompletedFuture(
                         createConcurrentModificationException());
@@ -350,13 +352,14 @@ class CategorySyncIT {
       syncDrafts_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
     // Create a mock in the target project.
     final CategoryDraft oldCategoryDraft =
-            CategoryDraftBuilder.of()
-                    .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .key(oldCategoryKey)
-                    .custom(getCustomFieldsDraft())
-                    .build();
-    final Category oldCategory = ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .key(oldCategoryKey)
+            .custom(getCustomFieldsDraft())
+            .build();
+    final Category oldCategory =
+        ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
     // Preparation
     final ProjectApiRoot mockClient =
         buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry(oldCategory);
@@ -430,12 +433,12 @@ class CategorySyncIT {
   void syncDrafts_WithNewCategoryWithExistingParent_ShouldCreateCategory() {
     // Create a mock in the target project.
     final CategoryDraft oldCategoryDraft =
-            CategoryDraftBuilder.of()
-                    .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .key(oldCategoryKey)
-                    .custom(getCustomFieldsDraft())
-                    .build();
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .key(oldCategoryKey)
+            .custom(getCustomFieldsDraft())
+            .build();
     ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
 
     // Category draft coming from external source.
@@ -458,12 +461,12 @@ class CategorySyncIT {
   void syncDraft_withARemovedCustomType_ShouldUpdateCategory() {
     // Create a mock in the target project.
     final CategoryDraft oldCategoryDraft =
-            CategoryDraftBuilder.of()
-                    .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .key(oldCategoryKey)
-                    .custom(getCustomFieldsDraft())
-                    .build();
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .key(oldCategoryKey)
+            .custom(getCustomFieldsDraft())
+            .build();
     ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
 
     // Category draft coming from external source.
@@ -484,12 +487,12 @@ class CategorySyncIT {
   void syncDrafts_WithMultipleBatchSyncing_ShouldSync() {
     // Create a mock in the target project.
     final CategoryDraft oldCategoryDraft =
-            CategoryDraftBuilder.of()
-                    .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .key(oldCategoryKey)
-                    .custom(getCustomFieldsDraft())
-                    .build();
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .key(oldCategoryKey)
+            .custom(getCustomFieldsDraft())
+            .build();
     ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
 
     // Existing array of [1, 2, 3, oldCategoryKey]
@@ -585,12 +588,12 @@ class CategorySyncIT {
   void syncDrafts_WithMultipleBatchSyncingWithAlreadyProcessedDrafts_ShouldSync() {
     // Create a mock in the target project.
     final CategoryDraft oldCategoryDraft =
-            CategoryDraftBuilder.of()
-                    .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .key(oldCategoryKey)
-                    .custom(getCustomFieldsDraft())
-                    .build();
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .key(oldCategoryKey)
+            .custom(getCustomFieldsDraft())
+            .build();
     ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
 
     // Category draft coming from external source.
@@ -639,12 +642,12 @@ class CategorySyncIT {
   void syncDrafts_WithOneBatchSyncing_ShouldSync() {
     // Create a mock in the target project.
     final CategoryDraft oldCategoryDraft =
-            CategoryDraftBuilder.of()
-                    .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .key(oldCategoryKey)
-                    .custom(getCustomFieldsDraft())
-                    .build();
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .key(oldCategoryKey)
+            .custom(getCustomFieldsDraft())
+            .build();
     ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
 
     final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
@@ -720,12 +723,12 @@ class CategorySyncIT {
   void syncDrafts_WithSameSlugDraft_ShouldNotSyncIt() {
     // Create a mock in the target project.
     final CategoryDraft oldCategoryDraft =
-            CategoryDraftBuilder.of()
-                    .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .key(oldCategoryKey)
-                    .custom(getCustomFieldsDraft())
-                    .build();
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .key(oldCategoryKey)
+            .custom(getCustomFieldsDraft())
+            .build();
     ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
 
     final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
@@ -800,12 +803,12 @@ class CategorySyncIT {
   void syncDrafts_WithValidAndInvalidCustomTypeKeys_ShouldSyncCorrectly() {
     // Create a mock in the target project.
     final CategoryDraft oldCategoryDraft =
-            CategoryDraftBuilder.of()
-                    .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .key(oldCategoryKey)
-                    .custom(getCustomFieldsDraft())
-                    .build();
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .key(oldCategoryKey)
+            .custom(getCustomFieldsDraft())
+            .build();
     ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
 
     final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
@@ -853,12 +856,12 @@ class CategorySyncIT {
   void syncDrafts_WithValidCustomFieldsChange_ShouldSyncIt() {
     // Create a mock in the target project.
     final CategoryDraft oldCategoryDraft =
-            CategoryDraftBuilder.of()
-                    .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .key(oldCategoryKey)
-                    .custom(getCustomFieldsDraft())
-                    .build();
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .key(oldCategoryKey)
+            .custom(getCustomFieldsDraft())
+            .build();
     ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
 
     final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
@@ -897,12 +900,12 @@ class CategorySyncIT {
   void syncDrafts_WithDraftWithAMissingParentKey_ShouldNotSyncIt() {
     // Create a mock in the target project.
     final CategoryDraft oldCategoryDraft =
-            CategoryDraftBuilder.of()
-                    .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
-                    .key(oldCategoryKey)
-                    .custom(getCustomFieldsDraft())
-                    .build();
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "furniture"))
+            .key(oldCategoryKey)
+            .custom(getCustomFieldsDraft())
+            .build();
     ensureCategories(CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
 
     // Category draft coming from external source.

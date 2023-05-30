@@ -126,7 +126,8 @@ class CategorySyncIT {
   }
 
   @Test
-  void syncDrafts_withChangesInExistingCategoriesAndNewCategories_ShouldUpdate2CategoriesAndCreate1Category() {
+  void
+      syncDrafts_withChangesInExistingCategoriesAndNewCategories_ShouldUpdate2CategoriesAndCreate1Category() {
     ensureCategories(
         CTP_SOURCE_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new", null, 3));
 
@@ -247,7 +248,8 @@ class CategorySyncIT {
             .join();
     Collections.shuffle(categoryDrafts);
 
-    final CategorySync categorySyncWith13BatcheSize = new CategorySync(buildCategorySyncOptions(13));
+    final CategorySync categorySyncWith13BatcheSize =
+        new CategorySync(buildCategorySyncOptions(13));
     final CategorySyncStatistics syncStatistics =
         categorySyncWith13BatcheSize.sync(categoryDrafts).toCompletableFuture().join();
 

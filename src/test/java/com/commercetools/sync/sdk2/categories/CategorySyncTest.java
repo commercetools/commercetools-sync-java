@@ -61,7 +61,8 @@ class CategorySyncTest {
   private CategorySyncOptions categorySyncOptions;
   private List<String> errorCallBackMessages;
   private List<Throwable> errorCallBackExceptions;
-  private UnresolvedReferencesService mockUnresolvedReferencesService;
+  private UnresolvedReferencesService<WaitingToBeResolvedCategories>
+      mockUnresolvedReferencesService;
 
   // protected method access helper
   private static class CategorySyncMock extends CategorySync {
@@ -69,7 +70,9 @@ class CategorySyncTest {
         @Nonnull final CategorySyncOptions syncOptions,
         @Nonnull final TypeService typeService,
         @Nonnull final CategoryService categoryService,
-        @Nonnull final UnresolvedReferencesService unresolvedReferencesService) {
+        @Nonnull
+            final UnresolvedReferencesService<WaitingToBeResolvedCategories>
+                unresolvedReferencesService) {
       super(syncOptions, typeService, categoryService, unresolvedReferencesService);
     }
 

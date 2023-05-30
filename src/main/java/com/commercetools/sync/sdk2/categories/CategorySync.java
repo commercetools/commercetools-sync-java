@@ -349,22 +349,17 @@ public class CategorySync
         .handle(ImmutablePair::new)
         .thenCompose(
             updateResponse -> {
-              final Throwable sphereException = updateResponse.getValue();
+              final Throwable ctpException = updateResponse.getValue();
 
-              if (sphereException != null) {
+              if (ctpException != null) {
                 return executeSupplierIfConcurrentModificationException(
-                    sphereException,
+                    ctpException,
                     () -> fetchAndUpdate(oldCategory, newCategory),
                     () -> {
                       final String errorMessage =
-                          format(UPDATE_FAILED, categoryKey, sphereException.getMessage());
+                          format(UPDATE_FAILED, categoryKey, ctpException.getMessage());
                       handleError(
-                          errorMessage,
-                          sphereException,
-                          oldCategory,
-                          newCategory,
-                          updateActions,
-                          1);
+                          errorMessage, ctpException, oldCategory, newCategory, updateActions, 1);
 
                       categoryDraftsToUpdateSequentially.remove(newCategory);
                       return completedFuture(null);
