@@ -10,7 +10,8 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class CustomerCustomActionBuilder implements GenericCustomActionBuilder {
+public final class CustomerCustomActionBuilder
+    implements GenericCustomActionBuilder<CustomerUpdateAction> {
 
   private static final CustomerCustomActionBuilder builder = new CustomerCustomActionBuilder();
 

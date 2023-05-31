@@ -1,6 +1,8 @@
 package com.commercetools.sync.integration.sdk2.commons.utils;
 
+import static com.commercetools.sync.integration.sdk2.commons.utils.CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects;
 import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.deleteTypes;
 import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
@@ -23,7 +25,6 @@ import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.api.models.type.ResourceTypeId;
 import com.commercetools.api.models.type.Type;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
-import io.sphere.sdk.models.ResourceIdentifier;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.NotFoundException;
 import java.util.ArrayList;
@@ -44,6 +45,9 @@ import javax.annotation.Nullable;
 public final class CategoryITUtils {
   public static final String OLD_CATEGORY_CUSTOM_TYPE_KEY = "oldCategoryCustomTypeKey";
   public static final String OLD_CATEGORY_CUSTOM_TYPE_NAME = "old_type_name";
+
+  public static final String CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY =
+      "commercetools-sync-java.UnresolvedReferencesService.categoryDrafts";
 
   /**
    * Builds a list of the supplied number ({@code numberOfCategories}) of CategoryDraft objects that
@@ -255,6 +259,17 @@ public final class CategoryITUtils {
   }
 
   /**
+   * Deletes all categories and types from the CTP project defined by the {@code ctpClient}.
+   *
+   * @param ctpClient defines the CTP project to delete the categories and types from.
+   */
+  public static void deleteCategorySyncTestData(@Nonnull final ProjectApiRoot ctpClient) {
+    deleteAllCategories(ctpClient);
+    deleteTypes(ctpClient);
+    deleteWaitingToBeResolvedCustomObjects(ctpClient, CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY);
+  }
+
+  /**
    * Deletes all categories from CTP projects defined by the {@code ctpClient}. Only issues delete
    * request action to a category in the case that none of its ancestors was already deleted or not
    * to avoid trying to delete a category which would have been already deleted, due to deletion of
@@ -315,9 +330,9 @@ public final class CategoryITUtils {
    * from the supplied {@link java.util.List} of {@link Category}.
    *
    * @param categories a {@link java.util.List} of {@link Category} from which the {@link
-   *     java.util.Set} of {@link ResourceIdentifier} will be built.
-   * @return a {@link java.util.Set} of {@link io.sphere.sdk.models.ResourceIdentifier} with keys in
-   *     place of ids from the supplied {@link java.util.List} of {@link Category}.
+   *     java.util.Set} of {@link CategoryResourceIdentifier} will be built.
+   * @return a {@link java.util.Set} of {@link CategoryResourceIdentifier} with keys in place of ids
+   *     from the supplied {@link java.util.List} of {@link Category}.
    */
   @Nonnull
   public static Set<CategoryResourceIdentifier> getResourceIdentifiersWithKeys(

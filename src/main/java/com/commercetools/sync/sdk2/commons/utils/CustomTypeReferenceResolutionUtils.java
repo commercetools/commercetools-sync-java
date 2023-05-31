@@ -66,20 +66,19 @@ public final class CustomTypeReferenceResolutionUtils {
                         Optional.ofNullable(fields.getType())
                             .map(
                                 typeReference ->
-                                    (TypeResourceIdentifier)
-                                        getResourceIdentifierWithKey(
-                                            typeReference,
-                                            referenceIdToKeyCache,
-                                            (id, key) -> {
-                                              final TypeResourceIdentifierBuilder builder =
-                                                  TypeResourceIdentifierBuilder.of();
-                                              if (id == null) {
+                                    getResourceIdentifierWithKey(
+                                        typeReference,
+                                        referenceIdToKeyCache,
+                                        (id, key) -> {
+                                          final TypeResourceIdentifierBuilder builder =
+                                              TypeResourceIdentifierBuilder.of();
+                                          if (id == null) {
 
-                                                return builder.key(key).build();
-                                              } else {
-                                                return builder.id(id).build();
-                                              }
-                                            }))
+                                            return builder.key(key).build();
+                                          } else {
+                                            return builder.id(id).build();
+                                          }
+                                        }))
                             .orElse(null))
                     .build())
         .orElse(null);

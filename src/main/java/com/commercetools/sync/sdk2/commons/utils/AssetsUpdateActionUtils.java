@@ -131,7 +131,8 @@ public final class AssetsUpdateActionUtils {
 
             } else {
               syncOptions.applyWarningCallback(
-                  new SyncException(format(ASSET_KEY_NOT_SET, "name: " + newAsset.getName())),
+                  new SyncException(
+                      format(ASSET_KEY_NOT_SET, "name: " + newAsset.getName().values())),
                   null,
                   newAsset);
             }

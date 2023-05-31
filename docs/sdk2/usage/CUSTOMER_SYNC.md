@@ -36,7 +36,7 @@ against a [CustomerDraft](https://docs.commercetools.com/api/projects/customers#
 
 Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/java-sdk-v2-product-sync-migration/src/main/java/com/commercetools/sync/sdk2/commons/utils/ClientConfigurationUtils.java) which apply the best practices for `ProjectApiRoot` creation.
 To create `ClientCredentials` which are required for creating a client please use the `ClientCredentialsBuilder` provided in java-sdk-v2 [Client OAUTH2 package](https://github.com/commercetools/commercetools-sdk-java-v2/blob/main/rmf/rmf-java-base/src/main/java/io/vrap/rmf/base/client/oauth2/ClientCredentialsBuilder.java)
-If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
+If you have custom requirements for the client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
 final ClientCredentials clientCredentials =
@@ -77,7 +77,7 @@ When syncing from a source commercetools project, you can use [`toCustomerDrafts
  method that transforms(resolves by querying and caching key-id pairs) and maps from a `Customer` to `CustomerDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
-// Build a CustomerQuery for fetching customers from a source CTP project without any references expanded for the sync:
+// Build ByProjectKeyCustomersGet for fetching customers from a source CTP project without any references expanded for the sync:
 final ByProjectKeyCustomersGet byProjectKeyCustomersGet = client.customers().get();
 
 // Query all customers (NOTE this is just for example, please adjust your logic)

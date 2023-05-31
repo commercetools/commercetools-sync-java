@@ -4,7 +4,6 @@ import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUt
 import static com.commercetools.sync.sdk2.products.utils.PriceUtils.createPriceTierDraft;
 import static java.lang.String.format;
 
-import com.commercetools.api.models.ResourceUpdateAction;
 import com.commercetools.api.models.common.Price;
 import com.commercetools.api.models.common.PriceDraft;
 import com.commercetools.api.models.product.Product;
@@ -150,7 +149,7 @@ public final class ProductVariantPriceUpdateActionUtils {
     PriceCustomTypeAdapter priceAdapter = PriceCustomTypeAdapter.of(oldPrice);
     PriceDraftCustomTypeAdapter priceDraftAdapter = PriceDraftCustomTypeAdapter.of(newPrice);
 
-    List<ResourceUpdateAction> customUpdateAction =
+    List<ProductUpdateAction> customUpdateAction =
         CustomUpdateActionUtils.buildCustomUpdateActions(
             newProduct,
             priceAdapter,

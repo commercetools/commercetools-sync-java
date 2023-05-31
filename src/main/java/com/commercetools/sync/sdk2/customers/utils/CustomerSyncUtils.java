@@ -18,7 +18,6 @@ import static com.commercetools.sync.sdk2.customers.utils.CustomerUpdateActionUt
 import static com.commercetools.sync.sdk2.customers.utils.CustomerUpdateActionUtils.buildSetVatIdUpdateAction;
 import static com.commercetools.sync.sdk2.customers.utils.CustomerUpdateActionUtils.buildStoreUpdateActions;
 
-import com.commercetools.api.models.ResourceUpdateAction;
 import com.commercetools.api.models.customer.Customer;
 import com.commercetools.api.models.customer.CustomerDraft;
 import com.commercetools.api.models.customer.CustomerUpdateAction;
@@ -74,15 +73,14 @@ public final class CustomerSyncUtils {
 
     updateActions.addAll(addressUpdateActions);
 
-    final List<ResourceUpdateAction> customerCustomUpdateActions =
+    final List<CustomerUpdateAction> customerCustomUpdateActions =
         buildPrimaryResourceCustomUpdateActions(
             CustomerCustomTypeAdapter.of(oldCustomer),
             CustomerDraftCustomTypeAdapter.of(newCustomer),
             customerCustomActionBuilder,
             syncOptions);
 
-    customerCustomUpdateActions.forEach(
-        resourceUpdateAction -> updateActions.add((CustomerUpdateAction) resourceUpdateAction));
+    updateActions.addAll(customerCustomUpdateActions);
 
     final List<CustomerUpdateAction> buildStoreUpdateActions =
         buildStoreUpdateActions(oldCustomer, newCustomer);

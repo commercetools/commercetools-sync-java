@@ -79,11 +79,12 @@ public final class SyncUtils {
    *     Otherwise, it returns the resource identifier with id.
    */
   @Nullable
-  public static ResourceIdentifier getResourceIdentifierWithKey(
-      @Nullable final Reference reference,
-      @Nonnull ReferenceIdToKeyCache referenceIdToKeyCache,
-      final @Nonnull BiFunction<String, String, ResourceIdentifier>
-              toResourceIdentifierWithIdAndKey) {
+  public static <ResourceIdentifierT extends ResourceIdentifier>
+      ResourceIdentifierT getResourceIdentifierWithKey(
+          @Nullable final Reference reference,
+          @Nonnull ReferenceIdToKeyCache referenceIdToKeyCache,
+          final @Nonnull BiFunction<String, String, ResourceIdentifierT>
+                  toResourceIdentifierWithIdAndKey) {
     return Optional.ofNullable(reference)
         .map(
             ref -> {
@@ -94,10 +95,11 @@ public final class SyncUtils {
         .orElse(null);
   }
 
-  private static ResourceIdentifier getResourceIdentifierWithKey(
-      @Nonnull final String id,
-      @Nullable final String key,
-      final BiFunction<String, String, ResourceIdentifier> toResourceIdentifier) {
+  private static <ResourceIdentifierT extends ResourceIdentifier>
+      ResourceIdentifierT getResourceIdentifierWithKey(
+          @Nonnull final String id,
+          @Nullable final String key,
+          final BiFunction<String, String, ResourceIdentifierT> toResourceIdentifier) {
 
     if (!StringUtils.isEmpty(key)) {
       return toResourceIdentifier.apply(null, key);

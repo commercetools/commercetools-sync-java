@@ -1,6 +1,6 @@
 package com.commercetools.sync.sdk2.customers.utils;
 
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.mockGraphQLResponse;
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.mockGraphQLResponse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;

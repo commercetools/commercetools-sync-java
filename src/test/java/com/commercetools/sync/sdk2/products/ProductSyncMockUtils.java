@@ -1,9 +1,9 @@
 package com.commercetools.sync.sdk2.products;
 
 import static com.commercetools.sync.sdk2.commons.helpers.DefaultCurrencyUnits.EUR;
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.readObjectFromResource;
 import static com.commercetools.sync.sdk2.products.utils.AssetUtils.createAssetDraft;
 import static com.commercetools.sync.sdk2.products.utils.PriceUtils.createPriceDraft;
-import static io.vrap.rmf.base.client.utils.json.JsonUtils.fromInputStream;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
@@ -25,8 +25,6 @@ import com.commercetools.api.models.customer.CustomerReference;
 import com.commercetools.api.models.customer.CustomerReferenceBuilder;
 import com.commercetools.api.models.customer_group.CustomerGroup;
 import com.commercetools.api.models.customer_group.CustomerGroupReference;
-import com.commercetools.api.models.graph_ql.GraphQLResponse;
-import com.commercetools.api.models.graph_ql.GraphQLResponseBuilder;
 import com.commercetools.api.models.product.*;
 import com.commercetools.api.models.product_type.ProductTypeReference;
 import com.commercetools.api.models.product_type.ProductTypeReferenceBuilder;
@@ -50,11 +48,6 @@ import com.commercetools.sync.sdk2.services.ProductService;
 import com.commercetools.sync.sdk2.services.ProductTypeService;
 import com.commercetools.sync.sdk2.services.StateService;
 import com.commercetools.sync.sdk2.services.TaxCategoryService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vrap.rmf.base.client.ApiHttpResponse;
-import io.vrap.rmf.base.client.utils.json.JsonUtils;
-import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Arrays;
@@ -320,16 +313,7 @@ public class ProductSyncMockUtils {
   }
 
   public static ProductDraft createProductDraftFromJson(@Nonnull final String jsonResourcePath) {
-    final InputStream resourceAsStream =
-        Thread.currentThread().getContextClassLoader().getResourceAsStream(jsonResourcePath);
-    return fromInputStream(resourceAsStream, ProductDraft.class);
-  }
-
-  public static <T> T readObjectFromResource(final String resourcePath, final Class<T> objectType) {
-    final InputStream resourceAsStream =
-        Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath);
-    final T resourceFromJson = fromInputStream(resourceAsStream, objectType);
-    return resourceFromJson;
+    return readObjectFromResource(jsonResourcePath, ProductDraft.class);
   }
 
   /**
@@ -654,16 +638,5 @@ public class ProductSyncMockUtils {
     when(customerService.fetchCachedCustomerId(anyString()))
         .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
     return customerService;
-  }
-
-  @Nonnull
-  public static ApiHttpResponse<GraphQLResponse> mockGraphQLResponse(
-      final String jsonResponseString) throws JsonProcessingException {
-    ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
-    final Map responseMap = objectMapper.readValue(jsonResponseString, Map.class);
-    final ApiHttpResponse<GraphQLResponse> apiHttpResponse = mock(ApiHttpResponse.class);
-    when(apiHttpResponse.getBody())
-        .thenReturn(GraphQLResponseBuilder.of().data(responseMap).build());
-    return apiHttpResponse;
   }
 }

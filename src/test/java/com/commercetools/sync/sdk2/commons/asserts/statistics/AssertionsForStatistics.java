@@ -1,5 +1,6 @@
 package com.commercetools.sync.sdk2.commons.asserts.statistics;
 
+import com.commercetools.sync.sdk2.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.sdk2.customers.helpers.CustomerSyncStatistics;
 import com.commercetools.sync.sdk2.products.helpers.ProductSyncStatistics;
 import javax.annotation.Nonnull;
@@ -30,5 +31,17 @@ public final class AssertionsForStatistics {
   public static ProductSyncStatisticsAssert assertThat(
       @Nullable final ProductSyncStatistics statistics) {
     return new ProductSyncStatisticsAssert(statistics);
+  }
+
+  /**
+   * Create assertion for {@link CategorySyncStatistics}.
+   *
+   * @param statistics the actual value.
+   * @return the created assertion object.
+   */
+  @Nonnull
+  public static CategorySyncStatisticsAssert assertThat(
+      @Nullable final CategorySyncStatistics statistics) {
+    return new CategorySyncStatisticsAssert(statistics);
   }
 }
