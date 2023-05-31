@@ -22,6 +22,8 @@ import com.commercetools.sync.sdk2.commons.models.Custom;
 import com.commercetools.sync.sdk2.commons.models.CustomDraft;
 import com.commercetools.sync.sdk2.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -329,7 +331,7 @@ public final class CustomUpdateActionUtils {
 
     final String oldCustomTypeId = oldCustomFields.getType().getId();
 
-    // Object is JsonNode
+    // Convert Object to JSONNode
     final Map<String, Object> oldCustomFieldsJsonMap = oldCustomFields.getFields().values();
     final String newCustomTypeId = newCustomFields.getType().getId();
     final FieldContainer fields = newCustomFields.getFields();
@@ -497,9 +499,10 @@ public final class CustomUpdateActionUtils {
     return newCustomFields.keySet().stream()
         .filter(
             newCustomFieldName -> {
-              final Object newCustomFieldValue = newCustomFields.get(newCustomFieldName);
-              final Object oldCustomFieldValue = oldCustomFields.get(newCustomFieldName);
-              // TODO: This comparison doesn't work when newFieldValue is passed as JSON string.
+              final Object newCustomFieldValue =
+                  convertFieldValuesToJsonNode(newCustomFields.get(newCustomFieldName));
+              final Object oldCustomFieldValue =
+                  convertFieldValuesToJsonNode(oldCustomFields.get(newCustomFieldName));
               return !isNullJsonValue(newCustomFieldValue)
                   && !Objects.equals(newCustomFieldValue, oldCustomFieldValue);
             })
@@ -555,8 +558,10 @@ public final class CustomUpdateActionUtils {
     return oldCustomFields.keySet().stream()
         .filter(
             oldCustomFieldsName -> {
-              final Object newCustomFieldValue = newCustomFields.get(oldCustomFieldsName);
-              final Object oldCustomFieldValue = oldCustomFields.get(oldCustomFieldsName);
+              final Object newCustomFieldValue =
+                  convertFieldValuesToJsonNode(newCustomFields.get(oldCustomFieldsName));
+              final Object oldCustomFieldValue =
+                  convertFieldValuesToJsonNode(oldCustomFields.get(oldCustomFieldsName));
               return isNullJsonValue(newCustomFieldValue)
                   && oldCustomFieldValue != newCustomFieldValue;
             })
@@ -565,6 +570,21 @@ public final class CustomUpdateActionUtils {
                 customActionBuilder.buildSetCustomFieldAction(
                     variantId, updateIdGetter.apply(resource), oldCustomFieldsName, null))
         .collect(Collectors.toList());
+  }
+
+  /**
+   * Takes a value of type Object and converts to JSONNode. It helps to compare fields values of
+   * {@link CustomFields} and {@link CustomFieldsDraft}
+   *
+   * @param data a value of any Object-type
+   * @return the given value converted to {@link JsonNode} or null
+   */
+  @Nullable
+  private static JsonNode convertFieldValuesToJsonNode(@Nullable final Object data) {
+    if (Objects.isNull(data)) return null;
+    final ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
+    final JsonNode jsonNode = objectMapper.convertValue(data, JsonNode.class);
+    return jsonNode;
   }
 
   private CustomUpdateActionUtils() {}
