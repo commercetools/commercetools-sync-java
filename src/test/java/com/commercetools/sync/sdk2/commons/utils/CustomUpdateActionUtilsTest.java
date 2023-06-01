@@ -49,15 +49,14 @@ import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.products.helpers.AssetCustomActionBuilder;
 import com.commercetools.sync.sdk2.products.helpers.PriceCustomActionBuilder;
 import com.commercetools.sync.sdk2.products.models.PriceCustomTypeAdapter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import org.junit.jupiter.api.Test;
 
 class CustomUpdateActionUtilsTest {
@@ -656,7 +655,9 @@ class CustomUpdateActionUtilsTest {
     oldCustomFields.put("backgroundColor", Map.of("de", "rot", "es", "rojo"));
 
     final Map<String, Object> newCustomFields = new HashMap<>();
-    newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("es", "rojo").put("de", "rot"));
+    newCustomFields.put(
+        "backgroundColor",
+        JsonNodeFactory.instance.objectNode().put("es", "rojo").put("de", "rot"));
 
     final Asset newAssetDraft =
         AssetBuilder.of().id("test").sources(emptyList()).name(ofEnglish("assetName")).build();
@@ -770,7 +771,8 @@ class CustomUpdateActionUtilsTest {
     when(oldAsset.getCustom()).thenReturn(oldCustomFields);
 
     final Map<String, Object> newCustomFieldsMap = new HashMap<>();
-    newCustomFieldsMap.put("setOfBooleans", new ObjectMapper().convertValue(Collections.emptyList(), List.class));
+    newCustomFieldsMap.put(
+        "setOfBooleans", new ObjectMapper().convertValue(Collections.emptyList(), List.class));
 
     // test
     final List<ProductUpdateAction> updateActions =
