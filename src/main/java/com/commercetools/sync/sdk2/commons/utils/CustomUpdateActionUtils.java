@@ -331,7 +331,6 @@ public final class CustomUpdateActionUtils {
 
     final String oldCustomTypeId = oldCustomFields.getType().getId();
 
-    // Convert Object to JSONNode
     final Map<String, Object> oldCustomFieldsJsonMap = oldCustomFields.getFields().values();
     final String newCustomTypeId = newCustomFields.getType().getId();
     final FieldContainer fields = newCustomFields.getFields();
@@ -499,9 +498,10 @@ public final class CustomUpdateActionUtils {
     return newCustomFields.keySet().stream()
         .filter(
             newCustomFieldName -> {
-              final Object newCustomFieldValue =
+              // Convert Object to JSONNode
+              final JsonNode newCustomFieldValue =
                   convertFieldValuesToJsonNode(newCustomFields.get(newCustomFieldName));
-              final Object oldCustomFieldValue =
+              final JsonNode oldCustomFieldValue =
                   convertFieldValuesToJsonNode(oldCustomFields.get(newCustomFieldName));
               return !isNullJsonValue(newCustomFieldValue)
                   && !Objects.equals(newCustomFieldValue, oldCustomFieldValue);
@@ -516,8 +516,8 @@ public final class CustomUpdateActionUtils {
         .collect(Collectors.toList());
   }
 
-  private static boolean isNullJsonValue(@Nullable final Object value) {
-    return !Objects.nonNull(value) || (value instanceof JsonNode && ((JsonNode) value).isNull());
+  private static boolean isNullJsonValue(@Nullable final JsonNode value) {
+    return !Objects.nonNull(value) || value.isNull();
   }
 
   /**
@@ -558,9 +558,10 @@ public final class CustomUpdateActionUtils {
     return oldCustomFields.keySet().stream()
         .filter(
             oldCustomFieldsName -> {
-              final Object newCustomFieldValue =
+              // Convert Object to JSONNode
+              final JsonNode newCustomFieldValue =
                   convertFieldValuesToJsonNode(newCustomFields.get(oldCustomFieldsName));
-              final Object oldCustomFieldValue =
+              final JsonNode oldCustomFieldValue =
                   convertFieldValuesToJsonNode(oldCustomFields.get(oldCustomFieldsName));
               return isNullJsonValue(newCustomFieldValue)
                   && oldCustomFieldValue != newCustomFieldValue;
