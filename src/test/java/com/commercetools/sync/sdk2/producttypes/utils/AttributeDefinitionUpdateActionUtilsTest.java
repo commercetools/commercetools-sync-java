@@ -1,6 +1,8 @@
 package com.commercetools.sync.sdk2.producttypes.utils;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static com.commercetools.sync.sdk2.producttypes.TestBuilderUtils.createDefaultAttributeDefinitionBuilder;
+import static com.commercetools.sync.sdk2.producttypes.TestBuilderUtils.createDefaultAttributeDefinitionDraftBuilder;
 import static com.commercetools.sync.sdk2.producttypes.utils.AttributeDefinitionUpdateActionUtils.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -33,7 +35,6 @@ import com.commercetools.api.models.product_type.ProductTypeRemoveEnumValuesActi
 import com.commercetools.api.models.product_type.ProductTypeSetInputTipActionBuilder;
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
 import com.commercetools.api.models.product_type.TextInputHint;
-import com.commercetools.sync.sdk2.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.sdk2.producttypes.helpers.ResourceToDraftConverters;
 import java.util.List;
 import java.util.Optional;
@@ -74,7 +75,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
 
     newDifferent =
         AttributeDefinitionDraftBuilder.of()
-            .type(attributeTypeBuilder -> attributeTypeBuilder.textBuilder())
+            .type(AttributeTypeBuilder::textBuilder)
             .name("attributeName1")
             .label(ofEnglish("label2"))
             .isRequired(true)
@@ -356,7 +357,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
 
   @Test
   void buildChangeAttributeConstraintAction_WithDifferentValues_ShouldBuildAction()
-      throws BuildUpdateActionException {
+      throws UnsupportedOperationException {
     // Preparation
     final AttributeDefinitionDraft draft =
         createDefaultAttributeDefinitionDraftBuilder()
@@ -382,7 +383,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
 
   @Test
   void buildChangeAttributeConstraintAction_WithSameValues_ShouldReturnEmptyOptional()
-      throws BuildUpdateActionException {
+      throws UnsupportedOperationException {
     // Preparation
     final AttributeDefinitionDraft draft =
         createDefaultAttributeDefinitionDraftBuilder()
@@ -404,7 +405,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
   @Test
   void
       buildChangeAttributeConstraintAction_WithSourceNullValuesAndNonDefaultTarget_ShouldBuildAction()
-          throws BuildUpdateActionException {
+          throws UnsupportedOperationException {
     // Preparation
     final AttributeDefinitionDraft draft =
         createDefaultAttributeDefinitionDraftBuilder().attributeConstraint(null).build();
@@ -443,7 +444,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
     try {
       buildChangeAttributeConstraintUpdateAction(attributeDefinition, draft);
       fail("Expected an exception to be thrown");
-    } catch (BuildUpdateActionException e) {
+    } catch (UnsupportedOperationException e) {
       assertThat(e)
           .hasMessage(
               "Invalid AttributeConstraint update to COMBINATION_UNIQUE. Only following updates are allowed: SameForAll to None and Unique to None.");
@@ -451,7 +452,8 @@ class AttributeDefinitionUpdateActionUtilsTest {
   }
 
   @Test
-  void buildActions_WithNewDifferentValues_ShouldReturnActions() throws BuildUpdateActionException {
+  void buildActions_WithNewDifferentValues_ShouldReturnActions()
+      throws UnsupportedOperationException {
     final List<ProductTypeUpdateAction> result = buildActions(old, newDifferent);
 
     assertThat(result)
@@ -479,7 +481,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
   }
 
   @Test
-  void buildActions_WithSameValues_ShouldReturnEmpty() throws BuildUpdateActionException {
+  void buildActions_WithSameValues_ShouldReturnEmpty() throws UnsupportedOperationException {
     final List<ProductTypeUpdateAction> result = buildActions(old, newSame);
 
     assertThat(result).isEmpty();
@@ -487,7 +489,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
 
   @Test
   void buildActions_WithStringAttributeTypesWithLabelChanges_ShouldBuildChangeLabelAction()
-      throws BuildUpdateActionException {
+      throws UnsupportedOperationException {
     final AttributeDefinition attributeDefinition =
         createDefaultAttributeDefinitionBuilder().label(ofEnglish("label1")).build();
 
@@ -507,7 +509,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
 
   @Test
   void buildActions_WithChangedSetOfEnumAttributeTypes_ShouldBuildEnumActions()
-      throws BuildUpdateActionException {
+      throws UnsupportedOperationException {
     // preparation
     final AttributeDefinition oldDefinition =
         createDefaultAttributeDefinitionBuilder()
@@ -590,7 +592,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
 
   @Test
   void buildActions_WithChangedSetOfLocalizedEnumAttributeTypes_ShouldBuildEnumActions()
-      throws BuildUpdateActionException {
+      throws UnsupportedOperationException {
     // preparation
     final AttributeDefinition oldDefinition =
         createDefaultAttributeDefinitionBuilder()
@@ -835,27 +837,5 @@ class AttributeDefinitionUpdateActionUtilsTest {
                 .attributeName(attributeDefinition.getName())
                 .newValue(localizedEnumValueDiffLabel)
                 .build());
-  }
-
-  private AttributeDefinitionDraftBuilder createDefaultAttributeDefinitionDraftBuilder() {
-    return AttributeDefinitionDraftBuilder.of()
-        .name("foo")
-        .label(ofEnglish("x"))
-        .type(AttributeTypeBuilder::textBuilder)
-        .inputHint(TextInputHint.MULTI_LINE)
-        .attributeConstraint(AttributeConstraintEnum.NONE)
-        .isRequired(true)
-        .isSearchable(false);
-  }
-
-  private AttributeDefinitionBuilder createDefaultAttributeDefinitionBuilder() {
-    return AttributeDefinitionBuilder.of()
-        .name("foo")
-        .label(ofEnglish("x"))
-        .type(AttributeTypeBuilder::textBuilder)
-        .inputHint(TextInputHint.MULTI_LINE)
-        .attributeConstraint(AttributeConstraintEnum.NONE)
-        .isRequired(true)
-        .isSearchable(false);
   }
 }

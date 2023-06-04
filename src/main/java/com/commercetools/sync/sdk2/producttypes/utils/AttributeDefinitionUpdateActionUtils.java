@@ -52,7 +52,7 @@ final class AttributeDefinitionUpdateActionUtils {
   static List<ProductTypeUpdateAction> buildActions(
       @Nonnull final AttributeDefinition oldAttributeDefinition,
       @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft)
-      throws BuildUpdateActionException {
+      throws UnsupportedOperationException {
 
     final List<ProductTypeUpdateAction> updateActions =
         filterEmptyOptionals(
@@ -338,7 +338,7 @@ final class AttributeDefinitionUpdateActionUtils {
   static Optional<ProductTypeUpdateAction> buildChangeAttributeConstraintUpdateAction(
       @Nonnull final AttributeDefinition oldAttributeDefinition,
       @Nonnull final AttributeDefinitionDraft newAttributeDefinition)
-      throws BuildUpdateActionException {
+      throws UnsupportedOperationException {
 
     final AttributeConstraintEnum newAttributeConstraint =
         newAttributeDefinition.getAttributeConstraint();
@@ -347,7 +347,7 @@ final class AttributeDefinitionUpdateActionUtils {
     if (newAttributeConstraint != null
         && !newAttributeConstraint.equals(oldAttributeConstraint)
         && !AttributeConstraintEnum.NONE.equals(newAttributeConstraint)) {
-      throw new BuildUpdateActionException(
+      throw new UnsupportedOperationException(
           format(
               "Invalid AttributeConstraint update to %s. Only following updates are allowed: SameForAll to None and Unique to None.",
               newAttributeConstraint.name()));
