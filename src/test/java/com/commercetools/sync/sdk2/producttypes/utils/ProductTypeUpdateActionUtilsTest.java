@@ -1,6 +1,6 @@
 package com.commercetools.sync.sdk2.producttypes.utils;
 
-import static com.commercetools.sync.sdk2.producttypes.TestBuilderUtils.createDefaultAttributeDefinitionBuilder;
+import static com.commercetools.sync.sdk2.producttypes.MockBuilderUtils.createMockAttributeDefinitionBuilder;
 import static com.commercetools.sync.sdk2.producttypes.helpers.ResourceToDraftConverters.toAttributeDefinitionDraftBuilder;
 import static com.commercetools.sync.sdk2.producttypes.utils.ProductTypeUpdateActionUtils.buildChangeDescriptionAction;
 import static com.commercetools.sync.sdk2.producttypes.utils.ProductTypeUpdateActionUtils.buildChangeNameAction;
@@ -37,7 +37,7 @@ class ProductTypeUpdateActionUtilsTest {
   static void setup() {
     final LocalizedString label = LocalizedString.of(Locale.ENGLISH, "label1");
     final AttributeDefinition attributeDefinition =
-        createDefaultAttributeDefinitionBuilder()
+        createMockAttributeDefinitionBuilder()
             .name("attributeName1")
             .label(label)
             .type(AttributeTypeBuilder::textBuilder)

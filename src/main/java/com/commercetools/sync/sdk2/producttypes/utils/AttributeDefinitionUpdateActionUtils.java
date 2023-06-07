@@ -353,9 +353,16 @@ final class AttributeDefinitionUpdateActionUtils {
               newAttributeConstraint.name()));
     }
 
+    if (AttributeConstraintEnum.NONE.equals(oldAttributeConstraint)
+        && newAttributeConstraint == null) {
+      // attribute constraint is optional and by default attribute constraint is NONE:
+      // https://docs.commercetools.com/api/projects/productTypes#ctp:api:type:AttributeDefinitionDraft
+      return Optional.empty();
+    }
+
     return buildUpdateAction(
-        oldAttributeDefinition.getAttributeConstraint(),
-        newAttributeDefinition.getAttributeConstraint(),
+        oldAttributeConstraint,
+        newAttributeConstraint,
         () ->
             ProductTypeChangeAttributeConstraintActionBuilder.of()
                 .attributeName(oldAttributeDefinition.getName())
