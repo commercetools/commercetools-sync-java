@@ -134,8 +134,6 @@ class CategorySyncIT {
     assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
   }
 
-  // TODO: Fix the mock for customFields or Adjust the CustomUpdateActionUtils comparison
-  @Disabled
   @Test
   void syncDrafts_WithCategoryWithNoChanges_ShouldNotUpdateCategory() {
     // Create a mock in the target project.
@@ -717,8 +715,6 @@ class CategorySyncIT {
     assertThat(syncStatistics).hasValues(6, 5, 1, 0, 0);
   }
 
-  // Needs the custom fields fix
-  @Disabled
   @Test
   void syncDrafts_WithSameSlugDraft_ShouldNotSyncIt() {
     // Create a mock in the target project.

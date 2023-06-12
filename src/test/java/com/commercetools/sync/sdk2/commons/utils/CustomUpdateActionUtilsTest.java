@@ -49,6 +49,8 @@ import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.products.helpers.AssetCustomActionBuilder;
 import com.commercetools.sync.sdk2.products.helpers.PriceCustomActionBuilder;
 import com.commercetools.sync.sdk2.products.models.PriceCustomTypeAdapter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -289,7 +291,7 @@ class CustomUpdateActionUtilsTest {
     // Mock new CustomFieldsDraft
     final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
     final Map<String, Object> newCustomFieldsJsonMapMock = new HashMap<>();
-    newCustomFieldsJsonMapMock.put("invisibleInShop", false);
+    newCustomFieldsJsonMapMock.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
     when(newCustomFieldsMock.getType())
         .thenReturn(TypeResourceIdentifierBuilder.of().id("categoryAssetCustomTypeId").build());
     when(newCustomFieldsMock.getFields())
@@ -502,8 +504,8 @@ class CustomUpdateActionUtilsTest {
     oldCustomFields.put("backgroundColor", Map.of("de", "rot", "en", "red"));
 
     final Map<String, Object> newCustomFields = new HashMap<>();
-    newCustomFields.put("invisibleInShop", true);
-    newCustomFields.put("backgroundColor", Map.of("de", "rot"));
+    newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+    newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
 
     // Mock new price
     final Price price =
@@ -540,8 +542,8 @@ class CustomUpdateActionUtilsTest {
     final Map<String, Object> oldCustomFields = new HashMap<>();
 
     final Map<String, Object> newCustomFields = new HashMap<>();
-    newCustomFields.put("invisibleInShop", true);
-    newCustomFields.put("backgroundColor", Map.of("de", "rot"));
+    newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+    newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
     newCustomFields.put("url", Map.of("domain", "domain.com"));
     newCustomFields.put("size", Map.of("cm", 34));
 
@@ -577,7 +579,7 @@ class CustomUpdateActionUtilsTest {
     oldCustomFields.put("backgroundColor", Map.of("de", "rot", "en", "red"));
 
     final Map<String, Object> newCustomFields = new HashMap<>();
-    newCustomFields.put("invisibleInShop", true);
+    newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
     // Mock new price
     final Price price =
@@ -627,8 +629,8 @@ class CustomUpdateActionUtilsTest {
     oldCustomFields.put("backgroundColor", Map.of("de", "rot"));
 
     final Map<String, Object> newCustomFields = new HashMap<>();
-    newCustomFields.put("invisibleInShop", true);
-    newCustomFields.put("backgroundColor", Map.of("de", "rot"));
+    newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+    newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
 
     final Asset newAssetDraft =
         AssetBuilder.of().id("test").sources(emptyList()).name(ofEnglish("assetName")).build();
@@ -653,7 +655,9 @@ class CustomUpdateActionUtilsTest {
     oldCustomFields.put("backgroundColor", Map.of("de", "rot", "es", "rojo"));
 
     final Map<String, Object> newCustomFields = new HashMap<>();
-    newCustomFields.put("backgroundColor", Map.of("es", "rojo", "de", "rot"));
+    newCustomFields.put(
+        "backgroundColor",
+        JsonNodeFactory.instance.objectNode().put("es", "rojo").put("de", "rot"));
 
     final Asset newAssetDraft =
         AssetBuilder.of().id("test").sources(emptyList()).name(ofEnglish("assetName")).build();
@@ -677,7 +681,7 @@ class CustomUpdateActionUtilsTest {
     oldCustomFields.put("backgroundColor", "");
 
     final Map<String, Object> newCustomFields = new HashMap<>();
-    newCustomFields.put("backgroundColor", "");
+    newCustomFields.put("backgroundColor", JsonNodeFactory.instance.textNode(""));
 
     final Asset newAssetDraft =
         AssetBuilder.of().id("test").sources(emptyList()).name(ofEnglish("assetName")).build();
@@ -767,7 +771,8 @@ class CustomUpdateActionUtilsTest {
     when(oldAsset.getCustom()).thenReturn(oldCustomFields);
 
     final Map<String, Object> newCustomFieldsMap = new HashMap<>();
-    newCustomFieldsMap.put("setOfBooleans", Collections.emptyList());
+    newCustomFieldsMap.put(
+        "setOfBooleans", new ObjectMapper().convertValue(Collections.emptyList(), List.class));
 
     // test
     final List<ProductUpdateAction> updateActions =
@@ -959,7 +964,7 @@ class CustomUpdateActionUtilsTest {
     when(oldAsset.getCustom()).thenReturn(oldCustomFields);
 
     final Map<String, Object> newCustomFieldsMap = new HashMap<>();
-    newCustomFieldsMap.put("setOfBooleans", null);
+    newCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.nullNode());
 
     // test
     final List<ProductUpdateAction> updateActions =
@@ -996,7 +1001,7 @@ class CustomUpdateActionUtilsTest {
     when(oldAsset.getCustom()).thenReturn(oldCustomFields);
 
     final Map<String, Object> newCustomFieldsMap = new HashMap<>();
-    newCustomFieldsMap.put("setOfBooleans", null);
+    newCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.nullNode());
 
     // test
     final List<ProductUpdateAction> updateActions =
