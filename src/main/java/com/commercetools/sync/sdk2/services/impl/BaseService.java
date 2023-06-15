@@ -294,9 +294,10 @@ abstract class BaseService<
 
   /**
    * Given a resource key, this method fetches a resource that matches this given key in the CTP
-   * project defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}. If there
-   * is no matching resource an empty {@link Optional} will be returned in the returned future. A
-   * mapping of the key to the id of the fetched resource is persisted in an in -memory map.
+   * project defined in a potentially injected {@link com.commercetools.api.client.ProjectApiRoot}.
+   * If there is no matching resource an empty {@link Optional} will be returned in the returned
+   * future. A mapping of the key to the id of the fetched resource is persisted in an in -memory
+   * map.
    *
    * @param key the key of the resource to fetch
    * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion
