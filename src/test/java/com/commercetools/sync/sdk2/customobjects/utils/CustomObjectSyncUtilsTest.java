@@ -188,7 +188,7 @@ class CustomObjectSyncUtilsTest {
   void
       hasIdenticalValue_WithSameNestedJsonNode_WithSameAttributeOrderInNestedJson_ShouldBeIdentical() {
 
-    JsonNode oldNestedJson =
+    final JsonNode oldNestedJson =
         JsonNodeFactory.instance.objectNode().put("username", "Peter").put("userId", "123-456-789");
     JsonNode newNestedJson =
         JsonNodeFactory.instance.objectNode().put("username", "Peter").put("userId", "123-456-789");
