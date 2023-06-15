@@ -99,52 +99,37 @@ final class AttributeDefinitionUpdateActionUtils {
   static List<ProductTypeUpdateAction> buildEnumUpdateActions(
       @Nonnull final AttributeDefinition oldAttributeDefinition,
       @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) {
-
     final AttributeType oldAttributeType = oldAttributeDefinition.getType();
     final AttributeType newAttributeType = newAttributeDefinitionDraft.getType();
+    final AttributeEnumType oldEnumAttributeType = getAttributeEnumType(oldAttributeType);
+    final AttributeEnumType newEnumAttributeType = getAttributeEnumType(newAttributeType);
+    if (oldEnumAttributeType != null && newEnumAttributeType != null) {
+      return buildEnumValuesUpdateActions(
+          oldAttributeDefinition.getName(),
+          oldEnumAttributeType.getValues(),
+          newEnumAttributeType.getValues());
+    } else {
+      final AttributeLocalizedEnumType oldLocalizedEnumAttributeType =
+          getLocalizedEnumAttributeType(oldAttributeType);
+      final AttributeLocalizedEnumType newLocalizedEnumAttributeType =
+          getLocalizedEnumAttributeType(newAttributeType);
+      if (oldLocalizedEnumAttributeType != null && newLocalizedEnumAttributeType != null) {
+        return buildLocalizedEnumValuesUpdateActions(
+            oldAttributeDefinition.getName(),
+            oldLocalizedEnumAttributeType.getValues(),
+            newLocalizedEnumAttributeType.getValues());
 
-    return getAttributeEnumType(oldAttributeType)
-        .map(
-            oldEnumAttributeType ->
-                getAttributeEnumType(newAttributeType)
-                    .map(
-                        newEnumAttributeType ->
-                            buildEnumValuesUpdateActions(
-                                oldAttributeDefinition.getName(),
-                                oldEnumAttributeType.getValues(),
-                                newEnumAttributeType.getValues()))
-                    .orElseGet(Collections::emptyList))
-        .orElseGet(
-            () ->
-                getLocalizedEnumAttributeType(oldAttributeType)
-                    .map(
-                        oldLocalizedEnumAttributeType ->
-                            getLocalizedEnumAttributeType(newAttributeType)
-                                .map(
-                                    newLocalizedEnumAttributeType ->
-                                        buildLocalizedEnumValuesUpdateActions(
-                                            oldAttributeDefinition.getName(),
-                                            oldLocalizedEnumAttributeType.getValues(),
-                                            newLocalizedEnumAttributeType.getValues()))
-                                .orElseGet(Collections::emptyList))
-                    .orElseGet(Collections::emptyList));
+      } else {
+        return Collections.emptyList();
+      }
+    }
   }
 
-  /**
-   * Returns an optional containing the attribute type if is an {@link AttributeEnumType} or if the
-   * {@link AttributeType} is a {@link AttributeSetType} with an {@link AttributeEnumType} as a
-   * subtype, it returns this subtype in the optional. Otherwise, an empty optional.
-   *
-   * @param attributeType the attribute type.
-   * @return an optional containing the attribute type if is an {@link AttributeEnumType} or if the
-   *     {@link AttributeType} is a {@link AttributeSetType} with an {@link AttributeEnumType} as a
-   *     subtype, it returns this subtype in the optional. Otherwise, an empty optional.
-   */
-  private static Optional<AttributeEnumType> getAttributeEnumType(
+  private static AttributeEnumType getAttributeEnumType(
       @Nonnull final AttributeType attributeType) {
 
     if (attributeType instanceof AttributeEnumType) {
-      return Optional.of((AttributeEnumType) attributeType);
+      return (AttributeEnumType) attributeType;
     }
 
     if (attributeType instanceof AttributeSetType) {
@@ -152,30 +137,18 @@ final class AttributeDefinitionUpdateActionUtils {
       final AttributeType subType = setFieldType.getElementType();
 
       if (subType instanceof AttributeEnumType) {
-        return Optional.of((AttributeEnumType) subType);
+        return (AttributeEnumType) subType;
       }
     }
 
-    return Optional.empty();
+    return null;
   }
 
-  /**
-   * Returns an optional containing the attribute type if is an {@link AttributeLocalizedEnumType}
-   * or if the {@link AttributeType} is a {@link AttributeSetType} with an {@link
-   * AttributeLocalizedEnumType} as a subtype, it returns this subtype in the optional. Otherwise,
-   * an empty optional.
-   *
-   * @param attributeType the attribute type.
-   * @return an optional containing the attribute type if is an {@link AttributeLocalizedEnumType}
-   *     or if the {@link AttributeType} is a {@link AttributeSetType} with an {@link
-   *     AttributeLocalizedEnumType} as a subtype, it returns this subtype in the optional.
-   *     Otherwise, an empty optional.
-   */
-  private static Optional<AttributeLocalizedEnumType> getLocalizedEnumAttributeType(
+  private static AttributeLocalizedEnumType getLocalizedEnumAttributeType(
       @Nonnull final AttributeType attributeType) {
 
     if (attributeType instanceof AttributeLocalizedEnumType) {
-      return Optional.of((AttributeLocalizedEnumType) attributeType);
+      return (AttributeLocalizedEnumType) attributeType;
     }
 
     if (attributeType instanceof AttributeSetType) {
@@ -183,11 +156,11 @@ final class AttributeDefinitionUpdateActionUtils {
       final AttributeType subType = setFieldType.getElementType();
 
       if (subType instanceof AttributeLocalizedEnumType) {
-        return Optional.of((AttributeLocalizedEnumType) subType);
+        return (AttributeLocalizedEnumType) subType;
       }
     }
 
-    return Optional.empty();
+    return null;
   }
 
   /**
