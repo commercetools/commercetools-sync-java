@@ -1,7 +1,7 @@
 # ProductType Sync
 
 The module used for importing/syncing ProductTypes into a commercetools project. 
-It also provides utilities for generating update actions based on the comparison of a [ProductType](https://docs.commercetools.com/api/projects/productTypes) 
+It also provides utilities for generating update actions based on the comparison of a [ProductType](https://docs.commercetools.com/api/projects/productTypes#producttype) 
 against a [ProductTypeDraft](https://docs.commercetools.com/api/projects/productTypes#ctp:api:type:ProductTypeDraft).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -9,7 +9,7 @@ against a [ProductTypeDraft](https://docs.commercetools.com/api/projects/product
 
 - [Usage](#usage)
   - [Prerequisites](#prerequisites)
-    - [SphereClient](#sphereclient)
+    - [ProjectApiRoot](#projectapiroot)
     - [Required Fields](#required-fields)
     - [Reference Resolution](#reference-resolution)
       - [Syncing from a commercetools project](#syncing-from-a-commercetools-project)
@@ -39,10 +39,10 @@ against a [ProductTypeDraft](https://docs.commercetools.com/api/projects/product
 ## Usage
 
 ### Prerequisites
-#### SphereClient
+#### ProjectApiRoot
 
-Use the [ClientConfigurationUtils](#todo) which apply the best practices for `ProjectRoot` creation.
-To create `ClientCredentials` which are required for creating a client please use the `ClientCredentialsBuilder` provided in java-sdk-v2 [Client OAUTH2 package](#todo)
+Use the [ClientConfigurationUtils](#todo) which apply the best practices for `ProjectApiRoot` creation.
+To create the required `ClientCredentials` for client creation, please utilize the `ClientCredentialsBuilder` provided in the java-sdk-v2 [Client OAUTH2 package](#todo).
 If you have custom requirements for the client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
@@ -93,8 +93,7 @@ final List<ProductTypes> productTypes = QueryUtils.queryAll(byProjectKeyProductT
 
 In order to transform and map the `ProductType` to `ProductTypeDraft`, 
 Utils method `toProductTypeDrafts` requires `projectApiRoot`, implementation of [`ReferenceIdToKeyCache`](#todo) and a list of `productTypes` as parameters.
-For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](#todo).
-Example as shown below:
+For cache implementation, you have two options: you can either use your own cache implementation or utilize the class [`CaffeineReferenceIdToKeyCacheImpl`](#todo) provided in the library. This class implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy.Example as shown below:
 
 ````java
 //Implement the cache using library class.
@@ -182,7 +181,7 @@ following context about the warning message:
  final Logger logger = LoggerFactory.getLogger(ProductTypeSync.class);
  final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
          .of(projectApiRoot)
-         .warningCallback((syncException, draft, productType, updateActions) -> 
+         .warningCallback((syncException, draft, productType) -> 
             logger.warn(new SyncException("My customized message"), syncException)).build();
 ````
 
@@ -216,7 +215,7 @@ Please refer to [example in product sync document](PRODUCT_SYNC.md#beforeCreateC
  
 ##### batchSize
 A number that could be used to set the batch size with which product types are fetched and processed,
-as product types are obtained from the target project on the commercetools platform in batches for better performance. The algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding product types from the target project on the commecetools platform in a single request. Playing with this option can slightly improve or reduce processing speed. If it is not set, the default batch size is 50 for product type sync.
+as product types are obtained from the target project on the commercetools platform in batches for better performance. The algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding product types from the target project on the commecetools platform in a single request. Playing with this option can slightly improve or reduce processing speed. If it is not set, the default batch size is `50` for product type sync.
 
 ````java                         
 final ProductTypeSyncOptions productTypeSyncOptions = 
