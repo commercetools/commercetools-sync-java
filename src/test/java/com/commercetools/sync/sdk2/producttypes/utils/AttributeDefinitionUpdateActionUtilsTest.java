@@ -13,14 +13,11 @@ import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.product_type.AttributeConstraintEnum;
 import com.commercetools.api.models.product_type.AttributeConstraintEnumDraft;
 import com.commercetools.api.models.product_type.AttributeDefinition;
-import com.commercetools.api.models.product_type.AttributeDefinitionBuilder;
 import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
-import com.commercetools.api.models.product_type.AttributeDefinitionDraftBuilder;
 import com.commercetools.api.models.product_type.AttributeLocalizedEnumValue;
 import com.commercetools.api.models.product_type.AttributeLocalizedEnumValueBuilder;
 import com.commercetools.api.models.product_type.AttributePlainEnumValue;
 import com.commercetools.api.models.product_type.AttributePlainEnumValueBuilder;
-import com.commercetools.api.models.product_type.AttributeTypeBuilder;
 import com.commercetools.api.models.product_type.ProductTypeAddLocalizedEnumValueActionBuilder;
 import com.commercetools.api.models.product_type.ProductTypeAddPlainEnumValueActionBuilder;
 import com.commercetools.api.models.product_type.ProductTypeChangeAttributeConstraintActionBuilder;
@@ -38,13 +35,9 @@ import com.commercetools.api.models.product_type.TextInputHint;
 import com.commercetools.sync.sdk2.producttypes.helpers.ResourceToDraftConverters;
 import java.util.List;
 import java.util.Optional;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class AttributeDefinitionUpdateActionUtilsTest {
-  private static AttributeDefinition old;
-  private static AttributeDefinitionDraft newSame;
-  private static AttributeDefinitionDraft newDifferent;
 
   private static final AttributePlainEnumValue ENUM_VALUE_A =
       AttributePlainEnumValueBuilder.of().key("a").label("label_a").build();
@@ -55,36 +48,6 @@ class AttributeDefinitionUpdateActionUtilsTest {
       AttributeLocalizedEnumValueBuilder.of().key("a").label(ofEnglish("label_a")).build();
   private static final AttributeLocalizedEnumValue LOCALIZED_ENUM_VALUE_B =
       AttributeLocalizedEnumValueBuilder.of().key("b").label(ofEnglish("label_b")).build();
-
-  /** Initialises test data. */
-  @BeforeAll
-  static void setup() {
-    old =
-        AttributeDefinitionBuilder.of()
-            .name("attributeName1")
-            .label(ofEnglish("label1"))
-            .type(AttributeTypeBuilder::textBuilder)
-            .isRequired(false)
-            .attributeConstraint(AttributeConstraintEnum.SAME_FOR_ALL)
-            .inputTip(ofEnglish("inputTip1"))
-            .inputHint(TextInputHint.SINGLE_LINE)
-            .isSearchable(false)
-            .build();
-
-    newSame = ResourceToDraftConverters.toAttributeDefinitionDraftBuilder(old).build();
-
-    newDifferent =
-        AttributeDefinitionDraftBuilder.of()
-            .type(AttributeTypeBuilder::textBuilder)
-            .name("attributeName1")
-            .label(ofEnglish("label2"))
-            .isRequired(true)
-            .attributeConstraint(AttributeConstraintEnum.NONE)
-            .inputTip(ofEnglish("inputTip2"))
-            .inputHint(TextInputHint.MULTI_LINE)
-            .isSearchable(true)
-            .build();
-  }
 
   @Test
   void buildChangeLabelAction_WithDifferentValues_ShouldReturnAction() {
@@ -453,6 +416,26 @@ class AttributeDefinitionUpdateActionUtilsTest {
   @Test
   void buildActions_WithNewDifferentValues_ShouldReturnActions()
       throws UnsupportedOperationException {
+    final AttributeDefinition old =
+        createMockAttributeDefinitionBuilder()
+            .label(ofEnglish("label1"))
+            .isRequired(false)
+            .attributeConstraint(AttributeConstraintEnum.SAME_FOR_ALL)
+            .inputTip(ofEnglish("inputTip1"))
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(false)
+            .build();
+
+    final AttributeDefinitionDraft newDifferent =
+        createMockAttributeDefinitionDraftBuilder()
+            .label(ofEnglish("label2"))
+            .isRequired(true)
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputTip(ofEnglish("inputTip2"))
+            .inputHint(TextInputHint.MULTI_LINE)
+            .isSearchable(true)
+            .build();
+
     final List<ProductTypeUpdateAction> result = buildActions(old, newDifferent);
 
     assertThat(result)
@@ -481,6 +464,11 @@ class AttributeDefinitionUpdateActionUtilsTest {
 
   @Test
   void buildActions_WithSameValues_ShouldReturnEmpty() throws UnsupportedOperationException {
+    final AttributeDefinition old = createMockAttributeDefinitionBuilder().build();
+
+    final AttributeDefinitionDraft newSame =
+        ResourceToDraftConverters.toAttributeDefinitionDraftBuilder(old).build();
+
     final List<ProductTypeUpdateAction> result = buildActions(old, newSame);
 
     assertThat(result).isEmpty();
