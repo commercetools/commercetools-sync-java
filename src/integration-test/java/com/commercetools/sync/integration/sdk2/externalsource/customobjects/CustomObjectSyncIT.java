@@ -50,7 +50,7 @@ import org.junit.jupiter.api.Test;
 public class CustomObjectSyncIT {
   private static final String CUSTOM_OBJECT_KEY_1 = "key1";
   private static final String CUSTOM_OBJECT_CONTAINER_1 = "container1";
-  private static final ObjectNode CUSTOM_OBJECT_VALUE_JSON_1 =
+  private final ObjectNode CUSTOM_OBJECT_VALUE_JSON_1 =
       JsonNodeFactory.instance.objectNode().put("name", "value1");
 
   @BeforeEach
