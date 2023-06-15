@@ -67,7 +67,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
             .isRequired(false)
             .attributeConstraint(AttributeConstraintEnum.SAME_FOR_ALL)
             .inputTip(ofEnglish("inputTip1"))
-            .inputHint(TextInputHint.TextInputHintEnum.SINGLE_LINE)
+            .inputHint(TextInputHint.SINGLE_LINE)
             .isSearchable(false)
             .build();
 
