@@ -133,17 +133,13 @@ class BuildAttributeDefinitionUpdateActionsTest {
   @Test
   void
       buildAttributesUpdateActions_WithNullNewAttributesAndNoOldAttributes_ShouldNotBuildActions() {
-    final ProductType oldProductType = mock(ProductType.class);
-    when(oldProductType.getAttributes()).thenReturn(emptyList());
-    when(oldProductType.getKey()).thenReturn("product_type_key_1");
+    final ProductType oldProductType =
+        createMockProductTypeBuilder().attributes(emptyList()).build();
 
     final List<ProductTypeUpdateAction> updateActions =
         buildAttributesUpdateActions(
             oldProductType,
-            ProductTypeDraftBuilder.of()
-                .key("key")
-                .name("name")
-                .description("description")
+            createMockProductTypeDraftBuilder()
                 .attributes((List<AttributeDefinitionDraft>) null)
                 .build(),
             SYNC_OPTIONS);
