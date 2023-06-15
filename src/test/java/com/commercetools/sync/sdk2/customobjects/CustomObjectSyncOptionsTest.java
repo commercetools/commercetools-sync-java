@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings("unchecked")
 class CustomObjectSyncOptionsTest {
 
-  private static ProjectApiRoot CTP_CLIENT = mock(ProjectApiRoot.class);
+  private static final ProjectApiRoot CTP_CLIENT = mock(ProjectApiRoot.class);
 
   private interface MockTriFunction
       extends TriFunction<

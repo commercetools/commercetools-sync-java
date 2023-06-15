@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 class CustomObjectSyncOptionsBuilderTest {
 
   private static final ProjectApiRoot CTP_CLIENT = mock(ProjectApiRoot.class);
-  private CustomObjectSyncOptionsBuilder customObjectSyncOptionsBuilder =
+  private final CustomObjectSyncOptionsBuilder customObjectSyncOptionsBuilder =
       CustomObjectSyncOptionsBuilder.of(CTP_CLIENT);
 
   @Test
