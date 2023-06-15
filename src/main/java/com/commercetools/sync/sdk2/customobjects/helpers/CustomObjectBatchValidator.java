@@ -62,10 +62,9 @@ public class CustomObjectBatchValidator
 
     if (customObjectDraft == null) {
       handleError(CUSTOM_OBJECT_DRAFT_IS_NULL);
+      return false;
     } else {
       return true;
     }
-
-    return false;
   }
 }
