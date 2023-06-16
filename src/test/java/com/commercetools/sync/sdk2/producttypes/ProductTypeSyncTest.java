@@ -4,7 +4,6 @@ import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.sdk2.producttypes.MockBuilderUtils.createMockProductTypeBuilder;
 import static com.commercetools.sync.sdk2.producttypes.MockBuilderUtils.createMockProductTypeDraftBuilder;
-import static com.commercetools.sync.sdk2.producttypes.utils.ProductTypeMockUtils.getProductTypeBuilder;
 import static io.vrap.rmf.base.client.utils.json.JsonUtils.fromJsonString;
 import static java.util.Collections.*;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -709,7 +708,7 @@ class ProductTypeSyncTest {
                 new ApiHttpResponse<>(
                     200,
                     null,
-                    getProductTypeBuilder()
+                    createMockProductTypeBuilder()
                         .key(newProductTypeDraft.getKey())
                         .id(UUID.randomUUID().toString())
                         .build())));
