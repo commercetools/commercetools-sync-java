@@ -93,7 +93,7 @@ class ProductTypeSyncIT {
             .key(PRODUCT_TYPE_KEY_1)
             .name(PRODUCT_TYPE_NAME_2)
             .description(PRODUCT_TYPE_DESCRIPTION_2)
-            .attributes(singletonList(ATTRIBUTE_DEFINITION_DRAFT_1))
+            .attributes(ATTRIBUTE_DEFINITION_DRAFT_1)
             .build();
 
     final ProductTypeSyncOptions productTypeSyncOptions =
@@ -129,7 +129,7 @@ class ProductTypeSyncIT {
             .key(PRODUCT_TYPE_KEY_2)
             .name(PRODUCT_TYPE_NAME_2)
             .description(PRODUCT_TYPE_DESCRIPTION_2)
-            .attributes(singletonList(ATTRIBUTE_DEFINITION_DRAFT_1))
+            .attributes(ATTRIBUTE_DEFINITION_DRAFT_1)
             .build();
 
     final ProductTypeSyncOptions productTypeSyncOptions =
@@ -167,10 +167,9 @@ class ProductTypeSyncIT {
             .name(PRODUCT_TYPE_NAME_1)
             .description(PRODUCT_TYPE_DESCRIPTION_1)
             .attributes(
-                asList(
-                    ATTRIBUTE_DEFINITION_DRAFT_1,
-                    ATTRIBUTE_DEFINITION_DRAFT_2,
-                    ATTRIBUTE_DEFINITION_DRAFT_3))
+                ATTRIBUTE_DEFINITION_DRAFT_1,
+                ATTRIBUTE_DEFINITION_DRAFT_2,
+                ATTRIBUTE_DEFINITION_DRAFT_3)
             .build();
 
     final ProductTypeSyncOptions productTypeSyncOptions =
@@ -207,7 +206,7 @@ class ProductTypeSyncIT {
             .key(PRODUCT_TYPE_KEY_1)
             .name(PRODUCT_TYPE_NAME_1)
             .description(PRODUCT_TYPE_DESCRIPTION_1)
-            .attributes(singletonList(ATTRIBUTE_DEFINITION_DRAFT_1))
+            .attributes(ATTRIBUTE_DEFINITION_DRAFT_1)
             .build();
 
     final ProductTypeSyncOptions productTypeSyncOptions =
@@ -240,7 +239,7 @@ class ProductTypeSyncIT {
             .key(PRODUCT_TYPE_KEY_1)
             .name(PRODUCT_TYPE_NAME_1)
             .description(PRODUCT_TYPE_DESCRIPTION_1)
-            .attributes(asList(ATTRIBUTE_DEFINITION_DRAFT_2, ATTRIBUTE_DEFINITION_DRAFT_1))
+            .attributes(ATTRIBUTE_DEFINITION_DRAFT_2, ATTRIBUTE_DEFINITION_DRAFT_1)
             .build();
 
     final ArrayList<ProductTypeUpdateAction> builtUpdateActions = new ArrayList<>();
@@ -275,9 +274,7 @@ class ProductTypeSyncIT {
         .containsExactly(
             ProductTypeChangeAttributeOrderByNameActionBuilder.of()
                 .attributeNames(
-                    asList(
-                        ATTRIBUTE_DEFINITION_DRAFT_2.getName(),
-                        ATTRIBUTE_DEFINITION_DRAFT_1.getName()))
+                    ATTRIBUTE_DEFINITION_DRAFT_2.getName(), ATTRIBUTE_DEFINITION_DRAFT_1.getName())
                 .build());
   }
 
@@ -303,7 +300,7 @@ class ProductTypeSyncIT {
             .key(PRODUCT_TYPE_KEY_1)
             .name(PRODUCT_TYPE_NAME_1)
             .description(PRODUCT_TYPE_DESCRIPTION_1)
-            .attributes(singletonList(attributeDefinitionDraftUpdated))
+            .attributes(attributeDefinitionDraftUpdated)
             .build();
 
     final ProductTypeSyncOptions productTypeSyncOptions =
@@ -333,7 +330,7 @@ class ProductTypeSyncIT {
         ProductTypeDraftBuilder.of()
             .name(PRODUCT_TYPE_NAME_1)
             .description(PRODUCT_TYPE_DESCRIPTION_1)
-            .attributes(asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_1))
+            .attributes(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_1)
             .build();
 
     final List<String> errorMessages = new ArrayList<>();
@@ -434,7 +431,7 @@ class ProductTypeSyncIT {
             .key(PRODUCT_TYPE_KEY_2)
             .name(PRODUCT_TYPE_NAME_2)
             .description(PRODUCT_TYPE_DESCRIPTION_2)
-            .attributes(singletonList(invalidAttrDefinition))
+            .attributes(invalidAttrDefinition)
             .build();
 
     final List<String> errorMessages = new ArrayList<>();
@@ -494,7 +491,7 @@ class ProductTypeSyncIT {
             .key(PRODUCT_TYPE_KEY_1)
             .name(PRODUCT_TYPE_NAME_1)
             .description(PRODUCT_TYPE_DESCRIPTION_1)
-            .attributes(singletonList(invalidAttrDefinition))
+            .attributes(invalidAttrDefinition)
             .build();
 
     final List<String> errorMessages = new ArrayList<>();
@@ -689,7 +686,7 @@ class ProductTypeSyncIT {
                         .key("product_type_key_" + i)
                         .name("product_type_name_" + i)
                         .description("product_type_description_" + i)
-                        .attributes(singletonList(ATTRIBUTE_DEFINITION_DRAFT_1))
+                        .attributes(ATTRIBUTE_DEFINITION_DRAFT_1)
                         .build())
             .collect(Collectors.toList());
 
@@ -776,7 +773,7 @@ class ProductTypeSyncIT {
             .key("withSetOfEnums")
             .name("withSetOfEnums")
             .description("withSetOfEnums")
-            .attributes(asList(withSetOfEnumsOld, withSetOfSetOfLEnumsOld))
+            .attributes(withSetOfEnumsOld, withSetOfSetOfLEnumsOld)
             .build();
 
     CTP_TARGET_CLIENT.productTypes().create(oldDraft).executeBlocking();
@@ -842,7 +839,7 @@ class ProductTypeSyncIT {
             .key("withSetOfEnums")
             .name("withSetOfEnums")
             .description("withSetOfEnums")
-            .attributes(asList(withSetOfEnumsNew, withSetOfSetOfLEnumsNew))
+            .attributes(withSetOfEnumsNew, withSetOfSetOfLEnumsNew)
             .build();
 
     final ProductTypeSyncOptions productTypeSyncOptions =
@@ -897,9 +894,8 @@ class ProductTypeSyncIT {
             .name(PRODUCT_TYPE_NAME_3)
             .description(PRODUCT_TYPE_DESCRIPTION_3)
             .attributes(
-                singletonList(
-                    ResourceToDraftConverters.toAttributeDefinitionDraftBuilder(referenceTypeAttr)
-                        .build()))
+                ResourceToDraftConverters.toAttributeDefinitionDraftBuilder(referenceTypeAttr)
+                    .build())
             .build();
 
     final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
@@ -911,10 +907,9 @@ class ProductTypeSyncIT {
             .name(PRODUCT_TYPE_NAME_3)
             .description(PRODUCT_TYPE_DESCRIPTION_3)
             .attributes(
-                asList(
-                    ATTRIBUTE_DEFINITION_DRAFT_1,
-                    ResourceToDraftConverters.toAttributeDefinitionDraftBuilder(referenceTypeAttr)
-                        .build()))
+                ATTRIBUTE_DEFINITION_DRAFT_1,
+                ResourceToDraftConverters.toAttributeDefinitionDraftBuilder(referenceTypeAttr)
+                    .build())
             .build();
 
     productTypeSync.sync(singletonList(updatedProductTypeDraft)).toCompletableFuture().join();

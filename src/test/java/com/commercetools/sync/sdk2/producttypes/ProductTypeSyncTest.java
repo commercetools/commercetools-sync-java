@@ -517,7 +517,7 @@ class ProductTypeSyncTest {
             .key("key1")
             .name("name")
             .description("desc")
-            .attributes(singletonList(nestedTypeAttrDefDraft))
+            .attributes(nestedTypeAttrDefDraft)
             .build();
     final List<String> errorMessages = new ArrayList<>();
     final List<Throwable> exceptions = new ArrayList<>();
@@ -592,7 +592,7 @@ class ProductTypeSyncTest {
             .key("foo")
             .name("name")
             .description("desc")
-            .attributes(singletonList(nestedTypeAttrDefDraft))
+            .attributes(nestedTypeAttrDefDraft)
             .build();
 
     final List<String> errorMessages = new ArrayList<>();
@@ -749,14 +749,6 @@ class ProductTypeSyncTest {
 
     final ProductTypeService productTypeService =
         new ProductTypeServiceImpl(productTypeSyncOptions);
-    //      final PagedQueryResult<ProductType> productTypePagedQueryResult =
-    //   spy(PagedQueryResult.empty());
-    //      when(productTypePagedQueryResult.getResults())
-    //          .thenReturn(singletonList(mockedExistingProductType));
-    //      when(projectApiRoot.execute(any(ProductTypeQuery.class)))
-    //          .thenReturn(completedFuture(productTypePagedQueryResult));
-    //      when(projectApiRoot.execute(any(ProductTypeUpdateCommand.class)))
-    //          .thenReturn(completedFuture(mockedExistingProductType));
 
     final String jsonStringProductTypes = "{\"data\":{\"productTypes\":{\"results\":[]}}}";
     final GraphQLResponse productTypesResult =

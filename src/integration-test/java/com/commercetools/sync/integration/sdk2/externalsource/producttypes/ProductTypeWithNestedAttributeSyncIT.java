@@ -158,7 +158,7 @@ class ProductTypeWithNestedAttributeSyncIT {
             .key(PRODUCT_TYPE_KEY_5)
             .name(PRODUCT_TYPE_NAME_5)
             .description(PRODUCT_TYPE_DESCRIPTION_5)
-            .attributes(singletonList(nestedTypeAttr3))
+            .attributes(nestedTypeAttr3)
             .build();
 
     final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
@@ -235,7 +235,7 @@ class ProductTypeWithNestedAttributeSyncIT {
             .key(PRODUCT_TYPE_KEY_5)
             .name(PRODUCT_TYPE_NAME_5)
             .description(PRODUCT_TYPE_DESCRIPTION_5)
-            .attributes(singletonList(nestedTypeAttr))
+            .attributes(nestedTypeAttr)
             .build();
 
     final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
@@ -429,8 +429,7 @@ class ProductTypeWithNestedAttributeSyncIT {
             .key(PRODUCT_TYPE_KEY_1)
             .name(PRODUCT_TYPE_NAME_1)
             .description(PRODUCT_TYPE_DESCRIPTION_1)
-            .attributes(
-                asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, nestedTypeAttr))
+            .attributes(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, nestedTypeAttr)
             .build();
 
     final ProductTypeDraft productTypeDraft5 =
@@ -438,7 +437,7 @@ class ProductTypeWithNestedAttributeSyncIT {
             .key(PRODUCT_TYPE_KEY_5)
             .name(PRODUCT_TYPE_NAME_5)
             .description(PRODUCT_TYPE_DESCRIPTION_5)
-            .attributes(singletonList(ATTRIBUTE_DEFINITION_DRAFT_3))
+            .attributes(ATTRIBUTE_DEFINITION_DRAFT_3)
             .build();
 
     final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
@@ -560,8 +559,7 @@ class ProductTypeWithNestedAttributeSyncIT {
             .key(PRODUCT_TYPE_KEY_1)
             .name(PRODUCT_TYPE_NAME_1)
             .description(PRODUCT_TYPE_DESCRIPTION_1)
-            .attributes(
-                asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, nestedTypeAttr))
+            .attributes(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, nestedTypeAttr)
             .build();
 
     final ProductTypeDraft productTypeDraft5 =
@@ -569,7 +567,7 @@ class ProductTypeWithNestedAttributeSyncIT {
             .key(PRODUCT_TYPE_KEY_5)
             .name(PRODUCT_TYPE_NAME_5)
             .description(PRODUCT_TYPE_DESCRIPTION_5)
-            .attributes(singletonList(ATTRIBUTE_DEFINITION_DRAFT_3))
+            .attributes(ATTRIBUTE_DEFINITION_DRAFT_3)
             .build();
 
     productTypeSyncOptions =
@@ -688,8 +686,7 @@ class ProductTypeWithNestedAttributeSyncIT {
             .key(PRODUCT_TYPE_KEY_1)
             .name(PRODUCT_TYPE_NAME_1)
             .description(PRODUCT_TYPE_DESCRIPTION_1)
-            .attributes(
-                asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, nestedTypeAttr))
+            .attributes(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, nestedTypeAttr)
             .build();
 
     final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
@@ -702,7 +699,7 @@ class ProductTypeWithNestedAttributeSyncIT {
             .key(PRODUCT_TYPE_KEY_1)
             .name(PRODUCT_TYPE_NAME_1)
             .description(PRODUCT_TYPE_DESCRIPTION_1)
-            .attributes(asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2))
+            .attributes(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2)
             .build();
 
     final ProductTypeSyncStatistics productTypeSyncStatistics =
