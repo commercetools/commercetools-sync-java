@@ -180,7 +180,7 @@ public class CustomObjectSyncTest {
             .build();
 
     // test
-    CustomObjectSyncStatistics syncStatistics =
+    final CustomObjectSyncStatistics syncStatistics =
         new CustomObjectSync(spyCustomObjectSyncOptions, customObjectService)
             .sync(singletonList(newCustomObjectDraft))
             .toCompletableFuture()
@@ -316,7 +316,7 @@ public class CustomObjectSyncTest {
   }
 
   @Test
-  void sync_UpdateWithSphereExceptionAndRetryWithFetchException_ShouldIncrementFailed() {
+  void sync_UpdateWithBadRequestExceptionAndRetryWithFetchException_ShouldIncrementFailed() {
     final List<String> errorMessages = new ArrayList<>();
     final List<Throwable> exceptions = new ArrayList<>();
 
@@ -559,7 +559,9 @@ public class CustomObjectSyncTest {
 
     // assertion
     assertThat(exceptions).hasSize(1);
+    assertThat(exceptions.get(0)).isNull();
     assertThat(errorMessages).hasSize(1);
+    assertThat(errorMessages.get(0)).isEqualTo("CustomObjectDraft is null.");
     assertAll(
         () -> assertThat(syncStatistics.getProcessed().get()).isEqualTo(1),
         () -> assertThat(syncStatistics.getCreated().get()).isEqualTo(0),
