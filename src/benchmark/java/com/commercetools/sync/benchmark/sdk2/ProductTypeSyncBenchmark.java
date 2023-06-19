@@ -5,7 +5,6 @@ import static com.commercetools.sync.integration.sdk2.commons.utils.ProductTypeI
 import static com.commercetools.sync.integration.sdk2.commons.utils.ProductTypeITUtils.deleteProductTypes;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -231,7 +230,7 @@ class ProductTypeSyncBenchmark {
     // benchmark
     final long beforeSyncTime = System.currentTimeMillis();
     final ProductTypeSyncStatistics syncStatistics =
-        executeBlocking(productTypeSync.sync(productTypeDrafts));
+        productTypeSync.sync(productTypeDrafts).toCompletableFuture().join();
     final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
     // assert on threshold (based on history of benchmarks; highest was ~13 seconds)
