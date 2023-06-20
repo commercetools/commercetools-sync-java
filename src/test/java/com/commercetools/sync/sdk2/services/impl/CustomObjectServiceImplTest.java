@@ -1,10 +1,6 @@
 package com.commercetools.sync.sdk2.services.impl;
 
-import static java.lang.String.format;
-import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
-import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.*;
 
@@ -38,6 +34,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -310,25 +308,16 @@ class CustomObjectServiceImplTest {
     when(draftMock.getKey()).thenReturn(customObjectKey);
     when(draftMock.getContainer()).thenReturn(customObjectContainer);
 
-    final Optional<CustomObject> customObjectOptional =
-        service.upsertCustomObject(draftMock).toCompletableFuture().join();
+    final CompletableFuture<Optional<CustomObject>> future =
+        service.upsertCustomObject(draftMock).toCompletableFuture();
 
     // assertion
     assertAll(
-        () -> assertThat(customObjectOptional).isEmpty(),
-        () -> assertThat(errorMessages).hasSize(1),
+        () -> assertThat(future.isCompletedExceptionally()).isTrue(),
         () ->
-            assertThat(errorMessages)
-                .singleElement(as(STRING))
-                .contains(
-                    format(
-                        "Failed to create draft with key: '%s'.",
-                        CustomObjectCompositeIdentifier.of(draftMock)))
-                .contains("ApiHttpResponse"),
-        () -> assertThat(errorExceptions).hasSize(1),
-        () ->
-            assertThat(errorExceptions)
-                .singleElement(as(THROWABLE))
-                .isExactlyInstanceOf(ConcurrentModificationException.class));
+            assertThat(future)
+                .failsWithin(1, TimeUnit.SECONDS)
+                .withThrowableOfType(ExecutionException.class)
+                .withCauseExactlyInstanceOf(ConcurrentModificationException.class));
   }
 }

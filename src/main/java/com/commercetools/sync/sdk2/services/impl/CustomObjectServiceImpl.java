@@ -6,6 +6,7 @@ import com.commercetools.api.client.ByProjectKeyCustomObjectsPost;
 import com.commercetools.api.models.custom_object.CustomObject;
 import com.commercetools.api.models.custom_object.CustomObjectDraft;
 import com.commercetools.api.models.custom_object.CustomObjectPagedQueryResponse;
+import com.commercetools.sync.customobjects.CustomObjectSync;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.sdk2.customobjects.helpers.CustomObjectCompositeIdentifier;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.jetbrains.annotations.NotNull;
@@ -92,6 +94,48 @@ public class CustomObjectServiceImpl
         CustomObject::getId,
         customObject -> customObject,
         () -> this.syncOptions.getCtpClient().customObjects().post(customObjectDraft));
+  }
+
+  /**
+   * Custom object has special behaviour that it only performs upsert operation. That means both
+   * update and create custom object operations in the end called {@link
+   * com.commercetools.sync.sdk2.services.impl.BaseService#createResource}, which is different from
+   * other resources.
+   *
+   * <p>This method provides a specific exception handling after execution of create command for
+   * custom objects. Any exception that occurs inside executeCreateCommand method is thrown to the
+   * caller method in {@link CustomObjectSync}, which is necessary to trigger retry on error
+   * behaviour.
+   *
+   * @param draft the custom object draft to create a custom object in target CTP project.
+   * @param key a function to get the key from the supplied custom object draft.
+   * @param idMapper
+   * @param resourceMapper
+   * @param createCommand a function to get the create command using the supplied custom object
+   *     draft.
+   * @return a {@link CompletionStage} containing an optional with the created resource if
+   *     successful otherwise an exception.
+   */
+  @Nonnull
+  @Override
+  CompletionStage<Optional<CustomObject>> executeCreateCommand(
+      @NotNull CustomObjectDraft draft,
+      @NotNull String key,
+      @NotNull Function<CustomObject, String> idMapper,
+      @NotNull Function<CustomObject, CustomObject> resourceMapper,
+      @NotNull ByProjectKeyCustomObjectsPost createCommand) {
+    return createCommand
+        .execute()
+        .thenApply(
+            resource -> {
+              if (resource != null) {
+                final CustomObject customObject = resource.getBody();
+                keyToIdCache.put(key, idMapper.apply(customObject));
+                return Optional.of(resourceMapper.apply(customObject));
+              } else {
+                return Optional.empty();
+              }
+            });
   }
 
   @Nonnull

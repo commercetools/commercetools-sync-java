@@ -4,7 +4,6 @@ import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.models.custom_object.CustomObject;
 import com.commercetools.api.models.custom_object.CustomObjectDraft;
 import com.commercetools.api.models.custom_object.CustomObjectDraftBuilder;
-import com.fasterxml.jackson.databind.JsonNode;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.NotFoundException;
 import javax.annotation.Nonnull;
@@ -43,7 +42,7 @@ public final class CustomObjectITUtils {
       @Nonnull final ProjectApiRoot ctpClient,
       @Nonnull final String key,
       @Nonnull final String container,
-      @Nonnull final JsonNode value) {
+      @Nonnull final Object value) {
 
     CustomObjectDraft customObjectDraft =
         CustomObjectDraftBuilder.of().container(container).key(key).value(value).build();
