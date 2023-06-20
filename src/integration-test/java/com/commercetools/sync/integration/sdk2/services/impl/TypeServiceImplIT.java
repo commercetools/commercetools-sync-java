@@ -1,13 +1,13 @@
 package com.commercetools.sync.integration.sdk2.services.impl;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
-import static com.commercetools.sync.integration.sdk2.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.sdk2.commons.utils.CategoryITUtils.deleteAllCategories;
-import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.*;
+import static com.commercetools.sync.integration.sdk2.commons.utils.CategoryITUtils.ensureCategoriesCustomType;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TypeITUtils.*;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
@@ -17,7 +17,10 @@ import static org.mockito.Mockito.*;
 import com.commercetools.api.client.ByProjectKeyTypesGet;
 import com.commercetools.api.client.ByProjectKeyTypesRequestBuilder;
 import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.client.error.BadRequestException;
 import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.error.DuplicateFieldError;
+import com.commercetools.api.models.error.DuplicateFieldErrorBuilder;
 import com.commercetools.api.models.type.*;
 import com.commercetools.sync.sdk2.services.TypeService;
 import com.commercetools.sync.sdk2.services.impl.TypeServiceImpl;
@@ -26,10 +29,10 @@ import com.commercetools.sync.sdk2.types.TypeSyncOptionsBuilder;
 import io.vrap.rmf.base.client.error.BadGatewayException;
 import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
 import java.util.*;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class TypeServiceImplIT {
@@ -48,7 +51,7 @@ class TypeServiceImplIT {
     errorCallBackExceptions = new ArrayList<>();
 
     deleteAllCategories(CTP_TARGET_CLIENT);
-    createCategoriesCustomType(OLD_TYPE_KEY, OLD_TYPE_LOCALE, OLD_TYPE_NAME, CTP_TARGET_CLIENT);
+    ensureCategoriesCustomType(OLD_TYPE_KEY, OLD_TYPE_LOCALE, OLD_TYPE_NAME, CTP_TARGET_CLIENT);
 
     final TypeSyncOptions typeSyncOptions =
         TypeSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -187,7 +190,6 @@ class TypeServiceImplIT {
     assertThat(errorCallBackMessages).isEmpty();
   }
 
-  @Disabled
   @Test
   void createType_WithValidType_ShouldCreateTypeAndCacheId() {
     final TypeDraft newTypeDraft =
@@ -212,22 +214,22 @@ class TypeServiceImplIT {
     final TypeService spyTypeService = new TypeServiceImpl(spyOptions);
 
     // test
-    //    final Optional<Type> createdType =
-    //        spyTypeService.createType(newTypeDraft).toCompletableFuture().join();
+    final Optional<Type> createdType =
+        spyTypeService.createType(newTypeDraft).toCompletableFuture().join();
 
     final Type queriedType =
         CTP_TARGET_CLIENT.types().withKey(TYPE_KEY_1).get().executeBlocking().getBody();
 
-    //                assertThat(createdType)
-    //                    .hasValueSatisfying(
-    //                        created -> {
-    //                          assertThat(created.getKey()).isEqualTo(queriedType.getKey());
-    //
-    // assertThat(created.getDescription()).isEqualTo(queriedType.getDescription());
-    //                          assertThat(created.getName()).isEqualTo(queriedType.getName());
-    //                          assertThat(created.getFieldDefinitions())
-    //                              .isEqualTo(queriedType.getFieldDefinitions());
-    //                        });
+    assertThat(createdType)
+        .hasValueSatisfying(
+            created -> {
+              assertThat(created.getKey()).isEqualTo(queriedType.getKey());
+
+              assertThat(created.getDescription()).isEqualTo(queriedType.getDescription());
+              assertThat(created.getName()).isEqualTo(queriedType.getName());
+              assertThat(created.getFieldDefinitions())
+                  .isEqualTo(queriedType.getFieldDefinitions());
+            });
 
     // Assert that the created type is cached
     final Optional<String> typeId =
@@ -235,7 +237,6 @@ class TypeServiceImplIT {
     assertThat(typeId).isPresent();
   }
 
-  @Disabled
   @Test
   void createType_WithInvalidType_ShouldHaveEmptyOptionalAsAResult() {
     // preparation
@@ -260,16 +261,14 @@ class TypeServiceImplIT {
     final TypeService typeService = new TypeServiceImpl(options);
 
     // test
-    //    final Optional<Type> result =
-    // typeService.createType(newTypeDraft).toCompletableFuture().join();
+    final Optional<Type> result = typeService.createType(newTypeDraft).toCompletableFuture().join();
 
     // assertion
-    //    assertThat(result).isEmpty();
+    assertThat(result).isEmpty();
     assertThat(errorCallBackMessages)
         .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
   }
 
-  @Disabled
   @Test
   void createType_WithDuplicateKey_ShouldHaveEmptyOptionalAsAResult() {
     // preparation
@@ -294,36 +293,36 @@ class TypeServiceImplIT {
     final TypeService typeService = new TypeServiceImpl(options);
 
     // test
-    //    final Optional<Type> result =
-    // typeService.createType(newTypeDraft).toCompletableFuture().join();
+    final Optional<Type> result = typeService.createType(newTypeDraft).toCompletableFuture().join();
 
     // assertion
-    //    assertThat(result).isEmpty();
+    assertThat(result).isEmpty();
     assertThat(errorCallBackMessages)
         .hasSize(1)
         .singleElement(as(STRING))
         .contains("A duplicate value");
 
-    //    assertThat(errorCallBackExceptions)
-    //        .hasSize(1)
-    //        .singleElement()
-    //        .matches(
-    //            exception -> {
-    //              assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
-    //              final ErrorResponseException errorResponseException =
-    //                  (ErrorResponseException) exception;
-    //
-    //              final List<DuplicateFieldError> fieldErrors =
-    //                  errorResponseException.getErrors().stream()
-    //                      .map(
-    //                          sphereError -> {
-    //
-    // assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
-    //                            return sphereError.as(DuplicateFieldError.class);
-    //                          })
-    //                      .collect(toList());
-    //              return fieldErrors.size() == 1;
-    //            });
+    assertThat(errorCallBackExceptions)
+        .hasSize(1)
+        .singleElement()
+        .matches(
+            exception -> {
+              assertThat(exception).isExactlyInstanceOf(CompletionException.class);
+              final BadRequestException errorResponseException =
+                  (BadRequestException) exception.getCause();
+
+              final List<DuplicateFieldError> fieldErrors =
+                  errorResponseException.getErrorResponse().getErrors().stream()
+                      .map(
+                          error -> {
+                            assertThat(error.getCode())
+                                .isEqualTo(DuplicateFieldError.DUPLICATE_FIELD);
+                            return DuplicateFieldErrorBuilder.of((DuplicateFieldError) error)
+                                .build();
+                          })
+                      .collect(toList());
+              return fieldErrors.size() == 1;
+            });
   }
 
   @Test

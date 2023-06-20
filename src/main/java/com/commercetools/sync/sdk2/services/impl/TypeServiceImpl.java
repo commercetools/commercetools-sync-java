@@ -5,7 +5,11 @@ import static com.commercetools.sync.sdk2.commons.utils.SyncUtils.batchElements;
 import com.commercetools.api.client.ByProjectKeyTypesGet;
 import com.commercetools.api.client.ByProjectKeyTypesKeyByKeyGet;
 import com.commercetools.api.client.ByProjectKeyTypesPost;
-import com.commercetools.api.models.type.*;
+import com.commercetools.api.models.type.Type;
+import com.commercetools.api.models.type.TypeDraft;
+import com.commercetools.api.models.type.TypePagedQueryResponse;
+import com.commercetools.api.models.type.TypeUpdateAction;
+import com.commercetools.api.models.type.TypeUpdateBuilder;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.services.TypeService;
@@ -40,7 +44,8 @@ public final class TypeServiceImpl
   }
 
   @Nonnull
-  private CompletionStage<Optional<Type>> fetchTypeByKey(@Nullable final String key) {
+  @Override
+  public CompletionStage<Optional<Type>> fetchTypeByKey(@Nullable final String key) {
     return super.fetchResource(key, syncOptions.getCtpClient().types().withKey(key).get());
   }
 
@@ -71,6 +76,17 @@ public final class TypeServiceImpl
                 .get()
                 .withWhere("key in :keys")
                 .withPredicateVar("keys", keysNotCached));
+  }
+
+  @Nonnull
+  @Override
+  public CompletionStage<Optional<Type>> createType(@Nonnull TypeDraft typeDraft) {
+    return super.createResource(
+        typeDraft,
+        TypeDraft::getKey,
+        typeResult -> typeResult.getId(),
+        type -> type,
+        () -> syncOptions.getCtpClient().types().post(typeDraft));
   }
 
   @Nonnull
