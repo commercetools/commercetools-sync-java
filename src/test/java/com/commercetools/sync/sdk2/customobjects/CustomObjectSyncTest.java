@@ -15,6 +15,7 @@ import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.models.custom_object.CustomObject;
 import com.commercetools.api.models.custom_object.CustomObjectDraft;
 import com.commercetools.api.models.custom_object.CustomObjectDraftBuilder;
+import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.sdk2.customobjects.helpers.CustomObjectSyncStatistics;
 import com.commercetools.sync.sdk2.services.CustomObjectService;
@@ -559,7 +560,7 @@ public class CustomObjectSyncTest {
 
     // assertion
     assertThat(exceptions).hasSize(1);
-    assertThat(exceptions.get(0)).isNull();
+    assertThat(exceptions.get(0)).isExactlyInstanceOf(SyncException.class);
     assertThat(errorMessages).hasSize(1);
     assertThat(errorMessages.get(0)).isEqualTo("CustomObjectDraft is null.");
     assertAll(
@@ -577,7 +578,11 @@ public class CustomObjectSyncTest {
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) -> {
                   errorMessages.add(exception.getMessage());
-                  exceptions.add(exception.getCause());
+                  if (exception.getCause() != null) {
+                    exceptions.add(exception.getCause());
+                  } else {
+                    exceptions.add(exception);
+                  }
                 })
             .build());
   }
