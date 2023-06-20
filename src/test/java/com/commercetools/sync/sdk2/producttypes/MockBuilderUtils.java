@@ -15,6 +15,7 @@ public class MockBuilderUtils {
 
   public static ProductTypeBuilder createMockProductTypeBuilder() {
     return ProductTypeBuilder.of()
+        .key("foo")
         .id("test")
         .version(1L)
         .createdAt(ZonedDateTime.now())

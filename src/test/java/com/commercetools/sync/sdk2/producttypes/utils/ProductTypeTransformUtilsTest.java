@@ -1,8 +1,8 @@
 package com.commercetools.sync.sdk2.producttypes.utils;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
-import static com.commercetools.sync.sdk2.producttypes.utils.ProductTypeMockUtils.getAttributeDefinitionBuilder;
-import static com.commercetools.sync.sdk2.producttypes.utils.ProductTypeMockUtils.getProductTypeBuilder;
+import static com.commercetools.sync.sdk2.producttypes.MockBuilderUtils.createMockAttributeDefinitionBuilder;
+import static com.commercetools.sync.sdk2.producttypes.MockBuilderUtils.createMockProductTypeBuilder;
 import static io.vrap.rmf.base.client.utils.json.JsonUtils.fromJsonString;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -50,7 +50,7 @@ class ProductTypeTransformUtilsTest {
     final ProjectApiRoot sourceClient = mock(ProjectApiRoot.class);
 
     final ProductType productTypeFoo =
-        getProductTypeBuilder().key("foo").attributes(emptyList()).build();
+        createMockProductTypeBuilder().key("foo").attributes(emptyList()).build();
 
     final List<ProductType> productTypes = singletonList(productTypeFoo);
 
@@ -70,20 +70,26 @@ class ProductTypeTransformUtilsTest {
     final ProjectApiRoot sourceClient = mock(ProjectApiRoot.class);
 
     final AttributeDefinition stringAttr =
-        getAttributeDefinitionBuilder().type(AttributeTypeBuilder::textBuilder).build();
+        createMockAttributeDefinitionBuilder().type(AttributeTypeBuilder::textBuilder).build();
 
     final AttributeDefinition numberAttr =
-        getAttributeDefinitionBuilder()
+        createMockAttributeDefinitionBuilder()
             .name("a")
             .label(ofEnglish("b"))
             .type(AttributeTypeBuilder::numberBuilder)
             .build();
 
     final ProductType productTypeFoo =
-        getProductTypeBuilder().key("ProductTypeFoo").attributes(singletonList(stringAttr)).build();
+        createMockProductTypeBuilder()
+            .key("ProductTypeFoo")
+            .attributes(singletonList(stringAttr))
+            .build();
 
     final ProductType productTypeBar =
-        getProductTypeBuilder().key("ProductTypeBar").attributes(singletonList(numberAttr)).build();
+        createMockProductTypeBuilder()
+            .key("ProductTypeBar")
+            .attributes(singletonList(numberAttr))
+            .build();
 
     final List<ProductType> productTypes = asList(productTypeFoo, productTypeBar);
 
@@ -111,7 +117,7 @@ class ProductTypeTransformUtilsTest {
         ProductTypeReferenceBuilder.of().id(referencedProductTypeId).build();
 
     final AttributeDefinition nestedTypeAttr =
-        getAttributeDefinitionBuilder()
+        createMockAttributeDefinitionBuilder()
             .name("nestedattr")
             .type(
                 attributeTypeBuilder ->
@@ -139,7 +145,7 @@ class ProductTypeTransformUtilsTest {
     when(byProjectKeyGraphqlPost.execute()).thenReturn(apiHttpResponseCompletableFuture);
 
     final ProductType productType =
-        getProductTypeBuilder()
+        createMockProductTypeBuilder()
             .key("withNestedTypeAttr")
             .attributes(singletonList(nestedTypeAttr))
             .build();
@@ -172,7 +178,7 @@ class ProductTypeTransformUtilsTest {
         ProductTypeReferenceBuilder.of().id(referencedProductTypeId).build();
 
     final AttributeDefinition nestedTypeAttr =
-        getAttributeDefinitionBuilder()
+        createMockAttributeDefinitionBuilder()
             .name("nestedattr")
             .label(ofEnglish("nestedattr"))
             .type(
@@ -187,7 +193,7 @@ class ProductTypeTransformUtilsTest {
             .build();
 
     final ProductType productType =
-        getProductTypeBuilder()
+        createMockProductTypeBuilder()
             .key("withNestedTypeAttr")
             .attributes(singletonList(nestedTypeAttr))
             .build();

@@ -131,7 +131,8 @@ public class AttributeDefinitionReferenceResolver
               AttributeSetType setAttributeTypeChain =
                   AttributeSetTypeBuilder.of().elementType(resolvedNestedAttributeType).build();
               for (int i = 0; i < maxDepth.get(); i++) {
-                setAttributeTypeChain = AttributeSetType.of(setAttributeTypeChain);
+                setAttributeTypeChain =
+                    AttributeSetTypeBuilder.of().elementType(setAttributeTypeChain).build();
               }
               return setAttributeTypeChain;
             })

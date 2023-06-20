@@ -5,6 +5,7 @@ import static com.commercetools.sync.sdk2.producttypes.utils.AttributeDefinition
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 
+import com.commercetools.api.models.product_type.AttributeDefinition;
 import com.commercetools.api.models.product_type.ProductType;
 import com.commercetools.api.models.product_type.ProductTypeChangeDescriptionActionBuilder;
 import com.commercetools.api.models.product_type.ProductTypeChangeNameActionBuilder;
@@ -84,8 +85,11 @@ public final class ProductTypeUpdateActionUtils {
       @Nonnull final ProductTypeSyncOptions syncOptions) {
 
     try {
-      return buildAttributeDefinitionsUpdateActions(
-          oldProductType.getAttributes(), newProductType.getAttributes());
+      List<AttributeDefinition> attributes = oldProductType.getAttributes();
+      if (attributes == null) {
+        attributes = emptyList();
+      }
+      return buildAttributeDefinitionsUpdateActions(attributes, newProductType.getAttributes());
     } catch (final BuildUpdateActionException exception) {
       syncOptions.applyErrorCallback(
           new SyncException(
