@@ -110,14 +110,14 @@ into sync options. However, in the actual case, `beforeUpdateCallback`is not tri
 the new custom object draft has the same key and container as an existing custom object but different in custom object values, 
 the sync process automatically performs the create/update operation. The value of a corresponding custom object in the target project is overwritten. This approach is different from other resources and no update action is involved.
 
-No example is applicable.
+Also see the API documentation of [Create-or-update-customobject](https://docs.commercetools.com/api/projects/custom-objects#create-or-update-customobject)
 
 ##### beforeCreateCallback
 During the sync process, if a custom object draft should be created, this callback can be used to intercept the **_create_** request just before it is sent to the commercetools platform.  It contains the following information : 
 
  * custom object draft that should be created
  
-Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
+Please refer to [example in product sync document](PRODUCT_SYNC.md#beforecreatecallback).
 
 ##### batchSize
 A number that could be used to set the batch size with which custom objects are fetched and processed,
