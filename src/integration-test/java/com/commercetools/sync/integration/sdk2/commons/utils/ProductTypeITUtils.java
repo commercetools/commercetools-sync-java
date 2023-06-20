@@ -2,7 +2,7 @@ package com.commercetools.sync.integration.sdk2.commons.utils;
 
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createObjectFromResource;
+import static com.commercetools.sync.integration.sdk2.commons.utils.TestUtils.readObjectFromResource;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,6 +26,7 @@ import com.commercetools.api.models.product_type.AttributeTextType;
 import com.commercetools.api.models.product_type.ProductType;
 import com.commercetools.api.models.product_type.ProductTypeDraft;
 import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
+import com.commercetools.api.models.product_type.ProductTypePagedQueryResponse;
 import com.commercetools.api.models.product_type.ProductTypeReferenceBuilder;
 import com.commercetools.api.models.product_type.ProductTypeRemoveAttributeDefinitionActionBuilder;
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
@@ -129,6 +130,8 @@ public final class ProductTypeITUtils {
         ctpClient.productTypes().post(productTypeDraft2).execute().join().getBody();
     final AttributeDefinitionDraft nestedTypeAttr1 =
         AttributeDefinitionDraftBuilder.of()
+            .name("nestedattr1")
+            .label(LocalizedString.ofEnglish("nestedattr1"))
             .type(
                 AttributeSetTypeBuilder.of()
                     .elementType(
@@ -145,7 +148,8 @@ public final class ProductTypeITUtils {
                                     .build())
                             .build())
                     .build())
-            .isSearchable(true)
+            .isSearchable(false)
+            .isRequired(false)
             .build();
 
     final AttributeDefinitionDraft nestedTypeAttr2 =
@@ -157,7 +161,8 @@ public final class ProductTypeITUtils {
                     .build())
             .name("nestedattr2")
             .label(LocalizedString.ofEnglish("nestedattr2"))
-            .isSearchable(true)
+            .isSearchable(false)
+            .isRequired(false)
             .build();
 
     final ProductTypeDraft productTypeDraft3 =
@@ -322,7 +327,7 @@ public final class ProductTypeITUtils {
    * @param name the name of the product type.
    * @param ctpClient defines the CTP project to create the product type on.
    */
-  public static void createProductType(
+  public static void ensureProductType(
       @Nonnull final String productTypeKey,
       @Nonnull final Locale locale,
       @Nonnull final String name,
@@ -347,11 +352,41 @@ public final class ProductTypeITUtils {
    * @param jsonResourcePath defines the path of the JSON resource of the product type.
    * @param ctpClient defines the CTP project to create the product type on.
    */
+  public static ProductType ensureProductType(
+      @Nonnull final String jsonResourcePath, @Nonnull final ProjectApiRoot ctpClient) {
+    final ProductTypeDraft productTypeDraft =
+        readObjectFromResource(jsonResourcePath, ProductTypeDraft.class);
+
+    ProductType productType =
+        ctpClient
+            .productTypes()
+            .get()
+            .withWhere("key=:key")
+            .withPredicateVar("key", productTypeDraft.getKey())
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductTypePagedQueryResponse::getResults)
+            .thenApply(productTypes -> productTypes.isEmpty() ? null : productTypes.get(0))
+            .join();
+
+    if (productType == null) {
+      productType =
+          ctpClient
+              .productTypes()
+              .create(productTypeDraft)
+              .execute()
+              .thenApply(ApiHttpResponse::getBody)
+              .toCompletableFuture()
+              .join();
+    }
+
+    return productType;
+  }
+
   public static ProductType createProductType(
       @Nonnull final String jsonResourcePath, @Nonnull final ProjectApiRoot ctpClient) {
     final ProductTypeDraft productTypeDraft =
-        createObjectFromResource(jsonResourcePath, ProductTypeDraft.class);
-
+        readObjectFromResource(jsonResourcePath, ProductTypeDraft.class);
     return ctpClient
         .productTypes()
         .create(productTypeDraft)

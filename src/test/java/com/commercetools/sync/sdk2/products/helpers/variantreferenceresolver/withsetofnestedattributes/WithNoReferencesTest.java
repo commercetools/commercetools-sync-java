@@ -1,6 +1,6 @@
 package com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.withsetofnestedattributes;
 
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createObjectFromResource;
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.readObjectFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -46,7 +46,7 @@ class WithNoReferencesTest {
   void resolveReferences_WithSetOfNestedTextAttributes_ShouldReturnEqualDraft() {
     // preparation
     final ProductVariantDraft withSetOfNestedTextAttributes =
-        createObjectFromResource(
+        readObjectFromResource(
             SET_OF_NESTED_ATTRIBUTE_WITH_TEXT_ATTRIBUTES, ProductVariantDraft.class);
 
     // test
@@ -63,7 +63,7 @@ class WithNoReferencesTest {
   void resolveReferences_WithSetOfNestedSetOfTextAttributes_ShouldReturnEqualDraft() {
     // preparation
     final ProductVariantDraft withSetOfNestedSetOfTextAttributes =
-        createObjectFromResource(
+        readObjectFromResource(
             SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_TEXT_ATTRIBUTES, ProductVariantDraft.class);
 
     // test

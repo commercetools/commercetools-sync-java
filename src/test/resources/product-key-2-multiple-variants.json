@@ -1,0 +1,46 @@
+{
+  "id": "2b2a2ce2-3ba3-47a4-9c9b-13770d664dd2",
+  "version": 448,
+  "productType": {
+    "typeId": "product-type",
+    "id": "db860040-dcb7-4db5-8f87-7dfc89611599"
+  },
+  "masterData": {
+    "staged": {
+      "name": {
+        "en": "Purple Foundation",
+        "en-US": "Purple Foundation"
+      },
+      "categories": [
+      ],
+      "categoryOrderHints": {},
+      "slug": {
+        "en": "purple-foundation",
+        "en-US": "purple-foundation"
+      },
+      "masterVariant": {
+        "id": 1,
+        "sku": "10-38-45862",
+        "key": "4364064522287-31280524787759",
+        "attributes": [{
+          "name": "priceInfo",
+          "value": "90/kg"
+        }]
+      },
+      "variants": [
+        {
+          "id": 2,
+          "sku": "10-38-45868",
+          "key": "4364064522287-31280524820527",
+          "attributes": [{
+            "name": "priceInfo",
+            "value": "90/kg"
+          }]
+        }
+      ]
+    },
+    "hasStagedChanges": false,
+    "published": true
+  },
+  "key": "1eab5094-1e4d-475c-a09a-b8e7439edd53"
+}

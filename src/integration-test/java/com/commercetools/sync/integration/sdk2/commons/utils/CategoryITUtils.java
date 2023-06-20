@@ -1,6 +1,8 @@
 package com.commercetools.sync.integration.sdk2.commons.utils;
 
+import static com.commercetools.sync.integration.sdk2.commons.utils.CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects;
 import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.deleteTypes;
 import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
@@ -10,6 +12,7 @@ import com.commercetools.api.client.QueryUtils;
 import com.commercetools.api.models.category.Category;
 import com.commercetools.api.models.category.CategoryDraft;
 import com.commercetools.api.models.category.CategoryDraftBuilder;
+import com.commercetools.api.models.category.CategoryPagedQueryResponse;
 import com.commercetools.api.models.category.CategoryReference;
 import com.commercetools.api.models.category.CategoryReferenceBuilder;
 import com.commercetools.api.models.category.CategoryResourceIdentifier;
@@ -22,7 +25,6 @@ import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.api.models.type.ResourceTypeId;
 import com.commercetools.api.models.type.Type;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
-import io.sphere.sdk.models.ResourceIdentifier;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.NotFoundException;
 import java.util.ArrayList;
@@ -35,6 +37,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -42,6 +45,9 @@ import javax.annotation.Nullable;
 public final class CategoryITUtils {
   public static final String OLD_CATEGORY_CUSTOM_TYPE_KEY = "oldCategoryCustomTypeKey";
   public static final String OLD_CATEGORY_CUSTOM_TYPE_NAME = "old_type_name";
+
+  public static final String CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY =
+      "commercetools-sync-java.UnresolvedReferencesService.categoryDrafts";
 
   /**
    * Builds a list of the supplied number ({@code numberOfCategories}) of CategoryDraft objects that
@@ -201,17 +207,33 @@ public final class CategoryITUtils {
    * @param ctpClient defines the CTP project to create the categories on.
    * @param categoryDrafts the drafts to build the categories from.
    */
-  public static List<Category> createCategories(
+  public static List<Category> ensureCategories(
       @Nonnull final ProjectApiRoot ctpClient, @Nonnull final List<CategoryDraft> categoryDrafts) {
     final List<CompletableFuture<Category>> futures = new ArrayList<>();
     for (CategoryDraft categoryDraft : categoryDrafts) {
       final CompletableFuture<Category> categoryCompletableFuture =
           ctpClient
               .categories()
-              .create(categoryDraft)
+              .get()
+              .withWhere("key=:key")
+              .withPredicateVar("key", categoryDraft.getKey())
               .execute()
               .thenApply(ApiHttpResponse::getBody)
-              .toCompletableFuture();
+              .thenApply(CategoryPagedQueryResponse::getResults)
+              .thenApply(
+                  categories -> {
+                    if (categories.isEmpty()) {
+                      return ctpClient
+                          .categories()
+                          .create(categoryDraft)
+                          .execute()
+                          .thenApply(ApiHttpResponse::getBody);
+                    } else {
+                      return CompletableFuture.completedFuture(categories.get(0));
+                    }
+                  })
+              .thenCompose(Function.identity());
+
       futures.add(categoryCompletableFuture);
     }
 
@@ -227,14 +249,24 @@ public final class CategoryITUtils {
    * @param name the name of the custom type.
    * @param ctpClient defines the CTP project to create the type on.
    */
-  public static Type createCategoriesCustomType(
+  public static Type ensureCategoriesCustomType(
       @Nonnull final String typeKey,
       @Nonnull final Locale locale,
       @Nonnull final String name,
       @Nonnull final ProjectApiRoot ctpClient) {
-
     return createTypeIfNotAlreadyExisting(
         typeKey, locale, name, singletonList(ResourceTypeId.CATEGORY), ctpClient);
+  }
+
+  /**
+   * Deletes all categories and types from the CTP project defined by the {@code ctpClient}.
+   *
+   * @param ctpClient defines the CTP project to delete the categories and types from.
+   */
+  public static void deleteCategorySyncTestData(@Nonnull final ProjectApiRoot ctpClient) {
+    deleteAllCategories(ctpClient);
+    deleteTypes(ctpClient);
+    deleteWaitingToBeResolvedCustomObjects(ctpClient, CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY);
   }
 
   /**
@@ -250,7 +282,8 @@ public final class CategoryITUtils {
   public static void deleteAllCategories(@Nonnull final ProjectApiRoot ctpClient) {
     final Set<String> keys = new HashSet<>();
     final List<Category> categories =
-        QueryUtils.queryAll(ctpClient.categories().get(), categories1 -> categories1)
+        QueryUtils.queryAll(
+                ctpClient.categories().get().addExpand("ancestors[*]"), categories1 -> categories1)
             .thenApply(
                 fetchedCategories ->
                     fetchedCategories.stream().flatMap(List::stream).collect(Collectors.toList()))
@@ -297,9 +330,9 @@ public final class CategoryITUtils {
    * from the supplied {@link java.util.List} of {@link Category}.
    *
    * @param categories a {@link java.util.List} of {@link Category} from which the {@link
-   *     java.util.Set} of {@link ResourceIdentifier} will be built.
-   * @return a {@link java.util.Set} of {@link io.sphere.sdk.models.ResourceIdentifier} with keys in
-   *     place of ids from the supplied {@link java.util.List} of {@link Category}.
+   *     java.util.Set} of {@link CategoryResourceIdentifier} will be built.
+   * @return a {@link java.util.Set} of {@link CategoryResourceIdentifier} with keys in place of ids
+   *     from the supplied {@link java.util.List} of {@link Category}.
    */
   @Nonnull
   public static Set<CategoryResourceIdentifier> getResourceIdentifiersWithKeys(
@@ -324,6 +357,13 @@ public final class CategoryITUtils {
       @Nonnull final List<Category> categories) {
     return categories.stream()
         .map(category -> CategoryReferenceBuilder.of().id(category.getId()).build())
+        .collect(Collectors.toList());
+  }
+
+  public static List<CategoryResourceIdentifier> getResourceIdentifiersWithIds(
+      @Nonnull final List<Category> categories) {
+    return categories.stream()
+        .map(category -> CategoryResourceIdentifierBuilder.of().id(category.getId()).build())
         .collect(Collectors.toList());
   }
 

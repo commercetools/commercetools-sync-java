@@ -64,11 +64,18 @@ public class PriceUtils {
     ChannelResourceIdentifier channelResourceIdentifier = null;
     if (referenceIdToKeyCache != null) {
       channelResourceIdentifier =
-          (ChannelResourceIdentifier)
-              getResourceIdentifierWithKey(
-                  channelReference,
-                  referenceIdToKeyCache,
-                  (id, key) -> ChannelResourceIdentifierBuilder.of().id(id).key(key).build());
+          getResourceIdentifierWithKey(
+              channelReference,
+              referenceIdToKeyCache,
+              (id, key) -> {
+                final ChannelResourceIdentifierBuilder builder =
+                    ChannelResourceIdentifierBuilder.of();
+                if (id == null) {
+                  return builder.key(key).build();
+                } else {
+                  return builder.id(id).build();
+                }
+              });
     } else if (channelReference != null) {
       channelResourceIdentifier =
           ChannelResourceIdentifierBuilder.of().id(channelReference.getId()).build();
@@ -82,11 +89,10 @@ public class PriceUtils {
     CustomerGroupResourceIdentifier customerGroupResourceIdentifier = null;
     if (referenceIdToKeyCache != null) {
       customerGroupResourceIdentifier =
-          (CustomerGroupResourceIdentifier)
-              getResourceIdentifierWithKey(
-                  customerGroupReference,
-                  referenceIdToKeyCache,
-                  (id, key) -> CustomerGroupResourceIdentifierBuilder.of().id(id).key(key).build());
+          getResourceIdentifierWithKey(
+              customerGroupReference,
+              referenceIdToKeyCache,
+              (id, key) -> CustomerGroupResourceIdentifierBuilder.of().id(id).key(key).build());
     } else if (customerGroupReference != null) {
       customerGroupResourceIdentifier =
           CustomerGroupResourceIdentifierBuilder.of().id(customerGroupReference.getId()).build();

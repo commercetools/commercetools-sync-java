@@ -4,20 +4,20 @@ plugins {
     id 'org.ajoberstar.grgit' version '5.0.0'
     id "com.github.ben-manes.versions" version '0.46.0'
     id 'ru.vyarus.mkdocs' version '3.0.0'
-    id "com.github.spotbugs" version "5.0.13"
-    id 'com.diffplug.spotless' version '6.17.0'
+    id "com.github.spotbugs" version "5.0.14"
+    id 'com.diffplug.spotless' version '6.18.0'
     id 'io.github.gradle-nexus.publish-plugin' version '1.3.0'
 }
 
 ext{
     commercetoolsJvmSdkVersion = '2.14.0'
-    commercetoolsJavaSdkV2Version = '14.0.0'
-    mockitoJunitJupiterVersion = '5.2.0'
+    commercetoolsJavaSdkV2Version = '14.2.1'
+    mockitoJunitJupiterVersion = '5.3.1'
     jupiterApiVersion = '5.9.2'
     assertjVersion = '3.24.2'
     pmdVersion = '6.55.0'
     jacocoVersion = '0.8.8'
-    caffeineVersion = '3.1.5'
+    caffeineVersion = '3.1.6'
     nexusStagingPluginVersion = '0.22.0'
     commonTextVersion = '1.9'
     commercetoolsJavaSDK2Version = '10.1.0'

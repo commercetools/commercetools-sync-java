@@ -2,13 +2,13 @@ package com.commercetools.sync.sdk2.products.utils;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static com.commercetools.sync.sdk2.commons.helpers.DefaultCurrencyUnits.EUR;
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.readObjectFromResource;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.SIMPLE_PRODUCT_WITH_MASTER_VARIANT_RESOURCE_PATH;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.SIMPLE_PRODUCT_WITH_MULTIPLE_VARIANTS_RESOURCE_PATH;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createProductVariantDraftBuilder;
-import static io.vrap.rmf.base.client.utils.json.JsonUtils.fromInputStream;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -73,7 +73,6 @@ import com.commercetools.api.models.product_type.TextInputHint;
 import com.commercetools.sync.sdk2.products.AttributeMetaData;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -89,12 +88,8 @@ class ProductSyncUtilsTest {
   @BeforeEach
   void setup() {
     productSyncOptions = ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
-
-    final InputStream resourceAsStream =
-        Thread.currentThread()
-            .getContextClassLoader()
-            .getResourceAsStream(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH);
-    final Product productFromJson = fromInputStream(resourceAsStream, Product.class);
+    final Product productFromJson =
+        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class);
     oldProduct = ProductMixin.toProjection(productFromJson, ProductProjectionType.STAGED);
   }
 
@@ -513,11 +508,8 @@ class ProductSyncUtilsTest {
   @Test
   void buildActions_FromDraftsWithDifferentAttributes_ShouldBuildUpdateActions() {
     // Reloading the oldProduct object with a specific file for this test
-    final InputStream resourceAsStream =
-        Thread.currentThread()
-            .getContextClassLoader()
-            .getResourceAsStream(SIMPLE_PRODUCT_WITH_MULTIPLE_VARIANTS_RESOURCE_PATH);
-    final Product productFromJson = fromInputStream(resourceAsStream, Product.class);
+    final Product productFromJson =
+        readObjectFromResource(SIMPLE_PRODUCT_WITH_MULTIPLE_VARIANTS_RESOURCE_PATH, Product.class);
     oldProduct = ProductMixin.toProjection(productFromJson, ProductProjectionType.STAGED);
 
     final Attribute brandNameAttribute =

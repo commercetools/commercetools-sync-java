@@ -22,6 +22,8 @@ import com.commercetools.sync.sdk2.commons.models.Custom;
 import com.commercetools.sync.sdk2.commons.models.CustomDraft;
 import com.commercetools.sync.sdk2.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -47,8 +49,10 @@ public final class CustomUpdateActionUtils {
    * example channels, categories, inventory entries. For more details of the inner logic and
    * different scenarios, check the Javadoc of the other method.
    *
-   * @param <T> the type of the old {@link Custom} which has the custom fields.
-   * @param <S> the type of the new resource {@link CustomDraft}.
+   * @param <CustomT> the type of the old {@link Custom} which has the custom fields.
+   * @param <CustomDraftT> the type of the new resource {@link CustomDraft}.
+   * @param <ResourceUpdateActionT> extends ResourceUpdateAction (e.g {@link
+   *     com.commercetools.api.models.customer.CustomerChangeEmailAction}
    * @param oldResource the resource which should be updated.
    * @param newResource the resource draft where we get the new custom fields.
    * @param customActionBuilder the builder instance responsible for building the custom update
@@ -60,11 +64,14 @@ public final class CustomUpdateActionUtils {
    *     Function, Function, BaseSyncOptions) )
    */
   @Nonnull
-  public static <T extends Custom, S extends CustomDraft>
-      List<ResourceUpdateAction> buildPrimaryResourceCustomUpdateActions(
-          @Nonnull final T oldResource,
-          @Nonnull final S newResource,
-          @Nonnull final GenericCustomActionBuilder customActionBuilder,
+  public static <
+          CustomT extends Custom,
+          CustomDraftT extends CustomDraft,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      List<ResourceUpdateActionT> buildPrimaryResourceCustomUpdateActions(
+          @Nonnull final CustomT oldResource,
+          @Nonnull final CustomDraftT newResource,
+          @Nonnull final GenericCustomActionBuilder<ResourceUpdateActionT> customActionBuilder,
           @Nonnull final BaseSyncOptions syncOptions) {
     return buildCustomUpdateActions(
         oldResource,
@@ -119,10 +126,12 @@ public final class CustomUpdateActionUtils {
    *   <li>Custom field values are identical.
    * </ol>
    *
-   * @param <D> the type of the new {@link BaseResource} which is the super {@link BaseResource} of
-   *     the Resource to update.
-   * @param <T> the type of the old {@link Custom} which has the custom fields.
-   * @param <S> the type of the new resource {@link CustomDraft}.
+   * @param <ResourceDraftT> the type of the new {@link BaseResource} which is the super {@link
+   *     BaseResource} of the Resource to update.
+   * @param <CustomT> the type of the old {@link Custom} which has the custom fields.
+   * @param <CustomDraftT> the type of the new resource {@link CustomDraft}.
+   * @param <ResourceUpdateActionT> extends ResourceUpdateAction (e.g {@link
+   *     com.commercetools.api.models.customer.CustomerChangeEmailAction}
    * @param newMainResourceDraft the main resource of the resource draft where we get the new custom
    *     fields.
    * @param oldResource the resource which should be updated.
@@ -141,16 +150,20 @@ public final class CustomUpdateActionUtils {
    */
   @SuppressWarnings("unchecked")
   @Nonnull
-  public static <D, T extends Custom, S extends CustomDraft>
-      List<ResourceUpdateAction> buildCustomUpdateActions(
-          @Nullable final D newMainResourceDraft,
-          @Nonnull final T oldResource,
-          @Nonnull final S newResourceDraft,
-          @Nonnull final GenericCustomActionBuilder customActionBuilder,
+  public static <
+          ResourceDraftT,
+          CustomT extends Custom,
+          CustomDraftT extends CustomDraft,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      List<ResourceUpdateActionT> buildCustomUpdateActions(
+          @Nullable final ResourceDraftT newMainResourceDraft,
+          @Nonnull final CustomT oldResource,
+          @Nonnull final CustomDraftT newResourceDraft,
+          @Nonnull final GenericCustomActionBuilder<ResourceUpdateActionT> customActionBuilder,
           @Nullable final Long variantId,
-          @Nonnull final Function<T, String> resourceIdGetter,
-          @Nonnull final Function<T, String> resourceTypeIdGetter,
-          @Nonnull final Function<T, String> updateIdGetter,
+          @Nonnull final Function<CustomT, String> resourceIdGetter,
+          @Nonnull final Function<CustomT, String> resourceTypeIdGetter,
+          @Nonnull final Function<CustomT, String> updateIdGetter,
           @Nonnull final BaseSyncOptions syncOptions) {
 
     final CustomFields oldResourceCustomFields = oldResource.getCustom();
@@ -202,7 +215,7 @@ public final class CustomUpdateActionUtils {
           } else {
             final Map<String, Object> newCustomFieldsJsonMap =
                 newResourceCustomFields.getFields().values();
-            final Optional<ResourceUpdateAction> updateAction =
+            final Optional<ResourceUpdateActionT> updateAction =
                 buildTypedSetCustomTypeUpdateAction(
                     newCustomFieldsTypeId,
                     newCustomFieldsJsonMap,
@@ -229,15 +242,18 @@ public final class CustomUpdateActionUtils {
   }
 
   @Nonnull
-  private static <T extends Custom, S extends CustomDraft>
-      List<ResourceUpdateAction> buildCustomUpdateActions(
-          @Nonnull final T oldResource,
-          @Nonnull final S newResourceDraft,
-          @Nonnull final GenericCustomActionBuilder customActionBuilder,
+  private static <
+          CustomT extends Custom,
+          CustomDraftT extends CustomDraft,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      List<ResourceUpdateActionT> buildCustomUpdateActions(
+          @Nonnull final CustomT oldResource,
+          @Nonnull final CustomDraftT newResourceDraft,
+          @Nonnull final GenericCustomActionBuilder<ResourceUpdateActionT> customActionBuilder,
           @Nullable final Long variantId,
-          @Nonnull final Function<T, String> resourceIdGetter,
-          @Nonnull final Function<T, String> resourceTypeIdGetter,
-          @Nonnull final Function<T, String> updateIdGetter,
+          @Nonnull final Function<CustomT, String> resourceIdGetter,
+          @Nonnull final Function<CustomT, String> resourceTypeIdGetter,
+          @Nonnull final Function<CustomT, String> updateIdGetter,
           @Nonnull final BaseSyncOptions syncOptions) {
     return buildCustomUpdateActions(
         null,
@@ -278,7 +294,9 @@ public final class CustomUpdateActionUtils {
    *   <li>If both the resources' custom type keys are not set.
    * </ol>
    *
-   * @param <T> the type of the old {@link Custom} which has the custom fields.
+   * @param <CustomT> the type of the old {@link Custom} which has the custom fields.
+   * @param <ResourceUpdateActionT> extends ResourceUpdateAction (e.g {@link
+   *     com.commercetools.api.models.customer.CustomerChangeEmailAction}
    * @param oldCustomFields the old resource's custom fields.
    * @param newCustomFields the new resource draft's custom fields.
    * @param resource the resource that the custom fields are on. It is used to identify the type of
@@ -296,21 +314,23 @@ public final class CustomUpdateActionUtils {
    *     update actions are needed.
    */
   @Nonnull
-  static <T extends Custom> List<ResourceUpdateAction> buildNonNullCustomFieldsUpdateActions(
-      @Nonnull final CustomFields oldCustomFields,
-      @Nonnull final CustomFieldsDraft newCustomFields,
-      @Nonnull final T resource,
-      @Nonnull final GenericCustomActionBuilder customActionBuilder,
-      @Nullable final Long variantId,
-      @Nonnull final Function<T, String> resourceIdGetter,
-      @Nonnull final Function<T, String> resourceTypeIdGetter,
-      @Nonnull final Function<T, String> updateIdGetter,
-      @Nonnull final BaseSyncOptions syncOptions)
-      throws BuildUpdateActionException {
+  static <
+          CustomT extends Custom,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      List<ResourceUpdateActionT> buildNonNullCustomFieldsUpdateActions(
+          @Nonnull final CustomFields oldCustomFields,
+          @Nonnull final CustomFieldsDraft newCustomFields,
+          @Nonnull final CustomT resource,
+          @Nonnull final GenericCustomActionBuilder<ResourceUpdateActionT> customActionBuilder,
+          @Nullable final Long variantId,
+          @Nonnull final Function<CustomT, String> resourceIdGetter,
+          @Nonnull final Function<CustomT, String> resourceTypeIdGetter,
+          @Nonnull final Function<CustomT, String> updateIdGetter,
+          @Nonnull final BaseSyncOptions syncOptions)
+          throws BuildUpdateActionException {
 
     final String oldCustomTypeId = oldCustomFields.getType().getId();
 
-    // Object is JsonNode
     final Map<String, Object> oldCustomFieldsJsonMap = oldCustomFields.getFields().values();
     final String newCustomTypeId = newCustomFields.getType().getId();
     final FieldContainer fields = newCustomFields.getFields();
@@ -326,7 +346,7 @@ public final class CustomUpdateActionUtils {
       }
       if (newCustomFieldsJsonMap == null) {
         // New resource's custom fields are null/not set. So we should unset old custom fields.
-        final Optional<ResourceUpdateAction> updateAction =
+        final Optional<ResourceUpdateActionT> updateAction =
             buildTypedSetCustomTypeUpdateAction(
                 newCustomTypeId,
                 null,
@@ -350,7 +370,7 @@ public final class CustomUpdateActionUtils {
           variantId,
           updateIdGetter);
     } else {
-      final Optional<ResourceUpdateAction> updateAction =
+      final Optional<ResourceUpdateActionT> updateAction =
           buildTypedSetCustomTypeUpdateAction(
               newCustomTypeId,
               newCustomFieldsJsonMap,
@@ -387,7 +407,9 @@ public final class CustomUpdateActionUtils {
    *   <li>Custom field values are identical.
    * </ol>
    *
-   * @param <T> the type of the old {@link Custom} which has the custom fields.
+   * @param <CustomT> the type of the old {@link Custom} which has the custom fields.
+   * @param <ResourceUpdateActionT> extends ResourceUpdateAction (e.g {@link
+   *     com.commercetools.api.models.customer.CustomerChangeEmailAction}
    * @param oldCustomFields the old resource's custom fields map of JSON values.
    * @param newCustomFields the new resource's custom fields map of JSON values.
    * @param resource the resource that the custom fields are on. It is used to identify the type of
@@ -402,15 +424,18 @@ public final class CustomUpdateActionUtils {
    *     update actions are needed.
    */
   @Nonnull
-  static <T extends Custom> List<ResourceUpdateAction> buildSetCustomFieldsUpdateActions(
-      @Nonnull final Map<String, Object> oldCustomFields,
-      @Nonnull final Map<String, Object> newCustomFields,
-      @Nonnull final T resource,
-      @Nonnull final GenericCustomActionBuilder customActionBuilder,
-      @Nullable final Long variantId,
-      @Nonnull final Function<T, String> updateIdGetter) {
+  static <
+          CustomT extends Custom,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      List<ResourceUpdateActionT> buildSetCustomFieldsUpdateActions(
+          @Nonnull final Map<String, Object> oldCustomFields,
+          @Nonnull final Map<String, Object> newCustomFields,
+          @Nonnull final CustomT resource,
+          @Nonnull final GenericCustomActionBuilder<ResourceUpdateActionT> customActionBuilder,
+          @Nullable final Long variantId,
+          @Nonnull final Function<CustomT, String> updateIdGetter) {
 
-    final List<ResourceUpdateAction> customFieldsUpdateActions =
+    final List<ResourceUpdateActionT> customFieldsUpdateActions =
         buildNewOrModifiedCustomFieldsUpdateActions(
             oldCustomFields,
             newCustomFields,
@@ -419,7 +444,7 @@ public final class CustomUpdateActionUtils {
             variantId,
             updateIdGetter);
 
-    final List<ResourceUpdateAction> removedCustomFieldsActions =
+    final List<ResourceUpdateActionT> removedCustomFieldsActions =
         buildRemovedCustomFieldsUpdateActions(
             oldCustomFields,
             newCustomFields,
@@ -442,7 +467,9 @@ public final class CustomUpdateActionUtils {
    * <p>Note: Null value custom fields are filtered out. In other words, no update actions would be
    * built for fields with null values.
    *
-   * @param <T> the type of the old {@link Custom} which has the custom fields.
+   * @param <CustomT> the type of the old {@link Custom} which has the custom fields.
+   * @param <ResourceUpdateActionT> extends ResourceUpdateAction (e.g {@link
+   *     com.commercetools.api.models.customer.CustomerChangeEmailAction}
    * @param oldCustomFields the old resource's custom fields map of JSON values.
    * @param newCustomFields the new resource's custom fields map of JSON values.
    * @param resource the resource that the custom fields are on. It is used to identify the type of
@@ -457,21 +484,25 @@ public final class CustomUpdateActionUtils {
    *     update actions are needed.
    */
   @Nonnull
-  private static <T extends Custom>
-      List<ResourceUpdateAction> buildNewOrModifiedCustomFieldsUpdateActions(
+  private static <
+          CustomT extends Custom,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      List<ResourceUpdateActionT> buildNewOrModifiedCustomFieldsUpdateActions(
           @Nonnull final Map<String, Object> oldCustomFields,
           @Nonnull final Map<String, Object> newCustomFields,
-          @Nonnull final T resource,
-          @Nonnull final GenericCustomActionBuilder customActionBuilder,
+          @Nonnull final CustomT resource,
+          @Nonnull final GenericCustomActionBuilder<ResourceUpdateActionT> customActionBuilder,
           @Nullable final Long variantId,
-          @Nonnull final Function<T, String> updateIdGetter) {
+          @Nonnull final Function<CustomT, String> updateIdGetter) {
 
     return newCustomFields.keySet().stream()
         .filter(
             newCustomFieldName -> {
-              final Object newCustomFieldValue = newCustomFields.get(newCustomFieldName);
-              final Object oldCustomFieldValue = oldCustomFields.get(newCustomFieldName);
-
+              // Convert Object to JSONNode
+              final JsonNode newCustomFieldValue =
+                  convertFieldValuesToJsonNode(newCustomFields.get(newCustomFieldName));
+              final JsonNode oldCustomFieldValue =
+                  convertFieldValuesToJsonNode(oldCustomFields.get(newCustomFieldName));
               return !isNullJsonValue(newCustomFieldValue)
                   && !Objects.equals(newCustomFieldValue, oldCustomFieldValue);
             })
@@ -485,8 +516,8 @@ public final class CustomUpdateActionUtils {
         .collect(Collectors.toList());
   }
 
-  private static boolean isNullJsonValue(@Nullable final Object value) {
-    return !Objects.nonNull(value) || (value instanceof JsonNode && ((JsonNode) value).isNull());
+  private static boolean isNullJsonValue(@Nullable final JsonNode value) {
+    return !Objects.nonNull(value) || value.isNull();
   }
 
   /**
@@ -496,7 +527,9 @@ public final class CustomUpdateActionUtils {
    * result. If no update action is needed an empty {@link List}&lt;{@link ResourceUpdateAction}&gt;
    * is returned.
    *
-   * @param <T> the type of the old {@link Custom} which has the custom fields.
+   * @param <CustomT> the type of the old {@link Custom} which has the custom fields.
+   * @param <ResourceUpdateActionT> extends ResourceUpdateAction (e.g {@link
+   *     com.commercetools.api.models.customer.CustomerChangeEmailAction}
    * @param oldCustomFields the old resource's custom fields map of JSON values.
    * @param newCustomFields the new resources's custom fields map of JSON values.
    * @param resource the resource that the custom fields are on. It is used to identify the type of
@@ -511,22 +544,48 @@ public final class CustomUpdateActionUtils {
    *     update actions are needed.
    */
   @Nonnull
-  private static <T extends Custom>
-      List<ResourceUpdateAction> buildRemovedCustomFieldsUpdateActions(
+  private static <
+          CustomT extends Custom,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      List<ResourceUpdateActionT> buildRemovedCustomFieldsUpdateActions(
           @Nonnull final Map<String, Object> oldCustomFields,
           @Nonnull final Map<String, Object> newCustomFields,
-          @Nonnull final T resource,
-          @Nonnull final GenericCustomActionBuilder customActionBuilder,
+          @Nonnull final CustomT resource,
+          @Nonnull final GenericCustomActionBuilder<ResourceUpdateActionT> customActionBuilder,
           @Nullable final Long variantId,
-          @Nonnull final Function<T, String> updateIdGetter) {
+          @Nonnull final Function<CustomT, String> updateIdGetter) {
 
     return oldCustomFields.keySet().stream()
-        .filter(oldCustomFieldsName -> isNullJsonValue(newCustomFields.get(oldCustomFieldsName)))
+        .filter(
+            oldCustomFieldsName -> {
+              // Convert Object to JSONNode
+              final JsonNode newCustomFieldValue =
+                  convertFieldValuesToJsonNode(newCustomFields.get(oldCustomFieldsName));
+              final JsonNode oldCustomFieldValue =
+                  convertFieldValuesToJsonNode(oldCustomFields.get(oldCustomFieldsName));
+              return isNullJsonValue(newCustomFieldValue)
+                  && oldCustomFieldValue != newCustomFieldValue;
+            })
         .map(
             oldCustomFieldsName ->
                 customActionBuilder.buildSetCustomFieldAction(
                     variantId, updateIdGetter.apply(resource), oldCustomFieldsName, null))
         .collect(Collectors.toList());
+  }
+
+  /**
+   * Takes a value of type Object and converts to JSONNode. It helps to compare fields values of
+   * {@link CustomFields} and {@link CustomFieldsDraft}
+   *
+   * @param data a value of any Object-type
+   * @return the given value converted to {@link JsonNode} or null
+   */
+  @Nullable
+  private static JsonNode convertFieldValuesToJsonNode(@Nullable final Object data) {
+    if (Objects.isNull(data)) return null;
+    final ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
+    final JsonNode jsonNode = objectMapper.convertValue(data, JsonNode.class);
+    return jsonNode;
   }
 
   private CustomUpdateActionUtils() {}

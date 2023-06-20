@@ -70,7 +70,7 @@ import javax.annotation.Nonnull;
 
 public final class ProductUpdateActionUtils {
   private static final String BLANK_VARIANT_KEY = "The variant key is blank.";
-  private static final String NULL_VARIANT = "The variant is null.";
+  static final String NULL_VARIANT = "The variant is null.";
   static final String BLANK_OLD_MASTER_VARIANT_KEY = "Old master variant key is blank.";
   static final String BLANK_NEW_MASTER_VARIANT_KEY = "New master variant null or has blank key.";
   static final String BLANK_NEW_MASTER_VARIANT_SKU = "New master variant has blank SKU.";
@@ -220,16 +220,22 @@ public final class ProductUpdateActionUtils {
         newCategoryOrderHints,
         () -> {
           final Set<String> newCategoryIds =
-              newProduct.getCategories().stream()
-                  .map(CategoryResourceIdentifier::getId)
-                  .collect(toSet());
+              newProduct.getCategories() == null
+                  ? Collections.emptySet()
+                  : newProduct.getCategories().stream()
+                      .map(CategoryResourceIdentifier::getId)
+                      .collect(toSet());
 
           final List<ProductUpdateAction> updateActions = new ArrayList<>();
 
           final Map<String, String> newMap =
-              nonNull(newCategoryOrderHints) ? newCategoryOrderHints.values() : emptyMap();
+              nonNull(newCategoryOrderHints) && nonNull(newCategoryOrderHints.values())
+                  ? newCategoryOrderHints.values()
+                  : emptyMap();
           final Map<String, String> oldMap =
-              nonNull(oldCategoryOrderHints) ? oldCategoryOrderHints.values() : emptyMap();
+              nonNull(oldCategoryOrderHints) && nonNull(oldCategoryOrderHints.values())
+                  ? oldCategoryOrderHints.values()
+                  : emptyMap();
 
           // remove category hints present in old product if they are absent in draft but only if
           // product
@@ -330,14 +336,18 @@ public final class ProductUpdateActionUtils {
       @Nonnull final ProductProjection oldProduct, @Nonnull final ProductDraft newProduct) {
     final SearchKeywords newSearchKeywords = newProduct.getSearchKeywords();
     final SearchKeywords oldSearchKeywords = oldProduct.getSearchKeywords();
-    return buildUpdateAction(
-        oldSearchKeywords,
-        newSearchKeywords,
-        () ->
-            ProductSetSearchKeywordsActionBuilder.of()
-                .searchKeywords(newSearchKeywords)
-                .staged(true)
-                .build());
+    if (newSearchKeywords == null) {
+      return Optional.empty();
+    } else {
+      return buildUpdateAction(
+          oldSearchKeywords,
+          newSearchKeywords,
+          () ->
+              ProductSetSearchKeywordsActionBuilder.of()
+                  .searchKeywords(newSearchKeywords)
+                  .staged(true)
+                  .build());
+    }
   }
 
   /**
@@ -473,7 +483,8 @@ public final class ProductUpdateActionUtils {
     oldProductVariantsWithMaster.put(oldMasterVariant.getKey(), oldMasterVariant);
 
     final List<ProductVariantDraft> newAllProductVariants =
-        new ArrayList<>(newProduct.getVariants());
+        new ArrayList<>(
+            newProduct.getVariants() == null ? Collections.emptyList() : newProduct.getVariants());
     newAllProductVariants.add(newProduct.getMasterVariant());
 
     // Remove missing variants, but keep master variant (MV can't be removed)
@@ -870,8 +881,10 @@ public final class ProductUpdateActionUtils {
           // (if it does not exist in the new variants list).
           // We don't need to include new master variant to the iteration stream iteration,
           // because this body is called only if newKey != oldKey
-          if (newProduct.getVariants().stream()
-              .noneMatch(variant -> Objects.equals(variant.getKey(), oldKey))) {
+          if (newProduct.getVariants() == null
+              || newProduct.getVariants().stream().allMatch(Objects::isNull)
+              || newProduct.getVariants().stream()
+                  .noneMatch(variant -> Objects.equals(variant.getKey(), oldKey))) {
             updateActions.add(
                 ProductRemoveVariantAction.builder()
                     .id(oldProduct.getMasterVariant().getId())

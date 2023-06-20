@@ -26,6 +26,7 @@ import com.commercetools.api.models.product_type.ProductTypeResourceIdentifier;
 import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
 import com.commercetools.api.models.state.StateResourceIdentifier;
 import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
+import com.commercetools.api.models.tax_category.TaxCategoryReference;
 import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifier;
 import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifierBuilder;
 import com.commercetools.sync.sdk2.commons.helpers.CategoryResourceIdentifierPair;
@@ -35,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
@@ -143,38 +145,53 @@ public final class ProductReferenceResolutionUtils {
               final ProductVariantDraft masterVariantDraftWithKeys =
                   variantDraftsWithKeys.remove(0);
 
+              final ProductTypeResourceIdentifier productTypeResourceIdentifier =
+                  getResourceIdentifierWithKey(
+                      product.getProductType(),
+                      referenceIdToKeyCache,
+                      (id, key) -> {
+                        final ProductTypeResourceIdentifierBuilder builder =
+                            ProductTypeResourceIdentifierBuilder.of();
+                        if (id == null) {
+                          return builder.key(key).build();
+                        } else {
+                          return builder.id(id).build();
+                        }
+                      });
+              final TaxCategoryResourceIdentifier taxCategoryResourceIdentifier =
+                  getResourceIdentifierWithKey(
+                      product.getTaxCategory(),
+                      referenceIdToKeyCache,
+                      (id, key) -> {
+                        final TaxCategoryResourceIdentifierBuilder builder =
+                            TaxCategoryResourceIdentifierBuilder.of();
+                        if (id == null) {
+                          return builder.key(key).build();
+                        } else {
+                          return builder.id(id).build();
+                        }
+                      });
+              final StateResourceIdentifier stateResourceIdentifier =
+                  getResourceIdentifierWithKey(
+                      product.getState(),
+                      referenceIdToKeyCache,
+                      (id, key) -> {
+                        final StateResourceIdentifierBuilder builder =
+                            StateResourceIdentifierBuilder.of();
+                        if (id == null) {
+                          return builder.key(key).build();
+                        } else {
+                          return builder.id(id).build();
+                        }
+                      });
               return productDraftBuilder
                   .masterVariant(masterVariantDraftWithKeys)
                   .variants(variantDraftsWithKeys)
-                  .productType(
-                      (ProductTypeResourceIdentifier)
-                          getResourceIdentifierWithKey(
-                              product.getProductType(),
-                              referenceIdToKeyCache,
-                              (id, key) ->
-                                  ProductTypeResourceIdentifierBuilder.of()
-                                      .id(id)
-                                      .key(key)
-                                      .build()))
+                  .productType(productTypeResourceIdentifier)
                   .categories(categoryResourceIdentifiers)
                   .categoryOrderHints(categoryOrderHintsWithKeys)
-                  .taxCategory(
-                      (TaxCategoryResourceIdentifier)
-                          getResourceIdentifierWithKey(
-                              product.getTaxCategory(),
-                              referenceIdToKeyCache,
-                              (id, key) ->
-                                  TaxCategoryResourceIdentifierBuilder.of()
-                                      .id(id)
-                                      .key(key)
-                                      .build()))
-                  .state(
-                      (StateResourceIdentifier)
-                          getResourceIdentifierWithKey(
-                              product.getState(),
-                              referenceIdToKeyCache,
-                              (id, key) ->
-                                  StateResourceIdentifierBuilder.of().id(id).key(key).build()))
+                  .taxCategory(taxCategoryResourceIdentifier)
+                  .state(stateResourceIdentifier)
                   .build();
             })
         .collect(Collectors.toList());
@@ -193,9 +210,9 @@ public final class ProductReferenceResolutionUtils {
       @Nonnull final ProductProjection product) {
     final List<ProductVariantDraft> allVariants =
         product.getVariants().stream()
-            .map(productVariant -> getProductVariantDraft(productVariant))
+            .map(productVariant -> createProductVariantDraft(productVariant))
             .collect(toList());
-    final ProductVariantDraft masterVariant = getProductVariantDraft(product.getMasterVariant());
+    final ProductVariantDraft masterVariant = createProductVariantDraft(product.getMasterVariant());
 
     return ProductDraftBuilder.of()
         .productType(
@@ -210,7 +227,12 @@ public final class ProductReferenceResolutionUtils {
         .description(product.getDescription())
         .searchKeywords(product.getSearchKeywords())
         .taxCategory(
-            TaxCategoryResourceIdentifierBuilder.of().id(product.getTaxCategory().getId()).build())
+            TaxCategoryResourceIdentifierBuilder.of()
+                .id(
+                    Optional.ofNullable(product.getTaxCategory())
+                        .map(TaxCategoryReference::getId)
+                        .orElse(null))
+                .build())
         .key(product.getKey())
         .categories(
             product.getCategories().stream()
@@ -224,7 +246,8 @@ public final class ProductReferenceResolutionUtils {
         .publish(product.getPublished());
   }
 
-  static ProductVariantDraft getProductVariantDraft(@Nonnull final ProductVariant productVariant) {
+  public static ProductVariantDraft createProductVariantDraft(
+      @Nonnull final ProductVariant productVariant) {
     final List<AssetDraft> assetDrafts = createAssetDraft(productVariant.getAssets());
     final List<PriceDraft> priceDrafts = createPriceDraft(productVariant.getPrices());
     final List<Attribute> attributes = createAttributes(productVariant.getAttributes());

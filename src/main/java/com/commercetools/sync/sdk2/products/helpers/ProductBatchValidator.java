@@ -123,12 +123,14 @@ public class ProductBatchValidator
   private void collectReferencedKeysInCategories(
       @Nonnull final ReferencedKeys referencedKeys, @Nonnull final ProductDraft productDraft) {
 
-    productDraft.getCategories().stream()
-        .filter(Objects::nonNull)
-        .forEach(
-            resourceIdentifier ->
-                collectReferencedKeyFromResourceIdentifier(
-                    resourceIdentifier, referencedKeys.categoryKeys::add));
+    if (productDraft.getCategories() != null) {
+      productDraft.getCategories().stream()
+          .filter(Objects::nonNull)
+          .forEach(
+              resourceIdentifier ->
+                  collectReferencedKeyFromResourceIdentifier(
+                      resourceIdentifier, referencedKeys.categoryKeys::add));
+    }
   }
 
   private void collectReferencedKeysInVariants(
@@ -202,7 +204,10 @@ public class ProductBatchValidator
     // don't filter the nulls
     final List<ProductVariantDraft> allVariants = new ArrayList<>();
     allVariants.add(productDraft.getMasterVariant());
-    allVariants.addAll(productDraft.getVariants());
+    final List<ProductVariantDraft> variants = productDraft.getVariants();
+    if (variants != null) {
+      allVariants.addAll(variants);
+    }
 
     for (int i = 0; i < allVariants.size(); i++) {
       errorMessages.addAll(

@@ -1,5 +1,6 @@
 package com.commercetools.sync.sdk2.products.utils;
 
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.mockGraphQLResponse;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createProductFromJson;
 import static com.commercetools.sync.sdk2.services.impl.BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER;
 import static java.util.Arrays.asList;
@@ -18,7 +19,6 @@ import com.commercetools.api.models.custom_object.CustomObjectPagedQueryResponse
 import com.commercetools.api.models.graph_ql.GraphQLRequest;
 import com.commercetools.api.models.graph_ql.GraphQLRequestBuilder;
 import com.commercetools.api.models.graph_ql.GraphQLResponse;
-import com.commercetools.api.models.graph_ql.GraphQLResponseBuilder;
 import com.commercetools.api.models.product.ProductDraft;
 import com.commercetools.api.models.product.ProductProjection;
 import com.commercetools.api.models.product.ProductReference;
@@ -36,13 +36,11 @@ import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -145,17 +143,6 @@ class ProductTransformUtilsTest {
                           assertThat(((ProductTypeReference) attribute.getValue()).getId())
                               .isEqualTo("prodType1");
                         }));
-  }
-
-  @NotNull
-  private ApiHttpResponse<GraphQLResponse> mockGraphQLResponse(final String jsonResponseString)
-      throws JsonProcessingException {
-    ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
-    final Map responseMap = objectMapper.readValue(jsonResponseString, Map.class);
-    final ApiHttpResponse<GraphQLResponse> apiHttpResponse = mock(ApiHttpResponse.class);
-    when(apiHttpResponse.getBody())
-        .thenReturn(GraphQLResponseBuilder.of().data(responseMap).build());
-    return apiHttpResponse;
   }
 
   @Test
