@@ -481,8 +481,8 @@ attributes.
 The product-sync uses the [JVM-SDK-V2](http://commercetools.github.io/commercetools-sdk-java-v2), therefore ensure you [Install JVM SDK](https://docs.commercetools.com/sdk/java-sdk-getting-started#install-the-java-sdk) module `commercetools-sdk-java-api` with
 any HTTP client module. The default one is `commercetools-http-client`. 
 
-```maven
- // Sample maven pom.xml
+```xml
+ <!-- Sample maven pom.xml -->
  <properties>
      <commercetools.version>LATEST</commercetools.version>
  </properties>

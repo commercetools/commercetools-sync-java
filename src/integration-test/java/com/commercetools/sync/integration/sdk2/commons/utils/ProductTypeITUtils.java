@@ -130,6 +130,8 @@ public final class ProductTypeITUtils {
         ctpClient.productTypes().post(productTypeDraft2).execute().join().getBody();
     final AttributeDefinitionDraft nestedTypeAttr1 =
         AttributeDefinitionDraftBuilder.of()
+            .name("nestedattr1")
+            .label(LocalizedString.ofEnglish("nestedattr1"))
             .type(
                 AttributeSetTypeBuilder.of()
                     .elementType(
@@ -146,7 +148,8 @@ public final class ProductTypeITUtils {
                                     .build())
                             .build())
                     .build())
-            .isSearchable(true)
+            .isSearchable(false)
+            .isRequired(false)
             .build();
 
     final AttributeDefinitionDraft nestedTypeAttr2 =
@@ -158,7 +161,8 @@ public final class ProductTypeITUtils {
                     .build())
             .name("nestedattr2")
             .label(LocalizedString.ofEnglish("nestedattr2"))
-            .isSearchable(true)
+            .isSearchable(false)
+            .isRequired(false)
             .build();
 
     final ProductTypeDraft productTypeDraft3 =

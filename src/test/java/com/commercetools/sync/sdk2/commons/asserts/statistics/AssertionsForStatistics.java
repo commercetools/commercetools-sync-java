@@ -4,6 +4,7 @@ import com.commercetools.sync.sdk2.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.sdk2.customers.helpers.CustomerSyncStatistics;
 import com.commercetools.sync.sdk2.customobjects.helpers.CustomObjectSyncStatistics;
 import com.commercetools.sync.sdk2.products.helpers.ProductSyncStatistics;
+import com.commercetools.sync.sdk2.producttypes.helpers.ProductTypeSyncStatistics;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -56,5 +57,17 @@ public final class AssertionsForStatistics {
   public static CustomObjectSyncStatisticsAssert assertThat(
       @Nullable final CustomObjectSyncStatistics statistics) {
     return new CustomObjectSyncStatisticsAssert(statistics);
+  }
+
+  /**
+   * Create assertion for {@link ProductTypeSyncStatistics}.
+   *
+   * @param statistics the actual value.
+   * @return the created assertion object.
+   */
+  @Nonnull
+  public static ProductTypeSyncStatisticsAssert assertThat(
+      @Nullable final ProductTypeSyncStatistics statistics) {
+    return new ProductTypeSyncStatisticsAssert(statistics);
   }
 }
