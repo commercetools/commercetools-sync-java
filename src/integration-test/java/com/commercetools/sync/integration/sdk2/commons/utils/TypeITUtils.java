@@ -5,12 +5,9 @@ import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUt
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static java.util.Collections.singletonList;
 
-import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.type.*;
 import java.util.Arrays;
-import java.util.Optional;
-import javax.annotation.Nonnull;
 
 public final class TypeITUtils {
   public static final String TYPE_KEY_1 = "key_1";
@@ -93,19 +90,6 @@ public final class TypeITUtils {
    */
   public static void populateTargetProject() {
     ensureTypeByTypeDraft(typeDraft1, CTP_TARGET_CLIENT);
-  }
-
-  /**
-   * Tries to fetch type of {@code key} using {@code client}.
-   *
-   * @param client sphere client used to execute requests.
-   * @param key key of requested type.
-   * @return {@link Optional} which may contain type of {@code key}.
-   */
-  public static Optional<Type> getTypeByKey(
-      @Nonnull final ProjectApiRoot client, @Nonnull final String key) {
-
-    return null;
   }
 
   private TypeITUtils() {}
