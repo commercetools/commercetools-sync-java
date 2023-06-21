@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.commercetools.api.models.type.TypeAddLocalizedEnumValueActionBuilder;
+import com.commercetools.api.models.type.TypeChangeLocalizedEnumValueLabelActionBuilder;
 import com.commercetools.api.models.type.TypeChangeLocalizedEnumValueOrderActionBuilder;
 import com.commercetools.api.models.type.TypeUpdateAction;
 import com.commercetools.sync.sdk2.commons.exceptions.DuplicateKeyException;
@@ -18,7 +19,7 @@ class LocalizedEnumValueUpdateActionUtilsTest {
 
   @Test
   void
-      buildLocalizedEnumUpdateActions_WithEmptyPlainEnumValuesAndNoOldEnumValues_ShouldNotBuildActions() {
+      buildLocalizedEnumUpdateActions_WithEmptyLocalizedEnumValuesAndNoOldEnumValues_ShouldNotBuildActions() {
     final List<TypeUpdateAction> updateActions =
         buildLocalizedEnumValuesUpdateActions(FIELD_NAME_1, emptyList(), emptyList());
 
@@ -27,7 +28,7 @@ class LocalizedEnumValueUpdateActionUtilsTest {
 
   @Test
   void
-      buildLocalizedEnumUpdateActions_WithNewPlainEnumValuesAndNoOldPlainEnumValues_ShouldBuild3AddActions() {
+      buildLocalizedEnumUpdateActions_WithNewLocalizedEnumValuesAndNoOldLocalizedEnumValues_ShouldBuild3AddActions() {
     final List<TypeUpdateAction> updateActions =
         buildLocalizedEnumValuesUpdateActions(FIELD_NAME_1, emptyList(), ENUM_VALUES_ABC);
 
@@ -48,7 +49,7 @@ class LocalizedEnumValueUpdateActionUtilsTest {
   }
 
   @Test
-  void buildLocalizedEnumUpdateActions_WithIdenticalPlainEnum_ShouldNotBuildUpdateActions() {
+  void buildLocalizedEnumUpdateActions_WithIdenticalLocalizedEnum_ShouldNotBuildUpdateActions() {
     final List<TypeUpdateAction> updateActions =
         buildLocalizedEnumValuesUpdateActions(FIELD_NAME_1, ENUM_VALUES_ABC, ENUM_VALUES_ABC);
 
@@ -56,7 +57,7 @@ class LocalizedEnumValueUpdateActionUtilsTest {
   }
 
   @Test
-  void buildLocalizedEnumUpdateActions_WithOnePlainEnumValue_ShouldBuildAddEnumValueAction() {
+  void buildLocalizedEnumUpdateActions_WithOneLocalizedEnumValue_ShouldBuildAddEnumValueAction() {
     final List<TypeUpdateAction> updateActions =
         buildLocalizedEnumValuesUpdateActions(FIELD_NAME_1, ENUM_VALUES_ABC, ENUM_VALUES_ABCD);
 
@@ -92,6 +93,24 @@ class LocalizedEnumValueUpdateActionUtilsTest {
             TypeChangeLocalizedEnumValueOrderActionBuilder.of()
                 .fieldName(FIELD_NAME_1)
                 .keys(ENUM_VALUE_C.getKey(), ENUM_VALUE_A.getKey(), ENUM_VALUE_B.getKey())
+                .build());
+  }
+
+  @Test
+  void buildLocalizedEnumUpdateActions_WithMixedCase_ShouldBuildChangeEnumValueOrderAction() {
+    final List<TypeUpdateAction> updateActions =
+        buildLocalizedEnumValuesUpdateActions(
+            FIELD_NAME_1, ENUM_VALUES_BAC, ENUM_VALUES_AB_WITH_DIFFERENT_LABEL);
+
+    assertThat(updateActions)
+        .containsExactly(
+            TypeChangeLocalizedEnumValueLabelActionBuilder.of()
+                .fieldName(FIELD_NAME_1)
+                .value(ENUM_VALUE_A_DIFFERENT_LABEL)
+                .build(),
+            TypeChangeLocalizedEnumValueOrderActionBuilder.of()
+                .fieldName(FIELD_NAME_1)
+                .keys(ENUM_VALUE_A_DIFFERENT_LABEL.getKey(), ENUM_VALUE_B.getKey())
                 .build());
   }
 
@@ -183,5 +202,32 @@ class LocalizedEnumValueUpdateActionUtilsTest {
             "Enum Values have duplicated keys. Definition name: "
                 + "'field_definition_name', Duplicated enum value: 'b'. "
                 + "Enum Values are expected to be unique inside their definition.");
+  }
+
+  @Test
+  void buildLocalizedEnumUpdateActions_WithDifferentLabels_ShouldReturnChangeLabelAction() {
+    final List<TypeUpdateAction> updateActions =
+        buildLocalizedEnumValuesUpdateActions(
+            FIELD_NAME_1, ENUM_VALUES_AB, ENUM_VALUES_AB_WITH_DIFFERENT_LABEL);
+
+    assertThat(updateActions)
+        .containsAnyOf(
+            TypeChangeLocalizedEnumValueLabelActionBuilder.of()
+                .fieldName(FIELD_NAME_1)
+                .value(ENUM_VALUE_A_DIFFERENT_LABEL)
+                .build());
+  }
+
+  @Test
+  void buildLocalizedEnumUpdateActions_WithSameLabels_ShouldNotReturnChangeLabelAction() {
+    final List<TypeUpdateAction> updateActions =
+        buildLocalizedEnumValuesUpdateActions(FIELD_NAME_1, ENUM_VALUES_AB, ENUM_VALUES_AB);
+
+    assertThat(updateActions)
+        .doesNotContain(
+            TypeChangeLocalizedEnumValueLabelActionBuilder.of()
+                .fieldName(FIELD_NAME_1)
+                .value(ENUM_VALUE_A)
+                .build());
   }
 }
