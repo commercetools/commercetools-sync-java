@@ -1,13 +1,13 @@
 package com.commercetools.sync.sdk2.types.utils;
 
+import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.sdk2.commons.utils.EnumValuesUpdateActionUtils.buildActions;
+import static com.commercetools.sync.sdk2.commons.utils.OptionalUtils.filterEmptyOptionals;
 
-import com.commercetools.api.models.type.CustomFieldLocalizedEnumValue;
-import com.commercetools.api.models.type.TypeAddLocalizedEnumValueActionBuilder;
-import com.commercetools.api.models.type.TypeChangeLocalizedEnumValueOrderActionBuilder;
-import com.commercetools.api.models.type.TypeUpdateAction;
+import com.commercetools.api.models.type.*;
 import com.commercetools.sync.sdk2.commons.exceptions.DuplicateKeyException;
 import java.util.List;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -47,7 +47,9 @@ final class LocalizedEnumValueUpdateActionUtils {
         oldEnumValues,
         newEnumValues,
         null,
-        null,
+        (definitionName, oldEnumValue, newEnumValue) ->
+            LocalizedEnumValueUpdateActionUtils.buildLocalizedEnumValueUpdateActions(
+                fieldDefinitionName, oldEnumValue, newEnumValue),
         (name, localizedEnumValue) ->
             TypeAddLocalizedEnumValueActionBuilder.of()
                 .fieldName(name)
@@ -58,6 +60,59 @@ final class LocalizedEnumValueUpdateActionUtils {
             TypeChangeLocalizedEnumValueOrderActionBuilder.of()
                 .fieldName(name)
                 .keys(localizedEnumValues)
+                .build());
+  }
+
+  /**
+   * Compares all the fields of an old {@link CustomFieldLocalizedEnumValue} and a new {@link
+   * CustomFieldLocalizedEnumValue} and returns a list of {@link TypeUpdateAction} as a result. If
+   * both {@link CustomFieldLocalizedEnumValue} have identical fields then no update action is
+   * needed and hence an empty {@link java.util.List} is returned.
+   *
+   * @param attributeDefinitionName the attribute definition name whose localized enum values belong
+   *     to.
+   * @param oldEnumValue the localized enum value which should be updated.
+   * @param newEnumValue the localized enum value where we get the new fields.
+   * @return A list with the update actions or an empty list if the localized enum values are
+   *     identical.
+   */
+  @Nonnull
+  public static List<TypeUpdateAction> buildLocalizedEnumValueUpdateActions(
+      @Nonnull final String attributeDefinitionName,
+      @Nonnull final CustomFieldLocalizedEnumValue oldEnumValue,
+      @Nonnull final CustomFieldLocalizedEnumValue newEnumValue) {
+
+    return filterEmptyOptionals(
+        buildChangeLabelAction(attributeDefinitionName, oldEnumValue, newEnumValue));
+  }
+
+  /**
+   * Compares the {@code label} values of an old {@link CustomFieldLocalizedEnumValue} and a new
+   * {@link CustomFieldLocalizedEnumValue} and returns an {@link java.util.Optional} of update
+   * action, which would contain the {@code "changeLabel"} {@link
+   * com.commercetools.api.models.type.TypeChangeLocalizedEnumValueLabelAction}. If both, old and
+   * new {@link CustomFieldLocalizedEnumValue} have the same {@code label} values, then no update
+   * action is needed and empty optional will be returned.
+   *
+   * @param attributeDefinitionName the attribute definition name whose localized enum values belong
+   *     to.
+   * @param oldEnumValue the old localized enum value.
+   * @param newEnumValue the new localized enum value which contains the new description.
+   * @return optional containing update action or empty optional if labels are identical.
+   */
+  @Nonnull
+  private static Optional<TypeUpdateAction> buildChangeLabelAction(
+      @Nonnull final String attributeDefinitionName,
+      @Nonnull final CustomFieldLocalizedEnumValue oldEnumValue,
+      @Nonnull final CustomFieldLocalizedEnumValue newEnumValue) {
+
+    return buildUpdateAction(
+        oldEnumValue.getLabel(),
+        newEnumValue.getLabel(),
+        () ->
+            TypeChangeLocalizedEnumValueLabelActionBuilder.of()
+                .fieldName(attributeDefinitionName)
+                .value(newEnumValue)
                 .build());
   }
 

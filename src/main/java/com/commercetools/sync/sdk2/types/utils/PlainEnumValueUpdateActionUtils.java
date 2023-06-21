@@ -1,9 +1,13 @@
 package com.commercetools.sync.sdk2.types.utils;
 
+import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.sdk2.commons.utils.OptionalUtils.filterEmptyOptionals;
+
 import com.commercetools.api.models.type.*;
 import com.commercetools.sync.sdk2.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.sdk2.commons.utils.EnumValuesUpdateActionUtils;
 import java.util.List;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -42,12 +46,65 @@ final class PlainEnumValueUpdateActionUtils {
         oldEnumValues,
         newEnumValues,
         null,
-        null,
+        (definitionName, oldEnumValue, newEnumValue) ->
+            PlainEnumValueUpdateActionUtils.buildLocalizedEnumValueUpdateActions(
+                definitionName, oldEnumValue, newEnumValue),
         (name, enumValue) ->
             TypeAddEnumValueActionBuilder.of().fieldName(name).value(enumValue).build(),
         null,
         (name, enumValues) ->
             TypeChangeEnumValueOrderActionBuilder.of().fieldName(name).keys(enumValues).build());
+  }
+
+  /**
+   * Compares all the fields of an old {@link CustomFieldEnumValue} and a new {@link
+   * CustomFieldEnumValue} and returns a list of {@link TypeUpdateAction} as a result. If both
+   * {@link CustomFieldEnumValue} have identical fields then no update action is needed and hence an
+   * empty {@link java.util.List} is returned.
+   *
+   * @param attributeDefinitionName the attribute definition name whose enum values belong to.
+   * @param oldEnumValue the enum value which should be updated.
+   * @param newEnumValue the enum value where we get the new fields.
+   * @return A list with the update actions or an empty list if the enum values are identical.
+   */
+  @Nonnull
+  public static List<TypeUpdateAction> buildLocalizedEnumValueUpdateActions(
+      @Nonnull final String attributeDefinitionName,
+      @Nonnull final CustomFieldEnumValue oldEnumValue,
+      @Nonnull final CustomFieldEnumValue newEnumValue) {
+
+    return filterEmptyOptionals(
+        buildChangeLabelAction(attributeDefinitionName, oldEnumValue, newEnumValue));
+  }
+
+  /**
+   * Compares the {@code label} values of an old {@link CustomFieldEnumValue} and a new {@link
+   * CustomFieldEnumValue} and returns an {@link java.util.Optional} of update action, which would
+   * contain the {@code "changeLabel"} {@link
+   * com.commercetools.api.models.type.TypeChangeEnumValueLabelAction}. If both, old and new {@link
+   * CustomFieldEnumValue} have the same {@code label} values, then no update action is needed and
+   * empty optional will be returned.
+   *
+   * @param attributeDefinitionName the attribute definition name whose localized enum values belong
+   *     to.
+   * @param oldEnumValue the old localized enum value.
+   * @param newEnumValue the new localized enum value which contains the new description.
+   * @return optional containing update action or empty optional if labels are identical.
+   */
+  @Nonnull
+  private static Optional<TypeUpdateAction> buildChangeLabelAction(
+      @Nonnull final String attributeDefinitionName,
+      @Nonnull final CustomFieldEnumValue oldEnumValue,
+      @Nonnull final CustomFieldEnumValue newEnumValue) {
+
+    return buildUpdateAction(
+        oldEnumValue.getLabel(),
+        newEnumValue.getLabel(),
+        () ->
+            TypeChangeEnumValueLabelActionBuilder.of()
+                .fieldName(attributeDefinitionName)
+                .value(newEnumValue)
+                .build());
   }
 
   private PlainEnumValueUpdateActionUtils() {}
