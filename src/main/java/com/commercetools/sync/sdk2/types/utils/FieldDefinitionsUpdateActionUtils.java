@@ -34,14 +34,14 @@ import javax.annotation.Nullable;
 final class FieldDefinitionsUpdateActionUtils {
 
   /**
-   * This method compares two lists of FieldDefinitions and performs actions for syncing and updating the field definitions.
-   * It handles adding, removing, changing order, changing labels etc. on the field definitions.
+   * This method compares two lists of FieldDefinitions and performs actions for syncing and
+   * updating the field definitions. It handles adding, removing, changing order, changing labels
+   * etc. on the field definitions.
    *
    * <p>If the list of new {@link FieldDefinition}s is {@code null}, then remove actions are built
    * for every existing field definition in the {@code oldFieldDefinitions} list.
    *
-   * <p>Note: Null field definitions are ignored and filtered out from
-   * {@code newFieldDefinitions}.
+   * <p>Note: Null field definitions are ignored and filtered out from {@code newFieldDefinitions}.
    *
    * @param oldFieldDefinitions the old list of field definitions.
    * @param newFieldDefinitions the new list of field definitions.
@@ -114,8 +114,8 @@ final class FieldDefinitionsUpdateActionUtils {
    * field definition fields (label, etc..), and add the computed actions to the list of update
    * actions.
    *
-   * <p>Note: If the field type is different, the old field definition is removed and the new
-   * field definition is added with the new field type.
+   * <p>Note: If the field type is different, the old field definition is removed and the new field
+   * definition is added with the new field type.
    *
    * @param oldFieldDefinitions the list of old {@link FieldDefinition}s.
    * @param newFieldDefinitions the list of new {@link FieldDefinition}s.
@@ -235,10 +235,7 @@ final class FieldDefinitionsUpdateActionUtils {
     return buildUpdateAction(
         allNames,
         newNames,
-        () ->
-            TypeChangeFieldDefinitionOrderActionBuilder.of()
-                .fieldNames(newNames)
-                .build());
+        () -> TypeChangeFieldDefinitionOrderActionBuilder.of().fieldNames(newNames).build());
   }
 
   /**
