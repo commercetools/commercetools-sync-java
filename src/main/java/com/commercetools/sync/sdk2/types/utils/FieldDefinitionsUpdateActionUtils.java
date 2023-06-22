@@ -114,7 +114,7 @@ final class FieldDefinitionsUpdateActionUtils {
    * field definition fields (label, etc..), and add the computed actions to the list of update
    * actions.
    *
-   * <p>Note: If the field type field is different, the old field definition is removed and the new
+   * <p>Note: If the field type is different, the old field definition is removed and the new
    * field definition is added with the new field type.
    *
    * @param oldFieldDefinitions the list of old {@link FieldDefinition}s.
@@ -229,9 +229,6 @@ final class FieldDefinitionsUpdateActionUtils {
     final List<String> notExistingNames =
         newNames.stream().filter(newName -> !existingNames.contains(newName)).collect(toList());
 
-    final List<String> newFieldDefinitionsOrderNames =
-        newFieldDefinitions.stream().map(FieldDefinition::getName).collect(toList());
-
     final List<String> allNames =
         Stream.concat(existingNames.stream(), notExistingNames.stream()).collect(toList());
 
@@ -240,7 +237,7 @@ final class FieldDefinitionsUpdateActionUtils {
         newNames,
         () ->
             TypeChangeFieldDefinitionOrderActionBuilder.of()
-                .fieldNames(newFieldDefinitionsOrderNames)
+                .fieldNames(newNames)
                 .build());
   }
 
