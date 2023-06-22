@@ -34,16 +34,13 @@ import javax.annotation.Nullable;
 final class FieldDefinitionsUpdateActionUtils {
 
   /**
-   * Compares a list of {@link FieldDefinition}s with a list of {@link FieldDefinition}s. The method
-   * serves as an implementation for field definitions syncing and building the required update
-   * actions (AddFieldDefinition, RemoveFieldDefinition, ChangeFieldDefinitionOrder) and 1-1 update
-   * actions on field definitions (e.g. changeFieldDefinitionLabel, etc..) for the required
-   * resource.
+   * This method compares two lists of FieldDefinitions and performs actions for syncing and updating the field definitions.
+   * It handles adding, removing, changing order, changing labels etc. on the field definitions.
    *
    * <p>If the list of new {@link FieldDefinition}s is {@code null}, then remove actions are built
    * for every existing field definition in the {@code oldFieldDefinitions} list.
    *
-   * <p>Note: The method will ignore/filter out {@code null} field definitions from the passed
+   * <p>Note: Null field definitions are ignored and filtered out from
    * {@code newFieldDefinitions}.
    *
    * @param oldFieldDefinitions the old list of field definitions.
