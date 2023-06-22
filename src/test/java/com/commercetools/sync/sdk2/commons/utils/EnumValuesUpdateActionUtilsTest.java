@@ -1,7 +1,7 @@
 package com.commercetools.sync.sdk2.commons.utils;
 
 import static com.commercetools.sync.sdk2.commons.utils.EnumValuesUpdateActionUtils.*;
-import static com.commercetools.sync.sdk2.commons.utils.PlainEnumValueFixtures.*;
+import static com.commercetools.sync.sdk2.commons.utils.PlainEnumValueFixtures.AttributePlainEnumValueFixtures.*;
 import static com.commercetools.sync.sdk2.producttypes.utils.PlainEnumValueUpdateActionUtils.buildEnumValueUpdateActions;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
