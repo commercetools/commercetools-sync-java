@@ -78,48 +78,48 @@ final class FieldDefinitionUpdateActionUtils {
     final FieldType oldFieldDefinitionType = oldFieldDefinition.getType();
     final FieldType newFieldDefinitionType = newFieldDefinition.getType();
 
-    return getEnumFieldType(oldFieldDefinitionType)
-        .map(
-            oldEnumFieldType ->
-                getEnumFieldType(newFieldDefinitionType)
-                    .map(
-                        newEnumFieldType ->
-                            buildEnumValuesUpdateActions(
-                                oldFieldDefinition.getName(),
-                                oldEnumFieldType.getValues(),
-                                newEnumFieldType.getValues()))
-                    .orElseGet(Collections::emptyList))
-        .orElseGet(
-            () ->
-                getLocalizedEnumFieldType(oldFieldDefinitionType)
-                    .map(
-                        oldLocalizedEnumFieldType ->
-                            getLocalizedEnumFieldType(newFieldDefinitionType)
-                                .map(
-                                    newLocalizedEnumFieldType ->
-                                        buildLocalizedEnumValuesUpdateActions(
-                                            oldFieldDefinition.getName(),
-                                            oldLocalizedEnumFieldType.getValues(),
-                                            newLocalizedEnumFieldType.getValues()))
-                                .orElseGet(Collections::emptyList))
-                    .orElseGet(Collections::emptyList));
+    final CustomFieldEnumType oldEnumFieldType = getEnumFieldType(oldFieldDefinitionType);
+
+    if (oldEnumFieldType == null) {
+      final CustomFieldLocalizedEnumType oldLocalizedEnumFieldType =
+          getLocalizedEnumFieldType(oldFieldDefinitionType);
+      if (oldLocalizedEnumFieldType == null) {
+        return Collections.emptyList();
+      } else {
+        final CustomFieldLocalizedEnumType newLocalizedEnumFieldType =
+            getLocalizedEnumFieldType(newFieldDefinitionType);
+        if (newLocalizedEnumFieldType == null) {
+          return Collections.emptyList();
+        } else {
+          return buildLocalizedEnumValuesUpdateActions(
+              oldFieldDefinition.getName(),
+              oldLocalizedEnumFieldType.getValues(),
+              newLocalizedEnumFieldType.getValues());
+        }
+      }
+    } else {
+      final CustomFieldEnumType newEnumFieldType = getEnumFieldType(newFieldDefinitionType);
+      if (newEnumFieldType == null) {
+        return Collections.emptyList();
+      } else {
+        return buildEnumValuesUpdateActions(
+            oldFieldDefinition.getName(),
+            oldEnumFieldType.getValues(),
+            newEnumFieldType.getValues());
+      }
+    }
   }
 
   /**
-   * Returns an optional containing the field type if is an {@link CustomFieldEnumType} or if the
-   * {@link FieldType} is a {@link CustomFieldSetType} with an {@link CustomFieldEnumType} as a
-   * subtype, it returns this subtype in the optional. Otherwise, an empty optional.
-   *
    * @param fieldType the field type.
-   * @return an optional containing the field type if is an {@link CustomFieldEnumType} or if the
-   *     {@link FieldType} is a {@link CustomFieldSetType} with an {@link CustomFieldEnumType} as a
-   *     subtype, it returns this subtype in the optional. Otherwise, an empty optional.
+   * @return the field type if is an {@link CustomFieldEnumType} or if the {@link FieldType} is a
+   *     {@link CustomFieldSetType} with an {@link CustomFieldEnumType} as a subtype. Otherwise, it
+   *     returns null.
    */
-  private static Optional<CustomFieldEnumType> getEnumFieldType(
-      @Nonnull final FieldType fieldType) {
+  private static CustomFieldEnumType getEnumFieldType(@Nonnull final FieldType fieldType) {
 
     if (fieldType instanceof CustomFieldEnumType) {
-      return Optional.of((CustomFieldEnumType) fieldType);
+      return (CustomFieldEnumType) fieldType;
     }
 
     if (fieldType instanceof CustomFieldSetType) {
@@ -128,30 +128,24 @@ final class FieldDefinitionUpdateActionUtils {
       final FieldType subType = setFieldType.getElementType();
 
       if (subType instanceof CustomFieldEnumType) {
-        return Optional.of((CustomFieldEnumType) subType);
+        return (CustomFieldEnumType) subType;
       }
     }
 
-    return Optional.empty();
+    return null;
   }
 
   /**
-   * Returns an optional containing the field type if is an {@link CustomFieldLocalizedEnumType} or
-   * if the {@link FieldType} is a {@link CustomFieldSetType} with an {@link
-   * CustomFieldLocalizedEnumType} as a subtype, it returns this subtype in the optional. Otherwise,
-   * an empty optional.
-   *
    * @param fieldType the field type.
-   * @return an optional containing the field type if is an {@link CustomFieldLocalizedEnumType} or
-   *     if the {@link FieldType} is a {@link CustomFieldSetType} with an {@link
-   *     CustomFieldLocalizedEnumType} as a subtype, it returns this subtype in the optional.
-   *     Otherwise, an empty optional.
+   * @return the field type if is an {@link CustomFieldLocalizedEnumType} or if the {@link
+   *     FieldType} is a {@link CustomFieldSetType} with an {@link CustomFieldLocalizedEnumType} as
+   *     a subtype. Otherwise, it returns null.
    */
-  private static Optional<CustomFieldLocalizedEnumType> getLocalizedEnumFieldType(
+  private static CustomFieldLocalizedEnumType getLocalizedEnumFieldType(
       @Nonnull final FieldType fieldType) {
 
     if (fieldType instanceof CustomFieldLocalizedEnumType) {
-      return Optional.of((CustomFieldLocalizedEnumType) fieldType);
+      return (CustomFieldLocalizedEnumType) fieldType;
     }
 
     if (fieldType instanceof CustomFieldSetType) {
@@ -159,11 +153,11 @@ final class FieldDefinitionUpdateActionUtils {
       final FieldType subType = setFieldType.getElementType();
 
       if (subType instanceof CustomFieldLocalizedEnumType) {
-        return Optional.of((CustomFieldLocalizedEnumType) subType);
+        return (CustomFieldLocalizedEnumType) subType;
       }
     }
 
-    return Optional.empty();
+    return null;
   }
 
   /**
