@@ -203,7 +203,7 @@ List<TypeUpdateAction> updateActions = TypeSyncUtils.buildActions(type, typeDraf
 Utility methods provided by the library to compare the specific fields of a `Type` and a new `TypeDraft`, and in turn builds
  the update action. One example is the `buildChangeNameUpdateAction` which compares names:
 ````java
-Optional<TypeUpdateAction> updateAction = TypeUpdateActionUtils.buildChangeNameAction(oldType, typeDraft);
+Optional<TypeUpdateAction> updateAction = TypeUpdateActionUtils.buildChangeNameUpdateAction(oldType, typeDraft);
 ````
 More examples of those utils for different types can be found [here](#todo).
 
