@@ -80,7 +80,7 @@ public final class CartDiscountReferenceResolutionUtils {
         .requiresDiscountCode(cartDiscount.getRequiresDiscountCode())
         .sortOrder(cartDiscount.getSortOrder())
         .target(cartDiscount.getTarget())
-        .value(createCartDiscountValueDraft(cartDiscount.getValue()))
+        .value(toCartDiscountValueDraft(cartDiscount.getValue()))
         .key(cartDiscount.getKey())
         .description(cartDiscount.getDescription())
         .isActive(cartDiscount.getIsActive())
@@ -91,7 +91,7 @@ public final class CartDiscountReferenceResolutionUtils {
         .build();
   }
 
-  private static CartDiscountValueDraft createCartDiscountValueDraft(
+  private static CartDiscountValueDraft toCartDiscountValueDraft(
       final CartDiscountValue cartDiscountValue) {
     if (cartDiscountValue instanceof CartDiscountValueAbsolute) {
       final CartDiscountValueAbsolute cartDiscountValueAbsolute =
