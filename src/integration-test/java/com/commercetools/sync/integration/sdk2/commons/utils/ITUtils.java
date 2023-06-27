@@ -116,7 +116,7 @@ public final class ITUtils {
         .join();
   }
 
-  private static CompletionStage<Optional<Type>> typeExists(
+  static CompletionStage<Optional<Type>> typeExists(
       @Nonnull final String typeKey, @Nonnull final ProjectApiRoot ctpClient) {
 
     return ctpClient
@@ -256,13 +256,12 @@ public final class ITUtils {
           return CompletableFuture.allOf(
               types.stream()
                   .map(
-                      type -> {
-                        return ctpClient
-                            .types()
-                            .delete(type)
-                            .execute()
-                            .thenApply(ApiHttpResponse::getBody);
-                      })
+                      type ->
+                          ctpClient
+                              .types()
+                              .delete(type)
+                              .execute()
+                              .thenApply(ApiHttpResponse::getBody))
                   .map(CompletionStage::toCompletableFuture)
                   .toArray(CompletableFuture[]::new));
         });
