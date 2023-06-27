@@ -1,13 +1,30 @@
 package com.commercetools.sync.sdk2.types.utils;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static com.commercetools.sync.sdk2.commons.utils.PlainEnumValueFixtures.CustomFieldEnumValueFixtures.ENUM_VALUE_A;
+import static com.commercetools.sync.sdk2.commons.utils.PlainEnumValueFixtures.CustomFieldEnumValueFixtures.ENUM_VALUE_B;
 import static com.commercetools.sync.sdk2.types.utils.FieldDefinitionFixtures.stringFieldDefinition;
 import static com.commercetools.sync.sdk2.types.utils.FieldDefinitionUpdateActionUtils.buildActions;
 import static com.commercetools.sync.sdk2.types.utils.FieldDefinitionUpdateActionUtils.buildChangeLabelUpdateAction;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.commercetools.api.models.type.*;
+import com.commercetools.api.models.type.CustomFieldEnumTypeBuilder;
+import com.commercetools.api.models.type.CustomFieldEnumValueBuilder;
+import com.commercetools.api.models.type.CustomFieldLocalizedEnumTypeBuilder;
+import com.commercetools.api.models.type.CustomFieldLocalizedEnumValue;
+import com.commercetools.api.models.type.CustomFieldLocalizedEnumValueBuilder;
+import com.commercetools.api.models.type.FieldDefinition;
+import com.commercetools.api.models.type.FieldDefinitionBuilder;
+import com.commercetools.api.models.type.TypeAddEnumValueActionBuilder;
+import com.commercetools.api.models.type.TypeAddLocalizedEnumValueActionBuilder;
+import com.commercetools.api.models.type.TypeChangeEnumValueOrderActionBuilder;
+import com.commercetools.api.models.type.TypeChangeLabelActionBuilder;
+import com.commercetools.api.models.type.TypeChangeLocalizedEnumValueOrderActionBuilder;
+import com.commercetools.api.models.type.TypeChangeInputHintActionBuilder;
+import com.commercetools.api.models.type.TypeTextInputHint;
+import com.commercetools.api.models.type.TypeUpdateAction;
+import com.commercetools.sync.sdk2.commons.utils.LocalizedEnumValueFixtures;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeAll;
@@ -22,15 +39,10 @@ class FieldDefinitionUpdateActionUtilsTest {
   private static FieldDefinition newSame;
   private static FieldDefinition newDifferent;
 
-  private static final CustomFieldEnumValue ENUM_VALUE_A =
-      CustomFieldEnumValueBuilder.of().key("a").label("label_a").build();
-  private static final CustomFieldEnumValue ENUM_VALUE_B =
-      CustomFieldEnumValueBuilder.of().key("b").label("label_b").build();
-
   private static final CustomFieldLocalizedEnumValue LOCALIZED_ENUM_VALUE_A =
-      CustomFieldLocalizedEnumValueBuilder.of().key("a").label(ofEnglish("label_a")).build();
+      LocalizedEnumValueFixtures.CustomFieldLocalizedEnumValueFixtures.ENUM_VALUE_A;
   private static final CustomFieldLocalizedEnumValue LOCALIZED_ENUM_VALUE_B =
-      CustomFieldLocalizedEnumValueBuilder.of().key("b").label(ofEnglish("label_b")).build();
+      LocalizedEnumValueFixtures.CustomFieldLocalizedEnumValueFixtures.ENUM_VALUE_B;
 
   /** Initialises test data. */
   @BeforeAll
