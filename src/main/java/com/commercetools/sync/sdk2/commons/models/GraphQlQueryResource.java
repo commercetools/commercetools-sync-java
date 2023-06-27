@@ -1,6 +1,7 @@
 package com.commercetools.sync.sdk2.commons.models;
 
 public enum GraphQlQueryResource {
+  CART_DISCOUNTS("cartDiscounts"),
   CATEGORIES("categories"),
   CHANNELS("channels"),
   CUSTOMER_GROUPS("customerGroups"),
