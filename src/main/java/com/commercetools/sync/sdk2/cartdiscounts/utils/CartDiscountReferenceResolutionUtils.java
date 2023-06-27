@@ -114,37 +114,39 @@ public final class CartDiscountReferenceResolutionUtils {
   }
 
   private static CartDiscountValueRelativeDraft cloneCartDiscountValueRelativeDraft(
-      final CartDiscountValueRelative cartDiscountValue) {
-    final CartDiscountValueRelative cartDiscountValueRelative = cartDiscountValue;
+      final CartDiscountValueRelative cartDiscountValueRelative) {
     return CartDiscountValueRelativeDraftBuilder.of()
         .permyriad(cartDiscountValueRelative.getPermyriad())
         .build();
   }
 
   private static CartDiscountValueGiftLineItemDraft cloneCartDiscountValueGiftLineItemDraft(
-      final CartDiscountValueGiftLineItem cartDiscountValue) {
-    final CartDiscountValueGiftLineItem cartDiscountValueGiftLineItem = cartDiscountValue;
-    return CartDiscountValueGiftLineItemDraftBuilder.of()
-        .distributionChannel(
-            channelResourceIdentifierBuilder ->
-                channelResourceIdentifierBuilder.id(
-                    cartDiscountValueGiftLineItem.getDistributionChannel().getId()))
-        .product(
-            productResourceIdentifierBuilder ->
-                productResourceIdentifierBuilder.id(
-                    cartDiscountValueGiftLineItem.getProduct().getId()))
-        .supplyChannel(
-            channelResourceIdentifierBuilder ->
-                channelResourceIdentifierBuilder.id(
-                    cartDiscountValueGiftLineItem.getSupplyChannel().getId()))
-        .variantId(cartDiscountValueGiftLineItem.getVariantId())
-        .build();
+      final CartDiscountValueGiftLineItem cartDiscountValueGiftLineItem) {
+    final CartDiscountValueGiftLineItemDraftBuilder builder =
+        CartDiscountValueGiftLineItemDraftBuilder.of()
+            .product(
+                productResourceIdentifierBuilder ->
+                    productResourceIdentifierBuilder.id(
+                        cartDiscountValueGiftLineItem.getProduct().getId()))
+            .variantId(cartDiscountValueGiftLineItem.getVariantId());
+    if (cartDiscountValueGiftLineItem.getDistributionChannel() != null) {
+      builder.distributionChannel(
+          channelResourceIdentifierBuilder ->
+              channelResourceIdentifierBuilder.id(
+                  cartDiscountValueGiftLineItem.getDistributionChannel().getId()));
+    }
+    if (cartDiscountValueGiftLineItem.getSupplyChannel() != null) {
+      builder.supplyChannel(
+          channelResourceIdentifierBuilder ->
+              channelResourceIdentifierBuilder.id(
+                  cartDiscountValueGiftLineItem.getSupplyChannel().getId()));
+    }
+
+    return builder.build();
   }
 
   private static CartDiscountValueFixedDraft cloneCartDiscountValueFixedDraft(
-      final CartDiscountValueFixed cartDiscountValue) {
-    final CartDiscountValueFixed cartDiscountValueFixed = cartDiscountValue;
-
+      final CartDiscountValueFixed cartDiscountValueFixed) {
     return CartDiscountValueFixedDraftBuilder.of()
         .money(
             cartDiscountValueFixed.getMoney().stream()
@@ -159,8 +161,7 @@ public final class CartDiscountReferenceResolutionUtils {
   }
 
   private static CartDiscountValueAbsoluteDraft cloneCartDiscountValueAbsoluteDraft(
-      final CartDiscountValueAbsolute cartDiscountValue) {
-    final CartDiscountValueAbsolute cartDiscountValueAbsolute = cartDiscountValue;
+      final CartDiscountValueAbsolute cartDiscountValueAbsolute) {
     return CartDiscountValueAbsoluteDraftBuilder.of()
         .money(
             cartDiscountValueAbsolute.getMoney().stream()
