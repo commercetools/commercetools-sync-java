@@ -20,6 +20,9 @@ final class FieldDefinitionUpdateActionUtils {
    * and the {@link FieldDefinition} have identical fields, then no update action is needed and
    * hence an empty {@link java.util.List} is returned.
    *
+   * <p>Note: Updating the required-field of a FieldDefinition is not possible with commercetools
+   * API.
+   *
    * @param oldFieldDefinition the old field definition which should be updated.
    * @param newFieldDefinition the new field definition where we get the new fields.
    * @return A list with the update actions or an empty list if the field definition fields are
@@ -199,6 +202,10 @@ final class FieldDefinitionUpdateActionUtils {
   static Optional<TypeUpdateAction> buildChangeInputHintUpdateAction(
       @Nonnull final FieldDefinition oldFieldDefinition,
       @Nonnull final FieldDefinition newFieldDefinition) {
+
+    if (newFieldDefinition.getInputHint() == null && oldFieldDefinition.getInputHint() != null) {
+      return Optional.empty();
+    }
 
     return buildUpdateAction(
         oldFieldDefinition.getInputHint(),
