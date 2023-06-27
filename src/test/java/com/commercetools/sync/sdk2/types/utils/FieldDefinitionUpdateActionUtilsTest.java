@@ -19,6 +19,7 @@ import com.commercetools.api.models.type.FieldDefinitionBuilder;
 import com.commercetools.api.models.type.TypeAddEnumValueActionBuilder;
 import com.commercetools.api.models.type.TypeAddLocalizedEnumValueActionBuilder;
 import com.commercetools.api.models.type.TypeChangeEnumValueOrderActionBuilder;
+import com.commercetools.api.models.type.TypeChangeInputHintActionBuilder;
 import com.commercetools.api.models.type.TypeChangeLabelActionBuilder;
 import com.commercetools.api.models.type.TypeChangeLocalizedEnumValueOrderActionBuilder;
 import com.commercetools.api.models.type.TypeTextInputHint;
@@ -79,6 +80,10 @@ class FieldDefinitionUpdateActionUtilsTest {
             TypeChangeLabelActionBuilder.of()
                 .fieldName(old.getName())
                 .label(newDifferent.getLabel())
+                .build(),
+            TypeChangeInputHintActionBuilder.of()
+                .fieldName(old.getName())
+                .inputHint(newDifferent.getInputHint())
                 .build());
   }
 
