@@ -36,8 +36,8 @@ public final class TypeUpdateActionUtils {
 
   /**
    * Compares the {@link LocalizedString} descriptions of a {@link Type} and a {@link TypeDraft} and
-   * returns an {@link TypeUpdateAction} as a result in an {@link Optional} of update action if
-   * values are different.
+   * returns an {@link TypeSetDescriptionAction} as a result in an {@link Optional} of update action
+   * if values are different.
    *
    * @param oldType the type which should be updated.
    * @param newType the type draft where we get the new description.
@@ -60,10 +60,9 @@ public final class TypeUpdateActionUtils {
    * has a list of field definitions in which a duplicate name exists, the error callback is
    * triggered and an empty list is returned.
    *
-   * <p>Note: Currently this commercetools API doesn't support the following:
+   * <p>Note: Currently commercetools API doesn't support the following:
    *
    * <ul>
-   *   <li>updating the inputHint of a FieldDefinition
    *   <li>removing the EnumValue/LocalizedEnumValue of a FieldDefinition
    * </ul>
    *

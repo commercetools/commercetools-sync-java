@@ -5,13 +5,7 @@ import static com.commercetools.sync.sdk2.commons.utils.OptionalUtils.filterEmpt
 import static com.commercetools.sync.sdk2.types.utils.LocalizedEnumValueUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
 import static com.commercetools.sync.sdk2.types.utils.PlainEnumValueUpdateActionUtils.buildEnumValuesUpdateActions;
 
-import com.commercetools.api.models.type.CustomFieldEnumType;
-import com.commercetools.api.models.type.CustomFieldLocalizedEnumType;
-import com.commercetools.api.models.type.CustomFieldSetType;
-import com.commercetools.api.models.type.FieldDefinition;
-import com.commercetools.api.models.type.FieldType;
-import com.commercetools.api.models.type.TypeChangeLabelActionBuilder;
-import com.commercetools.api.models.type.TypeUpdateAction;
+import com.commercetools.api.models.type.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -39,7 +33,9 @@ final class FieldDefinitionUpdateActionUtils {
       @Nonnull final FieldDefinition newFieldDefinition) {
 
     final List<TypeUpdateAction> updateActions =
-        filterEmptyOptionals(buildChangeLabelUpdateAction(oldFieldDefinition, newFieldDefinition));
+        filterEmptyOptionals(
+            buildChangeLabelUpdateAction(oldFieldDefinition, newFieldDefinition),
+            buildChangeInputHintUpdateAction(oldFieldDefinition, newFieldDefinition));
 
     updateActions.addAll(buildEnumUpdateActions(oldFieldDefinition, newFieldDefinition));
 
@@ -190,6 +186,33 @@ final class FieldDefinitionUpdateActionUtils {
             TypeChangeLabelActionBuilder.of()
                 .fieldName(oldFieldDefinition.getName())
                 .label(newFieldDefinition.getLabel())
+                .build());
+  }
+
+  /**
+   * Compares the {@link TypeTextInputHint} inputHint of old {@link FieldDefinition} with new {@link
+   * FieldDefinition} and returns a {@link TypeChangeInputHintAction} as a result in an {@link
+   * java.util.Optional}. If both the {@link FieldDefinition} and the {@link FieldDefinition} have
+   * the same inputHint, then no update action is needed and hence an empty {@link
+   * java.util.Optional} is returned.
+   *
+   * @param oldFieldDefinition the old field definition which should be updated.
+   * @param newFieldDefinition the new field definition draft where we get the new inputHint.
+   * @return A filled optional with the update action or an empty optional if the inputHints are
+   *     identical.
+   */
+  @Nonnull
+  static Optional<TypeUpdateAction> buildChangeInputHintUpdateAction(
+      @Nonnull final FieldDefinition oldFieldDefinition,
+      @Nonnull final FieldDefinition newFieldDefinition) {
+
+    return buildUpdateAction(
+        oldFieldDefinition.getInputHint(),
+        newFieldDefinition.getInputHint(),
+        () ->
+            TypeChangeInputHintActionBuilder.of()
+                .fieldName(oldFieldDefinition.getName())
+                .inputHint(newFieldDefinition.getInputHint())
                 .build());
   }
 
