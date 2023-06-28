@@ -31,7 +31,6 @@ import com.commercetools.api.models.cart_discount.CartDiscountValueRelativeDraft
 import com.commercetools.api.models.cart_discount.StackingMode;
 import java.util.Optional;
 import javax.annotation.Nonnull;
-import org.jetbrains.annotations.NotNull;
 
 public final class CartDiscountUpdateActionUtils {
 
@@ -100,7 +99,6 @@ public final class CartDiscountUpdateActionUtils {
         () -> CartDiscountChangeValueActionBuilder.of().value(newCartDiscount.getValue()).build());
   }
 
-  @NotNull
   private static Optional<CartDiscountUpdateAction> buildChangeFixedValueUpdateAction(
       final CartDiscountValueFixed oldValue, final CartDiscountValueFixedDraft newValue) {
     return oldValue.getMoney().equals(newValue.getMoney())
@@ -108,7 +106,6 @@ public final class CartDiscountUpdateActionUtils {
         : Optional.of(CartDiscountChangeValueActionBuilder.of().value(newValue).build());
   }
 
-  @NotNull
   private static Optional<CartDiscountUpdateAction> buildChangeRelativeValueUpdateAction(
       final CartDiscountValueRelative oldValue, final CartDiscountValueRelativeDraft newValue) {
     return oldValue.getPermyriad().equals(newValue.getPermyriad())
@@ -116,7 +113,6 @@ public final class CartDiscountUpdateActionUtils {
         : Optional.of(CartDiscountChangeValueActionBuilder.of().value(newValue).build());
   }
 
-  @NotNull
   private static Optional<CartDiscountUpdateAction> buildChangeGiftLineItemValueUpdateAction(
       final CartDiscountValueGiftLineItem oldValue,
       final CartDiscountValueGiftLineItemDraft newValue) {
