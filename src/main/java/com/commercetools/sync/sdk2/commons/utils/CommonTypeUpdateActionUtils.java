@@ -24,16 +24,17 @@ public final class CommonTypeUpdateActionUtils {
    * @param newObject the object with the new information
    * @param updateActionSupplier the supplier that returns the update action to return in the
    *     optional
-   * @param <S> the type of the objects to compare
-   * @param <U> certain {@link ResourceUpdateAction} implementation type
+   * @param <AnyT> the type of the objects to compare
+   * @param <ResourceUpdateActionT> certain {@link ResourceUpdateAction} implementation type
    * @return A filled optional with the update action or an empty optional if the object values are
    *     identical
    */
   @Nonnull
-  public static <S, U extends ResourceUpdateAction> Optional<U> buildUpdateAction(
-      @Nullable final S oldObject,
-      @Nullable final S newObject,
-      @Nonnull final Supplier<U> updateActionSupplier) {
+  public static <AnyT, ResourceUpdateActionT extends ResourceUpdateAction>
+      Optional<ResourceUpdateActionT> buildUpdateAction(
+          @Nullable final AnyT oldObject,
+          @Nullable final AnyT newObject,
+          @Nonnull final Supplier<ResourceUpdateActionT> updateActionSupplier) {
 
     return !Objects.equals(oldObject, newObject)
         ? Optional.ofNullable(updateActionSupplier.get())
