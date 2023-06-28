@@ -31,6 +31,9 @@ import com.commercetools.api.models.cart_discount.CartDiscountValueAbsoluteBuild
 import com.commercetools.api.models.cart_discount.CartDiscountValueAbsoluteDraft;
 import com.commercetools.api.models.cart_discount.CartDiscountValueAbsoluteDraftBuilder;
 import com.commercetools.api.models.cart_discount.CartDiscountValueDraft;
+import com.commercetools.api.models.cart_discount.CartDiscountValueFixedBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountValueFixedDraft;
+import com.commercetools.api.models.cart_discount.CartDiscountValueFixedDraftBuilder;
 import com.commercetools.api.models.cart_discount.CartDiscountValueGiftLineItem;
 import com.commercetools.api.models.cart_discount.CartDiscountValueGiftLineItemBuilder;
 import com.commercetools.api.models.cart_discount.CartDiscountValueGiftLineItemDraft;
@@ -695,6 +698,82 @@ class CartDiscountUpdateActionUtilsTest {
                             null)
                         .build())
                 .build());
+  }
+
+  @Test
+  void buildChangeValueUpdateAction_WithDifferentFixedAmounts_ShouldBuildUpdateAction() {
+    final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+    when(oldCartDiscount.getValue())
+        .thenReturn(
+            CartDiscountValueFixedBuilder.of()
+                .money(
+                    CentPrecisionMoneyBuilder.of()
+                        .centAmount(10L)
+                        .fractionDigits(0)
+                        .currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode())
+                        .build())
+                .build());
+
+    final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+    final CartDiscountValueFixedDraft sameValuesWithDifferentOrder =
+        CartDiscountValueFixedDraftBuilder.of()
+            .money(
+                CentPrecisionMoneyBuilder.of()
+                    .centAmount(20L)
+                    .fractionDigits(0)
+                    .currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode())
+                    .build())
+            .build();
+    when(newCartDiscountDraft.getValue()).thenReturn(sameValuesWithDifferentOrder);
+
+    final Optional<CartDiscountUpdateAction> changeValueUpdateAction =
+        buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+    assertThat(changeValueUpdateAction)
+        .contains(
+            CartDiscountChangeValueActionBuilder.of()
+                .value(
+                    CartDiscountValueFixedDraftBuilder.of()
+                        .money(
+                            CentPrecisionMoneyBuilder.of()
+                                .centAmount(20L)
+                                .fractionDigits(0)
+                                .currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode())
+                                .build())
+                        .build())
+                .build());
+  }
+
+  @Test
+  void buildChangeValueUpdateAction_WithSameFixedCartDiscountValue_ShouldNotBuildUpdateAction() {
+    final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+    when(oldCartDiscount.getValue())
+        .thenReturn(
+            CartDiscountValueFixedBuilder.of()
+                .money(
+                    CentPrecisionMoneyBuilder.of()
+                        .centAmount(10L)
+                        .fractionDigits(0)
+                        .currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode())
+                        .build())
+                .build());
+
+    final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+    final CartDiscountValueFixedDraft sameValuesWithDifferentOrder =
+        CartDiscountValueFixedDraftBuilder.of()
+            .money(
+                CentPrecisionMoneyBuilder.of()
+                    .centAmount(10L)
+                    .fractionDigits(0)
+                    .currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode())
+                    .build())
+            .build();
+    when(newCartDiscountDraft.getValue()).thenReturn(sameValuesWithDifferentOrder);
+
+    final Optional<CartDiscountUpdateAction> changeValueUpdateAction =
+        buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+    assertThat(changeValueUpdateAction).isNotPresent();
   }
 
   @Test
