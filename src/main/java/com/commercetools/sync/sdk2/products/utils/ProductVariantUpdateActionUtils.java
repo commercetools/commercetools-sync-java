@@ -69,8 +69,7 @@ public final class ProductVariantUpdateActionUtils {
    */
   @Nonnull
 
-  public static Optional<ProductSetSkuAction> buildProductVariantSkuUpdateAction(
-
+  public static Optional<ProductUpdateAction> buildProductVariantSkuUpdateAction(
       @Nonnull final ProductVariant oldProductVariant,
       @Nonnull final ProductVariantDraft newProductVariant) {
     final String oldProductVariantSku = oldProductVariant.getSku();

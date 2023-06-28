@@ -13,7 +13,6 @@ import com.commercetools.api.models.cart_discount.CartDiscountChangeRequiresDisc
 import com.commercetools.api.models.cart_discount.CartDiscountChangeSortOrderActionBuilder;
 import com.commercetools.api.models.cart_discount.CartDiscountChangeStackingModeActionBuilder;
 import com.commercetools.api.models.cart_discount.CartDiscountChangeTargetActionBuilder;
-import com.commercetools.api.models.cart_discount.CartDiscountChangeValueAction;
 import com.commercetools.api.models.cart_discount.CartDiscountChangeValueActionBuilder;
 import com.commercetools.api.models.cart_discount.CartDiscountDraft;
 import com.commercetools.api.models.cart_discount.CartDiscountSetDescriptionActionBuilder;
@@ -143,7 +142,7 @@ public final class CartDiscountUpdateActionUtils {
   }
 
   @Nonnull
-  private static Optional<CartDiscountChangeValueAction> buildActionIfDifferentProductVariantIds(
+  private static Optional<CartDiscountUpdateAction> buildActionIfDifferentProductVariantIds(
       @Nonnull final CartDiscountValueGiftLineItem oldValue,
       @Nonnull final CartDiscountValueGiftLineItemDraft newValue) {
     return buildUpdateAction(
@@ -153,7 +152,7 @@ public final class CartDiscountUpdateActionUtils {
   }
 
   @Nonnull
-  private static Optional<CartDiscountChangeValueAction> buildActionIfDifferentSupplyChannels(
+  private static Optional<CartDiscountUpdateAction> buildActionIfDifferentSupplyChannels(
       @Nonnull final CartDiscountValueGiftLineItem oldValue,
       @Nonnull final CartDiscountValueGiftLineItemDraft newValue) {
     return buildUpdateActionForReferences(
@@ -163,7 +162,7 @@ public final class CartDiscountUpdateActionUtils {
   }
 
   @Nonnull
-  private static Optional<CartDiscountChangeValueAction> buildActionIfDifferentDistributionChannels(
+  private static Optional<CartDiscountUpdateAction> buildActionIfDifferentDistributionChannels(
       @Nonnull final CartDiscountValueGiftLineItem oldValue,
       @Nonnull final CartDiscountValueGiftLineItemDraft newValue) {
     return buildUpdateActionForReferences(

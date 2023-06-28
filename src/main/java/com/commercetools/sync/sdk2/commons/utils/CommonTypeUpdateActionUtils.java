@@ -30,7 +30,7 @@ public final class CommonTypeUpdateActionUtils {
    *     identical
    */
   @Nonnull
-  public static <AnyT, ResourceUpdateActionT extends ResourceUpdateAction>
+  public static <AnyT, ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
       Optional<ResourceUpdateActionT> buildUpdateAction(
           @Nullable final AnyT oldObject,
           @Nullable final AnyT newObject,
@@ -51,18 +51,21 @@ public final class CommonTypeUpdateActionUtils {
    * @param newResourceIdentifier the new resource identifier
    * @param updateActionSupplier the supplier that returns the update action to return in the
    *     optional
-   * @param <S> the type of the old reference
-   * @param <U> the type of the new resource identifier
-   * @param <V> concrete {@link ResourceUpdateAction} implementation type
+   * @param <ReferenceT> the type of the old reference
+   * @param <ResourceIdentifierT> the type of the new resource identifier
+   * @param <ResourceUpdateActionT> concrete {@link ResourceUpdateAction} implementation type
    * @return A filled optional with the update action or an empty optional if the object values are
    *     identical
    */
   @Nonnull
-  public static <S extends Reference, U extends ResourceIdentifier, V extends ResourceUpdateAction>
-      Optional<V> buildUpdateActionForReferences(
-          @Nullable final S oldReference,
-          @Nullable final U newResourceIdentifier,
-          @Nonnull final Supplier<V> updateActionSupplier) {
+  public static <
+          ReferenceT extends Reference,
+          ResourceIdentifierT extends ResourceIdentifier,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      Optional<ResourceUpdateActionT> buildUpdateActionForReferences(
+          @Nullable final ReferenceT oldReference,
+          @Nullable final ResourceIdentifierT newResourceIdentifier,
+          @Nonnull final Supplier<ResourceUpdateActionT> updateActionSupplier) {
 
     return !areResourceIdentifiersEqual(oldReference, newResourceIdentifier)
         ? Optional.ofNullable(updateActionSupplier.get())
@@ -75,13 +78,14 @@ public final class CommonTypeUpdateActionUtils {
    *
    * @param oldReference the old reference
    * @param newResourceIdentifier the new resource identifier
-   * @param <T> the type of the old reference
-   * @param <S> the type of the new resource identifier
+   * @param <ReferenceT> the type of the old reference
+   * @param <ResourceIdentifierT> the type of the new resource identifier
    * @return true or false depending if the reference and resource identifier have the same id.
    */
-  public static <T extends Reference, S extends ResourceIdentifier>
+  public static <ReferenceT extends Reference, ResourceIdentifierT extends ResourceIdentifier>
       boolean areResourceIdentifiersEqual(
-          @Nullable final T oldReference, @Nullable final S newResourceIdentifier) {
+          @Nullable final ReferenceT oldReference,
+          @Nullable final ResourceIdentifierT newResourceIdentifier) {
 
     final String oldId = ofNullable(oldReference).map(Reference::getId).orElse(null);
     final String newId =
@@ -99,16 +103,17 @@ public final class CommonTypeUpdateActionUtils {
    * @param newObject the object with the new information
    * @param updateActionSupplier the supplier that returns a list of update actions if the objects
    *     are different
-   * @param <S> the type of the objects to compare
-   * @param <U> certain {@link ResourceUpdateAction} implementation type
+   * @param <AnyT> the type of the objects to compare
+   * @param <ResourceUpdateActionT> certain {@link ResourceUpdateAction} implementation type
    * @return A filled optional with the update action or an empty optional if the object values are
    *     identical
    */
   @Nonnull
-  public static <S, U extends ResourceUpdateAction> List<U> buildUpdateActions(
-      @Nullable final S oldObject,
-      @Nullable final S newObject,
-      @Nonnull final Supplier<List<U>> updateActionSupplier) {
+  public static <AnyT, ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      List<ResourceUpdateActionT> buildUpdateActions(
+          @Nullable final AnyT oldObject,
+          @Nullable final AnyT newObject,
+          @Nonnull final Supplier<List<ResourceUpdateActionT>> updateActionSupplier) {
 
     return !Objects.equals(oldObject, newObject) ? updateActionSupplier.get() : emptyList();
   }
