@@ -235,11 +235,8 @@ public class TypeSync
                     () -> {
                       final String errorMessage =
                           format(
-                              CTP_TYPE_UPDATE_FAILED,
-                              newType.getKey(),
-                              ctpException.getMessage());
-                      handleError(
-                          errorMessage, ctpException, oldType, newType, updateActions, 1);
+                              CTP_TYPE_UPDATE_FAILED, newType.getKey(), ctpException.getMessage());
+                      handleError(errorMessage, ctpException, oldType, newType, updateActions, 1);
                       return CompletableFuture.completedFuture(Optional.empty());
                     });
               } else {
