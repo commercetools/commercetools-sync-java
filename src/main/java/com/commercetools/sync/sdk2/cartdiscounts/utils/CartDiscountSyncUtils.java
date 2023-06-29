@@ -20,20 +20,18 @@ public final class CartDiscountSyncUtils {
       new CartDiscountCustomActionBuilder();
 
   /**
-   * Compares all the fields of a {@link io.sphere.sdk.cartdiscounts.CartDiscount} and a {@link
-   * io.sphere.sdk.cartdiscounts.CartDiscountDraft}. It returns a {@link java.util.List} of {@link
-   * io.sphere.sdk.commands.UpdateAction}&lt;{@link io.sphere.sdk.cartdiscounts.CartDiscount}&gt; as
-   * a result. If no update action is needed, for example in case where both the {@link
-   * io.sphere.sdk.cartdiscounts.CartDiscount} and the {@link
-   * io.sphere.sdk.cartdiscounts.CartDiscountDraft} have the same fields, an empty {@link
-   * java.util.List} is returned.
+   * Compares all the fields of a {@link CartDiscount} and a {@link CartDiscountDraft}. It returns a
+   * {@link java.util.List} of {@link io.sphere.sdk.commands.UpdateAction}&lt;{@link
+   * CartDiscount}&gt; as a result. If no update action is needed, for example in case where both
+   * the {@link CartDiscount} and the {@link CartDiscountDraft} have the same fields, an empty
+   * {@link java.util.List} is returned.
    *
    * @param oldCartDiscount the cart discount which should be updated.
    * @param newCartDiscount the cart discount draft where we get the new data.
    * @param syncOptions the sync options wrapper which contains options related to the sync process
    *     supplied by the user. For example, custom callbacks to call in case of warnings or errors
    *     occurring on the build update action process. And other options (See {@link
-   *     com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions} for more info.
+   *     CartDiscountSyncOptions} for more info.
    * @return A list of cart discount specific update actions.
    */
   @Nonnull

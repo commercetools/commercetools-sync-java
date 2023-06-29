@@ -48,56 +48,53 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class CartDiscountSyncUtilsTest {
 
   private static final ProjectApiRoot CTP_CLIENT = mock(ProjectApiRoot.class);
 
-  private static final String KEY = "key";
-  private static final LocalizedString NAME = LocalizedString.ofEnglish("name");
-  private static final LocalizedString DESC = LocalizedString.ofEnglish("discount- get 10 percent");
-  private static final String PREDICATE =
-      "lineItemExists(sku = \"0123456789\" or sku = \"0246891213\") = true";
-  private static final CartDiscountValue VALUE =
-      CartDiscountValueRelativeBuilder.of().permyriad(1000L).build();
-
-  private static final CartDiscountValueDraft VALUE_DRAFT =
-      CartDiscountValueRelativeDraftBuilder.of().permyriad(1000L).build();
-  private static final CartDiscountTarget TARGET =
-      CartDiscountLineItemsTargetBuilder.of().predicate("1=1").build();
-  private static final ZonedDateTime JANUARY_FROM = ZonedDateTime.parse("2019-01-01T00:00:00.000Z");
-  private static final ZonedDateTime JANUARY_UNTIL =
-      ZonedDateTime.parse("2019-01-31T00:00:00.000Z");
-  private static final String SORT_ORDER = "0.1";
-  private static final Boolean IS_ACTIVE = false;
-  private static final Boolean IS_REQUIRE_DISC_CODE = false;
-  private static final StackingMode STACKING_MODE = StackingMode.STACKING;
-
   private static final String CUSTOM_TYPE_ID = "id";
   private static final String CUSTOM_FIELD_NAME = "field";
   private static final String CUSTOM_FIELD_VALUE = "value";
 
-  private CartDiscount cartDiscount;
-  private CartDiscountDraft cartDiscountDraft;
+  private static CartDiscount cartDiscount;
+  private static CartDiscountDraft cartDiscountDraft;
 
   /** Creates a {@code cartDiscount} and a {@code cartDiscountDraft} with identical values. */
-  @BeforeEach
-  void setup() {
+  @BeforeAll
+  static void setup() {
+    final String key = "key";
+    final LocalizedString name = LocalizedString.ofEnglish("name");
+    final LocalizedString desc = LocalizedString.ofEnglish("discount- get 10 percent");
+    final String predicate = "lineItemExists(sku = \"0123456789\" or sku = \"0246891213\") = true";
+    final CartDiscountValue value = CartDiscountValueRelativeBuilder.of().permyriad(1000L).build();
+
+    final CartDiscountValueDraft valueDraft =
+        CartDiscountValueRelativeDraftBuilder.of().permyriad(1000L).build();
+    final CartDiscountTarget target =
+        CartDiscountLineItemsTargetBuilder.of().predicate("1=1").build();
+    final ZonedDateTime januaryFrom = ZonedDateTime.parse("2019-01-01T00:00:00.000Z");
+    final ZonedDateTime januaryUntil = ZonedDateTime.parse("2019-01-31T00:00:00.000Z");
+    final String sortOrder = "0.1";
+    final Boolean isActive = false;
+    final Boolean isRequireDiscCode = false;
+    final StackingMode stackingMode = StackingMode.STACKING;
+
     cartDiscount = mock(CartDiscount.class);
-    when(cartDiscount.getKey()).thenReturn(KEY);
-    when(cartDiscount.getName()).thenReturn(NAME);
-    when(cartDiscount.getDescription()).thenReturn(DESC);
-    when(cartDiscount.getCartPredicate()).thenReturn(PREDICATE);
-    when(cartDiscount.getValue()).thenReturn(VALUE);
-    when(cartDiscount.getTarget()).thenReturn(TARGET);
-    when(cartDiscount.getValidFrom()).thenReturn(JANUARY_FROM);
-    when(cartDiscount.getValidUntil()).thenReturn(JANUARY_UNTIL);
-    when(cartDiscount.getSortOrder()).thenReturn(SORT_ORDER);
-    when(cartDiscount.getIsActive()).thenReturn(IS_ACTIVE);
-    when(cartDiscount.getRequiresDiscountCode()).thenReturn(IS_REQUIRE_DISC_CODE);
-    when(cartDiscount.getStackingMode()).thenReturn(STACKING_MODE);
+    when(cartDiscount.getKey()).thenReturn(key);
+    when(cartDiscount.getName()).thenReturn(name);
+    when(cartDiscount.getDescription()).thenReturn(desc);
+    when(cartDiscount.getCartPredicate()).thenReturn(predicate);
+    when(cartDiscount.getValue()).thenReturn(value);
+    when(cartDiscount.getTarget()).thenReturn(target);
+    when(cartDiscount.getValidFrom()).thenReturn(januaryFrom);
+    when(cartDiscount.getValidUntil()).thenReturn(januaryUntil);
+    when(cartDiscount.getSortOrder()).thenReturn(sortOrder);
+    when(cartDiscount.getIsActive()).thenReturn(isActive);
+    when(cartDiscount.getRequiresDiscountCode()).thenReturn(isRequireDiscCode);
+    when(cartDiscount.getStackingMode()).thenReturn(stackingMode);
 
     final CustomFields customFields = mock(CustomFields.class);
     when(customFields.getType()).thenReturn(TypeReferenceBuilder.of().id(CUSTOM_TYPE_ID).build());
@@ -121,18 +118,18 @@ class CartDiscountSyncUtilsTest {
 
     cartDiscountDraft =
         CartDiscountDraftBuilder.of()
-            .name(NAME)
-            .cartPredicate(PREDICATE)
-            .value(VALUE_DRAFT)
-            .target(TARGET)
-            .sortOrder(SORT_ORDER)
-            .requiresDiscountCode(IS_REQUIRE_DISC_CODE)
-            .key(KEY)
-            .description(DESC)
-            .sortOrder(SORT_ORDER)
-            .isActive(IS_ACTIVE)
-            .validFrom(JANUARY_FROM)
-            .validUntil(JANUARY_UNTIL)
+            .name(name)
+            .cartPredicate(predicate)
+            .value(valueDraft)
+            .target(target)
+            .sortOrder(sortOrder)
+            .requiresDiscountCode(isRequireDiscCode)
+            .key(key)
+            .description(desc)
+            .sortOrder(sortOrder)
+            .isActive(isActive)
+            .validFrom(januaryFrom)
+            .validUntil(januaryUntil)
             .custom(customFieldsDraft)
             .build();
   }
