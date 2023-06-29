@@ -227,19 +227,19 @@ public class TypeSync
         .thenCompose(
             updateResponse -> {
               final Type updatedType = updateResponse.getKey();
-              final Throwable sphereException = updateResponse.getValue();
-              if (sphereException != null) {
+              final Throwable ctpException = updateResponse.getValue();
+              if (ctpException != null) {
                 return executeSupplierIfConcurrentModificationException(
-                    sphereException,
+                    ctpException,
                     () -> fetchAndUpdate(oldType, newType),
                     () -> {
                       final String errorMessage =
                           format(
                               CTP_TYPE_UPDATE_FAILED,
                               newType.getKey(),
-                              sphereException.getMessage());
+                              ctpException.getMessage());
                       handleError(
-                          errorMessage, sphereException, oldType, newType, updateActions, 1);
+                          errorMessage, ctpException, oldType, newType, updateActions, 1);
                       return CompletableFuture.completedFuture(Optional.empty());
                     });
               } else {

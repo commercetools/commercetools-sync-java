@@ -183,8 +183,6 @@ __Note__ The statistics object contains the processing time of the last batch on
 **remove** the existing `fieldDefinition` and then **add** a new `fieldDefinition` with the new `FieldType`.
 
 2. The `fieldDefinition` with missing `fieldType` (is `null`) will not be synced.
-
-3. The `required` field of `FieldDefinition` cannot be updated!
  
 #### More examples of how to use the sync
  

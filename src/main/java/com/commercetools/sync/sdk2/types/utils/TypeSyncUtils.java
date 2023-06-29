@@ -22,8 +22,8 @@ public final class TypeSyncUtils {
    * <p>Note: The commercetools API doesn't support the following:
    *
    * <ul>
-   *   <li>updating the inputHint of a FieldDefinition
    *   <li>removing the EnumValue/LocalizedEnumValue of a FieldDefinition
+   *   <li>changing the required field of a FieldDefinition
    * </ul>
    *
    * @param oldType the {@link Type} which should be updated.
