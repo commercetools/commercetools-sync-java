@@ -1,7 +1,7 @@
 package com.commercetools.sync.sdk2.cartdiscounts.utils;
 
+import static com.commercetools.api.models.common.DefaultCurrencyUnits.EUR;
 import static com.commercetools.sync.sdk2.cartdiscounts.utils.CartDiscountUpdateActionUtils.*;
-import static com.commercetools.sync.sdk2.commons.helpers.DefaultCurrencyUnits.EUR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -47,10 +47,10 @@ import com.commercetools.api.models.cart_discount.MultiBuyLineItemsTargetBuilder
 import com.commercetools.api.models.cart_discount.SelectionMode;
 import com.commercetools.api.models.cart_discount.StackingMode;
 import com.commercetools.api.models.common.CentPrecisionMoneyBuilder;
+import com.commercetools.api.models.common.DefaultCurrencyUnits;
 import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.product.ProductReferenceBuilder;
 import com.commercetools.api.models.product.ProductResourceIdentifierBuilder;
-import com.commercetools.sync.sdk2.commons.helpers.DefaultCurrencyUnits;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;

@@ -1,6 +1,6 @@
 package com.commercetools.sync.sdk2.products;
 
-import static com.commercetools.sync.sdk2.commons.helpers.DefaultCurrencyUnits.EUR;
+import static com.commercetools.api.models.common.DefaultCurrencyUnits.EUR;
 import static com.commercetools.sync.sdk2.commons.utils.TestUtils.readObjectFromResource;
 import static com.commercetools.sync.sdk2.products.utils.AssetUtils.createAssetDraft;
 import static com.commercetools.sync.sdk2.products.utils.PriceUtils.createPriceDraft;
