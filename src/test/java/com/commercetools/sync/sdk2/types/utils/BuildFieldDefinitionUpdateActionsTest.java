@@ -354,6 +354,7 @@ class BuildFieldDefinitionUpdateActionsTest {
             .name("a")
             .label(ofEnglish("new_label"))
             .required(true)
+            .inputHint(TypeTextInputHint.MULTI_LINE)
             .build();
     final TypeDraft typeDraft =
         TypeDraftBuilder.of()
@@ -370,6 +371,7 @@ class BuildFieldDefinitionUpdateActionsTest {
             .name("a")
             .label(ofEnglish("old_label"))
             .required(true)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     final Type type = mock(Type.class);
@@ -379,7 +381,11 @@ class BuildFieldDefinitionUpdateActionsTest {
         buildFieldDefinitionsUpdateActions(type, typeDraft, SYNC_OPTIONS);
 
     assertThat(updateActions)
-        .containsExactly(
+        .containsExactlyInAnyOrder(
+            TypeChangeInputHintActionBuilder.of()
+                .fieldName("a")
+                .inputHint(TypeTextInputHint.MULTI_LINE)
+                .build(),
             TypeChangeLabelActionBuilder.of()
                 .fieldName(newDefinition.getName())
                 .label(newDefinition.getLabel())
@@ -424,6 +430,7 @@ class BuildFieldDefinitionUpdateActionsTest {
             .name("a")
             .label(ofEnglish("new_label"))
             .required(true)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     final Type type = mock(Type.class);
@@ -459,6 +466,7 @@ class BuildFieldDefinitionUpdateActionsTest {
             .name("a")
             .label(ofEnglish("new_label"))
             .required(true)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     final TypeDraft typeDraft =
@@ -479,6 +487,7 @@ class BuildFieldDefinitionUpdateActionsTest {
             .name("a")
             .label(ofEnglish("new_label"))
             .required(true)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     final Type type = mock(Type.class);
@@ -534,6 +543,7 @@ class BuildFieldDefinitionUpdateActionsTest {
             .name("a")
             .label(ofEnglish("new_label"))
             .required(true)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     final Type type = mock(Type.class);
@@ -575,6 +585,7 @@ class BuildFieldDefinitionUpdateActionsTest {
             .name("a")
             .label(ofEnglish("new_label"))
             .required(true)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     final TypeDraft typeDraft =
@@ -597,6 +608,7 @@ class BuildFieldDefinitionUpdateActionsTest {
             .name("a")
             .label(ofEnglish("new_label"))
             .required(true)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     final Type type = mock(Type.class);
@@ -657,6 +669,7 @@ class BuildFieldDefinitionUpdateActionsTest {
             .name("a")
             .label(ofEnglish("new_label"))
             .required(true)
+            .inputHint(TypeTextInputHint.MULTI_LINE)
             .build();
 
     final Type type = mock(Type.class);
@@ -669,6 +682,10 @@ class BuildFieldDefinitionUpdateActionsTest {
     // assertion
     assertThat(updateActions)
         .containsExactlyInAnyOrder(
+            TypeChangeInputHintActionBuilder.of()
+                .fieldName("a")
+                .inputHint(TypeTextInputHint.SINGLE_LINE)
+                .build(),
             TypeAddLocalizedEnumValueActionBuilder.of().fieldName("a").value(value_C).build(),
             TypeChangeLocalizedEnumValueOrderActionBuilder.of()
                 .fieldName("a")

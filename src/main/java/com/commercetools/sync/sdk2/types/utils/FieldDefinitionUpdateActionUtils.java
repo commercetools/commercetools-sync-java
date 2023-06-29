@@ -4,6 +4,7 @@ import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUt
 import static com.commercetools.sync.sdk2.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.sdk2.types.utils.LocalizedEnumValueUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
 import static com.commercetools.sync.sdk2.types.utils.PlainEnumValueUpdateActionUtils.buildEnumValuesUpdateActions;
+import static java.util.Optional.ofNullable;
 
 import com.commercetools.api.models.type.*;
 import java.util.Collections;
@@ -193,6 +194,9 @@ final class FieldDefinitionUpdateActionUtils {
    * the same inputHint, then no update action is needed and hence an empty {@link
    * java.util.Optional} is returned.
    *
+   * <p>Note: A null inputHint value in the AttributeDefinitionDraft is treated as a
+   * TextInputHint#SINGLE_LINE value which is the default value of CTP.
+   *
    * @param oldFieldDefinition the old field definition which should be updated.
    * @param newFieldDefinition the new field definition draft where we get the new inputHint.
    * @return A filled optional with the update action or an empty optional if the inputHints are
@@ -203,17 +207,16 @@ final class FieldDefinitionUpdateActionUtils {
       @Nonnull final FieldDefinition oldFieldDefinition,
       @Nonnull final FieldDefinition newFieldDefinition) {
 
-    if (newFieldDefinition.getInputHint() == null && oldFieldDefinition.getInputHint() != null) {
-      return Optional.empty();
-    }
+    final TypeTextInputHint newFieldInputHint =
+        ofNullable(newFieldDefinition.getInputHint()).orElse(TypeTextInputHint.SINGLE_LINE);
 
     return buildUpdateAction(
         oldFieldDefinition.getInputHint(),
-        newFieldDefinition.getInputHint(),
+        newFieldInputHint,
         () ->
             TypeChangeInputHintActionBuilder.of()
                 .fieldName(oldFieldDefinition.getName())
-                .inputHint(newFieldDefinition.getInputHint())
+                .inputHint(newFieldInputHint)
                 .build());
   }
 
