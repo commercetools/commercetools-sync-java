@@ -1,13 +1,12 @@
 package com.commercetools.sync.integration.sdk2.commons.utils;
 
 import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.*;
-import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
-import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static java.util.Collections.singletonList;
 
+import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.type.*;
-import java.util.Arrays;
+import java.util.Optional;
+import javax.annotation.Nonnull;
 
 public final class TypeITUtils {
   public static final String TYPE_KEY_1 = "key_1";
@@ -57,39 +56,17 @@ public final class TypeITUtils {
           .inputHint(TypeTextInputHint.SINGLE_LINE)
           .build();
 
-  private static final TypeDraft typeDraft1 =
-      TypeDraftBuilder.of()
-          .key(TYPE_KEY_1)
-          .name(TYPE_NAME_1)
-          .description(TYPE_DESCRIPTION_1)
-          .fieldDefinitions(Arrays.asList(FIELD_DEFINITION_1, FIELD_DEFINITION_2))
-          .resourceTypeIds(ResourceTypeId.CATEGORY)
-          .build();
-  private static final TypeDraft typeDraft2 =
-      TypeDraftBuilder.of()
-          .key(TYPE_KEY_2)
-          .name(TYPE_NAME_2)
-          .description(TYPE_DESCRIPTION_2)
-          .fieldDefinitions(singletonList(FIELD_DEFINITION_2))
-          .resourceTypeIds(ResourceTypeId.CATEGORY)
-          .build();
-
   /**
-   * Populate source CTP project. Creates type with key TYPE_KEY_1, TYPE_NAME_1, TYPE_DESCRIPTION_1
-   * and fields FIELD_DEFINITION_1, FIELD_DEFINITION_2. Creates type with key TYPE_KEY_2,
-   * TYPE_NAME_2, TYPE_DESCRIPTION_2 and fields FIELD_DEFINITION_1.
+   * Tries to fetch type of {@code key} using {@code projectApiRoot}.
+   *
+   * @param ctpClient client used to execute requests.
+   * @param typeKey key of requested type.
+   * @return {@link Optional} which may contain type of {@code key}.
    */
-  public static void populateSourceProject() {
-    ensureTypeByTypeDraft(typeDraft1, CTP_SOURCE_CLIENT);
-    ensureTypeByTypeDraft(typeDraft2, CTP_SOURCE_CLIENT);
-  }
+  public static Optional<Type> getTypeByKey(
+      @Nonnull final ProjectApiRoot ctpClient, @Nonnull final String typeKey) {
 
-  /**
-   * Populate target CTP project. Creates type with key TYPE_KEY_1, TYPE_NAME_1, TYPE_DESCRIPTION_1
-   * and fields FIELD_DEFINITION_1, FIELD_DEFINITION_2.
-   */
-  public static void populateTargetProject() {
-    ensureTypeByTypeDraft(typeDraft1, CTP_TARGET_CLIENT);
+    return typeExists(typeKey, ctpClient).toCompletableFuture().join();
   }
 
   private TypeITUtils() {}

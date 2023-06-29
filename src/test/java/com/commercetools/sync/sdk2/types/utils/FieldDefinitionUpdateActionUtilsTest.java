@@ -188,6 +188,7 @@ class FieldDefinitionUpdateActionUtilsTest {
             .name("fieldName1")
             .label(ofEnglish("label1"))
             .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     final FieldDefinition newFieldDefinition =
@@ -196,6 +197,7 @@ class FieldDefinitionUpdateActionUtilsTest {
             .name("fieldName1")
             .label(ofEnglish("label2"))
             .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     final List<TypeUpdateAction> result = buildActions(oldFieldDefinition, newFieldDefinition);
@@ -221,6 +223,7 @@ class FieldDefinitionUpdateActionUtilsTest {
             .name("fieldName1")
             .label(ofEnglish("label1"))
             .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     final FieldDefinition newFieldDefinition =
@@ -233,6 +236,7 @@ class FieldDefinitionUpdateActionUtilsTest {
             .name("fieldName1")
             .label(ofEnglish("label2"))
             .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     final List<TypeUpdateAction> result = buildActions(oldFieldDefinition, newFieldDefinition);
@@ -263,6 +267,7 @@ class FieldDefinitionUpdateActionUtilsTest {
             .name("fieldName1")
             .label(ofEnglish("label1"))
             .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     final FieldDefinition newFieldDefinition =
@@ -280,6 +285,7 @@ class FieldDefinitionUpdateActionUtilsTest {
             .name("fieldName1")
             .label(ofEnglish("label2"))
             .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     final List<TypeUpdateAction> result = buildActions(oldFieldDefinition, newFieldDefinition);
@@ -306,6 +312,7 @@ class FieldDefinitionUpdateActionUtilsTest {
             .name("fieldName1")
             .label(ofEnglish("label1"))
             .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     final FieldDefinition newFieldDefinition =
@@ -320,6 +327,7 @@ class FieldDefinitionUpdateActionUtilsTest {
             .name("fieldName1")
             .label(ofEnglish("label2"))
             .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     final List<TypeUpdateAction> result = buildActions(oldFieldDefinition, newFieldDefinition);
@@ -346,6 +354,7 @@ class FieldDefinitionUpdateActionUtilsTest {
             .name("fieldName1")
             .label(ofEnglish("label1"))
             .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     final FieldDefinition newFieldDefinition =
@@ -368,6 +377,7 @@ class FieldDefinitionUpdateActionUtilsTest {
             .name("fieldName1")
             .label(ofEnglish("label1"))
             .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     final List<TypeUpdateAction> result = buildActions(oldFieldDefinition, newFieldDefinition);
@@ -405,6 +415,7 @@ class FieldDefinitionUpdateActionUtilsTest {
             .name("fieldName1")
             .label(ofEnglish("label1"))
             .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     final FieldDefinition newFieldDefinition =
@@ -425,6 +436,7 @@ class FieldDefinitionUpdateActionUtilsTest {
             .name("fieldName1")
             .label(ofEnglish("label2"))
             .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     // test
@@ -456,6 +468,7 @@ class FieldDefinitionUpdateActionUtilsTest {
             .name("fieldName1")
             .label(ofEnglish("label1"))
             .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     final FieldDefinition newFieldDefinition =
@@ -478,6 +491,7 @@ class FieldDefinitionUpdateActionUtilsTest {
             .name("fieldName1")
             .label(ofEnglish("label1"))
             .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
             .build();
 
     // test
