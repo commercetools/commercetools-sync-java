@@ -1,6 +1,6 @@
 package com.commercetools.sync.sdk2.producttypes.utils;
 
-import static com.commercetools.sync.sdk2.commons.utils.LocalizedEnumValueFixtures.*;
+import static com.commercetools.sync.sdk2.commons.utils.LocalizedEnumValueFixtures.AttributeLocalizedEnumValueFixtures.*;
 import static com.commercetools.sync.sdk2.producttypes.utils.LocalizedEnumValueUpdateActionUtils.buildLocalizedEnumValueUpdateActions;
 import static com.commercetools.sync.sdk2.producttypes.utils.LocalizedEnumValueUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
 import static java.lang.String.format;
