@@ -1,6 +1,6 @@
 package com.commercetools.sync.sdk2.producttypes.utils;
 
-import static com.commercetools.sync.sdk2.commons.utils.PlainEnumValueFixtures.*;
+import static com.commercetools.sync.sdk2.commons.utils.PlainEnumValueFixtures.AttributePlainEnumValueFixtures.*;
 import static com.commercetools.sync.sdk2.producttypes.utils.PlainEnumValueUpdateActionUtils.*;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;

@@ -1,18 +1,21 @@
 package com.commercetools.sync.sdk2.services.impl;
 
+import static com.commercetools.sync.sdk2.commons.utils.SyncUtils.batchElements;
+
 import com.commercetools.api.client.ByProjectKeyTypesGet;
 import com.commercetools.api.client.ByProjectKeyTypesKeyByKeyGet;
 import com.commercetools.api.client.ByProjectKeyTypesPost;
 import com.commercetools.api.models.type.Type;
 import com.commercetools.api.models.type.TypeDraft;
 import com.commercetools.api.models.type.TypePagedQueryResponse;
+import com.commercetools.api.models.type.TypeUpdateAction;
+import com.commercetools.api.models.type.TypeUpdateBuilder;
 import com.commercetools.sync.sdk2.commons.BaseSyncOptions;
 import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.services.TypeService;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -41,7 +44,8 @@ public final class TypeServiceImpl
   }
 
   @Nonnull
-  private CompletionStage<Optional<Type>> fetchTypeByKey(@Nullable final String key) {
+  @Override
+  public CompletionStage<Optional<Type>> fetchTypeByKey(@Nullable final String key) {
     return super.fetchResource(key, syncOptions.getCtpClient().types().withKey(key).get());
   }
 
@@ -62,7 +66,7 @@ public final class TypeServiceImpl
   @Nonnull
   @Override
   public CompletionStage<Set<Type>> fetchMatchingTypesByKeys(@Nonnull final Set<String> keys) {
-    return fetchMatchingResources(
+    return super.fetchMatchingResources(
         keys,
         type -> type.getKey(),
         (keysNotCached) ->
@@ -72,5 +76,48 @@ public final class TypeServiceImpl
                 .get()
                 .withWhere("key in :keys")
                 .withPredicateVar("keys", keysNotCached));
+  }
+
+  @Nonnull
+  @Override
+  public CompletionStage<Optional<Type>> createType(@Nonnull TypeDraft typeDraft) {
+    return super.createResource(
+        typeDraft,
+        TypeDraft::getKey,
+        typeResult -> typeResult.getId(),
+        type -> type,
+        () -> syncOptions.getCtpClient().types().post(typeDraft));
+  }
+
+  @Nonnull
+  @Override
+  public CompletionStage<Type> updateType(
+      @Nonnull final Type type, @Nonnull final List<TypeUpdateAction> updateActions) {
+
+    final List<List<TypeUpdateAction>> actionBatches =
+        batchElements(updateActions, MAXIMUM_ALLOWED_UPDATE_ACTIONS);
+
+    CompletionStage<ApiHttpResponse<Type>> resultStage =
+        CompletableFuture.completedFuture(new ApiHttpResponse<>(200, null, type));
+
+    for (final List<TypeUpdateAction> batch : actionBatches) {
+      resultStage =
+          resultStage
+              .thenApply(ApiHttpResponse::getBody)
+              .thenCompose(
+                  updatedType ->
+                      syncOptions
+                          .getCtpClient()
+                          .types()
+                          .withId(updatedType.getId())
+                          .post(
+                              TypeUpdateBuilder.of()
+                                  .actions(batch)
+                                  .version(updatedType.getVersion())
+                                  .build())
+                          .execute());
+    }
+
+    return resultStage.thenApply(ApiHttpResponse::getBody);
   }
 }
