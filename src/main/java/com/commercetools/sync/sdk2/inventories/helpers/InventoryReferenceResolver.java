@@ -1,29 +1,28 @@
 package com.commercetools.sync.sdk2.inventories.helpers;
 
+import static com.commercetools.sync.sdk2.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
+import static java.lang.String.format;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.stream.Collectors.toList;
+
+import com.commercetools.api.models.channel.Channel;
 import com.commercetools.api.models.channel.ChannelResourceIdentifier;
 import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
+import com.commercetools.api.models.inventory.InventoryEntryDraft;
+import com.commercetools.api.models.inventory.InventoryEntryDraftBuilder;
 import com.commercetools.sync.sdk2.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.sdk2.commons.helpers.CustomReferenceResolver;
 import com.commercetools.sync.sdk2.inventories.InventorySyncOptions;
 import com.commercetools.sync.sdk2.services.ChannelService;
 import com.commercetools.sync.sdk2.services.TypeService;
-import com.commercetools.api.models.channel.Channel;
-import com.commercetools.api.models.inventory.InventoryEntryDraft;
-import com.commercetools.api.models.inventory.InventoryEntryDraftBuilder;
 import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
-
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-
-import static com.commercetools.sync.sdk2.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
-import static java.lang.String.format;
-import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.stream.Collectors.toList;
+import javax.annotation.Nonnull;
 
 public final class InventoryReferenceResolver
     extends CustomReferenceResolver<
@@ -192,7 +191,8 @@ public final class InventoryReferenceResolver
   @Nonnull
   private static CompletionStage<InventoryEntryDraftBuilder> setChannelReference(
       @Nonnull final String channelId, @Nonnull final InventoryEntryDraftBuilder draftBuilder) {
-    return completedFuture(draftBuilder.supplyChannel(ChannelResourceIdentifierBuilder.of().id(channelId).build()));
+    return completedFuture(
+        draftBuilder.supplyChannel(ChannelResourceIdentifierBuilder.of().id(channelId).build()));
   }
 
   /**
