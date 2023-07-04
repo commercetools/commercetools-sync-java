@@ -187,7 +187,9 @@ public final class CartDiscountUpdateActionUtils {
                     newValue.getMoney().stream()
                         .filter(
                             newAmount -> newAmount.getCurrency().equals(oldAmount.getCurrency()))
-                        .anyMatch(newAmount -> newAmount.isEqualTo(oldAmount)));
+                        .anyMatch(
+                            newAmount ->
+                                newAmount.getCentAmount().equals(oldAmount.getCentAmount())));
 
     return allOldValuesFoundInNewValues
         ? empty()
