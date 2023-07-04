@@ -87,7 +87,7 @@ class InventoryEntryQueryBuilderTest {
 
     final int totalIdentifiers =
         inventoryEntryQueries.stream()
-            .mapToInt(value -> Integer.valueOf(value.getLimit().stream().findFirst().orElse("0")))
+            .mapToInt(value -> Integer.parseInt(value.getLimit().stream().findFirst().orElse("0")))
             .sum();
     assertThat(totalIdentifiers).isEqualTo(500);
   }
