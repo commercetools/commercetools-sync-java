@@ -28,6 +28,7 @@ import com.commercetools.sync.sdk2.cartdiscounts.CartDiscountSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.commons.ExceptionUtils;
 import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.services.CartDiscountService;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;
 import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
@@ -114,6 +115,9 @@ class CartDiscountServiceImplTest {
   }
 
   @Test
+  @SuppressFBWarnings(
+      value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT",
+      justification = "See: https://github.com/spotbugs/spotbugs/issues/872")
   void createCartDiscount_WithNullCartDiscountKey_ShouldNotCreateCartDiscount() {
     // preparation
     final CartDiscountDraft mockCartDiscountDraft = mock(CartDiscountDraft.class);
@@ -142,6 +146,9 @@ class CartDiscountServiceImplTest {
   }
 
   @Test
+  @SuppressFBWarnings(
+      value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT",
+      justification = "See: https://github.com/spotbugs/spotbugs/issues/872")
   void createCartDiscount_WithEmptyCartDiscountKey_ShouldHaveEmptyOptionalAsAResult() {
     // preparation
     final ProjectApiRoot projectApiRoot = mockProjectApiRoot();
@@ -166,7 +173,7 @@ class CartDiscountServiceImplTest {
     assertThat(result).isCompletedWithValue(Optional.empty());
     assertThat(errors.keySet())
         .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
-    verify(options.getCtpClient(), times(0)).cartDiscounts();
+    verify(projectApiRoot, times(0)).cartDiscounts();
   }
 
   @Test
