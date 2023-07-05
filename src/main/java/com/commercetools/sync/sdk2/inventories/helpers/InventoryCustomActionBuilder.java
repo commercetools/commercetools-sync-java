@@ -11,6 +11,17 @@ import javax.annotation.Nullable;
 public class InventoryCustomActionBuilder
     implements GenericCustomActionBuilder<InventoryEntryUpdateAction> {
 
+  private static final InventoryCustomActionBuilder builder = new InventoryCustomActionBuilder();
+
+  private InventoryCustomActionBuilder() {
+    super();
+  }
+
+  @Nonnull
+  public static InventoryCustomActionBuilder of() {
+    return builder;
+  }
+
   @Nonnull
   @Override
   public InventoryEntryUpdateAction buildRemoveCustomTypeAction(
