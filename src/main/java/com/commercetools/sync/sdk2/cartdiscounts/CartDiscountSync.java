@@ -53,10 +53,9 @@ public class CartDiscountSync
   private final CartDiscountBatchValidator batchValidator;
 
   /**
-   * Takes a {@link CartDiscountSyncOptions} to instantiate a new {@link
-   * com.commercetools.sync.sdk2.cartdiscounts.CartDiscountSync} instance that could be used to sync
-   * cart discount drafts in the CTP project specified in the injected {@link
-   * CartDiscountSyncOptions} instance.
+   * Takes a {@link CartDiscountSyncOptions} to instantiate a new {@link CartDiscountSync} instance
+   * that could be used to sync cart discount drafts in the CTP project specified in the injected
+   * {@link CartDiscountSyncOptions} instance.
    *
    * @param cartDiscountSyncOptions the container of all the options of the sync process including
    *     the CTP project client and/or configuration and other sync-specific options.
@@ -69,11 +68,9 @@ public class CartDiscountSync
   }
 
   /**
-   * Takes a {@link CartDiscountSyncOptions} and a {@link
-   * com.commercetools.sync.services.CartDiscountService} instances to instantiate a new {@link
-   * com.commercetools.sync.sdk2.cartdiscounts.CartDiscountSync} instance that could be used to sync
-   * cart discount drafts in the CTP project specified in the injected {@link
-   * CartDiscountSyncOptions} instance.
+   * Takes a {@link CartDiscountSyncOptions} and a {@link CartDiscountService} instances to
+   * instantiate a new {@link CartDiscountSync} instance that could be used to sync cart discount
+   * drafts in the CTP project specified in the injected {@link CartDiscountSyncOptions} instance.
    *
    * <p>NOTE: This constructor is mainly to be used for tests where the services can be mocked and
    * passed to.
@@ -99,7 +96,7 @@ public class CartDiscountSync
   /**
    * Iterates through the whole {@code cartDiscountDrafts} list and accumulates its valid drafts to
    * batches. Every batch is then processed by {@link
-   * com.commercetools.sync.sdk2.cartdiscounts.CartDiscountSync#processBatch(java.util.List)}.
+   * CartDiscountSync#processBatch(java.util.List)}.
    *
    * <p><strong>Inherited doc:</strong> {@inheritDoc}
    *
@@ -279,11 +276,10 @@ public class CartDiscountSync
   }
 
   /**
-   * Given an existing {@link io.sphere.sdk.cartdiscounts.CartDiscount} and a new {@link
-   * io.sphere.sdk.cartdiscounts.CartDiscountDraft}, the method calculates all the update actions
-   * required to synchronize the existing cart discount to be the same as the new one. If there are
-   * update actions found, a request is made to CTP to update the existing cart discount, otherwise
-   * it doesn't issue a request.
+   * Given an existing {@link CartDiscount} and a new {@link CartDiscountDraft}, the method
+   * calculates all the update actions required to synchronize the existing cart discount to be the
+   * same as the new one. If there are update actions found, a request is made to CTP to update the
+   * existing cart discount, otherwise it doesn't issue a request.
    *
    * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was
    * carried out successfully or not. If an exception was thrown on executing the request to CTP,the
@@ -292,8 +288,7 @@ public class CartDiscountSync
    * @param oldCartDiscount existing cart discount that could be updated.
    * @param newCartDiscount draft containing data that could differ from data in {@code
    *     oldCartDiscount}.
-   * @param updateActions the update actions to update the {@link
-   *     io.sphere.sdk.cartdiscounts.CartDiscount} with.
+   * @param updateActions the update actions to update the {@link CartDiscount} with.
    * @return a {@link java.util.concurrent.CompletionStage} which contains an empty result after
    *     execution of the update.
    */

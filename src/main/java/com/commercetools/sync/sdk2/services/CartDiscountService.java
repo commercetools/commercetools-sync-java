@@ -78,7 +78,7 @@ public interface CartDiscountService {
    * @param updateActions the update actions to update the {@link CartDiscount} with.
    * @return {@link java.util.concurrent.CompletionStage}&lt;{@link CartDiscount}&gt; containing as
    *     a result of its completion an instance of the {@link CartDiscount} which was updated in the
-   *     CTP project or a {@link io.sphere.sdk.models.SphereException}.
+   *     CTP project or an exception.
    */
   @Nonnull
   CompletionStage<CartDiscount> updateCartDiscount(
