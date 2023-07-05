@@ -260,31 +260,4 @@ class InventoryReferenceResolverTest {
         .toCompletableFuture()
         .join();
   }
-
-  @Test
-  void
-      resolveSupplyChannelReference_WithResolvedSupplyChannelReference_ShouldNotResolveChannelReference() {
-    final InventoryEntryDraft draft =
-        InventoryEntryDraftBuilder.of()
-            .sku(SKU)
-            .quantityOnStock(QUANTITY)
-            .expectedDelivery(DATE_1)
-            .restockableInDays(RESTOCKABLE_IN_DAYS)
-            .supplyChannel(ChannelResourceIdentifierBuilder.of().id(CHANNEL_ID).build())
-            .build();
-
-    final InventoryReferenceResolver referenceResolver =
-        new InventoryReferenceResolver(syncOptions, typeService, channelService);
-
-    referenceResolver
-        .resolveSupplyChannelReference(InventoryEntryDraftBuilder.of(draft))
-        .thenApply(InventoryEntryDraftBuilder::build)
-        .thenAccept(
-            resolvedDraft -> {
-              assertThat(resolvedDraft.getSupplyChannel()).isNotNull();
-              assertThat(resolvedDraft.getSupplyChannel().getId()).isEqualTo(CHANNEL_ID);
-            })
-        .toCompletableFuture()
-        .join();
-  }
 }

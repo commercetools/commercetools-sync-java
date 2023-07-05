@@ -5,7 +5,6 @@ import static java.util.Collections.emptyList;
 import com.commercetools.api.client.ByProjectKeyInventoryGet;
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.models.inventory.InventoryEntry;
-import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -22,7 +21,7 @@ public final class InventoryEntryQueryBuilder {
   private static final int MAX_QUERY_LENGTH = 10000;
 
   /**
-   * Builds {@link List} of {@link InventoryEntryQuery}'s to be used to query existing {@link
+   * Builds {@link List} of {@link ByProjectKeyInventoryGet} requests to be used to query existing {@link
    * InventoryEntry}'s against set of sku and supply channels.
    *
    * <p>For instance, a query for one inventory entry will be like (sku="sku_9" and
