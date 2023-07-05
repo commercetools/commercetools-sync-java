@@ -66,6 +66,8 @@ class CartDiscountSyncIT {
 
   private CartDiscount oldCartDiscount;
 
+  private final Random random = new Random();
+
   /**
    * Deletes cart discounts from the target CTP projects. Populates the target CTP project with test
    * data.
@@ -503,7 +505,7 @@ class CartDiscountSyncIT {
             .variantId(1L)
             .build();
 
-    final String sortOrder = Double.toString(new Random().nextDouble());
+    final String sortOrder = Double.toString(random.nextDouble());
 
     final CartDiscountDraft sourceCartDiscountDraft =
         CartDiscountDraftBuilder.of()
