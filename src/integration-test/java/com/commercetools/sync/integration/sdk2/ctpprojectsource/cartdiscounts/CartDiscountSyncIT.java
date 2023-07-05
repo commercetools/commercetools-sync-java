@@ -2,7 +2,6 @@ package com.commercetools.sync.integration.sdk2.ctpprojectsource.cartdiscounts;
 
 import static com.commercetools.api.models.common.DefaultCurrencyUnits.EUR;
 import static com.commercetools.sync.integration.sdk2.commons.utils.CartDiscountITUtils.*;
-import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
@@ -46,7 +45,6 @@ class CartDiscountSyncIT {
   @BeforeEach
   void setup() {
     deleteCartDiscountsFromTargetAndSource();
-    deleteTypesFromTargetAndSource();
     populateSourceProject();
     populateTargetProject();
     referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
@@ -55,7 +53,6 @@ class CartDiscountSyncIT {
   @AfterAll
   static void tearDown() {
     deleteCartDiscountsFromTargetAndSource();
-    deleteTypesFromTargetAndSource();
   }
 
   @Test
