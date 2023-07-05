@@ -18,7 +18,7 @@ import javax.annotation.Nonnull;
 /** This class provides factory methods for assembling update actions of inventory entries. */
 public final class InventorySyncUtils {
   private static final InventoryCustomActionBuilder inventoryCustomActionBuilder =
-      InventoryCustomActionBuilder.of();
+      new InventoryCustomActionBuilder();
 
   /**
    * Compares the quantityOnStock, the restockableInDays, the expectedDelivery, the supply channel

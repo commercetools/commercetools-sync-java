@@ -91,7 +91,7 @@ class InventoryUpdateActionUtilsIT {
         buildPrimaryResourceCustomUpdateActions(
             InventoryEntryCustomTypeAdapter.of(oldInventoryBeforeSync),
             InventoryEntryDraftCustomTypeAdapter.of(newInventory),
-            InventoryCustomActionBuilder.of(),
+            new InventoryCustomActionBuilder(),
             options);
     assertThat(updateActions).isNotEmpty();
 
