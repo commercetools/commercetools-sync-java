@@ -68,7 +68,7 @@ public final class InventoryTransformUtils {
       transformReferencesToRunParallel.add(this.transformChannelReference(inventoryEntries));
 
       return CompletableFuture.allOf(
-              transformReferencesToRunParallel.stream().toArray(CompletableFuture[]::new))
+              transformReferencesToRunParallel.toArray(CompletableFuture[]::new))
           .thenApply(ignore -> mapToInventoryEntryDrafts(inventoryEntries, referenceIdToKeyCache));
     }
 
