@@ -30,6 +30,8 @@ import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.vrap.rmf.base.client.ApiHttpResponse;
+import org.apache.commons.lang3.StringUtils;
+
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -302,27 +304,29 @@ public final class InventoryITUtils {
    * @param ctpClient sphere client used to execute requests
    * @param sku sku of requested inventory entry
    * @param supplyChannel optional reference to supply channel of requested inventory entry
+   * @param expand
    * @return {@link java.util.Optional} which may contain inventory entry of {@code sku} and {@code
    *     supplyChannel}
    */
   public static List<InventoryEntry> getInventoryEntryBySkuAndSupplyChannel(
-      @Nonnull final ProjectApiRoot ctpClient,
-      @Nonnull final String sku,
-      @Nullable final ChannelReference supplyChannel) {
+          @Nonnull final ProjectApiRoot ctpClient,
+          @Nonnull final String sku,
+          @Nullable final ChannelReference supplyChannel, @Nullable final String expand) {
     ByProjectKeyInventoryGet query =
         ctpClient
             .inventory()
             .get()
-            .withExpand("custom.type")
             .withWhere("sku=:sku")
             .withPredicateVar("sku", sku);
 
+    query = StringUtils.isBlank(expand) ? query : query.withExpand(expand);
+
     query =
         supplyChannel == null
-            ? query.withWhere("supplyChannel is not defined")
+            ? query.addWhere("supplyChannel is not defined")
             : query
-                .withWhere("supplyChannel(id=:id)")
-                .withPredicateVar("id", supplyChannel.getId());
+                .addWhere("supplyChannel(id=:id)")
+                .addPredicateVar("id", supplyChannel.getId());
     return query
         .execute()
         .thenApply(ApiHttpResponse::getBody)
