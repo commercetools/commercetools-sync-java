@@ -1,5 +1,14 @@
 package com.commercetools.sync.integration.sdk2.services.impl;
 
+import static com.commercetools.sync.integration.sdk2.commons.utils.ChannelITUtils.deleteChannelsFromTargetAndSource;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
+import static com.commercetools.sync.integration.sdk2.commons.utils.InventoryITUtils.*;
+import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
+import static java.util.stream.Collectors.toList;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.commercetools.api.models.channel.Channel;
+import com.commercetools.api.models.channel.ChannelDraft;
 import com.commercetools.api.models.channel.ChannelDraftBuilder;
 import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
 import com.commercetools.api.models.inventory.*;
@@ -7,25 +16,15 @@ import com.commercetools.sync.sdk2.inventories.InventorySyncOptionsBuilder;
 import com.commercetools.sync.sdk2.inventories.helpers.InventoryEntryIdentifier;
 import com.commercetools.sync.sdk2.services.InventoryService;
 import com.commercetools.sync.sdk2.services.impl.InventoryServiceImpl;
-import com.commercetools.api.models.channel.Channel;
-import com.commercetools.api.models.channel.ChannelDraft;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
-
-import static com.commercetools.sync.integration.sdk2.commons.utils.ChannelITUtils.deleteChannelsFromTargetAndSource;
-import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
-import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.integration.sdk2.commons.utils.InventoryITUtils.*;
-import static java.util.stream.Collectors.toList;
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class InventoryServiceImplIT {
 
@@ -58,15 +57,25 @@ class InventoryServiceImplIT {
     // prepare draft and create
     final ChannelDraft channelDraft1 = ChannelDraftBuilder.of().key("CHANNEL_KEY").build();
     final Channel channel =
-        CTP_TARGET_CLIENT.channels().post(channelDraft1).execute().toCompletableFuture().join().getBody();
+        CTP_TARGET_CLIENT
+            .channels()
+            .post(channelDraft1)
+            .execute()
+            .toCompletableFuture()
+            .join()
+            .getBody();
 
     final InventoryEntryDraft inventoryEntryDraft1 =
-        InventoryEntryDraftBuilder.of().sku("SKU_WITH_CHANNEL").quantityOnStock(1L)
+        InventoryEntryDraftBuilder.of()
+            .sku("SKU_WITH_CHANNEL")
+            .quantityOnStock(1L)
             .supplyChannel(ChannelResourceIdentifierBuilder.of().id(channel.getId()).build())
             .build();
 
     final InventoryEntryDraft inventoryEntryDraft2 =
-        InventoryEntryDraftBuilder.of().sku("SKU_WITHOUT_CHANNEL").quantityOnStock(1L)
+        InventoryEntryDraftBuilder.of()
+            .sku("SKU_WITHOUT_CHANNEL")
+            .quantityOnStock(1L)
             .supplyChannel(ChannelResourceIdentifierBuilder.of().id(channel.getId()).build())
             .build();
 
@@ -102,9 +111,9 @@ class InventoryServiceImplIT {
     final InventoryEntryDraft inventoryEntryDraft =
         InventoryEntryDraftBuilder.of()
             .sku(SKU_2)
-    .quantityOnStock(QUANTITY_ON_STOCK_2)
-    .expectedDelivery(EXPECTED_DELIVERY_2)
-    .restockableInDays(RESTOCKABLE_IN_DAYS_2)
+            .quantityOnStock(QUANTITY_ON_STOCK_2)
+            .expectedDelivery(EXPECTED_DELIVERY_2)
+            .restockableInDays(RESTOCKABLE_IN_DAYS_2)
             .build();
 
     final Optional<InventoryEntry> result =
@@ -129,7 +138,8 @@ class InventoryServiceImplIT {
   void updateInventoryEntry_ShouldUpdateInventoryEntry() {
     // fetch existing inventory entry and assert its state
     final Optional<InventoryEntry> existingEntryOptional =
-        getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null, null).stream().findFirst();
+        getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null, null).stream()
+            .findFirst();
     assertThat(existingEntryOptional).isNotEmpty();
 
     final InventoryEntry existingEntry = existingEntryOptional.get();
@@ -140,9 +150,15 @@ class InventoryServiceImplIT {
     // build update actions and do update
     final List<InventoryEntryUpdateAction> updateActions =
         Stream.of(
-                InventoryEntryChangeQuantityActionBuilder.of().quantity(QUANTITY_ON_STOCK_2).build(),
-                InventoryEntrySetExpectedDeliveryActionBuilder.of().expectedDelivery(EXPECTED_DELIVERY_2).build(),
-                InventoryEntrySetRestockableInDaysActionBuilder.of().restockableInDays(RESTOCKABLE_IN_DAYS_2).build())
+                InventoryEntryChangeQuantityActionBuilder.of()
+                    .quantity(QUANTITY_ON_STOCK_2)
+                    .build(),
+                InventoryEntrySetExpectedDeliveryActionBuilder.of()
+                    .expectedDelivery(EXPECTED_DELIVERY_2)
+                    .build(),
+                InventoryEntrySetRestockableInDaysActionBuilder.of()
+                    .restockableInDays(RESTOCKABLE_IN_DAYS_2)
+                    .build())
             .collect(toList());
 
     final InventoryEntry result =
@@ -157,7 +173,8 @@ class InventoryServiceImplIT {
 
     // assert CTP state
     final Optional<InventoryEntry> updatedInventoryEntry =
-        getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null, null).stream().findFirst();
+        getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null, null).stream()
+            .findFirst();
     assertThat(updatedInventoryEntry).isNotEmpty();
     assertThat(updatedInventoryEntry.get()).isEqualTo(result);
   }

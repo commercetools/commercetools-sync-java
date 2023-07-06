@@ -56,7 +56,9 @@ class InventoryUpdateActionUtilsIT {
   void buildCustomUpdateActions_ShouldBuildActionThatSetCustomField() {
     // Fetch old inventory and ensure it has custom fields.
     final Optional<InventoryEntry> oldInventoryOptional =
-        getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null, "custom.type").stream().findFirst();
+        getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null, "custom.type")
+            .stream()
+            .findFirst();
     assertThat(oldInventoryOptional).isNotEmpty();
     final InventoryEntry oldInventoryBeforeSync = oldInventoryOptional.get();
     assertThat(oldInventoryBeforeSync.getCustom()).isNotNull();

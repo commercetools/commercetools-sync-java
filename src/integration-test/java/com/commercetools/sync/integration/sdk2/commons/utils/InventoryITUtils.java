@@ -30,8 +30,6 @@ import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.vrap.rmf.base.client.ApiHttpResponse;
-import org.apache.commons.lang3.StringUtils;
-
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -43,6 +41,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringUtils;
 
 public final class InventoryITUtils {
 
@@ -309,24 +308,19 @@ public final class InventoryITUtils {
    *     supplyChannel}
    */
   public static List<InventoryEntry> getInventoryEntryBySkuAndSupplyChannel(
-          @Nonnull final ProjectApiRoot ctpClient,
-          @Nonnull final String sku,
-          @Nullable final ChannelReference supplyChannel, @Nullable final String expand) {
+      @Nonnull final ProjectApiRoot ctpClient,
+      @Nonnull final String sku,
+      @Nullable final ChannelReference supplyChannel,
+      @Nullable final String expand) {
     ByProjectKeyInventoryGet query =
-        ctpClient
-            .inventory()
-            .get()
-            .withWhere("sku=:sku")
-            .withPredicateVar("sku", sku);
+        ctpClient.inventory().get().withWhere("sku=:sku").withPredicateVar("sku", sku);
 
     query = StringUtils.isBlank(expand) ? query : query.withExpand(expand);
 
     query =
         supplyChannel == null
             ? query.addWhere("supplyChannel is not defined")
-            : query
-                .addWhere("supplyChannel(id=:id)")
-                .addPredicateVar("id", supplyChannel.getId());
+            : query.addWhere("supplyChannel(id=:id)").addPredicateVar("id", supplyChannel.getId());
     return query
         .execute()
         .thenApply(ApiHttpResponse::getBody)
