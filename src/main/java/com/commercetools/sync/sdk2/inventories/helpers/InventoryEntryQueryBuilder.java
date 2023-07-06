@@ -21,8 +21,8 @@ public final class InventoryEntryQueryBuilder {
   private static final int MAX_QUERY_LENGTH = 10000;
 
   /**
-   * Builds {@link List} of {@link ByProjectKeyInventoryGet} requests to be used to query existing {@link
-   * InventoryEntry}'s against set of sku and supply channels.
+   * Builds {@link List} of {@link ByProjectKeyInventoryGet} requests to be used to query existing
+   * {@link InventoryEntry}'s against set of sku and supply channels.
    *
    * <p>For instance, a query for one inventory entry will be like (sku="sku_9" and
    * supplyChannel(id="c28c5609-9766-4176-b8d3-a72edee753e8")) or when supply channel not defined
