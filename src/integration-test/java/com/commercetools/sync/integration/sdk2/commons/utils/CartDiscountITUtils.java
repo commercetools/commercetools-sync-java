@@ -110,7 +110,7 @@ public final class CartDiscountITUtils {
           .description(CART_DISCOUNT_DESC_1)
           .validFrom(JANUARY_FROM)
           .validUntil(JANUARY_UNTIL)
-          .custom(getCustomFieldsDraft())
+          .custom(createCustomFieldsDraft())
           .build();
 
   public static final CartDiscountDraft CART_DISCOUNT_DRAFT_2 =
@@ -126,10 +126,10 @@ public final class CartDiscountITUtils {
           .description(CART_DISCOUNT_DESC_2)
           .validFrom(FEBRUARY_FROM)
           .validUntil(FEBRUARY_UNTIL)
-          .custom(getCustomFieldsDraft())
+          .custom(createCustomFieldsDraft())
           .build();
 
-  public static CustomFieldsDraft getCustomFieldsDraft() {
+  public static CustomFieldsDraft createCustomFieldsDraft() {
     return CustomFieldsDraftBuilder.of()
         .type(
             typeResourceIdentifierBuilder ->
@@ -187,26 +187,8 @@ public final class CartDiscountITUtils {
     ensureCartDiscountCustomType(
         OLD_CART_DISCOUNT_TYPE_KEY, Locale.ENGLISH, OLD_CART_DISCOUNT_TYPE_NAME, CTP_SOURCE_CLIENT);
 
-    final CartDiscountDraft draft1 =
-        CartDiscountDraftBuilder.of(CART_DISCOUNT_DRAFT_1)
-            .custom(
-                CustomFieldsDraftBuilder.of()
-                    .type(
-                        typeResourceIdentifierBuilder ->
-                            typeResourceIdentifierBuilder.key(OLD_CART_DISCOUNT_TYPE_KEY))
-                    .fields(createCustomFieldsJsonMap())
-                    .build())
-            .build();
-    final CartDiscountDraft draft2 =
-        CartDiscountDraftBuilder.of(CART_DISCOUNT_DRAFT_2)
-            .custom(
-                CustomFieldsDraftBuilder.of()
-                    .type(
-                        typeResourceIdentifierBuilder ->
-                            typeResourceIdentifierBuilder.key(OLD_CART_DISCOUNT_TYPE_KEY))
-                    .fields(createCustomFieldsJsonMap())
-                    .build())
-            .build();
+    final CartDiscountDraft draft1 = createCartDiscountDraft(CART_DISCOUNT_DRAFT_1);
+    final CartDiscountDraft draft2 = createCartDiscountDraft(CART_DISCOUNT_DRAFT_2);
 
     CompletableFuture.allOf(
             CTP_SOURCE_CLIENT.cartDiscounts().create(draft1).execute(),
@@ -228,22 +210,18 @@ public final class CartDiscountITUtils {
     ensureCartDiscountCustomType(
         OLD_CART_DISCOUNT_TYPE_KEY, Locale.ENGLISH, OLD_CART_DISCOUNT_TYPE_NAME, CTP_TARGET_CLIENT);
 
-    final CartDiscountDraft draft1 =
-        CartDiscountDraftBuilder.of(CART_DISCOUNT_DRAFT_1)
-            .custom(
-                CustomFieldsDraftBuilder.of()
-                    .type(
-                        typeResourceIdentifierBuilder ->
-                            typeResourceIdentifierBuilder.key(OLD_CART_DISCOUNT_TYPE_KEY))
-                    .fields(createCustomFieldsJsonMap())
-                    .build())
-            .build();
+    final CartDiscountDraft draft1 = createCartDiscountDraft(CART_DISCOUNT_DRAFT_1);
     return CTP_TARGET_CLIENT
         .cartDiscounts()
         .create(draft1)
         .execute()
         .thenApply(ApiHttpResponse::getBody)
         .join();
+  }
+
+  private static CartDiscountDraft createCartDiscountDraft(
+      final CartDiscountDraft cartDiscountDraft) {
+    return CartDiscountDraftBuilder.of(cartDiscountDraft).custom(createCustomFieldsDraft()).build();
   }
 
   /**
