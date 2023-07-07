@@ -121,10 +121,10 @@ public class StateBatchValidator
   }
 
   @Nonnull
-  private static String getStateKey(@Nonnull final StateResourceIdentifier stateReference)
+  private static String getStateKey(@Nonnull final StateResourceIdentifier stateResourceIdentifier)
       throws InvalidReferenceException {
 
-    final String key = stateReference.getId();
+    final String key = stateResourceIdentifier.getId();
     if (isBlank(key)) {
       throw new InvalidReferenceException(BLANK_ID_VALUE_ON_REFERENCE);
     }
