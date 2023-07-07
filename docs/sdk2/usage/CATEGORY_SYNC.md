@@ -459,7 +459,7 @@ final CategoryQuery query = CategoryQuery.of();
 final PagedQueryResult<Category> pagedQueryResult = sphereClient.executeBlocking(query);
 
 // SDK v2: Create and execute query to fetch all categories in one line
-final CategoryPagedQueryResponse result = apiRoot.cartDiscounts().get().executeBlocking().getBody();
+final CategoryPagedQueryResponse result = apiRoot.categories().get().executeBlocking().getBody();
 ```
 [Read more](https://docs.commercetools.com/sdk/java-sdk-migrate#query-resources) about querying resources.
 
