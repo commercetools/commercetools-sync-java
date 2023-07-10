@@ -204,10 +204,8 @@ class CartDiscountServiceImplIT {
             .isActive(false)
             .build();
 
-    final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
-
     final CartDiscountSyncOptions spyOptions =
-        CartDiscountSyncOptionsBuilder.of(spyClient)
+        CartDiscountSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
             .errorCallback(
                 (exception, oldResource, newResource, actions) -> {
                   errorCallBackMessages.add(exception.getMessage());
@@ -260,17 +258,6 @@ class CartDiscountServiceImplIT {
             .key(CART_DISCOUNT_KEY_1)
             .isActive(false)
             .build();
-
-    final CartDiscountSyncOptions options =
-        CartDiscountSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-            .errorCallback(
-                (exception, oldResource, newResource, actions) -> {
-                  errorCallBackMessages.add(exception.getMessage());
-                  errorCallBackExceptions.add(exception);
-                })
-            .build();
-
-    cartDiscountService = new CartDiscountServiceImpl(options);
 
     // test
     final Optional<CartDiscount> result =
@@ -325,17 +312,6 @@ class CartDiscountServiceImplIT {
             .key(CART_DISCOUNT_KEY_2)
             .isActive(false)
             .build();
-
-    final CartDiscountSyncOptions options =
-        CartDiscountSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-            .errorCallback(
-                (exception, oldResource, newResource, actions) -> {
-                  errorCallBackMessages.add(exception.getMessage());
-                  errorCallBackExceptions.add(exception);
-                })
-            .build();
-
-    cartDiscountService = new CartDiscountServiceImpl(options);
 
     // test
     final Optional<CartDiscount> result =
