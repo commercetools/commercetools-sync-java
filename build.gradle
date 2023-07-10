@@ -62,4 +62,5 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterApiVersion}"
     testRuntimeOnly "org.junit.vintage:junit-vintage-engine:${jupiterApiVersion}"
     testImplementation "org.assertj:assertj-core:${assertjVersion}"
+    testImplementation 'com.github.spotbugs:spotbugs-annotations:4.7.3'
 }
