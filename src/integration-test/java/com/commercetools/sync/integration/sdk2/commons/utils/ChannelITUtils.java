@@ -66,8 +66,8 @@ public final class ChannelITUtils {
             .roles(ChannelRoleEnum.INVENTORY_SUPPLY)
             .build();
 
-    CTP_SOURCE_CLIENT.channels().create(channelDraft1).execute().join().getBody();
-    CTP_SOURCE_CLIENT.channels().create(channelDraft2).execute().join().getBody();
+    CTP_SOURCE_CLIENT.channels().create(channelDraft1).execute().toCompletableFuture().join();
+    CTP_SOURCE_CLIENT.channels().create(channelDraft2).execute().toCompletableFuture().join();
   }
 
   public static Channel populateTargetProject() {
