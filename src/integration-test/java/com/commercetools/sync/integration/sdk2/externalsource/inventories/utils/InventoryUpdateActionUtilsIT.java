@@ -29,15 +29,9 @@ class InventoryUpdateActionUtilsIT {
   private static final ObjectNode CUSTOM_FIELD_VALUE =
       JsonNodeFactory.instance.objectNode().put("en", "purple");
 
-  /**
-   * Deletes inventories and supply channels from source and target CTP projects. Populates target
-   * CTP projects with test data.
-   */
   @BeforeEach
   void setup() {
     deleteInventoryEntriesFromTargetAndSource();
-    deleteTypesFromTargetAndSource();
-    deleteChannelsFromTargetAndSource();
     populateTargetProject();
   }
 
