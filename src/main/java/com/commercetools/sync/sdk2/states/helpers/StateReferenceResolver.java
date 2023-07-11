@@ -2,7 +2,7 @@ package com.commercetools.sync.sdk2.states.helpers;
 
 import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.toList;
 
 import com.commercetools.api.models.state.State;
 import com.commercetools.api.models.state.StateDraft;
@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.jetbrains.annotations.NotNull;
 
@@ -117,11 +116,14 @@ public final class StateReferenceResolver
         .fetchMatchingStatesByKeysWithTransitions(stateKeys)
         .thenApply(
             states ->
-                states.stream().map(State::toReference).filter(Objects::nonNull).collect(toSet()))
+                states.stream()
+                    .map(State::toResourceIdentifier)
+                    .filter(Objects::nonNull)
+                    .collect(toList()))
         .thenApply(
             references -> {
               if (!references.isEmpty()) {
-                draftBuilder.transitions(toStateResourceIdentifiers(references));
+                draftBuilder.transitions(references);
               }
               return draftBuilder;
             });
@@ -134,6 +136,6 @@ public final class StateReferenceResolver
         .map(
             stateReference ->
                 StateResourceIdentifierBuilder.of().id(stateReference.getId()).build())
-        .collect(Collectors.toList());
+        .collect(toList());
   }
 }
