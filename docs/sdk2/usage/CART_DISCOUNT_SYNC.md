@@ -81,7 +81,7 @@ method that transforms(resolves by querying and caching key-id pairs) and maps f
 
 ````java
 // Build a ByProjectKeyCartDiscountsGet for fetching cart discounts from a source CTP project without any references expanded for the sync:
-final CartDiscountQuery cartDiscountQuery = client.cartDiscounts().get();
+final ByProjectKeyCartDiscountsGet byProjectKeyCartDiscountsGet = client.cartDiscounts().get();
 
 // Query all cart discounts (NOTE this is just for example, please adjust your logic)
 final List<CartDiscount> cartDiscounts = QueryUtils.queryAll(byProjectKeyCartDiscountsGet,
