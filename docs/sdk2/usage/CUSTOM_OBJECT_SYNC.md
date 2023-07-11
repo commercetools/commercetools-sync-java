@@ -25,6 +25,7 @@ against a [CustomObjectDraft](https://docs.commercetools.com/api/projects/custom
   - [Client configuration and creation](#client-configuration-and-creation)
   - [Signature of CustomObjectSyncOptions](#signature-of-customobjectsyncoptions)
   - [Build CustomObjectDraft (syncing from external project)](#build-customobjectdraft-syncing-from-external-project)
+  - [Query for CustomObjects](#query-for-customobjects)
   - [JVM-SDK-V2 migration guide](#jvm-sdk-v2-migration-guide)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
