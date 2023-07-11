@@ -1,6 +1,7 @@
 package com.commercetools.sync.integration.sdk2.commons.utils;
 
 import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.createCustomFieldsJsonMap;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 
@@ -135,15 +136,14 @@ public final class InventoryITUtils {
     draftsToCreate.add(INVENTORY_ENTRY_DRAFT_1);
 
     channelResourceIdentifiers.forEach(
-            supplyChannelReference ->
-                    draftsToCreate.add(
-        InventoryEntryDraftBuilder.of(INVENTORY_ENTRY_DRAFT_2)
-            .supplyChannel(supplyChannelReference)
-            .build())
-    );
+        supplyChannelReference ->
+            draftsToCreate.add(
+                InventoryEntryDraftBuilder.of(INVENTORY_ENTRY_DRAFT_2)
+                    .supplyChannel(supplyChannelReference)
+                    .build()));
 
     draftsToCreate.forEach(
-            draft -> CTP_SOURCE_CLIENT.inventory().create(draft).execute().toCompletableFuture());
+        draft -> CTP_SOURCE_CLIENT.inventory().create(draft).execute().toCompletableFuture());
   }
 
   /**
