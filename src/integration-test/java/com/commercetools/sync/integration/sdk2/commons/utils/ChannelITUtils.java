@@ -10,6 +10,8 @@ import com.commercetools.api.models.channel.ChannelDraft;
 import com.commercetools.api.models.channel.ChannelDraftBuilder;
 import com.commercetools.api.models.channel.ChannelRoleEnum;
 import io.vrap.rmf.base.client.ApiHttpResponse;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -54,7 +56,7 @@ public final class ChannelITUtils {
     return ctpClient.channels().delete(channel).execute().thenApply(ApiHttpResponse::getBody);
   }
 
-  public static void populateSourceProject() {
+  public static List<Channel> ensureChannelsInSourceProject() {
     final ChannelDraft channelDraft1 =
         ChannelDraftBuilder.of()
             .key(SUPPLY_CHANNEL_KEY_1)
@@ -66,11 +68,27 @@ public final class ChannelITUtils {
             .roles(ChannelRoleEnum.INVENTORY_SUPPLY)
             .build();
 
-    CTP_SOURCE_CLIENT.channels().create(channelDraft1).execute().toCompletableFuture().join();
-    CTP_SOURCE_CLIENT.channels().create(channelDraft2).execute().toCompletableFuture().join();
+    final Channel channel1 =
+        CTP_SOURCE_CLIENT
+            .channels()
+            .create(channelDraft1)
+            .execute()
+            .toCompletableFuture()
+            .join()
+            .getBody();
+    final Channel channel2 =
+        CTP_SOURCE_CLIENT
+            .channels()
+            .create(channelDraft2)
+            .execute()
+            .toCompletableFuture()
+            .join()
+            .getBody();
+
+    return Arrays.asList(channel1, channel2);
   }
 
-  public static Channel populateTargetProject() {
+  public static Channel ensureChannelsInTargetProject() {
     final ChannelDraft channelDraft =
         ChannelDraftBuilder.of()
             .key(SUPPLY_CHANNEL_KEY_1)

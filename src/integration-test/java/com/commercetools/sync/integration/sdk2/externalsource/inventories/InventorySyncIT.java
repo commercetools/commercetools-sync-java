@@ -1,7 +1,6 @@
 package com.commercetools.sync.integration.sdk2.externalsource.inventories;
 
-import static com.commercetools.sync.integration.sdk2.commons.utils.ChannelITUtils.deleteChannelsFromTargetAndSource;
-import static com.commercetools.sync.integration.sdk2.commons.utils.ChannelITUtils.getChannelByKey;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ChannelITUtils.*;
 import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.sdk2.commons.utils.InventoryITUtils.*;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
@@ -17,6 +16,7 @@ import com.commercetools.api.models.inventory.InventoryEntry;
 import com.commercetools.api.models.inventory.InventoryEntryDraft;
 import com.commercetools.api.models.inventory.InventoryEntryDraftBuilder;
 import com.commercetools.api.models.inventory.InventoryEntryUpdateAction;
+import com.commercetools.sync.integration.sdk2.commons.utils.ChannelITUtils;
 import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.commons.utils.QuadConsumer;
 import com.commercetools.sync.sdk2.inventories.InventorySync;
@@ -47,11 +47,18 @@ class InventorySyncIT {
   @BeforeEach
   void setup() {
     deleteInventoryEntriesFromTargetAndSource();
+    deleteChannelsFromTargetAndSource();
+    final Channel channel = ChannelITUtils.ensureChannelsInTargetProject();
+    final ChannelResourceIdentifier supplyChannelReference =
+        ChannelResourceIdentifierBuilder.of().id(channel.getId()).build();
+
+    List<Channel> channels = ChannelITUtils.ensureChannelsInSourceProject();
+
     ensureInventoriesCustomType(CTP_SOURCE_CLIENT);
     ensureInventoriesCustomType(CTP_TARGET_CLIENT);
-    deleteChannelsFromTargetAndSource();
-    populateSourceProject();
-    populateTargetProject();
+
+    populateInventoriesInSourceProject(channels);
+    populateInventoriesInTargetProject(supplyChannelReference);
   }
 
   /**

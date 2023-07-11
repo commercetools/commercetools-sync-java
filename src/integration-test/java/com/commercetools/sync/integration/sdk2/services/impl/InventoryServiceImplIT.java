@@ -1,16 +1,14 @@
 package com.commercetools.sync.integration.sdk2.services.impl;
 
 import static com.commercetools.sync.integration.sdk2.commons.utils.ChannelITUtils.deleteChannelsFromTargetAndSource;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ChannelITUtils.ensureChannelsInTargetProject;
 import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.sdk2.commons.utils.InventoryITUtils.*;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.commercetools.api.models.channel.Channel;
-import com.commercetools.api.models.channel.ChannelDraft;
-import com.commercetools.api.models.channel.ChannelDraftBuilder;
-import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
+import com.commercetools.api.models.channel.*;
 import com.commercetools.api.models.inventory.*;
 import com.commercetools.sync.sdk2.inventories.InventorySyncOptionsBuilder;
 import com.commercetools.sync.sdk2.inventories.helpers.InventoryEntryIdentifier;
@@ -37,9 +35,14 @@ class InventoryServiceImplIT {
   @BeforeEach
   void setup() {
     deleteInventoryEntriesFromTargetAndSource();
-    deleteTypesFromTargetAndSource();
     deleteChannelsFromTargetAndSource();
-    populateTargetProject();
+    final Channel channel = ensureChannelsInTargetProject();
+    final ChannelResourceIdentifier supplyChannelReference =
+        ChannelResourceIdentifierBuilder.of().id(channel.getId()).build();
+
+    ensureInventoriesCustomType(CTP_TARGET_CLIENT);
+
+    populateInventoriesInTargetProject(supplyChannelReference);
     inventoryService =
         new InventoryServiceImpl(InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build());
   }

@@ -126,7 +126,7 @@ public final class InventoryITUtils {
    *
    * @param supplyChannels
    */
-  public static void populateSourceProjectWithChannelsAndTypes(List<Channel> supplyChannels) {
+  public static void populateInventoriesInSourceProject(List<Channel> supplyChannels) {
     Set<ChannelResourceIdentifier> channelResourceIdentifiers =
         supplyChannels.stream()
             .map(channel -> ChannelResourceIdentifierBuilder.of().id(channel.getId()).build())
@@ -154,7 +154,7 @@ public final class InventoryITUtils {
    *
    * @param supplyChannelReference
    */
-  public static void populateTargetProjectWithChannelsAndTypes(
+  public static void populateInventoriesInTargetProject(
       final ChannelResourceIdentifier supplyChannelReference) {
     final InventoryEntryDraft draft1 =
         InventoryEntryDraftBuilder.of()

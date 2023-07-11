@@ -38,7 +38,7 @@ class InventoryUpdateActionUtilsIT {
   @BeforeEach
   void setup() {
     deleteInventoryEntriesFromTargetAndSource();
-    final Channel channel = ChannelITUtils.populateTargetProject();
+    final Channel channel = ChannelITUtils.ensureChannelsInTargetProject();
     final ChannelResourceIdentifier supplyChannelReference =
         ChannelResourceIdentifierBuilder.of().id(channel.getId()).build();
 
@@ -49,7 +49,7 @@ class InventoryUpdateActionUtilsIT {
         Collections.singletonList(ResourceTypeId.INVENTORY_ENTRY),
         CTP_TARGET_CLIENT);
 
-    populateTargetProjectWithChannelsAndTypes(supplyChannelReference);
+    populateInventoriesInTargetProject(supplyChannelReference);
   }
 
   /**
