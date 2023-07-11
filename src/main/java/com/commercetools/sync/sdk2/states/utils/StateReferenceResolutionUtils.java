@@ -39,7 +39,7 @@ public final class StateReferenceResolutionUtils {
    *     <tr>
    *        <td>transitions</td>
    *        <td>{@link java.util.List}&lt;{@link StateReference}&gt;</td>
-   *        <td>{@link java.util.List}&lt;{@link StateReference}&gt; (with key replaced with id field)</td>
+   *        <td>{@link java.util.List}&lt;{@link StateResourceIdentifier}&gt;</td>
    *     </tr>
    *   </tbody>
    * </table>
