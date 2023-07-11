@@ -81,7 +81,7 @@ method that transforms(resolves by querying and caching key-id pairs) and maps f
 
 ````java
 // Build a ByProjectKeyCartDiscountsGet for fetching cart discounts from a source CTP project without any references expanded for the sync:
-final CartDiscountQuery cartDiscountQuery = client.categories().get();
+final CartDiscountQuery cartDiscountQuery = client.cartDiscounts().get();
 
 // Query all cart discounts (NOTE this is just for example, please adjust your logic)
 final List<CartDiscount> cartDiscounts = QueryUtils.queryAll(byProjectKeyCartDiscountsGet,
@@ -92,7 +92,7 @@ final List<CartDiscount> cartDiscounts = QueryUtils.queryAll(byProjectKeyCartDis
 ````
 
 In order to transform and map the `CartDiscount` to `CartDiscountDraft`, 
-Utils method `toCartDiscountDrafts` requires `sphereClient`, implementation of [`ReferenceIdToKeyCache`](#todo) and `cartDiscounts` as parameters.
+Utils method `toCartDiscountDrafts` requires `projectApiRoot`, implementation of [`ReferenceIdToKeyCache`](#todo) and `cartDiscounts` as parameters.
 For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](#todo).
 Example as shown below:
 
@@ -123,7 +123,7 @@ final CartDiscountDraft cartDiscountDraft = CartDiscountDraftBuilder.of()
                                     .build())
                     .build())
             .key("cart-discount-key")
-            .custom(CustomFieldsDraft.ofTypeKeyAndJson("type-key", emptyMap())) // note that custom type provided with key
+            .custom(CustomFieldsDraftBuilder.of().type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.key("type-key")).fields(fieldContainerBuilder -> fieldContainerBuilder.values(emptyMap())).build()) // note that custom type provided with key
             .build();
 ````
 
@@ -169,7 +169,7 @@ following context about the warning message:
 ````java
  final Logger logger = LoggerFactory.getLogger(CartDiscountSync.class);
  final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
-         .of(sphereClient)
+         .of(projectApiRoot)
          .warningCallback((syncException, draft, cartDiscount, updateActions) -> 
             logger.warn(new SyncException("My customized message"), syncException)).build();
 ````
@@ -192,7 +192,7 @@ final TriFunction<
                     .collect(Collectors.toList());
                         
 final CartDiscountSyncOptions cartDiscountSyncOptions = 
-        CartDiscountSyncOptionsBuilder.of(sphereClient).beforeUpdateCallback(beforeUpdateCartDiscountCallback).build();
+        CartDiscountSyncOptionsBuilder.of(projectApiRoot).beforeUpdateCallback(beforeUpdateCartDiscountCallback).build();
 ````
 
 ##### beforeCreateCallback
@@ -219,7 +219,7 @@ which will improve the overall performance of the sync and commercetools API.
 Playing with this option can change the memory usage of the library. If it is not set, the default cache size is `10.000` for cart discount sync.
 ````java
 final CartDiscountSyncOptions cartDiscountSyncOptions = 
-         CartDiscountSyncOptionsBuilder.of(sphereClient).cacheSize(5000).build(); 
+         CartDiscountSyncOptionsBuilder.of(projectApiRoot).cacheSize(5000).build(); 
 ````
 
 ### Running the sync
@@ -304,12 +304,12 @@ If you have custom requirements for the client creation make sure to replace `Sp
 
 ### Signature of CartDiscountSyncOptions
 
-As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a `ProjectApiRoot` as first argument. The callback functions are signed with `CartDiscount`, `CartDiscountDraft` and `CartDiscountUpdateAction` from `package com.commercetools.api.models.category.*`
+As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a `ProjectApiRoot` as first argument. The callback functions are signed with `CartDiscount`, `CartDiscountDraft` and `CartDiscountUpdateAction` from `package com.commercetools.api.models.cart_discount.*`
 
 > Note: Type `UpdateAction<CartDiscount>` has changed to `CartDiscountUpdateAction`. Make sure you create and supply a specific CartDiscountUpdateAction in `beforeUpdateCallback`. For that you can use the [library-utilities](#todo) or use a JVM-SDK builder ([see also](https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources)):
 
 ```java
-// Example: Create a category update action to change name taking the 'newName' of the categoryDraft
+// Example: Create a cart discount update action to change name taking the 'newName' of the cartDiscountDraft
     final Function<LocalizedString, CartDiscountUpdateAction> createBeforeUpdateAction =
         (newName) -> CartDiscountChangeNameAction.builder().name(newName).build();
 
@@ -355,7 +355,7 @@ final CartDiscountDraft cartDiscountDraft =
                     CentPrecisionMoneyBuilder.of()
                       .centAmount(20L)
                       .fractionDigits(0)
-                      .currencyCode(EUR.getCurrencyCode())
+                      .currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode())
                       .build()
                 )
                 .build()
