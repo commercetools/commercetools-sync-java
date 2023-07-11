@@ -25,18 +25,14 @@ import com.commercetools.api.models.type.ResourceTypeId;
 import com.commercetools.api.models.type.Type;
 import com.commercetools.api.models.type.TypeDraft;
 import com.commercetools.api.models.type.TypeDraftBuilder;
-import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
-import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
+import com.commercetools.sync.sdk2.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
@@ -66,6 +62,33 @@ public final class InventoryITUtils {
   public static final String CUSTOM_FIELD_NAME = "backgroundColor";
   public static final ReferenceIdToKeyCache REFERENCE_ID_TO_KEY_CACHE =
       new CaffeineReferenceIdToKeyCacheImpl();
+  private static final InventoryEntryDraft INVENTORY_ENTRY_DRAFT_1 = InventoryEntryDraftBuilder.of()
+      .sku(SKU_1)
+      .quantityOnStock(QUANTITY_ON_STOCK_1)
+      .expectedDelivery(EXPECTED_DELIVERY_1)
+      .restockableInDays(RESTOCKABLE_IN_DAYS_1)
+      .supplyChannel((ChannelResourceIdentifier) null)
+      .custom(
+          CustomFieldsDraftBuilder.of()
+              .type(
+                  typeResourceIdentifierBuilder ->
+                      typeResourceIdentifierBuilder.key(CUSTOM_TYPE))
+              .fields(createCustomFieldsJsonMap())
+              .build())
+      .build();
+  private static final InventoryEntryDraft INVENTORY_ENTRY_DRAFT_2 = InventoryEntryDraftBuilder.of()
+          .sku(SKU_1)
+        .quantityOnStock(QUANTITY_ON_STOCK_2)
+        .expectedDelivery(EXPECTED_DELIVERY_2)
+        .restockableInDays(RESTOCKABLE_IN_DAYS_2)
+        .custom(
+          CustomFieldsDraftBuilder.of()
+                .type(
+          typeResourceIdentifierBuilder ->
+          typeResourceIdentifierBuilder.key(CUSTOM_TYPE))
+          .fields(createCustomFieldsJsonMap())
+          .build())
+          .build();
 
   /**
    * Deletes all inventory entries from CTP project, represented by provided {@code ctpClient}.
@@ -135,57 +158,19 @@ public final class InventoryITUtils {
     final ChannelResourceIdentifier supplyChannelReference2 =
         ChannelResourceIdentifierBuilder.of().id(channelId2).build();
 
-    createInventoriesCustomType(CTP_SOURCE_CLIENT);
-
-    final InventoryEntryDraft draft1 =
-        InventoryEntryDraftBuilder.of()
-            .sku(SKU_1)
-            .quantityOnStock(QUANTITY_ON_STOCK_1)
-            .expectedDelivery(EXPECTED_DELIVERY_1)
-            .restockableInDays(RESTOCKABLE_IN_DAYS_1)
-            .supplyChannel((ChannelResourceIdentifier) null)
-            .custom(
-                CustomFieldsDraftBuilder.of()
-                    .type(
-                        typeResourceIdentifierBuilder ->
-                            typeResourceIdentifierBuilder.key(CUSTOM_TYPE))
-                    .fields(createCustomFieldsJsonMap())
-                    .build())
-            .build();
+    ensureInventoriesCustomType(CTP_SOURCE_CLIENT);
 
     final InventoryEntryDraft draft2 =
-        InventoryEntryDraftBuilder.of()
-            .sku(SKU_1)
-            .quantityOnStock(QUANTITY_ON_STOCK_2)
-            .expectedDelivery(EXPECTED_DELIVERY_2)
-            .restockableInDays(RESTOCKABLE_IN_DAYS_2)
+            InventoryEntryDraftBuilder.of(INVENTORY_ENTRY_DRAFT_2)
             .supplyChannel(supplyChannelReference1)
-            .custom(
-                CustomFieldsDraftBuilder.of()
-                    .type(
-                        typeResourceIdentifierBuilder ->
-                            typeResourceIdentifierBuilder.key(CUSTOM_TYPE))
-                    .fields(createCustomFieldsJsonMap())
-                    .build())
             .build();
 
     final InventoryEntryDraft draft3 =
-        InventoryEntryDraftBuilder.of()
-            .sku(SKU_1)
-            .quantityOnStock(QUANTITY_ON_STOCK_2)
-            .expectedDelivery(EXPECTED_DELIVERY_2)
-            .restockableInDays(RESTOCKABLE_IN_DAYS_2)
+            InventoryEntryDraftBuilder.of(INVENTORY_ENTRY_DRAFT_2)
             .supplyChannel(supplyChannelReference2)
-            .custom(
-                CustomFieldsDraftBuilder.of()
-                    .type(
-                        typeResourceIdentifierBuilder ->
-                            typeResourceIdentifierBuilder.key(CUSTOM_TYPE))
-                    .fields(createCustomFieldsJsonMap())
-                    .build())
             .build();
 
-    CTP_SOURCE_CLIENT.inventory().create(draft1).execute().toCompletableFuture().join();
+    CTP_SOURCE_CLIENT.inventory().create(INVENTORY_ENTRY_DRAFT_1).execute().toCompletableFuture().join();
     CTP_SOURCE_CLIENT.inventory().create(draft2).execute().toCompletableFuture().join();
     CTP_SOURCE_CLIENT.inventory().create(draft3).execute().toCompletableFuture().join();
   }
@@ -217,77 +202,24 @@ public final class InventoryITUtils {
     final ChannelResourceIdentifier supplyChannelReference =
         ChannelResourceIdentifierBuilder.of().id(channelId).build();
 
-    createTypeIfNotAlreadyExisting(
-        CUSTOM_TYPE,
-        Locale.ENGLISH,
-        CUSTOM_TYPE,
-        Collections.singletonList(ResourceTypeId.INVENTORY_ENTRY),
-        CTP_TARGET_CLIENT);
-
-    final InventoryEntryDraft draft1 =
-        InventoryEntryDraftBuilder.of()
-            .sku(SKU_1)
-            .quantityOnStock(QUANTITY_ON_STOCK_1)
-            .expectedDelivery(EXPECTED_DELIVERY_1)
-            .restockableInDays(RESTOCKABLE_IN_DAYS_1)
-            .supplyChannel((ChannelResourceIdentifier) null)
-            .custom(
-                CustomFieldsDraftBuilder.of()
-                    .type(
-                        typeResourceIdentifierBuilder ->
-                            typeResourceIdentifierBuilder.key(CUSTOM_TYPE))
-                    .fields(createCustomFieldsJsonMap())
-                    .build())
-            .build();
+    ensureInventoriesCustomType(CTP_TARGET_CLIENT);
 
     final InventoryEntryDraft draft2 =
-        InventoryEntryDraftBuilder.of()
-            .sku(SKU_1)
-            .quantityOnStock(QUANTITY_ON_STOCK_1)
-            .expectedDelivery(EXPECTED_DELIVERY_1)
-            .restockableInDays(RESTOCKABLE_IN_DAYS_1)
+        InventoryEntryDraftBuilder.of(INVENTORY_ENTRY_DRAFT_1)
             .supplyChannel(supplyChannelReference)
-            .custom(
-                CustomFieldsDraftBuilder.of()
-                    .type(
-                        typeResourceIdentifierBuilder ->
-                            typeResourceIdentifierBuilder.key(CUSTOM_TYPE))
-                    .fields(createCustomFieldsJsonMap())
-                    .build())
             .build();
 
-    CTP_TARGET_CLIENT.inventory().create(draft1).execute().toCompletableFuture().join();
+    CTP_TARGET_CLIENT.inventory().create(INVENTORY_ENTRY_DRAFT_1).execute().toCompletableFuture().join();
     CTP_TARGET_CLIENT.inventory().create(draft2).execute().toCompletableFuture().join();
   }
 
-  private static Type createInventoriesCustomType(@Nonnull final ProjectApiRoot ctpClient) {
-    final FieldDefinition fieldDefinition =
-        FieldDefinitionBuilder.of()
-            .type(FieldTypeBuilder::stringBuilder)
-            .name(CUSTOM_FIELD_NAME)
-            .label(
-                localizedStringBuilder ->
-                    localizedStringBuilder.addValue(
-                        Locale.ENGLISH.toLanguageTag(), CUSTOM_FIELD_NAME))
-            .required(false)
-            .build();
-    final TypeDraft typeDraft =
-        TypeDraftBuilder.of()
-            .key(CUSTOM_TYPE)
-            .name(
-                localizedStringBuilder ->
-                    localizedStringBuilder.addValue(Locale.ENGLISH.toLanguageTag(), CUSTOM_TYPE))
-            .resourceTypeIds(ResourceTypeId.INVENTORY_ENTRY)
-            .fieldDefinitions(fieldDefinition)
-            .build();
-
-    return ctpClient
-        .types()
-        .create(typeDraft)
-        .execute()
-        .thenApply(ApiHttpResponse::getBody)
-        .toCompletableFuture()
-        .join();
+  public static Type ensureInventoriesCustomType(@Nonnull final ProjectApiRoot ctpClient) {
+    return createTypeIfNotAlreadyExisting(
+            CUSTOM_TYPE,
+            Locale.ENGLISH,
+            CUSTOM_TYPE,
+            Collections.singletonList(ResourceTypeId.INVENTORY_ENTRY),
+            ctpClient);
   }
 
   private static Map<String, JsonNode> getMockCustomFieldsJsons() {
@@ -307,7 +239,7 @@ public final class InventoryITUtils {
    * @return {@link java.util.Optional} which may contain inventory entry of {@code sku} and {@code
    *     supplyChannel}
    */
-  public static List<InventoryEntry> getInventoryEntryBySkuAndSupplyChannel(
+  public static Optional<InventoryEntry> getInventoryEntryBySkuAndSupplyChannel(
       @Nonnull final ProjectApiRoot ctpClient,
       @Nonnull final String sku,
       @Nullable final ChannelReference supplyChannel,
@@ -326,7 +258,9 @@ public final class InventoryITUtils {
         .thenApply(ApiHttpResponse::getBody)
         .toCompletableFuture()
         .join()
-        .getResults();
+        .getResults()
+        .stream()
+        .findFirst();
   }
 
   private InventoryITUtils() {}

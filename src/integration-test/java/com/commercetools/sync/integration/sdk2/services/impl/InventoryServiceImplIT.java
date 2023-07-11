@@ -129,17 +129,16 @@ class InventoryServiceImplIT {
             });
 
     // assert CTP state
-    final List<InventoryEntry> updatedInventoryEntry =
+    final Optional<InventoryEntry> updatedInventoryEntry =
         getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_2, null, null);
-    assertThat(updatedInventoryEntry).containsExactly(result.get());
+    assertThat(updatedInventoryEntry).isEqualTo(result.get());
   }
 
   @Test
   void updateInventoryEntry_ShouldUpdateInventoryEntry() {
     // fetch existing inventory entry and assert its state
     final Optional<InventoryEntry> existingEntryOptional =
-        getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null, null).stream()
-            .findFirst();
+        getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null, null);
     assertThat(existingEntryOptional).isNotEmpty();
 
     final InventoryEntry existingEntry = existingEntryOptional.get();
@@ -173,8 +172,7 @@ class InventoryServiceImplIT {
 
     // assert CTP state
     final Optional<InventoryEntry> updatedInventoryEntry =
-        getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null, null).stream()
-            .findFirst();
+        getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null, null);
     assertThat(updatedInventoryEntry).isNotEmpty();
     assertThat(updatedInventoryEntry.get()).isEqualTo(result);
   }
