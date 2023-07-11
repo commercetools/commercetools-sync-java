@@ -1,6 +1,7 @@
 package com.commercetools.sync.integration.sdk2.externalsource.inventories.utils;
 
 import static com.commercetools.sync.integration.sdk2.commons.utils.ChannelITUtils.deleteChannelsFromTargetAndSource;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
 import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.sdk2.commons.utils.InventoryITUtils.*;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
@@ -8,9 +9,14 @@ import static com.commercetools.sync.sdk2.commons.utils.CustomUpdateActionUtils.
 import static com.commercetools.sync.sdk2.commons.utils.CustomValueConverter.convertCustomValueObjDataToJsonNode;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.commercetools.api.models.channel.Channel;
+import com.commercetools.api.models.channel.ChannelResourceIdentifier;
+import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
 import com.commercetools.api.models.inventory.*;
 import com.commercetools.api.models.type.CustomFieldsDraft;
 import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.ResourceTypeId;
+import com.commercetools.sync.integration.sdk2.commons.utils.ChannelITUtils;
 import com.commercetools.sync.sdk2.inventories.InventorySyncOptions;
 import com.commercetools.sync.sdk2.inventories.InventorySyncOptionsBuilder;
 import com.commercetools.sync.sdk2.inventories.helpers.InventoryCustomActionBuilder;
@@ -29,16 +35,21 @@ class InventoryUpdateActionUtilsIT {
   private static final ObjectNode CUSTOM_FIELD_VALUE =
       JsonNodeFactory.instance.objectNode().put("en", "purple");
 
-  /**
-   * Deletes inventories and supply channels from source and target CTP projects. Populates target
-   * CTP projects with test data.
-   */
   @BeforeEach
   void setup() {
     deleteInventoryEntriesFromTargetAndSource();
-    deleteTypesFromTargetAndSource();
-    deleteChannelsFromTargetAndSource();
-    populateTargetProject();
+    final Channel channel = ChannelITUtils.populateTargetProject();
+    final ChannelResourceIdentifier supplyChannelReference =
+        ChannelResourceIdentifierBuilder.of().id(channel.getId()).build();
+
+    createTypeIfNotAlreadyExisting(
+        CUSTOM_TYPE,
+        Locale.ENGLISH,
+        CUSTOM_TYPE,
+        Collections.singletonList(ResourceTypeId.INVENTORY_ENTRY),
+        CTP_TARGET_CLIENT);
+
+    populateTargetProjectWithChannelsAndTypes(supplyChannelReference);
   }
 
   /**

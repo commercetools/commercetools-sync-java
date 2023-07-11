@@ -1,19 +1,13 @@
 package com.commercetools.sync.integration.sdk2.commons.utils;
 
 import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.createCustomFieldsJsonMap;
-import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 
 import com.commercetools.api.client.ByProjectKeyInventoryGet;
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.client.QueryUtils;
-import com.commercetools.api.models.channel.ChannelDraft;
-import com.commercetools.api.models.channel.ChannelDraftBuilder;
-import com.commercetools.api.models.channel.ChannelReference;
-import com.commercetools.api.models.channel.ChannelResourceIdentifier;
-import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
-import com.commercetools.api.models.channel.ChannelRoleEnum;
+import com.commercetools.api.models.channel.*;
 import com.commercetools.api.models.inventory.InventoryEntry;
 import com.commercetools.api.models.inventory.InventoryEntryDraft;
 import com.commercetools.api.models.inventory.InventoryEntryDraftBuilder;
@@ -30,6 +24,7 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
@@ -49,9 +44,6 @@ public final class InventoryITUtils {
       ZonedDateTime.of(2017, 4, 1, 10, 0, 0, 0, ZoneId.of("UTC"));
   public static final ZonedDateTime EXPECTED_DELIVERY_2 =
       ZonedDateTime.of(2017, 5, 1, 20, 0, 0, 0, ZoneId.of("UTC"));
-
-  public static final String SUPPLY_CHANNEL_KEY_1 = "channel-key_1";
-  public static final String SUPPLY_CHANNEL_KEY_2 = "channel-key_2";
 
   public static final String CUSTOM_TYPE = "inventory-custom-type-name";
   public static final String CUSTOM_FIELD_NAME = "backgroundColor";
@@ -126,85 +118,58 @@ public final class InventoryITUtils {
   }
 
   /**
-   * Populate source CTP project. Creates supply channel of key SUPPLY_CHANNEL_KEY_1. Creates supply
-   * channel of key SUPPLY_CHANNEL_KEY_2. Creates inventory entry of values: SKU_1,
-   * QUANTITY_ON_STOCK_1, EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1. Creates inventory entry of
-   * values: SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2 and reference to
-   * firstly created supply channel. Creates inventory entry of values: SKU_1, QUANTITY_ON_STOCK_2,
-   * EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2 and reference to secondly created supply channel.
+   * Populate source CTP project.Creates inventory entry of values: SKU_1, QUANTITY_ON_STOCK_1,
+   * EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1. Takes a list of Channels and creates inventory
+   * entries of values: SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2 and
+   * reference to the given supply channel.
+   *
+   * @param supplyChannels
    */
-  public static void populateSourceProject() {
-    final ChannelDraft channelDraft1 =
-        ChannelDraftBuilder.of()
-            .key(SUPPLY_CHANNEL_KEY_1)
-            .roles(ChannelRoleEnum.INVENTORY_SUPPLY)
-            .build();
-    final ChannelDraft channelDraft2 =
-        ChannelDraftBuilder.of()
-            .key(SUPPLY_CHANNEL_KEY_2)
-            .roles(ChannelRoleEnum.INVENTORY_SUPPLY)
-            .build();
+  public static void populateSourceProjectWithChannelsAndTypes(List<Channel> supplyChannels) {
+    Set<ChannelResourceIdentifier> channelResourceIdentifiers =
+        supplyChannels.stream()
+            .map(channel -> ChannelResourceIdentifierBuilder.of().id(channel.getId()).build())
+            .collect(Collectors.toSet());
 
-    final String channelId1 =
-        CTP_SOURCE_CLIENT.channels().create(channelDraft1).execute().join().getBody().getId();
-    final String channelId2 =
-        CTP_SOURCE_CLIENT.channels().create(channelDraft2).execute().join().getBody().getId();
+    final List<InventoryEntryDraft> draftsToCreate = new ArrayList<>();
+    draftsToCreate.add(INVENTORY_ENTRY_DRAFT_1);
 
-    final ChannelResourceIdentifier supplyChannelReference1 =
-        ChannelResourceIdentifierBuilder.of().id(channelId1).build();
-    final ChannelResourceIdentifier supplyChannelReference2 =
-        ChannelResourceIdentifierBuilder.of().id(channelId2).build();
-
-    ensureInventoriesCustomType(CTP_SOURCE_CLIENT);
-
-    final InventoryEntryDraft draft2 =
+    channelResourceIdentifiers.forEach(
+            supplyChannelReference ->
+                    draftsToCreate.add(
         InventoryEntryDraftBuilder.of(INVENTORY_ENTRY_DRAFT_2)
-            .supplyChannel(supplyChannelReference1)
-            .build();
+            .supplyChannel(supplyChannelReference)
+            .build())
+    );
 
-    final InventoryEntryDraft draft3 =
-        InventoryEntryDraftBuilder.of(INVENTORY_ENTRY_DRAFT_2)
-            .supplyChannel(supplyChannelReference2)
-            .build();
-
-    CTP_SOURCE_CLIENT
-        .inventory()
-        .create(INVENTORY_ENTRY_DRAFT_1)
-        .execute()
-        .toCompletableFuture()
-        .join();
-    CTP_SOURCE_CLIENT.inventory().create(draft2).execute().toCompletableFuture().join();
-    CTP_SOURCE_CLIENT.inventory().create(draft3).execute().toCompletableFuture().join();
+    draftsToCreate.forEach(
+            draft -> CTP_SOURCE_CLIENT.inventory().create(draft).execute().toCompletableFuture());
   }
 
   /**
-   * Populate target CTP project. Creates supply channel of key SUPPLY_CHANNEL_KEY_1. Creates
+   * Populate target CTP project. Creates inventory entry of values: SKU_1, QUANTITY_ON_STOCK_1,
+   * EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1. Takes a ChannelResourceIdentifier and creates
    * inventory entry of values: SKU_1, QUANTITY_ON_STOCK_1, EXPECTED_DELIVERY_1,
-   * RESTOCKABLE_IN_DAYS_1. Creates inventory entry of values: SKU_1, QUANTITY_ON_STOCK_1,
-   * EXPECTED_DELIVERY_1, RESTOCKABLE_IN_DAYS_1 and reference to supply channel created before.
-   * Creates inventory custom type of key CUSTOM_TYPE, and String field definition of name
-   * CUSTOM_FIELD_NAME.
+   * RESTOCKABLE_IN_DAYS_1 and reference to given channel.
+   *
+   * @param supplyChannelReference
    */
-  public static void populateTargetProject() {
-    final ChannelDraft channelDraft =
-        ChannelDraftBuilder.of()
-            .key(SUPPLY_CHANNEL_KEY_1)
-            .roles(ChannelRoleEnum.INVENTORY_SUPPLY)
+  public static void populateTargetProjectWithChannelsAndTypes(
+      final ChannelResourceIdentifier supplyChannelReference) {
+    final InventoryEntryDraft draft1 =
+        InventoryEntryDraftBuilder.of()
+            .sku(SKU_1)
+            .quantityOnStock(QUANTITY_ON_STOCK_1)
+            .expectedDelivery(EXPECTED_DELIVERY_1)
+            .restockableInDays(RESTOCKABLE_IN_DAYS_1)
+            .custom(
+                CustomFieldsDraftBuilder.of()
+                    .type(
+                        typeResourceIdentifierBuilder ->
+                            typeResourceIdentifierBuilder.key(CUSTOM_TYPE))
+                    .fields(createCustomFieldsJsonMap())
+                    .build())
             .build();
-
-    final String channelId =
-        CTP_TARGET_CLIENT
-            .channels()
-            .create(channelDraft)
-            .execute()
-            .thenApply(ApiHttpResponse::getBody)
-            .toCompletableFuture()
-            .join()
-            .getId();
-    final ChannelResourceIdentifier supplyChannelReference =
-        ChannelResourceIdentifierBuilder.of().id(channelId).build();
-
-    ensureInventoriesCustomType(CTP_TARGET_CLIENT);
 
     final InventoryEntryDraft draft2 =
         InventoryEntryDraftBuilder.of(INVENTORY_ENTRY_DRAFT_1)

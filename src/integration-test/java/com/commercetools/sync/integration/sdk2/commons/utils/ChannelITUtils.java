@@ -2,21 +2,25 @@ package com.commercetools.sync.integration.sdk2.commons.utils;
 
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.client.QueryUtils;
 import com.commercetools.api.models.channel.Channel;
 import com.commercetools.api.models.channel.ChannelDraft;
 import com.commercetools.api.models.channel.ChannelDraftBuilder;
+import com.commercetools.api.models.channel.ChannelRoleEnum;
 import io.vrap.rmf.base.client.ApiHttpResponse;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
 
 public final class ChannelITUtils {
+  public static final String SUPPLY_CHANNEL_KEY_1 = "channel-key_1";
+  public static final String SUPPLY_CHANNEL_KEY_2 = "channel-key_2";
+
+  public static final String CUSTOM_TYPE = "inventory-custom-type-name";
+  public static final String CUSTOM_FIELD_NAME = "backgroundColor";
   /**
    * Deletes all Channels from CTP projects defined by the {@code CTP_SOURCE_CLIENT} and {@code
    * CTP_TARGET_CLIENT}.
@@ -50,29 +54,36 @@ public final class ChannelITUtils {
     return ctpClient.channels().delete(channel).execute().thenApply(ApiHttpResponse::getBody);
   }
 
-  /**
-   * Creates a {@link com.commercetools.api.models.channel.Channel} in the CTP project defined by
-   * the {@code ctpClient} in a blocking fashion.
-   *
-   * @param ctpClient defines the CTP project to create the Channels in.
-   * @param name the name of the channel to create.
-   * @param key the key of the channel to create.
-   * @return the created Channel.
-   */
-  public static Channel createChannel(
-      @Nonnull final ProjectApiRoot ctpClient,
-      @Nonnull final String name,
-      @Nonnull final String key) {
-    final ChannelDraft channelDraft =
+  public static void populateSourceProject() {
+    final ChannelDraft channelDraft1 =
         ChannelDraftBuilder.of()
-            .name(
-                localizedStringBuilder ->
-                    localizedStringBuilder.addValue(Locale.ENGLISH.toLanguageTag(), name))
-            .key(key)
+            .key(SUPPLY_CHANNEL_KEY_1)
+            .roles(ChannelRoleEnum.INVENTORY_SUPPLY)
+            .build();
+    final ChannelDraft channelDraft2 =
+        ChannelDraftBuilder.of()
+            .key(SUPPLY_CHANNEL_KEY_2)
+            .roles(ChannelRoleEnum.INVENTORY_SUPPLY)
             .build();
 
-    return executeBlocking(
-        ctpClient.channels().create(channelDraft).execute().thenApply(ApiHttpResponse::getBody));
+    CTP_SOURCE_CLIENT.channels().create(channelDraft1).execute().toCompletableFuture().join();
+    CTP_SOURCE_CLIENT.channels().create(channelDraft2).execute().toCompletableFuture().join();
+  }
+
+  public static Channel populateTargetProject() {
+    final ChannelDraft channelDraft =
+        ChannelDraftBuilder.of()
+            .key(SUPPLY_CHANNEL_KEY_1)
+            .roles(ChannelRoleEnum.INVENTORY_SUPPLY)
+            .build();
+
+    return CTP_TARGET_CLIENT
+        .channels()
+        .create(channelDraft)
+        .execute()
+        .thenApply(ApiHttpResponse::getBody)
+        .toCompletableFuture()
+        .join();
   }
 
   /**

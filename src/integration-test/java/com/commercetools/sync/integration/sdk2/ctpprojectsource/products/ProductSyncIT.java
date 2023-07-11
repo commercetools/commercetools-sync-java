@@ -1,7 +1,7 @@
 package com.commercetools.sync.integration.sdk2.ctpprojectsource.products;
 
 import static com.commercetools.sync.integration.sdk2.commons.utils.CategoryITUtils.*;
-import static com.commercetools.sync.integration.sdk2.commons.utils.InventoryITUtils.SUPPLY_CHANNEL_KEY_1;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ChannelITUtils.SUPPLY_CHANNEL_KEY_1;
 import static com.commercetools.sync.integration.sdk2.commons.utils.ProductITUtils.*;
 import static com.commercetools.sync.integration.sdk2.commons.utils.ProductTypeITUtils.ensureProductType;
 import static com.commercetools.sync.integration.sdk2.commons.utils.StateITUtils.ensureState;
