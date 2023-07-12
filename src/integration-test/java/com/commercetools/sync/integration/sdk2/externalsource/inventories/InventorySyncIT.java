@@ -340,7 +340,8 @@ class InventorySyncIT {
     final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
     final InventorySyncStatistics inventorySyncStatistics =
         inventorySync.sync(newInventories).toCompletableFuture().join();
-    // In target project existed 2 inventories before update. One resource equals an inventory in source project.
+    // In target project existed 2 inventories before update. One resource equals an inventory in
+    // source project.
     assertThat(inventorySyncStatistics).hasValues(3, 1, 1, 0);
   }
 
@@ -370,7 +371,8 @@ class InventorySyncIT {
     final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
     final InventorySyncStatistics inventorySyncStatistics =
         inventorySync.sync(newInventories).toCompletableFuture().join();
-    // In target project existed 2 inventories before update. One resource equals an inventory in source project.
+    // In target project existed 2 inventories before update. One resource equals an inventory in
+    // source project.
     assertThat(inventorySyncStatistics).hasValues(3, 0, 1, 1);
   }
 

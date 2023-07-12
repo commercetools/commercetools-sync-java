@@ -1,8 +1,6 @@
 package com.commercetools.sync.integration.sdk2.services.impl;
 
-import static com.commercetools.sync.integration.sdk2.commons.utils.ChannelITUtils.deleteChannelsFromTargetAndSource;
 import static com.commercetools.sync.integration.sdk2.commons.utils.ChannelITUtils.ensureChannelsInTargetProject;
-import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.sdk2.commons.utils.InventoryITUtils.*;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static java.util.stream.Collectors.toList;

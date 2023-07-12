@@ -53,7 +53,7 @@ public final class InventoryITUtils {
       JsonNodeFactory.instance.objectNode().put("en", "purple");
   public static final ReferenceIdToKeyCache REFERENCE_ID_TO_KEY_CACHE =
       new CaffeineReferenceIdToKeyCacheImpl();
-  private static final InventoryEntryDraft INVENTORY_ENTRY_DRAFT_1 =
+  public static final InventoryEntryDraft INVENTORY_ENTRY_DRAFT_1 =
       InventoryEntryDraftBuilder.of()
           .sku(SKU_1)
           .quantityOnStock(QUANTITY_ON_STOCK_1)
