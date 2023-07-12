@@ -34,8 +34,8 @@ class InventoryServiceImplIT {
    */
   @BeforeEach
   void setup() {
-    deleteInventoryEntriesFromTargetAndSource();
-    deleteChannelsFromTargetAndSource();
+    deleteInventoryEntries(CTP_TARGET_CLIENT);
+
     final Channel channel = ensureChannelsInTargetProject();
     final ChannelResourceIdentifier supplyChannelReference =
         ChannelResourceIdentifierBuilder.of().id(channel.getId()).build();
@@ -50,9 +50,7 @@ class InventoryServiceImplIT {
   /** Cleans up the target and source test data that were built in this test class. */
   @AfterAll
   static void tearDown() {
-    deleteInventoryEntriesFromTargetAndSource();
-    deleteTypesFromTargetAndSource();
-    deleteChannelsFromTargetAndSource();
+    deleteInventoryEntries(CTP_TARGET_CLIENT);
   }
 
   @Test
@@ -134,7 +132,7 @@ class InventoryServiceImplIT {
     // assert CTP state
     final Optional<InventoryEntry> updatedInventoryEntry =
         getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_2, null, null);
-    assertThat(updatedInventoryEntry).isEqualTo(result.get());
+    assertThat(updatedInventoryEntry).hasValue(result.get());
   }
 
   @Test
