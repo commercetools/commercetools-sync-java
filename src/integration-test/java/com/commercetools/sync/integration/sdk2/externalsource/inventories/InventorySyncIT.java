@@ -316,7 +316,7 @@ class InventorySyncIT {
 
   @Test
   void sync_FromSourceToTargetProjectWithChannelsEnsured_ShouldReturnProperStatistics() {
-    // Fetch new inventories from source project. Convert them to drafts.
+    // Fetch 3 inventories from source project. Convert them to drafts.
     final List<InventoryEntry> inventoryEntries =
         CTP_SOURCE_CLIENT
             .inventory()
@@ -340,12 +340,13 @@ class InventorySyncIT {
     final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
     final InventorySyncStatistics inventorySyncStatistics =
         inventorySync.sync(newInventories).toCompletableFuture().join();
+    // In target project existed 2 inventories before update. One resource equals an inventory in source project.
     assertThat(inventorySyncStatistics).hasValues(3, 1, 1, 0);
   }
 
   @Test
   void sync_FromSourceToTargetWithoutChannelsEnsured_ShouldReturnProperStatistics() {
-    // Fetch new inventories from source project. Convert them to drafts.
+    // Fetch 3 inventories from source project. Convert them to drafts.
     final List<InventoryEntry> inventoryEntries =
         CTP_SOURCE_CLIENT
             .inventory()
@@ -369,6 +370,7 @@ class InventorySyncIT {
     final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
     final InventorySyncStatistics inventorySyncStatistics =
         inventorySync.sync(newInventories).toCompletableFuture().join();
+    // In target project existed 2 inventories before update. One resource equals an inventory in source project.
     assertThat(inventorySyncStatistics).hasValues(3, 0, 1, 1);
   }
 
