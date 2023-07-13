@@ -79,7 +79,7 @@ public final class ProductVariantPriceUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static Optional<ProductChangePriceAction> buildChangePriceUpdateAction(
+  public static Optional<ProductUpdateAction> buildChangePriceUpdateAction(
       @Nonnull final Price oldPrice,
       @Nonnull final PriceDraft newPrice,
       @Nonnull final ProductSyncOptions syncOptions) {
@@ -95,7 +95,7 @@ public final class ProductVariantPriceUpdateActionUtils {
       return Optional.empty();
     }
 
-    final Optional<ProductChangePriceAction> actionAfterValuesDiff =
+    final Optional<ProductUpdateAction> actionAfterValuesDiff =
         buildUpdateAction(
             oldPriceValue,
             newPriceValue,

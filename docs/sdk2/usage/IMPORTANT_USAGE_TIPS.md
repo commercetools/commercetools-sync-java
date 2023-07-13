@@ -1,5 +1,12 @@
 # Important Usage Tips
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+- [Customized `ProjectApiRoot` Creation](#customized-projectapiroot-creation)
+- [Tuning the Sync Process](#tuning-the-sync-process)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 #### Customized `ProjectApiRoot` Creation
 When creating a customized `ProjectApiRoot` the following remarks should be considered:
 
