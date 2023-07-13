@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.models.category.CategoryReference;
 import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
+import com.commercetools.api.models.common.DefaultCurrencyUnits;
 import com.commercetools.api.models.common.MoneyBuilder;
 import com.commercetools.api.models.common.PriceDraft;
 import com.commercetools.api.models.common.PriceDraftBuilder;
@@ -28,7 +29,6 @@ import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifierBu
 import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.api.models.type.FieldContainerBuilder;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
-import com.commercetools.sync.sdk2.commons.helpers.DefaultCurrencyUnits;
 import com.commercetools.sync.sdk2.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;

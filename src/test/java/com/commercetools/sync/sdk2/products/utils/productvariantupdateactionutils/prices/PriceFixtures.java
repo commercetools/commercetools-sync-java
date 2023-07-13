@@ -1,8 +1,8 @@
 package com.commercetools.sync.sdk2.products.utils.productvariantupdateactionutils.prices;
 
+import static com.commercetools.api.models.common.DefaultCurrencyUnits.EUR;
+import static com.commercetools.api.models.common.DefaultCurrencyUnits.USD;
 import static com.commercetools.sync.sdk2.commons.MockUtils.getMockCustomFields;
-import static com.commercetools.sync.sdk2.commons.helpers.DefaultCurrencyUnits.EUR;
-import static com.commercetools.sync.sdk2.commons.helpers.DefaultCurrencyUnits.USD;
 import static com.commercetools.sync.sdk2.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.GBP;
 import static com.commercetools.sync.sdk2.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.byMonth;
 import static com.neovisionaries.i18n.CountryCode.DE;

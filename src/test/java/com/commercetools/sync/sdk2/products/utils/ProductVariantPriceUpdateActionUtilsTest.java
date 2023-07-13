@@ -265,7 +265,7 @@ class ProductVariantPriceUpdateActionUtilsTest {
             .build();
 
     // test
-    final ProductChangePriceAction result =
+    final ProductUpdateAction result =
         buildChangePriceUpdateAction(oldPrice, newPrice, syncOptions).orElse(null);
 
     // assertion
