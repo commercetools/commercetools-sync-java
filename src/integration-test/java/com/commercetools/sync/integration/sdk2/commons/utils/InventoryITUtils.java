@@ -12,13 +12,14 @@ import com.commercetools.api.models.channel.*;
 import com.commercetools.api.models.inventory.InventoryEntry;
 import com.commercetools.api.models.inventory.InventoryEntryDraft;
 import com.commercetools.api.models.inventory.InventoryEntryDraftBuilder;
+import com.commercetools.api.models.type.CustomFieldsDraft;
 import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.api.models.type.ResourceTypeId;
 import com.commercetools.api.models.type.Type;
 import com.commercetools.sync.sdk2.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -48,9 +49,11 @@ public final class InventoryITUtils {
 
   public static final String CUSTOM_TYPE = "inventory-custom-type-name";
   public static final String CUSTOM_FIELD_NAME = "backgroundColor";
+  public static final ObjectNode CUSTOM_FIELD_VALUE =
+      JsonNodeFactory.instance.objectNode().put("en", "purple");
   public static final ReferenceIdToKeyCache REFERENCE_ID_TO_KEY_CACHE =
       new CaffeineReferenceIdToKeyCacheImpl();
-  private static final InventoryEntryDraft INVENTORY_ENTRY_DRAFT_1 =
+  public static final InventoryEntryDraft INVENTORY_ENTRY_DRAFT_1 =
       InventoryEntryDraftBuilder.of()
           .sku(SKU_1)
           .quantityOnStock(QUANTITY_ON_STOCK_1)
@@ -156,20 +159,6 @@ public final class InventoryITUtils {
    */
   public static void populateInventoriesInTargetProject(
       final ChannelResourceIdentifier supplyChannelReference) {
-    final InventoryEntryDraft draft1 =
-        InventoryEntryDraftBuilder.of()
-            .sku(SKU_1)
-            .quantityOnStock(QUANTITY_ON_STOCK_1)
-            .expectedDelivery(EXPECTED_DELIVERY_1)
-            .restockableInDays(RESTOCKABLE_IN_DAYS_1)
-            .custom(
-                CustomFieldsDraftBuilder.of()
-                    .type(
-                        typeResourceIdentifierBuilder ->
-                            typeResourceIdentifierBuilder.key(CUSTOM_TYPE))
-                    .fields(createCustomFieldsJsonMap())
-                    .build())
-            .build();
 
     final InventoryEntryDraft draft2 =
         InventoryEntryDraftBuilder.of(INVENTORY_ENTRY_DRAFT_1)
@@ -194,10 +183,13 @@ public final class InventoryITUtils {
         ctpClient);
   }
 
-  private static Map<String, JsonNode> getMockCustomFieldsJsons() {
-    final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
-    customFieldsJsons.put(CUSTOM_FIELD_NAME, JsonNodeFactory.instance.textNode("customValue"));
-    return customFieldsJsons;
+  public static CustomFieldsDraft getMockCustomFieldsDraft() {
+    return CustomFieldsDraftBuilder.of()
+        .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.key(CUSTOM_TYPE))
+        .fields(
+            fieldContainerBuilder ->
+                fieldContainerBuilder.addValue(CUSTOM_FIELD_NAME, CUSTOM_FIELD_VALUE))
+        .build();
   }
 
   /**

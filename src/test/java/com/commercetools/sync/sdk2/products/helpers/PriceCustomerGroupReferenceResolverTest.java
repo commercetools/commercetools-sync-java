@@ -13,13 +13,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.common.DefaultCurrencyUnits;
 import com.commercetools.api.models.common.MoneyBuilder;
 import com.commercetools.api.models.common.PriceDraftBuilder;
 import com.commercetools.api.models.customer_group.CustomerGroup;
 import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifier;
 import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
 import com.commercetools.sync.sdk2.commons.exceptions.ReferenceResolutionException;
-import com.commercetools.sync.sdk2.commons.helpers.DefaultCurrencyUnits;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.services.ChannelService;

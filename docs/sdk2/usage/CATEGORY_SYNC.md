@@ -401,7 +401,7 @@ If you have custom requirements for the client creation make sure to replace `Sp
 
 ### Signature of CategorySyncOptions
 
-As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a `ProjectApiRoot` as first argument. The callback functions are signed with `CategoryDraft`, `CategoryProjection` and `CategoryUpdateAction` from `package com.commercetools.api.models.category.*`
+As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a `ProjectApiRoot` as first argument. The callback functions are signed with `CategoryDraft`, `Category` and `CategoryUpdateAction` from `package com.commercetools.api.models.category.*`
 
 > Note: Type `UpdateAction<Category>` has changed to `CategoryUpdateAction`. Make sure you create and supply a specific CategoryUpdateAction in `beforeUpdateCallback`. For that you can use the [library-utilities](#todo) or use a JVM-SDK builder ([see also](https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources)):
 
@@ -412,7 +412,7 @@ As models and update actions have changed in the JVM-SDK-V2 the signature of Syn
 
 // Add the change name action to the list of update actions before update is executed
     final TriFunction<
-            List<CategoryUpdateAction>, CategoryDraft, CategoryProjection, List<CategoryUpdateAction>>
+            List<CategoryUpdateAction>, CategoryDraft, Category, List<CategoryUpdateAction>>
         beforeUpdateCategoryCallback =
             (updateActions, newCategoryDraft, oldCategory) -> {
               final CategoryUpdateAction beforeUpdateAction =

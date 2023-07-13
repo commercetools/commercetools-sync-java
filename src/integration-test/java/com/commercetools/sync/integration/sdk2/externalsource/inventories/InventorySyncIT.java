@@ -1,11 +1,12 @@
 package com.commercetools.sync.integration.sdk2.externalsource.inventories;
 
 import static com.commercetools.sync.integration.sdk2.commons.utils.ChannelITUtils.*;
-import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.sdk2.commons.utils.InventoryITUtils.*;
+import static com.commercetools.sync.integration.sdk2.commons.utils.InventoryITUtils.CUSTOM_FIELD_NAME;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.sdk2.commons.utils.CustomValueConverter.convertCustomValueObjDataToJsonNode;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,6 +25,7 @@ import com.commercetools.sync.sdk2.inventories.InventorySyncOptions;
 import com.commercetools.sync.sdk2.inventories.InventorySyncOptionsBuilder;
 import com.commercetools.sync.sdk2.inventories.helpers.InventorySyncStatistics;
 import com.commercetools.sync.sdk2.inventories.utils.InventoryTransformUtils;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -49,14 +51,13 @@ class InventorySyncIT {
     deleteInventoryEntriesFromTargetAndSource();
     deleteChannelsFromTargetAndSource();
     final Channel channel = ChannelITUtils.ensureChannelsInTargetProject();
-    final ChannelResourceIdentifier supplyChannelReference =
-        ChannelResourceIdentifierBuilder.of().id(channel.getId()).build();
-
-    List<Channel> channels = ChannelITUtils.ensureChannelsInSourceProject();
+    final List<Channel> channels = ChannelITUtils.ensureChannelsInSourceProject();
 
     ensureInventoriesCustomType(CTP_SOURCE_CLIENT);
     ensureInventoriesCustomType(CTP_TARGET_CLIENT);
 
+    final ChannelResourceIdentifier supplyChannelReference =
+        ChannelResourceIdentifierBuilder.of().id(channel.getId()).build();
     populateInventoriesInSourceProject(channels);
     populateInventoriesInTargetProject(supplyChannelReference);
   }
@@ -68,7 +69,6 @@ class InventorySyncIT {
   @AfterAll
   static void tearDown() {
     deleteInventoryEntriesFromTargetAndSource();
-    deleteTypesFromTargetAndSource();
     deleteChannelsFromTargetAndSource();
   }
 
@@ -90,6 +90,7 @@ class InventorySyncIT {
             .quantityOnStock(QUANTITY_ON_STOCK_2)
             .expectedDelivery(EXPECTED_DELIVERY_2)
             .restockableInDays(RESTOCKABLE_IN_DAYS_2)
+            .custom(getMockCustomFieldsDraft())
             .build();
     final InventorySyncOptions inventorySyncOptions =
         InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
@@ -102,13 +103,17 @@ class InventorySyncIT {
 
     // Ensure that old entry has correct values after sync.
     final Optional<InventoryEntry> oldInventoryAfterSync =
-        getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null, null);
+        getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null, "custom.type");
     assertThat(oldInventoryAfterSync).isNotEmpty();
     assertValues(
         oldInventoryAfterSync.get(),
         QUANTITY_ON_STOCK_2,
         EXPECTED_DELIVERY_2,
         RESTOCKABLE_IN_DAYS_2);
+    final JsonNode syncedCustomFieldDataAsJson =
+        convertCustomValueObjDataToJsonNode(
+            oldInventoryAfterSync.get().getCustom().getFields().values().get(CUSTOM_FIELD_NAME));
+    assertThat(syncedCustomFieldDataAsJson).isEqualTo(CUSTOM_FIELD_VALUE);
   }
 
   @Test
@@ -311,7 +316,7 @@ class InventorySyncIT {
 
   @Test
   void sync_FromSourceToTargetProjectWithChannelsEnsured_ShouldReturnProperStatistics() {
-    // Fetch new inventories from source project. Convert them to drafts.
+    // Fetch 3 inventories from source project. Convert them to drafts.
     final List<InventoryEntry> inventoryEntries =
         CTP_SOURCE_CLIENT
             .inventory()
@@ -335,12 +340,14 @@ class InventorySyncIT {
     final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
     final InventorySyncStatistics inventorySyncStatistics =
         inventorySync.sync(newInventories).toCompletableFuture().join();
+    // In target project existed 2 inventories before update. One resource equals an inventory in
+    // source project.
     assertThat(inventorySyncStatistics).hasValues(3, 1, 1, 0);
   }
 
   @Test
   void sync_FromSourceToTargetWithoutChannelsEnsured_ShouldReturnProperStatistics() {
-    // Fetch new inventories from source project. Convert them to drafts.
+    // Fetch 3 inventories from source project. Convert them to drafts.
     final List<InventoryEntry> inventoryEntries =
         CTP_SOURCE_CLIENT
             .inventory()
@@ -364,6 +371,8 @@ class InventorySyncIT {
     final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
     final InventorySyncStatistics inventorySyncStatistics =
         inventorySync.sync(newInventories).toCompletableFuture().join();
+    // In target project existed 2 inventories before update. One resource equals an inventory in
+    // source project.
     assertThat(inventorySyncStatistics).hasValues(3, 0, 1, 1);
   }
 
