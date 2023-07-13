@@ -1,8 +1,6 @@
 package com.commercetools.sync.benchmark.sdk2;
 
 import static com.commercetools.sync.benchmark.sdk2.BenchmarkUtils.*;
-import static com.commercetools.sync.integration.sdk2.commons.utils.ChannelITUtils.deleteChannels;
-import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.sdk2.commons.utils.InventoryITUtils.deleteInventoryEntries;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
