@@ -265,7 +265,11 @@ public final class CategoryITUtils {
       @Nonnull final Category category, @Nonnull final Set<String> keysOfDeletedAncestors) {
     final List<Reference<Category>> categoryAncestors = category.getAncestors();
     return categoryAncestors.stream()
-        .anyMatch(ancestor -> keysOfDeletedAncestors.contains(ancestor.getObj().getKey()));
+        .filter(Objects::nonNull)
+        .anyMatch(
+            ancestor ->
+                ancestor.getObj() != null
+                    && keysOfDeletedAncestors.contains(ancestor.getObj().getKey()));
   }
 
   /**
