@@ -52,10 +52,10 @@ public final class SyncUtils {
    *     was in cache. Otherwise, it returns the supplied reference as is.
    */
   @Nullable
-  public static Reference getReferenceWithKeyReplaced(
+  public static Reference getReferenceWithKey(
       @Nullable final Reference reference,
-      @Nonnull final Supplier<Reference> keyInReferenceSupplier,
-      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache,
+      @Nonnull final Supplier<Reference> keyInReferenceSupplier) {
 
     if (reference != null) {
       final String id = reference.getId();
