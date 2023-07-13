@@ -5,15 +5,15 @@ import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUt
 
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.client.QueryUtils;
-import com.commercetools.api.models.channel.Channel;
-import com.commercetools.api.models.channel.ChannelDraft;
-import com.commercetools.api.models.channel.ChannelDraftBuilder;
-import com.commercetools.api.models.channel.ChannelRoleEnum;
+import com.commercetools.api.models.channel.*;
 import io.vrap.rmf.base.client.ApiHttpResponse;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public final class ChannelITUtils {
   public static final String SUPPLY_CHANNEL_KEY_1 = "channel-key_1";
@@ -54,36 +54,40 @@ public final class ChannelITUtils {
     return ctpClient.channels().delete(channel).execute().thenApply(ApiHttpResponse::getBody);
   }
 
-  public static void populateSourceProject() {
-    final ChannelDraft channelDraft1 =
-        ChannelDraftBuilder.of()
-            .key(SUPPLY_CHANNEL_KEY_1)
-            .roles(ChannelRoleEnum.INVENTORY_SUPPLY)
-            .build();
-    final ChannelDraft channelDraft2 =
-        ChannelDraftBuilder.of()
-            .key(SUPPLY_CHANNEL_KEY_2)
-            .roles(ChannelRoleEnum.INVENTORY_SUPPLY)
-            .build();
+  public static List<Channel> ensureChannelsInSourceProject() {
+    final Channel channel1 =
+        createChannelIfNotAlreadyExisting(
+            CTP_SOURCE_CLIENT, SUPPLY_CHANNEL_KEY_1, ChannelRoleEnum.INVENTORY_SUPPLY);
+    final Channel channel2 =
+        createChannelIfNotAlreadyExisting(
+            CTP_SOURCE_CLIENT, SUPPLY_CHANNEL_KEY_2, ChannelRoleEnum.INVENTORY_SUPPLY);
 
-    CTP_SOURCE_CLIENT.channels().create(channelDraft1).execute().toCompletableFuture().join();
-    CTP_SOURCE_CLIENT.channels().create(channelDraft2).execute().toCompletableFuture().join();
+    return Arrays.asList(channel1, channel2);
   }
 
-  public static Channel populateTargetProject() {
-    final ChannelDraft channelDraft =
-        ChannelDraftBuilder.of()
-            .key(SUPPLY_CHANNEL_KEY_1)
-            .roles(ChannelRoleEnum.INVENTORY_SUPPLY)
-            .build();
+  public static Channel ensureChannelsInTargetProject() {
+    return createChannelIfNotAlreadyExisting(
+        CTP_TARGET_CLIENT, SUPPLY_CHANNEL_KEY_1, ChannelRoleEnum.INVENTORY_SUPPLY);
+  }
 
-    return CTP_TARGET_CLIENT
-        .channels()
-        .create(channelDraft)
-        .execute()
-        .thenApply(ApiHttpResponse::getBody)
-        .toCompletableFuture()
-        .join();
+  private static Channel createChannelIfNotAlreadyExisting(
+      @Nonnull ProjectApiRoot ctpClient,
+      @Nonnull String channelKey,
+      @Nullable ChannelRoleEnum channelRole) {
+    return getChannelByKey(ctpClient, channelKey)
+        .orElseGet(
+            () -> {
+              final ChannelDraft channelDraft =
+                  ChannelDraftBuilder.of().key(channelKey).roles(channelRole).build();
+
+              return ctpClient
+                  .channels()
+                  .post(channelDraft)
+                  .execute()
+                  .thenApply(ApiHttpResponse::getBody)
+                  .toCompletableFuture()
+                  .join();
+            });
   }
 
   /**
@@ -95,17 +99,17 @@ public final class ChannelITUtils {
    */
   public static Optional<Channel> getChannelByKey(
       @Nonnull final ProjectApiRoot ctpClient, @Nonnull final String channelKey) {
-    return ctpClient
-        .channels()
-        .get()
-        .withWhere("key=:key")
-        .withPredicateVar("key", channelKey)
-        .execute()
-        .thenApply(ApiHttpResponse::getBody)
-        .join()
-        .getResults()
-        .stream()
-        .findFirst();
+    final ApiHttpResponse<ChannelPagedQueryResponse> channelResponse =
+        ctpClient
+            .channels()
+            .get()
+            .withWhere("key=:key")
+            .withPredicateVar("key", channelKey)
+            .execute()
+            .toCompletableFuture()
+            .join();
+
+    return channelResponse.getBody().getResults().stream().findFirst();
   }
 
   private ChannelITUtils() {}

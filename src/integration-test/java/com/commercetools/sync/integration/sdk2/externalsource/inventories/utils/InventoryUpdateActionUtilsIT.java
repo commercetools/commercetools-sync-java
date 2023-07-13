@@ -1,8 +1,6 @@
 package com.commercetools.sync.integration.sdk2.externalsource.inventories.utils;
 
-import static com.commercetools.sync.integration.sdk2.commons.utils.ChannelITUtils.deleteChannelsFromTargetAndSource;
-import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
-import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.*;
 import static com.commercetools.sync.integration.sdk2.commons.utils.InventoryITUtils.*;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.sdk2.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
@@ -13,9 +11,7 @@ import com.commercetools.api.models.channel.Channel;
 import com.commercetools.api.models.channel.ChannelResourceIdentifier;
 import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
 import com.commercetools.api.models.inventory.*;
-import com.commercetools.api.models.type.CustomFieldsDraft;
-import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
-import com.commercetools.api.models.type.ResourceTypeId;
+import com.commercetools.api.models.type.*;
 import com.commercetools.sync.integration.sdk2.commons.utils.ChannelITUtils;
 import com.commercetools.sync.sdk2.inventories.InventorySyncOptions;
 import com.commercetools.sync.sdk2.inventories.InventorySyncOptionsBuilder;
@@ -37,10 +33,8 @@ class InventoryUpdateActionUtilsIT {
 
   @BeforeEach
   void setup() {
-    deleteInventoryEntriesFromTargetAndSource();
-    final Channel channel = ChannelITUtils.populateTargetProject();
-    final ChannelResourceIdentifier supplyChannelReference =
-        ChannelResourceIdentifierBuilder.of().id(channel.getId()).build();
+    deleteInventoryEntries(CTP_TARGET_CLIENT);
+    final Channel channel = ChannelITUtils.ensureChannelsInTargetProject();
 
     createTypeIfNotAlreadyExisting(
         CUSTOM_TYPE,
@@ -49,7 +43,9 @@ class InventoryUpdateActionUtilsIT {
         Collections.singletonList(ResourceTypeId.INVENTORY_ENTRY),
         CTP_TARGET_CLIENT);
 
-    populateTargetProjectWithChannelsAndTypes(supplyChannelReference);
+    final ChannelResourceIdentifier supplyChannelReference =
+        ChannelResourceIdentifierBuilder.of().id(channel.getId()).build();
+    populateInventoriesInTargetProject(supplyChannelReference);
   }
 
   /**
@@ -58,16 +54,14 @@ class InventoryUpdateActionUtilsIT {
    */
   @AfterAll
   static void tearDown() {
-    deleteInventoryEntriesFromTargetAndSource();
-    deleteTypesFromTargetAndSource();
-    deleteChannelsFromTargetAndSource();
+    deleteInventoryEntries(CTP_TARGET_CLIENT);
   }
 
   @Test
   void buildCustomUpdateActions_ShouldBuildActionThatSetCustomField() {
     // Fetch old inventory and ensure it has custom fields.
     final Optional<InventoryEntry> oldInventoryOptional =
-        getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null).stream().findFirst();
+        getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null, "custom.type");
     assertThat(oldInventoryOptional).isNotEmpty();
     final InventoryEntry oldInventoryBeforeSync = oldInventoryOptional.get();
     assertThat(oldInventoryBeforeSync.getCustom()).isNotNull();
