@@ -264,7 +264,7 @@ More examples of how to use the sync [here](#todo).
 A utility method provided by the library to compare an InventoryEntry with a new InventoryEntryDraft and results in a list of InventoryEntry
  update actions. 
 ```java
-List<UpdateAction<InventoryEntry>> updateActions = InventorySyncUtils.buildActions(oldEntry, newEntry, inventorySyncOptions);
+List<InventoryEntryUpdateAction> updateActions = InventorySyncUtils.buildActions(oldEntry, newEntry, inventorySyncOptions);
 ```
 
 Examples of its usage can be found in the tests 
@@ -276,7 +276,7 @@ Utility methods provided by the library to compare the specific fields of an Inv
  the update action. One example is the `buildChangeQuantityAction` which compares quantities:
   
 ````java
-Optional<UpdateAction<InventoryEntry>> updateAction = buildChangeQuantityAction(oldEntry, newEntry);
+Optional<InventoryEntryUpdateAction> updateAction = buildChangeQuantityAction(oldEntry, newEntry);
 ````
 
 ## Migration Guide
