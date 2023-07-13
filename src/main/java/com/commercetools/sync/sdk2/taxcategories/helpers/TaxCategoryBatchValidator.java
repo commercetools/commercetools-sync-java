@@ -1,24 +1,23 @@
 package com.commercetools.sync.sdk2.taxcategories.helpers;
 
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
+import com.commercetools.api.models.tax_category.TaxCategoryDraft;
+import com.commercetools.api.models.tax_category.TaxRateDraft;
 import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.commons.helpers.BaseBatchValidator;
 import com.commercetools.sync.sdk2.taxcategories.TaxCategorySyncOptions;
-import com.commercetools.api.models.tax_category.TaxCategoryDraft;
-import com.commercetools.api.models.tax_category.TaxRateDraft;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static java.lang.String.format;
-import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.lang3.StringUtils.isBlank;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public class TaxCategoryBatchValidator
     extends BaseBatchValidator<
@@ -82,8 +81,7 @@ public class TaxCategoryBatchValidator
       handleError(TAX_CATEGORY_DRAFT_IS_NULL);
     } else if (isBlank(taxCategoryDraft.getKey())) {
       handleError(format(TAX_CATEGORY_DRAFT_KEY_NOT_SET, taxCategoryDraft.getName()));
-    } else if (taxCategoryDraft.getRates() != null
-        && !taxCategoryDraft.getRates().isEmpty()) {
+    } else if (taxCategoryDraft.getRates() != null && !taxCategoryDraft.getRates().isEmpty()) {
       return validateIfDuplicateCountryAndState(taxCategoryDraft.getRates());
     } else {
       return true;
