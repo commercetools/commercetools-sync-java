@@ -1,6 +1,6 @@
 package com.commercetools.sync.sdk2.states.helpers;
 
-import static com.commercetools.sync.sdk2.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_REFERENCE;
+import static com.commercetools.sync.sdk2.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -77,7 +77,16 @@ public class StateBatchValidator
     if (stateDraft == null) {
       handleError(STATE_DRAFT_IS_NULL);
     } else if (isBlank(stateDraft.getKey())) {
-      handleError(format(STATE_DRAFT_KEY_NOT_SET, stateDraft.getName()));
+      handleError(
+          format(
+              STATE_DRAFT_KEY_NOT_SET,
+              stateDraft.getName().stream()
+                  .map(
+                      localizedStringEntry ->
+                          format(
+                              "LocalizedString(%s -> %s)",
+                              localizedStringEntry.getLocale(), localizedStringEntry.getValue()))
+                  .collect(Collectors.joining())));
     } else {
       try {
         final Set<String> referencesStateKeys = getTransitionKeys(stateDraft);
@@ -115,7 +124,7 @@ public class StateBatchValidator
     if (!invalidStates.isEmpty()) {
       final String errorMessage = format(STATE_HAS_INVALID_REFERENCES, stateDraft.getKey());
       throw new SyncException(
-          errorMessage, new InvalidReferenceException(BLANK_ID_VALUE_ON_REFERENCE));
+          errorMessage, new InvalidReferenceException(BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
     return referencedStateKeys;
   }
@@ -124,9 +133,9 @@ public class StateBatchValidator
   private static String getStateKey(@Nonnull final StateResourceIdentifier stateResourceIdentifier)
       throws InvalidReferenceException {
 
-    final String key = stateResourceIdentifier.getId();
+    final String key = stateResourceIdentifier.getKey();
     if (isBlank(key)) {
-      throw new InvalidReferenceException(BLANK_ID_VALUE_ON_REFERENCE);
+      throw new InvalidReferenceException(BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER);
     }
     return key;
   }
