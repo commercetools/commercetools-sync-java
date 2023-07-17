@@ -80,7 +80,7 @@ public class StateBatchValidator
       handleError(
           format(
               STATE_DRAFT_KEY_NOT_SET,
-              stateDraft.getName().stream()
+              stateDraft.getName() == null ? null : stateDraft.getName().stream()
                   .map(
                       localizedStringEntry ->
                           format(
