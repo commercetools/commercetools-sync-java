@@ -59,7 +59,7 @@ class StateSyncTest {
 
     final StateDraft stateDraftWithoutKey =
         StateDraftBuilder.of()
-            .key(null)
+            .key("")
             .type(StateTypeEnum.LINE_ITEM_STATE)
             .name(ofEnglish("state-name"))
             .build();

@@ -183,11 +183,13 @@ public final class StateUpdateActionUtils {
 
     if (emptyNew && emptyOld) {
       return Optional.empty();
-    } else if (emptyNew) {
+    } else if (newState.getTransitions() == null) {
       return Optional.of(
           StateSetTransitionsActionBuilder.of()
               .transitions((List<StateResourceIdentifier>) null)
               .build());
+    } else if (emptyNew) {
+      return Optional.of(StateSetTransitionsActionBuilder.of().transitions(List.of()).build());
     }
 
     final Set<StateResourceIdentifier> newTransitions =
