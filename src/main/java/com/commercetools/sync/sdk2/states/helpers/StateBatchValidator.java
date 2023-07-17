@@ -80,13 +80,16 @@ public class StateBatchValidator
       handleError(
           format(
               STATE_DRAFT_KEY_NOT_SET,
-              stateDraft.getName() == null ? null : stateDraft.getName().stream()
-                  .map(
-                      localizedStringEntry ->
-                          format(
-                              "LocalizedString(%s -> %s)",
-                              localizedStringEntry.getLocale(), localizedStringEntry.getValue()))
-                  .collect(Collectors.joining())));
+              stateDraft.getName() == null
+                  ? null
+                  : stateDraft.getName().stream()
+                      .map(
+                          localizedStringEntry ->
+                              format(
+                                  "LocalizedString(%s -> %s)",
+                                  localizedStringEntry.getLocale(),
+                                  localizedStringEntry.getValue()))
+                      .collect(Collectors.joining())));
     } else {
       try {
         final Set<String> referencesStateKeys = getTransitionKeys(stateDraft);
