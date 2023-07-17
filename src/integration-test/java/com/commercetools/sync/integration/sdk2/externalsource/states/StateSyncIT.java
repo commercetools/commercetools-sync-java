@@ -1117,7 +1117,6 @@ class StateSyncIT {
         ApiRootBuilder.of(
                 request -> {
                   final String uri = request.getUri() != null ? request.getUri().toString() : "";
-                  final ApiHttpMethod method = request.getMethod();
                   if (uri.contains("states")) {
                     return CompletableFutureUtils.exceptionallyCompletedFuture(
                         createBadGatewayException());

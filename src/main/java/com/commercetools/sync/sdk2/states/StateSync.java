@@ -280,6 +280,21 @@ public class StateSync
         .orElse(completedFuture(null));
   }
 
+  /**
+   * Given an existing {@link State} and a new {@link StateDraft}, the method calculates all the
+   * update actions required to synchronize the existing state to be the same as the new one. If
+   * there are update actions found, a request is made to CTP to update the existing state,
+   * otherwise it doesn't issue a request.
+   *
+   * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was
+   * carried out successfully or not. If an exception was thrown on executing the request to CTP,
+   * the error handling method is called.
+   *
+   * @param oldState existing state that could be updated.
+   * @param newState draft containing data that could differ from data in {@code oldState}.
+   * @return a {@link java.util.concurrent.CompletionStage} which contains an empty result after
+   *     execution of the update.
+   */
   @Nonnull
   private CompletionStage<Void> buildActionsAndUpdate(
       @Nonnull final State oldState, @Nonnull final StateDraft newState) {
@@ -296,22 +311,6 @@ public class StateSync
     return completedFuture(null);
   }
 
-  /**
-   * Given an existing {@link io.sphere.sdk.states.State} and a new {@link
-   * io.sphere.sdk.states.StateDraft}, the method calculates all the update actions required to
-   * synchronize the existing state to be the same as the new one. If there are update actions
-   * found, a request is made to CTP to update the existing state, otherwise it doesn't issue a
-   * request.
-   *
-   * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was
-   * carried out successfully or not. If an exception was thrown on executing the request to CTP,
-   * the error handling method is called.
-   *
-   * @param oldState existing state that could be updated.
-   * @param newState draft containing data that could differ from data in {@code oldState}.
-   * @return a {@link java.util.concurrent.CompletionStage} which contains an empty result after
-   *     execution of the update.
-   */
   @Nonnull
   private CompletionStage<Void> updateState(
       @Nonnull final State oldState,
@@ -323,20 +322,19 @@ public class StateSync
         .handle(ImmutablePair::new)
         .thenCompose(
             updateResponse -> {
-              final Throwable sphereException = updateResponse.getValue();
+              final Throwable ctpException = updateResponse.getValue();
 
-              if (sphereException != null) {
+              if (ctpException != null) {
                 return executeSupplierIfConcurrentModificationException(
-                    sphereException,
+                    ctpException,
                     () -> fetchAndUpdate(oldState, newState),
                     () -> {
                       final String errorMessage =
                           format(
                               CTP_STATE_UPDATE_FAILED,
                               newState.getKey(),
-                              sphereException.getMessage());
-                      handleError(
-                          errorMessage, sphereException, oldState, newState, updateActions, 1);
+                              ctpException.getMessage());
+                      handleError(errorMessage, ctpException, oldState, newState, updateActions, 1);
                       return completedFuture(null);
                     });
               } else {
