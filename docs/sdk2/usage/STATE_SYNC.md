@@ -70,9 +70,9 @@ The following fields are **required** to be set in, otherwise, they won't be mat
 In commercetools, a [ResourceIdentifier](https://docs.commercetools.com/api/projects/states#ctp:api:type:StateResourceIdentifier) can be created by providing either the key or the ID. 
 When the key to a referenced state is provided with a `ResourceIdentifier`, the sync will resolve the resource with the given key and use the ID of the found resource to create or update a reference. 
 
-| ResourceIdentifier Field | Type                                       |
-|:-------------------------|:-------------------------------------------|
-| `transitions`            | Array of StateResourceIdentifiers to State | 
+| ResourceIdentifier Field | Type                                      |
+|:-------------------------|:------------------------------------------|
+| `transitions`            | Array of StateResourceIdentifiers | 
 
 ##### Syncing from a commercetools project
 
@@ -161,7 +161,7 @@ following context about the warning message:
  final Logger logger = LoggerFactory.getLogger(StateSync.class);
  final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
          .of(projectApiRoot)
-         .warningCallback((syncException, draft, state, updateActions) -> 
+         .warningCallback((syncException, draft, state) -> 
             logger.warn(new SyncException("My customized message"), syncException)).build();
 ````
 
@@ -183,7 +183,7 @@ final TriFunction<
                     .collect(Collectors.toList());
                         
 final StateSyncOptions stateSyncOptions = 
-        StateSyncOptionsBuilder.of(sphereClient).beforeUpdateCallback(beforeUpdateStateCallback).build();
+        StateSyncOptionsBuilder.of(projectApiRoot).beforeUpdateCallback(beforeUpdateStateCallback).build();
 ````
 
 ##### beforeCreateCallback
@@ -200,7 +200,7 @@ from the target project on the commecetools platform in a single request. Playin
 
 ````java                         
 final StateSyncOptions stateSyncOptions = 
-         StateSyncOptionsBuilder.of(sphereClient).batchSize(30).build();
+         StateSyncOptionsBuilder.of(projectApiRoot).batchSize(30).build();
 ````
 
 ##### cacheSize
@@ -290,7 +290,7 @@ Keeping the old custom objects around forever can negatively influence the perfo
 
 #### More examples of how to use the sync
  
- 1. [Sync usages](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/states/StateSyncIT.java).
+ 1. [Sync usages](#todo).
 
 *Make sure to read the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md) for optimal performance.*
 
@@ -310,12 +310,12 @@ Utility methods provided by the library to compare the specific fields of a `Sta
 ````java
 Optional<StateUpdateAction> updateAction = StateUpdateActionUtils.buildSetNameAction(oldState, stateDraft);
 ````
-More examples of those utils for different types can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/states/utils/StateUpdateActionUtilsTest.java).
+More examples of those utils for different types can be found [here](#todo).
 
 
 ## Migration Guide
 
-The cart-discount-sync uses the [JVM-SDK-V2](http://commercetools.github.io/commercetools-sdk-java-v2), therefore ensure you [Install JVM SDK](https://docs.commercetools.com/sdk/java-sdk-getting-started#install-the-java-sdk) module `commercetools-sdk-java-api` with
+The state-sync uses the [JVM-SDK-V2](http://commercetools.github.io/commercetools-sdk-java-v2), therefore ensure you [Install JVM SDK](https://docs.commercetools.com/sdk/java-sdk-getting-started#install-the-java-sdk) module `commercetools-sdk-java-api` with
 any HTTP client module. The default one is `commercetools-http-client`.
 
 ```xml
@@ -375,39 +375,23 @@ The V2 SDK do not have inheritance for `DraftBuilder` classes but the difference
 ```java
 // StateDraftBuilder in v1 takes parameters 'name', 'cartPredicate', 'value', 'target', 'sortOrder', 'requiresDiscountCode' 
 final StateDraft stateDraft =
-        StateDraftBuilder.of(
-              ofEnglish("name"),
-              "1 = 1",
-              StateValue.ofAbsolute(MoneyImpl.of(20, EUR)),
-              "sku = \"0123456789\" or sku = \"0246891213\"",
-              "0.2",
-              false)
-          .key("key")
-          .active(false)
-          .build()
+        StateDraftBuilder.of("key", StateType.LINE_ITEM_STATE)
+        .name(ofEnglish("state-name"))
+        .description(ofEnglish("state-desc"))
+        .roles(Collections.singleton(StateRole.RETURN))
+        .initial(false)
+        .build();
 
 // StateDraftBuilder in v2
 final StateDraft stateDraft =
         StateDraftBuilder.of()
-            .name(ofEnglish("name"))
-            .cartPredicate("1 = 1")
-            .value(
-              StateValueAbsoluteDraftBuilder.of()
-                .money(
-                    CentPrecisionMoneyBuilder.of()
-                      .centAmount(20L)
-                      .fractionDigits(0)
-                      .currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode())
-                      .build()
-                )
-                .build()
-            )
-            .target("sku = \"0123456789\" or sku = \"0246891213\"")
-            .sortOrder("0.2")
-            .requiresDiscountCode(false)
-            .key("key")
-            .isActive(false)
-            .build();
+        .key("key")
+        .type(StateTypeEnum.LINE_ITEM_STATE)
+        .name(ofEnglish("state-name"))
+        .description(ofEnglish("state-desc"))
+        .roles(StateRoleEnum.RETURN)
+        .initial(false)
+        .build();
 ```
 For more information, see the [Guide to replace DraftBuilders](https://docs.commercetools.com/sdk/java-sdk-migrate#using-draftbuilders).
 
