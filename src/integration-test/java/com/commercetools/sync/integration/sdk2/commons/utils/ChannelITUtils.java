@@ -2,21 +2,25 @@ package com.commercetools.sync.integration.sdk2.commons.utils;
 
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.client.QueryUtils;
-import com.commercetools.api.models.channel.Channel;
-import com.commercetools.api.models.channel.ChannelDraft;
-import com.commercetools.api.models.channel.ChannelDraftBuilder;
+import com.commercetools.api.models.channel.*;
 import io.vrap.rmf.base.client.ApiHttpResponse;
-import java.util.Locale;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public final class ChannelITUtils {
+  public static final String SUPPLY_CHANNEL_KEY_1 = "channel-key_1";
+  public static final String SUPPLY_CHANNEL_KEY_2 = "channel-key_2";
+
+  public static final String CUSTOM_TYPE = "inventory-custom-type-name";
+  public static final String CUSTOM_FIELD_NAME = "backgroundColor";
   /**
    * Deletes all Channels from CTP projects defined by the {@code CTP_SOURCE_CLIENT} and {@code
    * CTP_TARGET_CLIENT}.
@@ -50,29 +54,40 @@ public final class ChannelITUtils {
     return ctpClient.channels().delete(channel).execute().thenApply(ApiHttpResponse::getBody);
   }
 
-  /**
-   * Creates a {@link com.commercetools.api.models.channel.Channel} in the CTP project defined by
-   * the {@code ctpClient} in a blocking fashion.
-   *
-   * @param ctpClient defines the CTP project to create the Channels in.
-   * @param name the name of the channel to create.
-   * @param key the key of the channel to create.
-   * @return the created Channel.
-   */
-  public static Channel createChannel(
-      @Nonnull final ProjectApiRoot ctpClient,
-      @Nonnull final String name,
-      @Nonnull final String key) {
-    final ChannelDraft channelDraft =
-        ChannelDraftBuilder.of()
-            .name(
-                localizedStringBuilder ->
-                    localizedStringBuilder.addValue(Locale.ENGLISH.toLanguageTag(), name))
-            .key(key)
-            .build();
+  public static List<Channel> ensureChannelsInSourceProject() {
+    final Channel channel1 =
+        createChannelIfNotAlreadyExisting(
+            CTP_SOURCE_CLIENT, SUPPLY_CHANNEL_KEY_1, ChannelRoleEnum.INVENTORY_SUPPLY);
+    final Channel channel2 =
+        createChannelIfNotAlreadyExisting(
+            CTP_SOURCE_CLIENT, SUPPLY_CHANNEL_KEY_2, ChannelRoleEnum.INVENTORY_SUPPLY);
 
-    return executeBlocking(
-        ctpClient.channels().create(channelDraft).execute().thenApply(ApiHttpResponse::getBody));
+    return Arrays.asList(channel1, channel2);
+  }
+
+  public static Channel ensureChannelsInTargetProject() {
+    return createChannelIfNotAlreadyExisting(
+        CTP_TARGET_CLIENT, SUPPLY_CHANNEL_KEY_1, ChannelRoleEnum.INVENTORY_SUPPLY);
+  }
+
+  private static Channel createChannelIfNotAlreadyExisting(
+      @Nonnull ProjectApiRoot ctpClient,
+      @Nonnull String channelKey,
+      @Nullable ChannelRoleEnum channelRole) {
+    return getChannelByKey(ctpClient, channelKey)
+        .orElseGet(
+            () -> {
+              final ChannelDraft channelDraft =
+                  ChannelDraftBuilder.of().key(channelKey).roles(channelRole).build();
+
+              return ctpClient
+                  .channels()
+                  .post(channelDraft)
+                  .execute()
+                  .thenApply(ApiHttpResponse::getBody)
+                  .toCompletableFuture()
+                  .join();
+            });
   }
 
   /**
@@ -84,17 +99,17 @@ public final class ChannelITUtils {
    */
   public static Optional<Channel> getChannelByKey(
       @Nonnull final ProjectApiRoot ctpClient, @Nonnull final String channelKey) {
-    return ctpClient
-        .channels()
-        .get()
-        .withWhere("key=:key")
-        .withPredicateVar("key", channelKey)
-        .execute()
-        .thenApply(ApiHttpResponse::getBody)
-        .join()
-        .getResults()
-        .stream()
-        .findFirst();
+    final ApiHttpResponse<ChannelPagedQueryResponse> channelResponse =
+        ctpClient
+            .channels()
+            .get()
+            .withWhere("key=:key")
+            .withPredicateVar("key", channelKey)
+            .execute()
+            .toCompletableFuture()
+            .join();
+
+    return channelResponse.getBody().getResults().stream().findFirst();
   }
 
   private ChannelITUtils() {}

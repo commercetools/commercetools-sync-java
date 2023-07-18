@@ -11,6 +11,7 @@ import com.commercetools.api.models.channel.Channel;
 import com.commercetools.api.models.channel.ChannelReference;
 import com.commercetools.api.models.channel.ChannelRoleEnum;
 import com.commercetools.api.models.inventory.InventoryEntry;
+import com.commercetools.api.models.inventory.InventoryEntryDraftBuilder;
 import com.commercetools.api.models.type.CustomFields;
 import com.commercetools.sync.sdk2.services.ChannelService;
 import com.commercetools.sync.sdk2.services.InventoryService;
@@ -127,5 +128,17 @@ public class InventorySyncMockUtils {
     final CompletableFuture<T> exceptionalStage = new CompletableFuture<>();
     exceptionalStage.completeExceptionally(new RuntimeException());
     return exceptionalStage;
+  }
+
+  static InventoryEntryDraftBuilder createInventoryDraftBuilderWithoutChannel(
+      final String sku,
+      final Long quantity,
+      final ZonedDateTime expectedDelivery,
+      final Long restockableDays) {
+    return InventoryEntryDraftBuilder.of()
+        .sku(sku)
+        .quantityOnStock(quantity)
+        .expectedDelivery(expectedDelivery)
+        .restockableInDays(restockableDays);
   }
 }
