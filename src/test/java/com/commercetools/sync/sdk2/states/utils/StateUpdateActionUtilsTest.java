@@ -62,6 +62,7 @@ class StateUpdateActionUtilsTest {
             .description(description)
             .roles(roles)
             .initial(true)
+            .transitions(List.of())
             .build();
 
     newDifferentStateDraft =

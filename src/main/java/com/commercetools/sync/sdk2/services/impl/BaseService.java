@@ -60,7 +60,6 @@ abstract class BaseService<
 
   protected static final int MAXIMUM_ALLOWED_UPDATE_ACTIONS = 500;
   static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
-  static final String FETCH_FAILED = "Failed to fetch resource with key: '%s'. Reason: %s";
 
   /*
    * To be more practical, considering 41 characters as an average for key and sku fields

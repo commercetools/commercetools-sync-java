@@ -183,6 +183,11 @@ public final class StateUpdateActionUtils {
 
     if (emptyNew && emptyOld) {
       return Optional.empty();
+    } else if (newState.getTransitions() == null) {
+      return Optional.of(
+          StateSetTransitionsActionBuilder.of()
+              .transitions((List<StateResourceIdentifier>) null)
+              .build());
     } else if (emptyNew) {
       return Optional.of(StateSetTransitionsActionBuilder.of().transitions(List.of()).build());
     }
@@ -193,7 +198,7 @@ public final class StateUpdateActionUtils {
     final Set<StateReference> oldTransitions =
         oldState.getTransitions().stream().filter(Objects::nonNull).collect(Collectors.toSet());
 
-    if (hasNewTransitions(newTransitions, oldTransitions)) {
+    if (hasDifferentTransitions(newTransitions, oldTransitions)) {
       final List<StateResourceIdentifier> transitions =
           newTransitions.stream()
               .map(
@@ -209,17 +214,14 @@ public final class StateUpdateActionUtils {
     return Optional.empty();
   }
 
-  private static boolean hasNewTransitions(
+  private static boolean hasDifferentTransitions(
       final Set<StateResourceIdentifier> newTransitions, final Set<StateReference> oldTransitions) {
-    return newTransitions.stream()
-        .anyMatch(
-            stateResourceIdentifier -> {
-              final String newStateResourceIdentifierId = stateResourceIdentifier.getId();
-              return oldTransitions.stream()
-                  .noneMatch(
-                      stateReference ->
-                          stateReference.getId().equals(newStateResourceIdentifierId));
-            });
+    final List<String> newTransitionIds =
+        newTransitions.stream().map(StateResourceIdentifier::getId).collect(Collectors.toList());
+    final List<String> oldTransitionIds =
+        oldTransitions.stream().map(StateReference::getId).collect(Collectors.toList());
+
+    return !Objects.equals(newTransitionIds, oldTransitionIds);
   }
 
   private static List<StateRoleEnum> diffRoles(
