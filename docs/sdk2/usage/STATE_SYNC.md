@@ -373,7 +373,7 @@ The state-sync expects a list of `StateDraft`s to process. If you use java-sync-
 The V2 SDK do not have inheritance for `DraftBuilder` classes but the differences are minor and you can replace it easily. Here's an example:
 
 ```java
-// StateDraftBuilder in v1 takes parameters 'name', 'cartPredicate', 'value', 'target', 'sortOrder', 'requiresDiscountCode' 
+// StateDraftBuilder in v1 takes parameters 'key', 'type' 
 final StateDraft stateDraft =
         StateDraftBuilder.of("key", StateType.LINE_ITEM_STATE)
         .name(ofEnglish("state-name"))
