@@ -7,10 +7,9 @@ against a [StateDraft](https://docs.commercetools.com/api/projects/states#stated
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Usage](#usage)
-    - [Prerequisites](#prerequisites)
-    - [SphereClient](#sphereclient)
+  - [Prerequisites](#prerequisites)
+    - [ProjectApiRoot](#projectapiroot)
     - [Required Fields](#required-fields)
     - [Reference Resolution](#reference-resolution)
       - [Syncing from a commercetools project](#syncing-from-a-commercetools-project)
@@ -27,6 +26,12 @@ against a [StateDraft](https://docs.commercetools.com/api/projects/states#stated
     - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
+- [Migration Guide](#migration-guide)
+  - [Client configuration and creation](#client-configuration-and-creation)
+  - [Signature of StateSyncOptions](#signature-of-statesyncoptions)
+  - [Build StateDraft (syncing from external project)](#build-statedraft-syncing-from-external-project)
+  - [Query for states (syncing from CTP project)](#query-for-states-syncing-from-ctp-project)
+  - [Referencing other states in transitions](#referencing-other-states-in-transitions)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
