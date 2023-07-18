@@ -66,18 +66,6 @@ public class StateSyncIT {
     keyB = "state-B-" + current().nextInt();
     keyC = "state-C-" + current().nextInt();
 
-    final String key = "state-" + current().nextInt();
-    final StateDraft stateDraft =
-        StateDraftBuilder.of()
-            .key(key)
-            .type(StateTypeEnum.LINE_ITEM_STATE)
-            .name(ofEnglish("state-name"))
-            .description(ofEnglish("state-desc"))
-            .roles(List.of(StateRoleEnum.RETURN))
-            .initial(false)
-            .build();
-
-    CTP_TARGET_CLIENT.states().create(stateDraft).executeBlocking();
     errorCallBackMessages = new ArrayList<>();
     warningCallBackMessages = new ArrayList<>();
     errorCallBackExceptions = new ArrayList<>();

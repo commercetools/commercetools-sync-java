@@ -254,10 +254,9 @@ class StateSyncIT {
   @Test
   void sync_WithUpdatedState_ShouldUpdateState() {
     // preparation
-    String key = this.key;
     final StateDraft stateDraft =
         StateDraftBuilder.of()
-            .key(key)
+            .key(this.key)
             .type(StateTypeEnum.REVIEW_STATE)
             .name(ofEnglish("state-name-updated"))
             .description(ofEnglish("state-desc-updated"))
@@ -288,7 +287,6 @@ class StateSyncIT {
                   .isEqualTo(List.of(StateRoleEnum.REVIEW_INCLUDED_IN_STATISTICS));
               assertThat(state.getInitial()).isEqualTo(true);
             });
-    deleteStates(CTP_TARGET_CLIENT, null);
   }
 
   @Test
