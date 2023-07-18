@@ -106,7 +106,7 @@ public class TaxCategoryBatchValidator
             ]
         }
     */
-    Map<String, Map<String, Long>> map =
+    final Map<String, Map<String, Long>> map =
         taxRateDrafts.stream()
             .collect(
                 Collectors.groupingBy(
@@ -117,7 +117,7 @@ public class TaxCategoryBatchValidator
     for (Map.Entry<String, Map<String, Long>> countryEntry : map.entrySet()) {
       for (Map.Entry<String, Long> stateEntry : countryEntry.getValue().entrySet()) {
         if (stateEntry.getValue() > 1L) {
-          String errorMessage =
+          final String errorMessage =
               StringUtils.isBlank(stateEntry.getKey())
                   ? format(TAX_CATEGORY_DUPLICATED_COUNTRY, countryEntry.getKey())
                   : format(
