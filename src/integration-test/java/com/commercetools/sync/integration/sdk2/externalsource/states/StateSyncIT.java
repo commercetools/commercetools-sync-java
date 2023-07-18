@@ -65,7 +65,7 @@ class StateSyncIT {
 
   @AfterAll
   static void tearDown() {
-    deleteStatesFromTargetAndSource();
+    deleteStatesFromTarget();
   }
 
   @BeforeEach
@@ -146,7 +146,7 @@ class StateSyncIT {
   }
 
   @Test
-  void sync_withNewStateWithoutRole_shouldRemoveRole() {
+  void sync_withOldStateWithRoleAndNewStateWithoutRole_shouldRemoveRole() {
     final StateDraft stateDraft =
         StateDraftBuilder.of().key(keyA).type(StateTypeEnum.REVIEW_STATE).roles(List.of()).build();
 
@@ -168,25 +168,28 @@ class StateSyncIT {
 
     assertThat(stateSyncStatistics).hasValues(1, 0, 1, 0, 0);
 
-    final State fetchedState =
-        CTP_TARGET_CLIENT
-            .states()
-            .withKey(keyA)
-            .get()
-            .execute()
-            .thenApply(ApiHttpResponse::getBody)
-            .join();
+    final State fetchedState = getStateByKey(CTP_TARGET_CLIENT, keyA).get();
 
     assertThat(fetchedState.getRoles()).isEmpty();
   }
 
   @Test
-  void sync_withNewStateWithoutRole_shouldDoNothing() {
+  void sync_withOldStateWithoutRoleAndNewStateWithoutRole_shouldDoNothing() {
     final StateDraft stateDraft =
-        StateDraftBuilder.of().key(keyA).type(StateTypeEnum.REVIEW_STATE).roles(List.of()).build();
+        StateDraftBuilder.of()
+            .key(keyA)
+            .type(StateTypeEnum.REVIEW_STATE)
+            .roles(List.of())
+            .initial(true)
+            .build();
 
     final StateDraft stateDraftTarget =
-        StateDraftBuilder.of().key(keyA).type(StateTypeEnum.REVIEW_STATE).roles(List.of()).build();
+        StateDraftBuilder.of()
+            .key(keyA)
+            .type(StateTypeEnum.REVIEW_STATE)
+            .roles(List.of())
+            .initial(true)
+            .build();
     createStateInTarget(stateDraftTarget);
 
     final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
@@ -197,10 +200,7 @@ class StateSyncIT {
     final StateSyncStatistics stateSyncStatistics =
         stateSync.sync(List.of(stateDraft)).toCompletableFuture().join();
 
-    assertThat(stateSyncStatistics).hasValues(1, 0, 1, 0, 0);
-
-    final State fetchedState = getStateByKey(CTP_TARGET_CLIENT, keyA).get();
-    assertThat(fetchedState.getRoles()).isEmpty();
+    assertThat(stateSyncStatistics).hasValues(1, 0, 0, 0, 0);
   }
 
   @Test

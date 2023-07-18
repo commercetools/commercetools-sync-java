@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.sdk2.commons.utils;
 
-import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 
 import com.commercetools.api.client.ByProjectKeyStatesGet;
@@ -32,13 +31,9 @@ public final class StateITUtils {
 
   private StateITUtils() {}
 
-  /**
-   * Deletes all states from CTP projects defined by the {@code CTP_SOURCE_CLIENT} and {@code
-   * CTP_TARGET_CLIENT}.
-   */
-  public static void deleteStatesFromTargetAndSource() {
+  /** Deletes all states from CTP projects defined by the {@code CTP_TARGET_CLIENT}. */
+  public static void deleteStatesFromTarget() {
     deleteStates(CTP_TARGET_CLIENT, null);
-    deleteStates(CTP_SOURCE_CLIENT, null);
   }
 
   /**
