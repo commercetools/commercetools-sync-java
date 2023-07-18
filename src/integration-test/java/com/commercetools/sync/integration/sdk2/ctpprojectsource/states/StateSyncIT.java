@@ -2,8 +2,7 @@ package com.commercetools.sync.integration.sdk2.ctpprojectsource.states;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.*;
-import static com.commercetools.sync.integration.sdk2.commons.utils.StateITUtils.deleteStatesFromTarget;
-import static com.commercetools.sync.integration.sdk2.commons.utils.StateITUtils.getStateByKey;
+import static com.commercetools.sync.integration.sdk2.commons.utils.StateITUtils.*;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.sdk2.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY;
@@ -57,7 +56,7 @@ public class StateSyncIT {
 
   @AfterAll
   static void tearDown() {
-    deleteStatesFromTarget();
+    deleteStatesFromTargetAndSource();
   }
 
   @BeforeEach
