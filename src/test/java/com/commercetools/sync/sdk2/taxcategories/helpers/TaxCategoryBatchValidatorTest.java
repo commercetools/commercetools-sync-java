@@ -142,6 +142,16 @@ class TaxCategoryBatchValidatorTest {
             .key("duplicatedState")
             .build();
 
+    final TaxRateDraft taxRateFranceBerlin = TaxRateDraft.deepCopy(taxRateGermanyBerlin);
+    taxRateFranceBerlin.setCountry(CountryCode.ES.getAlpha2());
+    final TaxCategoryDraft withSameStateButDifferenCountry =
+        TaxCategoryDraftBuilder.of()
+            .name("foo")
+            .rates(taxRateGermanyBerlin, taxRateFranceBerlin)
+            .description("desc")
+            .key("sameStateDifferentCountry")
+            .build();
+
     final TaxRateDraft taxRateFrance =
         TaxRateDraftBuilder.of()
             .name("foo")
@@ -158,6 +168,16 @@ class TaxCategoryBatchValidatorTest {
             .key("duplicatedCountry")
             .build();
 
+    final TaxRateDraft taxRateMissingCountry = TaxRateDraft.deepCopy(taxRateFrance);
+    taxRateMissingCountry.setCountry(null);
+    final TaxCategoryDraft withMissingCountry =
+        TaxCategoryDraftBuilder.of()
+            .name("foo")
+            .rates(taxRateFrance)
+            .description("desc")
+            .key("missingCountry")
+            .build();
+
     final TaxCategoryBatchValidator batchValidator =
         new TaxCategoryBatchValidator(syncOptions, syncStatistics);
     final ImmutablePair<Set<TaxCategoryDraft>, Set<String>> pair =
@@ -168,10 +188,14 @@ class TaxCategoryBatchValidatorTest {
                 withEmptyKey,
                 withNullKey,
                 withDuplicatedState,
-                withDuplicatedCountry));
+                withDuplicatedCountry,
+                withMissingCountry,
+                withSameStateButDifferenCountry));
 
-    assertThat(pair.getLeft()).containsExactlyInAnyOrder(validDraft);
-    assertThat(pair.getRight()).containsExactlyInAnyOrder("foo");
+    assertThat(pair.getLeft())
+        .containsExactlyInAnyOrder(validDraft, withMissingCountry, withSameStateButDifferenCountry);
+    assertThat(pair.getRight())
+        .containsExactlyInAnyOrder("foo", "missingCountry", "sameStateDifferentCountry");
 
     assertThat(errorCallBackMessages).hasSize(5);
     assertThat(errorCallBackMessages.get(0)).isEqualTo(TAX_CATEGORY_DRAFT_IS_NULL);
