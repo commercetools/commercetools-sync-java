@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 class WaitingToBeResolvedTransitionsTest {
 
   @Test
-  void setProductDraft_WithNonNullProductDraft_ShouldSetProductDraft() {
+  void setStateDraft_WithNonNullStateDraft_ShouldSetStateDraft() {
     // preparation
     final StateDraft stateDraft = mock(StateDraft.class);
     final WaitingToBeResolvedTransitions waitingToBeResolvedTransition =
@@ -27,7 +27,7 @@ class WaitingToBeResolvedTransitionsTest {
   }
 
   @Test
-  void setMissingReferencedProductKeys_WithNonNullSet_ShouldSetTheSet() {
+  void setMissingReferencedStateKeys_WithNonNullSet_ShouldSetTheSet() {
     // preparation
     final WaitingToBeResolvedTransitions waitingToBeResolvedTransition =
         new WaitingToBeResolvedTransitions();
@@ -84,7 +84,7 @@ class WaitingToBeResolvedTransitionsTest {
   }
 
   @Test
-  void equals_WithDifferentProductDraft_ShouldReturnFalse() {
+  void equals_WithDifferentStateDraft_ShouldReturnFalse() {
     // preparation
     final StateDraft stateDraft = mock(StateDraft.class);
     final StateDraft stateDraft1 = mock(StateDraft.class);
@@ -136,7 +136,7 @@ class WaitingToBeResolvedTransitionsTest {
   }
 
   @Test
-  void hashCode_withSameProductKeyAndSameRefSet_ShouldBeEquals() {
+  void hashCode_withSameStateKeyAndSameRefSet_ShouldBeEquals() {
     // preparation
     final WaitingToBeResolvedTransitions waitingToBeResolvedTransition =
         new WaitingToBeResolvedTransitions(mock(StateDraft.class), new HashSet<>());
@@ -152,7 +152,7 @@ class WaitingToBeResolvedTransitionsTest {
   }
 
   @Test
-  void hashCode_withDifferentProductKeyAndSameRefSet_ShouldNotBeEquals() {
+  void hashCode_withDifferentStateKeyAndSameRefSet_ShouldNotBeEquals() {
     // preparation
     final StateDraft stateDraft = mock(StateDraft.class);
     final StateDraft stateDraft1 = mock(StateDraft.class);
@@ -172,7 +172,7 @@ class WaitingToBeResolvedTransitionsTest {
   }
 
   @Test
-  void hashCode_withSameProductKeyAndDiffRefSet_ShouldNotBeEquals() {
+  void hashCode_withSameStateKeyAndDiffRefSet_ShouldNotBeEquals() {
     // preparation
     final WaitingToBeResolvedTransitions waitingToBeResolvedTransition =
         new WaitingToBeResolvedTransitions(mock(StateDraft.class), new HashSet<>());
