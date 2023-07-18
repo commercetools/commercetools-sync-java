@@ -306,9 +306,9 @@ class StateSyncIT {
 
   @Test
   void sync_withEqualState_shouldNotUpdateState() {
-    StateDraft stateDraft =
+    final StateDraft stateDraft =
         StateDraftBuilder.of()
-            .key(key)
+            .key(this.key)
             .type(StateTypeEnum.LINE_ITEM_STATE)
             .name(ofEnglish("state-name"))
             .description(ofEnglish("state-desc"))
