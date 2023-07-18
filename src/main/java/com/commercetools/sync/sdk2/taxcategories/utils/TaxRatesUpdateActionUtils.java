@@ -1,5 +1,6 @@
 package com.commercetools.sync.sdk2.taxcategories.utils;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -167,23 +168,19 @@ final class TaxRatesUpdateActionUtils {
 
   private static boolean hasSameFields(
       @Nonnull final TaxRate oldTaxRate, @Nonnull final TaxRateDraft newTaxRate) {
-    boolean requiredFieldsNotEmpty =
-        Objects.nonNull(oldTaxRate.getName())
-            && Objects.nonNull(oldTaxRate.getIncludedInPrice())
-            && Objects.nonNull(oldTaxRate.getCountry());
-    if (requiredFieldsNotEmpty) {
-      final TaxRateDraft oldTaxRateAsDraft =
-          TaxRateDraftBuilder.of()
-              .amount(oldTaxRate.getAmount())
-              .name(oldTaxRate.getName())
-              .includedInPrice(oldTaxRate.getIncludedInPrice())
-              .country(oldTaxRate.getCountry())
-              .state(oldTaxRate.getState())
-              .subRates(oldTaxRate.getSubRates())
-              .key(oldTaxRate.getKey())
-              .build();
-      return oldTaxRateAsDraft.equals(newTaxRate);
+    if (newTaxRate.getSubRates() == null) {
+      newTaxRate.setSubRates(emptyList());
     }
-    return false;
+    final TaxRateDraft oldTaxRateAsDraft =
+        TaxRateDraftBuilder.of()
+            .amount(oldTaxRate.getAmount())
+            .name(oldTaxRate.getName())
+            .includedInPrice(oldTaxRate.getIncludedInPrice())
+            .country(oldTaxRate.getCountry())
+            .state(oldTaxRate.getState())
+            .subRates(oldTaxRate.getSubRates())
+            .key(oldTaxRate.getKey())
+            .build();
+    return oldTaxRateAsDraft.equals(newTaxRate);
   }
 }
