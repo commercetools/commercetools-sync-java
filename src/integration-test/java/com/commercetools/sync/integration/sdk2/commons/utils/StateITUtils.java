@@ -32,10 +32,11 @@ public final class StateITUtils {
 
   private StateITUtils() {}
 
-  /**
-   * Deletes all states from CTP projects defined by the {@code CTP_SOURCE_CLIENT} and {@code
-   * CTP_TARGET_CLIENT}.
-   */
+  /** Deletes all states from CTP projects defined by the {@code CTP_TARGET_CLIENT}. */
+  public static void deleteStatesFromTarget() {
+    deleteStates(CTP_TARGET_CLIENT, null);
+  }
+
   public static void deleteStatesFromTargetAndSource() {
     deleteStates(CTP_TARGET_CLIENT, null);
     deleteStates(CTP_SOURCE_CLIENT, null);

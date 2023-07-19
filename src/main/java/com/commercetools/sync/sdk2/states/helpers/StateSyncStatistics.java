@@ -4,6 +4,8 @@ import static java.lang.String.format;
 
 import com.commercetools.sync.sdk2.commons.helpers.BaseSyncStatistics;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
@@ -72,7 +74,7 @@ public class StateSyncStatistics extends BaseSyncStatistics {
       @Nonnull final String parentKey, @Nonnull final String childKey) {
     stateKeysWithMissingParents.merge(
         parentKey,
-        Set.of(childKey),
+        new HashSet<>(List.of(childKey)),
         (existingSet, newChildAsSet) -> {
           existingSet.addAll(newChildAsSet);
           return existingSet;

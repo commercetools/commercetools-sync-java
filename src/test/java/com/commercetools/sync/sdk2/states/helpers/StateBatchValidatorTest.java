@@ -93,9 +93,9 @@ class StateBatchValidatorTest {
     when(validStateDraft.getKey()).thenReturn("validDraftKey");
     final List<StateResourceIdentifier> transitionResourceIdentifiers = new ArrayList<>();
     transitionResourceIdentifiers.add(
-        StateResourceIdentifierBuilder.of().id("transition-key-1").build());
+        StateResourceIdentifierBuilder.of().key("transition-key-1").build());
     transitionResourceIdentifiers.add(
-        StateResourceIdentifierBuilder.of().id("transition-key-2").build());
+        StateResourceIdentifierBuilder.of().key("transition-key-2").build());
     when(validStateDraft.getTransitions()).thenReturn(transitionResourceIdentifiers);
 
     final StateDraft validMainStateDraft = mock(StateDraft.class);
