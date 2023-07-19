@@ -1,23 +1,5 @@
 package com.commercetools.sync.sdk2.taxcategories;
 
-import com.commercetools.api.client.error.BadRequestException;
-import com.commercetools.api.models.tax_category.*;
-import com.commercetools.sync.sdk2.services.TaxCategoryService;
-import com.commercetools.sync.sdk2.taxcategories.helpers.TaxCategorySyncStatistics;
-import com.neovisionaries.i18n.CountryCode;
-import com.commercetools.api.client.error.ConcurrentModificationException;
-import com.commercetools.api.client.ProjectApiRoot;
-import io.vrap.rmf.base.client.ApiHttpResponse;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
 import static com.commercetools.sync.sdk2.commons.ExceptionUtils.createBadGatewayException;
 import static com.commercetools.sync.sdk2.commons.ExceptionUtils.createConcurrentModificationException;
 import static java.lang.String.format;
@@ -32,6 +14,20 @@ import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.tax_category.*;
+import com.commercetools.sync.sdk2.services.TaxCategoryService;
+import com.commercetools.sync.sdk2.taxcategories.helpers.TaxCategorySyncStatistics;
+import com.neovisionaries.i18n.CountryCode;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 class TaxCategorySyncTest {
 
@@ -50,8 +46,7 @@ class TaxCategorySyncTest {
             .errorCallback((exception, draft, entry, actions) -> errors.add(exception.getMessage()))
             .build();
     final TaxCategorySync sync = new TaxCategorySync(options, taxCategoryService);
-    final TaxCategoryDraft withoutKeyDraft =
-        TaxCategoryDraftBuilder.of().name("").build();
+    final TaxCategoryDraft withoutKeyDraft = TaxCategoryDraftBuilder.of().name("").build();
 
     final TaxCategorySyncStatistics result =
         sync.sync(asList(null, withoutKeyDraft)).toCompletableFuture().join();
@@ -365,35 +360,35 @@ class TaxCategorySyncTest {
   void sync_WithDuplicatedState_ShouldNotBuildActionAndTriggerErrorCallback() {
     final String name = "DuplicatedName";
     final TaxRateDraft taxRateGermanyBerlin =
-            TaxRateDraftBuilder.of()
+        TaxRateDraftBuilder.of()
+            .name(name)
+            .amount(2.0)
+            .includedInPrice(false)
+            .country(CountryCode.DE.getAlpha2())
+            .state("BERLIN")
+            .build();
+
+    final TaxCategoryDraft draft =
+        TaxCategoryDraftBuilder.of()
+            .name(name)
+            .rates(
+                TaxRateDraftBuilder.of()
                     .name(name)
                     .amount(2.0)
                     .includedInPrice(false)
-                    .country(CountryCode.DE.getAlpha2())
-                    .state("BERLIN")
-                    .build();
-
-    final TaxCategoryDraft draft =
-            TaxCategoryDraftBuilder.of()
+                    .country(CountryCode.FR.getAlpha2())
+                    .state("LYON")
+                    .build(),
+                TaxRateDraftBuilder.of()
                     .name(name)
-                    .rates(
-                            TaxRateDraftBuilder.of()
-                                    .name(name)
-                                    .amount(2.0)
-                                    .includedInPrice(false)
-                                    .country(CountryCode.FR.getAlpha2())
-                                    .state("LYON")
-                                    .build(),
-                            TaxRateDraftBuilder.of()
-                                    .name(name)
-                                    .amount(2.0)
-                                    .includedInPrice(false)
-                                    .country(CountryCode.FR.getAlpha2())
-                                    .state("PARIS")
-                                    .build(),
-                            taxRateGermanyBerlin,
-                            taxRateGermanyBerlin)
-                    .description("desc")
+                    .amount(2.0)
+                    .includedInPrice(false)
+                    .country(CountryCode.FR.getAlpha2())
+                    .state("PARIS")
+                    .build(),
+                taxRateGermanyBerlin,
+                taxRateGermanyBerlin)
+            .description("desc")
             .key("someKey")
             .build();
 
@@ -435,19 +430,17 @@ class TaxCategorySyncTest {
   void sync_WithDuplicatedCountryCode_ShouldNotBuildActionAndTriggerErrorCallback() {
     final String name = "DuplicatedName";
     final TaxRateDraft taxRateFrance =
-            TaxRateDraftBuilder.of()
-                    .name(name)
-                    .amount(2.0)
-                    .includedInPrice(false)
-                    .country(CountryCode.FR.getAlpha2())
-                    .build();
+        TaxRateDraftBuilder.of()
+            .name(name)
+            .amount(2.0)
+            .includedInPrice(false)
+            .country(CountryCode.FR.getAlpha2())
+            .build();
     final TaxCategoryDraft draft =
-            TaxCategoryDraftBuilder.of()
-                    .name(name)
-                    .rates(
-                            taxRateFrance,
-                            taxRateFrance)
-                    .description("desc")
+        TaxCategoryDraftBuilder.of()
+            .name(name)
+            .rates(taxRateFrance, taxRateFrance)
+            .description("desc")
             .key("someKey")
             .build();
 

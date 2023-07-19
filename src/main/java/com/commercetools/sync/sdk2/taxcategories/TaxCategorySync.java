@@ -1,23 +1,5 @@
 package com.commercetools.sync.sdk2.taxcategories;
 
-import com.commercetools.api.models.tax_category.TaxCategoryUpdateAction;
-import com.commercetools.sync.sdk2.commons.BaseSync;
-import com.commercetools.sync.sdk2.services.TaxCategoryService;
-import com.commercetools.sync.sdk2.services.impl.TaxCategoryServiceImpl;
-import com.commercetools.sync.sdk2.taxcategories.helpers.TaxCategoryBatchValidator;
-import com.commercetools.sync.sdk2.taxcategories.helpers.TaxCategorySyncStatistics;
-import com.commercetools.api.models.tax_category.TaxCategory;
-import com.commercetools.api.models.tax_category.TaxCategoryDraft;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
-import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-
 import static com.commercetools.sync.sdk2.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.sdk2.taxcategories.utils.TaxCategorySyncUtils.buildActions;
 import static java.lang.String.format;
@@ -27,9 +9,30 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
+import com.commercetools.api.models.tax_category.TaxCategory;
+import com.commercetools.api.models.tax_category.TaxCategoryDraft;
+import com.commercetools.api.models.tax_category.TaxCategoryUpdateAction;
+import com.commercetools.sync.sdk2.commons.BaseSync;
+import com.commercetools.sync.sdk2.services.TaxCategoryService;
+import com.commercetools.sync.sdk2.services.impl.TaxCategoryServiceImpl;
+import com.commercetools.sync.sdk2.taxcategories.helpers.TaxCategoryBatchValidator;
+import com.commercetools.sync.sdk2.taxcategories.helpers.TaxCategorySyncStatistics;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import javax.annotation.Nonnull;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 public class TaxCategorySync
     extends BaseSync<
-        TaxCategory, TaxCategoryDraft, TaxCategoryUpdateAction, TaxCategorySyncStatistics, TaxCategorySyncOptions> {
+        TaxCategory,
+        TaxCategoryDraft,
+        TaxCategoryUpdateAction,
+        TaxCategorySyncStatistics,
+        TaxCategorySyncOptions> {
 
   private static final String TAX_CATEGORY_FETCH_FAILED =
       "Failed to fetch existing tax categories with keys: '%s'.";
@@ -44,9 +47,10 @@ public class TaxCategorySync
   }
 
   /**
-   * Takes a {@link com.commercetools.sync.taxcategories.TaxCategorySyncOptions} and a {@link TaxCategorySync} instances to instantiate a
-   * new {@link TaxCategorySync} instance that could be used to sync tax category drafts in the CTP
-   * project specified in the injected {@link com.commercetools.sync.taxcategories.TaxCategorySyncOptions} instance.
+   * Takes a {@link com.commercetools.sync.taxcategories.TaxCategorySyncOptions} and a {@link
+   * TaxCategorySync} instances to instantiate a new {@link TaxCategorySync} instance that could be
+   * used to sync tax category drafts in the CTP project specified in the injected {@link
+   * com.commercetools.sync.taxcategories.TaxCategorySyncOptions} instance.
    *
    * <p>NOTE: This constructor is mainly to be used for tests where the services can be mocked and
    * passed to.

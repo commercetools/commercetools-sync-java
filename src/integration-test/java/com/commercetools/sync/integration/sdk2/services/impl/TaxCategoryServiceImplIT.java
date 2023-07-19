@@ -245,7 +245,7 @@ class TaxCategoryServiceImplIT {
     final TaxCategoryDraft newTaxCategoryDraft =
         TaxCategoryDraftBuilder.of()
             .name(TAXCATEGORY_NAME_1)
-            .rates(createTaxRateDraft())
+            .rates(mockTaxRateDraft())
             .description(TAXCATEGORY_DESCRIPTION_1)
             .key(TAXCATEGORY_KEY_1)
             .build();
@@ -311,7 +311,7 @@ class TaxCategoryServiceImplIT {
     final TaxCategoryDraft newTaxCategoryDraft =
         TaxCategoryDraftBuilder.of()
             .name(TAXCATEGORY_NAME_1)
-            .rates(singletonList(createTaxRateDraft()))
+            .rates(singletonList(mockTaxRateDraft()))
             .description(TAXCATEGORY_DESCRIPTION_1)
             .key("")
             .build();
@@ -343,7 +343,7 @@ class TaxCategoryServiceImplIT {
     final TaxCategoryDraft newTaxCategoryDraft =
         TaxCategoryDraftBuilder.of()
             .name(TAXCATEGORY_NAME_1)
-            .rates(singletonList(createTaxRateDraft()))
+            .rates(singletonList(mockTaxRateDraft()))
             .description(TAXCATEGORY_DESCRIPTION_1)
             .key(TAXCATEGORY_KEY)
             .build();
