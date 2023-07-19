@@ -6,6 +6,7 @@ import com.commercetools.sync.sdk2.customers.helpers.CustomerSyncStatistics;
 import com.commercetools.sync.sdk2.customobjects.helpers.CustomObjectSyncStatistics;
 import com.commercetools.sync.sdk2.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.sdk2.producttypes.helpers.ProductTypeSyncStatistics;
+import com.commercetools.sync.sdk2.taxcategories.helpers.TaxCategorySyncStatistics;
 import com.commercetools.sync.sdk2.types.helpers.TypeSyncStatistics;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -88,5 +89,17 @@ public final class AssertionsForStatistics {
   public static CartDiscountSyncStatisticsAssert assertThat(
       @Nullable final CartDiscountSyncStatistics statistics) {
     return new CartDiscountSyncStatisticsAssert(statistics);
+  }
+
+  /**
+   * Create assertion for {@link TaxCategorySyncStatistics}.
+   *
+   * @param statistics the actual value.
+   * @return the created assertion object.
+   */
+  @Nonnull
+  public static TaxCategorySyncStatisticsAssert assertThat(
+      @Nullable final TaxCategorySyncStatistics statistics) {
+    return new TaxCategorySyncStatisticsAssert(statistics);
   }
 }
