@@ -47,12 +47,11 @@ public class ShoppingListBatchValidator
   }
 
   /**
-   * Given the {@link java.util.List}&lt;{@link io.sphere.sdk.shoppinglists.ShoppingListDraft}&gt;
-   * of drafts this method attempts to validate drafts and collect referenced type keys from the
-   * draft and return an {@link org.apache.commons.lang3.tuple.ImmutablePair}&lt;{@link
-   * java.util.Set}&lt; {@link io.sphere.sdk.shoppinglists.ShoppingListDraft}&gt;,{@link
-   * com.commercetools.sync.sdk2.shoppinglists.helpers.ShoppingListBatchValidator.ReferencedKeys}&gt;
-   * which contains the {@link java.util.Set} of valid drafts and referenced keys.
+   * Given the {@link java.util.List}&lt;{@link ShoppingListDraft}&gt; of drafts this method
+   * attempts to validate drafts and collect referenced type keys from the draft and return an
+   * {@link org.apache.commons.lang3.tuple.ImmutablePair}&lt;{@link java.util.Set}&lt; {@link
+   * ShoppingListDraft}&gt;,{@link ShoppingListBatchValidator.ReferencedKeys}&gt; which contains the
+   * {@link java.util.Set} of valid drafts and referenced keys.
    *
    * <p>A valid shopping list draft is one which satisfies the following conditions:
    *
@@ -73,10 +72,8 @@ public class ShoppingListBatchValidator
    *
    * @param shoppingListDrafts the shopping list drafts to validate and collect referenced keys.
    * @return {@link org.apache.commons.lang3.tuple.ImmutablePair}&lt;{@link java.util.Set}&lt;{@link
-   *     io.sphere.sdk.shoppinglists.ShoppingListDraft}&gt;, {@link
-   *     com.commercetools.sync.sdk2.shoppinglists.helpers.ShoppingListBatchValidator.ReferencedKeys}&gt;
-   *     which contains the {@link java.util.Set} of valid drafts and referenced keys within a
-   *     wrapper.
+   *     ShoppingListDraft}&gt;, {@link ShoppingListBatchValidator.ReferencedKeys}&gt; which
+   *     contains the {@link java.util.Set} of valid drafts and referenced keys within a wrapper.
    */
   @Override
   public ImmutablePair<Set<ShoppingListDraft>, ReferencedKeys> validateAndCollectReferencedKeys(
