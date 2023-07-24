@@ -1,4 +1,4 @@
-package com.commercetools.sync.sdk2.commons.utils;
+package com.commercetools.sync.sdk2.products.utils;
 
 import com.commercetools.sync.sdk2.products.ActionGroup;
 import com.commercetools.sync.sdk2.products.SyncFilter;

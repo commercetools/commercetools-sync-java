@@ -5,7 +5,7 @@ import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUt
 import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActionForReferences;
 import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActions;
-import static com.commercetools.sync.sdk2.commons.utils.FilterUtils.executeSupplierIfPassesFilter;
+import static com.commercetools.sync.sdk2.products.utils.FilterUtils.executeSupplierIfPassesFilter;
 import static com.commercetools.sync.sdk2.internals.utils.UnorderedCollectionSyncUtils.buildRemoveUpdateActions;
 import static com.commercetools.sync.sdk2.products.ActionGroup.*;
 import static com.commercetools.sync.sdk2.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions;

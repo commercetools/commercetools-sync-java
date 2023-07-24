@@ -12,39 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 public final class ResourceIdentifierUtils {
 
   /**
-   * Given a {@link ResourceIdentifiable} {@code resource}, if it is not null, this method applies
-   * the {@link ResourceIdentifiable#toResourceIdentifier()} method to return it as a {@link
-   * ResourceIdentifiable}. If it is {@code null}, this method returns {@code null}.
-   *
-   * @param resource represents the resource to return as a {@link ResourceIdentifier} if not {@code
-   *     null}.
-   * @return the supplied resource in the as a {@link ResourceIdentifier} if not {@code null}. If it
-   *     is {@code null}, this method returns {@code null}.
-   */
-  @Nullable
-  public static <ResourceIdentifiableT extends ResourceIdentifiable>
-      ResourceIdentifier toResourceIdentifierIfNotNull(
-          @Nullable final ResourceIdentifiableT resource) {
-    return ofNullable(resource).map(ResourceIdentifiable::toResourceIdentifier).orElse(null);
-  }
-
-  /**
-   * Given a {@link Reference}, if it is not null, this method applies the {@link
-   * Reference#toResourceIdentifier()} method to return it as a {@link ResourceIdentifiable}. If it
-   * is {@code null}, this method returns {@code null}.
-   *
-   * @param reference represents the reference to return as a {@link ResourceIdentifier} if not
-   *     {@code null}.
-   * @return the supplied reference as a {@link ResourceIdentifier} if not {@code null}. If it is
-   *     {@code null}, this method returns {@code null}.
-   */
-  @Nullable
-  public static <ReferenceT extends Reference> ResourceIdentifier toResourceIdentifierIfNotNull(
-      @Nullable final ReferenceT reference) {
-    return ofNullable(reference).map(ReferenceT::toResourceIdentifier).orElse(null);
-  }
-
-  /**
    * Given a {@link Reference} {@code referenceValue} which is the representation of CTP Reference
    * object, this method checks if it has a {@code typeId} with the value equal to {@code
    * referenceTypeId}.
