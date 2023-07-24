@@ -8,7 +8,6 @@ import com.commercetools.api.client.QueryUtils;
 import com.commercetools.api.models.tax_category.TaxCategory;
 import com.commercetools.api.models.tax_category.TaxCategoryDraft;
 import com.commercetools.api.models.tax_category.TaxCategoryDraftBuilder;
-import com.commercetools.api.models.tax_category.TaxCategoryPagedQueryResponse;
 import com.commercetools.api.models.tax_category.TaxRateDraft;
 import com.commercetools.api.models.tax_category.TaxRateDraftBuilder;
 import io.vrap.rmf.base.client.ApiHttpResponse;
@@ -87,53 +86,69 @@ public final class TaxCategoryITUtils {
    * @return the created tax category.
    */
   public static TaxCategory ensureTaxCategory(@Nonnull final ProjectApiRoot ctpClient) {
-    TaxCategory taxCategory =
-        ctpClient
-            .taxCategories()
-            .get()
-            .withWhere("key=:key")
-            .withPredicateVar("key", TAXCATEGORY_KEY)
-            .execute()
-            .thenApply(ApiHttpResponse::getBody)
-            .thenApply(TaxCategoryPagedQueryResponse::getResults)
-            .thenApply(taxCategories -> taxCategories.isEmpty() ? null : taxCategories.get(0))
-            .join();
+    return taxCategoryExists(ctpClient, TAXCATEGORY_KEY)
+        .thenCompose(
+            taxCategory ->
+                taxCategory
+                    .map(CompletableFuture::completedFuture)
+                    .orElseGet(
+                        () -> {
+                          final TaxCategoryDraft taxCategoryDraft =
+                              TaxCategoryDraftBuilder.of()
+                                  .name(TAXCATEGORY_NAME)
+                                  .rates(mockTaxRateDraft())
+                                  .description(TAXCATEGORY_DESCRIPTION)
+                                  .key(TAXCATEGORY_KEY)
+                                  .build();
+                          return createTaxCategory(taxCategoryDraft, ctpClient);
+                        }))
+        .toCompletableFuture()
+        .join();
+  }
 
-    if (taxCategory == null) {
-
-      final TaxCategoryDraft taxCategoryDraft =
-          TaxCategoryDraftBuilder.of()
-              .name(TAXCATEGORY_NAME)
-              .rates(createTaxRateDraft())
-              .description(TAXCATEGORY_DESCRIPTION)
-              .key(TAXCATEGORY_KEY)
-              .build();
-
-      taxCategory =
-          ctpClient
-              .taxCategories()
-              .post(taxCategoryDraft)
-              .execute()
-              .thenApply(ApiHttpResponse::getBody)
-              .join();
-    }
-
-    return taxCategory;
+  private static CompletionStage<Optional<TaxCategory>> taxCategoryExists(
+      @Nonnull ProjectApiRoot ctpClient, @Nonnull String taxCategoryKey) {
+    return ctpClient
+        .taxCategories()
+        .withKey(taxCategoryKey)
+        .get()
+        .execute()
+        .handle(
+            (typeApiHttpResponse, throwable) -> {
+              if (throwable != null) {
+                return Optional.empty();
+              }
+              return Optional.of(typeApiHttpResponse.getBody().get());
+            });
   }
 
   /**
-   * Creates a {@link io.sphere.sdk.taxcategories.TaxRateDraft} with the name {@value
-   * TAXCATEGORY_TAXRATE_NAME} and amount {@value TAXCATEGORY_TAXRATE_AMOUNT}.
+   * Creates a {@link TaxRateDraft} with the name {@value TAXCATEGORY_TAXRATE_NAME} and amount
+   * {@value TAXCATEGORY_TAXRATE_AMOUNT}.
    *
    * @return the created tax rate draft.
    */
-  public static TaxRateDraft createTaxRateDraft() {
+  public static TaxRateDraft mockTaxRateDraft() {
     return TaxRateDraftBuilder.of()
         .name(TAXCATEGORY_TAXRATE_NAME)
         .amount(TAXCATEGORY_TAXRATE_AMOUNT)
         .country("DE")
         .includedInPrice(true)
         .build();
+  }
+
+  static CompletableFuture<TaxCategory> createTaxCategory(
+      @Nonnull final TaxCategoryDraft taxCategoryDraft, @Nonnull final ProjectApiRoot ctpClient) {
+    return ctpClient
+        .taxCategories()
+        .post(taxCategoryDraft)
+        .execute()
+        .thenApply(ApiHttpResponse::getBody);
+  }
+
+  public static TaxCategory createTaxCategoryByDraft(
+      @Nonnull final TaxCategoryDraft taxCategoryDraft, @Nonnull final ProjectApiRoot ctpClient) {
+    return createTaxCategory(taxCategoryDraft, ctpClient).toCompletableFuture().join();
   }
 
   public static Optional<TaxCategory> getTaxCategoryByKey(
