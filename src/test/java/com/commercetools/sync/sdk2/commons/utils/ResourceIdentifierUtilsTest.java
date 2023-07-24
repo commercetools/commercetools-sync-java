@@ -2,15 +2,11 @@ package com.commercetools.sync.sdk2.commons.utils;
 
 import static com.commercetools.sync.sdk2.commons.utils.ResourceIdentifierUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import com.commercetools.api.models.category.*;
 import com.commercetools.api.models.common.ReferenceImpl;
-import com.commercetools.api.models.common.ResourceIdentifier;
 import com.commercetools.api.models.product.ProductReference;
 import com.commercetools.api.models.product.ProductReferenceBuilder;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class ResourceIdentifierUtilsTest {

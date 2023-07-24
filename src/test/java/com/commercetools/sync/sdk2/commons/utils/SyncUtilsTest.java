@@ -6,7 +6,6 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.api.models.category.*;
-import com.commercetools.api.models.common.Reference;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;

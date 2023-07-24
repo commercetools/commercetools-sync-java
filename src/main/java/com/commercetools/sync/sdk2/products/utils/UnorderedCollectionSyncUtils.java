@@ -1,4 +1,4 @@
-package com.commercetools.sync.sdk2.internals.utils;
+package com.commercetools.sync.sdk2.products.utils;
 
 import static com.commercetools.sync.sdk2.commons.utils.CollectionUtils.collectionToMap;
 import static com.commercetools.sync.sdk2.commons.utils.CollectionUtils.emptyIfNull;

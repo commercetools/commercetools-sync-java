@@ -1,12 +1,7 @@
 package com.commercetools.sync.sdk2.commons.utils;
 
-import static java.util.Optional.ofNullable;
-
-import com.commercetools.api.models.ResourceIdentifiable;
 import com.commercetools.api.models.common.Reference;
-import com.commercetools.api.models.common.ResourceIdentifier;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 
 public final class ResourceIdentifierUtils {
