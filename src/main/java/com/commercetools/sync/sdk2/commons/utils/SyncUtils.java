@@ -38,36 +38,6 @@ public final class SyncUtils {
 
   /**
    * Given a reference to a resource of type {@code T}, this method checks if the reference id is
-   * cached in the map. If it is, then it executes the {@code keyInReferenceSupplier} and returns
-   * it's result. Otherwise, it returns the supplied reference as is. Since, the reference could be
-   * {@code null}, this method could also return null if the reference id is not in the map.
-   *
-   * <p>This method expects the passed supplier to either
-   *
-   * @param reference the reference of the resource to check if it's cached.
-   * @param keyInReferenceSupplier the supplier to execute and return its result if the {@code
-   *     reference} was cached.
-   * @param referenceIdToKeyCache the instance that manages cache.
-   * @return returns the result of the {@code keyInReferenceSupplier} if the {@code reference} id
-   *     was in cache. Otherwise, it returns the supplied reference as is.
-   */
-  @Nullable
-  public static Reference getReferenceWithKey(
-      @Nullable final Reference reference,
-      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache,
-      @Nonnull final Supplier<Reference> keyInReferenceSupplier) {
-
-    if (reference != null) {
-      final String id = reference.getId();
-      if (referenceIdToKeyCache.containsKey(id)) {
-        return keyInReferenceSupplier.get();
-      }
-    }
-    return reference;
-  }
-
-  /**
-   * Given a reference to a resource of type {@code T}, this method checks if the reference id is
    * cached. If it is, then it returns the resource identifier with key. Otherwise, it returns the
    * resource identifier with id. Since, the reference could be {@code null}, this method could also
    * return null if the reference id was not in the map.

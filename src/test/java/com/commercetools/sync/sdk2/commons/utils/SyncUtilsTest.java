@@ -118,38 +118,6 @@ class SyncUtilsTest {
   }
 
   @Test
-  void getReferenceWithKeyReplaced_WithNullReference_ShouldReturnNullReference() {
-    final Reference keyReplacedReference =
-        getReferenceWithKey(
-            null, referenceIdToKeyCache, () -> CategoryReferenceBuilder.of().id("id").build());
-    assertThat(keyReplacedReference).isNull();
-  }
-
-  @Test
-  void
-      getReferenceWithKeyReplaced_WithCachedCategoryReference_ShouldReturnCategoryReferenceWithKey() {
-    final String categoryKey = "categoryKey";
-    final String categoryId = UUID.randomUUID().toString();
-
-    referenceIdToKeyCache.add(categoryId, categoryKey);
-
-    final CategoryReference categoryReference =
-        CategoryReferenceBuilder.of().id(categoryId).build();
-
-    final Reference keyReplacedReference =
-        getReferenceWithKey(
-            categoryReference,
-            referenceIdToKeyCache,
-            () ->
-                CategoryReferenceBuilder.of()
-                    .id(referenceIdToKeyCache.get(categoryReference.getId()))
-                    .build());
-
-    assertThat(keyReplacedReference).isNotNull();
-    assertThat(keyReplacedReference.getId()).isEqualTo(categoryKey);
-  }
-
-  @Test
   void
       getResourceIdentifierWithKey_WithCachedReference_ShouldReturnCategoryResourceIdentifierWithKey() {
     final String categoryKey = "categoryKey";
@@ -168,25 +136,6 @@ class SyncUtilsTest {
 
     assertThat(resourceIdentifier).isNotNull();
     assertThat(resourceIdentifier.getKey()).isEqualTo(categoryKey);
-  }
-
-  @Test
-  void getReferenceWithKey_WithNonExpandedCategoryReference_ShouldReturnReferenceWithoutKey() {
-    final String categoryUuid = UUID.randomUUID().toString();
-    final CategoryReference categoryReference =
-        CategoryReferenceBuilder.of().id(categoryUuid).build();
-
-    final Reference keyReplacedReference =
-        getReferenceWithKey(
-            categoryReference,
-            referenceIdToKeyCache,
-            () ->
-                CategoryReferenceBuilder.of()
-                    .id(referenceIdToKeyCache.get(categoryReference.getId()))
-                    .build());
-
-    assertThat(keyReplacedReference).isNotNull();
-    assertThat(keyReplacedReference.getId()).isEqualTo(categoryUuid);
   }
 
   @Test
