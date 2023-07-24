@@ -100,7 +100,7 @@ following context about the warning message:
 ````java
  final Logger logger = LoggerFactory.getLogger(TaxCategorySync.class);
  final TaxCategorySyncOptions taxCategorySyncOptions = TaxCategorySyncOptionsBuilder
-         .of(sphereClient)
+         .of(projectApiRoot)
          .warningCallback((syncException, draft, taxCategory) -> 
             logger.warn(new SyncException("My customized message"), syncException)).build();
 ````
