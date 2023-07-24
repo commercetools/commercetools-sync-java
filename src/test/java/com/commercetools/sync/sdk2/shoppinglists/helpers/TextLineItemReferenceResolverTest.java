@@ -1,10 +1,11 @@
 package com.commercetools.sync.sdk2.shoppinglists.helpers;
 
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static com.commercetools.sync.sdk2.commons.ExceptionUtils.createBadGatewayException;
 import static com.commercetools.sync.sdk2.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.sdk2.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.sdk2.commons.helpers.CustomReferenceResolver.TYPE_DOES_NOT_EXIST;
-import static com.commercetools.sync.sdk2.shoppinglists.helpers.LineItemReferenceResolver.FAILED_TO_RESOLVE_CUSTOM_TYPE;
+import static com.commercetools.sync.sdk2.shoppinglists.helpers.TextLineItemReferenceResolver.FAILED_TO_RESOLVE_CUSTOM_TYPE;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -12,8 +13,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.commercetools.api.client.ProjectApiRoot;
-import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraft;
-import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraftBuilder;
+import com.commercetools.api.models.shopping_list.TextLineItemDraft;
+import com.commercetools.api.models.shopping_list.TextLineItemDraftBuilder;
 import com.commercetools.api.models.type.CustomFieldsDraft;
 import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.sync.sdk2.commons.exceptions.ReferenceResolutionException;
@@ -30,11 +31,11 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class LineItemReferenceResolverTest {
+class TextLineItemReferenceResolverTest {
 
   private TypeService typeService;
 
-  private LineItemReferenceResolver referenceResolver;
+  private TextLineItemReferenceResolver referenceResolver;
 
   /** Sets up the services and the options needed for reference resolution. */
   @BeforeEach
@@ -43,7 +44,7 @@ class LineItemReferenceResolverTest {
 
     final ShoppingListSyncOptions syncOptions =
         ShoppingListSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
-    referenceResolver = new LineItemReferenceResolver(syncOptions, typeService);
+    referenceResolver = new TextLineItemReferenceResolver(syncOptions, typeService);
   }
 
   @Test
@@ -55,15 +56,15 @@ class LineItemReferenceResolverTest {
             .fields(fieldContainerBuilder -> fieldContainerBuilder.values(new HashMap<>()))
             .build();
 
-    final ShoppingListLineItemDraft lineItemDraft =
-        ShoppingListLineItemDraftBuilder.of()
-            .sku("dummy-sku")
+    final TextLineItemDraft textLineItemDraft =
+        TextLineItemDraftBuilder.of()
+            .name(ofEnglish("dummy-custom-key"))
             .quantity(10L)
             .custom(customFieldsDraft)
             .build();
 
-    final ShoppingListLineItemDraft resolvedDraft =
-        referenceResolver.resolveReferences(lineItemDraft).toCompletableFuture().join();
+    final TextLineItemDraft resolvedDraft =
+        referenceResolver.resolveReferences(textLineItemDraft).toCompletableFuture().join();
 
     assertThat(resolvedDraft.getCustom()).isNotNull();
     assertThat(resolvedDraft.getCustom()).isEqualTo(customFieldsDraft);
@@ -78,15 +79,15 @@ class LineItemReferenceResolverTest {
             .fields(fieldContainerBuilder -> fieldContainerBuilder.values(new HashMap<>()))
             .build();
 
-    final ShoppingListLineItemDraft lineItemDraft =
-        ShoppingListLineItemDraftBuilder.of()
-            .sku("dummy-sku")
+    final TextLineItemDraft textLineItemDraft =
+        TextLineItemDraftBuilder.of()
+            .name(ofEnglish("dummy-custom-key"))
             .quantity(10L)
             .custom(customFieldsDraft)
             .build();
 
-    final ShoppingListLineItemDraft resolvedDraft =
-        referenceResolver.resolveReferences(lineItemDraft).toCompletableFuture().join();
+    final TextLineItemDraft resolvedDraft =
+        referenceResolver.resolveReferences(textLineItemDraft).toCompletableFuture().join();
 
     assertThat(resolvedDraft.getCustom()).isNotNull();
     assertThat(resolvedDraft.getCustom().getType().getId()).isEqualTo("typeId");
@@ -104,14 +105,14 @@ class LineItemReferenceResolverTest {
             .fields(fieldContainerBuilder -> fieldContainerBuilder.values(new HashMap<>()))
             .build();
 
-    final ShoppingListLineItemDraft lineItemDraft =
-        ShoppingListLineItemDraftBuilder.of()
-            .sku("dummy-sku")
+    final TextLineItemDraft textLineItemDraft =
+        TextLineItemDraftBuilder.of()
+            .name(ofEnglish("dummy-custom-key"))
             .quantity(10L)
             .custom(customFieldsDraft)
             .build();
 
-    assertThat(referenceResolver.resolveReferences(lineItemDraft))
+    assertThat(referenceResolver.resolveReferences(textLineItemDraft))
         .failsWithin(1, TimeUnit.SECONDS)
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(BadGatewayException.class)
@@ -127,9 +128,9 @@ class LineItemReferenceResolverTest {
             .fields(fieldContainerBuilder -> fieldContainerBuilder.values(new HashMap<>()))
             .build();
 
-    final ShoppingListLineItemDraft lineItemDraft =
-        ShoppingListLineItemDraftBuilder.of()
-            .sku("dummy-sku")
+    final TextLineItemDraft textLineItemDraft =
+        TextLineItemDraftBuilder.of()
+            .name(ofEnglish("dummy-custom-key"))
             .quantity(10L)
             .custom(customFieldsDraft)
             .build();
@@ -138,13 +139,13 @@ class LineItemReferenceResolverTest {
         .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
     final String expectedExceptionMessage =
-        format(FAILED_TO_RESOLVE_CUSTOM_TYPE, lineItemDraft.getSku());
+        format(FAILED_TO_RESOLVE_CUSTOM_TYPE, textLineItemDraft.getName());
 
     final String expectedMessageWithCause =
         format(
             "%s Reason: %s", expectedExceptionMessage, format(TYPE_DOES_NOT_EXIST, customTypeKey));
 
-    assertThat(referenceResolver.resolveReferences(lineItemDraft))
+    assertThat(referenceResolver.resolveReferences(textLineItemDraft))
         .failsWithin(1, TimeUnit.SECONDS)
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
@@ -159,21 +160,21 @@ class LineItemReferenceResolverTest {
             .fields(fieldContainerBuilder -> fieldContainerBuilder.values(new HashMap<>()))
             .build();
 
-    final ShoppingListLineItemDraft lineItemDraft =
-        ShoppingListLineItemDraftBuilder.of()
-            .sku("dummy-sku")
+    final TextLineItemDraft textLineItemDraft =
+        TextLineItemDraftBuilder.of()
+            .name(ofEnglish("dummy-custom-key"))
             .quantity(10L)
             .custom(customFieldsDraft)
             .build();
 
-    assertThat(referenceResolver.resolveReferences(lineItemDraft))
+    assertThat(referenceResolver.resolveReferences(textLineItemDraft))
         .failsWithin(1, TimeUnit.SECONDS)
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
         .withMessageContaining(
             format(
-                "Failed to resolve custom type reference on LineItemDraft"
-                    + " with SKU: 'dummy-sku'. Reason: %s",
-                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                "Failed to resolve custom type reference on TextLineItemDraft"
+                    + " with name: '%s'. Reason: %s",
+                ofEnglish("dummy-custom-key"), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
   }
 }
