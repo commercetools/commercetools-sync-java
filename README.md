@@ -1,23 +1,25 @@
 ![commercetools-java-sync-logos 002](https://user-images.githubusercontent.com/9512131/31182587-90d47f0a-a924-11e7-9716-66e6bec7f79b.png)
-# commercetools sync
+# commercetools sync (version 10)
 [![CI](https://github.com/commercetools/commercetools-sync-java/workflows/CI/badge.svg)](https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/commercetools/commercetools-sync-java/branch/master/graph/badge.svg)](https://codecov.io/gh/commercetools/commercetools-sync-java)
-[![Benchmarks 9.2.3](https://img.shields.io/badge/Benchmarks-9.2.3-orange.svg)](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
-[![Download from Maven Central](https://img.shields.io/badge/Maven_Central-9.2.3-blue.svg)](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.2.3/jar) 
 [![Javadoc](https://javadoc.io/badge2/com.commercetools/commercetools-sync-java/javadoc.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/9.2.3/)
 [![Known Vulnerabilities](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646/badge.svg)](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646)
+
+
+> Note: The current version of this library uses [JVM-SDK-V2](http://commercetools.github.io/commercetools-sdk-java-v2). This doc already contains updated information. Please migrate to this version, using our [Migration Guide](/docs/sdk2/MIGRATION_GUIDE.md).
+> If migration isn't an option for you, you can still use deprecated versions of this library available at [Maven central](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.2.3/jar).
 
 More at https://commercetools.github.io/commercetools-sync-java
 
 Java library which allows to import/synchronise (import changes) the data from any arbitrary source to commercetools project.
 
-Supported resources: [Categories](/docs/usage/CATEGORY_SYNC.md), [Products](/docs/usage/PRODUCT_SYNC.md), [InventoryEntries](/docs/usage/INVENTORY_SYNC.md), [ProductTypes](/docs/usage/PRODUCT_TYPE_SYNC.md), [Types](/docs/usage/TYPE_SYNC.md), [CartDiscounts](/docs/usage/CART_DISCOUNT_SYNC.md), [States](/docs/usage/STATE_SYNC.md), [TaxCategories](/docs/usage/TAX_CATEGORY_SYNC.md), [CustomObjects](/docs/usage/CUSTOM_OBJECT_SYNC.md), [Customers](/docs/usage/CUSTOMER_SYNC.md), [ShoppingLists](/docs/usage/SHOPPING_LIST_SYNC.md)
+Supported resources: [Categories](/docs/sdk2/usage/CATEGORY_SYNC.md), [Products](/docs/sdk2/usage/PRODUCT_SYNC.md), [InventoryEntries](/docs/sdk2/usage/INVENTORY_SYNC.md), [ProductTypes](/docs/sdk2/usage/PRODUCT_TYPE_SYNC.md), [Types](/docs/sdk2/usage/TYPE_SYNC.md), [CartDiscounts](/docs/sdk2/usage/CART_DISCOUNT_SYNC.md), [States](/docs/sdk2/usage/STATE_SYNC.md), [TaxCategories](/docs/sdk2/usage/TAX_CATEGORY_SYNC.md), [CustomObjects](/docs/sdk2/usage/CUSTOM_OBJECT_SYNC.md), [Customers](/docs/sdk2/usage/CUSTOMER_SYNC.md), [ShoppingLists](/docs/sdk2/usage/SHOPPING_LIST_SYNC.md)
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [Usage](#usage)
-  - [Quick Start](/docs/usage/QUICK_START.md)
+  - [Quick Start](/docs/sdk2/usage/QUICK_START.md)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
     - [Maven](#maven)
@@ -25,13 +27,12 @@ Supported resources: [Categories](/docs/usage/CATEGORY_SYNC.md), [Products](/doc
     - [SBT](#sbt)
     - [Ivy](#ivy)
 - [Release Notes](/docs/RELEASE_NOTES.md)
-- [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/9.2.3/)
-- [Benchmarks](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
+- [Deprecated Version](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.2.3/jar)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 ## Usage
 
-Create you own event or cronjob based application and use the library to transform any external data (JSON, CSV, XML, REST API, DB, ...) into [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)) and import those into the commercetools project.
+Create your own event or cronjob based application and use the library to transform any external data (JSON, CSV, XML, REST API, DB, ...) into [JVM-SDK-V2](http://commercetools.github.io/commercetools-sdk-java-v2) resource draft objects (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-sdk-java-v2/blob/main/commercetools/commercetools-sdk-java-api/src/main/java-generated/com/commercetools/api/models/category/CategoryDraft.java) and import those into the commercetools project.
 
 Notes:
 
@@ -39,7 +40,7 @@ Notes:
 - There is dockerized ready-to-use CLI application [commercetools-project-sync](https://github.com/commercetools/commercetools-project-sync) which based on this library can synchronize entire data catalogue between the 2 commercetools projects.
 - During a synchronisation, resources are either created or updated, but **not** deleted.
 
-⚡ See the [Quick Start Guide](/docs/usage/QUICK_START.md) for more information on building a product importer!
+⚡ See the [Quick Start Guide](/docs/sdk2/usage/QUICK_START.md) for more information on building a product importer!
 
 ![commercetools-java-sync-final 001](https://user-images.githubusercontent.com/3469524/126317637-a946a81c-2948-4751-86bb-02bcecfeca95.png)
 
@@ -60,26 +61,26 @@ Here are the most popular ones:
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>9.2.3</version>
+  <version>10.0.0</version>
 </dependency>
 ````
 
 #### Gradle
 
 ````groovy
-implementation 'com.commercetools:commercetools-sync-java:9.2.3'
+implementation 'com.commercetools:commercetools-sync-java:10.0.0'
 ````
 
 #### SBT 
 
 ````
-libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "9.2.3"
+libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "10.0.0"
 ````
 
 #### Ivy 
 
 ````xml
-<dependency org="com.commercetools" name="commercetools-sync-java" rev="9.2.3"/>
+<dependency org="com.commercetools" name="commercetools-sync-java" rev="10.0.0"/>
 ````
 
 **Note**: To avoid `commercetools JVM SDK` libraries version mismatch between projects.
@@ -88,27 +89,21 @@ libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "9.2.3"
 
 For Gradle users, remove: 
 ```groovy
-implementation 'com.commercetools.sdk.jvm.core:commercetools-models:<version>'
-implementation 'com.commercetools.sdk.jvm.core:commercetools-java-client-ahc-2_5:<version>'
-implementation 'com.commercetools.sdk.jvm.core:commercetools-convenience:<version>'
+implementation "com.commercetools.sdk:commercetools-http-client:${version}"
+implementation "com.commercetools.sdk:commercetools-sdk-java-api:${version}"
 ```
 
 For Maven users, remove:
 
 ````xml
 <dependency>
-  <groupId>com.commercetools.sdk.jvm.core</groupId>
-  <artifactId>commercetools-models</artifactId>
+  <groupId>com.commercetools.sdk</groupId>
+  <artifactId>commercetools-http-client</artifactId>
   <version>version</version>
 </dependency>
 <dependency>
-  <groupId>com.commercetools.sdk.jvm.core</groupId>
-  <artifactId>commercetools-java-client-ahc-2_5</artifactId>
-  <version>version</version>
-</dependency>
-<dependency>
-  <groupId>com.commercetools.sdk.jvm.core</groupId>
-  <artifactId>commercetools-convenience</artifactId>
+  <groupId>com.commercetools.sdk</groupId>
+  <artifactId>commercetools-sdk-java-v2</artifactId>
   <version>version</version>
 </dependency>
 ````
@@ -119,9 +114,8 @@ If you want to use a different `commercetools JVM SDK` version than the version 
 For Gradle:
 ````groovy
 implementation('com.commercetools:commercetools-sync-java') {
-    exclude group: 'com.commercetools.sdk.jvm.core', module: 'commercetools-models'
-    exclude group: 'com.commercetools.sdk.jvm.core', module: 'commercetools-java-client-ahc-2_5'
-    exclude group: 'com.commercetools.sdk.jvm.core', module: 'commercetools-convenience'
+    exclude group: 'com.commercetools.sdk', module: 'commercetools-http-client'
+    exclude group: 'com.commercetools.sdk', module: 'commercetools-sdk-java-api'
 }
 ````
 
@@ -133,16 +127,12 @@ For Maven:
   <version>version</version>
   <exclusions>
     <exclusion>
-        <groupId>com.commercetools.sdk.jvm.core</groupId>
-        <artifactId>commercetools-models</artifactId>
+        <groupId>com.commercetools.sdk</groupId>
+        <artifactId>commercetools-http-client</artifactId>
     </exclusion>
     <exclusion>
-        <groupId>com.commercetools.sdk.jvm.core</groupId>
-        <artifactId>commercetools-java-client-ahc-2_5</artifactId>
-    </exclusion>
-    <exclusion>
-        <groupId>com.commercetools.sdk.jvm.core</groupId>
-        <artifactId>commercetools-convenience</artifactId>
+        <groupId>com.commercetools.sdk</groupId>
+        <artifactId>commercetools-sdk-java-v2</artifactId>
     </exclusion>
   </exclusions>
 </dependency>
