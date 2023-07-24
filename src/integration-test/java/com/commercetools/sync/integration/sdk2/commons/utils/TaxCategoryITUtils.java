@@ -106,7 +106,7 @@ public final class TaxCategoryITUtils {
         .join();
   }
 
-  static CompletionStage<Optional<TaxCategory>> taxCategoryExists(
+  private static CompletionStage<Optional<TaxCategory>> taxCategoryExists(
       @Nonnull ProjectApiRoot ctpClient, @Nonnull String taxCategoryKey) {
     return ctpClient
         .taxCategories()

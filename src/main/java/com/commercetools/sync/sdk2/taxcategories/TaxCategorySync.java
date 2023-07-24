@@ -47,10 +47,9 @@ public class TaxCategorySync
   }
 
   /**
-   * Takes a {@link com.commercetools.sync.taxcategories.TaxCategorySyncOptions} and a {@link
-   * TaxCategorySync} instances to instantiate a new {@link TaxCategorySync} instance that could be
-   * used to sync tax category drafts in the CTP project specified in the injected {@link
-   * com.commercetools.sync.taxcategories.TaxCategorySyncOptions} instance.
+   * Takes a {@link TaxCategorySyncOptions} and a {@link TaxCategorySync} instances to instantiate a
+   * new {@link TaxCategorySync} instance that could be used to sync tax category drafts in the CTP
+   * project specified in the injected {@link TaxCategorySyncOptions} instance.
    *
    * <p>NOTE: This constructor is mainly to be used for tests where the services can be mocked and
    * passed to.
@@ -71,7 +70,7 @@ public class TaxCategorySync
   @Override
   protected CompletionStage<TaxCategorySyncStatistics> process(
       @Nonnull final List<TaxCategoryDraft> resourceDrafts) {
-    List<List<TaxCategoryDraft>> batches =
+    final List<List<TaxCategoryDraft>> batches =
         batchElements(resourceDrafts, syncOptions.getBatchSize());
     return syncBatches(batches, completedFuture(statistics));
   }
@@ -111,7 +110,7 @@ public class TaxCategorySync
         .handle(ImmutablePair::new)
         .thenCompose(
             fetchResponse -> {
-              Set<TaxCategory> fetchedTaxCategories = fetchResponse.getKey();
+              final Set<TaxCategory> fetchedTaxCategories = fetchResponse.getKey();
               final Throwable exception = fetchResponse.getValue();
 
               if (exception != null) {
@@ -196,7 +195,7 @@ public class TaxCategorySync
     final List<TaxCategoryUpdateAction> updateActions =
         buildActions(oldTaxCategory, newTaxCategory);
 
-    List<TaxCategoryUpdateAction> updateActionsAfterCallback =
+    final List<TaxCategoryUpdateAction> updateActionsAfterCallback =
         syncOptions.applyBeforeUpdateCallback(updateActions, newTaxCategory, oldTaxCategory);
 
     if (!updateActionsAfterCallback.isEmpty()) {
@@ -233,21 +232,21 @@ public class TaxCategorySync
         .thenCompose(
             updateResponse -> {
               final TaxCategory updatedTaxCategory = updateResponse.getKey();
-              final Throwable sphereException = updateResponse.getValue();
+              final Throwable ctpException = updateResponse.getValue();
 
-              if (sphereException != null) {
+              if (ctpException != null) {
                 return executeSupplierIfConcurrentModificationException(
-                    sphereException,
+                    ctpException,
                     () -> fetchAndUpdate(oldTaxCategory, newTaxCategory),
                     () -> {
                       final String errorMessage =
                           format(
                               TAX_CATEGORY_UPDATE_FAILED,
                               newTaxCategory.getKey(),
-                              sphereException.getMessage());
+                              ctpException.getMessage());
                       handleError(
                           errorMessage,
-                          sphereException,
+                          ctpException,
                           oldTaxCategory,
                           newTaxCategory,
                           updateActions,

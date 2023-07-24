@@ -19,8 +19,8 @@ import org.junit.jupiter.api.Test;
 
 class TaxCategorySyncOptionsBuilderTest {
 
-  private static ProjectApiRoot CTP_CLIENT = mock(ProjectApiRoot.class);
-  private TaxCategorySyncOptionsBuilder taxCategorySyncOptionsBuilder =
+  private static final ProjectApiRoot CTP_CLIENT = mock(ProjectApiRoot.class);
+  private final TaxCategorySyncOptionsBuilder taxCategorySyncOptionsBuilder =
       TaxCategorySyncOptionsBuilder.of(CTP_CLIENT);
 
   @Test

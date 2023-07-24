@@ -101,7 +101,7 @@ class TaxCategoryUpdateActionUtilsTest {
   @Test
   void buildRatesUpdateActions_OnlyWithNewRate_ShouldBuildOnlyAddTaxRateAction() {
     when(taxCategory.getRates()).thenReturn(emptyList());
-    TaxRateDraft taxRateDraft =
+    final TaxRateDraft taxRateDraft =
         TaxRateDraftBuilder.of()
             .name("%5 DE")
             .amount(0.05)
@@ -109,7 +109,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .country("DE")
             .build();
 
-    TaxCategoryDraft taxCategoryDraft =
+    final TaxCategoryDraft taxCategoryDraft =
         TaxCategoryDraftBuilder.of().name(OLD_NAME).rates(taxRateDraft).key(OLD_KEY).build();
 
     final List<TaxCategoryUpdateAction> result =
@@ -136,7 +136,7 @@ class TaxCategoryUpdateActionUtilsTest {
 
     when(taxCategory.getRates()).thenReturn(singletonList(taxRate));
 
-    TaxRateDraft taxRateDraft =
+    final TaxRateDraft taxRateDraft =
         TaxRateDraftBuilder.of()
             .name("%16 DE")
             .amount(0.16)
@@ -144,7 +144,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .country("DE")
             .build();
 
-    TaxCategoryDraft taxCategoryDraft =
+    final TaxCategoryDraft taxCategoryDraft =
         TaxCategoryDraftBuilder.of()
             .name("name")
             .rates(taxRateDraft)
@@ -166,7 +166,7 @@ class TaxCategoryUpdateActionUtilsTest {
 
   @Test
   void buildRatesUpdateActions_withoutNewTaxRate_ShouldBuildOnlyRemoveTaxRateAction() {
-    TaxCategoryDraft taxCategoryDraft =
+    final TaxCategoryDraft taxCategoryDraft =
         TaxCategoryDraftBuilder.of()
             .name(OLD_NAME)
             .rates(emptyList())
@@ -186,7 +186,7 @@ class TaxCategoryUpdateActionUtilsTest {
 
   @Test
   void buildRatesUpdateActions_withDifferentTaxRate_ShouldBuildMixedActions() {
-    TaxCategory taxCategory = mock(TaxCategory.class);
+    final TaxCategory taxCategory = mock(TaxCategory.class);
     when(taxCategory.getKey()).thenReturn("tax-category-key");
     when(taxCategory.getName()).thenReturn("name");
     when(taxCategory.getDescription()).thenReturn("desc");
@@ -215,7 +215,7 @@ class TaxCategoryUpdateActionUtilsTest {
     when(taxCategory.getRates()).thenReturn(asList(taxRate1, taxRate2, taxRate3));
 
     // Update: Price is included.
-    TaxRateDraft taxRateDraft1 =
+    final TaxRateDraft taxRateDraft1 =
         TaxRateDraftBuilder.of()
             .name("11% US")
             .amount(0.11)
@@ -225,7 +225,7 @@ class TaxCategoryUpdateActionUtilsTest {
 
     // taxRate-2 is removed.
     // new rate is added.
-    TaxRateDraft taxRateDraft4 =
+    final TaxRateDraft taxRateDraft4 =
         TaxRateDraftBuilder.of()
             .name("15% FR")
             .amount(0.15)
@@ -233,7 +233,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .country("FR")
             .build();
     // same
-    TaxRateDraft taxRateDraft3 =
+    final TaxRateDraft taxRateDraft3 =
         TaxRateDraftBuilder.of()
             .name("21% ES")
             .amount(0.21)
@@ -241,7 +241,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .country("ES")
             .build();
 
-    TaxCategoryDraft taxCategoryDraft =
+    final TaxCategoryDraft taxCategoryDraft =
         TaxCategoryDraftBuilder.of()
             .name("name")
             .rates(taxRateDraft1, taxRateDraft4, taxRateDraft3)
@@ -266,7 +266,7 @@ class TaxCategoryUpdateActionUtilsTest {
   @Test
   void buildTaxRatesUpdateActions_WithOnlyDifferentSubRates_ShouldReturnOnlyReplaceAction() {
 
-    TaxCategory taxCategory = mock(TaxCategory.class);
+    final TaxCategory taxCategory = mock(TaxCategory.class);
     when(taxCategory.getKey()).thenReturn("tax-category-key");
     when(taxCategory.getName()).thenReturn("name");
     when(taxCategory.getDescription()).thenReturn("desc");
@@ -288,7 +288,7 @@ class TaxCategoryUpdateActionUtilsTest {
     final SubRate subRate1 = SubRateBuilder.of().name("subRate-1").amount(0.06).build();
     final SubRate subRate2 = SubRateBuilder.of().name("subRate-2").amount(0.05).build();
 
-    TaxRateDraft taxRateDraft =
+    final TaxRateDraft taxRateDraft =
         TaxRateDraftBuilder.of()
             .name("11% US")
             .amount(0.11)
@@ -298,7 +298,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .subRates(asList(subRate1, subRate2))
             .build();
 
-    TaxCategoryDraft taxCategoryDraft =
+    final TaxCategoryDraft taxCategoryDraft =
         TaxCategoryDraftBuilder.of()
             .name("name")
             .rates(taxRateDraft)
@@ -321,7 +321,7 @@ class TaxCategoryUpdateActionUtilsTest {
   @Test
   void buildTaxRatesUpdateActions_WithMoreSubRates_ShouldReturnOnlyReplaceAction() {
 
-    TaxCategory taxCategory = mock(TaxCategory.class);
+    final TaxCategory taxCategory = mock(TaxCategory.class);
     when(taxCategory.getKey()).thenReturn("tax-category-key");
     when(taxCategory.getName()).thenReturn("name");
     when(taxCategory.getDescription()).thenReturn("desc");
@@ -332,7 +332,7 @@ class TaxCategoryUpdateActionUtilsTest {
     final SubRate subRate1 = SubRateBuilder.of().name("subRate-1").amount(0.06).build();
     final SubRate subRate2 = SubRateBuilder.of().name("subRate-2").amount(0.05).build();
 
-    TaxRateDraft taxRateDraft =
+    final TaxRateDraft taxRateDraft =
         TaxRateDraftBuilder.of()
             .name("11% US")
             .amount(0.11)
@@ -342,7 +342,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .subRates(asList(subRate1, subRate2))
             .build();
 
-    TaxCategoryDraft taxCategoryDraft =
+    final TaxCategoryDraft taxCategoryDraft =
         TaxCategoryDraftBuilder.of()
             .name("name")
             .rates(taxRateDraft)
@@ -365,7 +365,7 @@ class TaxCategoryUpdateActionUtilsTest {
   @Test
   void buildTaxRatesUpdateActions_WithSameTaxRateAndSubRates_ShouldNotBuildAnyAction() {
 
-    TaxCategory taxCategory = mock(TaxCategory.class);
+    final TaxCategory taxCategory = mock(TaxCategory.class);
     when(taxCategory.getKey()).thenReturn("tax-category-key");
     when(taxCategory.getName()).thenReturn("name");
     when(taxCategory.getDescription()).thenReturn("desc");
@@ -375,7 +375,7 @@ class TaxCategoryUpdateActionUtilsTest {
 
     final SubRate subRate1 = SubRateBuilder.of().name("subRate-1").amount(0.11).build();
 
-    TaxRateDraft taxRateDraft =
+    final TaxRateDraft taxRateDraft =
         TaxRateDraftBuilder.of()
             .name("11% US")
             .amount(0.11)
@@ -385,7 +385,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .subRates(subRate1)
             .build();
 
-    TaxCategoryDraft taxCategoryDraft =
+    final TaxCategoryDraft taxCategoryDraft =
         TaxCategoryDraftBuilder.of()
             .name("name")
             .rates(taxRateDraft)
@@ -402,7 +402,7 @@ class TaxCategoryUpdateActionUtilsTest {
   @Test
   void buildTaxRatesUpdateActions_WithNullOldState_ShouldReturnOnlyReplaceAction() {
 
-    TaxCategory taxCategory = mock(TaxCategory.class);
+    final TaxCategory taxCategory = mock(TaxCategory.class);
     when(taxCategory.getKey()).thenReturn("tax-category-key");
     when(taxCategory.getName()).thenReturn("name");
     when(taxCategory.getDescription()).thenReturn("desc");
@@ -413,7 +413,7 @@ class TaxCategoryUpdateActionUtilsTest {
     final SubRate subRate1 = SubRateBuilder.of().name("subRate-1").amount(0.06).build();
     final SubRate subRate2 = SubRateBuilder.of().name("subRate-2").amount(0.05).build();
 
-    TaxRateDraft taxRateDraft =
+    final TaxRateDraft taxRateDraft =
         TaxRateDraftBuilder.of()
             .name("11% US")
             .amount(0.11)
@@ -423,7 +423,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .subRates(asList(subRate1, subRate2))
             .build();
 
-    TaxCategoryDraft taxCategoryDraft =
+    final TaxCategoryDraft taxCategoryDraft =
         TaxCategoryDraftBuilder.of()
             .name("name")
             .rates(taxRateDraft)
@@ -444,7 +444,7 @@ class TaxCategoryUpdateActionUtilsTest {
   @Test
   void buildTaxRatesUpdateActions_WithRemovedState_ShouldReturnRemoveAndAddActions() {
 
-    TaxCategory taxCategory = mock(TaxCategory.class);
+    final TaxCategory taxCategory = mock(TaxCategory.class);
     when(taxCategory.getKey()).thenReturn("tax-category-key");
     when(taxCategory.getName()).thenReturn("name");
     when(taxCategory.getDescription()).thenReturn("desc");
@@ -455,7 +455,7 @@ class TaxCategoryUpdateActionUtilsTest {
     final SubRate subRate1 = SubRateBuilder.of().name("subRate-1").amount(0.05).build();
     final SubRate subRate2 = SubRateBuilder.of().name("subRate-2").amount(0.06).build();
 
-    TaxRateDraft taxRateDraft =
+    final TaxRateDraft taxRateDraft =
         TaxRateDraftBuilder.of()
             .name("11% US")
             .amount(0.11)
@@ -465,7 +465,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .subRates(asList(subRate1, subRate2))
             .build();
 
-    TaxCategoryDraft taxCategoryDraft =
+    final TaxCategoryDraft taxCategoryDraft =
         TaxCategoryDraftBuilder.of()
             .name("name")
             .rates(taxRateDraft)
@@ -486,7 +486,7 @@ class TaxCategoryUpdateActionUtilsTest {
   @Test
   void WhenTaxRatesWithAndWithoutState_WithRemovedTaxRate_ShouldBuildAndReturnRemoveAction() {
 
-    TaxCategory taxCategory = mock(TaxCategory.class);
+    final TaxCategory taxCategory = mock(TaxCategory.class);
     when(taxCategory.getKey()).thenReturn("tax-category-key");
     when(taxCategory.getName()).thenReturn("name");
     when(taxCategory.getDescription()).thenReturn("desc");
@@ -495,7 +495,7 @@ class TaxCategoryUpdateActionUtilsTest {
     final TaxRate taxRate2 = buildTaxRate(null);
     when(taxCategory.getRates()).thenReturn(asList(taxRate1, taxRate2));
 
-    TaxRateDraft taxRateDraft =
+    final TaxRateDraft taxRateDraft =
         TaxRateDraftBuilder.of()
             .name(taxRate2.getName())
             .amount(taxRate2.getAmount())
@@ -506,7 +506,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .build();
 
     // TaxCategoryDraft with only one taxRate
-    TaxCategoryDraft taxCategoryDraft =
+    final TaxCategoryDraft taxCategoryDraft =
         TaxCategoryDraftBuilder.of()
             .name("name")
             .rates(taxRateDraft)
@@ -525,7 +525,7 @@ class TaxCategoryUpdateActionUtilsTest {
   @Test
   void buildTaxRatesUpdateActions_WithRemovedCountryCode_ShouldReturnOnlyRemoveAction() {
 
-    TaxCategory taxCategory = mock(TaxCategory.class);
+    final TaxCategory taxCategory = mock(TaxCategory.class);
     when(taxCategory.getKey()).thenReturn("tax-category-key");
     when(taxCategory.getName()).thenReturn("name");
     when(taxCategory.getDescription()).thenReturn("desc");
@@ -536,7 +536,7 @@ class TaxCategoryUpdateActionUtilsTest {
     final SubRate subRate1 = SubRateBuilder.of().name("subRate-1").amount(0.06).build();
     final SubRate subRate2 = SubRateBuilder.of().name("subRate-2").amount(0.05).build();
 
-    TaxRateDraft taxRateDraft =
+    final TaxRateDraft taxRateDraft =
         TaxRateDraftBuilder.of()
             .name("11% US")
             .amount(0.11)
@@ -546,7 +546,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .build();
     taxRateDraft.setCountry(null);
 
-    TaxCategoryDraft taxCategoryDraft =
+    final TaxCategoryDraft taxCategoryDraft =
         TaxCategoryDraftBuilder.of()
             .name("name")
             .rates(taxRateDraft)
@@ -566,7 +566,7 @@ class TaxCategoryUpdateActionUtilsTest {
   @Test
   void buildTaxRatesUpdateActions_WithDuplicatedTaxRateDrafts_ShouldReturnOnlyFirstDraftInAction() {
 
-    TaxCategory taxCategory = mock(TaxCategory.class);
+    final TaxCategory taxCategory = mock(TaxCategory.class);
     when(taxCategory.getKey()).thenReturn("tax-category-key");
     when(taxCategory.getName()).thenReturn("name");
     when(taxCategory.getDescription()).thenReturn("desc");
@@ -577,7 +577,7 @@ class TaxCategoryUpdateActionUtilsTest {
     final SubRate subRate1 = SubRateBuilder.of().name("subRate-1").amount(0.06).build();
     final SubRate subRate2 = SubRateBuilder.of().name("subRate-2").amount(0.05).build();
 
-    TaxRateDraft taxRateDraft =
+    final TaxRateDraft taxRateDraft =
         TaxRateDraftBuilder.of()
             .name("11% US")
             .amount(0.11)
@@ -587,7 +587,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .subRates(asList(subRate1, subRate2))
             .build();
 
-    TaxRateDraft duplicatedCountryCodeAndState =
+    final TaxRateDraft duplicatedCountryCodeAndState =
         TaxRateDraftBuilder.of()
             .name("12% US")
             .amount(0.12)
@@ -596,7 +596,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .state("state")
             .build();
 
-    TaxCategoryDraft taxCategoryDraft =
+    final TaxCategoryDraft taxCategoryDraft =
         TaxCategoryDraftBuilder.of()
             .name("name")
             .rates(taxRateDraft, duplicatedCountryCodeAndState)
@@ -619,7 +619,7 @@ class TaxCategoryUpdateActionUtilsTest {
   @Test
   void
       buildTaxRatesUpdateActions_WithNewTaxRateDraftsWithSameCountryAndDifferentStates_ShouldCreateCorrectActions() {
-    TaxCategory taxCategory = mock(TaxCategory.class);
+    final TaxCategory taxCategory = mock(TaxCategory.class);
     when(taxCategory.getKey()).thenReturn("tax-category-key");
     when(taxCategory.getName()).thenReturn("name");
     when(taxCategory.getDescription()).thenReturn("desc");
@@ -651,7 +651,7 @@ class TaxCategoryUpdateActionUtilsTest {
     when(taxCategory.getRates()).thenReturn(asList(taxRate1, taxRate2, taxRate4));
 
     final SubRate subRate3 = SubRateBuilder.of().name("subRate-3").amount(0.13).build();
-    TaxRateDraft taxRateDraft1 =
+    final TaxRateDraft taxRateDraft1 =
         TaxRateDraftBuilder.of()
             .name("11% US")
             .amount(0.11)
@@ -660,7 +660,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .state("state-1")
             .build();
 
-    TaxRateDraft taxRateDraft2 =
+    final TaxRateDraft taxRateDraft2 =
         TaxRateDraftBuilder.of()
             .name("12% US")
             .amount(0.12)
@@ -669,7 +669,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .state("state-2")
             .build();
 
-    TaxRateDraft newTaxRateDraft =
+    final TaxRateDraft newTaxRateDraft =
         TaxRateDraftBuilder.of()
             .name("13% US")
             .amount(0.13)
@@ -679,7 +679,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .subRates(singletonList(subRate3))
             .build();
 
-    TaxCategoryDraft taxCategoryDraft =
+    final TaxCategoryDraft taxCategoryDraft =
         TaxCategoryDraftBuilder.of()
             .name("name")
             .rates(taxRateDraft1, taxRateDraft2, newTaxRateDraft)
