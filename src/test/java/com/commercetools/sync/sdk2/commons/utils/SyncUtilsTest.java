@@ -120,8 +120,8 @@ class SyncUtilsTest {
   @Test
   void getReferenceWithKeyReplaced_WithNullReference_ShouldReturnNullReference() {
     final Reference keyReplacedReference =
-        getReferenceWithKeyReplaced(
-            null, () -> CategoryReferenceBuilder.of().id("id").build(), referenceIdToKeyCache);
+        getReferenceWithKey(
+            null, referenceIdToKeyCache, () -> CategoryReferenceBuilder.of().id("id").build());
     assertThat(keyReplacedReference).isNull();
   }
 
@@ -137,13 +137,13 @@ class SyncUtilsTest {
         CategoryReferenceBuilder.of().id(categoryId).build();
 
     final Reference keyReplacedReference =
-        getReferenceWithKeyReplaced(
+        getReferenceWithKey(
             categoryReference,
+            referenceIdToKeyCache,
             () ->
                 CategoryReferenceBuilder.of()
                     .id(referenceIdToKeyCache.get(categoryReference.getId()))
-                    .build(),
-            referenceIdToKeyCache);
+                    .build());
 
     assertThat(keyReplacedReference).isNotNull();
     assertThat(keyReplacedReference.getId()).isEqualTo(categoryKey);
@@ -177,13 +177,13 @@ class SyncUtilsTest {
         CategoryReferenceBuilder.of().id(categoryUuid).build();
 
     final Reference keyReplacedReference =
-        getReferenceWithKeyReplaced(
+        getReferenceWithKey(
             categoryReference,
+            referenceIdToKeyCache,
             () ->
                 CategoryReferenceBuilder.of()
                     .id(referenceIdToKeyCache.get(categoryReference.getId()))
-                    .build(),
-            referenceIdToKeyCache);
+                    .build());
 
     assertThat(keyReplacedReference).isNotNull();
     assertThat(keyReplacedReference.getId()).isEqualTo(categoryUuid);
