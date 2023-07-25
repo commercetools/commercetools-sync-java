@@ -10,6 +10,7 @@ import com.commercetools.api.models.product.Product;
 import com.commercetools.api.models.product.ProductChangePriceAction;
 import com.commercetools.api.models.product.ProductDraft;
 import com.commercetools.api.models.product.ProductUpdateAction;
+import com.commercetools.api.models.type.ResourceTypeId;
 import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
 import com.commercetools.sync.sdk2.commons.utils.CustomUpdateActionUtils;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
@@ -158,7 +159,7 @@ public final class ProductVariantPriceUpdateActionUtils {
             variantId,
             PriceCustomTypeAdapter::getId,
             priceCustomTypeAdapter ->
-                priceCustomTypeAdapter.getTypeId(), // return resource ID "product-price"
+                ResourceTypeId.PRODUCT_PRICE.getJsonName(), // return resource ID "product-price"
             PriceCustomTypeAdapter::getId,
             syncOptions);
 

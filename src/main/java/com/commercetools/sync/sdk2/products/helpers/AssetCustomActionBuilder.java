@@ -16,12 +16,7 @@ public class AssetCustomActionBuilder implements GenericCustomActionBuilder<Prod
   @Nonnull
   public ProductUpdateAction buildRemoveCustomTypeAction(
       @Nullable final Long variantId, @Nullable final String assetKey) {
-    return ProductSetAssetCustomTypeAction.builder()
-        .variantId(variantId)
-        .assetKey(assetKey)
-        .fields((FieldContainer) null)
-        .staged(true)
-        .build();
+    return ProductSetAssetCustomTypeAction.builder().build();
   }
 
   @Override

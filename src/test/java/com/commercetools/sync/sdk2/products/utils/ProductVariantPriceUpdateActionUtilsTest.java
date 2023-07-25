@@ -230,10 +230,7 @@ class ProductVariantPriceUpdateActionUtilsTest {
                 ProductSetProductPriceCustomFieldAction.builder()
                     .name("foo")
                     .priceId(DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDY.getId())
-                    .value(
-                        DRAFT_DE_100_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDX
-                            .getCustom()
-                            .getFields())
+                    .value(JsonNodeFactory.instance.textNode("X"))
                     .staged(true)
                     .build()),
             emptyList()),
