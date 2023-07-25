@@ -41,28 +41,6 @@ public final class CompletableFutureUtils {
   }
 
   /**
-   * Creates a Future containing a stream of value results after the mapper function is applied to
-   * each value in the supplied collection and completed it. The type of the collection is decided
-   * upon on by the supplied collector.
-   *
-   * @param values collection of values to apply a mapper function that would map each to a {@link
-   *     java.util.concurrent.CompletionStage}.
-   * @param mapper function to map each value to a {@link java.util.concurrent.CompletionStage}
-   * @param <T> The type of the values.
-   * @param <S> The type of the mapped completed values.
-   * @return a future containing a stream of completed stage results of the values after the mapper
-   *     function was applied to each value in the supplied collection.
-   */
-  @Nonnull
-  public static <T, S> CompletableFuture<Stream<S>> mapValuesToFutureOfCompletedValues(
-      @Nonnull final Collection<T> values, @Nonnull final Function<T, CompletionStage<S>> mapper) {
-
-    final List<CompletableFuture<S>> futureList =
-        mapValuesToFutures(values.stream(), mapper, toList());
-    return collectionOfFuturesToFutureOfCollection(futureList, toList()).thenApply(List::stream);
-  }
-
-  /**
    * Creates a Future containing a collection of value results after the mapper function is applied
    * to each value in the supplied stream and completed it. The type of the returned collection is
    * decided by the supplied collector.
@@ -78,7 +56,7 @@ public final class CompletableFutureUtils {
    *     function was applied to each one.
    */
   @Nonnull
-  public static <T, S, U extends Collection<S>>
+  private static <T, S, U extends Collection<S>>
       CompletableFuture<U> mapValuesToFutureOfCompletedValues(
           @Nonnull final Stream<T> values,
           @Nonnull final Function<T, CompletionStage<S>> mapper,
