@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -296,7 +297,7 @@ class CustomObjectServiceImplTest {
     final String json = ow.writeValueAsString(errorResponse);
     when(byProjectKeyCustomObjectsPost.execute())
         .thenReturn(
-            CompletableFuture.failedFuture(
+            CompletableFutureUtils.failed(
                 new ConcurrentModificationException(
                     409,
                     "",
