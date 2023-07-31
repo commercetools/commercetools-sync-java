@@ -3,7 +3,7 @@
 ## Setup
 
 1. Benchmarks are run by JUnit as a separate source set just like main, test and integration-test. The benchmarks can be 
-found [here](/src/benchmark/java/com/commercetools/sync/sdk2/benchmark).
+found [here](/src/benchmark/java/com/commercetools/sync/benchmark).
 
 2. Every time a commit is made in any branch, the benchmarks are run and the run shows whether the benchmarks exceed the
 pre-defined threshold, so that we know if the corresponding commit influences the performance.
