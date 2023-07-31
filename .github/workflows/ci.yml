@@ -31,7 +31,7 @@ jobs:
           java-version: 11
           distribution: 'zulu'
       - name: Build with Gradle
-        run: ./gradlew clean setLibraryVersion test integrationTest jacocoTestCoverageVerification jacocoTestReport
+        run: ./gradlew clean test integrationTest jacocoTestCoverageVerification jacocoTestReport
         env:
           SOURCE_PROJECT_KEY: java-sync-source
           SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
@@ -58,11 +58,8 @@ jobs:
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3
-      - name: Fetch Library version
-        id: vars
-        run: echo ::set-output name=libVersion::${GITHUB_REF#refs/*/}
       - name: benchmark test
         if: ${{ success() }}
-        run: ./gradlew clean setLibraryVersion benchmark
+        run: ./gradlew -Dbuild.version="${{ github.ref_name }}" clean benchmark
         env:
-          GITHUB_TAG: ${{ steps.vars.outputs.libVersion }}
+          GITHUB_TAG: ${{ github.ref_name }}
