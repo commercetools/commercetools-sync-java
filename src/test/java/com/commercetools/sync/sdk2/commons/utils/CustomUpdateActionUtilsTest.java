@@ -30,7 +30,6 @@ import com.commercetools.api.models.type.CustomFields;
 import com.commercetools.api.models.type.CustomFieldsBuilder;
 import com.commercetools.api.models.type.CustomFieldsDraft;
 import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
-import com.commercetools.api.models.type.FieldContainer;
 import com.commercetools.api.models.type.FieldContainerBuilder;
 import com.commercetools.api.models.type.ResourceTypeId;
 import com.commercetools.api.models.type.TypeReference;
@@ -613,11 +612,7 @@ class CustomUpdateActionUtilsTest {
                   (ProductSetProductPriceCustomFieldAction) action;
 
               assertThat(setProductPriceCustomFieldAction.getName()).isEqualTo("backgroundColor");
-              assertThat(
-                      ((FieldContainer) setProductPriceCustomFieldAction.getValue())
-                          .values()
-                          .get("backgroundColor"))
-                  .isEqualTo(null);
+              assertThat(setProductPriceCustomFieldAction.getValue()).isEqualTo(null);
               return true;
             });
   }
@@ -769,6 +764,7 @@ class CustomUpdateActionUtilsTest {
 
     final Asset oldAsset = mock(Asset.class);
     when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+    when(oldAsset.getKey()).thenReturn("oldKey");
 
     final Map<String, Object> newCustomFieldsMap = new HashMap<>();
     newCustomFieldsMap.put(
@@ -779,10 +775,10 @@ class CustomUpdateActionUtilsTest {
         buildSetCustomFieldsUpdateActions(
             oldCustomFieldsMap,
             newCustomFieldsMap,
-            AssetCustomTypeAdapter.of(mock(Asset.class)),
+            AssetCustomTypeAdapter.of(oldAsset),
             new AssetCustomActionBuilder(),
             1L,
-            AssetCustomTypeAdapter::getId);
+            AssetCustomTypeAdapter::getKey);
 
     // assertion
     assertThat(updateActions)
@@ -791,8 +787,7 @@ class CustomUpdateActionUtilsTest {
                 .assetKey(oldAsset.getKey())
                 .variantId(1L)
                 .name("setOfBooleans")
-                .value(
-                    FieldContainerBuilder.of().values(Map.of("setOfBooleans", emptyList())).build())
+                .value(emptyList())
                 .staged(true)
                 .build());
   }
@@ -809,6 +804,7 @@ class CustomUpdateActionUtilsTest {
 
     final Asset oldAsset = mock(Asset.class);
     when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+    when(oldAsset.getKey()).thenReturn("oldKey");
 
     final Map<String, Object> newCustomFieldsMap = new HashMap<>();
     newCustomFieldsMap.put("setOfBooleans", Collections.emptyList());
@@ -818,10 +814,10 @@ class CustomUpdateActionUtilsTest {
         buildSetCustomFieldsUpdateActions(
             oldCustomFieldsMap,
             newCustomFieldsMap,
-            AssetCustomTypeAdapter.of(mock(Asset.class)),
+            AssetCustomTypeAdapter.of(oldAsset),
             new AssetCustomActionBuilder(),
             1L,
-            AssetCustomTypeAdapter::getId);
+            AssetCustomTypeAdapter::getKey);
 
     // assertion
     assertThat(updateActions)
@@ -830,8 +826,7 @@ class CustomUpdateActionUtilsTest {
                 .assetKey(oldAsset.getKey())
                 .variantId(1L)
                 .name("setOfBooleans")
-                .value(
-                    FieldContainerBuilder.of().values(Map.of("setOfBooleans", emptyList())).build())
+                .value(emptyList())
                 .staged(true)
                 .build());
   }
@@ -848,6 +843,7 @@ class CustomUpdateActionUtilsTest {
 
     final Asset oldAsset = mock(Asset.class);
     when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+    when(oldAsset.getKey()).thenReturn("oldKey");
 
     final Map<String, Object> newCustomFieldsMap = new HashMap<>();
     newCustomFieldsMap.put("setOfBooleans", Collections.emptyList());
@@ -857,10 +853,10 @@ class CustomUpdateActionUtilsTest {
         buildSetCustomFieldsUpdateActions(
             oldCustomFieldsMap,
             newCustomFieldsMap,
-            AssetCustomTypeAdapter.of(mock(Asset.class)),
+            AssetCustomTypeAdapter.of(oldAsset),
             new AssetCustomActionBuilder(),
             1L,
-            AssetCustomTypeAdapter::getId);
+            AssetCustomTypeAdapter::getKey);
 
     // assertion
     assertThat(updateActions)
@@ -869,8 +865,7 @@ class CustomUpdateActionUtilsTest {
                 .assetKey(oldAsset.getKey())
                 .variantId(1L)
                 .name("setOfBooleans")
-                .value(
-                    FieldContainerBuilder.of().values(Map.of("setOfBooleans", emptyList())).build())
+                .value(emptyList())
                 .staged(true)
                 .build());
   }
@@ -884,6 +879,7 @@ class CustomUpdateActionUtilsTest {
 
     final Asset oldAsset = mock(Asset.class);
     when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+    when(oldAsset.getKey()).thenReturn("oldKey");
 
     final Map<String, Object> newCustomFieldsMap = new HashMap<>();
     newCustomFieldsMap.put("setOfBooleans", Collections.emptyList());
@@ -893,10 +889,10 @@ class CustomUpdateActionUtilsTest {
         buildSetCustomFieldsUpdateActions(
             new HashMap<>(),
             newCustomFieldsMap,
-            AssetCustomTypeAdapter.of(mock(Asset.class)),
+            AssetCustomTypeAdapter.of(oldAsset),
             new AssetCustomActionBuilder(),
             1L,
-            AssetCustomTypeAdapter::getId);
+            AssetCustomTypeAdapter::getKey);
 
     // assertion
     assertThat(updateActions)
@@ -905,8 +901,7 @@ class CustomUpdateActionUtilsTest {
                 .assetKey(oldAsset.getKey())
                 .variantId(1L)
                 .name("setOfBooleans")
-                .value(
-                    FieldContainerBuilder.of().values(Map.of("setOfBooleans", emptyList())).build())
+                .value(emptyList())
                 .staged(true)
                 .build());
   }
@@ -923,6 +918,7 @@ class CustomUpdateActionUtilsTest {
 
     final Asset oldAsset = mock(Asset.class);
     when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+    when(oldAsset.getKey()).thenReturn("oldKey");
 
     final Map<String, Object> newCustomFieldsMap = new HashMap<>();
     newCustomFieldsMap.put("setOfBooleans", Collections.emptyList());
@@ -932,10 +928,10 @@ class CustomUpdateActionUtilsTest {
         buildSetCustomFieldsUpdateActions(
             new HashMap<>(),
             newCustomFieldsMap,
-            AssetCustomTypeAdapter.of(mock(Asset.class)),
+            AssetCustomTypeAdapter.of(oldAsset),
             new AssetCustomActionBuilder(),
             1L,
-            AssetCustomTypeAdapter::getId);
+            AssetCustomTypeAdapter::getKey);
 
     // assertion
     assertThat(updateActions)
@@ -944,8 +940,7 @@ class CustomUpdateActionUtilsTest {
                 .assetKey(oldAsset.getKey())
                 .variantId(1L)
                 .name("setOfBooleans")
-                .value(
-                    FieldContainerBuilder.of().values(Map.of("setOfBooleans", emptyList())).build())
+                .value(emptyList())
                 .staged(true)
                 .build());
   }
@@ -962,6 +957,7 @@ class CustomUpdateActionUtilsTest {
 
     final Asset oldAsset = mock(Asset.class);
     when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+    when(oldAsset.getKey()).thenReturn("oldKey");
 
     final Map<String, Object> newCustomFieldsMap = new HashMap<>();
     newCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.nullNode());
@@ -971,10 +967,10 @@ class CustomUpdateActionUtilsTest {
         buildSetCustomFieldsUpdateActions(
             oldCustomFieldsMap,
             newCustomFieldsMap,
-            AssetCustomTypeAdapter.of(mock(Asset.class)),
+            AssetCustomTypeAdapter.of(oldAsset),
             new AssetCustomActionBuilder(),
             1L,
-            AssetCustomTypeAdapter::getId);
+            AssetCustomTypeAdapter::getKey);
 
     assertThat(updateActions)
         .containsExactly(
@@ -982,10 +978,7 @@ class CustomUpdateActionUtilsTest {
                 .assetKey(oldAsset.getKey())
                 .variantId(1L)
                 .name("setOfBooleans")
-                .value(
-                    FieldContainerBuilder.of()
-                        .values(Collections.singletonMap("setOfBooleans", null))
-                        .build())
+                .value(null)
                 .staged(true)
                 .build());
   }

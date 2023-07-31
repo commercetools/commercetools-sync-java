@@ -3,8 +3,6 @@ package com.commercetools.sync.sdk2.customers.utils;
 import com.commercetools.api.models.customer.CustomerSetCustomFieldActionBuilder;
 import com.commercetools.api.models.customer.CustomerSetCustomTypeActionBuilder;
 import com.commercetools.api.models.customer.CustomerUpdateAction;
-import com.commercetools.api.models.type.FieldContainerBuilder;
-import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.commercetools.sync.sdk2.commons.helpers.GenericCustomActionBuilder;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -40,17 +38,10 @@ public final class CustomerCustomActionBuilder
       @Nonnull final String customTypeId,
       @Nullable final Map<String, Object> customFieldsJsonMap) {
 
-    final CustomerSetCustomTypeActionBuilder actionBuilder =
-        CustomerSetCustomTypeActionBuilder.of()
-            .type(TypeResourceIdentifierBuilder.of().id(customTypeId).build());
-
-    if (customFieldsJsonMap != null && !customFieldsJsonMap.isEmpty()) {
-      final FieldContainerBuilder customFields = FieldContainerBuilder.of();
-      customFieldsJsonMap.forEach(customFields::addValue);
-      actionBuilder.fields(customFields.build());
-    }
-
-    return actionBuilder.build();
+    return CustomerSetCustomTypeActionBuilder.of()
+        .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.id(customTypeId))
+        .fields(fieldContainerBuilder -> fieldContainerBuilder.values(customFieldsJsonMap))
+        .build();
   }
 
   @Nonnull
