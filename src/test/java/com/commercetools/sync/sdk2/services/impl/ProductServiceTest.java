@@ -33,6 +33,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -140,7 +141,7 @@ class ProductServiceTest {
     final String json = ow.writeValueAsString(errorResponse);
     when(byProjectKeyProductsPost.execute())
         .thenReturn(
-            CompletableFuture.failedFuture(
+            CompletableFutureUtils.failed(
                 new ConcurrentModificationException(
                     409,
                     "",
