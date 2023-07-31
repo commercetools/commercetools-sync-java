@@ -27,12 +27,11 @@ Supported resources: [Categories](/docs/sdk2/usage/CATEGORY_SYNC.md), [Products]
     - [SBT](#sbt)
     - [Ivy](#ivy)
 - [Release Notes](/docs/RELEASE_NOTES.md)
-- [Deprecated Version](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/9.2.3/jar)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 ## Usage
 
-Create your own event or cronjob based application and use the library to transform any external data (JSON, CSV, XML, REST API, DB, ...) into [JVM-SDK-V2](http://commercetools.github.io/commercetools-sdk-java-v2) resource draft objects (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-sdk-java-v2/blob/main/commercetools/commercetools-sdk-java-api/src/main/java-generated/com/commercetools/api/models/category/CategoryDraft.java) and import those into the commercetools project.
+Create your own event or cronjob based application and use the library to transform any external data (JSON, CSV, XML, REST API, DB, ...) into [JVM-SDK-V2](http://commercetools.github.io/commercetools-sdk-java-v2) resource draft objects (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-sdk-java-v2/blob/main/commercetools/commercetools-sdk-java-api/src/main/java-generated/com/commercetools/api/models/category/CategoryDraft.java)) and import those into the commercetools project.
 
 Notes:
 
