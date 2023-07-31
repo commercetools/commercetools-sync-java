@@ -7,6 +7,10 @@ public final class SyncSolutionInfo extends SolutionInfo {
   /** This value is injected by the script at gradle-scripts/set-library-version.gradle. */
   public static final String LIB_VERSION = "#{LIB_VERSION}";
 
+  private static final String LIB_WEBSITE = "https://github.com/commercetools/commercetools-sync-java";
+
+  private static final String LIB_HELP = "https://commercetools.atlassian.net/servicedesk/customer/portal/22";
+
   /**
    * Extends {@link SolutionInfo} class of the JVM SDK to append to the User-Agent header with
    * information of the commercetools-sync-java library
@@ -17,5 +21,7 @@ public final class SyncSolutionInfo extends SolutionInfo {
   public SyncSolutionInfo() {
     setName(LIB_NAME);
     setVersion(LIB_VERSION);
+    setWebsite(LIB_WEBSITE);
+    setEmergencyContact(LIB_HELP);
   }
 }
