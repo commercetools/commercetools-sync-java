@@ -1,42 +1,36 @@
 package com.commercetools.sync.integration.ctpprojectsource.cartdiscounts;
 
-import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.createCartDiscountCustomType;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.deleteCartDiscountsFromTargetAndSource;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.populateSourceProject;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.populateTargetProject;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
+import static com.commercetools.api.models.common.DefaultCurrencyUnits.EUR;
+import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.*;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.commercetools.sync.cartdiscounts.CartDiscountSync;
-import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
-import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
-import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
-import com.commercetools.sync.cartdiscounts.utils.CartDiscountTransformUtils;
-import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
-import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import io.sphere.sdk.cartdiscounts.AbsoluteCartDiscountValue;
-import io.sphere.sdk.cartdiscounts.CartDiscount;
-import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
-import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
-import io.sphere.sdk.cartdiscounts.CartDiscountValue;
-import io.sphere.sdk.cartdiscounts.CartPredicate;
-import io.sphere.sdk.cartdiscounts.ShippingCostTarget;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeCartPredicate;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeTarget;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeValue;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.SetCustomType;
-import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.Type;
-import io.sphere.sdk.utils.MoneyImpl;
+import com.commercetools.api.models.cart_discount.CartDiscount;
+import com.commercetools.api.models.cart_discount.CartDiscountChangeCartPredicateActionBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountChangeTargetActionBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountChangeValueActionBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountDraft;
+import com.commercetools.api.models.cart_discount.CartDiscountDraftBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountPagedQueryResponse;
+import com.commercetools.api.models.cart_discount.CartDiscountSetCustomTypeActionBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountShippingCostTargetBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountUpdateAction;
+import com.commercetools.api.models.cart_discount.CartDiscountValueAbsoluteDraftBuilder;
+import com.commercetools.api.models.common.MoneyBuilder;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.Type;
+import com.commercetools.sync.sdk2.cartdiscounts.CartDiscountSync;
+import com.commercetools.sync.sdk2.cartdiscounts.CartDiscountSyncOptions;
+import com.commercetools.sync.sdk2.cartdiscounts.CartDiscountSyncOptionsBuilder;
+import com.commercetools.sync.sdk2.cartdiscounts.helpers.CartDiscountSyncStatistics;
+import com.commercetools.sync.sdk2.cartdiscounts.utils.CartDiscountTransformUtils;
+import com.commercetools.sync.sdk2.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -51,7 +45,6 @@ class CartDiscountSyncIT {
   @BeforeEach
   void setup() {
     deleteCartDiscountsFromTargetAndSource();
-    deleteTypesFromTargetAndSource();
     populateSourceProject();
     populateTargetProject();
     referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
@@ -60,14 +53,19 @@ class CartDiscountSyncIT {
   @AfterAll
   static void tearDown() {
     deleteCartDiscountsFromTargetAndSource();
-    deleteTypesFromTargetAndSource();
   }
 
   @Test
   void sync_WithoutUpdates_ShouldReturnProperStatistics() {
     // preparation
     final List<CartDiscount> cartDiscounts =
-        CTP_SOURCE_CLIENT.execute(CartDiscountQuery.of()).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT
+            .cartDiscounts()
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(CartDiscountPagedQueryResponse::getResults)
+            .join();
 
     final List<CartDiscountDraft> cartDiscountDrafts =
         CartDiscountTransformUtils.toCartDiscountDrafts(
@@ -106,11 +104,17 @@ class CartDiscountSyncIT {
   void sync_WithUpdates_ShouldReturnProperStatistics() {
     // preparation
     final List<CartDiscount> cartDiscounts =
-        CTP_SOURCE_CLIENT.execute(CartDiscountQuery.of()).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT
+            .cartDiscounts()
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(CartDiscountPagedQueryResponse::getResults)
+            .join();
     final String newTypeKey = "new-type";
-    createCartDiscountCustomType(newTypeKey, Locale.ENGLISH, newTypeKey, CTP_SOURCE_CLIENT);
+    ensureCartDiscountCustomType(newTypeKey, Locale.ENGLISH, newTypeKey, CTP_SOURCE_CLIENT);
     final Type newTargetCustomType =
-        createCartDiscountCustomType(newTypeKey, Locale.ENGLISH, newTypeKey, CTP_TARGET_CLIENT);
+        ensureCartDiscountCustomType(newTypeKey, Locale.ENGLISH, newTypeKey, CTP_TARGET_CLIENT);
 
     final List<CartDiscountDraft> cartDiscountDrafts =
         CartDiscountTransformUtils.toCartDiscountDrafts(
@@ -123,16 +127,31 @@ class CartDiscountSyncIT {
             .map(
                 draft ->
                     CartDiscountDraftBuilder.of(draft)
-                        .cartPredicate(CartPredicate.of("totalPrice >= \"100 EUR\""))
-                        .value(AbsoluteCartDiscountValue.of(MoneyImpl.of(40, EUR)))
-                        .target(ShippingCostTarget.of())
-                        .custom(CustomFieldsDraft.ofTypeKeyAndJson(newTypeKey, emptyMap()))
+                        .cartPredicate("totalPrice >= \"100 EUR\"")
+                        .value(
+                            CartDiscountValueAbsoluteDraftBuilder.of()
+                                .money(
+                                    MoneyBuilder.of()
+                                        .currencyCode(EUR.getCurrencyCode())
+                                        .centAmount(40L)
+                                        .build())
+                                .build())
+                        .target(CartDiscountShippingCostTargetBuilder.of().build())
+                        .custom(
+                            CustomFieldsDraftBuilder.of()
+                                .type(
+                                    typeResourceIdentifierBuilder ->
+                                        typeResourceIdentifierBuilder.key(newTypeKey))
+                                .fields(
+                                    fieldContainerBuilder ->
+                                        fieldContainerBuilder.values(emptyMap()))
+                                .build())
                         .build())
             .collect(Collectors.toList());
 
     final List<String> errorMessages = new ArrayList<>();
     final List<Throwable> exceptions = new ArrayList<>();
-    final List<UpdateAction<CartDiscount>> updateActionsList = new ArrayList<>();
+    final List<CartDiscountUpdateAction> updateActionsList = new ArrayList<>();
 
     final CartDiscountSyncOptions cartDiscountSyncOptions =
         CartDiscountSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -159,11 +178,28 @@ class CartDiscountSyncIT {
     assertThat(exceptions).isEmpty();
     assertThat(updateActionsList)
         .containsExactly(
-            ChangeValue.of(
-                CartDiscountValue.ofAbsolute(Collections.singletonList(MoneyImpl.of(40, EUR)))),
-            ChangeCartPredicate.of("totalPrice >= \"100 EUR\""),
-            ChangeTarget.of(ShippingCostTarget.of()),
-            SetCustomType.ofTypeIdAndJson(newTargetCustomType.getId(), emptyMap()));
+            CartDiscountChangeValueActionBuilder.of()
+                .value(
+                    CartDiscountValueAbsoluteDraftBuilder.of()
+                        .money(
+                            MoneyBuilder.of()
+                                .centAmount(40L)
+                                .currencyCode(EUR.getCurrencyCode())
+                                .build())
+                        .build())
+                .build(),
+            CartDiscountChangeCartPredicateActionBuilder.of()
+                .cartPredicate("totalPrice >= \"100 EUR\"")
+                .build(),
+            CartDiscountChangeTargetActionBuilder.of()
+                .target(CartDiscountShippingCostTargetBuilder.of().build())
+                .build(),
+            CartDiscountSetCustomTypeActionBuilder.of()
+                .type(
+                    typeResourceIdentifierBuilder ->
+                        typeResourceIdentifierBuilder.id(newTargetCustomType.getId()))
+                .fields(fieldContainerBuilder -> fieldContainerBuilder.values(emptyMap()))
+                .build());
     assertThat(cartDiscountSyncStatistics).hasValues(2, 1, 1, 0);
     assertThat(cartDiscountSyncStatistics.getReportMessage())
         .isEqualTo(

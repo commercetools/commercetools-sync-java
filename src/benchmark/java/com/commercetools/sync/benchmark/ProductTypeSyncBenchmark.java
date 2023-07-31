@@ -1,38 +1,29 @@
 package com.commercetools.sync.benchmark;
 
-import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATES;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.PRODUCT_TYPE_SYNC;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.SUBMIT_BENCHMARK_RESULT;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
-import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.*;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_1;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.utils.QuadConsumer;
-import com.commercetools.sync.commons.utils.TriConsumer;
-import com.commercetools.sync.producttypes.ProductTypeSync;
-import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
-import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
-import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
-import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
-import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
-import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
-import io.sphere.sdk.queries.PagedQueryResult;
+import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
+import com.commercetools.api.models.product_type.AttributeDefinitionDraftBuilder;
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.product_type.ProductTypeDraft;
+import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
+import com.commercetools.api.models.product_type.ProductTypePagedQueryResponse;
+import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
+import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
+import com.commercetools.sync.sdk2.commons.utils.QuadConsumer;
+import com.commercetools.sync.sdk2.commons.utils.TriConsumer;
+import com.commercetools.sync.sdk2.producttypes.ProductTypeSync;
+import com.commercetools.sync.sdk2.producttypes.ProductTypeSyncOptions;
+import com.commercetools.sync.sdk2.producttypes.ProductTypeSyncOptionsBuilder;
+import com.commercetools.sync.sdk2.producttypes.helpers.ProductTypeSyncStatistics;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +66,7 @@ class ProductTypeSyncBenchmark {
             SyncException,
             Optional<ProductTypeDraft>,
             Optional<ProductType>,
-            List<UpdateAction<ProductType>>>
+            List<ProductTypeUpdateAction>>
         errorCallBack =
             (exception, newResource, oldResource, updateActions) -> {
               errorCallBackMessages.add(exception.getMessage());
@@ -107,7 +98,7 @@ class ProductTypeSyncBenchmark {
     // benchmark
     final long beforeSyncTime = System.currentTimeMillis();
     final ProductTypeSyncStatistics syncStatistics =
-        executeBlocking(productTypeSync.sync(productTypeDrafts));
+        productTypeSync.sync(productTypeDrafts).toCompletableFuture().join();
     final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
     // assert on threshold (based on history of benchmarks; highest was ~12 seconds)
@@ -120,15 +111,18 @@ class ProductTypeSyncBenchmark {
         .isLessThan(PRODUCT_TYPE_BENCHMARKS_CREATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (total number of existing product types)
-    final CompletableFuture<Integer> totalNumberOfProductTypes =
+    final Integer totalNumberOfProductTypes =
         CTP_TARGET_CLIENT
-            .execute(ProductTypeQuery.of())
-            .thenApply(PagedQueryResult::getTotal)
+            .productTypes()
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductTypePagedQueryResponse::getTotal)
             .thenApply(Long::intValue)
-            .toCompletableFuture();
+            .toCompletableFuture()
+            .join();
 
-    executeBlocking(totalNumberOfProductTypes);
-    assertThat(totalNumberOfProductTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
+    assertThat(totalNumberOfProductTypes).isEqualTo(NUMBER_OF_RESOURCE_UNDER_TEST);
 
     assertThat(syncStatistics)
         .hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
@@ -151,8 +145,7 @@ class ProductTypeSyncBenchmark {
                 .map(ProductTypeDraftBuilder::of)
                 .map(ProductTypeSyncBenchmark::applyAttributeDefinitionNameChange)
                 .map(ProductTypeDraftBuilder::build)
-                .map(draft -> CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(draft)))
-                .map(CompletionStage::toCompletableFuture)
+                .map(draft -> CTP_TARGET_CLIENT.productTypes().create(draft).execute())
                 .toArray(CompletableFuture[]::new))
         .join();
 
@@ -161,7 +154,7 @@ class ProductTypeSyncBenchmark {
     // benchmark
     final long beforeSyncTime = System.currentTimeMillis();
     final ProductTypeSyncStatistics syncStatistics =
-        executeBlocking(productTypeSync.sync(productTypeDrafts));
+        productTypeSync.sync(productTypeDrafts).toCompletableFuture().join();
     final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
     // assert on threshold (based on history of benchmarks; highest was ~13 seconds)
@@ -174,28 +167,32 @@ class ProductTypeSyncBenchmark {
         .isLessThan(PRODUCT_TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (number of updated product types)
-    final CompletableFuture<Integer> totalNumberOfUpdatedProductTypes =
+    final Long totalNumberOfUpdatedProductTypes =
         CTP_TARGET_CLIENT
-            .execute(
-                ProductTypeQuery.of().withPredicates(p -> p.attributes().name().is("attr_name_1")))
-            .thenApply(PagedQueryResult::getTotal)
-            .thenApply(Long::intValue)
-            .toCompletableFuture();
+            .productTypes()
+            .get()
+            .withWhere("attributes(name=:name)")
+            .withPredicateVar("name", "attr_name_1")
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductTypePagedQueryResponse::getTotal)
+            .toCompletableFuture()
+            .join();
 
-    executeBlocking(totalNumberOfUpdatedProductTypes);
-    assertThat(totalNumberOfUpdatedProductTypes)
-        .isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
+    assertThat(totalNumberOfUpdatedProductTypes).isEqualTo(NUMBER_OF_RESOURCE_UNDER_TEST);
 
     // Assert actual state of CTP project (total number of existing product types)
-    final CompletableFuture<Integer> totalNumberOfProductTypes =
+    final Long totalNumberOfProductTypes =
         CTP_TARGET_CLIENT
-            .execute(ProductTypeQuery.of())
-            .thenApply(PagedQueryResult::getTotal)
-            .thenApply(Long::intValue)
-            .toCompletableFuture();
+            .productTypes()
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductTypePagedQueryResponse::getTotal)
+            .toCompletableFuture()
+            .join();
 
-    executeBlocking(totalNumberOfProductTypes);
-    assertThat(totalNumberOfProductTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
+    assertThat(totalNumberOfProductTypes).isEqualTo(NUMBER_OF_RESOURCE_UNDER_TEST);
 
     // Assert statistics
     assertThat(syncStatistics)
@@ -223,7 +220,7 @@ class ProductTypeSyncBenchmark {
                 .map(ProductTypeDraftBuilder::of)
                 .map(ProductTypeSyncBenchmark::applyAttributeDefinitionNameChange)
                 .map(ProductTypeDraftBuilder::build)
-                .map(draft -> CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(draft)))
+                .map(draft -> CTP_TARGET_CLIENT.productTypes().create(draft).execute())
                 .map(CompletionStage::toCompletableFuture)
                 .toArray(CompletableFuture[]::new))
         .join();
@@ -233,7 +230,7 @@ class ProductTypeSyncBenchmark {
     // benchmark
     final long beforeSyncTime = System.currentTimeMillis();
     final ProductTypeSyncStatistics syncStatistics =
-        executeBlocking(productTypeSync.sync(productTypeDrafts));
+        productTypeSync.sync(productTypeDrafts).toCompletableFuture().join();
     final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
     // assert on threshold (based on history of benchmarks; highest was ~13 seconds)
@@ -246,27 +243,32 @@ class ProductTypeSyncBenchmark {
         .isLessThan(PRODUCT_TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (number of updated product types)
-    final CompletableFuture<Integer> totalNumberOfProductTypesWithOldName =
+    final Long totalNumberOfProductTypesWithOldName =
         CTP_TARGET_CLIENT
-            .execute(
-                ProductTypeQuery.of()
-                    .withPredicates(p -> p.attributes().name().is("attr_name_1_old")))
-            .thenApply(PagedQueryResult::getTotal)
-            .thenApply(Long::intValue)
-            .toCompletableFuture();
+            .productTypes()
+            .get()
+            .withWhere("attributes(name=:name)")
+            .withPredicateVar("name", "attr_name_1_old")
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductTypePagedQueryResponse::getTotal)
+            .toCompletableFuture()
+            .join();
 
-    executeBlocking(totalNumberOfProductTypesWithOldName);
-    assertThat(totalNumberOfProductTypesWithOldName).isCompletedWithValue(0);
+    assertThat(totalNumberOfProductTypesWithOldName).isEqualTo(0);
 
     // Assert actual state of CTP project (total number of existing product types)
-    final CompletableFuture<Integer> totalNumberOfProductTypes =
+    final Long totalNumberOfProductTypes =
         CTP_TARGET_CLIENT
-            .execute(ProductTypeQuery.of())
-            .thenApply(PagedQueryResult::getTotal)
-            .thenApply(Long::intValue)
-            .toCompletableFuture();
-    executeBlocking(totalNumberOfProductTypes);
-    assertThat(totalNumberOfProductTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
+            .productTypes()
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductTypePagedQueryResponse::getTotal)
+            .toCompletableFuture()
+            .join();
+
+    assertThat(totalNumberOfProductTypes).isEqualTo(NUMBER_OF_RESOURCE_UNDER_TEST);
 
     // Assert statistics
     assertThat(syncStatistics)
@@ -285,11 +287,11 @@ class ProductTypeSyncBenchmark {
     return IntStream.range(0, numberOfTypes)
         .mapToObj(
             i ->
-                ProductTypeDraftBuilder.of(
-                        format("key__%d", i),
-                        format("name__%d", i),
-                        format("description__%d", i),
-                        singletonList(ATTRIBUTE_DEFINITION_DRAFT_1))
+                ProductTypeDraftBuilder.of()
+                    .key(format("key__%d", i))
+                    .name(format("name__%d", i))
+                    .description(format("description__%d", i))
+                    .attributes(singletonList(ATTRIBUTE_DEFINITION_DRAFT_1))
                     .build())
         .collect(Collectors.toList());
   }

@@ -1,29 +1,30 @@
 package com.commercetools.sync.integration.ctpprojectsource.producttypes;
 
-import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateProjectWithNestedAttributes;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.removeAttributeReferencesAndDeleteProductTypes;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
-import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import com.commercetools.sync.producttypes.ProductTypeSync;
-import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
-import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
-import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
-import com.commercetools.sync.producttypes.utils.ProductTypeTransformUtils;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
-import io.sphere.sdk.products.attributes.NestedAttributeType;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
-import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
-import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeDefinitionLabel;
-import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
+import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
+import com.commercetools.api.models.product_type.AttributeDefinitionDraftBuilder;
+import com.commercetools.api.models.product_type.AttributeNestedType;
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.product_type.ProductTypeChangeLabelActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeDraft;
+import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
+import com.commercetools.api.models.product_type.ProductTypePagedQueryResponse;
+import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
+import com.commercetools.sync.sdk2.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
+import com.commercetools.sync.sdk2.producttypes.ProductTypeSync;
+import com.commercetools.sync.sdk2.producttypes.ProductTypeSyncOptions;
+import com.commercetools.sync.sdk2.producttypes.ProductTypeSyncOptionsBuilder;
+import com.commercetools.sync.sdk2.producttypes.helpers.ProductTypeSyncStatistics;
+import com.commercetools.sync.sdk2.producttypes.utils.ProductTypeTransformUtils;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,7 +34,7 @@ import org.junit.jupiter.api.Test;
 
 class ProductTypeWithNestedAttributeSyncIT {
   private ProductTypeSyncOptions productTypeSyncOptions;
-  private List<UpdateAction<ProductType>> builtUpdateActions;
+  private List<ProductTypeUpdateAction> builtUpdateActions;
   private List<String> errorMessages;
   private List<Throwable> exceptions;
   private ReferenceIdToKeyCache referenceIdToKeyCache;
@@ -83,7 +84,14 @@ class ProductTypeWithNestedAttributeSyncIT {
   void sync_WithEmptyTargetProject_ShouldReturnProperStatistics() {
     // preparation
     final List<ProductType> productTypes =
-        CTP_SOURCE_CLIENT.execute(ProductTypeQuery.of()).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT
+            .productTypes()
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductTypePagedQueryResponse::getResults)
+            .toCompletableFuture()
+            .join();
 
     final List<ProductTypeDraft> productTypeDrafts =
         ProductTypeTransformUtils.toProductTypeDrafts(
@@ -112,7 +120,14 @@ class ProductTypeWithNestedAttributeSyncIT {
   void sync_WithOneDraftPerBatchOnEmptyProject_ShouldReturnProperStatistics() {
     // preparation
     final List<ProductType> productTypes =
-        CTP_SOURCE_CLIENT.execute(ProductTypeQuery.of()).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT
+            .productTypes()
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductTypePagedQueryResponse::getResults)
+            .toCompletableFuture()
+            .join();
 
     final List<ProductTypeDraft> productTypeDrafts =
         ProductTypeTransformUtils.toProductTypeDrafts(
@@ -157,7 +172,14 @@ class ProductTypeWithNestedAttributeSyncIT {
     // preparation
     populateProjectWithNestedAttributes(CTP_TARGET_CLIENT);
     final List<ProductType> productTypes =
-        CTP_SOURCE_CLIENT.execute(ProductTypeQuery.of()).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT
+            .productTypes()
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductTypePagedQueryResponse::getResults)
+            .toCompletableFuture()
+            .join();
 
     final List<ProductTypeDraft> productTypeDrafts =
         ProductTypeTransformUtils.toProductTypeDrafts(
@@ -188,7 +210,14 @@ class ProductTypeWithNestedAttributeSyncIT {
     populateProjectWithNestedAttributes(CTP_TARGET_CLIENT);
 
     final List<ProductType> productTypes =
-        CTP_SOURCE_CLIENT.execute(ProductTypeQuery.of()).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT
+            .productTypes()
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductTypePagedQueryResponse::getResults)
+            .toCompletableFuture()
+            .join();
 
     // only update the nested types
     final List<ProductTypeDraft> productTypeDrafts =
@@ -202,7 +231,7 @@ class ProductTypeWithNestedAttributeSyncIT {
                       productType.getAttributes().stream()
                           .map(
                               attribute -> {
-                                if (attribute.getAttributeType() instanceof NestedAttributeType) {
+                                if (attribute.getType() instanceof AttributeNestedType) {
                                   return AttributeDefinitionDraftBuilder.of(attribute)
                                       .label(ofEnglish("new-label"))
                                       .build();
@@ -227,7 +256,11 @@ class ProductTypeWithNestedAttributeSyncIT {
     assertThat(errorMessages).isEmpty();
     assertThat(exceptions).isEmpty();
     assertThat(builtUpdateActions)
-        .containsExactly(ChangeAttributeDefinitionLabel.of("nestedattr2", ofEnglish("new-label")));
+        .containsExactly(
+            ProductTypeChangeLabelActionBuilder.of()
+                .attributeName("nestedattr2")
+                .label(ofEnglish("new-label"))
+                .build());
     assertThat(productTypeSyncStatistics).hasValues(4, 0, 1, 0, 0);
     assertThat(productTypeSyncStatistics.getReportMessage())
         .isEqualTo(

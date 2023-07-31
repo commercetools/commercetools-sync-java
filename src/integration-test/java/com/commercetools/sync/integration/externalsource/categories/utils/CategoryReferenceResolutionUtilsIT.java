@@ -1,27 +1,21 @@
 package com.commercetools.sync.integration.externalsource.categories.utils;
 
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsDraft;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.createAssetDraft;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.createAssetsCustomType;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static java.util.Collections.singletonList;
 import static java.util.Locale.ENGLISH;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.categories.CategoryDraftBuilder;
-import io.sphere.sdk.categories.commands.CategoryCreateCommand;
-import io.sphere.sdk.categories.queries.CategoryQuery;
-import io.sphere.sdk.models.Asset;
-import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.types.Type;
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryDraft;
+import com.commercetools.api.models.category.CategoryDraftBuilder;
+import com.commercetools.api.models.category.CategoryPagedQueryResponse;
+import com.commercetools.api.models.common.Asset;
+import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.api.models.type.Type;
+import com.commercetools.sync.integration.commons.utils.CategoryITUtils;
+import com.commercetools.sync.integration.commons.utils.ITUtils;
+import com.commercetools.sync.integration.commons.utils.TestClientUtils;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -35,44 +29,58 @@ class CategoryReferenceResolutionUtilsIT {
    */
   @BeforeAll
   static void setup() {
-    deleteAllCategories(CTP_TARGET_CLIENT);
-    deleteTypesFromTargetAndSource();
+    CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_TARGET_CLIENT);
+    ITUtils.deleteTypesFromTargetAndSource();
   }
 
   /** Cleans up the target and source test data that were built in this test class. */
   @AfterAll
   static void tearDown() {
-    deleteAllCategories(CTP_TARGET_CLIENT);
-    deleteTypesFromTargetAndSource();
+    CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_TARGET_CLIENT);
+    ITUtils.deleteTypesFromTargetAndSource();
   }
 
   @Test
   void buildCategoryQuery_Always_ShouldFetchProductWithoutExpansionOnReferences() {
     final CategoryDraft parentDraft =
-        CategoryDraftBuilder.of(ofEnglish("parent"), ofEnglish("parent")).build();
+        CategoryDraftBuilder.of().name(ofEnglish("parent")).slug(ofEnglish("parent")).build();
     final Category parentCategory =
-        executeBlocking(CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(parentDraft)));
+        TestClientUtils.CTP_TARGET_CLIENT
+            .categories()
+            .create(parentDraft)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .join();
 
-    createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, ENGLISH, "anyName", CTP_TARGET_CLIENT);
+    CategoryITUtils.ensureCategoriesCustomType(CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY, ENGLISH, "anyName", TestClientUtils.CTP_TARGET_CLIENT);
 
     final Type assetsCustomType =
-        createAssetsCustomType(
-            "assetsCustomTypeKey", ENGLISH, "assetsCustomTypeName", CTP_TARGET_CLIENT);
+        ITUtils.ensureAssetsCustomType(
+            "assetsCustomTypeKey", ENGLISH, "assetsCustomTypeName", TestClientUtils.CTP_TARGET_CLIENT);
     final List<AssetDraft> assetDrafts =
-        singletonList(createAssetDraft("1", ofEnglish("1"), assetsCustomType.getId()));
+        singletonList(ITUtils.createAssetDraft("1", ofEnglish("1"), assetsCustomType.getId()));
 
     final CategoryDraft categoryDraft =
-        CategoryDraftBuilder.of(ofEnglish("name"), ofEnglish("slug"))
+        CategoryDraftBuilder.of()
+            .name(ofEnglish("name"))
+            .slug(ofEnglish("slug"))
             .parent(parentCategory.toResourceIdentifier())
-            .custom(getCustomFieldsDraft())
+            .custom(CategoryITUtils.getCustomFieldsDraft())
             .assets(assetDrafts)
             .build();
 
-    executeBlocking(CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(categoryDraft)));
+    TestClientUtils.CTP_TARGET_CLIENT.categories().create(categoryDraft).executeBlocking();
 
     final List<Category> categories =
-        executeBlocking(CTP_TARGET_CLIENT.execute(CategoryQuery.of().bySlug(ENGLISH, "slug")))
-            .getResults();
+        TestClientUtils.CTP_TARGET_CLIENT
+            .categories()
+            .get()
+            .addWhere("slug(en=:slug)")
+            .addPredicateVar("slug", "slug")
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(CategoryPagedQueryResponse::getResults)
+            .join();
 
     assertThat(categories).hasSize(1);
     final Category fetchedCategory = categories.get(0);
