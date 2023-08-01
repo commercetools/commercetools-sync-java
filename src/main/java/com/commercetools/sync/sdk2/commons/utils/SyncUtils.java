@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -34,36 +33,6 @@ public final class SyncUtils {
       batches.add(elements.subList(i, Math.min(i + batchSize, elements.size())));
     }
     return batches;
-  }
-
-  /**
-   * Given a reference to a resource of type {@code T}, this method checks if the reference id is
-   * cached in the map. If it is, then it executes the {@code keyInReferenceSupplier} and returns
-   * it's result. Otherwise, it returns the supplied reference as is. Since, the reference could be
-   * {@code null}, this method could also return null if the reference id is not in the map.
-   *
-   * <p>This method expects the passed supplier to either
-   *
-   * @param reference the reference of the resource to check if it's cached.
-   * @param keyInReferenceSupplier the supplier to execute and return its result if the {@code
-   *     reference} was cached.
-   * @param referenceIdToKeyCache the instance that manages cache.
-   * @return returns the result of the {@code keyInReferenceSupplier} if the {@code reference} id
-   *     was in cache. Otherwise, it returns the supplied reference as is.
-   */
-  @Nullable
-  public static Reference getReferenceWithKey(
-      @Nullable final Reference reference,
-      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache,
-      @Nonnull final Supplier<Reference> keyInReferenceSupplier) {
-
-    if (reference != null) {
-      final String id = reference.getId();
-      if (referenceIdToKeyCache.containsKey(id)) {
-        return keyInReferenceSupplier.get();
-      }
-    }
-    return reference;
   }
 
   /**

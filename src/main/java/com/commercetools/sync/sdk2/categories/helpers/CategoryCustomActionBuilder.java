@@ -3,8 +3,6 @@ package com.commercetools.sync.sdk2.categories.helpers;
 import com.commercetools.api.models.category.CategorySetCustomFieldActionBuilder;
 import com.commercetools.api.models.category.CategorySetCustomTypeActionBuilder;
 import com.commercetools.api.models.category.CategoryUpdateAction;
-import com.commercetools.api.models.type.FieldContainer;
-import com.commercetools.api.models.type.TypeResourceIdentifier;
 import com.commercetools.sync.sdk2.commons.helpers.GenericCustomActionBuilder;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -16,10 +14,7 @@ public class CategoryCustomActionBuilder
   @Override
   public CategoryUpdateAction buildRemoveCustomTypeAction(
       @Nullable final Long variantId, @Nullable final String objectId) {
-    return CategorySetCustomTypeActionBuilder.of()
-        .type((TypeResourceIdentifier) null)
-        .fields((FieldContainer) null)
-        .build();
+    return CategorySetCustomTypeActionBuilder.of().build();
   }
 
   @Nonnull

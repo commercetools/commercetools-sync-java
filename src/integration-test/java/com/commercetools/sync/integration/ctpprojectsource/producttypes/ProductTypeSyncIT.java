@@ -1,23 +1,22 @@
 package com.commercetools.sync.integration.ctpprojectsource.producttypes;
 
-import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypesFromTargetAndSource;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateSourceProject;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateTargetProject;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.*;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.commercetools.sync.producttypes.ProductTypeSync;
-import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
-import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
-import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
-import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
-import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
+import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.product_type.ProductTypeDraft;
+import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
+import com.commercetools.api.models.product_type.ProductTypePagedQueryResponse;
+import com.commercetools.sync.sdk2.producttypes.ProductTypeSync;
+import com.commercetools.sync.sdk2.producttypes.ProductTypeSyncOptions;
+import com.commercetools.sync.sdk2.producttypes.ProductTypeSyncOptionsBuilder;
+import com.commercetools.sync.sdk2.producttypes.helpers.ProductTypeSyncStatistics;
+import com.commercetools.sync.sdk2.producttypes.helpers.ResourceToDraftConverters;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,12 +50,18 @@ class ProductTypeSyncIT {
   void sync_WithoutUpdates_ShouldReturnProperStatistics() {
     // preparation
     final List<ProductType> productTypes =
-        CTP_SOURCE_CLIENT.execute(ProductTypeQuery.of()).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT
+            .productTypes()
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductTypePagedQueryResponse::getResults)
+            .toCompletableFuture()
+            .join();
 
     final List<ProductTypeDraft> productTypeDrafts =
         productTypes.stream()
-            .map(ProductTypeDraftBuilder::of)
-            .map(ProductTypeDraftBuilder::build)
+            .map(ResourceToDraftConverters::toProductTypeDraft)
             .collect(Collectors.toList());
 
     final List<String> errorMessages = new ArrayList<>();
@@ -92,7 +97,14 @@ class ProductTypeSyncIT {
   void sync_WithUpdates_ShouldReturnProperStatistics() {
     // preparation
     final List<ProductType> productTypes =
-        CTP_SOURCE_CLIENT.execute(ProductTypeQuery.of()).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT
+            .productTypes()
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductTypePagedQueryResponse::getResults)
+            .toCompletableFuture()
+            .join();
 
     final List<ProductTypeDraft> productTypeDrafts =
         productTypes.stream()
@@ -100,14 +112,18 @@ class ProductTypeSyncIT {
                 productType -> {
                   final List<AttributeDefinitionDraft> attributeDefinitionDrafts =
                       productType.getAttributes().stream()
-                          .map(attribute -> AttributeDefinitionDraftBuilder.of(attribute).build())
+                          .map(
+                              attribute ->
+                                  ResourceToDraftConverters.toAttributeDefinitionDraftBuilder(
+                                          attribute)
+                                      .build())
                           .collect(Collectors.toList());
 
-                  return ProductTypeDraftBuilder.of(
-                          productType.getKey(),
-                          "newName",
-                          productType.getDescription(),
-                          attributeDefinitionDrafts)
+                  return ProductTypeDraftBuilder.of()
+                      .key(productType.getKey())
+                      .name("newName")
+                      .description(productType.getDescription())
+                      .attributes(attributeDefinitionDrafts)
                       .build();
                 })
             .collect(Collectors.toList());

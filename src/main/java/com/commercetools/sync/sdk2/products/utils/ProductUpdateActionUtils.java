@@ -5,14 +5,14 @@ import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUt
 import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActionForReferences;
 import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActions;
-import static com.commercetools.sync.sdk2.commons.utils.FilterUtils.executeSupplierIfPassesFilter;
-import static com.commercetools.sync.sdk2.internals.utils.UnorderedCollectionSyncUtils.buildRemoveUpdateActions;
 import static com.commercetools.sync.sdk2.products.ActionGroup.*;
+import static com.commercetools.sync.sdk2.products.utils.FilterUtils.executeSupplierIfPassesFilter;
 import static com.commercetools.sync.sdk2.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions;
 import static com.commercetools.sync.sdk2.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions;
 import static com.commercetools.sync.sdk2.products.utils.ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions;
 import static com.commercetools.sync.sdk2.products.utils.ProductVariantUpdateActionUtils.buildProductVariantPricesUpdateActions;
 import static com.commercetools.sync.sdk2.products.utils.ProductVariantUpdateActionUtils.buildProductVariantSkuUpdateAction;
+import static com.commercetools.sync.sdk2.products.utils.UnorderedCollectionSyncUtils.buildRemoveUpdateActions;
 import static java.lang.String.format;
 import static java.util.Collections.*;
 import static java.util.Objects.nonNull;
