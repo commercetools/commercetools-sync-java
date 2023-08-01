@@ -1,4 +1,4 @@
-package com.commercetools.sync.integration.sdk2.commons.utils;
+package com.commercetools.sync.integration.commons.utils.utils;
 
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
