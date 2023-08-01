@@ -91,7 +91,8 @@ class TypeSyncBenchmark {
   @Test
   void sync_NewTypes_ShouldCreateTypes() throws IOException {
     // preparation
-    final List<TypeDraft> typeDrafts = buildTypeDrafts(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
+    final List<TypeDraft> typeDrafts =
+        buildTypeDrafts(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
     final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
     // benchmark
@@ -102,7 +103,10 @@ class TypeSyncBenchmark {
 
     assertThat(totalTime)
         .withFailMessage(
-            String.format(BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR, totalTime, TYPE_BENCHMARKS_CREATE_ACTION_THRESHOLD))
+            String.format(
+                BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR,
+                totalTime,
+                TYPE_BENCHMARKS_CREATE_ACTION_THRESHOLD))
         .isLessThan(TYPE_BENCHMARKS_CREATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (total number of existing types)
@@ -119,19 +123,25 @@ class TypeSyncBenchmark {
     assertThat(totalNumberOfTypes).isEqualTo(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
 
     assertThat(syncStatistics)
-        .hasValues(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST, BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
+        .hasValues(
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            0,
+            0);
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
     if (BenchmarkUtils.SUBMIT_BENCHMARK_RESULT) {
-      BenchmarkUtils.saveNewResult(BenchmarkUtils.TYPE_SYNC, BenchmarkUtils.CREATES_ONLY, totalTime);
+      BenchmarkUtils.saveNewResult(
+          BenchmarkUtils.TYPE_SYNC, BenchmarkUtils.CREATES_ONLY, totalTime);
     }
   }
 
   @Test
   void sync_ExistingTypes_ShouldUpdateTypes() throws IOException {
     // preparation
-    final List<TypeDraft> typeDrafts = buildTypeDrafts(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
+    final List<TypeDraft> typeDrafts =
+        buildTypeDrafts(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
     // Create drafts to target project with different field type name
     CompletableFuture.allOf(
             typeDrafts.stream()
@@ -153,7 +163,10 @@ class TypeSyncBenchmark {
 
     assertThat(totalTime)
         .withFailMessage(
-            String.format(BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR, totalTime, TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD))
+            String.format(
+                BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR,
+                totalTime,
+                TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD))
         .isLessThan(TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (number of updated types)
@@ -185,20 +198,26 @@ class TypeSyncBenchmark {
 
     // Assert statistics
     assertThat(syncStatistics)
-        .hasValues(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST, 0, BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST, 0);
+        .hasValues(
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            0,
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            0);
 
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
     if (BenchmarkUtils.SUBMIT_BENCHMARK_RESULT) {
-      BenchmarkUtils.saveNewResult(BenchmarkUtils.TYPE_SYNC, BenchmarkUtils.UPDATES_ONLY, totalTime);
+      BenchmarkUtils.saveNewResult(
+          BenchmarkUtils.TYPE_SYNC, BenchmarkUtils.UPDATES_ONLY, totalTime);
     }
   }
 
   @Test
   void sync_WithSomeExistingTypes_ShouldSyncTypes() throws IOException {
     // preparation
-    final List<TypeDraft> typeDrafts = buildTypeDrafts(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
+    final List<TypeDraft> typeDrafts =
+        buildTypeDrafts(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
     final int halfNumberOfDrafts = typeDrafts.size() / 2;
     final List<TypeDraft> firstHalf = typeDrafts.subList(0, halfNumberOfDrafts);
 
@@ -259,13 +278,18 @@ class TypeSyncBenchmark {
 
     // Assert statistics
     assertThat(syncStatistics)
-        .hasValues(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST, halfNumberOfDrafts, halfNumberOfDrafts, 0);
+        .hasValues(
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            halfNumberOfDrafts,
+            halfNumberOfDrafts,
+            0);
 
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
     if (BenchmarkUtils.SUBMIT_BENCHMARK_RESULT) {
-      BenchmarkUtils.saveNewResult(BenchmarkUtils.TYPE_SYNC, BenchmarkUtils.CREATES_AND_UPDATES, totalTime);
+      BenchmarkUtils.saveNewResult(
+          BenchmarkUtils.TYPE_SYNC, BenchmarkUtils.CREATES_AND_UPDATES, totalTime);
     }
   }
 

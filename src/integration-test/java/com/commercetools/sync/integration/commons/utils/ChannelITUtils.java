@@ -54,10 +54,14 @@ public final class ChannelITUtils {
   public static List<Channel> ensureChannelsInSourceProject() {
     final Channel channel1 =
         createChannelIfNotAlreadyExisting(
-            TestClientUtils.CTP_SOURCE_CLIENT, SUPPLY_CHANNEL_KEY_1, ChannelRoleEnum.INVENTORY_SUPPLY);
+            TestClientUtils.CTP_SOURCE_CLIENT,
+            SUPPLY_CHANNEL_KEY_1,
+            ChannelRoleEnum.INVENTORY_SUPPLY);
     final Channel channel2 =
         createChannelIfNotAlreadyExisting(
-            TestClientUtils.CTP_SOURCE_CLIENT, SUPPLY_CHANNEL_KEY_2, ChannelRoleEnum.INVENTORY_SUPPLY);
+            TestClientUtils.CTP_SOURCE_CLIENT,
+            SUPPLY_CHANNEL_KEY_2,
+            ChannelRoleEnum.INVENTORY_SUPPLY);
 
     return Arrays.asList(channel1, channel2);
   }

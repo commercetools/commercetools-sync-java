@@ -90,7 +90,8 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
-    CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
+    CategoryITUtils.ensureCategories(
+        TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     // Category draft coming from external source.
     final CategoryDraft categoryDraft =
@@ -117,7 +118,8 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
-    CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
+    CategoryITUtils.ensureCategories(
+        TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     // Category draft coming from external source.
     final CategoryDraft categoryDraft =
@@ -144,7 +146,8 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
-    CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
+    CategoryITUtils.ensureCategories(
+        TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     // Category draft coming from external source.
     final CategoryDraft categoryDraft =
@@ -171,7 +174,8 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
-    CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
+    CategoryITUtils.ensureCategories(
+        TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     // Category draft coming from external source.
     final CategoryDraft categoryDraft =
@@ -199,7 +203,9 @@ class CategorySyncIT {
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
     final Category oldCategory =
-        CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
+        CategoryITUtils.ensureCategories(
+                TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft))
+            .get(0);
     // Preparation
     final ProjectApiRoot mockClient =
         buildClientWithConcurrentModificationUpdate(oldCategory.getId());
@@ -276,7 +282,9 @@ class CategorySyncIT {
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
     final Category oldCategory =
-        CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
+        CategoryITUtils.ensureCategories(
+                TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft))
+            .get(0);
 
     // Preparation
     final ProjectApiRoot mockClient =
@@ -357,7 +365,9 @@ class CategorySyncIT {
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
     final Category oldCategory =
-        CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft)).get(0);
+        CategoryITUtils.ensureCategories(
+                TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft))
+            .get(0);
     // Preparation
     final ProjectApiRoot mockClient =
         buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry(oldCategory);
@@ -437,7 +447,8 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
-    CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
+    CategoryITUtils.ensureCategories(
+        TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     // Category draft coming from external source.
     final CategoryDraft categoryDraft =
@@ -465,7 +476,8 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
-    CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
+    CategoryITUtils.ensureCategories(
+        TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     // Category draft coming from external source.
     final CategoryDraft categoryDraft =
@@ -491,7 +503,8 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
-    CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
+    CategoryITUtils.ensureCategories(
+        TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     // Existing array of [1, 2, 3, oldCategoryKey]
     final CategoryDraft oldCategoryDraft1 =
@@ -501,7 +514,12 @@ class CategorySyncIT {
             .key("cat1")
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
-    TestClientUtils.CTP_TARGET_CLIENT.categories().post(oldCategoryDraft1).execute().toCompletableFuture().join();
+    TestClientUtils.CTP_TARGET_CLIENT
+        .categories()
+        .post(oldCategoryDraft1)
+        .execute()
+        .toCompletableFuture()
+        .join();
     final CategoryDraft oldCategoryDraft2 =
         CategoryDraftBuilder.of()
             .name(LocalizedString.of(Locale.ENGLISH, "cat2"))
@@ -509,7 +527,12 @@ class CategorySyncIT {
             .key("cat2")
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
-    TestClientUtils.CTP_TARGET_CLIENT.categories().post(oldCategoryDraft2).execute().toCompletableFuture().join();
+    TestClientUtils.CTP_TARGET_CLIENT
+        .categories()
+        .post(oldCategoryDraft2)
+        .execute()
+        .toCompletableFuture()
+        .join();
     final CategoryDraft oldCategoryDraft3 =
         CategoryDraftBuilder.of()
             .name(LocalizedString.of(Locale.ENGLISH, "cat3"))
@@ -517,7 +540,12 @@ class CategorySyncIT {
             .key("cat3")
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
-    TestClientUtils.CTP_TARGET_CLIENT.categories().post(oldCategoryDraft3).execute().toCompletableFuture().join();
+    TestClientUtils.CTP_TARGET_CLIENT
+        .categories()
+        .post(oldCategoryDraft3)
+        .execute()
+        .toCompletableFuture()
+        .join();
 
     // _-----_-----_-----_-----_-----_PREPARE BATCHES FROM EXTERNAL
     // SOURCE-----_-----_-----_-----_-----_-----
@@ -592,7 +620,8 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
-    CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
+    CategoryITUtils.ensureCategories(
+        TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     // Category draft coming from external source.
     CategoryDraft categoryDraft1 =
@@ -646,7 +675,8 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
-    CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
+    CategoryITUtils.ensureCategories(
+        TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
 
@@ -725,7 +755,8 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
-    CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
+    CategoryITUtils.ensureCategories(
+        TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
 
@@ -805,7 +836,8 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
-    CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
+    CategoryITUtils.ensureCategories(
+        TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
     final String newCustomTypeKey = "newKey";
@@ -858,7 +890,8 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
-    CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
+    CategoryITUtils.ensureCategories(
+        TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
 
@@ -902,7 +935,8 @@ class CategorySyncIT {
             .key(oldCategoryKey)
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
-    CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
+    CategoryITUtils.ensureCategories(
+        TestClientUtils.CTP_TARGET_CLIENT, singletonList(oldCategoryDraft));
 
     // Category draft coming from external source.
     final CategoryDraft categoryDraft =

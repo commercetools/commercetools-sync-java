@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.ctpprojectsource.products;
 
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ensureProductType;
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.sdk2.products.ActionGroup.ATTRIBUTES;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
@@ -98,16 +97,25 @@ class ProductSyncIT {
    */
   @BeforeAll
   static void setup() {
-    final ChannelDraft channelDraft1 = ChannelDraftBuilder.of().key(ChannelITUtils.SUPPLY_CHANNEL_KEY_1).build();
-    targetPriceChannel = ProductITUtils.ensureChannel(channelDraft1, TestClientUtils.CTP_TARGET_CLIENT);
-    sourcePriceChannel = ProductITUtils.ensureChannel(channelDraft1, TestClientUtils.CTP_SOURCE_CLIENT);
+    final ChannelDraft channelDraft1 =
+        ChannelDraftBuilder.of().key(ChannelITUtils.SUPPLY_CHANNEL_KEY_1).build();
+    targetPriceChannel =
+        ProductITUtils.ensureChannel(channelDraft1, TestClientUtils.CTP_TARGET_CLIENT);
+    sourcePriceChannel =
+        ProductITUtils.ensureChannel(channelDraft1, TestClientUtils.CTP_SOURCE_CLIENT);
 
     targetPriceCustomType =
         ProductITUtils.ensurePricesCustomType(
-            "pricesCustomTypeKey", ENGLISH, "pricesCustomTypeName", TestClientUtils.CTP_TARGET_CLIENT);
+            "pricesCustomTypeKey",
+            ENGLISH,
+            "pricesCustomTypeName",
+            TestClientUtils.CTP_TARGET_CLIENT);
     sourcePriceCustomType =
         ProductITUtils.ensurePricesCustomType(
-            "pricesCustomTypeKey", ENGLISH, "pricesCustomTypeName", TestClientUtils.CTP_SOURCE_CLIENT);
+            "pricesCustomTypeKey",
+            ENGLISH,
+            "pricesCustomTypeName",
+            TestClientUtils.CTP_SOURCE_CLIENT);
 
     CategoryITUtils.ensureCategoriesCustomType(
         CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY,
@@ -121,22 +129,32 @@ class ProductSyncIT {
         TestClientUtils.CTP_SOURCE_CLIENT);
 
     final List<Category> targetCategories =
-        CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2));
+        CategoryITUtils.ensureCategories(
+            TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2));
     targetCategoryReferencesWithIds = CategoryITUtils.getReferencesWithIds(targetCategories);
-    targetCategoryResourceIdentifiers = CategoryITUtils.getResourceIdentifiersWithIds(targetCategories);
+    targetCategoryResourceIdentifiers =
+        CategoryITUtils.getResourceIdentifiersWithIds(targetCategories);
     final List<Category> sourceCategories =
-        CategoryITUtils.ensureCategories(TestClientUtils.CTP_SOURCE_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2));
+        CategoryITUtils.ensureCategories(
+            TestClientUtils.CTP_SOURCE_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2));
     sourceCategoryReferencesWithIds = CategoryITUtils.getReferencesWithIds(sourceCategories);
-    sourceCategoryResourceIdentifiers = CategoryITUtils.getResourceIdentifiersWithIds(sourceCategories);
+    sourceCategoryResourceIdentifiers =
+        CategoryITUtils.getResourceIdentifiersWithIds(sourceCategories);
 
-    targetProductType = ProductTypeITUtils.ensureProductType(PRODUCT_TYPE_RESOURCE_PATH, TestClientUtils.CTP_TARGET_CLIENT);
-    sourceProductType = ProductTypeITUtils.ensureProductType(PRODUCT_TYPE_RESOURCE_PATH, TestClientUtils.CTP_SOURCE_CLIENT);
+    targetProductType =
+        ProductTypeITUtils.ensureProductType(
+            PRODUCT_TYPE_RESOURCE_PATH, TestClientUtils.CTP_TARGET_CLIENT);
+    sourceProductType =
+        ProductTypeITUtils.ensureProductType(
+            PRODUCT_TYPE_RESOURCE_PATH, TestClientUtils.CTP_SOURCE_CLIENT);
 
     targetTaxCategory = TaxCategoryITUtils.ensureTaxCategory(TestClientUtils.CTP_TARGET_CLIENT);
     sourceTaxCategory = TaxCategoryITUtils.ensureTaxCategory(TestClientUtils.CTP_SOURCE_CLIENT);
 
-    targetProductState = StateITUtils.ensureState(TestClientUtils.CTP_TARGET_CLIENT, StateTypeEnum.PRODUCT_STATE);
-    sourceProductState = StateITUtils.ensureState(TestClientUtils.CTP_SOURCE_CLIENT, StateTypeEnum.PRODUCT_STATE);
+    targetProductState =
+        StateITUtils.ensureState(TestClientUtils.CTP_TARGET_CLIENT, StateTypeEnum.PRODUCT_STATE);
+    sourceProductState =
+        StateITUtils.ensureState(TestClientUtils.CTP_SOURCE_CLIENT, StateTypeEnum.PRODUCT_STATE);
   }
 
   /**
@@ -207,7 +225,12 @@ class ProductSyncIT {
             .key(sampleProductKey)
             .build();
 
-    TestClientUtils.CTP_SOURCE_CLIENT.products().create(newProductDraft).execute().toCompletableFuture().join();
+    TestClientUtils.CTP_SOURCE_CLIENT
+        .products()
+        .create(newProductDraft)
+        .execute()
+        .toCompletableFuture()
+        .join();
 
     final List<ProductProjection> products =
         TestClientUtils.CTP_SOURCE_CLIENT
@@ -220,7 +243,8 @@ class ProductSyncIT {
             .join();
 
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     // test
@@ -272,7 +296,12 @@ class ProductSyncIT {
             sourceProductState.toReference(),
             sourceCategoryReferencesWithIds,
             createRandomCategoryOrderHints(sourceCategoryReferencesWithIds));
-    TestClientUtils.CTP_SOURCE_CLIENT.products().create(newProductDraft).execute().toCompletableFuture().join();
+    TestClientUtils.CTP_SOURCE_CLIENT
+        .products()
+        .create(newProductDraft)
+        .execute()
+        .toCompletableFuture()
+        .join();
 
     final List<ProductProjection> products =
         TestClientUtils.CTP_SOURCE_CLIENT
@@ -286,7 +315,8 @@ class ProductSyncIT {
             .getResults();
 
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     final ProductSyncStatistics syncStatistics =
@@ -325,7 +355,12 @@ class ProductSyncIT {
             .publish(false)
             .build();
 
-    TestClientUtils.CTP_SOURCE_CLIENT.products().create(newProductDraft).execute().toCompletableFuture().join();
+    TestClientUtils.CTP_SOURCE_CLIENT
+        .products()
+        .create(newProductDraft)
+        .execute()
+        .toCompletableFuture()
+        .join();
 
     final List<ProductProjection> products =
         TestClientUtils.CTP_SOURCE_CLIENT
@@ -339,7 +374,8 @@ class ProductSyncIT {
             .getResults();
 
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     final ProductSyncStatistics syncStatistics =
@@ -380,7 +416,12 @@ class ProductSyncIT {
             .publish(true)
             .build();
 
-    TestClientUtils.CTP_SOURCE_CLIENT.products().create(newProductDraft).execute().toCompletableFuture().join();
+    TestClientUtils.CTP_SOURCE_CLIENT
+        .products()
+        .create(newProductDraft)
+        .execute()
+        .toCompletableFuture()
+        .join();
 
     final List<ProductProjection> products =
         TestClientUtils.CTP_SOURCE_CLIENT
@@ -394,7 +435,8 @@ class ProductSyncIT {
             .getResults();
 
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     final ProductSyncStatistics syncStatistics =
@@ -476,7 +518,8 @@ class ProductSyncIT {
             .getResults();
 
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     final ProductSyncStatistics syncStatistics =
@@ -638,7 +681,8 @@ class ProductSyncIT {
             .join()
             .getResults();
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
     final ProductSyncStatistics syncStatistics =
         customSync.sync(productDrafts).toCompletableFuture().join();
@@ -757,7 +801,8 @@ class ProductSyncIT {
             .join()
             .getResults();
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
     final ProductSyncStatistics syncStatistics =
         customSync.sync(productDrafts).toCompletableFuture().join();
@@ -934,7 +979,12 @@ class ProductSyncIT {
             .categoryOrderHints(createRandomCategoryOrderHints(sourceCategoryReferencesWithIds))
             .masterVariant(variantFooWithEmptyReferenceSet)
             .build();
-    TestClientUtils.CTP_SOURCE_CLIENT.products().create(sourceProductDraft).execute().toCompletableFuture().join();
+    TestClientUtils.CTP_SOURCE_CLIENT
+        .products()
+        .create(sourceProductDraft)
+        .execute()
+        .toCompletableFuture()
+        .join();
 
     // Test
     final List<ProductProjection> products =
@@ -947,7 +997,8 @@ class ProductSyncIT {
             .toCompletableFuture()
             .join();
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
     final ProductSyncStatistics syncStatistics =
         customSync.sync(productDrafts).toCompletableFuture().join();

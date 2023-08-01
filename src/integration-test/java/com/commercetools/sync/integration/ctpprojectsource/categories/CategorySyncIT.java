@@ -51,9 +51,15 @@ class CategorySyncIT {
   @BeforeAll
   static void setup() {
     CategoryITUtils.ensureCategoriesCustomType(
-        CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH, "anyName", TestClientUtils.CTP_TARGET_CLIENT);
+        CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY,
+        Locale.ENGLISH,
+        "anyName",
+        TestClientUtils.CTP_TARGET_CLIENT);
     CategoryITUtils.ensureCategoriesCustomType(
-        CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH, "anyName", TestClientUtils.CTP_SOURCE_CLIENT);
+        CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY,
+        Locale.ENGLISH,
+        "anyName",
+        TestClientUtils.CTP_SOURCE_CLIENT);
   }
 
   /**
@@ -65,7 +71,8 @@ class CategorySyncIT {
     CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_TARGET_CLIENT);
     CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_SOURCE_CLIENT);
 
-    CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2));
+    CategoryITUtils.ensureCategories(
+        TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2));
 
     callBackErrorResponses = new ArrayList<>();
     callBackExceptions = new ArrayList<>();
@@ -98,7 +105,8 @@ class CategorySyncIT {
   @Test
   void syncDrafts_withChangesInExistingCategories_ShouldUpdate2Categories() {
     CategoryITUtils.ensureCategories(
-        TestClientUtils.CTP_SOURCE_CLIENT, CategoryITUtils.getCategoryDraftsWithPrefix(Locale.ENGLISH, "new", null, 2));
+        TestClientUtils.CTP_SOURCE_CLIENT,
+        CategoryITUtils.getCategoryDraftsWithPrefix(Locale.ENGLISH, "new", null, 2));
 
     final List<Category> categories =
         TestClientUtils.CTP_SOURCE_CLIENT
@@ -128,7 +136,8 @@ class CategorySyncIT {
   void
       syncDrafts_withChangesInExistingCategoriesAndNewCategories_ShouldUpdate2CategoriesAndCreate1Category() {
     CategoryITUtils.ensureCategories(
-        TestClientUtils.CTP_SOURCE_CLIENT, CategoryITUtils.getCategoryDraftsWithPrefix(Locale.ENGLISH, "new", null, 3));
+        TestClientUtils.CTP_SOURCE_CLIENT,
+        CategoryITUtils.getCategoryDraftsWithPrefix(Locale.ENGLISH, "new", null, 3));
 
     final List<Category> categories =
         TestClientUtils.CTP_SOURCE_CLIENT
@@ -157,14 +166,17 @@ class CategorySyncIT {
   @Test
   void syncDrafts_withNewShuffledBatchOfCategories_ShouldCreateCategories() {
     // Create 5 categories in the source project
-    final List<Category> subFamily = CategoryITUtils.createChildren(5, null, "root", TestClientUtils.CTP_SOURCE_CLIENT);
+    final List<Category> subFamily =
+        CategoryITUtils.createChildren(5, null, "root", TestClientUtils.CTP_SOURCE_CLIENT);
 
     // Create 125 categories in the source project
     for (final Category child : subFamily) {
       final List<Category> subsubFamily =
-          CategoryITUtils.createChildren(5, child, child.getName().get(Locale.ENGLISH), TestClientUtils.CTP_SOURCE_CLIENT);
+          CategoryITUtils.createChildren(
+              5, child, child.getName().get(Locale.ENGLISH), TestClientUtils.CTP_SOURCE_CLIENT);
       for (final Category subChild : subsubFamily) {
-        CategoryITUtils.createChildren(4, subChild, subChild.getName().get(Locale.ENGLISH), TestClientUtils.CTP_SOURCE_CLIENT);
+        CategoryITUtils.createChildren(
+            4, subChild, subChild.getName().get(Locale.ENGLISH), TestClientUtils.CTP_SOURCE_CLIENT);
       }
     }
     // Total number of categories in the source project: 130
@@ -204,27 +216,37 @@ class CategorySyncIT {
   void
       syncDrafts_withExistingShuffledCategoriesWithChangingCategoryHierarchy_ShouldUpdateCategories() {
     // Create a total of 130 categories in the target project
-    final List<Category> subFamily = CategoryITUtils.createChildren(5, null, "root", TestClientUtils.CTP_TARGET_CLIENT);
+    final List<Category> subFamily =
+        CategoryITUtils.createChildren(5, null, "root", TestClientUtils.CTP_TARGET_CLIENT);
 
     for (final Category child : subFamily) {
       final List<Category> subsubFamily =
-          CategoryITUtils.createChildren(5, child, child.getName().get(Locale.ENGLISH), TestClientUtils.CTP_TARGET_CLIENT);
+          CategoryITUtils.createChildren(
+              5, child, child.getName().get(Locale.ENGLISH), TestClientUtils.CTP_TARGET_CLIENT);
       for (final Category subChild : subsubFamily) {
-        CategoryITUtils.createChildren(4, subChild, subChild.getName().get(Locale.ENGLISH), TestClientUtils.CTP_TARGET_CLIENT);
+        CategoryITUtils.createChildren(
+            4, subChild, subChild.getName().get(Locale.ENGLISH), TestClientUtils.CTP_TARGET_CLIENT);
       }
     }
     // ---------------------------------------------------------------
 
     // Create a total of 130 categories in the source project
-    final List<Category> sourceSubFamily = CategoryITUtils.createChildren(5, null, "root", TestClientUtils.CTP_SOURCE_CLIENT);
+    final List<Category> sourceSubFamily =
+        CategoryITUtils.createChildren(5, null, "root", TestClientUtils.CTP_SOURCE_CLIENT);
 
     for (final Category child : sourceSubFamily) {
       final List<Category> subsubFamily =
           CategoryITUtils.createChildren(
-              5, sourceSubFamily.get(0), child.getName().get(Locale.ENGLISH), TestClientUtils.CTP_SOURCE_CLIENT);
+              5,
+              sourceSubFamily.get(0),
+              child.getName().get(Locale.ENGLISH),
+              TestClientUtils.CTP_SOURCE_CLIENT);
       for (final Category subChild : subsubFamily) {
         CategoryITUtils.createChildren(
-            4, sourceSubFamily.get(0), subChild.getName().get(Locale.ENGLISH), TestClientUtils.CTP_SOURCE_CLIENT);
+            4,
+            sourceSubFamily.get(0),
+            subChild.getName().get(Locale.ENGLISH),
+            TestClientUtils.CTP_SOURCE_CLIENT);
       }
     }
     // ---------------------------------------------------------------
@@ -261,7 +283,8 @@ class CategorySyncIT {
   @Test
   void syncDrafts_withExistingCategoriesThatChangeParents_ShouldUpdateCategories() {
     // Create a total of 3 categories in the target project (2 roots and 1 child to the first root)
-    final List<Category> subFamily = CategoryITUtils.createChildren(2, null, "root", TestClientUtils.CTP_TARGET_CLIENT);
+    final List<Category> subFamily =
+        CategoryITUtils.createChildren(2, null, "root", TestClientUtils.CTP_TARGET_CLIENT);
 
     final Category firstRoot = subFamily.get(0);
     CategoryITUtils.createChildren(1, firstRoot, "child", TestClientUtils.CTP_TARGET_CLIENT);
@@ -269,7 +292,8 @@ class CategorySyncIT {
     // ---------------------------------------------------------------
 
     // Create a total of 2 categories in the source project (2 roots and 1 child to the second root)
-    final List<Category> sourceSubFamily = CategoryITUtils.createChildren(2, null, "root", TestClientUtils.CTP_SOURCE_CLIENT);
+    final List<Category> sourceSubFamily =
+        CategoryITUtils.createChildren(2, null, "root", TestClientUtils.CTP_SOURCE_CLIENT);
 
     final Category secondRoot = sourceSubFamily.get(1);
     CategoryITUtils.createChildren(1, secondRoot, "child", TestClientUtils.CTP_SOURCE_CLIENT);
@@ -321,7 +345,12 @@ class CategorySyncIT {
                     .build())
             .build();
 
-    TestClientUtils.CTP_TARGET_CLIENT.categories().create(parentDraft).execute().toCompletableFuture().join();
+    TestClientUtils.CTP_TARGET_CLIENT
+        .categories()
+        .create(parentDraft)
+        .execute()
+        .toCompletableFuture()
+        .join();
 
     final String childKey = "child";
     final CategoryDraft childDraft =
@@ -340,7 +369,12 @@ class CategorySyncIT {
                     .build())
             .build();
 
-    TestClientUtils.CTP_TARGET_CLIENT.categories().create(childDraft).execute().toCompletableFuture().join();
+    TestClientUtils.CTP_TARGET_CLIENT
+        .categories()
+        .create(childDraft)
+        .execute()
+        .toCompletableFuture()
+        .join();
     // ------------------------------------------------------------------------------------------------------------
     // Create a total of 2 categories in the source project
     String newParentKey = "new-parent";
@@ -359,7 +393,12 @@ class CategorySyncIT {
                     .build())
             .build();
 
-    TestClientUtils.CTP_SOURCE_CLIENT.categories().create(sourceParentDraft).execute().toCompletableFuture().join();
+    TestClientUtils.CTP_SOURCE_CLIENT
+        .categories()
+        .create(sourceParentDraft)
+        .execute()
+        .toCompletableFuture()
+        .join();
 
     final CategoryDraft sourceChildDraft =
         CategoryDraftBuilder.of()
@@ -377,7 +416,12 @@ class CategorySyncIT {
                     .build())
             .build();
 
-    TestClientUtils.CTP_SOURCE_CLIENT.categories().create(sourceChildDraft).execute().toCompletableFuture().join();
+    TestClientUtils.CTP_SOURCE_CLIENT
+        .categories()
+        .create(sourceChildDraft)
+        .execute()
+        .toCompletableFuture()
+        .join();
     // ---------------------------------------------------------------
 
     // Fetch categories from source project
@@ -431,9 +475,17 @@ class CategorySyncIT {
     // Create two categories in the source with Keys.
     List<CompletableFuture<ApiHttpResponse<Category>>> futureCreations = new ArrayList<>();
     futureCreations.add(
-        TestClientUtils.CTP_SOURCE_CLIENT.categories().create(oldCategoryDraft1).execute().toCompletableFuture());
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .categories()
+            .create(oldCategoryDraft1)
+            .execute()
+            .toCompletableFuture());
     futureCreations.add(
-        TestClientUtils.CTP_SOURCE_CLIENT.categories().create(oldCategoryDraft2).execute().toCompletableFuture());
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .categories()
+            .create(oldCategoryDraft2)
+            .execute()
+            .toCompletableFuture());
     CompletableFuture.allOf(futureCreations.toArray(new CompletableFuture[futureCreations.size()]))
         .join();
 
@@ -444,9 +496,17 @@ class CategorySyncIT {
     final CategoryDraft newCategoryDraft2 =
         CategoryDraftBuilder.of(oldCategoryDraft2).key(null).build();
     futureCreations.add(
-        TestClientUtils.CTP_TARGET_CLIENT.categories().create(newCategoryDraft1).execute().toCompletableFuture());
+        TestClientUtils.CTP_TARGET_CLIENT
+            .categories()
+            .create(newCategoryDraft1)
+            .execute()
+            .toCompletableFuture());
     futureCreations.add(
-        TestClientUtils.CTP_TARGET_CLIENT.categories().create(newCategoryDraft2).execute().toCompletableFuture());
+        TestClientUtils.CTP_TARGET_CLIENT
+            .categories()
+            .create(newCategoryDraft2)
+            .execute()
+            .toCompletableFuture());
 
     CompletableFuture.allOf(futureCreations.toArray(new CompletableFuture[futureCreations.size()]))
         .join();

@@ -33,12 +33,14 @@ class UnresolvedReferencesServiceImplIT {
 
   @AfterEach
   void tearDown() {
-    CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects(TestClientUtils.CTP_TARGET_CLIENT, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY);
+    CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects(
+        TestClientUtils.CTP_TARGET_CLIENT, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY);
   }
 
   @BeforeEach
   void setupTest() {
-    CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects(TestClientUtils.CTP_TARGET_CLIENT, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY);
+    CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects(
+        TestClientUtils.CTP_TARGET_CLIENT, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY);
     errorCallBackMessages = new ArrayList<>();
     errorCallBackExceptions = new ArrayList<>();
     warningCallBackMessages = new ArrayList<>();
@@ -124,7 +126,8 @@ class UnresolvedReferencesServiceImplIT {
   void saveFetchAndDelete_WithKeyWithSpecialCharacter_shouldWorkCorrectly() {
     // preparation
     final ProductDraft productDraft =
-        TestUtils.readObjectFromResource(PRODUCT_KEY_SPECIAL_CHARS_RESOURCE_PATH, ProductDraft.class);
+        TestUtils.readObjectFromResource(
+            PRODUCT_KEY_SPECIAL_CHARS_RESOURCE_PATH, ProductDraft.class);
 
     final Set<String> missingKeysSet = new HashSet<>();
     missingKeysSet.add("foo");

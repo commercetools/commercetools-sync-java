@@ -60,7 +60,8 @@ public final class ProductITUtils {
     TaxCategoryITUtils.deleteTaxCategories(ctpClient);
     CustomerGroupITUtils.deleteCustomerGroups(ctpClient);
     CustomerITUtils.deleteCustomers(ctpClient);
-    CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects(ctpClient, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY);
+    CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects(
+        ctpClient, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY);
   }
 
   /**

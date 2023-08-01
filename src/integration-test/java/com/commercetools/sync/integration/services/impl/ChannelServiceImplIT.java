@@ -70,7 +70,12 @@ class ChannelServiceImplIT {
   void fetchCachedChannelId_WithExistingChannel_ShouldFetchChannelAndCache() {
     final ChannelDraft draft =
         ChannelDraftBuilder.of().key(CHANNEL_KEY).roles(ChannelRoleEnum.INVENTORY_SUPPLY).build();
-    TestClientUtils.CTP_TARGET_CLIENT.channels().create(draft).execute().toCompletableFuture().join();
+    TestClientUtils.CTP_TARGET_CLIENT
+        .channels()
+        .create(draft)
+        .execute()
+        .toCompletableFuture()
+        .join();
     assertThat(channelService.fetchCachedChannelId(CHANNEL_KEY).toCompletableFuture().join())
         .isNotEmpty();
   }

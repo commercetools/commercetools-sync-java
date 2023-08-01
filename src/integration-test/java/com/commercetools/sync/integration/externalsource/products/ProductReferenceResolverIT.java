@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.externalsource.products;
 
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ensureProductType;
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.sdk2.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
@@ -54,8 +53,12 @@ class ProductReferenceResolverIT {
         Locale.ENGLISH,
         CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME,
         TestClientUtils.CTP_TARGET_CLIENT);
-    categories = CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2));
-    productType = ProductTypeITUtils.ensureProductType(PRODUCT_TYPE_RESOURCE_PATH, TestClientUtils.CTP_TARGET_CLIENT);
+    categories =
+        CategoryITUtils.ensureCategories(
+            TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2));
+    productType =
+        ProductTypeITUtils.ensureProductType(
+            PRODUCT_TYPE_RESOURCE_PATH, TestClientUtils.CTP_TARGET_CLIENT);
   }
 
   @BeforeEach
@@ -79,7 +82,9 @@ class ProductReferenceResolverIT {
               errorCallBackExceptions.add(exception.getCause());
             };
 
-    return ProductSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT).errorCallback(errorCallBack).build();
+    return ProductSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT)
+        .errorCallback(errorCallBack)
+        .build();
   }
 
   @AfterAll

@@ -51,7 +51,8 @@ class TypeServiceImplIT {
     errorCallBackExceptions = new ArrayList<>();
 
     CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_TARGET_CLIENT);
-    CategoryITUtils.ensureCategoriesCustomType(OLD_TYPE_KEY, OLD_TYPE_LOCALE, OLD_TYPE_NAME, TestClientUtils.CTP_TARGET_CLIENT);
+    CategoryITUtils.ensureCategoriesCustomType(
+        OLD_TYPE_KEY, OLD_TYPE_LOCALE, OLD_TYPE_NAME, TestClientUtils.CTP_TARGET_CLIENT);
 
     final TypeSyncOptions typeSyncOptions =
         TypeSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT)
@@ -167,7 +168,12 @@ class TypeServiceImplIT {
     assertThat(fetchedTypes).hasSize(1);
 
     final Type queriedType =
-        TestClientUtils.CTP_TARGET_CLIENT.types().withKey(OLD_TYPE_KEY).get().executeBlocking().getBody();
+        TestClientUtils.CTP_TARGET_CLIENT
+            .types()
+            .withKey(OLD_TYPE_KEY)
+            .get()
+            .executeBlocking()
+            .getBody();
 
     assertThat(queriedType).isNotNull();
 
@@ -218,7 +224,12 @@ class TypeServiceImplIT {
         spyTypeService.createType(newTypeDraft).toCompletableFuture().join();
 
     final Type queriedType =
-        TestClientUtils.CTP_TARGET_CLIENT.types().withKey(TYPE_KEY_1).get().executeBlocking().getBody();
+        TestClientUtils.CTP_TARGET_CLIENT
+            .types()
+            .withKey(TYPE_KEY_1)
+            .get()
+            .executeBlocking()
+            .getBody();
 
     assertThat(createdType)
         .hasValueSatisfying(
@@ -328,7 +339,12 @@ class TypeServiceImplIT {
   @Test
   void updateType_WithValidChanges_ShouldUpdateTypeCorrectly() {
     final Type queriedType =
-        TestClientUtils.CTP_TARGET_CLIENT.types().withKey(OLD_TYPE_KEY).get().executeBlocking().getBody();
+        TestClientUtils.CTP_TARGET_CLIENT
+            .types()
+            .withKey(OLD_TYPE_KEY)
+            .get()
+            .executeBlocking()
+            .getBody();
 
     assertThat(queriedType).isNotNull();
 
@@ -343,7 +359,12 @@ class TypeServiceImplIT {
     assertThat(updatedType).isNotNull();
 
     final Type queriedTypeUpdated =
-        TestClientUtils.CTP_TARGET_CLIENT.types().withKey(OLD_TYPE_KEY).get().executeBlocking().getBody();
+        TestClientUtils.CTP_TARGET_CLIENT
+            .types()
+            .withKey(OLD_TYPE_KEY)
+            .get()
+            .executeBlocking()
+            .getBody();
 
     assertThat(queriedTypeUpdated).isNotNull();
     assertThat(queriedTypeUpdated.getKey()).isEqualTo(updatedType.getKey());
@@ -356,7 +377,12 @@ class TypeServiceImplIT {
   @Test
   void updateType_WithInvalidChanges_ShouldCompleteExceptionally() {
     final Type queriedType =
-        TestClientUtils.CTP_TARGET_CLIENT.types().withKey(OLD_TYPE_KEY).get().executeBlocking().getBody();
+        TestClientUtils.CTP_TARGET_CLIENT
+            .types()
+            .withKey(OLD_TYPE_KEY)
+            .get()
+            .executeBlocking()
+            .getBody();
 
     assertThat(queriedType).isNotNull();
 
