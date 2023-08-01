@@ -1,51 +1,39 @@
 package com.commercetools.sync.integration.commons.utils;
 
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
-import static com.commercetools.sync.integration.commons.utils.ChannelITUtils.deleteChannels;
-import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects;
-import static com.commercetools.sync.integration.commons.utils.CustomerGroupITUtils.deleteCustomerGroups;
-import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.deleteCustomers;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndCompose;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
-import static com.commercetools.sync.integration.commons.utils.StateITUtils.deleteStates;
-import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.deleteTaxCategories;
-import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
-import static java.util.Collections.singletonList;
-import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
-import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.client.QueryUtils;
+import com.commercetools.api.models.channel.Channel;
+import com.commercetools.api.models.channel.ChannelDraft;
+import com.commercetools.api.models.channel.ChannelPagedQueryResponse;
+import com.commercetools.api.models.channel.ChannelResourceIdentifier;
+import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
+import com.commercetools.api.models.common.DiscountedPrice;
+import com.commercetools.api.models.common.DiscountedPriceDraft;
+import com.commercetools.api.models.common.PriceDraft;
+import com.commercetools.api.models.common.PriceDraftBuilder;
+import com.commercetools.api.models.common.PriceTier;
+import com.commercetools.api.models.common.PriceTierDraft;
+import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
+import com.commercetools.api.models.product.Product;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductDraftBuilder;
+import com.commercetools.api.models.product.ProductUpdateActionBuilder;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.type.CustomFieldsDraft;
+import com.commercetools.api.models.type.ResourceTypeId;
+import com.commercetools.api.models.type.Type;
 import com.neovisionaries.i18n.CountryCode;
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.client.SphereRequest;
-import io.sphere.sdk.customergroups.CustomerGroup;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.productdiscounts.DiscountedPrice;
-import io.sphere.sdk.products.Price;
-import io.sphere.sdk.products.PriceDraft;
-import io.sphere.sdk.products.PriceDraftBuilder;
-import io.sphere.sdk.products.PriceTier;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.ProductVariantDraftBuilder;
-import io.sphere.sdk.products.commands.ProductDeleteCommand;
-import io.sphere.sdk.products.commands.ProductUpdateCommand;
-import io.sphere.sdk.products.commands.updateactions.Unpublish;
-import io.sphere.sdk.products.queries.ProductQuery;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
-import io.sphere.sdk.types.Type;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -53,24 +41,26 @@ import javax.money.CurrencyUnit;
 
 public final class ProductITUtils {
 
+  public static final String CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY =
+      "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
+
   /**
    * Deletes all products, product types, categories and types from the CTP project defined by the
    * {@code ctpClient}.
    *
    * @param ctpClient defines the CTP project to delete the product types from.
    */
-  public static void deleteProductSyncTestData(@Nonnull final SphereClient ctpClient) {
+  public static void deleteProductSyncTestData(@Nonnull final ProjectApiRoot ctpClient) {
     deleteAllProducts(ctpClient);
-    deleteProductTypes(ctpClient);
-    deleteAllCategories(ctpClient);
-    deleteTypes(ctpClient);
-    deleteChannels(ctpClient);
-    deleteStates(ctpClient, empty());
-    deleteTaxCategories(ctpClient);
-    deleteCustomerGroups(ctpClient);
-    deleteCustomers(ctpClient);
-    deleteWaitingToBeResolvedCustomObjects(
-        ctpClient, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolvedProducts.class);
+    ProductTypeITUtils.deleteProductTypes(ctpClient);
+    CategoryITUtils.deleteAllCategories(ctpClient);
+    ITUtils.deleteTypes(ctpClient);
+    ChannelITUtils.deleteChannels(ctpClient);
+    StateITUtils.deleteStates(ctpClient, null);
+    TaxCategoryITUtils.deleteTaxCategories(ctpClient);
+    CustomerGroupITUtils.deleteCustomerGroups(ctpClient);
+    CustomerITUtils.deleteCustomers(ctpClient);
+    CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects(ctpClient, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY);
   }
 
   /**
@@ -79,8 +69,19 @@ public final class ProductITUtils {
    *
    * @param ctpClient defines the CTP project to delete the products from.
    */
-  public static void deleteAllProducts(@Nonnull final SphereClient ctpClient) {
-    queryAndCompose(ctpClient, ProductQuery.of(), product -> safeDeleteProduct(ctpClient, product));
+  public static void deleteAllProducts(@Nonnull final ProjectApiRoot ctpClient) {
+    QueryUtils.queryAll(
+            ctpClient.products().get(),
+            products -> {
+              CompletableFuture.allOf(
+                      products.stream()
+                          .map(product -> safeDeleteProduct(ctpClient, product))
+                          .map(CompletionStage::toCompletableFuture)
+                          .toArray(CompletableFuture[]::new))
+                  .join();
+            })
+        .toCompletableFuture()
+        .join();
   }
 
   /**
@@ -89,12 +90,12 @@ public final class ProductITUtils {
    *
    * @param ctpClient defines the CTP project to delete the product from.
    * @param product the product to be deleted.
-   * @return a {@link CompletionStage} containing the deleted product.
+   * @return a {@link java.util.concurrent.CompletionStage} containing the deleted product.
    */
   @Nonnull
   private static CompletionStage<Product> safeDeleteProduct(
-      @Nonnull final SphereClient ctpClient, @Nonnull final Product product) {
-    return product.getMasterData().isPublished()
+      @Nonnull final ProjectApiRoot ctpClient, @Nonnull final Product product) {
+    return product.getMasterData().getPublished()
         ? unpublishAndDeleteProduct(ctpClient, product)
         : deleteProduct(ctpClient, product);
   }
@@ -104,13 +105,17 @@ public final class ProductITUtils {
    *
    * @param ctpClient defines the CTP project to delete the product from.
    * @param product the product to be unpublished and deleted.
-   * @return a {@link CompletionStage} containing the deleted product.
+   * @return a {@link java.util.concurrent.CompletionStage} containing the deleted product.
    */
   @Nonnull
   private static CompletionStage<Product> unpublishAndDeleteProduct(
-      @Nonnull final SphereClient ctpClient, @Nonnull final Product product) {
+      @Nonnull final ProjectApiRoot ctpClient, @Nonnull final Product product) {
     return ctpClient
-        .execute(buildUnpublishRequest(product))
+        .products()
+        .update(product)
+        .with(builder -> builder.plus(ProductUpdateActionBuilder::unpublishBuilder))
+        .execute()
+        .thenApply(productApiHttpResponse -> productApiHttpResponse.getBody())
         .thenCompose(unpublishedProduct -> deleteProduct(ctpClient, unpublishedProduct));
   }
 
@@ -119,24 +124,14 @@ public final class ProductITUtils {
    *
    * @param ctpClient the client defining the CTP project to delete the product from.
    * @param product the product to be deleted.
-   * @return a {@link CompletionStage} containing the deleted product. If the product supplied was
-   *     already unpublished the method will return a completion stage that completed exceptionally.
+   * @return a {@link java.util.concurrent.CompletionStage} containing the deleted product. If the
+   *     product supplied was already unpublished the method will return a completion stage that
+   *     completed exceptionally.
    */
   @Nonnull
   private static CompletionStage<Product> deleteProduct(
-      @Nonnull final SphereClient ctpClient, @Nonnull final Product product) {
-    return ctpClient.execute(ProductDeleteCommand.of(product));
-  }
-
-  /**
-   * Builds an unpublish request for the supplied product.
-   *
-   * @param product defines the product to build an un publish request for.
-   * @return an unpublish request for the supplied product.
-   */
-  @Nonnull
-  private static SphereRequest<Product> buildUnpublishRequest(@Nonnull final Product product) {
-    return ProductUpdateCommand.of(product, singletonList(Unpublish.of()));
+      @Nonnull final ProjectApiRoot ctpClient, @Nonnull final Product product) {
+    return ctpClient.products().delete(product).execute().thenApply(ApiHttpResponse::getBody);
   }
 
   /**
@@ -151,7 +146,7 @@ public final class ProductITUtils {
    */
   public static ProductDraft getDraftWithPriceReferences(
       @Nonnull final ProductDraft productDraft,
-      @Nullable final Reference<Channel> channelReference,
+      @Nullable final ChannelResourceIdentifier channelReference,
       @Nullable final CustomFieldsDraft customFieldsDraft) {
     final List<ProductVariantDraft> allVariants =
         productDraft.getVariants().stream()
@@ -160,7 +155,7 @@ public final class ProductITUtils {
                   final List<PriceDraft> priceDraftsWithChannelReferences =
                       getPriceDraftsWithReferences(
                           productVariant, channelReference, customFieldsDraft);
-                  return ProductVariantDraftBuilder.of(productVariant)
+                  return ProductVariantDraft.builder(productVariant)
                       .prices(priceDraftsWithChannelReferences)
                       .build();
                 })
@@ -176,7 +171,7 @@ public final class ProductITUtils {
                       .prices(priceDraftsWithReferences)
                       .build();
 
-              return ProductDraftBuilder.of(productDraft)
+              return ProductDraft.builder(productDraft)
                   .masterVariant(masterVariantWithPriceDrafts)
                   .variants(allVariants)
                   .build();
@@ -199,7 +194,7 @@ public final class ProductITUtils {
   @Nonnull
   private static List<PriceDraft> getPriceDraftsWithReferences(
       @Nonnull final ProductVariantDraft productVariant,
-      @Nullable final ResourceIdentifier<Channel> channelReference,
+      @Nullable final ChannelResourceIdentifier channelReference,
       @Nullable final CustomFieldsDraft customFieldsDraft) {
 
     return productVariant.getPrices().stream()
@@ -227,14 +222,14 @@ public final class ProductITUtils {
    * @param name the name of the custom type.
    * @param ctpClient defines the CTP project to create the type on.
    */
-  public static Type createPricesCustomType(
+  public static Type ensurePricesCustomType(
       @Nonnull final String typeKey,
       @Nonnull final Locale locale,
       @Nonnull final String name,
-      @Nonnull final SphereClient ctpClient) {
+      @Nonnull final ProjectApiRoot ctpClient) {
 
-    return createTypeIfNotAlreadyExisting(
-        typeKey, locale, name, ResourceTypeIdsSetBuilder.of().addPrices(), ctpClient);
+    return ITUtils.createTypeIfNotAlreadyExisting(
+        typeKey, locale, name, Collections.singletonList(ResourceTypeId.PRODUCT_PRICE), ctpClient);
   }
 
   /**
@@ -255,25 +250,61 @@ public final class ProductITUtils {
   public static PriceDraft createPriceDraft(
       @Nonnull final BigDecimal amount,
       @Nonnull final CurrencyUnit currencyUnits,
-      @Nullable final CountryCode countryCode,
+      @Nonnull final CountryCode countryCode,
       @Nullable final String customerGroupId,
       @Nullable final ZonedDateTime validFrom,
       @Nullable final ZonedDateTime validUntil,
       @Nullable final String channelId,
       @Nullable final CustomFieldsDraft customFieldsDraft,
-      @Nullable final DiscountedPrice discountedPrice,
-      @Nullable final List<PriceTier> priceTiers) {
-    return PriceDraftBuilder.of(Price.of(amount, currencyUnits))
-        .country(countryCode)
+      @Nullable final DiscountedPriceDraft discountedPrice,
+      @Nullable final List<PriceTierDraft> priceTiers) {
+    return PriceDraftBuilder.of()
+        .value(
+            moneyBuilder ->
+                moneyBuilder
+                    .centAmount(amount.longValue())
+                    .currencyCode(currencyUnits.getCurrencyCode()))
+        .country(countryCode.getName())
         .customerGroup(
-            ofNullable(customerGroupId).map(ResourceIdentifier::<CustomerGroup>ofId).orElse(null))
+            customerGroupId == null
+                ? null
+                : CustomerGroupResourceIdentifierBuilder.of().id(customerGroupId).build())
         .validFrom(validFrom)
         .validUntil(validUntil)
-        .channel(ofNullable(channelId).map(ResourceIdentifier::<Channel>ofId).orElse(null))
+        .channel(
+            channelId == null ? null : ChannelResourceIdentifierBuilder.of().id(channelId).build())
         .custom(customFieldsDraft)
         .discounted(discountedPrice)
         .tiers(priceTiers)
         .build();
+  }
+
+  public static Channel ensureChannel(ChannelDraft channelDraft, ProjectApiRoot projectApiRoot) {
+    Channel channel =
+        projectApiRoot
+            .channels()
+            .get()
+            .withWhere("key=:key")
+            .withPredicateVar("key", channelDraft.getKey())
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ChannelPagedQueryResponse::getResults)
+            .thenApply(channels -> channels.isEmpty() ? null : channels.get(0))
+            .join();
+
+    if (channel == null) {
+
+      channel =
+          projectApiRoot
+              .channels()
+              .create(channelDraft)
+              .execute()
+              .thenApply(ApiHttpResponse::getBody)
+              .toCompletableFuture()
+              .join();
+    }
+
+    return channel;
   }
 
   private ProductITUtils() {}

@@ -1,27 +1,29 @@
 package com.commercetools.sync.integration.commons.utils;
 
-import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
-import static io.sphere.sdk.models.ResourceIdentifier.ofKey;
-import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
+import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;
+import static java.util.Collections.singletonList;
 
-import com.commercetools.sync.commons.utils.CtpQueryUtils;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.categories.CategoryDraftBuilder;
-import io.sphere.sdk.categories.commands.CategoryCreateCommand;
-import io.sphere.sdk.categories.commands.CategoryDeleteCommand;
-import io.sphere.sdk.categories.expansion.CategoryExpansionModel;
-import io.sphere.sdk.categories.queries.CategoryQuery;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.CategoryOrderHints;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
-import io.sphere.sdk.types.Type;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.client.QueryUtils;
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryDraft;
+import com.commercetools.api.models.category.CategoryDraftBuilder;
+import com.commercetools.api.models.category.CategoryPagedQueryResponse;
+import com.commercetools.api.models.category.CategoryReference;
+import com.commercetools.api.models.category.CategoryReferenceBuilder;
+import com.commercetools.api.models.category.CategoryResourceIdentifier;
+import com.commercetools.api.models.category.CategoryResourceIdentifierBuilder;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.product.CategoryOrderHints;
+import com.commercetools.api.models.product.CategoryOrderHintsBuilder;
+import com.commercetools.api.models.type.CustomFieldsDraft;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.ResourceTypeId;
+import com.commercetools.api.models.type.Type;
+import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.error.NotFoundException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -40,6 +42,9 @@ import javax.annotation.Nullable;
 public final class CategoryITUtils {
   public static final String OLD_CATEGORY_CUSTOM_TYPE_KEY = "oldCategoryCustomTypeKey";
   public static final String OLD_CATEGORY_CUSTOM_TYPE_NAME = "old_type_name";
+
+  public static final String CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY =
+      "commercetools-sync-java.UnresolvedReferencesService.categoryDrafts";
 
   /**
    * Builds a list of the supplied number ({@code numberOfCategories}) of CategoryDraft objects that
@@ -61,8 +66,13 @@ public final class CategoryITUtils {
       final String key = format("key%s", i + 1);
       final String orderHint = format("0.%s", i + 1);
       final CategoryDraft categoryDraft =
-          CategoryDraftBuilder.of(name, slug)
-              .parent(parentCategory != null ? ofKey(parentCategory.getKey()) : null)
+          CategoryDraftBuilder.of()
+              .name(name)
+              .slug(slug)
+              .parent(
+                  parentCategory != null
+                      ? CategoryResourceIdentifierBuilder.of().key(parentCategory.getKey()).build()
+                      : null)
               .description(description)
               .key(key)
               .orderHint(orderHint)
@@ -111,11 +121,11 @@ public final class CategoryITUtils {
 
   /**
    * This method creates {@code numberOfChildren} categories as children to the supplied {@code
-   * parent} category in the supplied {@link SphereClient} project in a blocking fashion. It assigns
-   * them a key, and an {@code Locale.ENGLISH} name and slug of the value of the supplied {@code
-   * prefix} appended to the (index of the child + 1). For example, if the prefix supplied is {@code
-   * "cat"}, the key and the english locales of the name and the slug would be {@code "cat1"} for
-   * the first child.
+   * parent} category in the supplied {@link ProjectApiRoot} project in a blocking fashion. It
+   * assigns them a key, and an {@code Locale.ENGLISH} name and slug of the value of the supplied
+   * {@code prefix} appended to the (index of the child + 1). For example, if the prefix supplied is
+   * {@code "cat"}, the key and the english locales of the name and the slug would be {@code "cat1"}
+   * for the first child.
    *
    * @param numberOfChildren the number of children categories to create.
    * @param parent the parent category to assign these children to.
@@ -128,26 +138,31 @@ public final class CategoryITUtils {
       final int numberOfChildren,
       @Nullable final Category parent,
       @Nonnull final String prefix,
-      @Nonnull final SphereClient ctpClient) {
+      @Nonnull final ProjectApiRoot ctpClient) {
     final List<Category> children = new ArrayList<>();
     final List<CompletableFuture<Category>> futures = new ArrayList<>();
     for (int i = 0; i < numberOfChildren; i++) {
       final String categoryName = prefix + (i + 1);
       CategoryDraftBuilder childBuilder =
-          CategoryDraftBuilder.of(
-                  LocalizedString.of(Locale.ENGLISH, categoryName),
-                  LocalizedString.of(Locale.ENGLISH, categoryName))
+          CategoryDraftBuilder.of()
+              .name(LocalizedString.of(Locale.ENGLISH, categoryName))
+              .slug(LocalizedString.of(Locale.ENGLISH, categoryName))
               .key(categoryName)
-              .custom(
-                  CustomFieldsDraft.ofTypeKeyAndJson(
-                      OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
+              .custom(getCustomFieldsDraft())
               .orderHint("sameOrderHint");
       if (parent != null) {
-        childBuilder = childBuilder.parent(ofKey(parent.getKey()));
+        childBuilder =
+            childBuilder.parent(
+                CategoryResourceIdentifierBuilder.of().key(parent.getKey()).build());
       }
       CategoryDraft child = childBuilder.build();
       final CompletableFuture<Category> future =
-          ctpClient.execute(CategoryCreateCommand.of(child)).toCompletableFuture();
+          ctpClient
+              .categories()
+              .create(child)
+              .execute()
+              .thenApply(ApiHttpResponse::getBody)
+              .toCompletableFuture();
       futures.add(future);
     }
     CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
@@ -173,8 +188,10 @@ public final class CategoryITUtils {
    *     key.
    */
   public static CustomFieldsDraft getCustomFieldsDraft() {
-    return CustomFieldsDraft.ofTypeKeyAndJson(
-        OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap());
+    return CustomFieldsDraftBuilder.of()
+        .type(TypeResourceIdentifierBuilder.of().key(OLD_CATEGORY_CUSTOM_TYPE_KEY).build())
+        .fields(ITUtils.createCustomFieldsJsonMap())
+        .build();
   }
 
   /**
@@ -187,13 +204,33 @@ public final class CategoryITUtils {
    * @param ctpClient defines the CTP project to create the categories on.
    * @param categoryDrafts the drafts to build the categories from.
    */
-  public static List<Category> createCategories(
-      @Nonnull final SphereClient ctpClient, @Nonnull final List<CategoryDraft> categoryDrafts) {
+  public static List<Category> ensureCategories(
+      @Nonnull final ProjectApiRoot ctpClient, @Nonnull final List<CategoryDraft> categoryDrafts) {
     final List<CompletableFuture<Category>> futures = new ArrayList<>();
     for (CategoryDraft categoryDraft : categoryDrafts) {
-      final CategoryCreateCommand categoryCreateCommand = CategoryCreateCommand.of(categoryDraft);
       final CompletableFuture<Category> categoryCompletableFuture =
-          ctpClient.execute(categoryCreateCommand).toCompletableFuture();
+          ctpClient
+              .categories()
+              .get()
+              .withWhere("key=:key")
+              .withPredicateVar("key", categoryDraft.getKey())
+              .execute()
+              .thenApply(ApiHttpResponse::getBody)
+              .thenApply(CategoryPagedQueryResponse::getResults)
+              .thenApply(
+                  categories -> {
+                    if (categories.isEmpty()) {
+                      return ctpClient
+                          .categories()
+                          .create(categoryDraft)
+                          .execute()
+                          .thenApply(ApiHttpResponse::getBody);
+                    } else {
+                      return CompletableFuture.completedFuture(categories.get(0));
+                    }
+                  })
+              .thenCompose(Function.identity());
+
       futures.add(categoryCompletableFuture);
     }
 
@@ -209,14 +246,24 @@ public final class CategoryITUtils {
    * @param name the name of the custom type.
    * @param ctpClient defines the CTP project to create the type on.
    */
-  public static Type createCategoriesCustomType(
+  public static Type ensureCategoriesCustomType(
       @Nonnull final String typeKey,
       @Nonnull final Locale locale,
       @Nonnull final String name,
-      @Nonnull final SphereClient ctpClient) {
+      @Nonnull final ProjectApiRoot ctpClient) {
+    return ITUtils.createTypeIfNotAlreadyExisting(
+        typeKey, locale, name, singletonList(ResourceTypeId.CATEGORY), ctpClient);
+  }
 
-    return createTypeIfNotAlreadyExisting(
-        typeKey, locale, name, ResourceTypeIdsSetBuilder.of().addCategories(), ctpClient);
+  /**
+   * Deletes all categories and types from the CTP project defined by the {@code ctpClient}.
+   *
+   * @param ctpClient defines the CTP project to delete the categories and types from.
+   */
+  public static void deleteCategorySyncTestData(@Nonnull final ProjectApiRoot ctpClient) {
+    deleteAllCategories(ctpClient);
+    ITUtils.deleteTypes(ctpClient);
+    CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects(ctpClient, CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY);
   }
 
   /**
@@ -229,13 +276,11 @@ public final class CategoryITUtils {
    *
    * @param ctpClient defines the CTP project to delete the categories from.
    */
-  public static void deleteAllCategories(@Nonnull final SphereClient ctpClient) {
+  public static void deleteAllCategories(@Nonnull final ProjectApiRoot ctpClient) {
     final Set<String> keys = new HashSet<>();
     final List<Category> categories =
-        CtpQueryUtils.queryAll(
-                ctpClient,
-                CategoryQuery.of().withExpansionPaths(CategoryExpansionModel::ancestors),
-                Function.identity())
+        QueryUtils.queryAll(
+                ctpClient.categories().get().addExpand("ancestors[*]"), categories1 -> categories1)
             .thenApply(
                 fetchedCategories ->
                     fetchedCategories.stream().flatMap(List::stream).collect(Collectors.toList()))
@@ -247,8 +292,17 @@ public final class CategoryITUtils {
           final String categoryKey = category.getKey();
           if (!hasADeletedAncestor(category, keys)) {
             ctpClient
-                .execute(CategoryDeleteCommand.of(category))
+                .categories()
+                .delete(category)
+                .execute()
                 .thenAccept(deletedCategory -> keys.add(categoryKey))
+                .handle(
+                    (result, throwable) -> {
+                      if (throwable != null && !(throwable instanceof NotFoundException)) {
+                        return throwable;
+                      }
+                      return result;
+                    })
                 .toCompletableFuture()
                 .join();
           }
@@ -263,7 +317,7 @@ public final class CategoryITUtils {
 
   private static boolean hasADeletedAncestor(
       @Nonnull final Category category, @Nonnull final Set<String> keysOfDeletedAncestors) {
-    final List<Reference<Category>> categoryAncestors = category.getAncestors();
+    final List<CategoryReference> categoryAncestors = category.getAncestors();
     return categoryAncestors.stream()
         .filter(Objects::nonNull)
         .anyMatch(
@@ -273,42 +327,50 @@ public final class CategoryITUtils {
   }
 
   /**
-   * Builds a {@link Set} of {@link ResourceIdentifier} with keys in place of ids from the supplied
-   * {@link List} of {@link Category}.
+   * Builds a {@link java.util.Set} of {@link CategoryResourceIdentifier} with keys in place of ids
+   * from the supplied {@link java.util.List} of {@link Category}.
    *
-   * @param categories a {@link List} of {@link Category} from which the {@link Set} of {@link
-   *     ResourceIdentifier} will be built.
-   * @return a {@link Set} of {@link ResourceIdentifier} with keys in place of ids from the supplied
-   *     {@link List} of {@link Category}.
+   * @param categories a {@link java.util.List} of {@link Category} from which the {@link
+   *     java.util.Set} of {@link CategoryResourceIdentifier} will be built.
+   * @return a {@link java.util.Set} of {@link CategoryResourceIdentifier} with keys in place of ids
+   *     from the supplied {@link java.util.List} of {@link Category}.
    */
   @Nonnull
-  public static Set<ResourceIdentifier<Category>> geResourceIdentifiersWithKeys(
+  public static Set<CategoryResourceIdentifier> getResourceIdentifiersWithKeys(
       @Nonnull final List<Category> categories) {
     return categories.stream()
-        .map(category -> ResourceIdentifier.<Category>ofKey(category.getKey()))
+        .map(category -> CategoryResourceIdentifierBuilder.of().key(category.getKey()).build())
         .collect(Collectors.toSet());
   }
 
   /**
-   * Builds a {@link List} of {@link Reference} built from the supplied {@link List} of {@link
-   * Category}.
+   * Builds a {@link java.util.List} of {@link
+   * com.commercetools.api.models.category.CategoryReference} built from the supplied {@link
+   * java.util.List} of {@link Category}.
    *
-   * @param categories a {@link List} of {@link Category} from which the {@link List} of {@link
-   *     Reference} will be built.
-   * @return a {@link List} of {@link Reference} built from the supplied {@link List} of {@link
-   *     Category}.
+   * @param categories a {@link java.util.List} of {@link Category} from which the {@link
+   *     java.util.List} of {@link CategoryReference} will be built.
+   * @return a {@link java.util.List} of {@link CategoryReference} built from the supplied {@link
+   *     java.util.List} of {@link Category}.
    */
   @Nonnull
-  public static List<Reference<Category>> getReferencesWithIds(
+  public static List<CategoryReference> getReferencesWithIds(
       @Nonnull final List<Category> categories) {
     return categories.stream()
-        .map(category -> Category.referenceOfId(category.getId()))
+        .map(category -> CategoryReferenceBuilder.of().id(category.getId()).build())
+        .collect(Collectors.toList());
+  }
+
+  public static List<CategoryResourceIdentifier> getResourceIdentifiersWithIds(
+      @Nonnull final List<Category> categories) {
+    return categories.stream()
+        .map(category -> CategoryResourceIdentifierBuilder.of().id(category.getId()).build())
         .collect(Collectors.toList());
   }
 
   /**
-   * Given a {@link CategoryOrderHints} instance and a {@link List} of {@link Category}, this method
-   * replaces all the categoryOrderHint ids with the {@link Category} keys.
+   * Given a {@link CategoryOrderHints} instance and a {@link java.util.List} of {@link Category},
+   * this method replaces all the categoryOrderHint ids with the {@link Category} keys.
    *
    * @param categoryOrderHints the categoryOrderHints that should have its keys replaced with ids.
    * @param categories the categories that the keys would be taken from to replace on the newly
@@ -321,7 +383,7 @@ public final class CategoryITUtils {
       @Nonnull final List<Category> categories) {
     final Map<String, String> categoryOrderHintKeyMap = new HashMap<>();
     categoryOrderHints
-        .getAsMap()
+        .values()
         .forEach(
             (categoryId, categoryOrderHintValue) ->
                 categories.stream()
@@ -331,7 +393,7 @@ public final class CategoryITUtils {
                         category ->
                             categoryOrderHintKeyMap.put(
                                 category.getKey(), categoryOrderHintValue)));
-    return CategoryOrderHints.of(categoryOrderHintKeyMap);
+    return CategoryOrderHintsBuilder.of().values(categoryOrderHintKeyMap).build();
   }
 
   private CategoryITUtils() {}

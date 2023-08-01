@@ -3,7 +3,7 @@ sourceSets {
         java {
             compileClasspath += main.output + test.output
             runtimeClasspath += main.output + test.output
-            srcDir 'src/integration-test/java'
+            srcDir 'src/integration-test/java/com/commercetools'
         }
         resources.srcDir 'src/integration-test/resources'
     }

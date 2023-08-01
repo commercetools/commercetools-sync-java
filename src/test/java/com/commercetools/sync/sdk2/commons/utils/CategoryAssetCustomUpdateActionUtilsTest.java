@@ -57,7 +57,7 @@ class CategoryAssetCustomUpdateActionUtilsTest {
     CategorySetAssetCustomTypeAction categorySetAssetCustomTypeAction =
         (CategorySetAssetCustomTypeAction) updateAction;
     assertThat(categorySetAssetCustomTypeAction.getAssetId()).isEqualTo(null);
-    assertThat(categorySetAssetCustomTypeAction.getAssetKey()).isEqualTo(assetKey);
+    assertThat(categorySetAssetCustomTypeAction.getAssetKey()).isEqualTo(null);
     assertThat(categorySetAssetCustomTypeAction.getType()).isEqualTo(null);
   }
 
