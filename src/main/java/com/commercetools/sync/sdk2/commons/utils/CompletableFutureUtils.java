@@ -117,7 +117,7 @@ public final class CompletableFutureUtils {
    * @return a collection of futures resulting from applying the mapper function on each value.
    */
   @Nonnull
-  public static <T, S, U extends Collection<CompletableFuture<S>>> U mapValuesToFutures(
+  private static <T, S, U extends Collection<CompletableFuture<S>>> U mapValuesToFutures(
       @Nonnull final Stream<T> values,
       @Nonnull final Function<T, CompletionStage<S>> mapper,
       @Nonnull final Collector<CompletableFuture<S>, ?, U> collector) {
@@ -143,7 +143,7 @@ public final class CompletableFutureUtils {
    *     type {@code <T>}.
    */
   @Nonnull
-  public static <T, S extends Collection<CompletableFuture<T>>> S toCompletableFutures(
+  private static <T, S extends Collection<CompletableFuture<T>>> S toCompletableFutures(
       @Nonnull final Stream<CompletionStage<T>> values,
       @Nonnull final Collector<CompletableFuture<T>, ?, S> collector) {
     return values

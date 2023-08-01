@@ -1,4 +1,4 @@
-package com.commercetools.sync.sdk2.internals.utils;
+package com.commercetools.sync.sdk2.products.utils;
 
 import com.commercetools.api.models.product.ProductAddPriceAction;
 import com.commercetools.api.models.product.ProductChangePriceAction;

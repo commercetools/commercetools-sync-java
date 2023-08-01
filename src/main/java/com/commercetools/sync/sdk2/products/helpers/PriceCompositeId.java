@@ -1,4 +1,4 @@
-package com.commercetools.sync.sdk2.internals.helpers;
+package com.commercetools.sync.sdk2.products.helpers;
 
 import static java.util.Optional.ofNullable;
 

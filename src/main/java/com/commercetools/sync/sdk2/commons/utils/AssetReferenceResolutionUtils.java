@@ -35,7 +35,7 @@ public final class AssetReferenceResolutionUtils {
         .map(
             asset ->
                 AssetDraftBuilder.of()
-                    .custom(mapToCustomFieldsDraft(asset.getCustom(), referenceIdToKeyCache))
+                    .custom(mapToCustomFieldsDraft(asset, referenceIdToKeyCache))
                     .description(asset.getDescription())
                     .name(asset.getName())
                     .key(asset.getKey())

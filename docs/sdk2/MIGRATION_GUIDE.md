@@ -22,6 +22,24 @@
 The commercetools sync library uses the [JVM-SDK-V2](http://commercetools.github.io/commercetools-sdk-java-v2), therefore ensure you [Install JVM SDK](https://docs.commercetools.com/sdk/java-sdk-getting-started#install-the-java-sdk) module `commercetools-sdk-java-api` with
 any HTTP client module. The default one is `commercetools-http-client`.
 
+## Common Changes
+
+Some utility methods aren't available in this version. Please make sure to replace these. Here's a list of changes:
+
+- Removed utility methods:
+```java 
+// CollectionUtils
+public static <T> Set<T> emptyIfNull(@Nullable final Set<T> set)
+```
+- Changed scope of utility method:
+```java
+// CompletableFutureUtils
+private static <T, S, U extends Collection<CompletableFuture<S>>> U mapValuesToFutures(
+      @Nonnull final Stream<T> values,
+      @Nonnull final Function<T, CompletionStage<S>> mapper,
+      @Nonnull final Collector<CompletableFuture<S>, ?, U> collector)
+```
+
 ## Migrate syncers of supported resources
 
 - [Categories](/docs/sdk2/usage/CATEGORY_SYNC.md#migration-guide), 
