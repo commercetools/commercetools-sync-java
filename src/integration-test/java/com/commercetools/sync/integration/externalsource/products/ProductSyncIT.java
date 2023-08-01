@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.externalsource.products;
 
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ensureProductType;
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
 import static com.commercetools.sync.sdk2.products.utils.ProductReferenceResolutionUtils.createProductVariantDraft;
@@ -115,16 +114,22 @@ class ProductSyncIT {
         TestClientUtils.CTP_TARGET_CLIENT);
 
     final List<CategoryDraft> categoryDrafts = CategoryITUtils.getCategoryDrafts(null, 2);
-    final List<Category> categories = CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, categoryDrafts);
+    final List<Category> categories =
+        CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, categoryDrafts);
     categoryReferencesWithIds = CategoryITUtils.getReferencesWithIds(categories);
-    categoryResourceIdentifiersWithKeys = CategoryITUtils.getResourceIdentifiersWithKeys(categories);
+    categoryResourceIdentifiersWithKeys =
+        CategoryITUtils.getResourceIdentifiersWithKeys(categories);
     categoryOrderHintsWithIds = createRandomCategoryOrderHints(categoryReferencesWithIds);
     categoryOrderHintsWithKeys =
-        CategoryITUtils.replaceCategoryOrderHintCategoryIdsWithKeys(categoryOrderHintsWithIds, categories);
+        CategoryITUtils.replaceCategoryOrderHintCategoryIdsWithKeys(
+            categoryOrderHintsWithIds, categories);
 
-    productType = ProductTypeITUtils.ensureProductType(PRODUCT_TYPE_RESOURCE_PATH, TestClientUtils.CTP_TARGET_CLIENT);
+    productType =
+        ProductTypeITUtils.ensureProductType(
+            PRODUCT_TYPE_RESOURCE_PATH, TestClientUtils.CTP_TARGET_CLIENT);
     targetTaxCategory = TaxCategoryITUtils.ensureTaxCategory(TestClientUtils.CTP_TARGET_CLIENT);
-    targetProductState = StateITUtils.ensureState(TestClientUtils.CTP_TARGET_CLIENT, StateTypeEnum.PRODUCT_STATE);
+    targetProductState =
+        StateITUtils.ensureState(TestClientUtils.CTP_TARGET_CLIENT, StateTypeEnum.PRODUCT_STATE);
   }
 
   /**
@@ -1156,7 +1161,8 @@ class ProductSyncIT {
             CompletableFutureUtils.exceptionallyCompletedFuture(
                 ITUtils.createConcurrentModificationException()))
         .thenReturn(
-            CompletableFutureUtils.exceptionallyCompletedFuture(ITUtils.createBadGatewayException()));
+            CompletableFutureUtils.exceptionallyCompletedFuture(
+                ITUtils.createBadGatewayException()));
 
     return spyClient;
   }
@@ -1207,9 +1213,11 @@ class ProductSyncIT {
                 ITUtils.createConcurrentModificationException()));
 
     when(byProjectKeyProductProjectionsGet.execute())
-        .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(ITUtils.createNotFoundException()));
+        .thenReturn(
+            CompletableFutureUtils.exceptionallyCompletedFuture(ITUtils.createNotFoundException()));
     when(byProjectKeyProductProjectionsKeyByKeyGet.execute())
-        .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(ITUtils.createNotFoundException()));
+        .thenReturn(
+            CompletableFutureUtils.exceptionallyCompletedFuture(ITUtils.createNotFoundException()));
 
     return spyClient;
   }

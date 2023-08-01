@@ -155,7 +155,8 @@ class CustomerSyncIT {
 
   @Test
   void sync_WithUpdatedCustomer_ShouldUpdateCustomer() {
-    final Store storeCologne = CustomerITUtils.ensureStore(TestClientUtils.CTP_TARGET_CLIENT, "store-cologne");
+    final Store storeCologne =
+        CustomerITUtils.ensureStore(TestClientUtils.CTP_TARGET_CLIENT, "store-cologne");
     final CustomerDraft updatedCustomerDraft =
         CustomerDraftBuilder.of(customerDraftJohnDoe)
             .customerNumber("gold-new") // from gold-1, but can not be changed.
@@ -193,9 +194,11 @@ class CustomerSyncIT {
 
   @Test
   void sync_WithUpdatedAllFieldsOfCustomer_ShouldUpdateCustomerWithAllExpectedActions() {
-    final Store storeCologne = CustomerITUtils.ensureStore(TestClientUtils.CTP_TARGET_CLIENT, "store-cologne");
+    final Store storeCologne =
+        CustomerITUtils.ensureStore(TestClientUtils.CTP_TARGET_CLIENT, "store-cologne");
     final CustomerGroup customerGroupSilverMember =
-        CustomerITUtils.ensureCustomerGroup(TestClientUtils.CTP_TARGET_CLIENT, "silver members", "silver");
+        CustomerITUtils.ensureCustomerGroup(
+            TestClientUtils.CTP_TARGET_CLIENT, "silver members", "silver");
 
     final CustomerDraft updatedCustomerDraft =
         CustomerDraftBuilder.of()

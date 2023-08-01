@@ -123,13 +123,18 @@ class CartDiscountSyncBenchmark {
     assertThat(totalNumberOfCartDiscounts).isEqualTo(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
 
     assertThat(syncStatistics)
-        .hasValues(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST, BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
+        .hasValues(
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            0,
+            0);
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
 
     if (BenchmarkUtils.SUBMIT_BENCHMARK_RESULT) {
-      BenchmarkUtils.saveNewResult(BenchmarkUtils.CART_DISCOUNT_SYNC, BenchmarkUtils.CREATES_ONLY, totalTime);
+      BenchmarkUtils.saveNewResult(
+          BenchmarkUtils.CART_DISCOUNT_SYNC, BenchmarkUtils.CREATES_ONLY, totalTime);
     }
   }
 
@@ -184,7 +189,8 @@ class CartDiscountSyncBenchmark {
             .toCompletableFuture()
             .join();
 
-    assertThat(totalNumberOfUpdatedCartDiscounts).isEqualTo(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
+    assertThat(totalNumberOfUpdatedCartDiscounts)
+        .isEqualTo(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
 
     // Assert actual state of CTP project (total number of existing cart discounts)
     final Integer totalNumberOfCartDiscounts =
@@ -202,14 +208,19 @@ class CartDiscountSyncBenchmark {
 
     // Assert statistics
     assertThat(syncStatistics)
-        .hasValues(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST, 0, BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST, 0);
+        .hasValues(
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            0,
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            0);
 
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
 
     if (BenchmarkUtils.SUBMIT_BENCHMARK_RESULT) {
-      BenchmarkUtils.saveNewResult(BenchmarkUtils.CART_DISCOUNT_SYNC, BenchmarkUtils.UPDATES_ONLY, totalTime);
+      BenchmarkUtils.saveNewResult(
+          BenchmarkUtils.CART_DISCOUNT_SYNC, BenchmarkUtils.UPDATES_ONLY, totalTime);
     }
   }
 
@@ -283,14 +294,19 @@ class CartDiscountSyncBenchmark {
 
     // Assert statistics
     assertThat(syncStatistics)
-        .hasValues(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST, halfNumberOfDrafts, halfNumberOfDrafts, 0);
+        .hasValues(
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            halfNumberOfDrafts,
+            halfNumberOfDrafts,
+            0);
 
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
 
     if (BenchmarkUtils.SUBMIT_BENCHMARK_RESULT) {
-      BenchmarkUtils.saveNewResult(BenchmarkUtils.CART_DISCOUNT_SYNC, BenchmarkUtils.CREATES_AND_UPDATES, totalTime);
+      BenchmarkUtils.saveNewResult(
+          BenchmarkUtils.CART_DISCOUNT_SYNC, BenchmarkUtils.CREATES_AND_UPDATES, totalTime);
     }
   }
 

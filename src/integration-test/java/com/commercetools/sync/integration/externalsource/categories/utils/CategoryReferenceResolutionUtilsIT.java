@@ -52,11 +52,18 @@ class CategoryReferenceResolutionUtilsIT {
             .thenApply(ApiHttpResponse::getBody)
             .join();
 
-    CategoryITUtils.ensureCategoriesCustomType(CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY, ENGLISH, "anyName", TestClientUtils.CTP_TARGET_CLIENT);
+    CategoryITUtils.ensureCategoriesCustomType(
+        CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY,
+        ENGLISH,
+        "anyName",
+        TestClientUtils.CTP_TARGET_CLIENT);
 
     final Type assetsCustomType =
         ITUtils.ensureAssetsCustomType(
-            "assetsCustomTypeKey", ENGLISH, "assetsCustomTypeName", TestClientUtils.CTP_TARGET_CLIENT);
+            "assetsCustomTypeKey",
+            ENGLISH,
+            "assetsCustomTypeName",
+            TestClientUtils.CTP_TARGET_CLIENT);
     final List<AssetDraft> assetDrafts =
         singletonList(ITUtils.createAssetDraft("1", ofEnglish("1"), assetsCustomType.getId()));
 

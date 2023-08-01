@@ -263,7 +263,8 @@ public final class CategoryITUtils {
   public static void deleteCategorySyncTestData(@Nonnull final ProjectApiRoot ctpClient) {
     deleteAllCategories(ctpClient);
     ITUtils.deleteTypes(ctpClient);
-    CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects(ctpClient, CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY);
+    CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects(
+        ctpClient, CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY);
   }
 
   /**

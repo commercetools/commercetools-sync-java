@@ -66,7 +66,8 @@ class CustomerSyncIT {
         TestClientUtils.CTP_TARGET_CLIENT.customers().get().execute().join().getBody().getResults();
 
     final List<CustomerDraft> customerDrafts =
-        CustomerTransformUtils.toCustomerDrafts(TestClientUtils.CTP_TARGET_CLIENT, referenceIdToKeyCache, customers)
+        CustomerTransformUtils.toCustomerDrafts(
+                TestClientUtils.CTP_TARGET_CLIENT, referenceIdToKeyCache, customers)
             .join();
 
     final CustomerSyncStatistics customerSyncStatistics =
@@ -102,13 +103,15 @@ class CustomerSyncIT {
   private List<CustomerDraft> prepareUpdatedCustomerDrafts(
       @Nonnull final List<Customer> customers) {
 
-    final Store storeCologne = CustomerITUtils.ensureStore(TestClientUtils.CTP_TARGET_CLIENT, "store-cologne");
+    final Store storeCologne =
+        CustomerITUtils.ensureStore(TestClientUtils.CTP_TARGET_CLIENT, "store-cologne");
 
     CustomerITUtils.ensureCustomerCustomType(
         "customer-type-gold", Locale.ENGLISH, "gold customers", TestClientUtils.CTP_TARGET_CLIENT);
 
     final List<CustomerDraft> customerDrafts =
-        CustomerTransformUtils.toCustomerDrafts(TestClientUtils.CTP_TARGET_CLIENT, referenceIdToKeyCache, customers)
+        CustomerTransformUtils.toCustomerDrafts(
+                TestClientUtils.CTP_TARGET_CLIENT, referenceIdToKeyCache, customers)
             .join();
 
     return customerDrafts.stream()

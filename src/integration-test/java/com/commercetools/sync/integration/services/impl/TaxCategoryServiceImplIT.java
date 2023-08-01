@@ -233,7 +233,10 @@ class TaxCategoryServiceImplIT {
 
     // Fetch cached id by old key
     final Optional<String> cachedTaxCategoryId =
-        taxCategoryService.fetchCachedTaxCategoryId(TaxCategoryITUtils.TAXCATEGORY_KEY).toCompletableFuture().join();
+        taxCategoryService
+            .fetchCachedTaxCategoryId(TaxCategoryITUtils.TAXCATEGORY_KEY)
+            .toCompletableFuture()
+            .join();
 
     assertThat(cachedTaxCategoryId).isNotEmpty();
     assertThat(cachedTaxCategoryId).contains(taxCategory.get().getId());
@@ -442,7 +445,11 @@ class TaxCategoryServiceImplIT {
     assertThat(taxCategory).isNotNull();
 
     final TaxCategory fetchedTaxCategory =
-        taxCategoryService.fetchTaxCategory(TaxCategoryITUtils.TAXCATEGORY_KEY).toCompletableFuture().join().get();
+        taxCategoryService
+            .fetchTaxCategory(TaxCategoryITUtils.TAXCATEGORY_KEY)
+            .toCompletableFuture()
+            .join()
+            .get();
     assertThat(fetchedTaxCategory).isEqualTo(taxCategory);
   }
 

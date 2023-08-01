@@ -7,7 +7,6 @@ import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtil
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
-import static java.lang.String.format;
 import static java.util.Locale.ENGLISH;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -103,7 +102,8 @@ class ProductSyncBenchmark {
 
   @Test
   void sync_NewProducts_ShouldCreateProducts() throws IOException {
-    final List<ProductDraft> productDrafts = buildProductDrafts(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
+    final List<ProductDraft> productDrafts =
+        buildProductDrafts(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
 
     // Sync drafts
     final ProductSync productSync = new ProductSync(syncOptions);
@@ -115,7 +115,10 @@ class ProductSyncBenchmark {
 
     assertThat(totalTime)
         .withFailMessage(
-            String.format(BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR, totalTime, PRODUCT_BENCHMARKS_CREATE_ACTION_THRESHOLD))
+            String.format(
+                BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR,
+                totalTime,
+                PRODUCT_BENCHMARKS_CREATE_ACTION_THRESHOLD))
         .isLessThan(PRODUCT_BENCHMARKS_CREATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (total number of existing products)
@@ -131,18 +134,24 @@ class ProductSyncBenchmark {
     assertThat(totalNumberOfProducts).isEqualTo(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
 
     assertThat(syncStatistics)
-        .hasValues(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST, BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
+        .hasValues(
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            0,
+            0);
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
     if (BenchmarkUtils.SUBMIT_BENCHMARK_RESULT) {
-      BenchmarkUtils.saveNewResult(BenchmarkUtils.PRODUCT_SYNC_SDK_V2, BenchmarkUtils.CREATES_ONLY, totalTime);
+      BenchmarkUtils.saveNewResult(
+          BenchmarkUtils.PRODUCT_SYNC_SDK_V2, BenchmarkUtils.CREATES_ONLY, totalTime);
     }
   }
 
   @Test
   void sync_ExistingProducts_ShouldUpdateProducts() throws IOException {
-    final List<ProductDraft> productDrafts = buildProductDrafts(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
+    final List<ProductDraft> productDrafts =
+        buildProductDrafts(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
     // Create drafts to target project with different descriptions
     CompletableFuture.allOf(
             productDrafts.stream()
@@ -165,7 +174,10 @@ class ProductSyncBenchmark {
 
     assertThat(totalTime)
         .withFailMessage(
-            String.format(BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR, totalTime, PRODUCT_BENCHMARKS_UPDATE_ACTION_THRESHOLD))
+            String.format(
+                BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR,
+                totalTime,
+                PRODUCT_BENCHMARKS_UPDATE_ACTION_THRESHOLD))
         .isLessThan(PRODUCT_BENCHMARKS_UPDATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (number of updated products)
@@ -180,7 +192,8 @@ class ProductSyncBenchmark {
             .thenApply(ProductPagedQueryResponse::getTotal)
             .join();
 
-    assertThat(totalNumberOfUpdatedProducts).isEqualTo(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
+    assertThat(totalNumberOfUpdatedProducts)
+        .isEqualTo(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
 
     // Assert actual state of CTP project (total number of existing products)
     final Long totalNumberOfProducts =
@@ -196,18 +209,24 @@ class ProductSyncBenchmark {
 
     // Assert statistics
     assertThat(syncStatistics)
-        .hasValues(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST, 0, BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST, 0);
+        .hasValues(
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            0,
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            0);
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
     if (BenchmarkUtils.SUBMIT_BENCHMARK_RESULT) {
-      BenchmarkUtils.saveNewResult(BenchmarkUtils.PRODUCT_SYNC_SDK_V2, BenchmarkUtils.UPDATES_ONLY, totalTime);
+      BenchmarkUtils.saveNewResult(
+          BenchmarkUtils.PRODUCT_SYNC_SDK_V2, BenchmarkUtils.UPDATES_ONLY, totalTime);
     }
   }
 
   @Test
   void sync_WithSomeExistingProducts_ShouldSyncProducts() throws IOException {
-    final List<ProductDraft> productDrafts = buildProductDrafts(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
+    final List<ProductDraft> productDrafts =
+        buildProductDrafts(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
     final int halfNumberOfDrafts = productDrafts.size() / 2;
     final List<ProductDraft> firstHalf = productDrafts.subList(0, halfNumberOfDrafts);
 
@@ -233,7 +252,10 @@ class ProductSyncBenchmark {
 
     assertThat(totalTime)
         .withFailMessage(
-            String.format(BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR, totalTime, PRODUCT_BENCHMARKS_UPDATE_ACTION_THRESHOLD))
+            String.format(
+                BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR,
+                totalTime,
+                PRODUCT_BENCHMARKS_UPDATE_ACTION_THRESHOLD))
         .isLessThan(PRODUCT_BENCHMARKS_UPDATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (number of updated products)
@@ -263,12 +285,17 @@ class ProductSyncBenchmark {
 
     // Assert statistics
     assertThat(syncStatistics)
-        .hasValues(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST, halfNumberOfDrafts, halfNumberOfDrafts, 0);
+        .hasValues(
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            halfNumberOfDrafts,
+            halfNumberOfDrafts,
+            0);
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
     if (BenchmarkUtils.SUBMIT_BENCHMARK_RESULT) {
-      BenchmarkUtils.saveNewResult(BenchmarkUtils.PRODUCT_SYNC_SDK_V2, BenchmarkUtils.CREATES_AND_UPDATES, totalTime);
+      BenchmarkUtils.saveNewResult(
+          BenchmarkUtils.PRODUCT_SYNC_SDK_V2, BenchmarkUtils.CREATES_AND_UPDATES, totalTime);
     }
   }
 

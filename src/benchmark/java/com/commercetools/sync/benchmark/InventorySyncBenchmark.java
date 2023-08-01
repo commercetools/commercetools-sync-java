@@ -3,7 +3,6 @@ package com.commercetools.sync.benchmark;
 import static com.commercetools.sync.integration.commons.utils.InventoryITUtils.deleteInventoryEntries;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.api.models.inventory.InventoryEntryDraft;
@@ -59,7 +58,9 @@ class InventorySyncBenchmark {
     assertThat(totalTime)
         .withFailMessage(
             String.format(
-                BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR, totalTime, INVENTORY_BENCHMARKS_CREATE_ACTION_THRESHOLD))
+                BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR,
+                totalTime,
+                INVENTORY_BENCHMARKS_CREATE_ACTION_THRESHOLD))
         .isLessThan(INVENTORY_BENCHMARKS_CREATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (total number of existing inventories)
@@ -77,9 +78,14 @@ class InventorySyncBenchmark {
 
     // Assert on sync statistics
     assertThat(inventorySyncStatistics)
-        .hasValues(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST, BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
+        .hasValues(
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            0,
+            0);
     if (BenchmarkUtils.SUBMIT_BENCHMARK_RESULT) {
-      BenchmarkUtils.saveNewResult(BenchmarkUtils.INVENTORY_SYNC, BenchmarkUtils.CREATES_ONLY, totalTime);
+      BenchmarkUtils.saveNewResult(
+          BenchmarkUtils.INVENTORY_SYNC, BenchmarkUtils.CREATES_ONLY, totalTime);
     }
   }
 
@@ -94,7 +100,8 @@ class InventorySyncBenchmark {
   @Test
   void sync_WithSomeExistingInventories_ShouldSyncInventories() throws IOException {
     // TODO: SHOULD BE IMPLEMENTED.
-    BenchmarkUtils.saveNewResult(BenchmarkUtils.INVENTORY_SYNC, BenchmarkUtils.CREATES_AND_UPDATES, 30000);
+    BenchmarkUtils.saveNewResult(
+        BenchmarkUtils.INVENTORY_SYNC, BenchmarkUtils.CREATES_AND_UPDATES, 30000);
   }
 
   @Nonnull

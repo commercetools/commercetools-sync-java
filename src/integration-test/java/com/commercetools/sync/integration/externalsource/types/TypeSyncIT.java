@@ -76,7 +76,8 @@ class TypeSyncIT {
   @Test
   void sync_WithUpdatedType_ShouldUpdateType() {
     // preparation
-    final Optional<Type> oldTypeBefore = getTypeByKey(TestClientUtils.CTP_TARGET_CLIENT, TYPE_KEY_1);
+    final Optional<Type> oldTypeBefore =
+        getTypeByKey(TestClientUtils.CTP_TARGET_CLIENT, TYPE_KEY_1);
     assertThat(oldTypeBefore).isNotEmpty();
 
     final TypeDraft newTypeDraft =
@@ -86,7 +87,8 @@ class TypeSyncIT {
             .fieldDefinitions(FIELD_DEFINITION_1)
             .build();
 
-    final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT).build();
+    final TypeSyncOptions typeSyncOptions =
+        TypeSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT).build();
 
     final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
@@ -122,7 +124,8 @@ class TypeSyncIT {
             .fieldDefinitions(FIELD_DEFINITION_1)
             .build();
 
-    final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT).build();
+    final TypeSyncOptions typeSyncOptions =
+        TypeSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT).build();
 
     final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
@@ -154,7 +157,8 @@ class TypeSyncIT {
             .fieldDefinitions(FIELD_DEFINITION_1, FIELD_DEFINITION_2, FIELD_DEFINITION_3)
             .build();
 
-    final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT).build();
+    final TypeSyncOptions typeSyncOptions =
+        TypeSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT).build();
 
     final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
@@ -177,13 +181,15 @@ class TypeSyncIT {
 
   @Test
   void sync_WithUpdatedType_WithoutOldFieldDefinition_ShouldUpdateTypeRemovingFieldDefinition() {
-    final Optional<Type> oldTypeBefore = getTypeByKey(TestClientUtils.CTP_TARGET_CLIENT, TYPE_KEY_1);
+    final Optional<Type> oldTypeBefore =
+        getTypeByKey(TestClientUtils.CTP_TARGET_CLIENT, TYPE_KEY_1);
     assertThat(oldTypeBefore).isNotEmpty();
 
     final TypeDraft newTypeDraft =
         TypeDraftBuilder.of(TYPE_DRAFT_1).fieldDefinitions(FIELD_DEFINITION_1).build();
 
-    final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT).build();
+    final TypeSyncOptions typeSyncOptions =
+        TypeSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT).build();
 
     final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
@@ -210,7 +216,8 @@ class TypeSyncIT {
             .fieldDefinitions(FIELD_DEFINITION_2, FIELD_DEFINITION_3, FIELD_DEFINITION_1)
             .build();
 
-    final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT).build();
+    final TypeSyncOptions typeSyncOptions =
+        TypeSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT).build();
 
     final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
@@ -246,7 +253,8 @@ class TypeSyncIT {
     final TypeDraft newTypeDraft =
         TypeDraftBuilder.of(TYPE_DRAFT_1).fieldDefinitions(fieldDefinitionUpdated).build();
 
-    final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT).build();
+    final TypeSyncOptions typeSyncOptions =
+        TypeSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT).build();
 
     final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
@@ -356,7 +364,8 @@ class TypeSyncIT {
                         .build())
             .collect(Collectors.toList());
 
-    final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT).build();
+    final TypeSyncOptions typeSyncOptions =
+        TypeSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT).build();
 
     final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
@@ -542,7 +551,8 @@ class TypeSyncIT {
     return withTestClient(
         (uri, method) -> {
           if (uri.contains("types/key=") && ApiHttpMethod.GET.equals(method)) {
-            return CompletableFutureUtils.exceptionallyCompletedFuture(ITUtils.createBadGatewayException());
+            return CompletableFutureUtils.exceptionallyCompletedFuture(
+                ITUtils.createBadGatewayException());
           } else if (uri.contains("types/") && ApiHttpMethod.POST.equals(method)) {
             return CompletableFutureUtils.exceptionallyCompletedFuture(
                 ITUtils.createConcurrentModificationException());
@@ -605,7 +615,8 @@ class TypeSyncIT {
     return withTestClient(
         (uri, method) -> {
           if (uri.contains("types/key=") && ApiHttpMethod.GET.equals(method)) {
-            return CompletableFutureUtils.exceptionallyCompletedFuture(ITUtils.createNotFoundException());
+            return CompletableFutureUtils.exceptionallyCompletedFuture(
+                ITUtils.createNotFoundException());
           }
           if (uri.contains("types/") && ApiHttpMethod.POST.equals(method)) {
             return CompletableFutureUtils.exceptionallyCompletedFuture(
@@ -703,7 +714,8 @@ class TypeSyncIT {
             .fieldDefinitions(withSetOfEnumsNew, withSetOfLEnumsNew)
             .build();
 
-    final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT).build();
+    final TypeSyncOptions typeSyncOptions =
+        TypeSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT).build();
 
     final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
@@ -714,7 +726,8 @@ class TypeSyncIT {
     // assertions
     assertThat(typeSyncStatistics).hasValues(1, 0, 1, 0);
 
-    final Optional<Type> oldTypeAfter = getTypeByKey(TestClientUtils.CTP_TARGET_CLIENT, "withSetOfEnums");
+    final Optional<Type> oldTypeAfter =
+        getTypeByKey(TestClientUtils.CTP_TARGET_CLIENT, "withSetOfEnums");
 
     assertThat(oldTypeAfter)
         .hasValueSatisfying(

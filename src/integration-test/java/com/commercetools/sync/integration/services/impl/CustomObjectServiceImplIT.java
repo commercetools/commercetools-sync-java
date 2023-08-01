@@ -65,8 +65,10 @@ class CustomObjectServiceImplIT {
     errorCallBackMessages = new ArrayList<>();
     errorCallBackExceptions = new ArrayList<>();
 
-    CustomObjectITUtils.deleteCustomObject(TestClientUtils.CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER);
-    CustomObjectITUtils.deleteCustomObject(TestClientUtils.CTP_TARGET_CLIENT, NEW_CUSTOM_OBJECT_KEY, NEW_CUSTOM_OBJECT_CONTAINER);
+    CustomObjectITUtils.deleteCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER);
+    CustomObjectITUtils.deleteCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT, NEW_CUSTOM_OBJECT_KEY, NEW_CUSTOM_OBJECT_CONTAINER);
     CustomObjectITUtils.createCustomObject(
         TestClientUtils.CTP_TARGET_CLIENT,
         OLD_CUSTOM_OBJECT_KEY,
@@ -87,8 +89,10 @@ class CustomObjectServiceImplIT {
   /** Cleans up the target test data that were built in this test class. */
   @AfterAll
   static void tearDown() {
-    CustomObjectITUtils.deleteCustomObject(TestClientUtils.CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER);
-    CustomObjectITUtils.deleteCustomObject(TestClientUtils.CTP_TARGET_CLIENT, NEW_CUSTOM_OBJECT_KEY, NEW_CUSTOM_OBJECT_CONTAINER);
+    CustomObjectITUtils.deleteCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER);
+    CustomObjectITUtils.deleteCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT, NEW_CUSTOM_OBJECT_KEY, NEW_CUSTOM_OBJECT_CONTAINER);
   }
 
   @Test
@@ -131,13 +135,21 @@ class CustomObjectServiceImplIT {
       fetchMatchingCustomObjects_WithDifferentExistingCombinationOfKeysAndContainers_ShouldReturnEmptySet() {
 
     CustomObjectITUtils.deleteCustomObject(
-        TestClientUtils.CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY + "_1", OLD_CUSTOM_OBJECT_CONTAINER + "_1");
+        TestClientUtils.CTP_TARGET_CLIENT,
+        OLD_CUSTOM_OBJECT_KEY + "_1",
+        OLD_CUSTOM_OBJECT_CONTAINER + "_1");
     CustomObjectITUtils.deleteCustomObject(
-        TestClientUtils.CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY + "_1", OLD_CUSTOM_OBJECT_CONTAINER + "_2");
+        TestClientUtils.CTP_TARGET_CLIENT,
+        OLD_CUSTOM_OBJECT_KEY + "_1",
+        OLD_CUSTOM_OBJECT_CONTAINER + "_2");
     CustomObjectITUtils.deleteCustomObject(
-        TestClientUtils.CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY + "_2", OLD_CUSTOM_OBJECT_CONTAINER + "_1");
+        TestClientUtils.CTP_TARGET_CLIENT,
+        OLD_CUSTOM_OBJECT_KEY + "_2",
+        OLD_CUSTOM_OBJECT_CONTAINER + "_1");
     CustomObjectITUtils.deleteCustomObject(
-        TestClientUtils.CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY + "_2", OLD_CUSTOM_OBJECT_CONTAINER + "_2");
+        TestClientUtils.CTP_TARGET_CLIENT,
+        OLD_CUSTOM_OBJECT_KEY + "_2",
+        OLD_CUSTOM_OBJECT_CONTAINER + "_2");
 
     CustomObjectITUtils.createCustomObject(
         TestClientUtils.CTP_TARGET_CLIENT,
@@ -182,13 +194,21 @@ class CustomObjectServiceImplIT {
     assertThat(errorCallBackMessages).isEmpty();
 
     CustomObjectITUtils.deleteCustomObject(
-        TestClientUtils.CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY + "_1", OLD_CUSTOM_OBJECT_CONTAINER + "_1");
+        TestClientUtils.CTP_TARGET_CLIENT,
+        OLD_CUSTOM_OBJECT_KEY + "_1",
+        OLD_CUSTOM_OBJECT_CONTAINER + "_1");
     CustomObjectITUtils.deleteCustomObject(
-        TestClientUtils.CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY + "_1", OLD_CUSTOM_OBJECT_CONTAINER + "_2");
+        TestClientUtils.CTP_TARGET_CLIENT,
+        OLD_CUSTOM_OBJECT_KEY + "_1",
+        OLD_CUSTOM_OBJECT_CONTAINER + "_2");
     CustomObjectITUtils.deleteCustomObject(
-        TestClientUtils.CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY + "_2", OLD_CUSTOM_OBJECT_CONTAINER + "_1");
+        TestClientUtils.CTP_TARGET_CLIENT,
+        OLD_CUSTOM_OBJECT_KEY + "_2",
+        OLD_CUSTOM_OBJECT_CONTAINER + "_1");
     CustomObjectITUtils.deleteCustomObject(
-        TestClientUtils.CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY + "_2", OLD_CUSTOM_OBJECT_CONTAINER + "_2");
+        TestClientUtils.CTP_TARGET_CLIENT,
+        OLD_CUSTOM_OBJECT_KEY + "_2",
+        OLD_CUSTOM_OBJECT_CONTAINER + "_2");
   }
 
   @Test

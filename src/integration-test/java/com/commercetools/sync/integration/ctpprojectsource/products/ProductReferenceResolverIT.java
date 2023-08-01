@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.ctpprojectsource.products;
 
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ensureProductType;
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.sdk2.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
@@ -80,23 +79,33 @@ class ProductReferenceResolverIT {
         CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME,
         TestClientUtils.CTP_SOURCE_CLIENT);
 
-    CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2));
+    CategoryITUtils.ensureCategories(
+        TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2));
     categoryReferencesWithIds =
-        CategoryITUtils.getReferencesWithIds(CategoryITUtils.ensureCategories(TestClientUtils.CTP_SOURCE_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2)));
+        CategoryITUtils.getReferencesWithIds(
+            CategoryITUtils.ensureCategories(
+                TestClientUtils.CTP_SOURCE_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2)));
 
-    ProductTypeITUtils.ensureProductType(PRODUCT_TYPE_RESOURCE_PATH, TestClientUtils.CTP_TARGET_CLIENT);
     ProductTypeITUtils.ensureProductType(
-        PRODUCT_TYPE_WITH_REFERENCES_FOR_VARIANT_ATTRIBUTES_RESOURCE_PATH, TestClientUtils.CTP_TARGET_CLIENT);
+        PRODUCT_TYPE_RESOURCE_PATH, TestClientUtils.CTP_TARGET_CLIENT);
+    ProductTypeITUtils.ensureProductType(
+        PRODUCT_TYPE_WITH_REFERENCES_FOR_VARIANT_ATTRIBUTES_RESOURCE_PATH,
+        TestClientUtils.CTP_TARGET_CLIENT);
     productTypeSourceWithReferenceTypeVariantAttribute =
         ProductTypeITUtils.ensureProductType(
-            PRODUCT_TYPE_WITH_REFERENCES_FOR_VARIANT_ATTRIBUTES_RESOURCE_PATH, TestClientUtils.CTP_SOURCE_CLIENT);
+            PRODUCT_TYPE_WITH_REFERENCES_FOR_VARIANT_ATTRIBUTES_RESOURCE_PATH,
+            TestClientUtils.CTP_SOURCE_CLIENT);
 
-    productTypeSource = ProductTypeITUtils.ensureProductType(PRODUCT_TYPE_RESOURCE_PATH, TestClientUtils.CTP_SOURCE_CLIENT);
+    productTypeSource =
+        ProductTypeITUtils.ensureProductType(
+            PRODUCT_TYPE_RESOURCE_PATH, TestClientUtils.CTP_SOURCE_CLIENT);
     noKeyProductTypeSource =
-        ProductTypeITUtils.createProductType(PRODUCT_TYPE_NO_KEY_RESOURCE_PATH, TestClientUtils.CTP_SOURCE_CLIENT);
+        ProductTypeITUtils.createProductType(
+            PRODUCT_TYPE_NO_KEY_RESOURCE_PATH, TestClientUtils.CTP_SOURCE_CLIENT);
 
     oldTaxCategory = TaxCategoryITUtils.ensureTaxCategory(TestClientUtils.CTP_SOURCE_CLIENT);
-    oldProductState = StateITUtils.ensureState(TestClientUtils.CTP_SOURCE_CLIENT, StateTypeEnum.PRODUCT_STATE);
+    oldProductState =
+        StateITUtils.ensureState(TestClientUtils.CTP_SOURCE_CLIENT, StateTypeEnum.PRODUCT_STATE);
     TaxCategoryITUtils.ensureTaxCategory(TestClientUtils.CTP_TARGET_CLIENT);
     StateITUtils.ensureState(TestClientUtils.CTP_TARGET_CLIENT, StateTypeEnum.PRODUCT_STATE);
     oldCustomer = CustomerITUtils.ensureSampleCustomerJaneDoe(TestClientUtils.CTP_SOURCE_CLIENT);
@@ -158,7 +167,8 @@ class ProductReferenceResolverIT {
             .join();
 
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     // test
@@ -196,7 +206,8 @@ class ProductReferenceResolverIT {
             .join();
 
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     // test
@@ -238,7 +249,8 @@ class ProductReferenceResolverIT {
             .join();
 
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     final ProductSyncStatistics syncStatistics =
@@ -268,7 +280,8 @@ class ProductReferenceResolverIT {
             .join();
 
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     final ProductSyncStatistics syncStatistics =
@@ -296,7 +309,8 @@ class ProductReferenceResolverIT {
             .join();
 
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     final ProductSyncStatistics syncStatistics =
@@ -326,7 +340,8 @@ class ProductReferenceResolverIT {
             .join();
 
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     final ProductSyncStatistics syncStatistics =

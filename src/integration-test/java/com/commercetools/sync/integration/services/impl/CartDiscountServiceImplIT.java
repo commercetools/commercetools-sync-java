@@ -1,7 +1,6 @@
 package com.commercetools.sync.integration.services.impl;
 
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.as;
@@ -93,7 +92,10 @@ class CartDiscountServiceImplIT {
     assertThat(cartDiscount).isNotNull();
 
     final Optional<CartDiscount> fetchedCartDiscountOptional =
-        cartDiscountService.fetchCartDiscount(CartDiscountITUtils.CART_DISCOUNT_KEY_1).toCompletableFuture().join();
+        cartDiscountService
+            .fetchCartDiscount(CartDiscountITUtils.CART_DISCOUNT_KEY_1)
+            .toCompletableFuture()
+            .join();
 
     assertThat(fetchedCartDiscountOptional.get()).isEqualTo(cartDiscount);
   }
@@ -269,7 +271,9 @@ class CartDiscountServiceImplIT {
         .hasSize(1)
         .singleElement(as(STRING))
         .contains(
-            String.format("A duplicate value '\\\"%s\\\"' exists for field 'key'.", CartDiscountITUtils.CART_DISCOUNT_KEY_1));
+            String.format(
+                "A duplicate value '\\\"%s\\\"' exists for field 'key'.",
+                CartDiscountITUtils.CART_DISCOUNT_KEY_1));
 
     ensureErrorCallbackIsDuplicateFieldError();
   }
@@ -323,7 +327,9 @@ class CartDiscountServiceImplIT {
         .hasSize(1)
         .singleElement(as(STRING))
         .contains(
-            String.format("A duplicate value '\\\"%s\\\"' exists for field 'sortOrder'.", CartDiscountITUtils.SORT_ORDER_1));
+            String.format(
+                "A duplicate value '\\\"%s\\\"' exists for field 'sortOrder'.",
+                CartDiscountITUtils.SORT_ORDER_1));
 
     ensureErrorCallbackIsDuplicateFieldError();
   }
@@ -357,7 +363,8 @@ class CartDiscountServiceImplIT {
               assertThat(updated.getName()).isEqualTo(cartDiscount.getName());
               assertThat(updated.getValue()).isEqualTo(cartDiscount.getValue());
               assertThat(updated.getTarget()).isEqualTo(cartDiscount.getTarget());
-              assertThat(updated.getCartPredicate()).isEqualTo(CartDiscountITUtils.CART_DISCOUNT_CART_PREDICATE_2);
+              assertThat(updated.getCartPredicate())
+                  .isEqualTo(CartDiscountITUtils.CART_DISCOUNT_CART_PREDICATE_2);
             });
   }
 
