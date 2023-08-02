@@ -5,7 +5,6 @@ import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUt
 import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.sdk2.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.sdk2.commons.utils.ProductTypeITUtils.deleteProductTypes;
-import static java.util.Arrays.asList;
 
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.client.QueryUtils;
@@ -63,7 +62,7 @@ public final class ShoppingListITUtils {
    * @param ctpClient defines the CTP project to delete the ShoppingLists from.
    */
   public static void deleteShoppingLists(@Nonnull final ProjectApiRoot ctpClient) {
-    final Consumer<List<ShoppingList>> shoppingListConsumer =
+    Consumer<List<ShoppingList>> shoppingListsConsumer =
         shoppingLists -> {
           CompletableFuture.allOf(
                   shoppingLists.stream()
@@ -72,7 +71,7 @@ public final class ShoppingListITUtils {
                       .toArray(CompletableFuture[]::new))
               .join();
         };
-    QueryUtils.queryAll(ctpClient.shoppingLists().get(), shoppingListConsumer)
+    QueryUtils.queryAll(ctpClient.shoppingLists().get(), shoppingListsConsumer)
         .handle(
             (result, throwable) -> {
               if (throwable != null && !(throwable instanceof NotFoundException)) {
@@ -85,7 +84,7 @@ public final class ShoppingListITUtils {
   }
 
   private static CompletionStage<ShoppingList> deleteShoppingList(
-      @Nonnull final ProjectApiRoot ctpClient, @Nonnull final ShoppingList shoppingList) {
+      final ProjectApiRoot ctpClient, final ShoppingList shoppingList) {
     return ctpClient
         .shoppingLists()
         .delete(shoppingList)
@@ -94,24 +93,25 @@ public final class ShoppingListITUtils {
   }
 
   /**
-   * Creates a {@link ShoppingList} in the CTP project defined by the {@code ctpClient} in a
-   * blocking fashion.
+   * Creates a {@link io.sphere.sdk.shoppinglists.ShoppingList} in the CTP project defined by the
+   * {@code ctpClient} in a blocking fashion.
    *
    * @param ctpClient defines the CTP project to create the ShoppingList in.
    * @param name the name of the ShoppingList to create.
    * @param key the key of the ShoppingList to create.
    * @return the created ShoppingList.
    */
-  public static ShoppingList ensureShoppingList(
+  public static ShoppingList createShoppingList(
       @Nonnull final ProjectApiRoot ctpClient,
       @Nonnull final String name,
       @Nonnull final String key) {
-    return ensureShoppingList(ctpClient, name, key, null, null, null, null);
+
+    return createShoppingList(ctpClient, name, key, null, null, null, null);
   }
 
   /**
-   * Creates a {@link ShoppingList} in the CTP project defined by the {@code ctpClient} in a
-   * blocking fashion.
+   * Creates a {@link io.sphere.sdk.shoppinglists.ShoppingList} in the CTP project defined by the
+   * {@code ctpClient} in a blocking fashion.
    *
    * @param ctpClient defines the CTP project to create the ShoppingList in.
    * @param name the name of the ShoppingList to create.
@@ -123,7 +123,7 @@ public final class ShoppingListITUtils {
    *     to create.
    * @return the created ShoppingList.
    */
-  public static ShoppingList ensureShoppingList(
+  public static ShoppingList createShoppingList(
       @Nonnull final ProjectApiRoot ctpClient,
       @Nonnull final String name,
       @Nonnull final String key,
@@ -151,8 +151,8 @@ public final class ShoppingListITUtils {
   }
 
   /**
-   * Creates a sample {@link ShoppingList} in the CTP project defined by the {@code ctpClient} in a
-   * blocking fashion.
+   * Creates a sample {@link io.sphere.sdk.shoppinglists.ShoppingList} in the CTP project defined by
+   * the {@code ctpClient} in a blocking fashion.
    *
    * @param ctpClient defines the CTP project to create the ShoppingList in.
    * @return the created ShoppingList.
@@ -233,16 +233,15 @@ public final class ShoppingListITUtils {
     final TypeDraft textLineItemTypeDraft =
         TypeDraftBuilder.of()
             .key("custom-type-text-line-items")
-            .name(ofEnglish("name"))
+            .description(ofEnglish("name"))
             .resourceTypeIds(ResourceTypeId.SHOPPING_LIST_TEXT_LINE_ITEM)
             .fieldDefinitions(
-                List.of(
-                    FieldDefinitionBuilder.of()
-                        .type(FieldTypeBuilder::stringBuilder)
-                        .name("utensils")
-                        .label(ofEnglish("utensils"))
-                        .required(false)
-                        .build()))
+                FieldDefinitionBuilder.of()
+                    .type(FieldTypeBuilder::stringBuilder)
+                    .name("utensils")
+                    .label(ofEnglish("utensils"))
+                    .required(false)
+                    .build())
             .build();
 
     CompletableFuture.allOf(
@@ -253,6 +252,7 @@ public final class ShoppingListITUtils {
 
     final Map<String, Object> servingsFields = new HashMap<>();
     servingsFields.put("nutrition", "Per servings: 475 cal, 11g protein, 28g, fat, 44g carb");
+
     servingsFields.put("servings", 12);
 
     return CustomFieldsDraftBuilder.of()
@@ -285,7 +285,7 @@ public final class ShoppingListITUtils {
             .variants(ProductVariantDraftBuilder.of().sku("SKU-1").key("variant1").build())
             .key("product-1-sample-carrot-cake")
             .variants(
-                asList(
+                List.of(
                     ProductVariantDraftBuilder.of().sku("SKU-2").key("variant2").build(),
                     ProductVariantDraftBuilder.of().sku("SKU-3").key("variant3").build()))
             .publish(true)
@@ -299,7 +299,7 @@ public final class ShoppingListITUtils {
             .variants(ProductVariantDraftBuilder.of().sku("SKU-4").key("variant4").build())
             .key("product-2-sample-carrot-cake")
             .variants(
-                asList(
+                List.of(
                     ProductVariantDraftBuilder.of().sku("SKU-5").key("variant5").build(),
                     ProductVariantDraftBuilder.of().sku("SKU-6").key("variant6").build()))
             .publish(true)
@@ -356,21 +356,22 @@ public final class ShoppingListITUtils {
             .custom(buildIngredientCustomType("cinnamon", "2 tsp"))
             .build();
 
-    return asList(item1, item2, item3, item4, item5, item6);
+    return List.of(item1, item2, item3, item4, item5, item6);
   }
 
   /**
-   * Creates an instance of {@link CustomFieldsDraft} with the type key 'custom-type-line-items' and
-   * two custom fields 'ingredient' and'amount'.
+   * Creates an instance of {@link io.sphere.sdk.types.CustomFieldsDraft} with the type key
+   * 'custom-type-line-items' and two custom fields 'ingredient' and'amount'.
    *
    * @param ingredient the text field.
    * @param amount the text field.
-   * @return an instance of {@link CustomFieldsDraft} with the type key 'custom-type-line-items' and
-   *     two custom fields 'ingredient' and'amount'.
+   * @return an instance of {@link io.sphere.sdk.types.CustomFieldsDraft} with the type key
+   *     'custom-type-line-items' and two custom fields 'ingredient' and'amount'.
    */
   @Nonnull
   public static CustomFieldsDraft buildIngredientCustomType(
       @Nonnull final String ingredient, @Nonnull final String amount) {
+
     final Map<String, Object> map = new HashMap<>();
     map.put("ingredient", ingredient);
     map.put("amount", amount);
@@ -442,15 +443,15 @@ public final class ShoppingListITUtils {
             .addedAt(ZonedDateTime.parse("2020-11-06T10:00:00.000Z"))
             .build();
 
-    return asList(item1, item2, item3, item4, item5, item6);
+    return List.of(item1, item2, item3, item4, item5, item6);
   }
 
   /**
-   * Creates an instance of {@link CustomFieldsDraft} with the type key
+   * Creates an instance of {@link io.sphere.sdk.types.CustomFieldsDraft} with the type key
    * 'custom-type-text-line-items' and two custom fields 'utensil'.
    *
    * @param utensils the text field.
-   * @return an instance of {@link CustomFieldsDraft} with the type key
+   * @return an instance of {@link io.sphere.sdk.types.CustomFieldsDraft} with the type key
    *     'custom-type-text-line-items' and two custom fields 'utensils'.
    */
   @Nonnull
