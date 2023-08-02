@@ -57,7 +57,7 @@ class ShoppingListServiceImplIT {
     deleteShoppingListTestData(CTP_TARGET_CLIENT);
     errorCallBackMessages = new ArrayList<>();
     errorCallBackExceptions = new ArrayList<>();
-    shoppingList = ShoppingListITUtils.ensureShoppingList(CTP_TARGET_CLIENT, "name", "key");
+    shoppingList = ShoppingListITUtils.createShoppingList(CTP_TARGET_CLIENT, "name", "key");
     final ShoppingListSyncOptions options =
         ShoppingListSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
             .errorCallback(
@@ -103,7 +103,7 @@ class ShoppingListServiceImplIT {
     final Set<String> shoppingListKeys = new HashSet<>();
     shoppingListKeys.add("not_existing_key_1");
     shoppingListKeys.add("not_existing_key_2");
-    Set<ShoppingList> shoppingLists =
+    final Set<ShoppingList> shoppingLists =
         shoppingListService
             .fetchMatchingShoppingListsByKeys(shoppingListKeys)
             .toCompletableFuture()
@@ -116,12 +116,12 @@ class ShoppingListServiceImplIT {
 
   @Test
   void fetchMatchingShoppingListsByKeys_WithExistingShoppingListsKeys_ShouldReturnShoppingLists() {
-    ShoppingList otherShoppingList =
-        ShoppingListITUtils.ensureShoppingList(CTP_TARGET_CLIENT, "other_name", "other_key");
+    final ShoppingList otherShoppingList =
+        ShoppingListITUtils.createShoppingList(CTP_TARGET_CLIENT, "other_name", "other_key");
     final Set<String> shoppingListKeys = new HashSet<>();
     shoppingListKeys.add(shoppingList.getKey());
     shoppingListKeys.add(otherShoppingList.getKey());
-    Set<ShoppingList> shoppingLists =
+    final Set<ShoppingList> shoppingLists =
         shoppingListService
             .fetchMatchingShoppingListsByKeys(shoppingListKeys)
             .toCompletableFuture()

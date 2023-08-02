@@ -93,8 +93,8 @@ public final class ShoppingListITUtils {
   }
 
   /**
-   * Creates a {@link io.sphere.sdk.shoppinglists.ShoppingList} in the CTP project defined by the
-   * {@code ctpClient} in a blocking fashion.
+   * Creates a {@link ShoppingList} in the CTP project defined by the {@code ctpClient} in a
+   * blocking fashion.
    *
    * @param ctpClient defines the CTP project to create the ShoppingList in.
    * @param name the name of the ShoppingList to create.
@@ -110,8 +110,8 @@ public final class ShoppingListITUtils {
   }
 
   /**
-   * Creates a {@link io.sphere.sdk.shoppinglists.ShoppingList} in the CTP project defined by the
-   * {@code ctpClient} in a blocking fashion.
+   * Creates a {@link ShoppingList} in the CTP project defined by the {@code ctpClient} in a
+   * blocking fashion.
    *
    * @param ctpClient defines the CTP project to create the ShoppingList in.
    * @param name the name of the ShoppingList to create.
@@ -151,8 +151,8 @@ public final class ShoppingListITUtils {
   }
 
   /**
-   * Creates a sample {@link io.sphere.sdk.shoppinglists.ShoppingList} in the CTP project defined by
-   * the {@code ctpClient} in a blocking fashion.
+   * Creates a sample {@link ShoppingList} in the CTP project defined by the {@code ctpClient} in a
+   * blocking fashion.
    *
    * @param ctpClient defines the CTP project to create the ShoppingList in.
    * @return the created ShoppingList.
@@ -360,13 +360,13 @@ public final class ShoppingListITUtils {
   }
 
   /**
-   * Creates an instance of {@link io.sphere.sdk.types.CustomFieldsDraft} with the type key
-   * 'custom-type-line-items' and two custom fields 'ingredient' and'amount'.
+   * Creates an instance of {@link CustomFieldsDraft} with the type key 'custom-type-line-items' and
+   * two custom fields 'ingredient' and'amount'.
    *
    * @param ingredient the text field.
    * @param amount the text field.
-   * @return an instance of {@link io.sphere.sdk.types.CustomFieldsDraft} with the type key
-   *     'custom-type-line-items' and two custom fields 'ingredient' and'amount'.
+   * @return an instance of {@link CustomFieldsDraft} with the type key 'custom-type-line-items' and
+   *     two custom fields 'ingredient' and'amount'.
    */
   @Nonnull
   public static CustomFieldsDraft buildIngredientCustomType(
@@ -447,11 +447,11 @@ public final class ShoppingListITUtils {
   }
 
   /**
-   * Creates an instance of {@link io.sphere.sdk.types.CustomFieldsDraft} with the type key
+   * Creates an instance of {@link CustomFieldsDraft} with the type key
    * 'custom-type-text-line-items' and two custom fields 'utensil'.
    *
    * @param utensils the text field.
-   * @return an instance of {@link io.sphere.sdk.types.CustomFieldsDraft} with the type key
+   * @return an instance of {@link CustomFieldsDraft} with the type key
    *     'custom-type-text-line-items' and two custom fields 'utensils'.
    */
   @Nonnull
