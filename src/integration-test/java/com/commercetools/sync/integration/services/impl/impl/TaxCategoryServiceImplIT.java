@@ -1,7 +1,7 @@
 package com.commercetools.sync.integration.services.impl.impl;
 
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.utils.TaxCategoryITUtils.*;
-import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
