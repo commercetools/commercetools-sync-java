@@ -274,13 +274,6 @@ class ShoppingListSyncIT {
     final String textLineItemId =
         shoppingListSampleCarrotCake.getTextLineItems().get(0).getCustom().getType().getId();
 
-    updateActionList.contains(
-        ShoppingListSetTextLineItemCustomFieldActionBuilder.of()
-            .name("amount")
-            .value("150g")
-            .textLineItemId(lineItemId_Sku3Sugar)
-            .build());
-
     assertThat(updateActionList)
         .contains(
             ShoppingListSetSlugActionBuilder.of().slug(ofEnglish("carrot-cake-for-xmas")).build(),
