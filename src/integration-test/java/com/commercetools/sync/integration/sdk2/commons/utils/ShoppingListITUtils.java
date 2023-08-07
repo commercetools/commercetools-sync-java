@@ -190,6 +190,7 @@ public final class ShoppingListITUtils {
   private static CustomFieldsDraft createSampleTypes(@Nonnull final ProjectApiRoot ctpClient) {
     final TypeDraft shoppingListTypeDraft =
         TypeDraftBuilder.of()
+            .name(ofEnglish("custom-type-shopping-list"))
             .key("custom-type-shopping-list")
             .name(ofEnglish("name"))
             .resourceTypeIds(ResourceTypeId.SHOPPING_LIST)
@@ -232,8 +233,9 @@ public final class ShoppingListITUtils {
 
     final TypeDraft textLineItemTypeDraft =
         TypeDraftBuilder.of()
+            .name(ofEnglish("custom-type-text-line-items"))
             .key("custom-type-text-line-items")
-            .description(ofEnglish("name"))
+            .description(ofEnglish("description"))
             .resourceTypeIds(ResourceTypeId.SHOPPING_LIST_TEXT_LINE_ITEM)
             .fieldDefinitions(
                 FieldDefinitionBuilder.of()
@@ -253,7 +255,7 @@ public final class ShoppingListITUtils {
     final Map<String, Object> servingsFields = new HashMap<>();
     servingsFields.put("nutrition", "Per servings: 475 cal, 11g protein, 28g, fat, 44g carb");
 
-    servingsFields.put("servings", 12);
+    servingsFields.put("servings", 12L);
 
     return CustomFieldsDraftBuilder.of()
         .type(
@@ -279,10 +281,11 @@ public final class ShoppingListITUtils {
 
     final ProductDraft productDraft =
         ProductDraftBuilder.of()
+            .slug(ofEnglish("product1"))
             .productType(productType.toResourceIdentifier())
             .name(ofEnglish("product1"))
             .description(ofEnglish("product1"))
-            .variants(ProductVariantDraftBuilder.of().sku("SKU-1").key("variant1").build())
+            .masterVariant(ProductVariantDraftBuilder.of().sku("SKU-1").key("variant1").build())
             .key("product-1-sample-carrot-cake")
             .variants(
                 List.of(
@@ -293,10 +296,11 @@ public final class ShoppingListITUtils {
 
     final ProductDraft productDraft2 =
         ProductDraftBuilder.of()
+            .slug(ofEnglish("product2"))
             .productType(productType.toResourceIdentifier())
             .name(ofEnglish("product2"))
             .description(ofEnglish("product2"))
-            .variants(ProductVariantDraftBuilder.of().sku("SKU-4").key("variant4").build())
+            .masterVariant(ProductVariantDraftBuilder.of().sku("SKU-4").key("variant4").build())
             .key("product-2-sample-carrot-cake")
             .variants(
                 List.of(

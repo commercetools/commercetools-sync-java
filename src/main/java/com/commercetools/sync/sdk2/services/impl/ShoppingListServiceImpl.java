@@ -58,7 +58,14 @@ public final class ShoppingListServiceImpl
   @Nonnull
   @Override
   public CompletionStage<Optional<ShoppingList>> fetchShoppingList(@Nullable final String key) {
-    return super.fetchResource(key, syncOptions.getCtpClient().shoppingLists().withKey(key).get());
+    return super.fetchResource(
+        key,
+        syncOptions
+            .getCtpClient()
+            .shoppingLists()
+            .withKey(key)
+            .get()
+            .addExpand("lineItems[*].variant"));
   }
 
   @Nonnull
@@ -118,7 +125,8 @@ public final class ShoppingListServiceImpl
                   .shoppingLists()
                   .get()
                   .withWhere("key in :keys")
-                  .withPredicateVar("keys", keysNotCached);
+                  .withPredicateVar("keys", keysNotCached)
+                  .addExpand("lineItems[*].variant");
           return query;
         });
   }
