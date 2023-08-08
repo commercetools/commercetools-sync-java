@@ -11,7 +11,7 @@ against a [ShoppingListDraft](https://docs.commercetools.com/api/projects/shoppi
 
 - [Usage](#usage)
   - [Prerequisites](#prerequisites)
-    - [SphereClient](#sphereclient)
+    - [ProjectApiRoot](#projectapiroot)
     - [Required Fields](#required-fields)
     - [Reference Resolution](#reference-resolution)
       - [Syncing from a commercetools project](#syncing-from-a-commercetools-project)
@@ -28,6 +28,12 @@ against a [ShoppingListDraft](https://docs.commercetools.com/api/projects/shoppi
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
 - [Caveats](#caveats)
+- [Migration Guide](#migration-guide)
+  - [Client configuration and creation](#client-configuration-and-creation)
+  - [Signature of ShoppingListSyncOptions](#signature-of-shoppinglistsyncoptions)
+  - [Build ShoppingListDraft (syncing from external project)](#build-shoppinglistdraft-syncing-from-external-project)
+  - [Query for ShoppingLists (syncing from CTP project)](#query-for-shoppinglists-syncing-from-ctp-project)
+  - [JVM-SDK-V2 migration guide](#jvm-sdk-v2-migration-guide)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
