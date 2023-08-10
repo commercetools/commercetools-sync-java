@@ -4,17 +4,23 @@ import static com.commercetools.sync.integration.commons.utils.TestClientUtils.C
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
+import static java.util.Optional.ofNullable;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.client.QueryUtils;
 import com.commercetools.api.client.error.ConcurrentModificationException;
+import com.commercetools.api.models.common.Asset;
 import com.commercetools.api.models.common.AssetDraft;
 import com.commercetools.api.models.common.AssetDraftBuilder;
 import com.commercetools.api.models.common.AssetSourceBuilder;
 import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.common.LocalizedStringBuilder;
+import com.commercetools.api.models.common.PriceDraft;
 import com.commercetools.api.models.error.ErrorResponse;
 import com.commercetools.api.models.error.ErrorResponseBuilder;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product.ProductVariantDraftBuilder;
 import com.commercetools.api.models.type.CustomFieldBooleanType;
 import com.commercetools.api.models.type.CustomFieldBooleanTypeBuilder;
 import com.commercetools.api.models.type.CustomFieldLocalizedStringType;
@@ -31,10 +37,8 @@ import com.commercetools.api.models.type.Type;
 import com.commercetools.api.models.type.TypeDraft;
 import com.commercetools.api.models.type.TypeDraftBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;
 import io.vrap.rmf.base.client.error.NotFoundException;
@@ -45,7 +49,9 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /** This class is meant only meant for internal use of the library's integration tests. */
 public final class ITUtils {
@@ -218,8 +224,8 @@ public final class ITUtils {
   }
 
   /**
-   * Builds a {@link FieldContainer} for the custom fields to their {@link JsonNode} values that
-   * looks as follows in JSON format:
+   * Builds a {@link FieldContainer} for the custom fields to their values that looks as follows in
+   * JSON format:
    *
    * <p>"fields": {"invisibleInShop": false, "backgroundColor": { "en": "red", "de": "rot"}}
    *
@@ -228,10 +234,10 @@ public final class ITUtils {
    */
   public static FieldContainer createCustomFieldsJsonMap() {
     final FieldContainerBuilder customFields = FieldContainerBuilder.of();
-    customFields.addValue(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(false));
+    customFields.addValue(BOOLEAN_CUSTOM_FIELD_NAME, false);
     customFields.addValue(
         LOCALISED_STRING_CUSTOM_FIELD_NAME,
-        JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
+        LocalizedStringBuilder.of().addValue("de", "rot").addValue("en", "red").build());
     return customFields.build();
   }
 
@@ -351,6 +357,61 @@ public final class ITUtils {
         .key(assetKey)
         .tags(singletonList(assetKey))
         .sources(singletonList(AssetSourceBuilder.of().uri("sourceUri").build()));
+  }
+
+  /**
+   * Creates a {@link ProductVariantDraft} draft key and sku of the value supplied {@code
+   * variantKeyAndSku} and with the supplied {@code assetDrafts} and {@code priceDrafts}
+   *
+   * @param variantKeyAndSku the value of the key and sku of the created draft.
+   * @param assetDrafts the assets to assign to the created draft.
+   * @param priceDrafts the prices to assign to the created draft.
+   * @return a {@link ProductVariantDraft} draft key and sku of the value supplied {@code
+   *     variantKeyAndSku} and with the supplied {@code assetDrafts} and {@code priceDrafts}.
+   */
+  public static ProductVariantDraft createVariantDraft(
+      @Nonnull final String variantKeyAndSku,
+      @Nullable final List<AssetDraft> assetDrafts,
+      @Nullable final List<PriceDraft> priceDrafts) {
+
+    return ProductVariantDraftBuilder.of()
+        .key(variantKeyAndSku)
+        .sku(variantKeyAndSku)
+        .assets(assetDrafts)
+        .prices(priceDrafts)
+        .build();
+  }
+  /**
+   * Asserts that a list of {@link Asset} and a list of {@link AssetDraft} have the same ordering of
+   * assets (assets are matched by key). It asserts that the matching assets have the same name,
+   * description, custom fields, tags, and asset sources.
+   *
+   * @param assets the list of assets to compare to the list of asset drafts.
+   * @param assetDrafts the list of asset drafts to compare to the list of assets.
+   */
+  public static void assertAssetsAreEqual(
+      @Nonnull final List<Asset> assets, @Nonnull final List<AssetDraft> assetDrafts) {
+    IntStream.range(0, assetDrafts.size())
+        .forEach(
+            index -> {
+              final Asset createdAsset = assets.get(index);
+              final AssetDraft assetDraft = assetDrafts.get(index);
+
+              assertThat(createdAsset.getName()).isEqualTo(assetDraft.getName());
+              assertThat(createdAsset.getDescription()).isEqualTo(assetDraft.getDescription());
+              assertThat(createdAsset.getKey()).isEqualTo(assetDraft.getKey());
+
+              ofNullable(assetDraft.getCustom())
+                  .ifPresent(
+                      customFields -> {
+                        assertThat(createdAsset.getCustom()).isNotNull();
+                        assertThat(createdAsset.getCustom().getFields())
+                            .isEqualTo(assetDraft.getCustom().getFields());
+                      });
+
+              assertThat(createdAsset.getTags()).isEqualTo(assetDraft.getTags());
+              assertThat(createdAsset.getSources()).isEqualTo(assetDraft.getSources());
+            });
   }
 
   public static NotFoundException createNotFoundException() {
