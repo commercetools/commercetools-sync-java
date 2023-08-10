@@ -293,6 +293,18 @@ public final class ITUtils {
   }
 
   /**
+   * Creates an {@link AssetDraft} with the given key and name.
+   *
+   * @param assetKey asset draft key.
+   * @param assetName asset draft name.
+   * @return an {@link AssetDraft} with the given key and name.
+   */
+  public static AssetDraft createAssetDraft(
+      @Nonnull final String assetKey, @Nonnull final LocalizedString assetName) {
+    return createAssetDraftBuilder(assetKey, assetName).build();
+  }
+
+  /**
    * Creates an {@link AssetDraft} with the with the given key and name. The asset draft created
    * will have custom field with the type id supplied ({@code assetCustomTypeId} and the fields
    * built from the method {@link ITUtils#createCustomFieldsJsonMap()}.
