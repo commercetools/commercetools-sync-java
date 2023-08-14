@@ -148,6 +148,10 @@ public class ProductSyncMockUtils {
         .metaTitle(stagedProductData.getMetaTitle())
         .description(stagedProductData.getDescription())
         .searchKeywords(stagedProductData.getSearchKeywords())
+        .taxCategory(
+            TaxCategoryResourceIdentifierBuilder.of()
+                .id(stagedProductData.getTaxCategory().getId())
+                .build())
         .key(stagedProductData.getKey())
         .categories(
             stagedProductData.getCategories().stream()

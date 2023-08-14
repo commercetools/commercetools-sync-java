@@ -45,6 +45,7 @@ import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.products.SyncFilter;
 import java.util.*;
 import java.util.stream.IntStream;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class ProductUpdateActionUtilsTest {
@@ -81,19 +82,10 @@ class ProductUpdateActionUtilsTest {
   private static final String NEW_PROD_DRAFT_WITHOUT_MV_SKU =
       RES_ROOT + "productDraftNew_noMasterVariantSku.json";
 
-  @Test
-  void buildVariantsUpdateActions_updatesVariants() {
-    // preparation
-    final ProductProjection productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
-    final ProductDraft productDraftNew =
-        createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
+  private static final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
 
-    final ProductSyncOptions productSyncOptions =
-        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
-            .syncFilter(SyncFilter.of())
-            .build();
-
-    final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
+  @BeforeAll
+  static void beforeAll() {
     final AttributeMetaData priceInfo =
         AttributeMetaData.of(
             AttributeDefinitionBuilder.of()
@@ -106,6 +98,31 @@ class ProductUpdateActionUtilsTest {
                 .inputHint(TextInputHint.SINGLE_LINE)
                 .build());
     attributesMetaData.put("priceInfo", priceInfo);
+    final AttributeMetaData sizeAttributeMetaData =
+        AttributeMetaData.of(
+            AttributeDefinitionBuilder.of()
+                .name("size")
+                .label(LocalizedString.ofEnglish("size"))
+                .attributeConstraint(AttributeConstraintEnum.NONE)
+                .type(AttributeTypeBuilder::textBuilder)
+                .isRequired(false)
+                .isSearchable(true)
+                .inputHint(TextInputHint.SINGLE_LINE)
+                .build());
+    attributesMetaData.put("size", sizeAttributeMetaData);
+  }
+
+  @Test
+  void buildVariantsUpdateActions_updatesVariants() {
+    // preparation
+    final ProductProjection productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+    final ProductDraft productDraftNew =
+        createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
+
+    final ProductSyncOptions productSyncOptions =
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
+            .syncFilter(SyncFilter.of())
+            .build();
 
     final List<ProductUpdateAction> updateActions =
         buildVariantsUpdateActions(
@@ -288,21 +305,6 @@ class ProductUpdateActionUtilsTest {
             .syncFilter(SyncFilter.of())
             .build();
 
-    final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
-
-    final AttributeMetaData priceInfo =
-        AttributeMetaData.of(
-            AttributeDefinitionBuilder.of()
-                .name("priceInfo")
-                .label(LocalizedString.ofEnglish("priceInfo"))
-                .attributeConstraint(AttributeConstraintEnum.NONE)
-                .type(AttributeTypeBuilder::textBuilder)
-                .isRequired(false)
-                .isSearchable(true)
-                .inputHint(TextInputHint.SINGLE_LINE)
-                .build());
-    attributesMetaData.put("priceInfo", priceInfo);
-
     final List<ProductUpdateAction> updateActions =
         buildVariantsUpdateActions(
             productOld, productDraftNew, productSyncOptions, attributesMetaData);
@@ -442,7 +444,7 @@ class ProductUpdateActionUtilsTest {
 
     final List<ProductUpdateAction> updateActions =
         buildVariantsUpdateActions(
-            productOld, productDraftNew, productSyncOptions, Collections.emptyMap());
+            productOld, productDraftNew, productSyncOptions, attributesMetaData);
 
     final List<ProductRemoveVariantAction> productRemoveVariantActions =
         productOld.getVariants().stream()
@@ -472,7 +474,7 @@ class ProductUpdateActionUtilsTest {
 
     final List<ProductUpdateAction> updateActions =
         buildVariantsUpdateActions(
-            productOld, productDraftNew, productSyncOptions, Collections.emptyMap());
+            productOld, productDraftNew, productSyncOptions, attributesMetaData);
 
     final List<ProductRemoveVariantAction> productRemoveVariantActions =
         productOld.getVariants().stream()
