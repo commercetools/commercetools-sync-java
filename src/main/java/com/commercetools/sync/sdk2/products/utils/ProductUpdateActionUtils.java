@@ -1,5 +1,6 @@
 package com.commercetools.sync.sdk2.products.utils;
 
+import static com.commercetools.sync.products.utils.ProductSyncUtils.TEMPORARY_MASTER_SKU_SUFFIX;
 import static com.commercetools.sync.sdk2.commons.utils.CollectionUtils.*;
 import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.areResourceIdentifiersEqual;
 import static com.commercetools.sync.sdk2.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
@@ -26,6 +27,7 @@ import com.commercetools.api.models.category.CategoryReference;
 import com.commercetools.api.models.category.CategoryResourceIdentifier;
 import com.commercetools.api.models.category.CategoryResourceIdentifierBuilder;
 import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.product.Attribute;
 import com.commercetools.api.models.product.CategoryOrderHints;
 import com.commercetools.api.models.product.Product;
 import com.commercetools.api.models.product.ProductAddToCategoryAction;
@@ -41,6 +43,7 @@ import com.commercetools.api.models.product.ProductRemoveFromCategoryAction;
 import com.commercetools.api.models.product.ProductRemoveFromCategoryActionBuilder;
 import com.commercetools.api.models.product.ProductRemoveVariantAction;
 import com.commercetools.api.models.product.ProductSetAttributeInAllVariantsAction;
+import com.commercetools.api.models.product.ProductSetAttributeInAllVariantsActionBuilder;
 import com.commercetools.api.models.product.ProductSetCategoryOrderHintAction;
 import com.commercetools.api.models.product.ProductSetDescriptionAction;
 import com.commercetools.api.models.product.ProductSetMetaDescriptionAction;
@@ -48,6 +51,7 @@ import com.commercetools.api.models.product.ProductSetMetaKeywordsAction;
 import com.commercetools.api.models.product.ProductSetMetaTitleAction;
 import com.commercetools.api.models.product.ProductSetSearchKeywordsAction;
 import com.commercetools.api.models.product.ProductSetSearchKeywordsActionBuilder;
+import com.commercetools.api.models.product.ProductSetSkuActionBuilder;
 import com.commercetools.api.models.product.ProductSetTaxCategoryAction;
 import com.commercetools.api.models.product.ProductTransitionStateAction;
 import com.commercetools.api.models.product.ProductUnpublishAction;
@@ -433,12 +437,12 @@ public final class ProductUpdateActionUtils {
    *   <li>{@link ProductAddVariantAction}
    *   <li>{@link ProductRemoveVariantAction}
    *   <li>{@link ProductChangeMasterVariantAction}
-   *   <li>{@link io.sphere.sdk.products.commands.updateactions.SetAttribute}
+   *   <li>{@link com.commercetools.api.models.product.ProductSetAttributeAction}
    *   <li>{@link ProductSetAttributeInAllVariantsAction}
-   *   <li>{@link io.sphere.sdk.products.commands.updateactions.SetSku}
-   *   <li>{@link io.sphere.sdk.products.commands.updateactions.AddExternalImage}
-   *   <li>{@link io.sphere.sdk.products.commands.updateactions.RemoveImage}
-   *   <li>{@link io.sphere.sdk.products.commands.updateactions.AddPrice}
+   *   <li>{@link com.commercetools.api.models.product.ProductSetSkuAction}
+   *   <li>{@link com.commercetools.api.models.product.ProductAddExternalImageAction}
+   *   <li>{@link com.commercetools.api.models.product.ProductRemoveImageAction}
+   *   <li>{@link com.commercetools.api.models.product.ProductAddPriceAction}
    *   <li>... and more variant level update actions.
    * </ul>
    *
@@ -485,7 +489,8 @@ public final class ProductUpdateActionUtils {
     final List<ProductVariantDraft> newAllProductVariants =
         new ArrayList<>(
             newProduct.getVariants() == null ? Collections.emptyList() : newProduct.getVariants());
-    newAllProductVariants.add(newProduct.getMasterVariant());
+    final ProductVariantDraft newMasterVariant = newProduct.getMasterVariant();
+    newAllProductVariants.add(newMasterVariant);
 
     // Remove missing variants, but keep master variant (MV can't be removed)
     final List<ProductUpdateAction> updateActions =
@@ -531,7 +536,42 @@ public final class ProductUpdateActionUtils {
             });
 
     updateActions.addAll(buildChangeMasterVariantUpdateAction(oldProduct, newProduct, syncOptions));
+    if (newMasterVariant != null
+        && hasAddVariantUpdateAction(updateActions)
+        && hasChangeMasterVariantUpdateAction(updateActions)) {
+
+      // Following update actions helps with the changing of master variants.
+      // The details are described here:
+      // https://github.com/commercetools/commercetools-project-sync/issues/447
+      final String oldMasterVariantSku = oldMasterVariant.getSku();
+      final boolean hasConflictingAddVariant =
+          hasConflictingAddVariantUpdateAction(updateActions, oldMasterVariantSku);
+
+      if (hasConflictingAddVariant) {
+        updateActions.add(
+            ProductSetSkuActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .sku(oldMasterVariant.getSku() + TEMPORARY_MASTER_SKU_SUFFIX)
+                .build());
+      }
+
+      updateActions.addAll(
+          buildSetAttributeInAllVariantsUpdateAction(
+              attributesMetaData, oldProduct.getMasterVariant(), newMasterVariant));
+    }
     return updateActions;
+  }
+
+  private static boolean hasConflictingAddVariantUpdateAction(
+      final List<ProductUpdateAction> updateActions, final String oldMasterVariantSku) {
+    return updateActions.stream()
+        .anyMatch(
+            productUpdateAction ->
+                productUpdateAction instanceof ProductAddVariantAction
+                    && ((ProductAddVariantAction) productUpdateAction).getSku() != null
+                    && ((ProductAddVariantAction) productUpdateAction)
+                        .getSku()
+                        .equals(oldMasterVariantSku));
   }
 
   private static List<ProductUpdateAction> getSameForAllUpdateActions(
@@ -894,9 +934,51 @@ public final class ProductUpdateActionUtils {
         });
   }
 
+  private static List<ProductUpdateAction> buildSetAttributeInAllVariantsUpdateAction(
+      @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
+      @Nonnull final ProductVariant oldMasterVariant,
+      @Nonnull final ProductVariantDraft newMasterVariant) {
+    final List<ProductUpdateAction> updateActions = new ArrayList<>();
+    final List<Attribute> attributes = newMasterVariant.getAttributes();
+    if (attributes != null) {
+      attributes.forEach(
+          attributeDraft -> {
+            final AttributeMetaData attributeMetaData =
+                attributesMetaData.get(attributeDraft.getName());
+            final Boolean isAttributesEqual =
+                oldMasterVariant.getAttributes().stream()
+                    .filter(oldAttribute -> oldAttribute.getName().equals(attributeDraft.getName()))
+                    .findAny()
+                    .map(attribute -> attribute.getValue().equals(attributeDraft.getValue()))
+                    .orElse(false);
+            if (attributeMetaData.isSameForAll() && !isAttributesEqual) {
+              updateActions.add(
+                  0,
+                  ProductSetAttributeInAllVariantsActionBuilder.of()
+                      .name(attributeDraft.getName())
+                      .value(attributeDraft.getValue())
+                      .build());
+            }
+          });
+    }
+
+    return updateActions;
+  }
+
+  private static boolean hasChangeMasterVariantUpdateAction(
+      final List<ProductUpdateAction> updateActions) {
+    return updateActions.stream()
+        .anyMatch(updateAction -> updateAction instanceof ProductChangeMasterVariantAction);
+  }
+
+  private static boolean hasAddVariantUpdateAction(final List<ProductUpdateAction> updateActions) {
+    return updateActions.stream()
+        .anyMatch(updateAction -> updateAction instanceof ProductAddVariantAction);
+  }
+
   /**
-   * Compares the {@link io.sphere.sdk.taxcategories.TaxCategory} references of an old {@link
-   * Product} and new {@link ProductDraft}. If they are different - return {@link
+   * Compares the {@link com.commercetools.api.models.tax_category.TaxCategory} references of an old
+   * {@link Product} and new {@link ProductDraft}. If they are different - return {@link
    * ProductSetTaxCategoryAction} update action.
    *
    * <p>If the old value is set, but the new one is empty - the command will unset the tax category.
@@ -904,8 +986,8 @@ public final class ProductUpdateActionUtils {
    * <p>{@link ProductProjection} which should be updated.
    *
    * @param oldProduct the productprojection which should be updated.
-   * @param newProduct the product draft with new {@link io.sphere.sdk.taxcategories.TaxCategory}
-   *     reference.
+   * @param newProduct the product draft with new {@link
+   *     com.commercetools.api.models.tax_category.TaxCategory} reference.
    * @return An optional with {@link ProductUpdateAction} update action.
    */
   @Nonnull

@@ -1,5 +1,6 @@
 package com.commercetools.sync.sdk2.products.utils;
 
+import static com.commercetools.sync.products.utils.ProductSyncUtils.TEMPORARY_MASTER_SKU_SUFFIX;
 import static com.commercetools.sync.sdk2.commons.utils.CollectionUtils.emptyIfNull;
 import static com.commercetools.sync.sdk2.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.sdk2.products.utils.ProductUpdateActionUtils.buildActionIfPassesFilter;
@@ -23,6 +24,7 @@ import com.commercetools.api.models.product.Product;
 import com.commercetools.api.models.product.ProductDraft;
 import com.commercetools.api.models.product.ProductProjection;
 import com.commercetools.api.models.product.ProductRemoveVariantAction;
+import com.commercetools.api.models.product.ProductSetSkuAction;
 import com.commercetools.api.models.product.ProductUpdateAction;
 import com.commercetools.sync.sdk2.products.ActionGroup;
 import com.commercetools.sync.sdk2.products.AttributeMetaData;
@@ -126,7 +128,10 @@ public final class ProductSyncUtils {
     buildPublishOrUnpublishUpdateAction(oldProduct, newProduct, hasNewUpdateActions)
         .ifPresent(updateActions::add);
 
-    return prioritizeUpdateActions(updateActions, oldProduct.getMasterVariant().getId());
+    return prioritizeUpdateActions(
+        updateActions,
+        oldProduct.getMasterVariant().getId(),
+        oldProduct.getMasterVariant().getSku());
   }
 
   /**
@@ -137,7 +142,9 @@ public final class ProductSyncUtils {
    *     actions 4 changeMasterVariant if any 5 removeVariant for old master 6 the rest comes in
    */
   private static List<ProductUpdateAction> prioritizeUpdateActions(
-      final List<ProductUpdateAction> updateActions, final Long oldMasterVariantId) {
+      final List<ProductUpdateAction> updateActions,
+      final Long oldMasterVariantId,
+      final String oldMasterVariantSku) {
 
     final ProductRemoveVariantAction removeMasterVariantUpdateAction =
         ProductRemoveVariantAction.builder().id(oldMasterVariantId).build();
@@ -169,9 +176,19 @@ public final class ProductSyncUtils {
                 action.getAction().equals(REMOVE_VARIANT_ACTION_NAME)
                     && action.equals(removeMasterVariantUpdateAction));
 
+    final List<ProductUpdateAction> temporarySetSkuUpdateAction =
+        getActionsByActionName(
+            updateActions,
+            action ->
+                action instanceof ProductSetSkuAction
+                    && ((ProductSetSkuAction) action)
+                        .getSku()
+                        .equals(oldMasterVariantSku + TEMPORARY_MASTER_SKU_SUFFIX));
+
     final List<ProductUpdateAction> updateActionList =
         new ArrayList<>(removeVariantUpdateActionsNoMaster);
     updateActionList.addAll(sameForAllUpdateActions);
+    updateActionList.addAll(temporarySetSkuUpdateAction);
     updateActionList.addAll(addVariantUpdateActions);
     updateActionList.addAll(changeMasterUpdateActions);
     updateActionList.addAll(removeOldMasterVariantUpdateAction);
