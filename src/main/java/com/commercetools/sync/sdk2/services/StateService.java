@@ -128,7 +128,7 @@ public interface StateService {
    * @param updateActions the update actions to update the {@link State} with.
    * @return {@link java.util.concurrent.CompletionStage}&lt;{@link State}&gt; containing as a
    *     result of it's completion an instance of the {@link State} which was updated in the CTP
-   *     project or a {@link io.sphere.sdk.models.SphereException}.
+   *     project or a {@link java.util.concurrent.CompletionException}.
    */
   @Nonnull
   CompletionStage<State> updateState(

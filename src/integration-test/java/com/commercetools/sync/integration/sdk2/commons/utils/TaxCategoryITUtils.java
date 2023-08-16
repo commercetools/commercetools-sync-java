@@ -50,7 +50,7 @@ public final class TaxCategoryITUtils {
         taxCategories -> {
           CompletableFuture.allOf(
                   taxCategories.stream()
-                      .map(taxCategory -> deleteTaxCategoryWithRetry(ctpClient, taxCategory))
+                      .map(taxCategory -> deleteTaxCategory(ctpClient, taxCategory))
                       .map(CompletionStage::toCompletableFuture)
                       .toArray(CompletableFuture[]::new))
               .join();
@@ -67,7 +67,7 @@ public final class TaxCategoryITUtils {
         .join();
   }
 
-  private static CompletionStage<TaxCategory> deleteTaxCategoryWithRetry(
+  private static CompletionStage<TaxCategory> deleteTaxCategory(
       @Nonnull final ProjectApiRoot ctpClient, @Nonnull final TaxCategory taxCategory) {
     return ctpClient
         .taxCategories()
