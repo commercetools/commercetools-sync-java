@@ -528,6 +528,17 @@ public final class ProductTypeITUtils {
               assertThat(enumValue.getLabel()).isEqualTo(enumValueDraft.getLabel());
             });
   }
+    @Nonnull
+    public static Map<String, Object> createNestedAttributeValueReferences(
+            @Nonnull final String attributeName, @Nonnull final Object referenceValue) {
+        return Map.of("name", attributeName,"value", referenceValue);
+    }
 
-  private ProductTypeITUtils() {}
+    @Nonnull
+    public static Map<String, Object> createNestedAttributeValueSetOfReferences(
+            @Nonnull final String attributeName, @Nonnull final Object... referenceValues) {
+        return Map.of("name", attributeName,"value", List.of(referenceValues));
+    }
+
+    private ProductTypeITUtils() {}
 }
