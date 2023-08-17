@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import com.commercetools.api.models.graph_ql.GraphQLResponse;
 import com.commercetools.api.models.graph_ql.GraphQLResponseBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
@@ -24,11 +25,21 @@ public class TestUtils {
   @Nonnull
   public static ApiHttpResponse<GraphQLResponse> mockGraphQLResponse(
       final String jsonResponseString) throws JsonProcessingException {
-    ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
+    final ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
     final Map responseMap = objectMapper.readValue(jsonResponseString, Map.class);
     final ApiHttpResponse<GraphQLResponse> apiHttpResponse = mock(ApiHttpResponse.class);
     when(apiHttpResponse.getBody())
         .thenReturn(GraphQLResponseBuilder.of().data(responseMap).build());
+    return apiHttpResponse;
+  }
+
+  @Nonnull
+  public static ApiHttpResponse<JsonNode> mockJsonNodeResponse(final String jsonResponseString)
+      throws JsonProcessingException {
+    final ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
+    final JsonNode jsonNode = objectMapper.readValue(jsonResponseString, JsonNode.class);
+    final ApiHttpResponse<JsonNode> apiHttpResponse = mock(ApiHttpResponse.class);
+    when(apiHttpResponse.getBody()).thenReturn(jsonNode);
     return apiHttpResponse;
   }
 }

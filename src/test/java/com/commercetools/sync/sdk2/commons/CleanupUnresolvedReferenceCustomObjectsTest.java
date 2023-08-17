@@ -9,9 +9,9 @@ import static org.mockito.Mockito.*;
 import com.commercetools.api.client.*;
 import com.commercetools.api.models.custom_object.CustomObject;
 import com.commercetools.api.models.graph_ql.GraphQLRequest;
-import com.commercetools.api.models.graph_ql.GraphQLResponse;
 import com.commercetools.sync.sdk2.commons.utils.TestUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.NotFoundException;
 import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
@@ -58,10 +58,11 @@ class CleanupUnresolvedReferenceCustomObjectsTest {
   void cleanup_withDeleteDaysAfterLastModification_ShouldDeleteAndReturnCleanupStatistics()
       throws JsonProcessingException {
     String jsonStringCustomObjects =
-        "{ \"customObjects\": {\"results\":[{\"key\":\"coKey1\"}, {" + "\"key\":\"coKey2\"}]}}";
-    final ApiHttpResponse<GraphQLResponse> fetchedCustomObjectsApiHttpResponse =
-        TestUtils.mockGraphQLResponse(jsonStringCustomObjects);
-    when(byProjectKeyGraphQlPost.execute())
+        "{ \"data\": {\"customObjects\": {\"results\":[{\"id\":\"coId1\", \"key\":\"coKey1\"}, {"
+            + "\"id\":\"coId1\", \"key\":\"coKey2\"}]}}}";
+    final ApiHttpResponse<JsonNode> fetchedCustomObjectsApiHttpResponse =
+        TestUtils.mockJsonNodeResponse(jsonStringCustomObjects);
+    when(byProjectKeyGraphQlPost.execute(eq(JsonNode.class)))
         .thenReturn(CompletableFuture.completedFuture(fetchedCustomObjectsApiHttpResponse));
 
     final Throwable badRequestException = createBadGatewayException();
@@ -85,10 +86,11 @@ class CleanupUnresolvedReferenceCustomObjectsTest {
   @Test
   void cleanup_withNotFound404Exception_ShouldNotIncrementFailedCounter()
       throws JsonProcessingException {
-    String jsonStringCustomObjects = "{ \"customObjects\": {\"results\":[{\"key\":\"coKey1\"}]}}";
-    final ApiHttpResponse<GraphQLResponse> fetchedCustomObjectsApiHttpResponse =
-        TestUtils.mockGraphQLResponse(jsonStringCustomObjects);
-    when(byProjectKeyGraphQlPost.execute())
+    String jsonStringCustomObjects =
+        "{ \"data\": {\"customObjects\": {\"results\":[{\"id\":\"coId1\", \"key\":\"coKey1\"}]}}}";
+    final ApiHttpResponse<JsonNode> fetchedCustomObjectsApiHttpResponse =
+        TestUtils.mockJsonNodeResponse(jsonStringCustomObjects);
+    when(byProjectKeyGraphQlPost.execute(eq(JsonNode.class)))
         .thenReturn(CompletableFuture.completedFuture(fetchedCustomObjectsApiHttpResponse));
 
     final String json = getErrorResponseJsonString(404);
@@ -119,10 +121,11 @@ class CleanupUnresolvedReferenceCustomObjectsTest {
   @Test
   void cleanup_withBadRequest400Exception_ShouldIncrementFailedCounterAndTriggerErrorCallback()
       throws JsonProcessingException {
-    String jsonStringCustomObjects = "{ \"customObjects\": {\"results\":[{\"key\":\"coKey1\"}]}}";
-    final ApiHttpResponse<GraphQLResponse> fetchedCustomObjectsApiHttpResponse =
-        TestUtils.mockGraphQLResponse(jsonStringCustomObjects);
-    when(byProjectKeyGraphQlPost.execute())
+    String jsonStringCustomObjects =
+        "{ \"data\": {\"customObjects\": {\"results\":[{\"id\":\"coId1\", \"key\":\"coKey1\"}]}}}";
+    final ApiHttpResponse<JsonNode> fetchedCustomObjectsApiHttpResponse =
+        TestUtils.mockJsonNodeResponse(jsonStringCustomObjects);
+    when(byProjectKeyGraphQlPost.execute(eq(JsonNode.class)))
         .thenReturn(CompletableFuture.completedFuture(fetchedCustomObjectsApiHttpResponse));
 
     final ApiHttpResponse<CustomObject> customObjectApiHttpResponse = mock(ApiHttpResponse.class);
