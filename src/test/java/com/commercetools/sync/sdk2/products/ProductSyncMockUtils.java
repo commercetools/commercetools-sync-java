@@ -242,7 +242,7 @@ public class ProductSyncMockUtils {
       @Nonnull final ProductTypeResourceIdentifier productTypeReference,
       @Nullable final TaxCategoryResourceIdentifier taxCategoryReference,
       @Nullable final StateResourceIdentifier stateReference,
-      @Nonnull final List<CategoryResourceIdentifier> categoryResourceIdentifiers,
+      @Nullable final List<CategoryResourceIdentifier> categoryResourceIdentifiers,
       @Nullable final CategoryOrderHints categoryOrderHints) {
     return createProductDraftBuilder(jsonResourcePath, productTypeReference)
         .taxCategory(taxCategoryReference)

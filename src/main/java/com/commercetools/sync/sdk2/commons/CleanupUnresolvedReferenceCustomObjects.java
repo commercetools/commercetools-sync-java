@@ -250,14 +250,14 @@ public final class CleanupUnresolvedReferenceCustomObjects {
     }
   }
 
-  private final class GraphQlQueryAll {
+  private static class GraphQlQueryAll {
     private final ProjectApiRoot client;
     private final GraphQLRequest graphqlRequest;
     private final long pageSize;
 
     private Consumer<Map<String, String>> pageConsumer;
 
-    private GraphQlQueryAll(
+    public GraphQlQueryAll(
         @Nonnull final ProjectApiRoot client,
         @Nonnull final GraphQLRequest graphqlRequest,
         final long pageSize) {
