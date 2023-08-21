@@ -6,8 +6,9 @@ import com.commercetools.sync.sdk2.commons.models.CustomDraft;
 import javax.annotation.Nullable;
 
 /**
- * Adapt ShoppingList with {@link com.commercetools.sync.sdk2.commons.models.CustomDraft} interface
- * to be used on {@link com.commercetools.sync.sdk2.commons.utils.CustomUpdateActionUtils}
+ * Adapt ShoppingListLineItemDraft with {@link
+ * com.commercetools.sync.sdk2.commons.models.CustomDraft} interface to be used on {@link
+ * com.commercetools.sync.sdk2.commons.utils.CustomUpdateActionUtils}
  */
 public final class ShoppingListLineItemDraftCustomTypeAdapter implements CustomDraft {
 

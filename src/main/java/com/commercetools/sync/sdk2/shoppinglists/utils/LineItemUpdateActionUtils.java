@@ -276,10 +276,11 @@ public final class LineItemUpdateActionUtils {
   }
 
   /**
-   * Compares the custom fields and custom types of a {@link ShoppingListLineItem} and a {@link ShoppingListLineItemDraft}
-   * and returns a list of {@link ShoppingListUpdateAction as a result. If both the
-   * {@link ShoppingListLineItem} and the {@link ShoppingListLineItemDraft} have identical custom fields and types, then no
-   * update action is needed and hence an empty {@link java.util.List} is returned.
+   * Compares the custom fields and custom types of a {@link ShoppingListLineItem} and a {@link
+   * ShoppingListLineItemDraft} and returns a list of {@link ShoppingListUpdateAction} as a result.
+   * If both the {@link ShoppingListLineItem} and the {@link ShoppingListLineItemDraft} have
+   * identical custom fields and types, then no update action is needed and hence an empty {@link
+   * java.util.List} is returned.
    *
    * @param oldShoppingList shopping list resource, whose line item should be updated.
    * @param newShoppingList new shopping list draft, which contains the line item to update.
