@@ -360,7 +360,7 @@ final ProductTypeDraft productTypeDraft =
                       .of("key", "name", "description", emptyList())
                       .build();
 
-// SDK v2: CategoryDraftBuilder without draftTemplate
+// SDK v2: ProductTypeDraftBuilder without draftTemplate
 final ProductTypeDraft productTypeDraft =
               ProductTypeDraftBuilder.of()
                       .description("product-type-description")
@@ -372,8 +372,8 @@ For more information, see the [Guide to replace DraftBuilders](https://docs.comm
 
 ### Query for ProductTypes (syncing from CTP project)
 
-If you sync producttypes between different commercetools projects you probably use [ProductTypeTransformUtils#toCategoryDrafts](#todo) to transform `ProductType` into `ProductTypeDraft` which can be used by the producttype-sync.
-However, if you need to query `ProductTypes` from a commercetools project instead of passing `CategoryQuery`s to a `sphereClient`, create (and execute) requests directly from the `apiRoot`.
+If you sync producttypes between different commercetools projects you probably use [ProductTypeTransformUtils#toProductTypeDrafts](#todo) to transform `ProductType` into `ProductTypeDraft` which can be used by the producttype-sync.
+However, if you need to query `ProductTypes` from a commercetools project instead of passing `ProductTypeQuery`s to a `sphereClient`, create (and execute) requests directly from the `apiRoot`.
 Here's an example:
 
 ```java
@@ -389,4 +389,4 @@ final ProductTypePagedQueryResponse result = apiRoot.productTypes().get().execut
 
 ### JVM-SDK-V2 migration guide
 
-On any other needs to migrate your project using jvm-sdk-v2 please refer to it's [Migration Guide](https://docs.commercetools.com/sdk/java-sdk-migrate). 
+On any other needs to migrate your project using jvm-sdk-v2 please refer to its [Migration Guide](https://docs.commercetools.com/sdk/java-sdk-migrate). 
