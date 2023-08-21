@@ -39,7 +39,25 @@ private static <T, S, U extends Collection<CompletableFuture<S>>> U mapValuesToF
       @Nonnull final Function<T, CompletionStage<S>> mapper,
       @Nonnull final Collector<CompletableFuture<S>, ?, U> collector)
 ```
+- Removed helper class:
+[ChannelCustomActionBuilder](https://github.com/commercetools/commercetools-sync-java/blob/v1.0.0-M14/src/main/java/com/commercetools/sync/channels/helpers/ChannelCustomActionBuilder.java)
+```java
+// Included these methods
+  public UpdateAction<Channel> buildRemoveCustomTypeAction(
+      @Nullable final Integer variantId, @Nullable final String objectId);
 
+  public UpdateAction<Channel> buildSetCustomTypeAction(
+      @Nullable final Integer variantId,
+      @Nullable final String objectId,
+      @Nonnull final String customTypeId,
+      @Nullable final Map<String, JsonNode> customFieldsJsonMap);
+
+  public UpdateAction<Channel> buildSetCustomFieldAction(
+      @Nullable final Integer variantId,
+      @Nullable final String objectId,
+      @Nullable final String customFieldName,
+      @Nullable final JsonNode customFieldValue);
+```
 ## Migrate syncers of supported resources
 
 - [Categories](/docs/sdk2/usage/CATEGORY_SYNC.md#migration-guide), 
