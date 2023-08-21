@@ -1,7 +1,7 @@
-package com.commercetools.sync.integration.sdk2.externalsource.shoppinglists;
+package com.commercetools.sync.integration.externalsource.shoppinglists;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
-import static com.commercetools.sync.integration.sdk2.commons.utils.ShoppingListITUtils.*;
+import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.*;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;

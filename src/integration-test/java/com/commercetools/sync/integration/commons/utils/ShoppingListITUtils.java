@@ -1,10 +1,10 @@
-package com.commercetools.sync.integration.sdk2.commons.utils;
+package com.commercetools.sync.integration.commons.utils;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
-import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUtils.deleteCustomers;
-import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.deleteTypes;
-import static com.commercetools.sync.integration.sdk2.commons.utils.ProductITUtils.deleteAllProducts;
-import static com.commercetools.sync.integration.sdk2.commons.utils.ProductTypeITUtils.deleteProductTypes;
+import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.deleteCustomers;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
+import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
 
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.client.QueryUtils;

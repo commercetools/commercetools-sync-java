@@ -1,10 +1,10 @@
-package com.commercetools.sync.integration.sdk2.services.impl;
+package com.commercetools.sync.integration.services.impl;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
-import static com.commercetools.sync.integration.sdk2.commons.utils.ProductTypeITUtils.createProductType;
-import static com.commercetools.sync.integration.sdk2.commons.utils.ShoppingListITUtils.deleteShoppingListTestData;
-import static com.commercetools.sync.integration.sdk2.commons.utils.ShoppingListITUtils.deleteShoppingLists;
-import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
+import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.deleteShoppingListTestData;
+import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.deleteShoppingLists;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,7 +25,7 @@ import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraft;
 import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraftBuilder;
 import com.commercetools.api.models.shopping_list.TextLineItemDraft;
 import com.commercetools.api.models.shopping_list.TextLineItemDraftBuilder;
-import com.commercetools.sync.integration.sdk2.commons.utils.ShoppingListITUtils;
+import com.commercetools.sync.integration.commons.utils.ShoppingListITUtils;
 import com.commercetools.sync.sdk2.services.ShoppingListService;
 import com.commercetools.sync.sdk2.services.impl.ShoppingListServiceImpl;
 import com.commercetools.sync.sdk2.shoppinglists.ShoppingListSyncOptions;
