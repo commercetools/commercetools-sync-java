@@ -7,7 +7,6 @@ import com.commercetools.api.models.custom_object.CustomObject;
 import com.commercetools.api.models.custom_object.CustomObjectDraft;
 import com.commercetools.api.models.custom_object.CustomObjectPagedQueryResponse;
 import com.commercetools.sync.customobjects.CustomObjectSync;
-import com.commercetools.sync.sdk2.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.sdk2.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.sdk2.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.sdk2.services.CustomObjectService;
@@ -50,8 +49,12 @@ public class CustomObjectServiceImpl
      *  "container_1|key_1" : "33213df2-c09a-426d-8c28-ccc52fdf9744"
      * ]
      */
-    return super.cacheKeysToIdsUsingGraphQl(
-        getKeys(identifiers), GraphQlQueryResource.CUSTOM_OBJECTS);
+    return fetchMatchingCustomObjects(identifiers)
+        .thenApply(
+            chunk -> {
+              chunk.forEach(resource -> keyToIdCache.put(keyMapper(resource), resource.getId()));
+              return keyToIdCache.asMap();
+            });
   }
 
   @NotNull

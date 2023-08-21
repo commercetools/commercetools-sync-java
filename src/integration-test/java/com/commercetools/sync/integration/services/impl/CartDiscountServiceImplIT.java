@@ -1,44 +1,34 @@
 package com.commercetools.sync.integration.services.impl;
 
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_CART_PREDICATE_2;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_KEY_1;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_KEY_2;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_NAME_2;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_TARGET_2;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_VALUE_2;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.SORT_ORDER_1;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.SORT_ORDER_2;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.deleteCartDiscountsFromTargetAndSource;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.populateTargetProject;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
-import static java.lang.String.format;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
-import static org.assertj.core.api.InstanceOfAssertFactories.throwable;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
-import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
-import com.commercetools.sync.services.CartDiscountService;
-import com.commercetools.sync.services.impl.CartDiscountServiceImpl;
-import io.sphere.sdk.cartdiscounts.CartDiscount;
-import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
-import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeCartPredicate;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeName;
-import io.sphere.sdk.cartdiscounts.queries.CartDiscountByKeyGet;
-import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
-import io.sphere.sdk.client.BadGatewayException;
-import io.sphere.sdk.client.ErrorResponseException;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.errors.DuplicateFieldError;
-import io.sphere.sdk.queries.PagedResult;
+import com.commercetools.api.client.ByProjectKeyCartDiscountsGet;
+import com.commercetools.api.client.ByProjectKeyCartDiscountsRequestBuilder;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.client.error.BadRequestException;
+import com.commercetools.api.models.cart_discount.CartDiscount;
+import com.commercetools.api.models.cart_discount.CartDiscountChangeCartPredicateAction;
+import com.commercetools.api.models.cart_discount.CartDiscountChangeCartPredicateActionBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountDraft;
+import com.commercetools.api.models.cart_discount.CartDiscountDraftBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountSetKeyAction;
+import com.commercetools.api.models.cart_discount.CartDiscountSetKeyActionBuilder;
+import com.commercetools.api.models.error.DuplicateFieldError;
+import com.commercetools.sync.integration.commons.utils.CartDiscountITUtils;
+import com.commercetools.sync.sdk2.cartdiscounts.CartDiscountSyncOptions;
+import com.commercetools.sync.sdk2.cartdiscounts.CartDiscountSyncOptionsBuilder;
+import com.commercetools.sync.sdk2.services.CartDiscountService;
+import com.commercetools.sync.sdk2.services.impl.CartDiscountServiceImpl;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.error.BadGatewayException;
+import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -60,7 +50,7 @@ class CartDiscountServiceImplIT {
   /** Cleans up the target test data that were built in this test class. */
   @AfterAll
   static void tearDown() {
-    deleteCartDiscountsFromTargetAndSource();
+    CartDiscountITUtils.deleteCartDiscountsFromTargetAndSource();
   }
 
   /**
@@ -69,9 +59,9 @@ class CartDiscountServiceImplIT {
    */
   @BeforeEach
   void setup() {
-    deleteCartDiscountsFromTargetAndSource();
+    CartDiscountITUtils.deleteCartDiscountsFromTargetAndSource();
 
-    populateTargetProject();
+    CartDiscountITUtils.populateTargetProject();
 
     errorCallBackMessages = new ArrayList<>();
     errorCallBackExceptions = new ArrayList<>();
@@ -90,22 +80,24 @@ class CartDiscountServiceImplIT {
 
   @Test
   void fetchCartDiscount_WithExistingCartDiscountKey_ShouldFetchCartDiscount() {
-    final Optional<CartDiscount> cartDiscountOptional =
+    final CartDiscount cartDiscount =
         CTP_TARGET_CLIENT
-            .execute(
-                CartDiscountQuery.of()
-                    .withPredicates(
-                        cartDiscountQueryModel ->
-                            cartDiscountQueryModel.key().is(CART_DISCOUNT_KEY_1)))
+            .cartDiscounts()
+            .withKey(CartDiscountITUtils.CART_DISCOUNT_KEY_1)
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
-            .join()
-            .head();
-    assertThat(cartDiscountOptional).isNotNull();
+            .join();
+    assertThat(cartDiscount).isNotNull();
 
     final Optional<CartDiscount> fetchedCartDiscountOptional =
-        cartDiscountService.fetchCartDiscount(CART_DISCOUNT_KEY_1).toCompletableFuture().join();
+        cartDiscountService
+            .fetchCartDiscount(CartDiscountITUtils.CART_DISCOUNT_KEY_1)
+            .toCompletableFuture()
+            .join();
 
-    assertThat(fetchedCartDiscountOptional).isEqualTo(cartDiscountOptional);
+    assertThat(fetchedCartDiscountOptional.get()).isEqualTo(cartDiscount);
   }
 
   @Test
@@ -142,7 +134,7 @@ class CartDiscountServiceImplIT {
   @Test
   void fetchMatchingCartDiscountsByKeys_WithAnyExistingKeys_ShouldReturnASetOfCartDiscounts() {
     final Set<String> cartDiscountKeys = new HashSet<>();
-    cartDiscountKeys.add(CART_DISCOUNT_KEY_1);
+    cartDiscountKeys.add(CartDiscountITUtils.CART_DISCOUNT_KEY_1);
 
     final Set<CartDiscount> matchingCartDiscounts =
         cartDiscountService
@@ -158,9 +150,22 @@ class CartDiscountServiceImplIT {
   @Test
   void fetchMatchingCartDiscountsByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
     // Mock sphere client to return BadGatewayException on any request.
-    final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-    when(spyClient.execute(any(CartDiscountQuery.class)))
-        .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()))
+    final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
+    final ByProjectKeyCartDiscountsRequestBuilder byProjectKeyCartDiscountsRequestBuilder = mock();
+    when(spyClient.cartDiscounts()).thenReturn(byProjectKeyCartDiscountsRequestBuilder);
+    final ByProjectKeyCartDiscountsGet byProjectKeyCartDiscountsGet = mock();
+    when(byProjectKeyCartDiscountsRequestBuilder.get()).thenReturn(byProjectKeyCartDiscountsGet);
+    when(byProjectKeyCartDiscountsGet.withWhere(anyString()))
+        .thenReturn(byProjectKeyCartDiscountsGet);
+    when(byProjectKeyCartDiscountsGet.withPredicateVar(anyString(), any()))
+        .thenReturn(byProjectKeyCartDiscountsGet);
+    when(byProjectKeyCartDiscountsGet.withWithTotal(anyBoolean()))
+        .thenReturn(byProjectKeyCartDiscountsGet);
+    when(byProjectKeyCartDiscountsGet.withLimit(anyInt())).thenReturn(byProjectKeyCartDiscountsGet);
+    when(byProjectKeyCartDiscountsGet.execute())
+        .thenReturn(
+            CompletableFutureUtils.exceptionallyCompletedFuture(
+                new BadGatewayException(500, "", null, "", null)))
         .thenCallRealMethod();
 
     final CartDiscountSyncOptions spyOptions =
@@ -175,7 +180,7 @@ class CartDiscountServiceImplIT {
     final CartDiscountService spyCartDiscountService = new CartDiscountServiceImpl(spyOptions);
 
     final Set<String> cartDiscountKeys = new HashSet<>();
-    cartDiscountKeys.add(CART_DISCOUNT_KEY_1);
+    cartDiscountKeys.add(CartDiscountITUtils.CART_DISCOUNT_KEY_1);
 
     // test and assert
     assertThat(errorCallBackExceptions).isEmpty();
@@ -190,21 +195,19 @@ class CartDiscountServiceImplIT {
   void createCartDiscount_WithValidCartDiscount_ShouldCreateCartDiscount() {
     // preparation
     final CartDiscountDraft newCartDiscountDraft =
-        CartDiscountDraftBuilder.of(
-                CART_DISCOUNT_NAME_2,
-                CART_DISCOUNT_CART_PREDICATE_2,
-                CART_DISCOUNT_VALUE_2,
-                CART_DISCOUNT_TARGET_2,
-                SORT_ORDER_2,
-                false)
-            .key(CART_DISCOUNT_KEY_2)
-            .active(false)
+        CartDiscountDraftBuilder.of()
+            .name(CartDiscountITUtils.CART_DISCOUNT_NAME_2)
+            .cartPredicate(CartDiscountITUtils.CART_DISCOUNT_CART_PREDICATE_2)
+            .value(CartDiscountITUtils.CART_DISCOUNT_VALUE_DRAFT_2)
+            .target(CartDiscountITUtils.CART_DISCOUNT_TARGET_2)
+            .sortOrder(CartDiscountITUtils.SORT_ORDER_2)
+            .requiresDiscountCode(false)
+            .key(CartDiscountITUtils.CART_DISCOUNT_KEY_2)
+            .isActive(false)
             .build();
 
-    final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-
     final CartDiscountSyncOptions spyOptions =
-        CartDiscountSyncOptionsBuilder.of(spyClient)
+        CartDiscountSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
             .errorCallback(
                 (exception, oldResource, newResource, actions) -> {
                   errorCallBackMessages.add(exception.getMessage());
@@ -221,58 +224,42 @@ class CartDiscountServiceImplIT {
             .toCompletableFuture()
             .join();
 
-    final Optional<CartDiscount> queriedOptional =
+    final CartDiscount cartDiscount =
         CTP_TARGET_CLIENT
-            .execute(
-                CartDiscountQuery.of()
-                    .withPredicates(
-                        cartDiscountQueryModel ->
-                            cartDiscountQueryModel.key().is(CART_DISCOUNT_KEY_2)))
+            .cartDiscounts()
+            .withKey(CartDiscountITUtils.CART_DISCOUNT_KEY_2)
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
-            .join()
-            .head();
+            .join();
 
-    assertThat(queriedOptional)
+    assertThat(createdCartDiscount)
         .hasValueSatisfying(
-            queried ->
-                assertThat(createdCartDiscount)
-                    .hasValueSatisfying(
-                        created -> {
-                          assertThat(created.getKey()).isEqualTo(queried.getKey());
-                          assertThat(created.getName()).isEqualTo(queried.getName());
-                          assertThat(created.getCartPredicate())
-                              .isEqualTo(queried.getCartPredicate());
-                          assertThat(created.getValue()).isEqualTo(queried.getValue());
-                          assertThat(created.getTarget()).isEqualTo(queried.getTarget());
-                          assertThat(created.getSortOrder()).isEqualTo(queried.getSortOrder());
-                        }));
+            created -> {
+              assertThat(created.getKey()).isEqualTo(cartDiscount.getKey());
+              assertThat(created.getName()).isEqualTo(cartDiscount.getName());
+              assertThat(created.getCartPredicate()).isEqualTo(cartDiscount.getCartPredicate());
+              assertThat(created.getValue()).isEqualTo(cartDiscount.getValue());
+              assertThat(created.getTarget()).isEqualTo(cartDiscount.getTarget());
+              assertThat(created.getSortOrder()).isEqualTo(cartDiscount.getSortOrder());
+            });
   }
 
   @Test
   void createCartDiscount_WithDuplicateCartDiscountKey_ShouldHaveEmptyOptionalAsAResult() {
     // preparation
     final CartDiscountDraft newCartDiscountDraft =
-        CartDiscountDraftBuilder.of(
-                CART_DISCOUNT_NAME_2,
-                CART_DISCOUNT_CART_PREDICATE_2,
-                CART_DISCOUNT_VALUE_2,
-                CART_DISCOUNT_TARGET_2,
-                SORT_ORDER_2,
-                false)
-            .key(CART_DISCOUNT_KEY_1)
-            .active(false)
+        CartDiscountDraftBuilder.of()
+            .name(CartDiscountITUtils.CART_DISCOUNT_NAME_2)
+            .cartPredicate(CartDiscountITUtils.CART_DISCOUNT_CART_PREDICATE_2)
+            .value(CartDiscountITUtils.CART_DISCOUNT_VALUE_DRAFT_2)
+            .target(CartDiscountITUtils.CART_DISCOUNT_TARGET_2)
+            .sortOrder(CartDiscountITUtils.SORT_ORDER_2)
+            .requiresDiscountCode(false)
+            .key(CartDiscountITUtils.CART_DISCOUNT_KEY_1)
+            .isActive(false)
             .build();
-
-    final CartDiscountSyncOptions options =
-        CartDiscountSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-            .errorCallback(
-                (exception, oldResource, newResource, actions) -> {
-                  errorCallBackMessages.add(exception.getMessage());
-                  errorCallBackExceptions.add(exception);
-                })
-            .build();
-
-    cartDiscountService = new CartDiscountServiceImpl(options);
 
     // test
     final Optional<CartDiscount> result =
@@ -284,7 +271,9 @@ class CartDiscountServiceImplIT {
         .hasSize(1)
         .singleElement(as(STRING))
         .contains(
-            format("A duplicate value '\"%s\"' exists for field 'key'.", CART_DISCOUNT_KEY_1));
+            String.format(
+                "A duplicate value '\\\"%s\\\"' exists for field 'key'.",
+                CartDiscountITUtils.CART_DISCOUNT_KEY_1));
 
     ensureErrorCallbackIsDuplicateFieldError();
   }
@@ -295,16 +284,17 @@ class CartDiscountServiceImplIT {
         .singleElement()
         .matches(
             exception -> {
-              assertThat(exception).hasCauseExactlyInstanceOf(ErrorResponseException.class);
-              final ErrorResponseException errorResponseException =
-                  (ErrorResponseException) exception.getCause();
+              assertThat(exception.getCause().getCause()).isInstanceOf(BadRequestException.class);
+              final BadRequestException badRequestException =
+                  (BadRequestException) exception.getCause().getCause();
 
               final List<DuplicateFieldError> fieldErrors =
-                  errorResponseException.getErrors().stream()
+                  badRequestException.getErrorResponse().getErrors().stream()
                       .map(
-                          sphereError -> {
-                            assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
-                            return sphereError.as(DuplicateFieldError.class);
+                          ctpError -> {
+                            assertThat(ctpError.getCode())
+                                .isEqualTo(DuplicateFieldError.DUPLICATE_FIELD);
+                            return (DuplicateFieldError) ctpError;
                           })
                       .collect(toList());
 
@@ -316,27 +306,16 @@ class CartDiscountServiceImplIT {
   void createCartDiscount_WithDuplicateSortOrder_ShouldHaveEmptyOptionalAsAResult() {
     // preparation
     final CartDiscountDraft newCartDiscountDraft =
-        CartDiscountDraftBuilder.of(
-                CART_DISCOUNT_NAME_2,
-                CART_DISCOUNT_CART_PREDICATE_2,
-                CART_DISCOUNT_VALUE_2,
-                CART_DISCOUNT_TARGET_2,
-                SORT_ORDER_1,
-                false)
-            .key(CART_DISCOUNT_KEY_2)
-            .active(false)
+        CartDiscountDraftBuilder.of()
+            .name(CartDiscountITUtils.CART_DISCOUNT_NAME_2)
+            .cartPredicate(CartDiscountITUtils.CART_DISCOUNT_CART_PREDICATE_2)
+            .value(CartDiscountITUtils.CART_DISCOUNT_VALUE_DRAFT_2)
+            .target(CartDiscountITUtils.CART_DISCOUNT_TARGET_2)
+            .sortOrder(CartDiscountITUtils.SORT_ORDER_1)
+            .requiresDiscountCode(false)
+            .key(CartDiscountITUtils.CART_DISCOUNT_KEY_2)
+            .isActive(false)
             .build();
-
-    final CartDiscountSyncOptions options =
-        CartDiscountSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-            .errorCallback(
-                (exception, oldResource, newResource, actions) -> {
-                  errorCallBackMessages.add(exception.getMessage());
-                  errorCallBackExceptions.add(exception);
-                })
-            .build();
-
-    cartDiscountService = new CartDiscountServiceImpl(options);
 
     // test
     final Optional<CartDiscount> result =
@@ -347,7 +326,10 @@ class CartDiscountServiceImplIT {
     assertThat(errorCallBackMessages)
         .hasSize(1)
         .singleElement(as(STRING))
-        .contains(format("A duplicate value '\"%s\"' exists for field 'sortOrder'.", SORT_ORDER_1));
+        .contains(
+            String.format(
+                "A duplicate value '\\\"%s\\\"' exists for field 'sortOrder'.",
+                CartDiscountITUtils.SORT_ORDER_1));
 
     ensureErrorCallbackIsDuplicateFieldError();
   }
@@ -356,18 +338,17 @@ class CartDiscountServiceImplIT {
   void updateCartDiscount_WithValidChanges_ShouldUpdateCartDiscountCorrectly() {
     final CartDiscount cartDiscount =
         CTP_TARGET_CLIENT
-            .execute(
-                CartDiscountQuery.of()
-                    .withPredicates(
-                        cartDiscountQueryModel ->
-                            cartDiscountQueryModel.key().is(CART_DISCOUNT_KEY_1)))
-            .toCompletableFuture()
-            .thenApply(PagedResult::head)
-            .thenApply(Optional::get)
+            .cartDiscounts()
+            .withKey(CartDiscountITUtils.CART_DISCOUNT_KEY_1)
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .join();
 
-    final ChangeCartPredicate changeCartPredicateUpdateAction =
-        ChangeCartPredicate.of(CART_DISCOUNT_CART_PREDICATE_2);
+    final CartDiscountChangeCartPredicateAction changeCartPredicateUpdateAction =
+        CartDiscountChangeCartPredicateActionBuilder.of()
+            .cartPredicate(CartDiscountITUtils.CART_DISCOUNT_CART_PREDICATE_2)
+            .build();
 
     final CartDiscount updatedCartDiscount =
         cartDiscountService
@@ -383,7 +364,7 @@ class CartDiscountServiceImplIT {
               assertThat(updated.getValue()).isEqualTo(cartDiscount.getValue());
               assertThat(updated.getTarget()).isEqualTo(cartDiscount.getTarget());
               assertThat(updated.getCartPredicate())
-                  .isEqualTo(CART_DISCOUNT_CART_PREDICATE_2.toSphereCartPredicate());
+                  .isEqualTo(CartDiscountITUtils.CART_DISCOUNT_CART_PREDICATE_2);
             });
   }
 
@@ -391,19 +372,22 @@ class CartDiscountServiceImplIT {
   void updateCartDiscount_WithInvalidChanges_ShouldCompleteExceptionally() {
     final CartDiscount cartDiscount =
         CTP_TARGET_CLIENT
-            .execute(CartDiscountByKeyGet.of(CART_DISCOUNT_KEY_1))
-            .toCompletableFuture()
+            .cartDiscounts()
+            .withKey(CartDiscountITUtils.CART_DISCOUNT_KEY_1)
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .join();
 
-    final ChangeName invalidAction = ChangeName.of(null);
+    final CartDiscountSetKeyAction invalidAction =
+        CartDiscountSetKeyActionBuilder.of().key("").build();
 
     cartDiscountService
         .updateCartDiscount(cartDiscount, singletonList(invalidAction))
         .handle(
             (result, throwable) -> {
               assertThat(result).isNull();
-              assertThat(throwable)
-                  .hasMessageContaining("Request body does not contain valid JSON.");
+              assertThat(throwable).hasMessageContaining("Invalid key");
               return null;
             })
         .toCompletableFuture()

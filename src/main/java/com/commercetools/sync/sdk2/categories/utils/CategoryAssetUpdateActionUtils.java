@@ -16,7 +16,6 @@ import com.commercetools.sync.sdk2.categories.CategorySyncOptions;
 import com.commercetools.sync.sdk2.categories.helpers.AssetCustomActionBuilder;
 import com.commercetools.sync.sdk2.commons.models.AssetCustomTypeAdapter;
 import com.commercetools.sync.sdk2.commons.models.AssetDraftCustomTypeAdapter;
-import com.commercetools.sync.sdk2.commons.models.Custom;
 import com.commercetools.sync.sdk2.commons.utils.CustomUpdateActionUtils;
 import java.util.List;
 import java.util.Optional;
@@ -180,7 +179,7 @@ public final class CategoryAssetUpdateActionUtils {
         AssetDraftCustomTypeAdapter.of(newAsset),
         new AssetCustomActionBuilder(),
         -1L,
-        Custom::getId,
+        AssetCustomTypeAdapter::getId,
         asset -> ResourceTypeId.ASSET.getJsonName(),
         AssetCustomTypeAdapter::getKey,
         syncOptions);

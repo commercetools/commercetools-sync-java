@@ -1,23 +1,22 @@
 package com.commercetools.sync.integration.commons.utils;
 
-import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
-import static java.util.Collections.singletonList;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 
-import com.neovisionaries.i18n.CountryCode;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.taxcategories.TaxCategory;
-import io.sphere.sdk.taxcategories.TaxCategoryDraft;
-import io.sphere.sdk.taxcategories.TaxCategoryDraftBuilder;
-import io.sphere.sdk.taxcategories.TaxRateDraft;
-import io.sphere.sdk.taxcategories.TaxRateDraftBuilder;
-import io.sphere.sdk.taxcategories.commands.TaxCategoryCreateCommand;
-import io.sphere.sdk.taxcategories.commands.TaxCategoryDeleteCommand;
-import io.sphere.sdk.taxcategories.queries.TaxCategoryQuery;
-import io.sphere.sdk.taxcategories.queries.TaxCategoryQueryBuilder;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.client.QueryUtils;
+import com.commercetools.api.models.tax_category.TaxCategory;
+import com.commercetools.api.models.tax_category.TaxCategoryDraft;
+import com.commercetools.api.models.tax_category.TaxCategoryDraftBuilder;
+import com.commercetools.api.models.tax_category.TaxRateDraft;
+import com.commercetools.api.models.tax_category.TaxRateDraftBuilder;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.error.NotFoundException;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 
 public final class TaxCategoryITUtils {
@@ -45,8 +44,35 @@ public final class TaxCategoryITUtils {
    *
    * @param ctpClient defines the CTP project to delete the tax categories from.
    */
-  public static void deleteTaxCategories(@Nonnull final SphereClient ctpClient) {
-    queryAndExecute(ctpClient, TaxCategoryQuery.of(), TaxCategoryDeleteCommand::of);
+  public static void deleteTaxCategories(@Nonnull final ProjectApiRoot ctpClient) {
+    final Consumer<List<TaxCategory>> taxCategoryConsumer =
+        taxCategories -> {
+          CompletableFuture.allOf(
+                  taxCategories.stream()
+                      .map(taxCategory -> deleteTaxCategoryWithRetry(ctpClient, taxCategory))
+                      .map(CompletionStage::toCompletableFuture)
+                      .toArray(CompletableFuture[]::new))
+              .join();
+        };
+    QueryUtils.queryAll(ctpClient.taxCategories().get(), taxCategoryConsumer)
+        .handle(
+            (result, throwable) -> {
+              if (throwable != null && !(throwable instanceof NotFoundException)) {
+                return throwable;
+              }
+              return result;
+            })
+        .toCompletableFuture()
+        .join();
+  }
+
+  private static CompletionStage<TaxCategory> deleteTaxCategoryWithRetry(
+      @Nonnull final ProjectApiRoot ctpClient, @Nonnull final TaxCategory taxCategory) {
+    return ctpClient
+        .taxCategories()
+        .delete(taxCategory)
+        .execute()
+        .thenApply(ApiHttpResponse::getBody);
   }
 
   /**
@@ -59,13 +85,41 @@ public final class TaxCategoryITUtils {
    * @param ctpClient defines the CTP project to create the tax category in.
    * @return the created tax category.
    */
-  public static TaxCategory createTaxCategory(@Nonnull final SphereClient ctpClient) {
-    final TaxCategoryDraft taxCategoryDraft =
-        TaxCategoryDraftBuilder.of(
-                TAXCATEGORY_NAME, singletonList(createTaxRateDraft()), TAXCATEGORY_DESCRIPTION)
-            .key(TAXCATEGORY_KEY)
-            .build();
-    return executeBlocking(ctpClient.execute(TaxCategoryCreateCommand.of(taxCategoryDraft)));
+  public static TaxCategory ensureTaxCategory(@Nonnull final ProjectApiRoot ctpClient) {
+    return taxCategoryExists(ctpClient, TAXCATEGORY_KEY)
+        .thenCompose(
+            taxCategory ->
+                taxCategory
+                    .map(CompletableFuture::completedFuture)
+                    .orElseGet(
+                        () -> {
+                          final TaxCategoryDraft taxCategoryDraft =
+                              TaxCategoryDraftBuilder.of()
+                                  .name(TAXCATEGORY_NAME)
+                                  .rates(mockTaxRateDraft())
+                                  .description(TAXCATEGORY_DESCRIPTION)
+                                  .key(TAXCATEGORY_KEY)
+                                  .build();
+                          return createTaxCategory(taxCategoryDraft, ctpClient);
+                        }))
+        .toCompletableFuture()
+        .join();
+  }
+
+  private static CompletionStage<Optional<TaxCategory>> taxCategoryExists(
+      @Nonnull ProjectApiRoot ctpClient, @Nonnull String taxCategoryKey) {
+    return ctpClient
+        .taxCategories()
+        .withKey(taxCategoryKey)
+        .get()
+        .execute()
+        .handle(
+            (typeApiHttpResponse, throwable) -> {
+              if (throwable != null) {
+                return Optional.empty();
+              }
+              return Optional.of(typeApiHttpResponse.getBody().get());
+            });
   }
 
   /**
@@ -74,17 +128,32 @@ public final class TaxCategoryITUtils {
    *
    * @return the created tax rate draft.
    */
-  public static TaxRateDraft createTaxRateDraft() {
-    return TaxRateDraftBuilder.of(
-            TAXCATEGORY_TAXRATE_NAME, TAXCATEGORY_TAXRATE_AMOUNT, true, CountryCode.DE)
+  public static TaxRateDraft mockTaxRateDraft() {
+    return TaxRateDraftBuilder.of()
+        .name(TAXCATEGORY_TAXRATE_NAME)
+        .amount(TAXCATEGORY_TAXRATE_AMOUNT)
+        .country("DE")
+        .includedInPrice(true)
         .build();
   }
 
+  static CompletableFuture<TaxCategory> createTaxCategory(
+      @Nonnull final TaxCategoryDraft taxCategoryDraft, @Nonnull final ProjectApiRoot ctpClient) {
+    return ctpClient
+        .taxCategories()
+        .post(taxCategoryDraft)
+        .execute()
+        .thenApply(ApiHttpResponse::getBody);
+  }
+
+  public static TaxCategory createTaxCategoryByDraft(
+      @Nonnull final TaxCategoryDraft taxCategoryDraft, @Nonnull final ProjectApiRoot ctpClient) {
+    return createTaxCategory(taxCategoryDraft, ctpClient).toCompletableFuture().join();
+  }
+
   public static Optional<TaxCategory> getTaxCategoryByKey(
-      @Nonnull final SphereClient sphereClient, @Nonnull final String key) {
-    final TaxCategoryQuery query =
-        TaxCategoryQueryBuilder.of().plusPredicates(queryModel -> queryModel.key().is(key)).build();
-    return sphereClient.execute(query).toCompletableFuture().join().head();
+      @Nonnull final ProjectApiRoot ctpClient, @Nonnull final String key) {
+    return Optional.of(ctpClient.taxCategories().withKey(key).get().execute().join().getBody());
   }
 
   private TaxCategoryITUtils() {}

@@ -1,34 +1,31 @@
-package com.commercetools.sync.integration.ctpprojectsource.shoppinglists;
+package com.commercetools.sync.integration.sdk2.ctpprojectsource.shoppinglists;
 
-import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.createSampleCustomerJaneDoe;
-import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.createSampleShoppingListCarrotCake;
-import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.createShoppingList;
-import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.deleteShoppingListTestData;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.shoppinglists.utils.ShoppingListReferenceResolutionUtils.buildShoppingListQuery;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static com.commercetools.sync.integration.sdk2.commons.utils.CustomerITUtils.ensureSampleCustomerJaneDoe;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ShoppingListITUtils.*;
+import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
+import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
-import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
-import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import com.commercetools.sync.shoppinglists.ShoppingListSync;
-import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
-import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
-import com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics;
-import com.commercetools.sync.shoppinglists.utils.ShoppingListTransformUtils;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
-import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
-import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetAnonymousId;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetCustomer;
+import com.commercetools.api.models.customer.Customer;
+import com.commercetools.api.models.customer.CustomerResourceIdentifierBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingList;
+import com.commercetools.api.models.shopping_list.ShoppingListChangeNameActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListDraftBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListPagedQueryResponse;
+import com.commercetools.api.models.shopping_list.ShoppingListSetAnonymousIdActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListSetCustomerActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
+import com.commercetools.sync.sdk2.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
+import com.commercetools.sync.sdk2.shoppinglists.ShoppingListSync;
+import com.commercetools.sync.sdk2.shoppinglists.ShoppingListSyncOptions;
+import com.commercetools.sync.sdk2.shoppinglists.ShoppingListSyncOptionsBuilder;
+import com.commercetools.sync.sdk2.shoppinglists.helpers.ShoppingListSyncStatistics;
+import com.commercetools.sync.sdk2.shoppinglists.utils.ShoppingListTransformUtils;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -41,7 +38,7 @@ class ShoppingListSyncIT {
   private List<String> errorMessages;
   private List<String> warningMessages;
   private List<Throwable> exceptions;
-  private List<UpdateAction<ShoppingList>> updateActionList;
+  private List<ShoppingListUpdateAction> updateActionList;
   private ShoppingListSync shoppingListSync;
   private ReferenceIdToKeyCache referenceIdToKeyCache;
 
@@ -99,10 +96,13 @@ class ShoppingListSyncIT {
 
     final List<ShoppingList> shoppingLists =
         CTP_SOURCE_CLIENT
-            .execute(buildShoppingListQuery())
-            .toCompletableFuture()
-            .join()
-            .getResults();
+            .shoppingLists()
+            .get()
+            .addExpand("lineItems[*].variant")
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ShoppingListPagedQueryResponse::getResults)
+            .join();
 
     final List<ShoppingListDraft> shoppingListDrafts =
         ShoppingListTransformUtils.toShoppingListDrafts(
@@ -128,13 +128,16 @@ class ShoppingListSyncIT {
   void sync_WithUpdatedCustomerOnShoppingList_ShouldReturnProperStatistics() {
     final List<ShoppingList> shoppingLists =
         CTP_SOURCE_CLIENT
-            .execute(buildShoppingListQuery())
-            .toCompletableFuture()
-            .join()
-            .getResults();
+            .shoppingLists()
+            .get()
+            .addExpand("lineItems[*].variant")
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ShoppingListPagedQueryResponse::getResults)
+            .join();
 
-    createSampleCustomerJaneDoe(CTP_SOURCE_CLIENT);
-    final Customer sampleCustomerJaneDoe = createSampleCustomerJaneDoe(CTP_TARGET_CLIENT);
+    ensureSampleCustomerJaneDoe(CTP_SOURCE_CLIENT);
+    final Customer sampleCustomerJaneDoe = ensureSampleCustomerJaneDoe(CTP_TARGET_CLIENT);
 
     final List<ShoppingListDraft> updatedShoppingListDrafts =
         ShoppingListTransformUtils.toShoppingListDrafts(
@@ -144,9 +147,12 @@ class ShoppingListSyncIT {
             .map(
                 shoppingListDraft ->
                     ShoppingListDraftBuilder.of(shoppingListDraft)
-                        .name(LocalizedString.ofEnglish("second-shopping-list"))
+                        .name(ofEnglish("second-shopping-list"))
                         .anonymousId(null)
-                        .customer(ResourceIdentifier.ofKey(sampleCustomerJaneDoe.getKey()))
+                        .customer(
+                            CustomerResourceIdentifierBuilder.of()
+                                .key(sampleCustomerJaneDoe.getKey())
+                                .build())
                         .build())
             .collect(Collectors.toList());
 
@@ -158,18 +164,24 @@ class ShoppingListSyncIT {
     assertThat(exceptions).isEmpty();
 
     // order is important, otherwise the error below could occur:
-    // "message" : "The resource was already claimed by a customer..
+    // "message" : "The resource was already claimed by a customer.."
     // "action" : {
     //  "action" : "setAnonymousId"
     // }
     assertThat(updateActionList)
         .containsExactly(
-            ChangeName.of(LocalizedString.ofEnglish("second-shopping-list")),
-            SetAnonymousId.of(null),
-            SetCustomer.of(
-                Reference.of(Customer.referenceTypeId(), sampleCustomerJaneDoe.getId())));
+            ShoppingListChangeNameActionBuilder.of()
+                .name(ofEnglish("second-shopping-list"))
+                .build(),
+            ShoppingListSetAnonymousIdActionBuilder.of().anonymousId(null).build(),
+            ShoppingListSetCustomerActionBuilder.of()
+                .customer(
+                    CustomerResourceIdentifierBuilder.of()
+                        .id(sampleCustomerJaneDoe.getId())
+                        .build())
+                .build());
 
-    AssertionsForStatistics.assertThat(shoppingListSyncStatistics).hasValues(2, 1, 1, 0);
+    assertThat(shoppingListSyncStatistics).hasValues(2, 1, 1, 0);
     assertThat(shoppingListSyncStatistics.getReportMessage())
         .isEqualTo(
             "Summary: 2 shopping lists were processed in total "

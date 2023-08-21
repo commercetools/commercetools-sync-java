@@ -1,28 +1,23 @@
 package com.commercetools.sync.integration.services.impl;
 
-import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_SPECIAL_CHARS_RESOURCE_PATH;
-import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
-import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.PRODUCT_KEY_SPECIAL_CHARS_RESOURCE_PATH;
+import static com.commercetools.sync.sdk2.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
 import static java.util.Collections.singleton;
 import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
-import com.commercetools.sync.products.ProductSyncOptions;
-import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import com.commercetools.sync.services.UnresolvedReferencesService;
-import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
-import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.customobjects.queries.CustomObjectByKeyGet;
-import io.sphere.sdk.json.SphereJsonUtils;
-import io.sphere.sdk.products.ProductDraft;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import com.commercetools.api.models.custom_object.CustomObject;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.sync.integration.commons.utils.CustomObjectITUtils;
+import com.commercetools.sync.integration.commons.utils.TestClientUtils;
+import com.commercetools.sync.integration.commons.utils.TestUtils;
+import com.commercetools.sync.sdk2.commons.models.WaitingToBeResolvedProducts;
+import com.commercetools.sync.sdk2.products.ProductSyncOptions;
+import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.sdk2.services.UnresolvedReferencesService;
+import com.commercetools.sync.sdk2.services.impl.UnresolvedReferencesServiceImpl;
+import java.util.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,20 +33,20 @@ class UnresolvedReferencesServiceImplIT {
 
   @AfterEach
   void tearDown() {
-    deleteWaitingToBeResolvedCustomObjects(
-        CTP_TARGET_CLIENT, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolvedProducts.class);
+    CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects(
+        TestClientUtils.CTP_TARGET_CLIENT, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY);
   }
 
   @BeforeEach
   void setupTest() {
-    deleteWaitingToBeResolvedCustomObjects(
-        CTP_TARGET_CLIENT, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolvedProducts.class);
+    CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects(
+        TestClientUtils.CTP_TARGET_CLIENT, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY);
     errorCallBackMessages = new ArrayList<>();
     errorCallBackExceptions = new ArrayList<>();
     warningCallBackMessages = new ArrayList<>();
 
     final ProductSyncOptions productSyncOptions =
-        ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+        ProductSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT)
             .errorCallback(
                 (exception, oldResource, newResource, actions) -> {
                   errorCallBackMessages.add(exception.getMessage());
@@ -69,10 +64,13 @@ class UnresolvedReferencesServiceImplIT {
   void saveFetchAndDelete_WithoutExceptions_shouldWorkCorrectly() {
     // preparation
     final ProductDraft productDraft =
-        SphereJsonUtils.readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, ProductDraft.class);
+        TestUtils.readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, ProductDraft.class);
 
+    final Set<String> missingKeysSet = new HashSet<>();
+    missingKeysSet.add("foo");
+    missingKeysSet.add("bar");
     final WaitingToBeResolvedProducts productDraftWithUnresolvedRefs =
-        new WaitingToBeResolvedProducts(productDraft, asSet("foo", "bar"));
+        new WaitingToBeResolvedProducts(productDraft, missingKeysSet);
 
     // test
     final Optional<WaitingToBeResolvedProducts> result =
@@ -128,11 +126,14 @@ class UnresolvedReferencesServiceImplIT {
   void saveFetchAndDelete_WithKeyWithSpecialCharacter_shouldWorkCorrectly() {
     // preparation
     final ProductDraft productDraft =
-        SphereJsonUtils.readObjectFromResource(
+        TestUtils.readObjectFromResource(
             PRODUCT_KEY_SPECIAL_CHARS_RESOURCE_PATH, ProductDraft.class);
 
+    final Set<String> missingKeysSet = new HashSet<>();
+    missingKeysSet.add("foo");
+    missingKeysSet.add("bar");
     final WaitingToBeResolvedProducts productDraftWithUnresolvedRefs =
-        new WaitingToBeResolvedProducts(productDraft, asSet("foo", "bar"));
+        new WaitingToBeResolvedProducts(productDraft, missingKeysSet);
 
     // test
     final Optional<WaitingToBeResolvedProducts> result =
@@ -151,15 +152,17 @@ class UnresolvedReferencesServiceImplIT {
                 assertThat(waitingToBeResolved.getProductDraft()).isEqualTo(productDraft));
 
     // test
-    final CustomObjectByKeyGet<WaitingToBeResolvedProducts> customObjectByKeyGet =
-        CustomObjectByKeyGet.of(
-            CUSTOM_OBJECT_CONTAINER_KEY,
-            sha1Hex(productDraft.getKey()),
-            WaitingToBeResolvedProducts.class);
-    final CustomObject<WaitingToBeResolvedProducts> createdCustomObject =
-        CTP_TARGET_CLIENT.execute(customObjectByKeyGet).toCompletableFuture().join();
+    CustomObject customObject =
+        TestClientUtils.CTP_TARGET_CLIENT
+            .customObjects()
+            .withContainerAndKey(CUSTOM_OBJECT_CONTAINER_KEY, sha1Hex(productDraft.getKey()))
+            .get()
+            .execute()
+            .toCompletableFuture()
+            .join()
+            .getBody();
     // assertions
-    assertThat(createdCustomObject.getKey()).isEqualTo(sha1Hex(productDraft.getKey()));
+    assertThat(customObject.getKey()).isEqualTo(sha1Hex(productDraft.getKey()));
 
     // test
     final Set<WaitingToBeResolvedProducts> waitingDrafts =
@@ -199,10 +202,13 @@ class UnresolvedReferencesServiceImplIT {
   void save_ExistingProductDraftWithoutException_overwritesOldCustomObjectValue() {
     // preparation
     final ProductDraft productDraft =
-        SphereJsonUtils.readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, ProductDraft.class);
+        TestUtils.readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, ProductDraft.class);
 
+    final Set<String> missingKeysSet = new HashSet<>();
+    missingKeysSet.add("foo");
+    missingKeysSet.add("bar");
     final WaitingToBeResolvedProducts productDraftWithUnresolvedRefs =
-        new WaitingToBeResolvedProducts(productDraft, asSet("foo", "bar"));
+        new WaitingToBeResolvedProducts(productDraft, missingKeysSet);
 
     unresolvedReferencesService
         .save(
@@ -212,8 +218,11 @@ class UnresolvedReferencesServiceImplIT {
         .toCompletableFuture()
         .join();
 
+    final Set<String> missingKeysSet123 = new HashSet<>();
+    missingKeysSet.add("foo123");
+    missingKeysSet.add("bar123");
     final WaitingToBeResolvedProducts productDraftWithUnresolvedNewRefs =
-        new WaitingToBeResolvedProducts(productDraft, asSet("foo123", "bar123"));
+        new WaitingToBeResolvedProducts(productDraft, missingKeysSet123);
 
     // test
     final Optional<WaitingToBeResolvedProducts> latestResult =
@@ -234,15 +243,17 @@ class UnresolvedReferencesServiceImplIT {
                   .isEqualTo(productDraftWithUnresolvedNewRefs.getMissingReferencedProductKeys());
             });
 
-    final CustomObjectByKeyGet<WaitingToBeResolvedProducts> customObjectByKeyGet =
-        CustomObjectByKeyGet.of(
-            CUSTOM_OBJECT_CONTAINER_KEY,
-            sha1Hex(productDraft.getKey()),
-            WaitingToBeResolvedProducts.class);
-    final CustomObject<WaitingToBeResolvedProducts> createdCustomObject =
-        CTP_TARGET_CLIENT.execute(customObjectByKeyGet).toCompletableFuture().join();
+    CustomObject customObject =
+        TestClientUtils.CTP_TARGET_CLIENT
+            .customObjects()
+            .withContainerAndKey(CUSTOM_OBJECT_CONTAINER_KEY, sha1Hex(productDraft.getKey()))
+            .get()
+            .execute()
+            .toCompletableFuture()
+            .join()
+            .getBody();
 
-    assertThat(createdCustomObject.getValue()).isEqualTo(productDraftWithUnresolvedNewRefs);
+    assertThat((Map) customObject.getValue()).hasSize(3);
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();

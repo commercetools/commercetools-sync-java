@@ -1,10 +1,6 @@
 package com.commercetools.sync.sdk2.products.helpers;
 
-import com.commercetools.api.models.product.ProductSetProductPriceCustomFieldAction;
-import com.commercetools.api.models.product.ProductSetProductPriceCustomTypeAction;
-import com.commercetools.api.models.product.ProductUpdateAction;
-import com.commercetools.api.models.type.FieldContainerBuilder;
-import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
+import com.commercetools.api.models.product.*;
 import com.commercetools.sync.sdk2.commons.helpers.GenericCustomActionBuilder;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -16,7 +12,7 @@ public class PriceCustomActionBuilder implements GenericCustomActionBuilder<Prod
   @Nonnull
   public ProductUpdateAction buildRemoveCustomTypeAction(
       @Nullable final Long variantId, @Nullable final String priceId) {
-    return ProductSetProductPriceCustomTypeAction.builder().priceId(priceId).staged(true).build();
+    return ProductSetProductPriceCustomTypeActionBuilder.of().priceId(priceId).build();
   }
 
   @Override
@@ -27,16 +23,10 @@ public class PriceCustomActionBuilder implements GenericCustomActionBuilder<Prod
       @Nonnull final String customTypeId,
       @Nullable final Map<String, Object> customFieldsJsonMap) {
 
-    FieldContainerBuilder customFields = null;
-    if (customFieldsJsonMap != null) {
-      customFields = FieldContainerBuilder.of();
-      customFieldsJsonMap.forEach(customFields::addValue);
-    }
-
-    return ProductSetProductPriceCustomTypeAction.builder()
+    return ProductSetProductPriceCustomTypeActionBuilder.of()
         .priceId(priceId)
-        .type(TypeResourceIdentifierBuilder.of().id(customTypeId).build())
-        .fields(customFields != null ? customFields.build() : null)
+        .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.id(customTypeId))
+        .fields(fieldContainerBuilder -> fieldContainerBuilder.values(customFieldsJsonMap))
         .staged(true)
         .build();
   }
@@ -49,10 +39,10 @@ public class PriceCustomActionBuilder implements GenericCustomActionBuilder<Prod
       @Nullable final String customFieldName,
       @Nullable final Object customFieldValue) {
 
-    return ProductSetProductPriceCustomFieldAction.builder()
+    return ProductSetProductPriceCustomFieldActionBuilder.of()
         .priceId(priceId)
         .name(customFieldName)
-        .value(FieldContainerBuilder.of().addValue(customFieldName, customFieldValue).build())
+        .value(customFieldValue)
         .staged(true)
         .build();
   }

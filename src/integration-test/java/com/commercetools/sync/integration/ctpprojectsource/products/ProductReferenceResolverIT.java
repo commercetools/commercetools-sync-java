@@ -1,56 +1,40 @@
 package com.commercetools.sync.integration.ctpprojectsource.products;
 
-import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getReferencesWithIds;
-import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.createSampleCustomerJaneDoe;
-import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
-import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.StateITUtils.createState;
-import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.createTaxCategory;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_NO_ATTRIBUTES_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_NO_KEY_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_WITH_REFERENCES_FOR_VARIANT_ATTRIBUTES_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
-import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
+import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.sdk2.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
-import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
-import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import com.commercetools.sync.products.ProductSync;
-import com.commercetools.sync.products.ProductSyncOptions;
-import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import com.commercetools.sync.products.helpers.ProductSyncStatistics;
-import com.commercetools.sync.products.utils.ProductTransformUtils;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.ProductVariantDraftBuilder;
-import io.sphere.sdk.products.attributes.AttributeDraft;
-import io.sphere.sdk.products.commands.ProductCreateCommand;
-import io.sphere.sdk.products.queries.ProductProjectionQuery;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.states.StateType;
-import io.sphere.sdk.taxcategories.TaxCategory;
+import com.commercetools.api.models.category.CategoryReference;
+import com.commercetools.api.models.common.Reference;
+import com.commercetools.api.models.customer.Customer;
+import com.commercetools.api.models.customer.CustomerReference;
+import com.commercetools.api.models.customer.CustomerReferenceBuilder;
+import com.commercetools.api.models.product.Attribute;
+import com.commercetools.api.models.product.AttributeBuilder;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductDraftBuilder;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductProjectionPagedQueryResponse;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.state.State;
+import com.commercetools.api.models.state.StateReference;
+import com.commercetools.api.models.state.StateReferenceBuilder;
+import com.commercetools.api.models.state.StateTypeEnum;
+import com.commercetools.api.models.tax_category.TaxCategory;
+import com.commercetools.sync.integration.commons.utils.*;
+import com.commercetools.sync.sdk2.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.sdk2.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
+import com.commercetools.sync.sdk2.products.ProductSync;
+import com.commercetools.sync.sdk2.products.ProductSyncOptions;
+import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.sdk2.products.helpers.ProductSyncStatistics;
+import com.commercetools.sync.sdk2.products.utils.ProductTransformUtils;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -71,8 +55,7 @@ class ProductReferenceResolverIT {
   private static TaxCategory oldTaxCategory;
   private static State oldProductState;
   private static Customer oldCustomer;
-  private static ProductProjectionQuery productQuery;
-  private static List<Reference<Category>> categoryReferencesWithIds;
+  private static List<CategoryReference> categoryReferencesWithIds;
   private ProductSync productSync;
   private List<String> errorCallBackMessages;
   private List<String> warningCallBackMessages;
@@ -85,43 +68,48 @@ class ProductReferenceResolverIT {
    */
   @BeforeAll
   static void setup() {
-    deleteProductSyncTestData(CTP_TARGET_CLIENT);
-    deleteProductSyncTestData(CTP_SOURCE_CLIENT);
-
-    createCategoriesCustomType(
-        OLD_CATEGORY_CUSTOM_TYPE_KEY,
+    CategoryITUtils.ensureCategoriesCustomType(
+        CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY,
         Locale.ENGLISH,
-        OLD_CATEGORY_CUSTOM_TYPE_NAME,
-        CTP_TARGET_CLIENT);
-    createCategoriesCustomType(
-        OLD_CATEGORY_CUSTOM_TYPE_KEY,
+        CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME,
+        TestClientUtils.CTP_TARGET_CLIENT);
+    CategoryITUtils.ensureCategoriesCustomType(
+        CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY,
         Locale.ENGLISH,
-        OLD_CATEGORY_CUSTOM_TYPE_NAME,
-        CTP_SOURCE_CLIENT);
+        CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME,
+        TestClientUtils.CTP_SOURCE_CLIENT);
 
-    createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
+    CategoryITUtils.ensureCategories(
+        TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2));
     categoryReferencesWithIds =
-        getReferencesWithIds(createCategories(CTP_SOURCE_CLIENT, getCategoryDrafts(null, 2)));
+        CategoryITUtils.getReferencesWithIds(
+            CategoryITUtils.ensureCategories(
+                TestClientUtils.CTP_SOURCE_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2)));
 
-    createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
-    createProductType(PRODUCT_TYPE_NO_KEY_RESOURCE_PATH, CTP_TARGET_CLIENT);
-    createProductType(
-        PRODUCT_TYPE_WITH_REFERENCES_FOR_VARIANT_ATTRIBUTES_RESOURCE_PATH, CTP_TARGET_CLIENT);
+    ProductTypeITUtils.ensureProductType(
+        PRODUCT_TYPE_RESOURCE_PATH, TestClientUtils.CTP_TARGET_CLIENT);
+    ProductTypeITUtils.ensureProductType(
+        PRODUCT_TYPE_WITH_REFERENCES_FOR_VARIANT_ATTRIBUTES_RESOURCE_PATH,
+        TestClientUtils.CTP_TARGET_CLIENT);
     productTypeSourceWithReferenceTypeVariantAttribute =
-        createProductType(
-            PRODUCT_TYPE_WITH_REFERENCES_FOR_VARIANT_ATTRIBUTES_RESOURCE_PATH, CTP_SOURCE_CLIENT);
+        ProductTypeITUtils.ensureProductType(
+            PRODUCT_TYPE_WITH_REFERENCES_FOR_VARIANT_ATTRIBUTES_RESOURCE_PATH,
+            TestClientUtils.CTP_SOURCE_CLIENT);
 
-    productTypeSource = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_SOURCE_CLIENT);
+    productTypeSource =
+        ProductTypeITUtils.ensureProductType(
+            PRODUCT_TYPE_RESOURCE_PATH, TestClientUtils.CTP_SOURCE_CLIENT);
     noKeyProductTypeSource =
-        createProductType(PRODUCT_TYPE_NO_KEY_RESOURCE_PATH, CTP_SOURCE_CLIENT);
+        ProductTypeITUtils.createProductType(
+            PRODUCT_TYPE_NO_KEY_RESOURCE_PATH, TestClientUtils.CTP_SOURCE_CLIENT);
 
-    oldTaxCategory = createTaxCategory(CTP_SOURCE_CLIENT);
-    oldProductState = createState(CTP_SOURCE_CLIENT, StateType.PRODUCT_STATE);
-    createTaxCategory(CTP_TARGET_CLIENT);
-    createState(CTP_TARGET_CLIENT, StateType.PRODUCT_STATE);
-    oldCustomer = createSampleCustomerJaneDoe(CTP_SOURCE_CLIENT);
-    createSampleCustomerJaneDoe(CTP_TARGET_CLIENT);
-    productQuery = ProductProjectionQuery.ofStaged();
+    oldTaxCategory = TaxCategoryITUtils.ensureTaxCategory(TestClientUtils.CTP_SOURCE_CLIENT);
+    oldProductState =
+        StateITUtils.ensureState(TestClientUtils.CTP_SOURCE_CLIENT, StateTypeEnum.PRODUCT_STATE);
+    TaxCategoryITUtils.ensureTaxCategory(TestClientUtils.CTP_TARGET_CLIENT);
+    StateITUtils.ensureState(TestClientUtils.CTP_TARGET_CLIENT, StateTypeEnum.PRODUCT_STATE);
+    oldCustomer = CustomerITUtils.ensureSampleCustomerJaneDoe(TestClientUtils.CTP_SOURCE_CLIENT);
+    CustomerITUtils.ensureSampleCustomerJaneDoe(TestClientUtils.CTP_TARGET_CLIENT);
   }
 
   /**
@@ -130,15 +118,15 @@ class ProductReferenceResolverIT {
    */
   @BeforeEach
   void setupTest() {
-    deleteAllProducts(CTP_TARGET_CLIENT);
-    deleteAllProducts(CTP_SOURCE_CLIENT);
+    ProductITUtils.deleteAllProducts(TestClientUtils.CTP_TARGET_CLIENT);
+    ProductITUtils.deleteAllProducts(TestClientUtils.CTP_SOURCE_CLIENT);
 
     errorCallBackMessages = new ArrayList<>();
     errorCallBackExceptions = new ArrayList<>();
     warningCallBackMessages = new ArrayList<>();
 
     final ProductSyncOptions syncOptions =
-        ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+        ProductSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT)
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) -> {
                   errorCallBackMessages.add(exception.getMessage());
@@ -153,10 +141,7 @@ class ProductReferenceResolverIT {
   }
 
   @AfterAll
-  static void tearDown() {
-    deleteProductSyncTestData(CTP_TARGET_CLIENT);
-    deleteProductSyncTestData(CTP_SOURCE_CLIENT);
-  }
+  static void tearDown() {}
 
   @Test
   void sync_withNewProductWithExistingCategoryAndProductTypeReferences_ShouldCreateProduct() {
@@ -169,13 +154,21 @@ class ProductReferenceResolverIT {
             oldProductState.toReference(),
             categoryReferencesWithIds,
             createRandomCategoryOrderHints(categoryReferencesWithIds));
-    CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
+    TestClientUtils.CTP_SOURCE_CLIENT.products().create(productDraft).executeBlocking();
 
     final List<ProductProjection> products =
-        CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .productProjections()
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductProjectionPagedQueryResponse::getResults)
+            .join();
 
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     // test
@@ -200,13 +193,21 @@ class ProductReferenceResolverIT {
             oldProductState.toReference(),
             categoryReferencesWithIds,
             createRandomCategoryOrderHints(categoryReferencesWithIds));
-    CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
+    TestClientUtils.CTP_SOURCE_CLIENT.products().create(productDraft).executeBlocking();
 
     final List<ProductProjection> products =
-        CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .productProjections()
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductProjectionPagedQueryResponse::getResults)
+            .join();
 
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     // test
@@ -235,13 +236,21 @@ class ProductReferenceResolverIT {
   @Test
   void sync_withNewProductWithStateReferenceVariantAttribute_ShouldCreateProduct() {
 
-    createProductWithReferenceVariantAttribute("state", oldProductState.getId(), "state-reference");
+    createProductWithStateReferenceVariantAttribute(oldProductState.getId());
 
     final List<ProductProjection> products =
-        CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .productProjections()
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductProjectionPagedQueryResponse::getResults)
+            .join();
 
-    final List<ProductDraft> productDrafts = // mapToProductDrafts(products);
-        ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+    final List<ProductDraft> productDrafts =
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     final ProductSyncStatistics syncStatistics =
@@ -258,14 +267,21 @@ class ProductReferenceResolverIT {
     final List<String> stateIdList = new ArrayList<>();
     stateIdList.add(oldProductState.getId());
 
-    createProductWithReferenceSetVariantAttribute("state", stateIdList, "state-reference-set");
+    createProductWithStateReferenceSetVariantAttribute(stateIdList);
 
     final List<ProductProjection> products =
-        CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .productProjections()
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductProjectionPagedQueryResponse::getResults)
+            .join();
 
     final List<ProductDraft> productDrafts =
-        // mapToProductDrafts(products);
-        ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     final ProductSyncStatistics syncStatistics =
@@ -280,14 +296,21 @@ class ProductReferenceResolverIT {
   @Test
   void sync_withNewProductWithCustomerReferenceVariantAttribute_ShouldCreateProduct() {
 
-    createProductWithReferenceVariantAttribute(
-        "customer", oldCustomer.getId(), "customer-reference");
+    createProductWithCustomerReferenceVariantAttribute(oldCustomer.getId());
 
     final List<ProductProjection> products =
-        CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .productProjections()
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductProjectionPagedQueryResponse::getResults)
+            .join();
 
-    final List<ProductDraft> productDrafts = // mapToProductDrafts(products);
-        ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+    final List<ProductDraft> productDrafts =
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     final ProductSyncStatistics syncStatistics =
@@ -304,14 +327,21 @@ class ProductReferenceResolverIT {
     final List<String> customerIdList = new ArrayList<>();
     customerIdList.add(oldCustomer.getId());
 
-    createProductWithReferenceSetVariantAttribute(
-        "customer", customerIdList, "customer-reference-set");
+    createProductWithCustomerReferenceSetVariantAttribute(customerIdList, "customer-reference-set");
 
     final List<ProductProjection> products =
-        CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .productProjections()
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductProjectionPagedQueryResponse::getResults)
+            .join();
 
-    final List<ProductDraft> productDrafts = // mapToProductDrafts(products);
-        ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+    final List<ProductDraft> productDrafts =
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     final ProductSyncStatistics syncStatistics =
@@ -323,35 +353,19 @@ class ProductReferenceResolverIT {
     assertThat(warningCallBackMessages).isEmpty();
   }
 
-  private void createProductWithReferenceVariantAttribute(
-      @Nonnull final String typeId, @Nonnull final String id, @Nonnull final String attributeName) {
-
-    ProductDraft productDraft =
-        createProductDraft(
-            PRODUCT_KEY_1_NO_ATTRIBUTES_RESOURCE_PATH,
-            productTypeSourceWithReferenceTypeVariantAttribute.toReference(),
-            oldTaxCategory.toReference(),
-            oldProductState.toReference(),
-            categoryReferencesWithIds,
-            createRandomCategoryOrderHints(categoryReferencesWithIds));
-    ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
-    attributeValue.put("typeId", typeId);
-    attributeValue.put("id", id);
-    AttributeDraft attributeDraft = AttributeDraft.of(attributeName, attributeValue);
-
-    ProductVariantDraft productVariantDraft = productDraft.getMasterVariant();
-    productVariantDraft =
-        ProductVariantDraftBuilder.of(productVariantDraft).plusAttribute(attributeDraft).build();
-
-    productDraft = ProductDraftBuilder.of(productDraft).masterVariant(productVariantDraft).build();
-    CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
+  private void createProductWithStateReferenceVariantAttribute(@Nonnull final String stateId) {
+    final StateReference reference = StateReferenceBuilder.of().id(stateId).build();
+    this.createProductWithReferenceVariantAttribute(reference, "state-reference");
   }
 
-  private void createProductWithReferenceSetVariantAttribute(
-      @Nonnull final String typeId,
-      @Nonnull final List<String> idList,
-      @Nonnull final String attributeName) {
+  private void createProductWithCustomerReferenceVariantAttribute(
+      @Nonnull final String customerId) {
+    final CustomerReference reference = CustomerReferenceBuilder.of().id(customerId).build();
+    this.createProductWithReferenceVariantAttribute(reference, "customer-reference");
+  }
 
+  private void createProductWithReferenceVariantAttribute(
+      @Nonnull final Reference reference, @Nonnull final String attributeName) {
     ProductDraft productDraft =
         createProductDraft(
             PRODUCT_KEY_1_NO_ATTRIBUTES_RESOURCE_PATH,
@@ -361,23 +375,64 @@ class ProductReferenceResolverIT {
             categoryReferencesWithIds,
             createRandomCategoryOrderHints(categoryReferencesWithIds));
 
-    Set<ObjectNode> attributeValueSet = new HashSet<>();
+    final Attribute attributeDraft =
+        AttributeBuilder.of().name(attributeName).value(reference).build();
+
+    final ProductVariantDraft productVariantDraft = productDraft.getMasterVariant();
+    productVariantDraft.getAttributes().add(attributeDraft);
+
+    productDraft = ProductDraftBuilder.of(productDraft).masterVariant(productVariantDraft).build();
+    TestClientUtils.CTP_SOURCE_CLIENT.products().create(productDraft).executeBlocking();
+  }
+
+  private void createProductWithCustomerReferenceSetVariantAttribute(
+      @Nonnull final List<String> idList, @Nonnull final String attributeName) {
+    final Set<CustomerReference> attributeValueSet = new HashSet<>();
 
     idList.forEach(
         id -> {
-          ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
-          attributeValue.put("typeId", typeId);
-          attributeValue.put("id", id);
-          attributeValueSet.add(attributeValue);
+          final CustomerReference customerReference = CustomerReferenceBuilder.of().id(id).build();
+          attributeValueSet.add(customerReference);
         });
 
-    AttributeDraft attributeDraft = AttributeDraft.of(attributeName, attributeValueSet);
+    this.createProductWithReferenceSetVariantAttribute(attributeValueSet, attributeName);
+  }
+
+  private void createProductWithStateReferenceSetVariantAttribute(
+      @Nonnull final List<String> idList) {
+    final Set<StateReference> attributeValueSet = new HashSet<>();
+
+    idList.forEach(
+        id -> {
+          final StateReference stateReference = StateReferenceBuilder.of().id(id).build();
+          attributeValueSet.add(stateReference);
+        });
+    this.createProductWithReferenceSetVariantAttribute(attributeValueSet, "state-reference-set");
+  }
+
+  private void createProductWithReferenceSetVariantAttribute(
+      final Set<? extends Reference> references, final String attributeName) {
+    ProductDraft productDraft =
+        createProductDraft(
+            PRODUCT_KEY_1_NO_ATTRIBUTES_RESOURCE_PATH,
+            productTypeSourceWithReferenceTypeVariantAttribute.toReference(),
+            oldTaxCategory.toReference(),
+            oldProductState.toReference(),
+            categoryReferencesWithIds,
+            createRandomCategoryOrderHints(categoryReferencesWithIds));
+
+    final Attribute attribute = AttributeBuilder.of().name(attributeName).value(references).build();
 
     ProductVariantDraft productVariantDraft = productDraft.getMasterVariant();
-    productVariantDraft =
-        ProductVariantDraftBuilder.of(productVariantDraft).plusAttribute(attributeDraft).build();
+    productVariantDraft.getAttributes().add(attribute);
+    productVariantDraft = ProductVariantDraftBuilder.of(productVariantDraft).build();
 
     productDraft = ProductDraftBuilder.of(productDraft).masterVariant(productVariantDraft).build();
-    CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
+    TestClientUtils.CTP_SOURCE_CLIENT
+        .products()
+        .create(productDraft)
+        .execute()
+        .thenApply(ApiHttpResponse::getBody)
+        .join();
   }
 }

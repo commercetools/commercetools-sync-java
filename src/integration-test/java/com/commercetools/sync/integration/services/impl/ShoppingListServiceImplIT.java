@@ -1,43 +1,36 @@
-package com.commercetools.sync.integration.services.impl;
+package com.commercetools.sync.integration.sdk2.services.impl;
 
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
-import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.createShoppingList;
-import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.deleteShoppingListTestData;
-import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.deleteShoppingLists;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ProductTypeITUtils.createProductType;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ShoppingListITUtils.deleteShoppingListTestData;
+import static com.commercetools.sync.integration.sdk2.commons.utils.ShoppingListITUtils.deleteShoppingLists;
+import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
+import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
-import com.commercetools.sync.services.ShoppingListService;
-import com.commercetools.sync.services.impl.ShoppingListServiceImpl;
-import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
-import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.ProductVariantDraftBuilder;
-import io.sphere.sdk.products.commands.ProductCreateCommand;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.shoppinglists.LineItemDraft;
-import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
-import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
-import io.sphere.sdk.shoppinglists.ShoppingListDraftDsl;
-import io.sphere.sdk.shoppinglists.TextLineItemDraft;
-import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
-import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
-import io.sphere.sdk.shoppinglists.queries.ShoppingListQuery;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductDraftBuilder;
+import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingList;
+import com.commercetools.api.models.shopping_list.ShoppingListChangeNameAction;
+import com.commercetools.api.models.shopping_list.ShoppingListChangeNameActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListDraftBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraftBuilder;
+import com.commercetools.api.models.shopping_list.TextLineItemDraft;
+import com.commercetools.api.models.shopping_list.TextLineItemDraftBuilder;
+import com.commercetools.sync.integration.sdk2.commons.utils.ShoppingListITUtils;
+import com.commercetools.sync.sdk2.services.ShoppingListService;
+import com.commercetools.sync.sdk2.services.impl.ShoppingListServiceImpl;
+import com.commercetools.sync.sdk2.shoppinglists.ShoppingListSyncOptions;
+import com.commercetools.sync.sdk2.shoppinglists.ShoppingListSyncOptionsBuilder;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -64,7 +57,7 @@ class ShoppingListServiceImplIT {
     deleteShoppingListTestData(CTP_TARGET_CLIENT);
     errorCallBackMessages = new ArrayList<>();
     errorCallBackExceptions = new ArrayList<>();
-    shoppingList = createShoppingList(CTP_TARGET_CLIENT, "name", "key");
+    shoppingList = ShoppingListITUtils.createShoppingList(CTP_TARGET_CLIENT, "name", "key");
     final ShoppingListSyncOptions options =
         ShoppingListSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
             .errorCallback(
@@ -110,7 +103,7 @@ class ShoppingListServiceImplIT {
     final Set<String> shoppingListKeys = new HashSet<>();
     shoppingListKeys.add("not_existing_key_1");
     shoppingListKeys.add("not_existing_key_2");
-    Set<ShoppingList> shoppingLists =
+    final Set<ShoppingList> shoppingLists =
         shoppingListService
             .fetchMatchingShoppingListsByKeys(shoppingListKeys)
             .toCompletableFuture()
@@ -123,12 +116,12 @@ class ShoppingListServiceImplIT {
 
   @Test
   void fetchMatchingShoppingListsByKeys_WithExistingShoppingListsKeys_ShouldReturnShoppingLists() {
-    ShoppingList otherShoppingList =
-        createShoppingList(CTP_TARGET_CLIENT, "other_name", "other_key");
+    final ShoppingList otherShoppingList =
+        ShoppingListITUtils.createShoppingList(CTP_TARGET_CLIENT, "other_name", "other_key");
     final Set<String> shoppingListKeys = new HashSet<>();
     shoppingListKeys.add(shoppingList.getKey());
     shoppingListKeys.add(otherShoppingList.getKey());
-    Set<ShoppingList> shoppingLists =
+    final Set<ShoppingList> shoppingLists =
         shoppingListService
             .fetchMatchingShoppingListsByKeys(shoppingListKeys)
             .toCompletableFuture()
@@ -161,7 +154,8 @@ class ShoppingListServiceImplIT {
 
   @Test
   void cacheKeysToIds_WithCachedKeys_ShouldReturnCachedKeysWithoutRequest() {
-    final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+    final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
+
     final ShoppingListSyncOptions shoppingListSyncOptions =
         ShoppingListSyncOptionsBuilder.of(spyClient)
             .errorCallback(
@@ -187,7 +181,7 @@ class ShoppingListServiceImplIT {
             .join();
     assertThat(cache).hasSize(1);
 
-    verify(spyClient, times(1)).execute(any());
+    verify(spyClient, times(1)).graphql();
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
   }
@@ -195,27 +189,31 @@ class ShoppingListServiceImplIT {
   @Test
   void createShoppingList_WithValidShoppingList_ShouldCreateShoppingList() {
     // preparation
-    ProductType productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
+    final ProductType productType =
+        createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     final ProductDraft productDraft =
-        ProductDraftBuilder.of(
-                ResourceIdentifier.ofKey(productType.getKey()),
-                LocalizedString.ofEnglish("newProduct"),
-                LocalizedString.ofEnglish("foo"),
-                ProductVariantDraftBuilder.of().key("foo-new").sku("sku-new").build())
+        ProductDraftBuilder.of()
+            .productType(
+                ProductTypeResourceIdentifierBuilder.of().key(productType.getKey()).build())
+            .name(ofEnglish("newProduct"))
+            .slug(ofEnglish("foo"))
+            .variants(ProductVariantDraftBuilder.of().key("foo-new").sku("sku-new").build())
             .key("newProduct")
             .build();
-    executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft)));
-    LineItemDraft lineItemDraft = LineItemDraftBuilder.ofSku("sku-new", Long.valueOf(1)).build();
-    TextLineItemDraft textLineItemDraft =
-        TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("text"), 1L).build();
-    final ShoppingListDraftDsl newShoppingListDraft =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("new_name"))
+    CTP_TARGET_CLIENT.products().create(productDraft).executeBlocking();
+    final ShoppingListLineItemDraft lineItemDraft =
+        ShoppingListLineItemDraftBuilder.of().sku("sku-new").quantity(1L).build();
+    final TextLineItemDraft textLineItemDraft =
+        TextLineItemDraftBuilder.of().name(ofEnglish("text")).quantity(1L).build();
+    final ShoppingListDraft newShoppingListDraft =
+        ShoppingListDraftBuilder.of()
+            .name(ofEnglish("new_name"))
             .key("new_key")
             .plusLineItems(lineItemDraft)
             .plusTextLineItems(textLineItemDraft)
             .build();
 
-    final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+    final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
 
     final ShoppingListSyncOptions options =
         ShoppingListSyncOptionsBuilder.of(spyClient)
@@ -225,7 +223,7 @@ class ShoppingListServiceImplIT {
                   errorCallBackExceptions.add(exception);
                 })
             .build();
-    ShoppingListService spyShoppingListService = new ShoppingListServiceImpl(options);
+    final ShoppingListService spyShoppingListService = new ShoppingListServiceImpl(options);
 
     // test
     final Optional<ShoppingList> createdShoppingList =
@@ -234,35 +232,33 @@ class ShoppingListServiceImplIT {
             .toCompletableFuture()
             .join();
 
-    final Optional<ShoppingList> queriedOptional =
+    final ShoppingList shoppingList =
         CTP_TARGET_CLIENT
-            .execute(
-                ShoppingListQuery.of()
-                    .withPredicates(
-                        shoppingListQueryModel -> shoppingListQueryModel.key().is("new_key")))
-            .toCompletableFuture()
-            .join()
-            .head();
+            .shoppingLists()
+            .withKey("new_key")
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .join();
 
-    assertThat(queriedOptional)
+    assertThat(createdShoppingList)
         .hasValueSatisfying(
-            queried ->
-                assertThat(createdShoppingList)
-                    .hasValueSatisfying(
-                        created -> {
-                          assertThat(created.getKey()).isEqualTo(queried.getKey());
-                          assertThat(created.getName()).isEqualTo(queried.getName());
-                          assertThat(created.getLineItems()).hasSize(1);
-                          assertThat(created.getTextLineItems()).hasSize(1);
-                        }));
+            created -> {
+              assertThat(created.getKey()).isEqualTo(shoppingList.getKey());
+              assertThat(created.getName()).isEqualTo(shoppingList.getName());
+              assertThat(created.getLineItems()).hasSize(1);
+              assertThat(created.getTextLineItems()).hasSize(1);
+            });
   }
 
   @Test
   void createShoppingList_WithNotExistingSkuInLineItem_ShouldNotCreateShoppingList() {
     // preparation
-    LineItemDraft lineItemDraft = LineItemDraftBuilder.ofSku("unknownSku", Long.valueOf(1)).build();
+    final ShoppingListLineItemDraft lineItemDraft =
+        ShoppingListLineItemDraftBuilder.of().sku("unknownSku").quantity(1L).build();
     final ShoppingListDraft newShoppingListDraft =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("new_name"))
+        ShoppingListDraftBuilder.of()
+            .name(ofEnglish("new_name"))
             .key("new_key")
             .plusLineItems(lineItemDraft)
             .build();
@@ -274,14 +270,15 @@ class ShoppingListServiceImplIT {
     assertThat(errorCallBackExceptions).hasSize(1);
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .contains(
-            "Failed to create draft with key: 'new_key'. Reason: "
-                + "detailMessage: No published product with an sku 'unknownSku' exists.");
+        .contains("Failed to create draft with key: 'new_key'. Reason: ");
+    assertThat(errorCallBackMessages.get(0))
+        .contains("No published product with an sku 'unknownSku' exists.");
   }
 
   @Test
   void updateCustomer_WithValidChanges_ShouldUpdateCustomerCorrectly() {
-    final ChangeName updatedName = ChangeName.of(LocalizedString.ofEnglish("updated_name"));
+    final ShoppingListChangeNameAction updatedName =
+        ShoppingListChangeNameActionBuilder.of().name(ofEnglish("updated_name")).build();
 
     final ShoppingList updatedShoppingList =
         shoppingListService
@@ -290,21 +287,17 @@ class ShoppingListServiceImplIT {
             .join();
     assertThat(updatedShoppingList).isNotNull();
 
-    final Optional<ShoppingList> queried =
+    final ShoppingList fetchedShoppingList =
         CTP_TARGET_CLIENT
-            .execute(
-                ShoppingListQuery.of()
-                    .withPredicates(
-                        shoppingListQueryModel ->
-                            shoppingListQueryModel.key().is(shoppingList.getKey())))
-            .toCompletableFuture()
-            .join()
-            .head();
+            .shoppingLists()
+            .withKey(shoppingList.getKey())
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .join();
 
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
-    assertThat(queried).isNotEmpty();
-    final ShoppingList fetchedShoppingList = queried.get();
     assertThat(fetchedShoppingList.getKey()).isEqualTo(updatedShoppingList.getKey());
     assertThat(fetchedShoppingList.getName()).isEqualTo(updatedShoppingList.getName());
   }
