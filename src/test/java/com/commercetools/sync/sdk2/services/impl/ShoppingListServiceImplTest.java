@@ -9,7 +9,6 @@ import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-import static org.mockito.internal.verification.VerificationModeFactory.only;
 
 import com.commercetools.api.client.ByProjectKeyShoppingListsByIDPost;
 import com.commercetools.api.client.ByProjectKeyShoppingListsByIDRequestBuilder;
@@ -82,6 +81,8 @@ class ShoppingListServiceImplTest {
         .thenReturn(byProjectKeyShoppingListsGet);
     when(byProjectKeyShoppingListsGet.withPredicateVar(anyString(), anyCollection()))
         .thenReturn(byProjectKeyShoppingListsGet);
+    when(byProjectKeyShoppingListsGet.addExpand(anyString()))
+        .thenReturn(byProjectKeyShoppingListsGet);
     when(byProjectKeyShoppingListsGet.withLimit(anyInt())).thenReturn(byProjectKeyShoppingListsGet);
     when(byProjectKeyShoppingListsGet.withWithTotal(anyBoolean()))
         .thenReturn(byProjectKeyShoppingListsGet);
@@ -91,6 +92,8 @@ class ShoppingListServiceImplTest {
         .thenReturn(byProjectKeyShoppingListsKeyByKeyRequestBuilder);
     byProjectKeyShoppingListsKeyByKeyGet = mock();
     when(byProjectKeyShoppingListsKeyByKeyRequestBuilder.get())
+        .thenReturn(byProjectKeyShoppingListsKeyByKeyGet);
+    when(byProjectKeyShoppingListsKeyByKeyGet.addExpand(anyString()))
         .thenReturn(byProjectKeyShoppingListsKeyByKeyGet);
 
     errorMessages = new ArrayList<>();
@@ -153,7 +156,7 @@ class ShoppingListServiceImplTest {
     assertThat(result).containsSame(mockShoppingList);
     assertThat(errorExceptions).isEmpty();
     assertThat(errorMessages).isEmpty();
-    verify(byProjectKeyShoppingListsKeyByKeyGet, only()).execute();
+    verify(byProjectKeyShoppingListsKeyByKeyGet, atMostOnce()).execute();
   }
 
   @Test
