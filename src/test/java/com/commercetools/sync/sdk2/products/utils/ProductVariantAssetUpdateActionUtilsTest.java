@@ -128,23 +128,17 @@ class ProductVariantAssetUpdateActionUtilsTest {
                 .staged(true)
                 .build(),
             ProductSetAssetCustomFieldActionBuilder.of()
-                .variantId(1l)
+                .variantId(1L)
                 .assetKey(null)
                 .name("invisibleInShop")
-                .value(
-                    FieldContainerBuilder.of()
-                        .addValue("invisibleInShop", newCustomFieldsMap.get("invisibleInShop"))
-                        .build())
+                .value(JsonNodeFactory.instance.booleanNode(false))
                 .staged(true)
                 .build(),
             ProductSetAssetCustomFieldActionBuilder.of()
-                .variantId(1l)
+                .variantId(1L)
                 .assetKey(null)
                 .name("backgroundColor")
-                .value(
-                    FieldContainerBuilder.of()
-                        .addValue("backgroundColor", newCustomFieldsMap.get("backgroundColor"))
-                        .build())
+                .value(JsonNodeFactory.instance.objectNode().put("es", "rojo"))
                 .staged(true)
                 .build());
   }
@@ -649,7 +643,7 @@ class ProductVariantAssetUpdateActionUtilsTest {
                 .variantId(1L)
                 .assetKey(oldAsset.getKey())
                 .name("setOfBooleans")
-                .value(FieldContainerBuilder.of().addValue("setOfBooleans", null).build())
+                .value(null)
                 .staged(true)
                 .build());
   }
@@ -710,7 +704,7 @@ class ProductVariantAssetUpdateActionUtilsTest {
             ProductSetAssetCustomFieldActionBuilder.of()
                 .variantId(1L)
                 .assetKey(oldAsset.getKey())
-                .value(FieldContainerBuilder.of().addValue("setOfBooleans", null).build())
+                .value(null)
                 .name("setOfBooleans")
                 .staged(true)
                 .build());
