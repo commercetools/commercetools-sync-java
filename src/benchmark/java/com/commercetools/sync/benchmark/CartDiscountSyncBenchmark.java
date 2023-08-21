@@ -1,6 +1,7 @@
 package com.commercetools.sync.benchmark;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.*;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static java.lang.String.format;

@@ -1,5 +1,6 @@
 package com.commercetools.sync.benchmark;
 
+import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.FIELD_DEFINITION_1;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.FIELD_DEFINITION_NAME_1;

@@ -1,5 +1,7 @@
 package com.commercetools.sync.integration.services.impl;
 
+import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.*;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
@@ -22,7 +24,6 @@ import com.commercetools.api.models.tax_category.TaxCategoryChangeNameActionBuil
 import com.commercetools.api.models.tax_category.TaxCategoryDraft;
 import com.commercetools.api.models.tax_category.TaxCategoryDraftBuilder;
 import com.commercetools.api.models.tax_category.TaxCategorySetKeyActionBuilder;
-import com.commercetools.sync.integration.commons.utils.TestClientUtils;
 import com.commercetools.sync.sdk2.services.TaxCategoryService;
 import com.commercetools.sync.sdk2.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.sdk2.taxcategories.TaxCategorySyncOptions;
@@ -43,7 +44,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class TaxCategoryServiceImplIT {
   private TaxCategoryService taxCategoryService;
@@ -62,12 +62,12 @@ class TaxCategoryServiceImplIT {
     errorCallBackMessages = new ArrayList<>();
     errorCallBackExceptions = new ArrayList<>();
 
-    TaxCategoryITUtils.deleteTaxCategories(TestClientUtils.CTP_TARGET_CLIENT);
+    deleteTaxCategories(CTP_TARGET_CLIENT);
     warnings = new ArrayList<>();
-    oldTaxCategory = TaxCategoryITUtils.ensureTaxCategory(TestClientUtils.CTP_TARGET_CLIENT);
+    oldTaxCategory = ensureTaxCategory(CTP_TARGET_CLIENT);
 
     final TaxCategorySyncOptions taxCategorySyncOptions =
-        TaxCategorySyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT)
+        TaxCategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) -> {
                   errorCallBackMessages.add(exception.getMessage());
@@ -80,7 +80,7 @@ class TaxCategoryServiceImplIT {
   /** Cleans up the target and source test data that were built in this test class. */
   @AfterAll
   static void tearDown() {
-    TaxCategoryITUtils.deleteTaxCategories(TestClientUtils.CTP_TARGET_CLIENT);
+    deleteTaxCategories(CTP_TARGET_CLIENT);
   }
 
   @Test
@@ -149,7 +149,7 @@ class TaxCategoryServiceImplIT {
   @Test
   void fetchMatchingTaxCategoriesByKeys_WithAnyExistingKeys_ShouldReturnASetOfTaxCategories() {
     final Set<String> taxCategoryKeys = new HashSet<>();
-    taxCategoryKeys.add(TaxCategoryITUtils.TAXCATEGORY_KEY);
+    taxCategoryKeys.add(TAXCATEGORY_KEY);
 
     final Set<TaxCategory> matchingTaxCategories =
         taxCategoryService
@@ -165,7 +165,7 @@ class TaxCategoryServiceImplIT {
   @Test
   void fetchMatchingTaxCategoriesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
     // Mock sphere client to return BadGatewayException on any request.
-    final ProjectApiRoot spyClient = Mockito.spy(TestClientUtils.CTP_TARGET_CLIENT);
+    final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
     when(spyClient.taxCategories()).thenReturn(mock(ByProjectKeyTaxCategoriesRequestBuilder.class));
     final ByProjectKeyTaxCategoriesGet getMock = mock(ByProjectKeyTaxCategoriesGet.class);
     when(spyClient.taxCategories().get()).thenReturn(getMock);
@@ -189,7 +189,7 @@ class TaxCategoryServiceImplIT {
     final TaxCategoryService spyTaxCategoryService = new TaxCategoryServiceImpl(spyOptions);
 
     final Set<String> keys = new HashSet<>();
-    keys.add(TaxCategoryITUtils.TAXCATEGORY_KEY);
+    keys.add(TAXCATEGORY_KEY);
 
     // test and assert
     assertThat(errorCallBackExceptions).isEmpty();
@@ -205,16 +205,16 @@ class TaxCategoryServiceImplIT {
       fetchMatchingTaxCategoriesByKeys_WithAllExistingSetOfKeys_ShouldCacheFetchedTaxCategoryIds() {
     final Set<TaxCategory> fetchedTaxCategories =
         taxCategoryService
-            .fetchMatchingTaxCategoriesByKeys(singleton(TaxCategoryITUtils.TAXCATEGORY_KEY))
+            .fetchMatchingTaxCategoriesByKeys(singleton(TAXCATEGORY_KEY))
             .toCompletableFuture()
             .join();
 
     assertThat(fetchedTaxCategories).hasSize(1);
 
     final TaxCategory taxCategory =
-        TestClientUtils.CTP_TARGET_CLIENT
+        CTP_TARGET_CLIENT
             .taxCategories()
-            .withKey(TaxCategoryITUtils.TAXCATEGORY_KEY)
+            .withKey(TAXCATEGORY_KEY)
             .get()
             .executeBlocking()
             .getBody();
@@ -232,10 +232,7 @@ class TaxCategoryServiceImplIT {
 
     // Fetch cached id by old key
     final Optional<String> cachedTaxCategoryId =
-        taxCategoryService
-            .fetchCachedTaxCategoryId(TaxCategoryITUtils.TAXCATEGORY_KEY)
-            .toCompletableFuture()
-            .join();
+        taxCategoryService.fetchCachedTaxCategoryId(TAXCATEGORY_KEY).toCompletableFuture().join();
 
     assertThat(cachedTaxCategoryId).isNotEmpty();
     assertThat(cachedTaxCategoryId).contains(taxCategory.get().getId());
@@ -247,13 +244,13 @@ class TaxCategoryServiceImplIT {
   void createTaxCategory_WithValidTaxCategory_ShouldCreateTaxCategoryAndCacheId() {
     final TaxCategoryDraft newTaxCategoryDraft =
         TaxCategoryDraftBuilder.of()
-            .name(TaxCategoryITUtils.TAXCATEGORY_NAME_1)
-            .rates(TaxCategoryITUtils.createTaxRateDraft())
-            .description(TaxCategoryITUtils.TAXCATEGORY_DESCRIPTION_1)
-            .key(TaxCategoryITUtils.TAXCATEGORY_KEY_1)
+            .name(TAXCATEGORY_NAME_1)
+            .rates(mockTaxRateDraft())
+            .description(TAXCATEGORY_DESCRIPTION_1)
+            .key(TAXCATEGORY_KEY_1)
             .build();
 
-    final ProjectApiRoot spyClient = Mockito.spy(TestClientUtils.CTP_TARGET_CLIENT);
+    final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
     final TaxCategorySyncOptions spyOptions =
         TaxCategorySyncOptionsBuilder.of(spyClient)
             .errorCallback(
@@ -270,9 +267,9 @@ class TaxCategoryServiceImplIT {
         spyTaxCategoryService.createTaxCategory(newTaxCategoryDraft).toCompletableFuture().join();
 
     final TaxCategory queriedTaxCategory =
-        TestClientUtils.CTP_TARGET_CLIENT
+        CTP_TARGET_CLIENT
             .taxCategories()
-            .withKey(TaxCategoryITUtils.TAXCATEGORY_KEY_1)
+            .withKey(TAXCATEGORY_KEY_1)
             .get()
             .executeBlocking()
             .getBody();
@@ -300,7 +297,7 @@ class TaxCategoryServiceImplIT {
     // Assert that the created taxCategory is cached
     final Optional<String> taxCategoryId =
         spyTaxCategoryService
-            .fetchCachedTaxCategoryId(TaxCategoryITUtils.TAXCATEGORY_KEY_1)
+            .fetchCachedTaxCategoryId(TAXCATEGORY_KEY_1)
             .toCompletableFuture()
             .join();
     assertThat(taxCategoryId).isPresent();
@@ -313,14 +310,14 @@ class TaxCategoryServiceImplIT {
     // preparation
     final TaxCategoryDraft newTaxCategoryDraft =
         TaxCategoryDraftBuilder.of()
-            .name(TaxCategoryITUtils.TAXCATEGORY_NAME_1)
-            .rates(singletonList(TaxCategoryITUtils.createTaxRateDraft()))
-            .description(TaxCategoryITUtils.TAXCATEGORY_DESCRIPTION_1)
+            .name(TAXCATEGORY_NAME_1)
+            .rates(singletonList(mockTaxRateDraft()))
+            .description(TAXCATEGORY_DESCRIPTION_1)
             .key("")
             .build();
 
     final TaxCategorySyncOptions options =
-        TaxCategorySyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT)
+        TaxCategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) -> {
                   errorCallBackMessages.add(exception.getMessage());
@@ -345,14 +342,14 @@ class TaxCategoryServiceImplIT {
     // preparation
     final TaxCategoryDraft newTaxCategoryDraft =
         TaxCategoryDraftBuilder.of()
-            .name(TaxCategoryITUtils.TAXCATEGORY_NAME_1)
-            .rates(singletonList(TaxCategoryITUtils.createTaxRateDraft()))
-            .description(TaxCategoryITUtils.TAXCATEGORY_DESCRIPTION_1)
-            .key(TaxCategoryITUtils.TAXCATEGORY_KEY)
+            .name(TAXCATEGORY_NAME_1)
+            .rates(singletonList(mockTaxRateDraft()))
+            .description(TAXCATEGORY_DESCRIPTION_1)
+            .key(TAXCATEGORY_KEY)
             .build();
 
     final TaxCategorySyncOptions options =
-        TaxCategorySyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT)
+        TaxCategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) -> {
                   errorCallBackMessages.add(exception.getMessage());
@@ -400,9 +397,9 @@ class TaxCategoryServiceImplIT {
   @Test
   void updateTaxCategory_WithValidChanges_ShouldUpdateTaxCategoryCorrectly() {
     final TaxCategory taxCategory =
-        TestClientUtils.CTP_TARGET_CLIENT
+        CTP_TARGET_CLIENT
             .taxCategories()
-            .withKey(TaxCategoryITUtils.TAXCATEGORY_KEY)
+            .withKey(TAXCATEGORY_KEY)
             .get()
             .executeBlocking()
             .getBody();
@@ -419,9 +416,9 @@ class TaxCategoryServiceImplIT {
     assertThat(updatedTaxCategory).isNotNull();
 
     final TaxCategory fetchedTaxCategory =
-        TestClientUtils.CTP_TARGET_CLIENT
+        CTP_TARGET_CLIENT
             .taxCategories()
-            .withKey(TaxCategoryITUtils.TAXCATEGORY_KEY)
+            .withKey(TAXCATEGORY_KEY)
             .get()
             .executeBlocking()
             .getBody();
@@ -434,9 +431,9 @@ class TaxCategoryServiceImplIT {
   @Test
   void fetchTaxCategory_WithExistingTaxCategoryKey_ShouldFetchTaxCategory() {
     final TaxCategory taxCategory =
-        TestClientUtils.CTP_TARGET_CLIENT
+        CTP_TARGET_CLIENT
             .taxCategories()
-            .withKey(TaxCategoryITUtils.TAXCATEGORY_KEY)
+            .withKey(TAXCATEGORY_KEY)
             .get()
             .executeBlocking()
             .getBody();
@@ -444,11 +441,7 @@ class TaxCategoryServiceImplIT {
     assertThat(taxCategory).isNotNull();
 
     final TaxCategory fetchedTaxCategory =
-        taxCategoryService
-            .fetchTaxCategory(TaxCategoryITUtils.TAXCATEGORY_KEY)
-            .toCompletableFuture()
-            .join()
-            .get();
+        taxCategoryService.fetchTaxCategory(TAXCATEGORY_KEY).toCompletableFuture().join().get();
     assertThat(fetchedTaxCategory).isEqualTo(taxCategory);
   }
 
