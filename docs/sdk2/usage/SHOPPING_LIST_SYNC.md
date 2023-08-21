@@ -75,10 +75,10 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 
 |Reference Field|Type|
 |:---|:---|
-| `customer` | ResourceIdentifier to a Customer | 
-| `custom.type` | ResourceIdentifier to a Type |  
-| `lineItems.custom.type` |  ResourceIdentifier to a Type | 
-| `textLineItems.custom.type ` | ResourceIdentifier to a Type | 
+| `customer` | CustomerResourceIdentifier | 
+| `custom.type` | TypeResourceIdentifier |  
+| `lineItems.custom.type` |  TypeResourceIdentifier | 
+| `textLineItems.custom.type ` | TypeResourceIdentifier | 
 
 > Note that a reference without the key field will be considered as an existing resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.
 
@@ -188,7 +188,7 @@ following context about the warning message:
  final Logger logger = LoggerFactory.getLogger(ShoppingListSync.class);
  final ShoppingListSyncOptions shoppingListSyncOptions = ShoppingListSyncOptionsBuilder
          .of(projectApiRoot)
-         .warningCallback((syncException, draft, shoppingList, updateActions) -> 
+         .warningCallback((syncException, draft, shoppingList) -> 
             logger.warn(new SyncException("My customized message"), syncException)).build();
 ````
 
@@ -220,7 +220,7 @@ During the sync process, if a shopping list draft should be created, this callba
 
  * shopping list that should be created
 
- Please refer to the [example in the product sync document](https://github.com/commercetools/commercetools-sync-java/blob/master/docs/usage/PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
+ Please refer to the [example in the product sync document](#todo).
 
 ##### batchSize
 A number that could be used to set the batch size with which shopping lists are fetched and processed,
@@ -301,7 +301,7 @@ hereby commercetools-java-sync library will not update the `addedAt` value.
 
 ## Migration Guide
 
-The shoppinglist-sync uses the [JVM-SDK-V2](http://commercetools.github.io/commercetools-sdk-java-v2), therefore ensure you [Install JVM SDK](https://docs.commercetools.com/sdk/java-sdk-getting-started#install-the-java-sdk) module `commercetools-sdk-java-api` with
+The shopping-list-sync uses the [JVM-SDK-V2](http://commercetools.github.io/commercetools-sdk-java-v2), therefore ensure you [Install JVM SDK](https://docs.commercetools.com/sdk/java-sdk-getting-started#install-the-java-sdk) module `commercetools-sdk-java-api` with
 any HTTP client module. The default one is `commercetools-http-client`.
 
 ```xml
@@ -336,7 +336,7 @@ As models and update actions have changed in the JVM-SDK-V2 the signature of Syn
 > Note: Type `UpdateAction<ShoppingList>` has changed to `ShoppingListUpdateAction`. Make sure you create and supply a specific ShoppingListUpdateAction in `beforeUpdateCallback`. For that you can use the [library-utilities](#todo) or use a JVM-SDK builder ([see also](https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources)):
 
 ```java
-// Example: Create a shoppinglist update action to change name taking the 'newName' of the shoppingListDraft
+// Example: Create a shopping-list update action to change name taking the 'newName' of the shoppingListDraft
     final Function<LocalizedString, ShoppingListUpdateAction> createBeforeUpdateAction =
         (newName) -> ShoppingListChangeNameAction.builder().name(newName).build();
 
@@ -354,7 +354,7 @@ As models and update actions have changed in the JVM-SDK-V2 the signature of Syn
 
 ### Build ShoppingListDraft (syncing from external project)
 
-The shoppinglist-sync expects a list of `ShoppingListDraft`s to process. If you use java-sync-library to sync your shoppinglists from any external system into a commercetools platform project you have to convert your data into CTP compatible `ShoppingListDraft` type. This was done in previous version using `DraftBuilder`s.
+The shopping-list-sync expects a list of `ShoppingListDraft`s to process. If you use java-sync-library to sync your shopping-lists from any external system into a commercetools platform project you have to convert your data into CTP compatible `ShoppingListDraft` type. This was done in previous version using `DraftBuilder`s.
 The V2 SDK do not have inheritance for `DraftBuilder` classes but the differences are minor and you can replace it easily. Here's an example:
 
 ```java
@@ -377,7 +377,7 @@ For more information, see the [Guide to replace DraftBuilders](https://docs.comm
 
 ### Query for ShoppingLists (syncing from CTP project)
 
-If you sync shopping lists between different commercetools projects you probably use [ShoppingListTransformUtils#toShoppingListDrafts](#todo) to transform `ShoppingList` into `ShoppingListDraft` which can be used by the shoppinglist-sync.
+If you sync shopping lists between different commercetools projects you probably use [ShoppingListTransformUtils#toShoppingListDrafts](#todo) to transform `ShoppingList` into `ShoppingListDraft` which can be used by the shopping-list-sync.
 However, if you need to query `ShoppingLists` from a commercetools project instead of passing `ShoppingListQuery`s to a `sphereClient`, create (and execute) requests directly from the `apiRoot`.
 Here's an example:
 
@@ -387,7 +387,7 @@ final ShoppingListQuery query = ShoppingListQuery.of();
 
 final PagedQueryResult<ShoppingList> pagedQueryResult = sphereClient.executeBlocking(query);
 
-// SDK v2: Create and execute query to fetch all shoppinglists in one line
+// SDK v2: Create and execute query to fetch all shopping lists in one line
 final ShoppingListPagedQueryResponse result = apiRoot.shoppingLists().get().executeBlocking().getBody();
 ```
 [Read more](https://docs.commercetools.com/sdk/java-sdk-migrate#query-resources) about querying resources.
