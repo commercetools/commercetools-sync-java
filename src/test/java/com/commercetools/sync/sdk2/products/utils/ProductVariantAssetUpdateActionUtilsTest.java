@@ -15,7 +15,6 @@ import com.commercetools.api.models.common.AssetDraftBuilder;
 import com.commercetools.api.models.common.AssetSource;
 import com.commercetools.api.models.common.AssetSourceBuilder;
 import com.commercetools.api.models.common.LocalizedString;
-import com.commercetools.api.models.product.Product;
 import com.commercetools.api.models.product.ProductChangeAssetNameAction;
 import com.commercetools.api.models.product.ProductChangeAssetNameActionBuilder;
 import com.commercetools.api.models.product.ProductDraft;
@@ -45,7 +44,6 @@ import org.junit.jupiter.api.Test;
 class ProductVariantAssetUpdateActionUtilsTest {
   private static final ProductSyncOptions SYNC_OPTIONS =
       ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
-  final Product product = mock(Product.class);
   final ProductDraft productDraft = mock(ProductDraft.class);
 
   @Test
@@ -54,14 +52,12 @@ class ProductVariantAssetUpdateActionUtilsTest {
     final LocalizedString newName = LocalizedString.of(Locale.GERMAN, "newName");
 
     final Map<String, Object> oldCustomFieldsMap = new HashMap<>();
-    oldCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
-    oldCustomFieldsMap.put(
-        "backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
+    oldCustomFieldsMap.put("invisibleInShop", true);
+    oldCustomFieldsMap.put("backgroundColor", Map.of("de", "rot"));
 
     final Map<String, Object> newCustomFieldsMap = new HashMap<>();
-    newCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
-    newCustomFieldsMap.put(
-        "backgroundColor", JsonNodeFactory.instance.objectNode().put("es", "rojo"));
+    newCustomFieldsMap.put("invisibleInShop", false);
+    newCustomFieldsMap.put("backgroundColor", Map.of("es", "rojo"));
 
     final FieldContainer oldFieldContainer =
         FieldContainerBuilder.of().values(oldCustomFieldsMap).build();
@@ -116,13 +112,13 @@ class ProductVariantAssetUpdateActionUtilsTest {
                 .staged(true)
                 .build(),
             ProductSetAssetTagsActionBuilder.of()
-                .variantId(1l)
+                .variantId(1L)
                 .assetKey(null)
                 .tags(newTags)
                 .staged(true)
                 .build(),
             ProductSetAssetSourcesActionBuilder.of()
-                .variantId(1l)
+                .variantId(1L)
                 .assetKey(null)
                 .sources(newAssetSources)
                 .staged(true)
@@ -131,14 +127,14 @@ class ProductVariantAssetUpdateActionUtilsTest {
                 .variantId(1L)
                 .assetKey(null)
                 .name("invisibleInShop")
-                .value(JsonNodeFactory.instance.booleanNode(false))
+                .value(newCustomFieldsMap.get("invisibleInShop"))
                 .staged(true)
                 .build(),
             ProductSetAssetCustomFieldActionBuilder.of()
                 .variantId(1L)
                 .assetKey(null)
                 .name("backgroundColor")
-                .value(JsonNodeFactory.instance.objectNode().put("es", "rojo"))
+                .value(newCustomFieldsMap.get("backgroundColor"))
                 .staged(true)
                 .build());
   }
@@ -643,7 +639,6 @@ class ProductVariantAssetUpdateActionUtilsTest {
                 .variantId(1L)
                 .assetKey(oldAsset.getKey())
                 .name("setOfBooleans")
-                .value(null)
                 .staged(true)
                 .build());
   }
@@ -704,7 +699,6 @@ class ProductVariantAssetUpdateActionUtilsTest {
             ProductSetAssetCustomFieldActionBuilder.of()
                 .variantId(1L)
                 .assetKey(oldAsset.getKey())
-                .value(null)
                 .name("setOfBooleans")
                 .staged(true)
                 .build());

@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.api.models.common.Address;
 import com.commercetools.api.models.common.AddressBuilder;
+import com.commercetools.api.models.common.LocalizedStringBuilder;
 import com.commercetools.api.models.customer.Customer;
 import com.commercetools.api.models.customer.CustomerAddAddressActionBuilder;
 import com.commercetools.api.models.customer.CustomerAddBillingAddressIdActionBuilder;
@@ -45,7 +46,6 @@ import com.commercetools.sync.sdk2.customers.CustomerSync;
 import com.commercetools.sync.sdk2.customers.CustomerSyncOptions;
 import com.commercetools.sync.sdk2.customers.CustomerSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.customers.helpers.CustomerSyncStatistics;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.neovisionaries.i18n.CountryCode;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -304,11 +304,11 @@ class CustomerSyncIT {
             CustomerAddBillingAddressIdActionBuilder.of().addressKey("address4").build(),
             CustomerSetCustomFieldActionBuilder.of()
                 .name(ITUtils.LOCALISED_STRING_CUSTOM_FIELD_NAME)
-                .value(JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"))
+                .value(LocalizedStringBuilder.of().values(Map.of("de", "rot", "en", "red")).build())
                 .build(),
             CustomerSetCustomFieldActionBuilder.of()
                 .name(ITUtils.BOOLEAN_CUSTOM_FIELD_NAME)
-                .value(JsonNodeFactory.instance.booleanNode(false))
+                .value(false)
                 .build(),
             CustomerAddStoreActionBuilder.of()
                 .store(StoreResourceIdentifierBuilder.of().key(storeCologne.getKey()).build())

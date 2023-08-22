@@ -59,7 +59,7 @@ class ProductAssetCustomUpdateActionUtilsTest {
     ProductSetAssetCustomTypeAction productSetAssetCustomTypeAction =
         (ProductSetAssetCustomTypeAction) updateAction;
     assertThat(productSetAssetCustomTypeAction.getAssetId()).isEqualTo(null);
-    assertThat(productSetAssetCustomTypeAction.getAssetKey()).isEqualTo(null);
+    assertThat(productSetAssetCustomTypeAction.getAssetKey()).isEqualTo(assetKey);
     assertThat(productSetAssetCustomTypeAction.getType()).isEqualTo(null);
   }
 

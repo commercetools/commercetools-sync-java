@@ -1,7 +1,7 @@
 package com.commercetools.sync.sdk2.products.helpers;
 
 import com.commercetools.api.models.product.ProductSetAssetCustomFieldAction;
-import com.commercetools.api.models.product.ProductSetAssetCustomTypeAction;
+import com.commercetools.api.models.product.ProductSetAssetCustomTypeActionBuilder;
 import com.commercetools.api.models.product.ProductUpdateAction;
 import com.commercetools.api.models.type.FieldContainer;
 import com.commercetools.api.models.type.TypeResourceIdentifier;
@@ -16,7 +16,11 @@ public class AssetCustomActionBuilder implements GenericCustomActionBuilder<Prod
   @Nonnull
   public ProductUpdateAction buildRemoveCustomTypeAction(
       @Nullable final Long variantId, @Nullable final String assetKey) {
-    return ProductSetAssetCustomTypeAction.builder().build();
+    return ProductSetAssetCustomTypeActionBuilder.of()
+        .variantId(variantId)
+        .assetKey(assetKey)
+        .staged(true)
+        .build();
   }
 
   @Override
@@ -27,7 +31,7 @@ public class AssetCustomActionBuilder implements GenericCustomActionBuilder<Prod
       @Nonnull final String customTypeId,
       @Nullable final Map<String, Object> customFieldsJsonMap) {
 
-    return ProductSetAssetCustomTypeAction.builder()
+    return ProductSetAssetCustomTypeActionBuilder.of()
         .variantId(variantId)
         .assetKey(assetKey)
         .type(TypeResourceIdentifier.builder().id(customTypeId).build())
