@@ -332,16 +332,16 @@ public final class CategoryITUtils {
    * from the supplied {@link java.util.List} of {@link Category}.
    *
    * @param categories a {@link java.util.List} of {@link Category} from which the {@link
-   *     java.util.Set} of {@link CategoryResourceIdentifier} will be built.
-   * @return a {@link java.util.Set} of {@link CategoryResourceIdentifier} with keys in place of ids
-   *     from the supplied {@link java.util.List} of {@link Category}.
+   *     java.util.List} of {@link CategoryResourceIdentifier} will be built.
+   * @return a {@link java.util.List} of {@link CategoryResourceIdentifier} with keys in place of
+   *     ids from the supplied {@link java.util.List} of {@link Category}.
    */
   @Nonnull
-  public static Set<CategoryResourceIdentifier> getResourceIdentifiersWithKeys(
+  public static List<CategoryResourceIdentifier> getResourceIdentifiersWithKeys(
       @Nonnull final List<Category> categories) {
     return categories.stream()
         .map(category -> CategoryResourceIdentifierBuilder.of().key(category.getKey()).build())
-        .collect(Collectors.toSet());
+        .collect(Collectors.toList());
   }
 
   /**

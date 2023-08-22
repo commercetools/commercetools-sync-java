@@ -7,10 +7,14 @@ import com.commercetools.api.models.common.AssetDraft;
 import com.commercetools.api.models.common.AssetDraftBuilder;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 public class AssetUtils {
 
-  public static List<AssetDraft> createAssetDraft(List<Asset> assets) {
+  public static List<AssetDraft> createAssetDraft(@Nullable List<Asset> assets) {
+    if (assets == null) {
+      return List.of();
+    }
     return assets.stream()
         .map(
             asset ->
