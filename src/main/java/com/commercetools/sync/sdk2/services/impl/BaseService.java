@@ -156,7 +156,7 @@ abstract class BaseService<
                         final Iterator<JsonNode> elements =
                             jsonNode.get(queryResource.getName()).get("results").elements();
                         while (elements.hasNext()) {
-                          JsonNode idAndKey = elements.next();
+                          final JsonNode idAndKey = elements.next();
                           keyToIdCache.put(
                               idAndKey.get("key").asText(), idAndKey.get("id").asText());
                         }
