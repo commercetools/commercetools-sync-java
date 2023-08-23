@@ -5,12 +5,9 @@ import static java.util.Collections.*;
 import com.commercetools.api.models.common.Reference;
 import com.commercetools.api.models.product.Attribute;
 import com.commercetools.api.models.product.AttributeAccessor;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
