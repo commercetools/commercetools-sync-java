@@ -1,10 +1,12 @@
 package com.commercetools.sync.sdk2.products.utils;
 
-import static java.util.Collections.singletonList;
+import static java.util.Collections.*;
 
 import com.commercetools.api.models.common.Reference;
 import com.commercetools.api.models.product.Attribute;
 import com.commercetools.api.models.product.AttributeAccessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -44,24 +46,53 @@ public final class AttributeUtils {
    *     if the attribute doesn't contain reference types.
    */
   public static List<Reference> getAttributeReferences(@Nonnull final Attribute attribute) {
-      List<Attribute> attributes;
-      final Object attrValue = attribute.getValue();
-      if (attrValue instanceof List && ((List) attrValue).stream().anyMatch(v -> v instanceof List)) {
-          final List<List<Attribute>> nestedSet = AttributeAccessor.asSetNested(attribute);
-          attributes = nestedSet.stream().flatMap(Collection::stream).collect(Collectors.toList());
-      } else if (attrValue instanceof List) {
-          if (((List) attrValue).stream().anyMatch(v -> v instanceof Attribute)) {
-              attributes = AttributeAccessor.asNested(attribute);
-          } else if (attrValue instanceof List && ((List<?>) attrValue).stream().allMatch(value -> value instanceof Map)) {
+    final List<Reference> referenceList = getAttributeReference(attribute);
+    if (!referenceList.isEmpty()) {
+      return referenceList;
+    } else {
+      final List<Attribute> flattenedAttributes = flatMapNestedAttributes(attribute);
+      return flattenedAttributes.stream()
+          .map(AttributeUtils::getAttributeReference)
+          .flatMap(Collection::stream)
+          .collect(Collectors.toList());
+    }
+  }
 
-          }
-      } else {
-          attributes = singletonList(attribute);
-      }
+  /**
+   * Takes an object and checks if it's of type {@link List} of {@link Attribute} which is
+   * significant for a nested attribute.
+   *
+   * @param attrValue - value to be checked
+   * @return true, if the given param is of type {@link List} of {@link Attribute} otherwise false
+   */
+  private static boolean isNested(@Nonnull final Object attrValue) {
+    return attrValue instanceof List
+        && (((List) attrValue).stream().allMatch(v -> v instanceof Attribute));
+  }
 
-      return attributes.stream()
-              .map(AttributeUtils::getAttributeReference)
-              .flatMap(Collection::stream)
-              .collect(Collectors.toList());
+  /**
+   * Given an attribute this method first checks if its of type "nested" or "set" of "nested" and
+   * transforms its value into a flattened {@link List} of {@link Attribute} using recursion.
+   *
+   * @param attribute - Attribute of any value
+   * @return - a {@link List} of {@link Attribute} transformed from the given attribute.
+   */
+  private static List<Attribute> flatMapNestedAttributes(@Nonnull final Attribute attribute) {
+    final Object attrValue = attribute.getValue();
+    List<Attribute> flattenedAttributes;
+    if (isNested(attrValue)) {
+      flattenedAttributes = AttributeAccessor.asNested(attribute);
+    } else if (attrValue instanceof List
+        && ((List) attrValue).stream().allMatch(v -> isNested(v))) {
+      final List<List<Attribute>> nestedSet = AttributeAccessor.asSetNested(attribute);
+      flattenedAttributes =
+          nestedSet.stream().flatMap(Collection::stream).collect(Collectors.toList());
+    } else {
+      return singletonList(attribute);
+    }
+    return flattenedAttributes.stream()
+        .map(attr -> flatMapNestedAttributes(attr))
+        .flatMap(Collection::stream)
+        .collect(Collectors.toList());
   }
 }

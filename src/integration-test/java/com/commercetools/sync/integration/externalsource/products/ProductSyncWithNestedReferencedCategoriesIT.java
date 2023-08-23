@@ -1,48 +1,30 @@
 package com.commercetools.sync.integration.externalsource.products;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.*;
-import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.*;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.PRODUCT_TYPE_WITH_REFERENCES_RESOURCE_PATH;
-import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.CompletionException;
-import javax.annotation.Nonnull;
-
 import com.commercetools.api.client.error.BadRequestException;
-import com.commercetools.api.client.error.ErrorResponseException;
 import com.commercetools.api.models.category.Category;
 import com.commercetools.api.models.category.CategoryDraft;
 import com.commercetools.api.models.category.CategoryDraftBuilder;
 import com.commercetools.api.models.category.CategoryReference;
 import com.commercetools.api.models.category.CategoryReferenceBuilder;
-import com.commercetools.api.models.product.Attribute;
-import com.commercetools.api.models.product.AttributeBuilder;
-import com.commercetools.api.models.product.Product;
-import com.commercetools.api.models.product.ProductDraft;
-import com.commercetools.api.models.product.ProductDraftBuilder;
-import com.commercetools.api.models.product.ProductProjection;
-import com.commercetools.api.models.product.ProductSetAttributeActionBuilder;
-import com.commercetools.api.models.product.ProductUpdateAction;
-import com.commercetools.api.models.product.ProductVariantDraft;
-import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.common.Reference;
+import com.commercetools.api.models.common.ReferenceTypeId;
+import com.commercetools.api.models.product.*;
 import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
 import com.commercetools.api.models.product_type.AttributeDefinitionDraftBuilder;
 import com.commercetools.api.models.product_type.ProductType;
-import com.commercetools.api.models.product_type.ProductTypeAddAttributeDefinitionAction;
 import com.commercetools.api.models.product_type.ProductTypeAddAttributeDefinitionActionBuilder;
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
 import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
@@ -51,8 +33,12 @@ import com.commercetools.sync.sdk2.products.ProductSync;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.products.helpers.ProductSyncStatistics;
-import io.sphere.sdk.products.queries.ProductByKeyGet;
 import io.vrap.rmf.base.client.ApiHttpResponse;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletionException;
+import javax.annotation.Nonnull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,9 +55,6 @@ class ProductSyncWithNestedReferencedCategoriesIT {
   private List<Throwable> errorCallBackExceptions;
   private List<ProductUpdateAction> actions;
 
-  private static final String ATTRIBUTE_NAME_FIELD = "name";
-  private static final String ATTRIBUTE_VALUE_FIELD = "value";
-
   @BeforeAll
   static void setup() {
     deleteProductSyncTestData(CTP_TARGET_CLIENT);
@@ -81,60 +64,82 @@ class ProductSyncWithNestedReferencedCategoriesIT {
 
     final AttributeDefinitionDraft nestedAttributeDef =
         AttributeDefinitionDraftBuilder.of()
-                        .type(attributeTypeBuilder -> attributeTypeBuilder.nestedBuilder().typeReference(productTypeReferenceBuilder -> productTypeReferenceBuilder.id(nestedProductType.getId())))
-                .name(
-                "nestedAttribute")
-                        .label(
-                ofEnglish("nestedAttribute"))
-                .isRequired(
-                false)
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .nestedBuilder()
+                        .typeReference(
+                            productTypeReferenceBuilder ->
+                                productTypeReferenceBuilder.id(nestedProductType.getId())))
+            .name("nestedAttribute")
+            .label(ofEnglish("nestedAttribute"))
+            .isRequired(false)
             .isSearchable(false)
             .build();
 
     final AttributeDefinitionDraft setOfNestedAttributeDef =
         AttributeDefinitionDraftBuilder.of()
-                        .type(attributeTypeBuilder -> attributeTypeBuilder.setBuilder()
-                                .elementType(attributeTypeBuilder1 -> attributeTypeBuilder1.nestedBuilder().typeReference(productTypeReferenceBuilder -> productTypeReferenceBuilder.id(nestedProductType.getId()))))
-                .name(
-                "setOfNestedAttribute")
-                        .label(
-                ofEnglish("setOfNestedAttribute"))
-                        .isRequired(
-                false)
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            attributeTypeBuilder1 ->
+                                attributeTypeBuilder1
+                                    .nestedBuilder()
+                                    .typeReference(
+                                        productTypeReferenceBuilder ->
+                                            productTypeReferenceBuilder.id(
+                                                nestedProductType.getId()))))
+            .name("setOfNestedAttribute")
+            .label(ofEnglish("setOfNestedAttribute"))
+            .isRequired(false)
             .isSearchable(false)
             .build();
 
-      final List<ProductTypeUpdateAction> productTypeUpdateActions = List.of(
-              ProductTypeAddAttributeDefinitionActionBuilder.of().attribute(nestedAttributeDef).build(),
-              ProductTypeAddAttributeDefinitionActionBuilder.of().attribute(setOfNestedAttributeDef).build());
+    final List<ProductTypeUpdateAction> productTypeUpdateActions =
+        List.of(
+            ProductTypeAddAttributeDefinitionActionBuilder.of()
+                .attribute(nestedAttributeDef)
+                .build(),
+            ProductTypeAddAttributeDefinitionActionBuilder.of()
+                .attribute(setOfNestedAttributeDef)
+                .build());
 
-    CTP_TARGET_CLIENT.productTypes().update(productType, productTypeUpdateActions).executeBlocking();
+    CTP_TARGET_CLIENT
+        .productTypes()
+        .update(productType, productTypeUpdateActions)
+        .executeBlocking();
 
     final CategoryDraft category1Draft =
-        CategoryDraftBuilder.of().name(ofEnglish("cat1-name")).slug(ofEnglish("cat1-slug"))
+        CategoryDraftBuilder.of()
+            .name(ofEnglish("cat1-name"))
+            .slug(ofEnglish("cat1-slug"))
             .key("cat1-key")
             .build();
 
     testCategory1 =
         CTP_TARGET_CLIENT
-                .categories()
-                .create(category1Draft)
-                .execute()
-                .thenApply(ApiHttpResponse::getBody)
+            .categories()
+            .create(category1Draft)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join();
 
     final CategoryDraft category2Draft =
-        CategoryDraftBuilder.of().name(ofEnglish("cat2-name")).slug(ofEnglish("cat2-slug"))
+        CategoryDraftBuilder.of()
+            .name(ofEnglish("cat2-name"))
+            .slug(ofEnglish("cat2-slug"))
             .key("cat2-key")
             .build();
 
     testCategory2 =
         CTP_TARGET_CLIENT
-                .categories()
-                .create(category2Draft)
+            .categories()
+            .create(category2Draft)
             .execute()
-                .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join();
   }
@@ -190,11 +195,9 @@ class ProductSyncWithNestedReferencedCategoriesIT {
   void
       sync_withNestedCategoryReferenceAsAttribute_shouldCreateProductReferencingExistingCategory() {
     // preparation
-    final Map<String, Object> nestedAttributeValue =
+    final Attribute nestedAttributeValue =
         createNestedAttributeValueReferences(
-            "category-reference",
-            CategoryReferenceBuilder.of().id(testCategory1.getKey()).build()
-        );
+            "category-reference", CategoryReferenceBuilder.of().id(testCategory1.getKey()).build());
 
     final Attribute categoryReferenceAttribute =
         AttributeBuilder.of().name("nestedAttribute").value(List.of(nestedAttributeValue)).build();
@@ -207,7 +210,11 @@ class ProductSyncWithNestedReferencedCategoriesIT {
             .build();
 
     final ProductDraft productDraftWithCategoryReference =
-        ProductDraftBuilder.of().productType(productType.toResourceIdentifier()).name(ofEnglish("productName")).slug(ofEnglish("productSlug")).masterVariant(masterVariant)
+        ProductDraftBuilder.of()
+            .productType(productType.toResourceIdentifier())
+            .name(ofEnglish("productName"))
+            .slug(ofEnglish("productSlug"))
+            .masterVariant(masterVariant)
             .key("new-product")
             .build();
 
@@ -228,11 +235,11 @@ class ProductSyncWithNestedReferencedCategoriesIT {
 
     final Product createdProduct =
         CTP_TARGET_CLIENT
-                .products()
-                .withKey(productDraftWithCategoryReference.getKey())
-                .get()
-                .execute()
-                .thenApply(ApiHttpResponse::getBody)
+            .products()
+            .withKey(productDraftWithCategoryReference.getKey())
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join();
 
@@ -249,7 +256,8 @@ class ProductSyncWithNestedReferencedCategoriesIT {
               final List<Attribute> value = (List<Attribute>) attribute.getValue();
               final Attribute categoryReferenceAttr = value.get(0);
               assertThat(categoryReferenceAttr.getName()).isEqualTo("category-reference");
-              final CategoryReference categoryReferenceAttrValue = (CategoryReference) categoryReferenceAttr.getValue();
+              final CategoryReference categoryReferenceAttrValue =
+                  (CategoryReference) categoryReferenceAttr.getValue();
               assertThat(categoryReferenceAttrValue.getId()).isEqualTo(testCategory1.getId());
             });
   }
@@ -257,13 +265,12 @@ class ProductSyncWithNestedReferencedCategoriesIT {
   @Test
   void sync_withSameNestedCategoryReferenceAsAttribute_shouldNotSyncAnythingNew() {
     // preparation
-    final Map<String, Object> nestedAttributeValue =
+    final Attribute nestedAttributeValue =
         createNestedAttributeValueReferences(
-            "category-reference",
-            CategoryReferenceBuilder.of().id(testCategory1.getKey()).build());
+            "category-reference", CategoryReferenceBuilder.of().id(testCategory1.getId()).build());
 
     final Attribute categoryReferenceAttribute =
-            AttributeBuilder.of().name("nestedAttribute").value(List.of(nestedAttributeValue)).build();
+        AttributeBuilder.of().name("nestedAttribute").value(List.of(nestedAttributeValue)).build();
 
     final ProductVariantDraft masterVariant =
         ProductVariantDraftBuilder.of()
@@ -273,28 +280,31 @@ class ProductSyncWithNestedReferencedCategoriesIT {
             .build();
 
     final ProductDraft productDraftWithCategoryReference =
-        ProductDraftBuilder.of().productType(productType.toResourceIdentifier()).name(ofEnglish("productName"))
-    .slug(ofEnglish("productSlug")).masterVariant(masterVariant)
+        ProductDraftBuilder.of()
+            .productType(productType.toResourceIdentifier())
+            .name(ofEnglish("productName"))
+            .slug(ofEnglish("productSlug"))
+            .masterVariant(masterVariant)
             .key("new-product")
             .build();
 
     CTP_TARGET_CLIENT
-            .products()
-            .create(productDraftWithCategoryReference)
-            .execute()
-            .thenApply(ApiHttpResponse::getBody)
+        .products()
+        .post(productDraftWithCategoryReference)
+        .execute()
+        .thenApply(ApiHttpResponse::getBody)
         .toCompletableFuture()
         .join();
 
-    final Map<String, Object> newNestedAttributeValue =
-            createNestedAttributeValueReferences(
-                    "category-reference",
-                    CategoryReferenceBuilder.of().id(testCategory1.getKey()).build());
-
+    final Attribute newNestedAttributeValue =
+        createNestedAttributeValueReferences(
+            "category-reference", CategoryReferenceBuilder.of().id(testCategory1.getKey()).build());
 
     final Attribute newProductReferenceAttribute =
-            AttributeBuilder.of().name("nestedAttribute").value(List.of(nestedAttributeValue)).build();
-
+        AttributeBuilder.of()
+            .name("nestedAttribute")
+            .value(List.of(newNestedAttributeValue))
+            .build();
 
     final ProductVariantDraft newMasterVariant =
         ProductVariantDraftBuilder.of()
@@ -305,7 +315,10 @@ class ProductSyncWithNestedReferencedCategoriesIT {
 
     final ProductDraft newProductDraftWithProductReference =
         ProductDraftBuilder.of()
-                .productType(productType.toResourceIdentifier()).name(ofEnglish("productName")).slug(ofEnglish("productSlug")).masterVariant(newMasterVariant)
+            .productType(productType.toResourceIdentifier())
+            .name(ofEnglish("productName"))
+            .slug(ofEnglish("productSlug"))
+            .masterVariant(newMasterVariant)
             .key("new-product")
             .build();
 
@@ -326,11 +339,11 @@ class ProductSyncWithNestedReferencedCategoriesIT {
 
     final Product createdProduct =
         CTP_TARGET_CLIENT
-                .products()
-                .withKey(productDraftWithCategoryReference.getKey())
-                .get()
-                .execute()
-                .thenApply(ApiHttpResponse::getBody)
+            .products()
+            .withKey(productDraftWithCategoryReference.getKey())
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join();
 
@@ -347,7 +360,8 @@ class ProductSyncWithNestedReferencedCategoriesIT {
               final List<Attribute> value = (List<Attribute>) attribute.getValue();
               final Attribute categoryReferenceAttr = value.get(0);
               assertThat(categoryReferenceAttr.getName()).isEqualTo("category-reference");
-              final CategoryReference categoryReferenceAttrValue = (CategoryReference) categoryReferenceAttr.getValue();
+              final CategoryReference categoryReferenceAttrValue =
+                  (CategoryReference) categoryReferenceAttr.getValue();
               assertThat(categoryReferenceAttrValue.getId()).isEqualTo(testCategory1.getId());
             });
   }
@@ -356,14 +370,12 @@ class ProductSyncWithNestedReferencedCategoriesIT {
   void
       sync_withChangedNestedCategoryReferenceAsAttribute_shouldUpdateProductReferencingExistingCategory() {
     // preparation
-    final Map<String, Object> nestedAttributeValue =
-            createNestedAttributeValueReferences(
-                    "category-reference",
-                    CategoryReferenceBuilder.of().id(testCategory1.getKey()).build());
-
+    final Attribute nestedAttributeValue =
+        createNestedAttributeValueReferences(
+            "category-reference", CategoryReferenceBuilder.of().id(testCategory1.getId()).build());
 
     final Attribute categoryReferenceAttribute =
-            AttributeBuilder.of().name("nestedAttribute").value(List.of(nestedAttributeValue)).build();
+        AttributeBuilder.of().name("nestedAttribute").value(List.of(nestedAttributeValue)).build();
 
     final ProductVariantDraft masterVariant =
         ProductVariantDraftBuilder.of()
@@ -374,22 +386,24 @@ class ProductSyncWithNestedReferencedCategoriesIT {
 
     final ProductDraft productDraftWithCategoryReference =
         ProductDraftBuilder.of()
-                .productType(productType.toResourceIdentifier()).name(ofEnglish("productName")).slug(ofEnglish("productSlug")).masterVariant(masterVariant)
+            .productType(productType.toResourceIdentifier())
+            .name(ofEnglish("productName"))
+            .slug(ofEnglish("productSlug"))
+            .masterVariant(masterVariant)
             .key("new-product")
             .build();
 
-    CTP_TARGET_CLIENT
-            .products()
-            .create(productDraftWithCategoryReference)
-            .executeBlocking();
+    CTP_TARGET_CLIENT.products().create(productDraftWithCategoryReference).executeBlocking();
 
-    final Map<String, Object> newNestedAttributeValue =
-            createNestedAttributeValueReferences(
-                    "category-reference",
-                    CategoryReferenceBuilder.of().id(testCategory2.getKey()).build());
+    final Attribute newNestedAttributeValue =
+        createNestedAttributeValueReferences(
+            "category-reference", CategoryReferenceBuilder.of().id(testCategory2.getKey()).build());
 
     final Attribute newProductReferenceAttribute =
-            AttributeBuilder.of().name("nestedAttribute").value(List.of(newNestedAttributeValue)).build();
+        AttributeBuilder.of()
+            .name("nestedAttribute")
+            .value(List.of(newNestedAttributeValue))
+            .build();
 
     final ProductVariantDraft newMasterVariant =
         ProductVariantDraftBuilder.of()
@@ -400,8 +414,10 @@ class ProductSyncWithNestedReferencedCategoriesIT {
 
     final ProductDraft newProductDraftWithCategoryReference =
         ProductDraftBuilder.of()
-                .productType(
-                productType.toResourceIdentifier()).name(ofEnglish("productName")).slug(ofEnglish("productSlug")).masterVariant(newMasterVariant)
+            .productType(productType.toResourceIdentifier())
+            .name(ofEnglish("productName"))
+            .slug(ofEnglish("productSlug"))
+            .masterVariant(newMasterVariant)
             .key("new-product")
             .build();
 
@@ -419,26 +435,32 @@ class ProductSyncWithNestedReferencedCategoriesIT {
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
 
-    final Map<String, Object> expectedNestedAttributeValue =
-            createNestedAttributeValueReferences(
-                    "category-reference",
-                    CategoryReferenceBuilder.of().id(testCategory2.getKey()).build());
+    final Attribute expectedNestedAttributeValue =
+        createNestedAttributeValueReferences(
+            "category-reference", CategoryReferenceBuilder.of().id(testCategory2.getId()).build());
 
     final Attribute expectedCategoryReferenceAttribute =
-            AttributeBuilder.of().name("nestedAttribute").value(List.of(nestedAttributeValue)).build();
+        AttributeBuilder.of()
+            .name("nestedAttribute")
+            .value(List.of(expectedNestedAttributeValue))
+            .build();
 
     assertThat(actions)
         .containsExactly(
-                ProductSetAttributeActionBuilder.of().variantId(1L).name(expectedCategoryReferenceAttribute.getName()).value(expectedCategoryReferenceAttribute.getValue()).staged(true).build()
-        );
+            ProductSetAttributeActionBuilder.of()
+                .variantId(1L)
+                .name(expectedCategoryReferenceAttribute.getName())
+                .value(expectedCategoryReferenceAttribute.getValue())
+                .staged(true)
+                .build());
 
     final Product createdProduct =
         CTP_TARGET_CLIENT
-                .products()
-                .withKey(productDraftWithCategoryReference.getKey())
-                .get()
-                .execute()
-                .thenApply(ApiHttpResponse::getBody)
+            .products()
+            .withKey(productDraftWithCategoryReference.getKey())
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join();
 
@@ -455,7 +477,8 @@ class ProductSyncWithNestedReferencedCategoriesIT {
               final List<Attribute> value = (List<Attribute>) attribute.getValue();
               final Attribute categoryReferenceAttr = value.get(0);
               assertThat(categoryReferenceAttr.getName()).isEqualTo("category-reference");
-              final CategoryReference categoryReferenceAttrValue = (CategoryReference) categoryReferenceAttr.getValue();
+              final CategoryReference categoryReferenceAttrValue =
+                  (CategoryReference) categoryReferenceAttr.getValue();
               assertThat(categoryReferenceAttrValue.getId()).isEqualTo(testCategory2.getId());
             });
   }
@@ -463,13 +486,12 @@ class ProductSyncWithNestedReferencedCategoriesIT {
   @Test
   void sync_withNonExistingNestedCategoryReferenceAsAttribute_ShouldFailCreatingTheProduct() {
     // preparation
-    final Map<String, Object> nestedAttributeValue =
-            createNestedAttributeValueReferences(
-                    "category-reference",
-                    CategoryReferenceBuilder.of().id("getKey").build());
+    final Attribute nestedAttributeValue =
+        createNestedAttributeValueReferences(
+            "category-reference", CategoryReferenceBuilder.of().id("nonExistingKey").build());
 
     final Attribute categoryReferenceAttribute =
-            AttributeBuilder.of().name("nestedAttribute").value(List.of(nestedAttributeValue)).build();
+        AttributeBuilder.of().name("nestedAttribute").value(List.of(nestedAttributeValue)).build();
 
     final ProductVariantDraft masterVariant =
         ProductVariantDraftBuilder.of()
@@ -480,9 +502,10 @@ class ProductSyncWithNestedReferencedCategoriesIT {
 
     final ProductDraft productDraftWithCategoryReference =
         ProductDraftBuilder.of()
-                .productType(productType.toResourceIdentifier())
-                .name(ofEnglish("productName"))
-    .slug(ofEnglish("productSlug")).masterVariant(masterVariant)
+            .productType(productType.toResourceIdentifier())
+            .name(ofEnglish("productName"))
+            .slug(ofEnglish("productSlug"))
+            .masterVariant(masterVariant)
             .key("new-product")
             .build();
 
@@ -505,7 +528,8 @@ class ProductSyncWithNestedReferencedCategoriesIT {
               final CompletionException completionException =
                   (CompletionException) error.getCause();
               assertThat(completionException).hasCauseExactlyInstanceOf(BadRequestException.class);
-              final BadRequestException badRequestException = (BadRequestException) completionException.getCause();
+              final BadRequestException badRequestException =
+                  (BadRequestException) completionException.getCause();
               assertThat(badRequestException.getStatusCode()).isEqualTo(400);
               assertThat(error.getMessage())
                   .contains(
@@ -525,14 +549,14 @@ class ProductSyncWithNestedReferencedCategoriesIT {
   void
       sync_withNestedCategoryReferenceSetAsAttribute_shouldCreateProductReferencingExistingCategories() {
     // preparation
-    final Map<String, Object> nestedAttributeValue =
+    final Attribute nestedAttributeValue =
         createNestedAttributeValueSetOfReferences(
             "category-reference-set",
             CategoryReferenceBuilder.of().id(testCategory1.getKey()).build(),
             CategoryReferenceBuilder.of().id(testCategory2.getKey()).build());
 
     final Attribute categoryReferenceAttribute =
-            AttributeBuilder.of().name("nestedAttribute").value(List.of(nestedAttributeValue)).build();
+        AttributeBuilder.of().name("nestedAttribute").value(List.of(nestedAttributeValue)).build();
 
     final ProductVariantDraft masterVariant =
         ProductVariantDraftBuilder.of()
@@ -543,9 +567,10 @@ class ProductSyncWithNestedReferencedCategoriesIT {
 
     final ProductDraft productDraftWithCategoryReference =
         ProductDraftBuilder.of()
-                .productType(productType.toResourceIdentifier())
-                .name(ofEnglish("productName"))
-    .slug(ofEnglish("productSlug")).masterVariant(masterVariant)
+            .productType(productType.toResourceIdentifier())
+            .name(ofEnglish("productName"))
+            .slug(ofEnglish("productSlug"))
+            .masterVariant(masterVariant)
             .key("new-product")
             .build();
 
@@ -566,11 +591,11 @@ class ProductSyncWithNestedReferencedCategoriesIT {
 
     final Product createdProduct =
         CTP_TARGET_CLIENT
-                .products()
-                .withKey(productDraftWithCategoryReference.getKey())
-                .get()
-                .execute()
-                .thenApply(ApiHttpResponse::getBody)
+            .products()
+            .withKey(productDraftWithCategoryReference.getKey())
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join();
 
@@ -587,10 +612,14 @@ class ProductSyncWithNestedReferencedCategoriesIT {
               final List<Attribute> value = (List<Attribute>) attribute.getValue();
               final Attribute categoryReferenceAttr = value.get(0);
               assertThat(categoryReferenceAttr.getName()).isEqualTo("category-reference-set");
-              final List<CategoryReference> categoryReferenceAttrValue = (List<CategoryReference>) categoryReferenceAttr.getValue();
-              assertThat(categoryReferenceAttrValue).hasSize(2)
-                      .anySatisfy(categoryReference -> categoryReference.getId().equals(testCategory1.getId()))
-                      .anySatisfy(categoryReference -> categoryReference.getId().equals(testCategory2.getId()));
+              final List<CategoryReference> categoryReferenceAttrValue =
+                  (List<CategoryReference>) categoryReferenceAttr.getValue();
+              assertThat(categoryReferenceAttrValue)
+                  .hasSize(2)
+                  .anySatisfy(
+                      categoryReference -> categoryReference.getId().equals(testCategory1.getId()))
+                  .anySatisfy(
+                      categoryReference -> categoryReference.getId().equals(testCategory2.getId()));
             });
   }
 
@@ -598,14 +627,14 @@ class ProductSyncWithNestedReferencedCategoriesIT {
   void
       sync_withNestedCategoryReferenceSetContainingANonExistingReference_shouldFailCreatingTheProduct() {
     // preparation
-    final Map<String, Object> nestedAttributeValue =
-            createNestedAttributeValueSetOfReferences(
-                    "category-reference-set",
-                    CategoryReferenceBuilder.of().id(testCategory1.getKey()).build(),
-                    CategoryReferenceBuilder.of().id("nonExistingKey").build());
+    final Attribute nestedAttributeValue =
+        createNestedAttributeValueSetOfReferences(
+            "category-reference-set",
+            CategoryReferenceBuilder.of().id(testCategory1.getKey()).build(),
+            CategoryReferenceBuilder.of().id("nonExistingKey").build());
 
     final Attribute categoryReferenceAttribute =
-            AttributeBuilder.of().name("nestedAttribute").value(List.of(nestedAttributeValue)).build();
+        AttributeBuilder.of().name("nestedAttribute").value(List.of(nestedAttributeValue)).build();
 
     final ProductVariantDraft masterVariant =
         ProductVariantDraftBuilder.of()
@@ -615,8 +644,11 @@ class ProductSyncWithNestedReferencedCategoriesIT {
             .build();
 
     final ProductDraft productDraftWithCategoryReference =
-        ProductDraftBuilder.of().productType(productType.toResourceIdentifier())
-                .name(ofEnglish("productName")).slug(ofEnglish("productSlug")).masterVariant(masterVariant)
+        ProductDraftBuilder.of()
+            .productType(productType.toResourceIdentifier())
+            .name(ofEnglish("productName"))
+            .slug(ofEnglish("productSlug"))
+            .masterVariant(masterVariant)
             .key("new-product")
             .build();
 
@@ -637,9 +669,10 @@ class ProductSyncWithNestedReferencedCategoriesIT {
             error -> {
               assertThat(error).hasCauseExactlyInstanceOf(CompletionException.class);
               final CompletionException completionException =
-                      (CompletionException) error.getCause();
+                  (CompletionException) error.getCause();
               assertThat(completionException).hasCauseExactlyInstanceOf(BadRequestException.class);
-              final BadRequestException badRequestException = (BadRequestException) completionException.getCause();
+              final BadRequestException badRequestException =
+                  (BadRequestException) completionException.getCause();
               assertThat(badRequestException.getStatusCode()).isEqualTo(400);
               assertThat(error.getMessage())
                   .contains(
@@ -659,24 +692,17 @@ class ProductSyncWithNestedReferencedCategoriesIT {
   void
       sync_withSetOfNestedProductReferenceSetAsAttribute_shouldCreateProductReferencingExistingCategories() {
     // preparation
-//    final ArrayNode nestedAttributeValue =
-//        createArrayNode(
-//            createNestedAttributeValueSetOfReferences(
-//                "category-reference-set",
-//                createReferenceObject(testCategory1.getKey(), Category.referenceTypeId()),
-//                createReferenceObject(testCategory2.getKey(), Category.referenceTypeId())));
+    final Attribute nestedAttributeValue =
+        createNestedAttributeValueSetOfReferences(
+            "category-reference-set",
+            CategoryReferenceBuilder.of().id(testCategory1.getKey()).build(),
+            CategoryReferenceBuilder.of().id(testCategory2.getKey()).build());
 
-      final Map<String, Object> nestedAttributeValue =
-              createNestedAttributeValueSetOfReferences(
-                      "category-reference-set",
-                      CategoryReferenceBuilder.of().id(testCategory1.getKey()).build(),
-                      CategoryReferenceBuilder.of().id(testCategory2.getKey()).build());
-
-      final Attribute categoryReferenceAttribute =
-              AttributeBuilder.of().name("setOfNestedAttribute").value(List.of(List.of(nestedAttributeValue))).build();
-
-//      final AttributeDraft categoryReferenceAttribute =
-//        AttributeDraft.of("setOfNestedAttribute", createArrayNode(nestedAttributeValue));
+    final Attribute categoryReferenceAttribute =
+        AttributeBuilder.of()
+            .name("setOfNestedAttribute")
+            .value(List.of(List.of(nestedAttributeValue)))
+            .build();
 
     final ProductVariantDraft masterVariant =
         ProductVariantDraftBuilder.of()
@@ -687,9 +713,10 @@ class ProductSyncWithNestedReferencedCategoriesIT {
 
     final ProductDraft productDraftWithCategoryReference =
         ProductDraftBuilder.of()
-                .productType(productType.toResourceIdentifier())
-                .name(ofEnglish("productName"))
-      .slug(ofEnglish("productSlug")).masterVariant(masterVariant)
+            .productType(productType.toResourceIdentifier())
+            .name(ofEnglish("productName"))
+            .slug(ofEnglish("productSlug"))
+            .masterVariant(masterVariant)
             .key("new-product")
             .build();
 
@@ -710,11 +737,11 @@ class ProductSyncWithNestedReferencedCategoriesIT {
 
     final Product createdProduct =
         CTP_TARGET_CLIENT
-                .products()
-                .withKey(productDraftWithCategoryReference.getKey())
-                .get()
-                .execute()
-                .thenApply(ApiHttpResponse::getBody)
+            .products()
+            .withKey(productDraftWithCategoryReference.getKey())
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join();
 
@@ -728,34 +755,24 @@ class ProductSyncWithNestedReferencedCategoriesIT {
     assertThat(createdCategoryReferenceAttribute)
         .hasValueSatisfying(
             attribute -> {
-                final List<Attribute> value = (List<Attribute>) attribute.getValue();
-                assertThat(value).isNotNull();
-
-//              final JsonNode setOfNestedAttributeNameField =
-//                  attribute.getValueAsJsonNode().get(0).get(0).get(ATTRIBUTE_NAME_FIELD);
-//              final JsonNode setOfNestedAttributeValueField =
-//                  attribute.getValueAsJsonNode().get(0).get(0).get(ATTRIBUTE_VALUE_FIELD);
-//
-//              assertThat(setOfNestedAttributeNameField.asText())
-//                  .isEqualTo("category-reference-set");
-//              assertThat(setOfNestedAttributeValueField).isInstanceOf(ArrayNode.class);
-//              final ArrayNode referenceSet = (ArrayNode) setOfNestedAttributeValueField;
-//              assertThat(referenceSet)
-//                  .hasSize(2)
-//                  .anySatisfy(
-//                      reference -> {
-//                        assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText())
-//                            .isEqualTo(Category.referenceTypeId());
-//                        assertThat(reference.get(REFERENCE_ID_FIELD).asText())
-//                            .isEqualTo(testCategory1.getId());
-//                      })
-//                  .anySatisfy(
-//                      reference -> {
-//                        assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText())
-//                            .isEqualTo(Category.referenceTypeId());
-//                        assertThat(reference.get(REFERENCE_ID_FIELD).asText())
-//                            .isEqualTo(testCategory2.getId());
-//                      });
+              final List<List<Attribute>> value = AttributeAccessor.asSetNested(attribute);
+              assertThat(value).isNotNull();
+              final Attribute nestedAttribute = value.get(0).get(0);
+              assertThat(nestedAttribute.getName()).isEqualTo("category-reference-set");
+              assertThat(nestedAttribute.getValue()).isInstanceOf(List.class);
+              final List<Reference> referenceList = (List<Reference>) nestedAttribute.getValue();
+              assertThat(referenceList)
+                  .hasSize(2)
+                  .anySatisfy(
+                      reference -> {
+                        assertThat(reference.getTypeId()).isEqualTo(ReferenceTypeId.CATEGORY);
+                        assertThat(reference.getId()).isEqualTo(testCategory1.getId());
+                      })
+                  .anySatisfy(
+                      reference -> {
+                        assertThat(reference.getTypeId()).isEqualTo(ReferenceTypeId.CATEGORY);
+                        assertThat(reference.getId()).isEqualTo(testCategory2.getId());
+                      });
             });
   }
 }
