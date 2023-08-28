@@ -1,8 +1,8 @@
 package com.commercetools.sync.integration.externalsource.taxcategories;
 
-import static com.commercetools.sync.integration.commons.utils.utils.TaxCategoryITUtils.*;
-import static com.commercetools.sync.integration.sdk2.commons.utils.ITUtils.*;
-import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.*;
+import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.*;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;

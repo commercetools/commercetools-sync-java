@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;
+import io.vrap.rmf.base.client.error.BadRequestException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
@@ -31,7 +32,13 @@ public class ExceptionUtils {
         500, "", null, "", new ApiHttpResponse<>(500, null, json.getBytes(StandardCharsets.UTF_8)));
   }
 
-  private static String getErrorResponseJsonString(Integer errorCode) {
+  public static BadRequestException createBadRequestException() {
+    final String json = getErrorResponseJsonString(400);
+    return new BadRequestException(
+        400, "", null, "", new ApiHttpResponse<>(400, null, json.getBytes(StandardCharsets.UTF_8)));
+  }
+
+  public static String getErrorResponseJsonString(Integer errorCode) {
     final ErrorResponse errorResponse =
         ErrorResponseBuilder.of()
             .statusCode(errorCode)

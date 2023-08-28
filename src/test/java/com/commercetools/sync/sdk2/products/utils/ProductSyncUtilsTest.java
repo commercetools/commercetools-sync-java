@@ -587,10 +587,11 @@ class ProductSyncUtilsTest {
             oldProduct, newProductDraft, productSyncOptions, attributesMetaData);
 
     // check the generated attribute update actions
-    assertThat(updateActions.size()).isEqualTo(9);
+    assertThat(updateActions.size()).isEqualTo(10);
     assertThat(updateActions)
         .containsSequence(
             ProductRemoveVariantActionBuilder.of().id(5L).staged(true).build(),
+            ProductSetSkuActionBuilder.of().variantId(1L).sku("1065833-temp").build(),
             ProductAddVariantActionBuilder.of()
                 .prices(emptyList())
                 .assets(emptyList())

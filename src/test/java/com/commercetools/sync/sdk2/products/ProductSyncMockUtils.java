@@ -137,32 +137,38 @@ public class ProductSyncMockUtils {
     final ProductVariantDraft masterVariant =
         createProductVariantDraftBuilder(stagedProductData.getMasterVariant()).build();
 
-    return ProductDraftBuilder.of()
-        .productType(productTypeResourceIdentifier)
-        .name(stagedProductData.getName())
-        .slug(stagedProductData.getSlug())
-        .masterVariant(masterVariant)
-        .variants(allVariants)
-        .metaDescription(stagedProductData.getMetaDescription())
-        .metaKeywords(stagedProductData.getMetaKeywords())
-        .metaTitle(stagedProductData.getMetaTitle())
-        .description(stagedProductData.getDescription())
-        .searchKeywords(stagedProductData.getSearchKeywords())
-        .taxCategory(
-            TaxCategoryResourceIdentifierBuilder.of()
-                .id(stagedProductData.getTaxCategory().getId())
-                .build())
-        .key(stagedProductData.getKey())
-        .categories(
-            stagedProductData.getCategories().stream()
-                .map(
-                    categoryReference ->
-                        CategoryResourceIdentifierBuilder.of()
-                            .id(categoryReference.getId())
-                            .build())
-                .collect(toList()))
-        .categoryOrderHints(stagedProductData.getCategoryOrderHints())
-        .publish(stagedProductData.getPublished());
+    final ProductDraftBuilder productDraftBuilder =
+        ProductDraftBuilder.of()
+            .productType(productTypeResourceIdentifier)
+            .name(stagedProductData.getName())
+            .slug(stagedProductData.getSlug())
+            .masterVariant(masterVariant)
+            .variants(allVariants)
+            .metaDescription(stagedProductData.getMetaDescription())
+            .metaKeywords(stagedProductData.getMetaKeywords())
+            .metaTitle(stagedProductData.getMetaTitle())
+            .description(stagedProductData.getDescription())
+            .searchKeywords(stagedProductData.getSearchKeywords())
+            .key(stagedProductData.getKey())
+            .categories(
+                stagedProductData.getCategories().stream()
+                    .map(
+                        categoryReference ->
+                            CategoryResourceIdentifierBuilder.of()
+                                .id(categoryReference.getId())
+                                .build())
+                    .collect(toList()))
+            .categoryOrderHints(stagedProductData.getCategoryOrderHints())
+            .publish(stagedProductData.getPublished());
+    final TaxCategoryReference taxCategory = stagedProductData.getTaxCategory();
+    if (taxCategory != null) {
+      productDraftBuilder.taxCategory(
+          TaxCategoryResourceIdentifierBuilder.of()
+              .id(stagedProductData.getTaxCategory().getId())
+              .build());
+    }
+
+    return productDraftBuilder;
   }
 
   /**
@@ -242,7 +248,7 @@ public class ProductSyncMockUtils {
       @Nonnull final ProductTypeResourceIdentifier productTypeReference,
       @Nullable final TaxCategoryResourceIdentifier taxCategoryReference,
       @Nullable final StateResourceIdentifier stateReference,
-      @Nonnull final List<CategoryResourceIdentifier> categoryResourceIdentifiers,
+      @Nullable final List<CategoryResourceIdentifier> categoryResourceIdentifiers,
       @Nullable final CategoryOrderHints categoryOrderHints) {
     return createProductDraftBuilder(jsonResourcePath, productTypeReference)
         .taxCategory(taxCategoryReference)

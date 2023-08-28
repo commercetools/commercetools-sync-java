@@ -90,7 +90,7 @@ class ProductSyncIT {
   private static TaxCategory targetTaxCategory;
   private static State targetProductState;
   private static List<CategoryReference> categoryReferencesWithIds;
-  private static Set<CategoryResourceIdentifier> categoryResourceIdentifiersWithKeys;
+  private static List<CategoryResourceIdentifier> categoryResourceIdentifiersWithKeys;
   private static CategoryOrderHints categoryOrderHintsWithIds;
   private static CategoryOrderHints categoryOrderHintsWithKeys;
   private ProductSyncOptions syncOptions;
@@ -394,7 +394,7 @@ class ProductSyncIT {
             ProductTypeResourceIdentifierBuilder.of().id(productType.getKey()).build(),
             TaxCategoryResourceIdentifierBuilder.of().key(targetTaxCategory.getKey()).build(),
             StateResourceIdentifierBuilder.of().key(targetProductState.getKey()).build(),
-            new ArrayList<>(categoryResourceIdentifiersWithKeys),
+            categoryResourceIdentifiersWithKeys,
             categoryOrderHintsWithKeys);
 
     final ProductSync productSync = new ProductSync(syncOptions);
@@ -415,7 +415,7 @@ class ProductSyncIT {
             ProductTypeResourceIdentifierBuilder.of().id(productType.getKey()).build(),
             TaxCategoryResourceIdentifierBuilder.of().key(targetTaxCategory.getKey()).build(),
             StateResourceIdentifierBuilder.of().key(targetProductState.getKey()).build(),
-            new ArrayList<>(categoryResourceIdentifiersWithKeys),
+            categoryResourceIdentifiersWithKeys,
             categoryOrderHintsWithKeys);
 
     final ProductSync productSync = new ProductSync(syncOptions);
@@ -451,7 +451,7 @@ class ProductSyncIT {
             ProductTypeResourceIdentifierBuilder.of().key(productType.getKey()).build(),
             TaxCategoryResourceIdentifierBuilder.of().key(targetTaxCategory.getKey()).build(),
             StateResourceIdentifierBuilder.of().key(targetProductState.getKey()).build(),
-            new ArrayList<>(categoryResourceIdentifiersWithKeys),
+            categoryResourceIdentifiersWithKeys,
             categoryOrderHintsWithKeys);
 
     final ProductSyncStatistics syncStatistics =
@@ -487,7 +487,7 @@ class ProductSyncIT {
             ProductTypeResourceIdentifierBuilder.of().key(productType.getKey()).build(),
             TaxCategoryResourceIdentifierBuilder.of().key(targetTaxCategory.getKey()).build(),
             StateResourceIdentifierBuilder.of().key(targetProductState.getKey()).build(),
-            new ArrayList<>(categoryResourceIdentifiersWithKeys),
+            categoryResourceIdentifiersWithKeys,
             categoryOrderHintsWithKeys);
 
     final ProductSyncStatistics syncStatistics =
@@ -528,7 +528,7 @@ class ProductSyncIT {
             ProductTypeResourceIdentifierBuilder.of().id(productType.getKey()).build(),
             TaxCategoryResourceIdentifierBuilder.of().key(targetTaxCategory.getKey()).build(),
             StateResourceIdentifierBuilder.of().key(targetProductState.getKey()).build(),
-            new ArrayList<>(categoryResourceIdentifiersWithKeys),
+            categoryResourceIdentifiersWithKeys,
             categoryOrderHintsWithKeys);
 
     final ProductSyncStatistics syncStatistics =
@@ -576,7 +576,7 @@ class ProductSyncIT {
             ProductTypeResourceIdentifierBuilder.of().key(productType.getKey()).build(),
             TaxCategoryResourceIdentifierBuilder.of().key(targetTaxCategory.getKey()).build(),
             StateResourceIdentifierBuilder.of().key(targetProductState.getKey()).build(),
-            new ArrayList<>(categoryResourceIdentifiersWithKeys),
+            categoryResourceIdentifiersWithKeys,
             categoryOrderHintsWithKeys);
 
     final List<ProductDraft> batch1 = new ArrayList<>();
@@ -638,7 +638,7 @@ class ProductSyncIT {
             ProductTypeResourceIdentifierBuilder.of().key(productType.getKey()).build(),
             TaxCategoryResourceIdentifierBuilder.of().key(targetTaxCategory.getKey()).build(),
             StateResourceIdentifierBuilder.of().key(targetProductState.getKey()).build(),
-            new ArrayList<>(categoryResourceIdentifiersWithKeys),
+            categoryResourceIdentifiersWithKeys,
             categoryOrderHintsWithKeys);
 
     final ProductDraft key3Draft =
@@ -723,7 +723,7 @@ class ProductSyncIT {
             ProductTypeResourceIdentifierBuilder.of().key(productType.getKey()).build(),
             TaxCategoryResourceIdentifierBuilder.of().key(targetTaxCategory.getKey()).build(),
             StateResourceIdentifierBuilder.of().key(targetProductState.getKey()).build(),
-            new ArrayList<>(categoryResourceIdentifiersWithKeys),
+            categoryResourceIdentifiersWithKeys,
             categoryOrderHintsWithKeys);
 
     final ProductDraft key3Draft =
@@ -833,7 +833,7 @@ class ProductSyncIT {
             ProductTypeResourceIdentifierBuilder.of().id(productType.getKey()).build(),
             TaxCategoryResourceIdentifierBuilder.of().key(targetTaxCategory.getKey()).build(),
             StateResourceIdentifierBuilder.of().key(targetProductState.getKey()).build(),
-            new ArrayList<>(categoryResourceIdentifiersWithKeys),
+            categoryResourceIdentifiersWithKeys,
             categoryOrderHintsWithKeys);
 
     // Draft with null key
@@ -896,7 +896,7 @@ class ProductSyncIT {
             ProductTypeResourceIdentifierBuilder.of().id(productType.getKey()).build(),
             null,
             null,
-            new ArrayList<>(categoryResourceIdentifiersWithKeys),
+            categoryResourceIdentifiersWithKeys,
             categoryOrderHintsWithKeys);
 
     final List<ProductDraft> batch = new ArrayList<>();
@@ -924,7 +924,7 @@ class ProductSyncIT {
             ProductTypeResourceIdentifierBuilder.of().key(productType.getKey()).build(),
             null,
             null,
-            new ArrayList<>(categoryResourceIdentifiersWithKeys),
+            categoryResourceIdentifiersWithKeys,
             categoryOrderHintsWithKeys);
 
     // Draft with same key

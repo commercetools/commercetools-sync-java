@@ -265,7 +265,7 @@ public final class ProductITUtils {
                 moneyBuilder
                     .centAmount(amount.longValue())
                     .currencyCode(currencyUnits.getCurrencyCode()))
-        .country(countryCode.getName())
+        .country(countryCode.getAlpha2())
         .customerGroup(
             customerGroupId == null
                 ? null
