@@ -163,20 +163,22 @@ public final class CleanupUnresolvedReferenceCustomObjects {
         Instant.now().minus(deleteDaysAfterLastModification, ChronoUnit.DAYS);
     final String query =
         format(
-            "query fetchKeys($where: String, $limit: Int) {%n"
-                + "  %s(container: \"%s\", limit: $limit, where: $where) {%n"
+            "query fetchKeys($where: String, $limit: Int, $sort: [String!], $container: String!) {%n"
+                + "  %s(container: $container, limit: $limit, where: $where, sort: $sort) {%n"
                 + "    results {%n"
                 + "      id,%n"
                 + "      key%n"
                 + "    }%n"
                 + "  }%n"
                 + "}",
-            GraphQlQueryResource.CUSTOM_OBJECTS.getName(), containerName);
+            GraphQlQueryResource.CUSTOM_OBJECTS.getName());
 
     final GraphQLVariablesMap graphQLVariablesMap =
         GraphQLVariablesMapBuilder.of()
+            .addValue("container", containerName)
             .addValue("where", format("lastModifiedAt < \"%s\"", lastModifiedAt))
             .build();
+
     return GraphQLRequestBuilder.of().query(query).variables(graphQLVariablesMap).build();
   }
 
@@ -266,7 +268,7 @@ public final class CleanupUnresolvedReferenceCustomObjects {
       this.graphqlRequest = graphqlRequest;
       final GraphQLVariablesMap graphQLVariablesMap = this.graphqlRequest.getVariables();
       graphQLVariablesMap.setValue("limit", pageSize);
-      graphQLVariablesMap.setValue("sort", "id asc");
+      graphQLVariablesMap.setValue("sort", List.of("id asc"));
       this.graphqlRequest.setVariables(graphQLVariablesMap);
       this.pageSize = pageSize;
     }
