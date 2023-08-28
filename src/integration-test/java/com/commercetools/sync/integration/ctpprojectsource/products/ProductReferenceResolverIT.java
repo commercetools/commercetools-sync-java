@@ -100,7 +100,7 @@ class ProductReferenceResolverIT {
         ProductTypeITUtils.ensureProductType(
             PRODUCT_TYPE_RESOURCE_PATH, TestClientUtils.CTP_SOURCE_CLIENT);
     noKeyProductTypeSource =
-        ProductTypeITUtils.createProductType(
+        ProductTypeITUtils.ensureProductType(
             PRODUCT_TYPE_NO_KEY_RESOURCE_PATH, TestClientUtils.CTP_SOURCE_CLIENT);
 
     oldTaxCategory = TaxCategoryITUtils.ensureTaxCategory(TestClientUtils.CTP_SOURCE_CLIENT);

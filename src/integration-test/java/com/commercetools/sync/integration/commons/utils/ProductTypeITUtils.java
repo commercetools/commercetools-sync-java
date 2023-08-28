@@ -380,19 +380,6 @@ public final class ProductTypeITUtils {
     return productType;
   }
 
-  public static ProductType createProductType(
-      @Nonnull final String jsonResourcePath, @Nonnull final ProjectApiRoot ctpClient) {
-    final ProductTypeDraft productTypeDraft =
-        TestUtils.readObjectFromResource(jsonResourcePath, ProductTypeDraft.class);
-    return ctpClient
-        .productTypes()
-        .create(productTypeDraft)
-        .execute()
-        .thenApply(ApiHttpResponse::getBody)
-        .toCompletableFuture()
-        .join();
-  }
-
   /**
    * Builds a list of two field definitions; one for a {@link
    * io.sphere.sdk.products.attributes.LocalizedStringAttributeType} and one for a {@link
