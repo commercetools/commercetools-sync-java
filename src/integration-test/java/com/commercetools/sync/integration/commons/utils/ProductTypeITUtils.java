@@ -7,27 +7,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.client.QueryUtils;
 import com.commercetools.api.models.common.LocalizedString;
-import com.commercetools.api.models.product_type.AttributeBooleanType;
-import com.commercetools.api.models.product_type.AttributeConstraintEnum;
-import com.commercetools.api.models.product_type.AttributeDefinition;
-import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
-import com.commercetools.api.models.product_type.AttributeDefinitionDraftBuilder;
-import com.commercetools.api.models.product_type.AttributeEnumType;
-import com.commercetools.api.models.product_type.AttributeLocalizableTextType;
-import com.commercetools.api.models.product_type.AttributeLocalizedEnumType;
-import com.commercetools.api.models.product_type.AttributeLocalizedEnumValue;
-import com.commercetools.api.models.product_type.AttributeNestedTypeBuilder;
-import com.commercetools.api.models.product_type.AttributePlainEnumValue;
-import com.commercetools.api.models.product_type.AttributeSetTypeBuilder;
-import com.commercetools.api.models.product_type.AttributeTextType;
-import com.commercetools.api.models.product_type.ProductType;
-import com.commercetools.api.models.product_type.ProductTypeDraft;
-import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
-import com.commercetools.api.models.product_type.ProductTypePagedQueryResponse;
-import com.commercetools.api.models.product_type.ProductTypeReferenceBuilder;
-import com.commercetools.api.models.product_type.ProductTypeRemoveAttributeDefinitionActionBuilder;
-import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
-import com.commercetools.api.models.product_type.TextInputHint;
+import com.commercetools.api.models.product.Attribute;
+import com.commercetools.api.models.product.AttributeBuilder;
+import com.commercetools.api.models.product_type.*;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.NotFoundException;
 import java.util.ArrayList;
@@ -527,6 +509,18 @@ public final class ProductTypeITUtils {
               assertThat(enumValue.getKey()).isEqualTo(enumValueDraft.getKey());
               assertThat(enumValue.getLabel()).isEqualTo(enumValueDraft.getLabel());
             });
+  }
+
+  @Nonnull
+  public static Attribute createNestedAttributeValueReferences(
+      @Nonnull final String attributeName, @Nonnull final Object referenceValue) {
+    return AttributeBuilder.of().name(attributeName).value(referenceValue).build();
+  }
+
+  @Nonnull
+  public static Attribute createNestedAttributeValueSetOfReferences(
+      @Nonnull final String attributeName, Object... referenceValues) {
+    return AttributeBuilder.of().name(attributeName).value(List.of(referenceValues)).build();
   }
 
   private ProductTypeITUtils() {}
