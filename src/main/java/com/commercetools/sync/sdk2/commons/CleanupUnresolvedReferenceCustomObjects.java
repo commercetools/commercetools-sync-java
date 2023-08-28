@@ -340,7 +340,7 @@ public final class CleanupUnresolvedReferenceCustomObjects {
         consumePageElements(idKeyMap);
         return getNextPageStage(idKeyMap);
       }
-      return completedFuture(new ApiHttpResponse(200, null, null));
+      return completedFuture(new ApiHttpResponse<>(200, null, null));
     }
 
     private void consumePageElements(@Nonnull final Map<String, String> idKeyElements) {
