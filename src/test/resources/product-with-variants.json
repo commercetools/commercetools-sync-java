@@ -1,5 +1,12 @@
 {
+  "id": "ba81a6da-cf83-435b-a89e-2afab579846f",
+  "version": 10,
   "key": "keep-other-variants-callback-test",
+  "productType": {
+    "typeId": "product-type",
+    "id": "cda0dbf7-b42e-40bf-8453-241d5b587f93"
+  },
+  "catalogs": [],
   "masterData": {
     "staged": {
       "name": {
@@ -34,8 +41,11 @@
           ]
         }
       ]
-    },
-    "published": true,
-    "hasStagedChanges": true
-  }
+    }
+  },
+  "catalogData": {},
+  "lastVariantId": 1,
+  "createdAt": "2016-11-21T09:32:41.261Z",
+  "lastModifiedAt": "2016-12-05T16:09:03.307Z",
+  "lastMessageSequenceNumber": 3
 }
