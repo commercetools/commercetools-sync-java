@@ -49,9 +49,9 @@ class ProductSyncWithNestedReferencedProductsIT {
   @BeforeAll
   static void setup() {
     deleteProductSyncTestData(CTP_TARGET_CLIENT);
-    productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
+    productType = ensureProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     final ProductType nestedProductType =
-        createProductType(PRODUCT_TYPE_WITH_REFERENCES_RESOURCE_PATH, CTP_TARGET_CLIENT);
+        ensureProductType(PRODUCT_TYPE_WITH_REFERENCES_RESOURCE_PATH, CTP_TARGET_CLIENT);
 
     final AttributeDefinitionDraft nestedAttributeDef =
         AttributeDefinitionDraftBuilder.of()

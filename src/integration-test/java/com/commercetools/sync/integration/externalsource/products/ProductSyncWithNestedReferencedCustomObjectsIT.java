@@ -51,8 +51,6 @@ class ProductSyncWithNestedReferencedCustomObjectsIT {
   private List<Throwable> errorCallBackExceptions;
   private List<ProductUpdateAction> actions;
 
-  private static final String ATTRIBUTE_NAME_FIELD = "name";
-  private static final String ATTRIBUTE_VALUE_FIELD = "value";
   private static final String CUSTOM_OBJECT_REFERENCE_ATTR_NAME = "customObject-reference";
   private static final String CUSTOM_OBJECT_REFERENCE_SET_ATTR_NAME = "customObject-reference-set";
 
@@ -61,9 +59,9 @@ class ProductSyncWithNestedReferencedCustomObjectsIT {
     deleteProductSyncTestData(CTP_TARGET_CLIENT);
     deleteCustomObjects();
 
-    productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
+    productType = ensureProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     final ProductType nestedProductType =
-        createProductType(PRODUCT_TYPE_WITH_REFERENCES_RESOURCE_PATH, CTP_TARGET_CLIENT);
+        ensureProductType(PRODUCT_TYPE_WITH_REFERENCES_RESOURCE_PATH, CTP_TARGET_CLIENT);
 
     final AttributeDefinitionDraft nestedAttributeDef =
         AttributeDefinitionDraftBuilder.of()
