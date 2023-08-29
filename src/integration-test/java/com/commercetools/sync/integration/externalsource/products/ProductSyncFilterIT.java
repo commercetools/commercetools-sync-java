@@ -4,7 +4,7 @@ import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.*;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ensureProductType;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.sdk2.products.ActionGroup.CATEGORIES;
@@ -72,7 +72,7 @@ class ProductSyncFilterIT {
         ensureCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
     categoryReferencesWithIds = getReferencesWithIds(categories);
     categoryResourceIdentifiersWithKeys = getResourceIdentifiersWithKeys(categories);
-    productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
+    productType = ensureProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
   }
 
   /**
