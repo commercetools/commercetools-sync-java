@@ -135,7 +135,7 @@ public final class PriceCompositeId {
       return false;
     }
     final PriceCompositeId that = (PriceCompositeId) otherObject;
-    return countryCode == that.countryCode
+    return Objects.equals(countryCode, that.countryCode)
         && Objects.equals(currencyCode, that.currencyCode)
         && Objects.equals(channelId, that.channelId)
         && Objects.equals(customerGroupId, that.customerGroupId)
