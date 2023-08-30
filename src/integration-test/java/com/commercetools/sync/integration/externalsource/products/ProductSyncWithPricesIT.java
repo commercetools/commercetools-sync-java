@@ -204,7 +204,8 @@ class ProductSyncWithPricesIT {
         CTP_TARGET_CLIENT
             .productProjections()
             .withKey(newProductDraft.getKey())
-            .get().withStaged(true)
+            .get()
+            .withStaged(true)
             .execute()
             .toCompletableFuture()
             .join()
@@ -257,7 +258,8 @@ class ProductSyncWithPricesIT {
         CTP_TARGET_CLIENT
             .productProjections()
             .withKey(newProductDraft.getKey())
-            .get().withStaged(true)
+            .get()
+            .withStaged(true)
             .execute()
             .toCompletableFuture()
             .join()
@@ -350,7 +352,7 @@ class ProductSyncWithPricesIT {
             .productProjections()
             .withKey(newProductDraft.getKey())
             .get()
-                .withStaged(true)
+            .withStaged(true)
             .execute()
             .toCompletableFuture()
             .join()
@@ -459,7 +461,8 @@ class ProductSyncWithPricesIT {
         CTP_TARGET_CLIENT
             .productProjections()
             .withKey(newProductDraft.getKey())
-            .get().withStaged(true)
+            .get()
+            .withStaged(true)
             .execute()
             .toCompletableFuture()
             .join()
@@ -526,7 +529,8 @@ class ProductSyncWithPricesIT {
         CTP_TARGET_CLIENT
             .productProjections()
             .withKey(newProductDraft.getKey())
-            .get().withStaged(true)
+            .get()
+            .withStaged(true)
             .execute()
             .toCompletableFuture()
             .join()
@@ -625,7 +629,8 @@ class ProductSyncWithPricesIT {
         CTP_TARGET_CLIENT
             .productProjections()
             .withKey(newProductDraft.getKey())
-            .get().withStaged(true)
+            .get()
+            .withStaged(true)
             .execute()
             .toCompletableFuture()
             .join()
@@ -647,7 +652,8 @@ class ProductSyncWithPricesIT {
     // Preparation
     final CustomerGroup cust1 = ensureCustomerGroup(CTP_TARGET_CLIENT, "cust1", "cust1");
     final CustomerGroup cust2 = ensureCustomerGroup(CTP_TARGET_CLIENT, "cust2", "cust2");
-    final Channel channel2 = ensureChannel(ChannelDraftBuilder.of().key("channel2").build(), CTP_TARGET_CLIENT);
+    final Channel channel2 =
+        ensureChannel(ChannelDraftBuilder.of().key("channel2").build(), CTP_TARGET_CLIENT);
 
     final Product product = createExistingProductWithPrices(cust2.getId(), channel2.getId());
     final ProductDraft newProductDraft = createProductDraftWithNewPrices();
@@ -774,7 +780,8 @@ class ProductSyncWithPricesIT {
         CTP_TARGET_CLIENT
             .productProjections()
             .withKey(newProductDraft.getKey())
-            .get().withStaged(true)
+            .get()
+            .withStaged(true)
             .execute()
             .toCompletableFuture()
             .join()
@@ -891,7 +898,8 @@ class ProductSyncWithPricesIT {
         CTP_TARGET_CLIENT
             .productProjections()
             .withKey(newProductDraft.getKey())
-            .get().withStaged(true)
+            .get()
+            .withStaged(true)
             .execute()
             .toCompletableFuture()
             .join()
@@ -1008,7 +1016,8 @@ class ProductSyncWithPricesIT {
         CTP_TARGET_CLIENT
             .productProjections()
             .withKey(newProductDraft.getKey())
-            .get().withStaged(true)
+            .get()
+            .withStaged(true)
             .execute()
             .toCompletableFuture()
             .join()
@@ -1108,7 +1117,8 @@ class ProductSyncWithPricesIT {
         CTP_TARGET_CLIENT
             .productProjections()
             .withKey(newProductDraft.getKey())
-            .get().withStaged(true)
+            .get()
+            .withStaged(true)
             .execute()
             .toCompletableFuture()
             .join()
@@ -1226,9 +1236,10 @@ class ProductSyncWithPricesIT {
    * @return
    * @param existingCustomerGroupId
    */
-  private Product createExistingProductWithPrices(@Nonnull final String existingCustomerGroupId, @Nonnull final String existingChannelId) {
+  private Product createExistingProductWithPrices(
+      @Nonnull final String existingCustomerGroupId, @Nonnull final String existingChannelId) {
     final Type customType2 =
-            ensurePricesCustomType("customType2", Locale.ENGLISH, "customType2", CTP_TARGET_CLIENT);
+        ensurePricesCustomType("customType2", Locale.ENGLISH, "customType2", CTP_TARGET_CLIENT);
 
     final ObjectNode lTextWithEnDeIt =
         JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red").put("it", "rosso");
@@ -1271,7 +1282,8 @@ class ProductSyncWithPricesIT {
             customType2WithEnDeOfId);
 
     final PriceDraft de345EurCust2OfId =
-        getPriceDraft(BigDecimal.valueOf(345), EUR, DE, existingCustomerGroupId, null, null, null, null);
+        getPriceDraft(
+            BigDecimal.valueOf(345), EUR, DE, existingCustomerGroupId, null, null, null, null);
 
     final List<PriceDraft> oldPrices =
         List.of(
