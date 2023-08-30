@@ -241,6 +241,13 @@ public final class ITUtils {
     return customFields.build();
   }
 
+  public static FieldContainer createCustomFieldsJsonMap(
+      @Nonnull final String fieldName, @Nullable final Object value) {
+    final FieldContainerBuilder customFields = FieldContainerBuilder.of();
+    customFields.addValue(fieldName, value);
+    return customFields.build();
+  }
+
   /**
    * Deletes all Types from CTP projects defined by the {@code CTP_SOURCE_CLIENT} and {@code
    * CTP_TARGET_CLIENT}.
