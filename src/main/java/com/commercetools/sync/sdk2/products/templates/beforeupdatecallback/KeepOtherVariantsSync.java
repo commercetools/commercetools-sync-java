@@ -1,7 +1,5 @@
 package com.commercetools.sync.sdk2.products.templates.beforeupdatecallback;
 
-import com.commercetools.api.models.product.Product;
-import com.commercetools.api.models.product.ProductDraft;
 import com.commercetools.api.models.product.ProductRemoveVariantAction;
 import com.commercetools.api.models.product.ProductUpdateAction;
 import java.util.List;
@@ -10,9 +8,8 @@ import javax.annotation.Nonnull;
 
 public class KeepOtherVariantsSync {
   /**
-   * Takes product update actions, a new {@link ProductDraft}, an old existing {@link Product}. This
-   * method filters out the update action if it is a {@link ProductRemoveVariantAction} update
-   * action.
+   * Takes a list of {@link ProductUpdateAction}'s. This method filters out the update action if it
+   * is a {@link ProductRemoveVariantAction} update action.
    *
    * <p>Using this method as a BeforeUpdateCallback would prevent the removal of not existing
    * variants in the target product.
