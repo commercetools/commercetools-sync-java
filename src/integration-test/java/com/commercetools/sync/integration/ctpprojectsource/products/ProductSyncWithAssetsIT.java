@@ -4,7 +4,7 @@ import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.*;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ensureProductType;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
@@ -74,8 +74,8 @@ class ProductSyncWithAssetsIT {
     deleteProductSyncTestData(CTP_TARGET_CLIENT);
     deleteProductSyncTestData(CTP_SOURCE_CLIENT);
 
-    targetProductType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
-    sourceProductType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_SOURCE_CLIENT);
+    targetProductType = ensureProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
+    sourceProductType = ensureProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_SOURCE_CLIENT);
 
     targetAssetCustomType =
         ensureAssetsCustomType(

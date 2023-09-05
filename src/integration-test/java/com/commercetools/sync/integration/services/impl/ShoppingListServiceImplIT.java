@@ -1,7 +1,7 @@
 package com.commercetools.sync.integration.services.impl;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ensureProductType;
 import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.deleteShoppingListTestData;
 import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.deleteShoppingLists;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
@@ -190,7 +190,7 @@ class ShoppingListServiceImplIT {
   void createShoppingList_WithValidShoppingList_ShouldCreateShoppingList() {
     // preparation
     final ProductType productType =
-        createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
+        ensureProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     final ProductDraft productDraft =
         ProductDraftBuilder.of()
             .productType(

@@ -1,9 +1,9 @@
-package com.commercetools.sync.integration.sdk2.commons.utils;
+package com.commercetools.sync.integration.commons.utils;
 
 import static com.commercetools.api.models.state.StateTypeEnum.LINE_ITEM_STATE;
-import static com.commercetools.sync.integration.sdk2.commons.utils.CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects;
-import static com.commercetools.sync.integration.sdk2.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.integration.sdk2.commons.utils.TestUtils.readObjectFromResource;
+import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.TestUtils.readObjectFromResource;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
 import static com.commercetools.sync.sdk2.services.impl.UnresolvedReferencesServiceImpl.*;
 import static java.lang.String.format;

@@ -353,18 +353,21 @@ public final class ProductTypeITUtils {
       @Nonnull final String jsonResourcePath, @Nonnull final ProjectApiRoot ctpClient) {
     final ProductTypeDraft productTypeDraft =
         TestUtils.readObjectFromResource(jsonResourcePath, ProductTypeDraft.class);
+    ProductType productType = null;
+    if (productTypeDraft.getKey() != null) {
 
-    ProductType productType =
-        ctpClient
-            .productTypes()
-            .get()
-            .withWhere("key=:key")
-            .withPredicateVar("key", productTypeDraft.getKey())
-            .execute()
-            .thenApply(ApiHttpResponse::getBody)
-            .thenApply(ProductTypePagedQueryResponse::getResults)
-            .thenApply(productTypes -> productTypes.isEmpty() ? null : productTypes.get(0))
-            .join();
+      productType =
+          ctpClient
+              .productTypes()
+              .get()
+              .withWhere("key=:key")
+              .withPredicateVar("key", productTypeDraft.getKey())
+              .execute()
+              .thenApply(ApiHttpResponse::getBody)
+              .thenApply(ProductTypePagedQueryResponse::getResults)
+              .thenApply(productTypes -> productTypes.isEmpty() ? null : productTypes.get(0))
+              .join();
+    }
 
     if (productType == null) {
       productType =
@@ -378,19 +381,6 @@ public final class ProductTypeITUtils {
     }
 
     return productType;
-  }
-
-  public static ProductType createProductType(
-      @Nonnull final String jsonResourcePath, @Nonnull final ProjectApiRoot ctpClient) {
-    final ProductTypeDraft productTypeDraft =
-        TestUtils.readObjectFromResource(jsonResourcePath, ProductTypeDraft.class);
-    return ctpClient
-        .productTypes()
-        .create(productTypeDraft)
-        .execute()
-        .thenApply(ApiHttpResponse::getBody)
-        .toCompletableFuture()
-        .join();
   }
 
   /**
