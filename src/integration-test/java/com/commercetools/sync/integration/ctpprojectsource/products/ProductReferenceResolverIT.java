@@ -68,6 +68,8 @@ class ProductReferenceResolverIT {
    */
   @BeforeAll
   static void setup() {
+    ProductITUtils.deleteProductSyncTestData(TestClientUtils.CTP_TARGET_CLIENT);
+    ProductITUtils.deleteProductSyncTestData(TestClientUtils.CTP_SOURCE_CLIENT);
     CategoryITUtils.ensureCategoriesCustomType(
         CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY,
         Locale.ENGLISH,
@@ -141,7 +143,10 @@ class ProductReferenceResolverIT {
   }
 
   @AfterAll
-  static void tearDown() {}
+  static void tearDown() {
+    ProductITUtils.deleteProductSyncTestData(TestClientUtils.CTP_TARGET_CLIENT);
+    ProductITUtils.deleteProductSyncTestData(TestClientUtils.CTP_SOURCE_CLIENT);
+  }
 
   @Test
   void sync_withNewProductWithExistingCategoryAndProductTypeReferences_ShouldCreateProduct() {
