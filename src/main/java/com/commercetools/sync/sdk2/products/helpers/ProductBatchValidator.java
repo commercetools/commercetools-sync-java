@@ -1,7 +1,8 @@
 package com.commercetools.sync.sdk2.products.helpers;
 
+import static com.commercetools.sync.sdk2.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
 import static com.commercetools.sync.sdk2.commons.utils.ResourceIdentifierUtils.isReferenceOfType;
-import static com.commercetools.sync.sdk2.products.utils.AttributeUtils.getAttributeReferences;
+import static com.commercetools.sync.sdk2.products.utils.AttributeUtils.getAttributeReferencesAsJson;
 import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static java.util.Objects.requireNonNull;
@@ -9,7 +10,6 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.models.category.CategoryReference;
-import com.commercetools.api.models.common.Reference;
 import com.commercetools.api.models.custom_object.CustomObjectReference;
 import com.commercetools.api.models.product.Attribute;
 import com.commercetools.api.models.product.ProductDraft;
@@ -20,6 +20,7 @@ import com.commercetools.sync.sdk2.commons.helpers.BaseBatchValidator;
 import com.commercetools.sync.sdk2.commons.utils.SyncUtils;
 import com.commercetools.sync.sdk2.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -273,7 +274,7 @@ public class ProductBatchValidator
   private static Set<String> getReferencedKeysWithReferenceTypeId(
       @Nonnull final Attribute attribute, @Nonnull final String referenceTypeId) {
 
-    final List<Reference> allAttributeReferences = getAttributeReferences(attribute);
+    final List<JsonNode> allAttributeReferences = getAttributeReferencesAsJson(attribute);
 
     if (allAttributeReferences.isEmpty()) {
       return emptySet();
@@ -281,7 +282,7 @@ public class ProductBatchValidator
 
     return allAttributeReferences.stream()
         .filter(reference -> isReferenceOfType(reference, referenceTypeId))
-        .map(reference -> reference.getId())
+        .map(reference -> reference.get(REFERENCE_ID_FIELD).asText())
         .filter(Objects::nonNull)
         .collect(Collectors.toSet());
   }

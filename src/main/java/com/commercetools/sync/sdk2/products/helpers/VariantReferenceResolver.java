@@ -2,7 +2,7 @@ package com.commercetools.sync.sdk2.products.helpers;
 
 import static com.commercetools.sync.sdk2.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static com.commercetools.sync.sdk2.commons.utils.ResourceIdentifierUtils.*;
-import static com.commercetools.sync.sdk2.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
+import static com.commercetools.sync.sdk2.products.utils.AttributeUtils.getAttributeReferencesAsJson;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 
@@ -30,10 +30,8 @@ import com.commercetools.sync.sdk2.services.ProductTypeService;
 import com.commercetools.sync.sdk2.services.StateService;
 import com.commercetools.sync.sdk2.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -168,13 +166,7 @@ public final class VariantReferenceResolver
     if (attributeDraftValue == null) {
       return CompletableFuture.completedFuture(attributeDraft);
     }
-    final ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
-    final JsonNode attributeValueAsJson =
-        objectMapper.convertValue(attributeDraftValue, JsonNode.class);
-    final JsonNode attributeDraftValueClone = attributeValueAsJson.deepCopy();
-
-    final List<JsonNode> allAttributeReferences =
-        attributeDraftValueClone.findParents(REFERENCE_TYPE_ID_FIELD);
+    final List<JsonNode> allAttributeReferences = getAttributeReferencesAsJson(attributeDraft);
 
     if (!allAttributeReferences.isEmpty()) {
       return CompletableFutureUtils.mapValuesToFutureOfCompletedValues(
@@ -183,7 +175,7 @@ public final class VariantReferenceResolver
               ignoredResult ->
                   AttributeBuilder.of()
                       .name(attributeDraft.getName())
-                      .value(attributeDraftValueClone)
+                      .value(attributeDraft.getValue())
                       .build());
     }
 

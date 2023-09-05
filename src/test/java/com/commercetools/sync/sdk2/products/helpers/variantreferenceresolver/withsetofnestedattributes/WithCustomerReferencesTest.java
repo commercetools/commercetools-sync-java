@@ -1,5 +1,6 @@
 package com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.withsetofnestedattributes;
 
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.convertArrayNodeToList;
 import static com.commercetools.sync.sdk2.commons.utils.TestUtils.readObjectFromResource;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.getMockCustomerService;
 import static com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceAttributeValue;
@@ -15,6 +16,7 @@ import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.products.helpers.VariantReferenceResolver;
 import com.commercetools.sync.sdk2.services.*;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -70,12 +72,13 @@ class WithCustomerReferencesTest {
     assertThat(resolvedAttributeDraft.getAttributes()).isNotNull();
 
     final Object value = resolvedAttributeDraft.getAttributes().get(0).getValue();
-    assertThat(value).isInstanceOf(List.class);
-    final List setOfResolvedNestedAttributes = (List) value;
+    assertThat(value).isInstanceOf(ArrayNode.class);
+    final ArrayNode setOfResolvedNestedAttributes = (ArrayNode) value;
 
     final Object resolvedNestedAttribute = setOfResolvedNestedAttributes.get(0);
-    assertThat(resolvedNestedAttribute).isInstanceOf(List.class);
-    final List<Attribute> resolvedNestedAttributes = (List) resolvedNestedAttribute;
+    assertThat(resolvedNestedAttribute).isInstanceOf(ArrayNode.class);
+    final List<Attribute> resolvedNestedAttributes =
+        convertArrayNodeToList((ArrayNode) resolvedNestedAttribute, Attribute.typeReference());
 
     final Map<String, Object> resolvedNestedAttributesMap =
         resolvedNestedAttributes.stream()
@@ -120,12 +123,13 @@ class WithCustomerReferencesTest {
     assertThat(resolvedAttributeDraft.getAttributes()).isNotNull();
 
     final Object value = resolvedAttributeDraft.getAttributes().get(0).getValue();
-    assertThat(value).isInstanceOf(List.class);
-    final List setOfResolvedNestedAttributes = (List) value;
+    assertThat(value).isInstanceOf(ArrayNode.class);
+    final ArrayNode setOfResolvedNestedAttributes = (ArrayNode) value;
 
     final Object resolvedNestedAttribute = setOfResolvedNestedAttributes.get(0);
-    assertThat(resolvedNestedAttribute).isInstanceOf(List.class);
-    final List<Attribute> resolvedNestedAttributes = (List) resolvedNestedAttribute;
+    assertThat(resolvedNestedAttribute).isInstanceOf(ArrayNode.class);
+    final List<Attribute> resolvedNestedAttributes =
+        convertArrayNodeToList((ArrayNode) resolvedNestedAttribute, Attribute.typeReference());
 
     final Map<String, Object> resolvedNestedAttributesMap =
         resolvedNestedAttributes.stream()

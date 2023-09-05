@@ -7,11 +7,15 @@ import static org.mockito.Mockito.when;
 import com.commercetools.api.models.graph_ql.GraphQLResponse;
 import com.commercetools.api.models.graph_ql.GraphQLResponseBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 
@@ -41,5 +45,17 @@ public class TestUtils {
     final ApiHttpResponse<JsonNode> apiHttpResponse = mock(ApiHttpResponse.class);
     when(apiHttpResponse.getBody()).thenReturn(jsonNode);
     return apiHttpResponse;
+  }
+
+  @Nonnull
+  public static <T> List<T> convertArrayNodeToList(
+      final ArrayNode values, final TypeReference<T> typeReference) {
+    final List<T> result = new ArrayList<>(values.size());
+    values.forEach(
+        jsonNode -> {
+          final T mappedNode = JsonUtils.fromJsonNode(jsonNode, typeReference);
+          result.add(mappedNode);
+        });
+    return result;
   }
 }
