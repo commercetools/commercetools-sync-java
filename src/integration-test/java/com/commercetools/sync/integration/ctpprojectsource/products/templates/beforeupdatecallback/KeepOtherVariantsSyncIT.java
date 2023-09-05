@@ -42,10 +42,7 @@ class KeepOtherVariantsSyncIT {
   private List<String> warningCallBackMessages;
   private List<Throwable> errorCallBackExceptions;
 
-  /**
-   * Delete all product related test data from target project. Then creates a productType for the
-   * products of the target CTP project.
-   */
+  /** Creates a productType for the products of the target CTP project. */
   @BeforeAll
   static void setupAllTests() {
     productType = ensureProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
@@ -54,8 +51,7 @@ class KeepOtherVariantsSyncIT {
   /**
    * 1. Clears all sync collections used for test assertions. 2. Deletes all products from target
    * CTP project 3. Creates an instance for {@link ProductSyncOptions} that will be used in the
-   * test. 4. Creates a product in the target CTP project with 1 variant other than the master
-   * variant.
+   * test.
    */
   @BeforeEach
   void setupPerTest() {
