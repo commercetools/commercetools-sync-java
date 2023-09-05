@@ -1,5 +1,6 @@
 package com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver;
 
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.convertArrayNodeToList;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -14,6 +15,9 @@ import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.products.helpers.VariantReferenceResolver;
 import com.commercetools.sync.sdk2.services.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeEach;
@@ -93,7 +97,8 @@ class WithProductReferencesTest {
     assertThat(resolvedAttributeDraft.getAttributes()).isNotNull();
     final Attribute resolvedAttribute = resolvedAttributeDraft.getAttributes().get(0);
     assertThat(resolvedAttribute).isNotNull();
-    final Reference productRef = (Reference) resolvedAttribute.getValue();
+    final Reference productRef =
+        JsonUtils.fromJsonNode((JsonNode) resolvedAttribute.getValue(), Reference.typeReference());
     assertThat(productRef.getId()).isEqualTo(PRODUCT_ID);
     assertThat(productRef.getTypeId().getJsonName()).isEqualTo(ProductReference.PRODUCT);
   }
@@ -118,7 +123,9 @@ class WithProductReferencesTest {
     final Attribute resolvedAttributeDraft = resolvedProductVariantDraft.getAttributes().get(0);
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
-    final List<ProductReference> referenceList = (List) resolvedAttributeDraft.getValue();
+    final List<ProductReference> referenceList =
+        convertArrayNodeToList(
+            (ArrayNode) resolvedAttributeDraft.getValue(), ProductReference.typeReference());
 
     assertThat(referenceList).isNotEmpty();
     final ProductReference resolvedReference = ProductReferenceBuilder.of().id(PRODUCT_ID).build();
@@ -151,7 +158,9 @@ class WithProductReferencesTest {
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
 
-    final List<ProductReference> referenceList = (List) resolvedAttributeDraft.getValue();
+    final List<ProductReference> referenceList =
+        convertArrayNodeToList(
+            (ArrayNode) resolvedAttributeDraft.getValue(), ProductReference.typeReference());
     final Set<ProductReference> resolvedSet = new HashSet<>(referenceList);
     assertThat(resolvedSet).containsExactly(productReference);
   }
@@ -187,7 +196,9 @@ class WithProductReferencesTest {
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
 
-    final List<ProductReference> referenceList = (List) resolvedAttributeDraft.getValue();
+    final List<ProductReference> referenceList =
+        convertArrayNodeToList(
+            (ArrayNode) resolvedAttributeDraft.getValue(), ProductReference.typeReference());
     final Set<ProductReference> resolvedSet = new HashSet<>(referenceList);
 
     final ProductReference resolvedReference1 = getProductReferenceWithId("existingId");
