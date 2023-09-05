@@ -244,7 +244,7 @@ public final class PriceFixtures {
             ofNullable(customerGroupId)
                 .map(id -> CustomerGroupReferenceBuilder.of().id(id).build())
                 .orElse(null))
-        .country(Optional.ofNullable(countryCode).map(CountryCode::getName).orElse(null))
+        .country(Optional.ofNullable(countryCode).map(CountryCode::getAlpha2).orElse(null))
         .validFrom(validFrom)
         .validUntil(validUntil)
         .channel(

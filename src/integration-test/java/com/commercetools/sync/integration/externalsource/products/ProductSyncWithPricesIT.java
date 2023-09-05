@@ -176,7 +176,7 @@ class ProductSyncWithPricesIT {
             .key("existingProduct")
             .build();
 
-    CTP_TARGET_CLIENT.products().create(existingProductDraft).executeBlocking().getBody();
+    CTP_TARGET_CLIENT.products().create(existingProductDraft).executeBlocking();
 
     final ProductDraft newProductDraft =
         ProductDraftBuilder.of()
@@ -230,7 +230,7 @@ class ProductSyncWithPricesIT {
             .key("bar")
             .build();
 
-    CTP_TARGET_CLIENT.products().create(existingProductDraft).executeBlocking().getBody();
+    CTP_TARGET_CLIENT.products().create(existingProductDraft).executeBlocking();
 
     final ProductDraft newProductDraft =
         ProductDraftBuilder.of()
