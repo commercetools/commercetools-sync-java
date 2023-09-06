@@ -1,5 +1,6 @@
 package com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver;
 
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.convertArrayNodeToList;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -19,6 +20,9 @@ import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.products.helpers.VariantReferenceResolver;
 import com.commercetools.sync.sdk2.services.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeEach;
@@ -100,8 +104,11 @@ class WithCategoryReferencesTest {
     assertThat(resolvedAttributeDraft.getAttributes()).isNotNull();
     final Attribute resolvedAttribute = resolvedAttributeDraft.getAttributes().get(0);
     assertThat(resolvedAttribute).isNotNull();
-    assertThat(resolvedAttribute.getValue()).isInstanceOf(Reference.class);
-    assertThat(((CategoryReference) resolvedAttribute.getValue()).getId()).isEqualTo(CATEGORY_ID);
+    assertThat(resolvedAttribute.getValue()).isInstanceOf(JsonNode.class);
+    final CategoryReference resolvedReference =
+        JsonUtils.fromJsonNode(
+            (JsonNode) resolvedAttribute.getValue(), CategoryReference.typeReference());
+    assertThat(resolvedReference.getId()).isEqualTo(CATEGORY_ID);
   }
 
   @Test
@@ -126,7 +133,9 @@ class WithCategoryReferencesTest {
     final Attribute resolvedAttributeDraft = resolvedProductVariantDraft.getAttributes().get(0);
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
-    final List<CategoryReference> referenceList = (List) resolvedAttributeDraft.getValue();
+    final List<CategoryReference> referenceList =
+        convertArrayNodeToList(
+            (ArrayNode) resolvedAttributeDraft.getValue(), CategoryReference.typeReference());
     assertThat(referenceList).isNotEmpty();
     final CategoryReference resolvedReference =
         CategoryReferenceBuilder.of().id(CATEGORY_ID).build();
@@ -159,7 +168,9 @@ class WithCategoryReferencesTest {
 
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
-    final List<CategoryReference> referenceList = (List) resolvedAttributeDraft.getValue();
+    final List<CategoryReference> referenceList =
+        convertArrayNodeToList(
+            (ArrayNode) resolvedAttributeDraft.getValue(), CategoryReference.typeReference());
     final Set<CategoryReference> resolvedSet = new HashSet<>(referenceList);
     assertThat(resolvedSet).isNotNull();
     assertThat(resolvedSet).containsExactly((CategoryReference) categoryReference);
@@ -197,7 +208,9 @@ class WithCategoryReferencesTest {
 
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
-    final List<CategoryReference> referenceList = (List) resolvedAttributeDraft.getValue();
+    final List<CategoryReference> referenceList =
+        convertArrayNodeToList(
+            (ArrayNode) resolvedAttributeDraft.getValue(), CategoryReference.typeReference());
     final Set<CategoryReference> resolvedSet = new HashSet<>(referenceList);
     assertThat(resolvedSet).isNotNull();
 

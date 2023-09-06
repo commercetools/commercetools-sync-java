@@ -1,5 +1,6 @@
 package com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver;
 
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.convertArrayNodeToList;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -20,6 +21,9 @@ import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.products.helpers.VariantReferenceResolver;
 import com.commercetools.sync.sdk2.services.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -151,7 +155,8 @@ class WithCustomObjectReferencesTest {
     assertThat(resolvedAttributeDraft.getAttributes()).isNotNull();
     final Attribute resolvedAttribute = resolvedAttributeDraft.getAttributes().get(0);
     assertThat(resolvedAttribute).isNotNull();
-    final Reference reference = (Reference) resolvedAttribute.getValue();
+    final Reference reference =
+        JsonUtils.fromJsonNode((JsonNode) resolvedAttribute.getValue(), Reference.typeReference());
     assertThat(reference.getId()).isEqualTo(CUSTOM_OBJECT_ID);
     assertThat(reference.getTypeId().getJsonName())
         .isEqualTo(CustomObjectReference.KEY_VALUE_DOCUMENT);
@@ -180,7 +185,9 @@ class WithCustomObjectReferencesTest {
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
 
-    final List<CustomObjectReference> referenceList = (List) resolvedAttributeDraft.getValue();
+    final List<CustomObjectReference> referenceList =
+        convertArrayNodeToList(
+            (ArrayNode) resolvedAttributeDraft.getValue(), CustomObjectReference.typeReference());
     assertThat(referenceList).isNotEmpty();
     final CustomObjectReference resolvedReference =
         CustomObjectReferenceBuilder.of().id(CUSTOM_OBJECT_ID).build();
@@ -214,7 +221,9 @@ class WithCustomObjectReferencesTest {
 
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
-    final List<CustomObjectReference> referenceList = (List) resolvedAttributeDraft.getValue();
+    final List<CustomObjectReference> referenceList =
+        convertArrayNodeToList(
+            (ArrayNode) resolvedAttributeDraft.getValue(), CustomObjectReference.typeReference());
     final Set<CustomObjectReference> resolvedSet = new HashSet<>(referenceList);
     assertThat(resolvedSet).containsExactly((CustomObjectReference) customObjectReference);
   }
@@ -262,7 +271,9 @@ class WithCustomObjectReferencesTest {
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
 
-    final List<CustomObjectReference> referenceList = (List) resolvedAttributeDraft.getValue();
+    final List<CustomObjectReference> referenceList =
+        convertArrayNodeToList(
+            (ArrayNode) resolvedAttributeDraft.getValue(), CustomObjectReference.typeReference());
     final Set<CustomObjectReference> resolvedSet = new HashSet<>(referenceList);
 
     final CustomObjectReference resolvedReference1 =

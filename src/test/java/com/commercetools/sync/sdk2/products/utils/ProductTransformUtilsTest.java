@@ -1,5 +1,6 @@
 package com.commercetools.sync.sdk2.products.utils;
 
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.convertArrayNodeToList;
 import static com.commercetools.sync.sdk2.commons.utils.TestUtils.mockGraphQLResponse;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.createProductFromJson;
 import static com.commercetools.sync.sdk2.services.impl.BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER;
@@ -27,7 +28,9 @@ import com.commercetools.sync.sdk2.commons.exceptions.ReferenceTransformExceptio
 import com.commercetools.sync.sdk2.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.vrap.rmf.base.client.ApiHttpMethod;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;
@@ -108,7 +111,10 @@ class ProductTransformUtilsTest {
                     .anySatisfy(
                         attribute -> {
                           assertThat(attribute.getName()).isEqualTo("productReference");
-                          final List<ProductReference> referenceSet = (List) attribute.getValue();
+                          final List<ProductReference> referenceSet =
+                              convertArrayNodeToList(
+                                  (ArrayNode) attribute.getValue(),
+                                  ProductReference.typeReference());
                           assertThat(referenceSet)
                               .anySatisfy(
                                   reference -> assertThat(reference.getId()).isEqualTo("prod1"));
@@ -124,7 +130,10 @@ class ProductTransformUtilsTest {
                     .anySatisfy(
                         attribute -> {
                           assertThat(attribute.getName()).isEqualTo("categoryReference");
-                          final List<CategoryReference> referenceSet = (List) attribute.getValue();
+                          final List<CategoryReference> referenceSet =
+                              convertArrayNodeToList(
+                                  (ArrayNode) attribute.getValue(),
+                                  CategoryReference.typeReference());
                           assertThat(referenceSet)
                               .anySatisfy(
                                   reference -> assertThat(reference.getId()).isEqualTo("cat1"));
@@ -140,8 +149,11 @@ class ProductTransformUtilsTest {
                     .anySatisfy(
                         attribute -> {
                           assertThat(attribute.getName()).isEqualTo("productTypeReference");
-                          assertThat(((ProductTypeReference) attribute.getValue()).getId())
-                              .isEqualTo("prodType1");
+                          final ProductTypeReference productTypeReference =
+                              JsonUtils.fromJsonNode(
+                                  (JsonNode) attribute.getValue(),
+                                  ProductTypeReference.typeReference());
+                          assertThat(productTypeReference.getId()).isEqualTo("prodType1");
                         }));
   }
 

@@ -1,5 +1,6 @@
 package com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver;
 
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.convertArrayNodeToList;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -17,6 +18,7 @@ import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.products.helpers.VariantReferenceResolver;
 import com.commercetools.sync.sdk2.services.*;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -84,7 +86,9 @@ class WithCustomerReferencesTest {
     final Attribute resolvedAttributeDraft = resolvedProductVariantDraft.getAttributes().get(0);
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
-    final List<CustomerReference> references = (List) resolvedAttributeDraft.getValue();
+    final List<CustomerReference> references =
+        convertArrayNodeToList(
+            (ArrayNode) resolvedAttributeDraft.getValue(), CustomerReference.typeReference());
     assertThat(references).isNotEmpty();
     final CustomerReference resolvedReference =
         CustomerReferenceBuilder.of().id(CUSTOMER_ID).build();
