@@ -31,7 +31,7 @@ public final class ResourceIdentifierUtils {
 
   /**
    * Given a {@link JsonNode} {@code referenceValue} which is the JSON representation of CTP
-   * Reference object, this method checks if it is has a {@code typeId} with the value equal to
+   * Reference object, this method checks if it has a {@code typeId} with the value equal to
    * {@code referenceTypeId}.
    *
    * @param referenceValue JSON representation of CTP reference object
