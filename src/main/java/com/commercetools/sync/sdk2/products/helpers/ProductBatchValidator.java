@@ -2,7 +2,8 @@ package com.commercetools.sync.sdk2.products.helpers;
 
 import static com.commercetools.sync.sdk2.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
 import static com.commercetools.sync.sdk2.commons.utils.ResourceIdentifierUtils.isReferenceOfType;
-import static com.commercetools.sync.sdk2.products.utils.AttributeUtils.getAttributeReferencesAsJson;
+import static com.commercetools.sync.sdk2.products.utils.AttributeUtils.getAttributeReferences;
+import static com.commercetools.sync.sdk2.products.utils.AttributeUtils.replaceAttributeValueWithJsonAndReturnValue;
 import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static java.util.Objects.requireNonNull;
@@ -274,7 +275,8 @@ public class ProductBatchValidator
   private static Set<String> getReferencedKeysWithReferenceTypeId(
       @Nonnull final Attribute attribute, @Nonnull final String referenceTypeId) {
 
-    final List<JsonNode> allAttributeReferences = getAttributeReferencesAsJson(attribute);
+    final JsonNode attributeValueAsJson = replaceAttributeValueWithJsonAndReturnValue(attribute);
+    final List<JsonNode> allAttributeReferences = getAttributeReferences(attributeValueAsJson);
 
     if (allAttributeReferences.isEmpty()) {
       return emptySet();

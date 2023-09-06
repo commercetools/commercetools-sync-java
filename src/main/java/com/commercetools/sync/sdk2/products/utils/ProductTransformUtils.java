@@ -324,7 +324,8 @@ public final class ProductTransformUtils {
       return variants.stream()
           .map(ProductVariant::getAttributes)
           .flatMap(Collection::stream)
-          .map(AttributeUtils::getAttributeReferencesAsJson)
+          .map(AttributeUtils::replaceAttributeValueWithJsonAndReturnValue)
+          .map(AttributeUtils::getAttributeReferences)
           .flatMap(Collection::stream)
           .collect(Collectors.toList());
     }

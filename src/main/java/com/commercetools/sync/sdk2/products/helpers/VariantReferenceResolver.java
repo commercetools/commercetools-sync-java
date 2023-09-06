@@ -2,7 +2,8 @@ package com.commercetools.sync.sdk2.products.helpers;
 
 import static com.commercetools.sync.sdk2.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static com.commercetools.sync.sdk2.commons.utils.ResourceIdentifierUtils.*;
-import static com.commercetools.sync.sdk2.products.utils.AttributeUtils.getAttributeReferencesAsJson;
+import static com.commercetools.sync.sdk2.products.utils.AttributeUtils.getAttributeReferences;
+import static com.commercetools.sync.sdk2.products.utils.AttributeUtils.replaceAttributeValueWithJsonAndReturnValue;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 
@@ -166,7 +167,9 @@ public final class VariantReferenceResolver
     if (attributeDraftValue == null) {
       return CompletableFuture.completedFuture(attributeDraft);
     }
-    final List<JsonNode> allAttributeReferences = getAttributeReferencesAsJson(attributeDraft);
+    final JsonNode attributeDraftValueAsJson =
+        replaceAttributeValueWithJsonAndReturnValue(attributeDraft);
+    List<JsonNode> allAttributeReferences = getAttributeReferences(attributeDraftValueAsJson);
 
     if (!allAttributeReferences.isEmpty()) {
       return CompletableFutureUtils.mapValuesToFutureOfCompletedValues(
@@ -175,7 +178,7 @@ public final class VariantReferenceResolver
               ignoredResult ->
                   AttributeBuilder.of()
                       .name(attributeDraft.getName())
-                      .value(attributeDraft.getValue())
+                      .value(attributeDraftValueAsJson)
                       .build());
     }
 
