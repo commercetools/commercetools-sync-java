@@ -1,6 +1,7 @@
 package com.commercetools.sync.integration.externalsource.products;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createReferenceObjectJson;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ensureProductType;
@@ -341,7 +342,7 @@ class ProductSyncWithReferencedCategoriesIT {
         .containsExactly(
             ProductSetAttributeInAllVariantsActionBuilder.of()
                 .name("category-reference")
-                .value(CategoryReferenceBuilder.of().id(category2.getId()).build())
+                .value(createReferenceObjectJson(category2.getId(), CategoryReference.CATEGORY))
                 .staged(true)
                 .build());
 

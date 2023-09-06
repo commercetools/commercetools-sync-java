@@ -3,6 +3,7 @@ package com.commercetools.sync.integration.externalsource.products;
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.createCustomObject;
 import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteCustomObject;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createReferenceObjectJson;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.*;
@@ -28,10 +29,14 @@ import com.commercetools.sync.sdk2.products.ProductSync;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.products.helpers.ProductSyncStatistics;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import javax.annotation.Nonnull;
@@ -180,8 +185,8 @@ class ProductSyncWithNestedReferencedCustomObjectsIT {
   void
       sync_withNestedCustomObjectReferenceAsAttribute_shouldCreateProductReferencingExistingCustomObject() {
     // preparation
-    final Attribute nestedAttributeValue =
-        createNestedAttributeValueReferences(
+    final Map<String, Object> nestedAttributeValue =
+        createNestedAttributeValueMapReferences(
             CUSTOM_OBJECT_REFERENCE_ATTR_NAME,
             createReferenceObject(
                 format("%s|%s", testCustomObject1.getContainer(), testCustomObject1.getKey()),
@@ -283,8 +288,8 @@ class ProductSyncWithNestedReferencedCustomObjectsIT {
 
     CTP_TARGET_CLIENT.products().post(productDraftWithCustomObjectReference).executeBlocking();
 
-    final Attribute newNestedAttributeValue =
-        createNestedAttributeValueReferences(
+    final Map<String, Object> newNestedAttributeValue =
+        createNestedAttributeValueMapReferences(
             CUSTOM_OBJECT_REFERENCE_ATTR_NAME,
             createReferenceObject(
                 format("%s|%s", testCustomObject1.getContainer(), testCustomObject1.getKey()),
@@ -390,8 +395,8 @@ class ProductSyncWithNestedReferencedCustomObjectsIT {
 
     CTP_TARGET_CLIENT.products().post(productDraftWithCustomObjectReference).executeBlocking();
 
-    final Attribute newNestedAttributeValue =
-        createNestedAttributeValueReferences(
+    final Map<String, Object> newNestedAttributeValue =
+        createNestedAttributeValueMapReferences(
             CUSTOM_OBJECT_REFERENCE_ATTR_NAME,
             createReferenceObject(
                 format("%s|%s", testCustomObject2.getContainer(), testCustomObject2.getKey()),
@@ -438,13 +443,15 @@ class ProductSyncWithNestedReferencedCustomObjectsIT {
             CUSTOM_OBJECT_REFERENCE_ATTR_NAME,
             createReferenceObject(
                 testCustomObject2.getId(), CustomObjectReference.KEY_VALUE_DOCUMENT));
+    final JsonNode attributeValueAsJson =
+        JsonUtils.toJsonNode(List.of(expectedNestedAttributeValue));
 
     assertThat(actions)
         .containsExactly(
             ProductSetAttributeActionBuilder.of()
                 .variantId(1L)
                 .name("nestedAttribute")
-                .value(List.of(expectedNestedAttributeValue))
+                .value(attributeValueAsJson)
                 .staged(true)
                 .build());
 
@@ -551,15 +558,18 @@ class ProductSyncWithNestedReferencedCustomObjectsIT {
   void
       sync_withNestedCustomObjectReferenceSetAsAttribute_shouldCreateProductReferencingExistingCustomObjects() {
     // preparation
-    final Attribute nestedAttributeValue =
-        createNestedAttributeValueSetOfReferences(
-            CUSTOM_OBJECT_REFERENCE_SET_ATTR_NAME,
-            createReferenceObject(
-                format("%s|%s", testCustomObject1.getContainer(), testCustomObject1.getKey()),
-                CustomObjectReference.KEY_VALUE_DOCUMENT),
-            createReferenceObject(
-                format("%s|%s", testCustomObject2.getContainer(), testCustomObject2.getKey()),
-                CustomObjectReference.KEY_VALUE_DOCUMENT));
+    final ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
+    arrayNode.add(
+        createReferenceObjectJson(
+            format("%s|%s", testCustomObject1.getContainer(), testCustomObject1.getKey()),
+            CustomObjectReference.KEY_VALUE_DOCUMENT));
+    arrayNode.add(
+        createReferenceObjectJson(
+            format("%s|%s", testCustomObject2.getContainer(), testCustomObject2.getKey()),
+            CustomObjectReference.KEY_VALUE_DOCUMENT));
+    final ObjectNode nestedAttributeValue =
+        createNestedAttributeValueObjectNodeReferences(
+            CUSTOM_OBJECT_REFERENCE_SET_ATTR_NAME, arrayNode);
 
     final Attribute customObjectReferenceAttribute =
         AttributeBuilder.of().name("nestedAttribute").value(List.of(nestedAttributeValue)).build();

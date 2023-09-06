@@ -1,6 +1,7 @@
 package com.commercetools.sync.integration.externalsource.products;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createReferenceObjectJson;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.*;
@@ -32,9 +33,15 @@ import com.commercetools.sync.sdk2.products.ProductSync;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.products.helpers.ProductSyncStatistics;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import javax.annotation.Nonnull;
@@ -265,8 +272,8 @@ class ProductSyncWithNestedReferencedCategoriesIT {
   @Test
   void sync_withSameNestedCategoryReferenceAsAttribute_shouldNotSyncAnythingNew() {
     // preparation
-    final Attribute nestedAttributeValue =
-        createNestedAttributeValueReferences(
+    final Map<String, Object> nestedAttributeValue =
+        createNestedAttributeValueMapReferences(
             "category-reference",
             createReferenceObject(testCategory1.getId(), CategoryReference.CATEGORY));
 
@@ -289,13 +296,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
             .key("new-product")
             .build();
 
-    CTP_TARGET_CLIENT
-        .products()
-        .post(productDraftWithCategoryReference)
-        .execute()
-        .thenApply(ApiHttpResponse::getBody)
-        .toCompletableFuture()
-        .join();
+    CTP_TARGET_CLIENT.products().post(productDraftWithCategoryReference).executeBlocking();
 
     final Attribute newNestedAttributeValue =
         createNestedAttributeValueReferences(
@@ -398,9 +399,10 @@ class ProductSyncWithNestedReferencedCategoriesIT {
 
     CTP_TARGET_CLIENT.products().create(productDraftWithCategoryReference).executeBlocking();
 
-    final Attribute newNestedAttributeValue =
-        createNestedAttributeValueReferences(
-            "category-reference", CategoryReferenceBuilder.of().id(testCategory2.getKey()).build());
+    final ObjectNode newNestedAttributeValue =
+        createNestedAttributeValueObjectNodeReferences(
+            "category-reference",
+            createReferenceObjectJson(testCategory2.getKey(), CategoryReference.CATEGORY));
 
     final Attribute newProductReferenceAttribute =
         AttributeBuilder.of()
@@ -441,12 +443,11 @@ class ProductSyncWithNestedReferencedCategoriesIT {
     final Attribute expectedNestedAttributeValue =
         createNestedAttributeValueReferences(
             "category-reference", CategoryReferenceBuilder.of().id(testCategory2.getId()).build());
+    final JsonNode attributeValueAsJson =
+        JsonUtils.toJsonNode(List.of(expectedNestedAttributeValue));
 
     final Attribute expectedCategoryReferenceAttribute =
-        AttributeBuilder.of()
-            .name("nestedAttribute")
-            .value(List.of(expectedNestedAttributeValue))
-            .build();
+        AttributeBuilder.of().name("nestedAttribute").value(attributeValueAsJson).build();
 
     assertThat(actions)
         .containsExactly(
@@ -630,8 +631,8 @@ class ProductSyncWithNestedReferencedCategoriesIT {
   void
       sync_withNestedCategoryReferenceSetContainingANonExistingReference_shouldFailCreatingTheProduct() {
     // preparation
-    final Attribute nestedAttributeValue =
-        createNestedAttributeValueSetOfReferences(
+    final Map<String, Object> nestedAttributeValue =
+        createNestedAttributeValueMapSetOfReferences(
             "category-reference-set",
             createReferenceObject(testCategory1.getKey(), CategoryReference.CATEGORY),
             CategoryReferenceBuilder.of().id("nonExistingKey").build());
@@ -695,11 +696,12 @@ class ProductSyncWithNestedReferencedCategoriesIT {
   void
       sync_withSetOfNestedProductReferenceSetAsAttribute_shouldCreateProductReferencingExistingCategories() {
     // preparation
-    final Attribute nestedAttributeValue =
-        createNestedAttributeValueSetOfReferences(
-            "category-reference-set",
-            createReferenceObject(testCategory1.getKey(), CategoryReference.CATEGORY),
-            CategoryReferenceBuilder.of().id(testCategory2.getKey()).build());
+    final ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
+    arrayNode.add(createReferenceObjectJson(testCategory1.getKey(), CategoryReference.CATEGORY));
+    arrayNode.add(createReferenceObjectJson(testCategory2.getKey(), CategoryReference.CATEGORY));
+
+    final ObjectNode nestedAttributeValue =
+        createNestedAttributeValueObjectNodeReferences("category-reference-set", arrayNode);
 
     final Attribute categoryReferenceAttribute =
         AttributeBuilder.of()

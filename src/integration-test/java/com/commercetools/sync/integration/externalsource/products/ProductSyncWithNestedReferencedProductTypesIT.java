@@ -1,6 +1,7 @@
 package com.commercetools.sync.integration.externalsource.products;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createReferenceObjectJson;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.*;
@@ -25,8 +26,13 @@ import com.commercetools.sync.sdk2.products.ProductSync;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.products.helpers.ProductSyncStatistics;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import javax.annotation.Nonnull;
@@ -220,8 +226,8 @@ class ProductSyncWithNestedReferencedProductTypesIT {
   @Test
   void sync_withSameNestedProductTypeReferenceAsAttribute_shouldNotSyncAnythingNew() {
     // preparation
-    final Attribute nestedAttributeValue =
-        createNestedAttributeValueReferences(
+    final Map<String, Object> nestedAttributeValue =
+        createNestedAttributeValueMapReferences(
             "productType-reference",
             createReferenceObject(testProductType1.getId(), ProductTypeReference.PRODUCT_TYPE));
 
@@ -246,15 +252,16 @@ class ProductSyncWithNestedReferencedProductTypesIT {
 
     CTP_TARGET_CLIENT.products().create(productDraftWithProductTypeReference).executeBlocking();
 
-    final Attribute newNestedAttributeValue =
-        createNestedAttributeValueReferences(
+    final ObjectNode newNestedAttributeValue =
+        createNestedAttributeValueObjectNodeReferences(
             "productType-reference",
-            createReferenceObject(testProductType1.getKey(), ProductTypeReference.PRODUCT_TYPE));
+            createReferenceObjectJson(
+                testProductType1.getKey(), ProductTypeReference.PRODUCT_TYPE));
 
     final Attribute newProductReferenceAttribute =
         AttributeBuilder.of()
             .name("nestedAttribute")
-            .value(List.of(newNestedAttributeValue))
+            .value(JsonNodeFactory.instance.arrayNode().add(newNestedAttributeValue))
             .build();
 
     final ProductVariantDraft newMasterVariant =
@@ -393,13 +400,15 @@ class ProductSyncWithNestedReferencedProductTypesIT {
         createNestedAttributeValueReferences(
             "productType-reference",
             createReferenceObject(testProductType2.getId(), ProductTypeReference.PRODUCT_TYPE));
+    final JsonNode attributeValueAsJson =
+        JsonUtils.toJsonNode(List.of(expectedNestedAttributeValue));
 
     assertThat(actions)
         .containsExactly(
             ProductSetAttributeActionBuilder.of()
                 .name("nestedAttribute")
                 .variantId(1L)
-                .value(List.of(expectedNestedAttributeValue))
+                .value(attributeValueAsJson)
                 .staged(true)
                 .build());
 

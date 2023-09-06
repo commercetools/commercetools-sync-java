@@ -1,6 +1,7 @@
 package com.commercetools.sync.integration.externalsource.products;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createReferenceObjectJson;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.*;
@@ -25,6 +26,10 @@ import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.sdk2.services.impl.UnresolvedReferencesServiceImpl;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -244,10 +249,10 @@ class ProductSyncWithNestedReferencedProductsIT {
   @Test
   void sync_withNestedProductReferenceAsAttribute_shouldCreateProductReferencingExistingProduct() {
     // preparation
-    final Attribute nestedAttributeValue =
-        createNestedAttributeValueReferences(
+    final ObjectNode nestedAttributeValue =
+        createNestedAttributeValueObjectNodeReferences(
             "product-reference",
-            createReferenceObject(testProduct1.getKey(), ProductReference.PRODUCT));
+            createReferenceObjectJson(testProduct1.getKey(), ProductReference.PRODUCT));
 
     final Attribute productReferenceAttribute =
         AttributeBuilder.of().name("nestedAttribute").value(List.of(nestedAttributeValue)).build();
@@ -315,13 +320,16 @@ class ProductSyncWithNestedReferencedProductsIT {
   @Test
   void sync_withSameNestedProductReferenceAsAttribute_shouldNotSyncAnythingNew() {
     // preparation
-    final Attribute nestedAttributeValue =
-        createNestedAttributeValueReferences(
+    final ObjectNode nestedAttributeValue =
+        createNestedAttributeValueObjectNodeReferences(
             "product-reference",
-            createReferenceObject(testProduct1.getId(), ProductReference.PRODUCT));
+            createReferenceObjectJson(testProduct1.getId(), ProductReference.PRODUCT));
 
     final Attribute productReferenceAttribute =
-        AttributeBuilder.of().name("nestedAttribute").value(List.of(nestedAttributeValue)).build();
+        AttributeBuilder.of()
+            .name("nestedAttribute")
+            .value(JsonNodeFactory.instance.arrayNode().add(nestedAttributeValue))
+            .build();
 
     final ProductVariantDraft masterVariant =
         ProductVariantDraftBuilder.of()
@@ -341,15 +349,15 @@ class ProductSyncWithNestedReferencedProductsIT {
 
     CTP_TARGET_CLIENT.products().create(productDraftWithProductReference).executeBlocking();
 
-    final Attribute newNestedAttributeValue =
-        createNestedAttributeValueReferences(
+    final ObjectNode newNestedAttributeValue =
+        createNestedAttributeValueObjectNodeReferences(
             "product-reference",
-            createReferenceObject(testProduct1.getKey(), ProductReference.PRODUCT));
+            createReferenceObjectJson(testProduct1.getKey(), ProductReference.PRODUCT));
 
     final Attribute newProductReferenceAttribute =
         AttributeBuilder.of()
             .name("nestedAttribute")
-            .value(List.of(newNestedAttributeValue))
+            .value(JsonNodeFactory.instance.arrayNode().add(newNestedAttributeValue))
             .build();
 
     final ProductVariantDraft newMasterVariant =
@@ -487,13 +495,15 @@ class ProductSyncWithNestedReferencedProductsIT {
         createNestedAttributeValueReferences(
             "product-reference",
             createReferenceObject(testProduct2.getId(), ProductReference.PRODUCT));
+    final JsonNode attributeValueAsJson =
+        JsonUtils.toJsonNode(List.of(expectedNestedAttributeValue));
 
     assertThat(actions)
         .containsExactly(
             ProductSetAttributeActionBuilder.of()
                 .variantId(1L)
                 .name("nestedAttribute")
-                .value(List.of(expectedNestedAttributeValue))
+                .value(attributeValueAsJson)
                 .staged(true)
                 .build());
 
