@@ -323,8 +323,7 @@ class StateServiceImplIT {
     when(mock1.get()).thenReturn(mock2);
     when(mock2.withWhere(any(String.class))).thenReturn(mock2);
     when(mock2.withPredicateVar(any(String.class), any())).thenReturn(mock2);
-    final CompletableFuture<ApiHttpResponse<State>> mock3 = mock(CompletableFuture.class);
-    final CompletableFuture<ApiHttpResponse<State>> spy = spy(mock3);
+    final CompletableFuture<ApiHttpResponse<State>> spy = mock(CompletableFuture.class);
 
     // Assert that the created state is cached
     final Optional<String> stateId =

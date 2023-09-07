@@ -327,8 +327,7 @@ class CustomObjectServiceImplIT {
     when(mock1.get()).thenReturn(mock2);
     when(mock2.withWhere(any(String.class))).thenReturn(mock2);
     when(mock2.withPredicateVar(any(String.class), any(String.class))).thenReturn(mock2, mock2);
-    final CompletableFuture<ApiHttpResponse<CustomObject>> mock3 = mock(CompletableFuture.class);
-    final CompletableFuture<ApiHttpResponse<CustomObject>> spy = spy(mock3);
+    final CompletableFuture<ApiHttpResponse<CustomObject>> spy = mock(CompletableFuture.class);
 
     // Assert that the created customObject is cached
     final Optional<String> customObjectId =
