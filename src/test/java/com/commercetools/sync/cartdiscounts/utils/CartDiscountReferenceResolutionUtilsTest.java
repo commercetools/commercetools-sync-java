@@ -119,6 +119,7 @@ class CartDiscountReferenceResolutionUtilsTest {
             .requiresDiscountCode(false)
             .references(List.of())
             .stackingMode(StackingMode.STACKING)
+            .stores(List.of())
             .build();
 
     // Cache customTypeId and customTypeKey Value
@@ -166,6 +167,7 @@ class CartDiscountReferenceResolutionUtilsTest {
             .requiresDiscountCode(false)
             .references(List.of())
             .stackingMode(StackingMode.STACKING)
+            .stores(List.of())
             .build();
 
     // Cache customTypeId and customTypeKey Value
