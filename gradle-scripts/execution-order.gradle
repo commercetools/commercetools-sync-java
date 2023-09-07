@@ -45,3 +45,7 @@ jacocoTestReport.mustRunAfter integrationTest
 build.mustRunAfter setLibraryVersion
 // Ensure benchmark results are only committed runs after the benchmarks are run
 benchmarkCommit.mustRunAfter benchmark
+
+mkdocsBuild.mustRunAfter compileJava
+mkdocsBuild.mustRunAfter processResources
+mkdocsBuild.mustRunAfter javadoc
