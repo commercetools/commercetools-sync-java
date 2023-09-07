@@ -1,10 +1,6 @@
 package com.commercetools.sync.commons.utils;
 
-import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
-import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildNonNullCustomFieldsUpdateActions;
-import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static io.sphere.sdk.types.CustomFieldsDraft.ofTypeKeyAndJson;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,83 +8,98 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.category.CategorySetAssetCustomFieldActionBuilder;
+import com.commercetools.api.models.category.CategoryUpdateAction;
+import com.commercetools.api.models.common.Asset;
+import com.commercetools.api.models.common.AssetBuilder;
+import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.api.models.common.AssetDraftBuilder;
+import com.commercetools.api.models.common.Price;
+import com.commercetools.api.models.common.PriceBuilder;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductSetAssetCustomFieldAction;
+import com.commercetools.api.models.product.ProductSetAssetCustomFieldActionBuilder;
+import com.commercetools.api.models.product.ProductSetAssetCustomTypeAction;
+import com.commercetools.api.models.product.ProductSetProductPriceCustomFieldAction;
+import com.commercetools.api.models.product.ProductSetProductPriceCustomTypeAction;
+import com.commercetools.api.models.product.ProductUpdateAction;
+import com.commercetools.api.models.type.CustomFields;
+import com.commercetools.api.models.type.CustomFieldsBuilder;
+import com.commercetools.api.models.type.CustomFieldsDraft;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.FieldContainerBuilder;
+import com.commercetools.api.models.type.ResourceTypeId;
+import com.commercetools.api.models.type.TypeReference;
+import com.commercetools.api.models.type.TypeReferenceBuilder;
+import com.commercetools.api.models.type.TypeResourceIdentifier;
+import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.categories.helpers.CategoryCustomActionBuilder;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.models.AssetCustomTypeAdapter;
+import com.commercetools.sync.commons.models.AssetDraftCustomTypeAdapter;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.AssetCustomActionBuilder;
 import com.commercetools.sync.products.helpers.PriceCustomActionBuilder;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.commercetools.sync.products.models.PriceCustomTypeAdapter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Asset;
-import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.models.AssetDraftBuilder;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.Resource;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.Price;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.commands.updateactions.SetAssetCustomField;
-import io.sphere.sdk.products.commands.updateactions.SetAssetCustomType;
-import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomField;
-import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomType;
-import io.sphere.sdk.types.CustomFields;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class CustomUpdateActionUtilsTest {
-  private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
+  private static final ProjectApiRoot CTP_CLIENT = mock(ProjectApiRoot.class);
   private static final CategorySyncOptions CATEGORY_SYNC_OPTIONS =
       CategorySyncOptionsBuilder.of(CTP_CLIENT).build();
-  Resource maiNewResource = mock(Resource.class);
+  final ProductDraft productDraftMock = mock(ProductDraft.class);
 
   @Test
   void
       buildCustomUpdateActions_WithNonNullCustomFieldsWithDifferentTypes_ShouldBuildUpdateActions() {
     final Asset oldAsset = mock(Asset.class);
-    final CustomFields oldAssetCustomFields = mock(CustomFields.class);
-    final Reference<Type> oldAssetCustomFieldsDraftTypeReference = Type.referenceOfId("2");
-    when(oldAssetCustomFields.getType()).thenReturn(oldAssetCustomFieldsDraftTypeReference);
+    final TypeReference oldAssetCustomFieldsDraftTypeReference =
+        TypeReferenceBuilder.of().id("2").build();
+    final CustomFields oldAssetCustomFields =
+        CustomFieldsBuilder.of()
+            .fields(fieldContainerBuilder -> fieldContainerBuilder.values(Collections.emptyMap()))
+            .type(oldAssetCustomFieldsDraftTypeReference)
+            .build();
     when(oldAsset.getCustom()).thenReturn(oldAssetCustomFields);
 
     final AssetDraft newAssetDraft = mock(AssetDraft.class);
     final CustomFieldsDraft newAssetCustomFieldsDraft = mock(CustomFieldsDraft.class);
 
-    final ResourceIdentifier<Type> typeResourceIdentifier = Type.referenceOfId("1");
+    final TypeResourceIdentifier typeResourceIdentifier =
+        TypeResourceIdentifierBuilder.of().id("1").build();
     when(newAssetCustomFieldsDraft.getType()).thenReturn(typeResourceIdentifier);
     when(newAssetDraft.getCustom()).thenReturn(newAssetCustomFieldsDraft);
 
-    final List<UpdateAction<Product>> updateActions =
-        buildCustomUpdateActions(
-            maiNewResource,
-            oldAsset,
-            newAssetDraft,
+    final List<ProductUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildCustomUpdateActions(
+            productDraftMock,
+            AssetCustomTypeAdapter.of(oldAsset),
+            AssetDraftCustomTypeAdapter.of(newAssetDraft),
             new AssetCustomActionBuilder(),
-            10,
-            Asset::getId,
-            asset -> Asset.resourceTypeId(),
-            Asset::getKey,
+            10L,
+            AssetCustomTypeAdapter::getId,
+            asset -> ResourceTypeId.ASSET.getJsonName(),
+            AssetCustomTypeAdapter::getKey,
             ProductSyncOptionsBuilder.of(CTP_CLIENT).build());
 
     // Should set custom type of old asset.
     assertThat(updateActions).isNotNull();
     assertThat(updateActions).hasSize(1);
-    assertThat(updateActions.get(0)).isInstanceOf(SetAssetCustomType.class);
+    assertThat(updateActions.get(0)).isInstanceOf(ProductSetAssetCustomTypeAction.class);
   }
 
   @Test
@@ -96,43 +107,58 @@ class CustomUpdateActionUtilsTest {
     final Asset oldAsset = mock(Asset.class);
     when(oldAsset.getCustom()).thenReturn(null);
 
-    final CustomFieldsDraft newAssetCustomFieldsDraft = mock(CustomFieldsDraft.class);
-    final ResourceIdentifier<Type> typeResourceIdentifier = Type.referenceOfId("1");
-    when(newAssetCustomFieldsDraft.getType()).thenReturn(typeResourceIdentifier);
+    final TypeResourceIdentifier typeResourceIdentifier =
+        TypeResourceIdentifierBuilder.of().id("1").build();
+    final CustomFieldsDraft newAssetCustomFieldsDraft =
+        CustomFieldsDraftBuilder.of()
+            .type(typeResourceIdentifier)
+            .fields(fieldContainerBuilder -> fieldContainerBuilder)
+            .build();
 
     final AssetDraft newAssetDraft =
-        AssetDraftBuilder.of(emptyList(), ofEnglish("assetName"))
+        AssetDraftBuilder.of()
+            .sources(emptyList())
+            .name(ofEnglish("assetName"))
             .custom(newAssetCustomFieldsDraft)
             .build();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildCustomUpdateActions(
-            maiNewResource,
-            oldAsset,
-            newAssetDraft,
+    final List<ProductUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildCustomUpdateActions(
+            productDraftMock,
+            AssetCustomTypeAdapter.of(oldAsset),
+            AssetDraftCustomTypeAdapter.of(newAssetDraft),
             new AssetCustomActionBuilder(),
-            10,
-            Asset::getId,
-            asset -> Asset.resourceTypeId(),
-            Asset::getKey,
+            10L,
+            AssetCustomTypeAdapter::getId,
+            asset -> ResourceTypeId.ASSET.getJsonName(),
+            AssetCustomTypeAdapter::getKey,
             ProductSyncOptionsBuilder.of(CTP_CLIENT).build());
 
     // Should add custom type to old asset.
     assertThat(updateActions).isNotNull();
     assertThat(updateActions).hasSize(1);
-    assertThat(updateActions.get(0)).isInstanceOf(SetAssetCustomType.class);
+    assertThat(updateActions.get(0)).isInstanceOf(ProductSetAssetCustomTypeAction.class);
   }
 
   @Test
   void buildCustomUpdateActions_WithNullOldCustomFieldsAndBlankNewTypeId_ShouldCallErrorCallBack() {
     final Asset oldAsset = mock(Asset.class);
+
     final String oldAssetId = "oldAssetId";
     when(oldAsset.getId()).thenReturn(oldAssetId);
     when(oldAsset.getCustom()).thenReturn(null);
 
     final AssetDraft newAssetDraft =
-        AssetDraftBuilder.of(emptyList(), ofEnglish("assetName"))
-            .custom(ofTypeKeyAndJson("key", new HashMap<>()))
+        AssetDraftBuilder.of()
+            .sources(emptyList())
+            .name(ofEnglish("assetName"))
+            .custom(
+                customFieldsDraftBuilder ->
+                    customFieldsDraftBuilder
+                        .type(
+                            typeResourceIdentifierBuilder ->
+                                typeResourceIdentifierBuilder.key("key"))
+                        .fields(fieldContainerBuilder -> fieldContainerBuilder))
             .build();
 
     // Mock custom options error callback
@@ -141,7 +167,7 @@ class CustomUpdateActionUtilsTest {
             SyncException,
             Optional<ProductDraft>,
             Optional<ProductProjection>,
-            List<UpdateAction<Product>>>
+            List<ProductUpdateAction>>
         errorCallback =
             (exception, newResource, oldResource, updateActions) -> {
               callBackResponses.add(exception.getMessage());
@@ -152,16 +178,16 @@ class CustomUpdateActionUtilsTest {
     final ProductSyncOptions productSyncOptions =
         ProductSyncOptionsBuilder.of(CTP_CLIENT).errorCallback(errorCallback).build();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildCustomUpdateActions(
-            maiNewResource,
-            oldAsset,
-            newAssetDraft,
+    final List<ProductUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildCustomUpdateActions(
+            productDraftMock,
+            AssetCustomTypeAdapter.of(oldAsset),
+            AssetDraftCustomTypeAdapter.of(newAssetDraft),
             new AssetCustomActionBuilder(),
-            10,
-            Asset::getId,
-            asset -> Asset.resourceTypeId(),
-            Asset::getKey,
+            10L,
+            AssetCustomTypeAdapter::getId,
+            asset -> ResourceTypeId.ASSET.getJsonName(),
+            AssetCustomTypeAdapter::getKey,
             productSyncOptions);
 
     assertThat(updateActions).isNotNull();
@@ -183,85 +209,24 @@ class CustomUpdateActionUtilsTest {
     when(oldAsset.getCustom()).thenReturn(mock(CustomFields.class));
 
     final AssetDraft newAssetDraft =
-        AssetDraftBuilder.of(emptyList(), ofEnglish("assetName")).custom(null).build();
+        AssetDraftBuilder.of().sources(emptyList()).name(ofEnglish("assetName")).build();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildCustomUpdateActions(
-            maiNewResource,
-            oldAsset,
-            newAssetDraft,
+    final List<ProductUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildCustomUpdateActions(
+            productDraftMock,
+            AssetCustomTypeAdapter.of(oldAsset),
+            AssetDraftCustomTypeAdapter.of(newAssetDraft),
             new AssetCustomActionBuilder(),
-            10,
-            Asset::getId,
-            asset -> Asset.resourceTypeId(),
-            Asset::getKey,
+            10L,
+            AssetCustomTypeAdapter::getId,
+            asset -> ResourceTypeId.ASSET.getJsonName(),
+            AssetCustomTypeAdapter::getKey,
             ProductSyncOptionsBuilder.of(CTP_CLIENT).build());
 
     // Should remove custom type from old asset.
     assertThat(updateActions).isNotNull();
     assertThat(updateActions).hasSize(1);
-    assertThat(updateActions.get(0)).isInstanceOf(SetAssetCustomType.class);
-  }
-
-  @Test
-  void buildCustomUpdateActions_WithNullIds_ShouldCallSyncOptionsCallBack() {
-    final Reference<Type> assetCustomTypeReference = Type.referenceOfId(null);
-
-    // Mock old CustomFields
-    final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
-    when(oldCustomFieldsMock.getType()).thenReturn(assetCustomTypeReference);
-
-    // Mock new CustomFieldsDraft
-    final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
-    when(newCustomFieldsMock.getType()).thenReturn(assetCustomTypeReference);
-
-    // Mock old Asset
-    final Asset oldAsset = mock(Asset.class);
-    final String oldAssetId = "oldAssetId";
-    when(oldAsset.getId()).thenReturn(oldAssetId);
-    when(oldAsset.getCustom()).thenReturn(oldCustomFieldsMock);
-
-    final AssetDraft newAssetDraft =
-        AssetDraftBuilder.of(emptyList(), ofEnglish("assetName"))
-            .custom(newCustomFieldsMock)
-            .build();
-
-    // Mock custom options error callback
-    final ArrayList<Object> callBackResponses = new ArrayList<>();
-    final QuadConsumer<
-            SyncException,
-            Optional<ProductDraft>,
-            Optional<ProductProjection>,
-            List<UpdateAction<Product>>>
-        errorCallback =
-            (exception, newResource, oldResource, updateActions) -> {
-              callBackResponses.add(exception.getMessage());
-              callBackResponses.add(exception.getCause());
-            };
-
-    // Mock sync options
-    final ProductSyncOptions productSyncOptions =
-        ProductSyncOptionsBuilder.of(CTP_CLIENT).errorCallback(errorCallback).build();
-
-    final List<UpdateAction<Product>> updateActions =
-        buildCustomUpdateActions(
-            maiNewResource,
-            oldAsset,
-            newAssetDraft,
-            new AssetCustomActionBuilder(),
-            10,
-            Asset::getId,
-            asset -> Asset.resourceTypeId(),
-            Asset::getKey,
-            productSyncOptions);
-
-    assertThat(callBackResponses).hasSize(2);
-    assertThat(callBackResponses.get(0))
-        .isEqualTo(
-            "Failed to build custom fields update actions on the asset"
-                + " with id 'oldAssetId'. Reason: Custom type ids are not set for both the old and new asset.");
-    assertThat((Exception) callBackResponses.get(1)).isInstanceOf(BuildUpdateActionException.class);
-    assertThat(updateActions).isEmpty();
+    assertThat(updateActions.get(0)).isInstanceOf(ProductSetAssetCustomTypeAction.class);
   }
 
   @Test
@@ -279,7 +244,7 @@ class CustomUpdateActionUtilsTest {
             SyncException,
             Optional<ProductDraft>,
             Optional<ProductProjection>,
-            List<UpdateAction<Product>>>
+            List<ProductUpdateAction>>
         errorCallback =
             (exception, newResource, oldResource, updateActions) -> {
               callBackResponses.add(exception.getMessage());
@@ -290,16 +255,16 @@ class CustomUpdateActionUtilsTest {
     final ProductSyncOptions productSyncOptions =
         ProductSyncOptionsBuilder.of(CTP_CLIENT).errorCallback(errorCallback).build();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildCustomUpdateActions(
-            maiNewResource,
-            oldAsset,
-            newAssetDraft,
+    final List<ProductUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildCustomUpdateActions(
+            productDraftMock,
+            AssetCustomTypeAdapter.of(oldAsset),
+            AssetDraftCustomTypeAdapter.of(newAssetDraft),
             new AssetCustomActionBuilder(),
-            10,
-            Asset::getId,
-            asset -> Asset.resourceTypeId(),
-            Asset::getKey,
+            10L,
+            AssetCustomTypeAdapter::getId,
+            asset -> ResourceTypeId.ASSET.getJsonName(),
+            AssetCustomTypeAdapter::getKey,
             productSyncOptions);
 
     assertThat(updateActions).isNotNull();
@@ -313,203 +278,218 @@ class CustomUpdateActionUtilsTest {
           throws BuildUpdateActionException {
     // Mock old CustomFields
     final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
-    final Map<String, JsonNode> oldCustomFieldsJsonMapMock = new HashMap<>();
-    oldCustomFieldsJsonMapMock.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
-    when(oldCustomFieldsMock.getType()).thenReturn(Type.referenceOfId("categoryAssetCustomTypeId"));
-    when(oldCustomFieldsMock.getFieldsJsonMap()).thenReturn(oldCustomFieldsJsonMapMock);
+    final Map<String, Object> oldCustomFieldsJsonMapMock = new HashMap<>();
+    oldCustomFieldsJsonMapMock.put("invisibleInShop", true);
+
+    when(oldCustomFieldsMock.getType())
+        .thenReturn(TypeReferenceBuilder.of().id("categoryAssetCustomTypeId").build());
+    when(oldCustomFieldsMock.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(oldCustomFieldsJsonMapMock).build());
 
     // Mock new CustomFieldsDraft
     final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
-    final Map<String, JsonNode> newCustomFieldsJsonMapMock = new HashMap<>();
+    final Map<String, Object> newCustomFieldsJsonMapMock = new HashMap<>();
     newCustomFieldsJsonMapMock.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
-    when(newCustomFieldsMock.getType()).thenReturn(Type.referenceOfId("categoryAssetCustomTypeId"));
-    when(newCustomFieldsMock.getFields()).thenReturn(newCustomFieldsJsonMapMock);
+    when(newCustomFieldsMock.getType())
+        .thenReturn(TypeResourceIdentifierBuilder.of().id("categoryAssetCustomTypeId").build());
+    when(newCustomFieldsMock.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(newCustomFieldsJsonMapMock).build());
 
-    final List<UpdateAction<Category>> updateActions =
-        buildNonNullCustomFieldsUpdateActions(
+    when(newCustomFieldsMock.getType())
+        .thenReturn(
+            TypeReferenceBuilder.of()
+                .id("categoryAssetCustomTypeId")
+                .build()
+                .toResourceIdentifier());
+    when(newCustomFieldsMock.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(newCustomFieldsJsonMapMock).build());
+
+    final List<ProductUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildNonNullCustomFieldsUpdateActions(
             oldCustomFieldsMock,
             newCustomFieldsMock,
-            mock(Asset.class),
-            new com.commercetools.sync.categories.helpers.AssetCustomActionBuilder(),
-            1,
-            Asset::getId,
-            assetResource -> Asset.resourceTypeId(),
-            Asset::getKey,
+            AssetCustomTypeAdapter.of(mock(Asset.class)),
+            new AssetCustomActionBuilder(),
+            1L,
+            AssetCustomTypeAdapter::getId,
+            asset -> ResourceTypeId.ASSET.getJsonName(),
+            AssetCustomTypeAdapter::getKey,
             CATEGORY_SYNC_OPTIONS);
 
     assertThat(updateActions).isNotNull();
     assertThat(updateActions).hasSize(1);
-    assertThat(updateActions.get(0))
-        .isInstanceOf(io.sphere.sdk.categories.commands.updateactions.SetAssetCustomField.class);
+    assertThat(updateActions.get(0)).isInstanceOf(ProductSetAssetCustomFieldAction.class);
   }
 
   @Test
   void buildNonNullCustomFieldsUpdateActions_WithDifferentCategoryTypeIds_ShouldBuildUpdateActions()
       throws BuildUpdateActionException {
     // Mock old CustomFields
-    final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
-    when(oldCustomFieldsMock.getType()).thenReturn(Type.referenceOfId("assetCustomTypeId"));
+    final CustomFields oldCustomFieldsMock =
+        CustomFieldsBuilder.of()
+            .type(TypeReferenceBuilder.of().id("assetCustomTypeId").build())
+            .fields(fieldContainerBuilder -> fieldContainerBuilder.values(Collections.emptyMap()))
+            .build();
 
     // Mock new CustomFieldsDraft
     final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
-    when(newCustomFieldsMock.getType()).thenReturn(ResourceIdentifier.ofId("newAssetCustomTypeId"));
 
-    final List<UpdateAction<Category>> updateActions =
-        buildNonNullCustomFieldsUpdateActions(
+    when(newCustomFieldsMock.getType())
+        .thenReturn(TypeResourceIdentifierBuilder.of().id("newAssetCustomTypeId").build());
+
+    final List<ProductUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildNonNullCustomFieldsUpdateActions(
             oldCustomFieldsMock,
             newCustomFieldsMock,
-            mock(Asset.class),
-            new com.commercetools.sync.categories.helpers.AssetCustomActionBuilder(),
-            1,
-            Asset::getId,
-            assetResource -> Asset.resourceTypeId(),
-            Asset::getKey,
+            AssetCustomTypeAdapter.of(mock(Asset.class)),
+            new AssetCustomActionBuilder(),
+            1L,
+            AssetCustomTypeAdapter::getId,
+            asset -> ResourceTypeId.ASSET.getJsonName(),
+            AssetCustomTypeAdapter::getKey,
             CATEGORY_SYNC_OPTIONS);
 
     assertThat(updateActions).isNotNull();
     assertThat(updateActions).hasSize(1);
-    assertThat(updateActions.get(0))
-        .isInstanceOf(io.sphere.sdk.categories.commands.updateactions.SetAssetCustomType.class);
+    assertThat(updateActions.get(0)).isInstanceOf(ProductSetAssetCustomTypeAction.class);
   }
 
   @Test
-  void buildNonNullCustomFieldsUpdateActions_WithNullOldCategoryTypeId_ShouldBuildUpdateActions()
+  void buildNonNullCustomFieldsUpdateActions_WithEmptyOldCategoryTypeId_ShouldBuildUpdateActions()
       throws BuildUpdateActionException {
     // Mock old CustomFields
-    final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
-    when(oldCustomFieldsMock.getType()).thenReturn(Type.referenceOfId(null));
+    final CustomFields oldCustomFieldsMock =
+        CustomFieldsBuilder.of()
+            .type(TypeReferenceBuilder.of().id("").build())
+            .fields(fieldContainerBuilder -> fieldContainerBuilder.values(Collections.emptyMap()))
+            .build();
 
     // Mock new CustomFieldsDraft
     final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
-    when(newCustomFieldsMock.getType()).thenReturn(Type.referenceOfId("priceCustomTypeId"));
+    when(newCustomFieldsMock.getType())
+        .thenReturn(TypeResourceIdentifierBuilder.of().id("priceCustomTypeId").build());
 
-    final List<UpdateAction<Product>> updateActions =
-        buildNonNullCustomFieldsUpdateActions(
+    // Mock new price
+    final Price price =
+        PriceBuilder.of()
+            .id("1")
+            .value(
+                builder ->
+                    builder
+                        .centPrecisionBuilder()
+                        .centAmount(10L)
+                        .currencyCode("EUR")
+                        .fractionDigits(0))
+            .build();
+
+    final List<ProductUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildNonNullCustomFieldsUpdateActions(
             oldCustomFieldsMock,
             newCustomFieldsMock,
-            mock(Price.class),
+            PriceCustomTypeAdapter.of(price),
             new PriceCustomActionBuilder(),
-            1,
-            Price::getId,
-            priceResource -> Price.resourceTypeId(),
-            Price::getId,
+            1L,
+            PriceCustomTypeAdapter::getId,
+            asset -> ResourceTypeId.PRODUCT_PRICE.getJsonName(),
+            PriceCustomTypeAdapter::getId,
             ProductSyncOptionsBuilder.of(CTP_CLIENT).build());
 
     assertThat(updateActions).isNotNull();
     assertThat(updateActions).hasSize(1);
-    assertThat(updateActions.get(0)).isInstanceOf(SetProductPriceCustomType.class);
-  }
-
-  @Test
-  void buildNonNullCustomFieldsUpdateActions_WithNullNewCategoryTypeId_ShouldBuildUpdateActions()
-      throws BuildUpdateActionException {
-    // Mock old CustomFields
-    final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
-    when(oldCustomFieldsMock.getType()).thenReturn(Type.referenceOfId("1"));
-
-    // Mock new CustomFieldsDraft
-    final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
-    when(newCustomFieldsMock.getType()).thenReturn(Type.referenceOfId(null));
-
-    // Mock custom options error callback
-    final ArrayList<String> errorMessages = new ArrayList<>();
-    final QuadConsumer<
-            SyncException,
-            Optional<ProductDraft>,
-            Optional<ProductProjection>,
-            List<UpdateAction<Product>>>
-        errorCallback =
-            (exception, newResource, oldResource, updateActions) ->
-                errorMessages.add(exception.getMessage());
-
-    // Mock sync options
-    final ProductSyncOptions productSyncOptions =
-        ProductSyncOptionsBuilder.of(CTP_CLIENT).errorCallback(errorCallback).build();
-
-    final Price price = mock(Price.class);
-    when(price.getId()).thenReturn(UUID.randomUUID().toString());
-
-    final List<UpdateAction<Product>> updateActions =
-        buildNonNullCustomFieldsUpdateActions(
-            oldCustomFieldsMock,
-            newCustomFieldsMock,
-            price,
-            new PriceCustomActionBuilder(),
-            1,
-            Price::getId,
-            priceResource -> Price.resourceTypeId(),
-            Price::getId,
-            productSyncOptions);
-
-    assertThat(errorMessages).hasSize(1);
-    assertThat(errorMessages.get(0))
-        .isEqualTo(
-            format(
-                "Failed to build 'setCustomType' update action on the "
-                    + "%s with id '%s'. Reason: New Custom Type id is blank (null/empty).",
-                Price.resourceTypeId(), price.getId()));
-    assertThat(updateActions).isEmpty();
+    assertThat(updateActions.get(0)).isInstanceOf(ProductSetProductPriceCustomTypeAction.class);
   }
 
   @Test
   void
       buildNonNullCustomFieldsUpdateActions_WithSameIdsButNullNewCustomFields_ShouldBuildUpdateActions()
           throws BuildUpdateActionException {
-    final Reference<Type> productPriceTypeReference =
-        Type.referenceOfId("productPriceCustomTypeId");
+    final TypeReference productPriceTypeReference =
+        TypeReferenceBuilder.of().id("productPriceCustomTypeId").build();
 
     // Mock old CustomFields
     final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
-    final Map<String, JsonNode> oldCustomFieldsJsonMapMock = new HashMap<>();
-    oldCustomFieldsJsonMapMock.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+    final Map<String, Object> oldCustomFieldsJsonMapMock = new HashMap<>();
+    oldCustomFieldsJsonMapMock.put("invisibleInShop", true);
     when(oldCustomFieldsMock.getType()).thenReturn(productPriceTypeReference);
-    when(oldCustomFieldsMock.getFieldsJsonMap()).thenReturn(oldCustomFieldsJsonMapMock);
+    when(oldCustomFieldsMock.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(oldCustomFieldsJsonMapMock).build());
 
     // Mock new CustomFieldsDraft
     final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
-    when(newCustomFieldsMock.getType()).thenReturn(productPriceTypeReference);
+    when(newCustomFieldsMock.getType())
+        .thenReturn(productPriceTypeReference.toResourceIdentifier());
     when(newCustomFieldsMock.getFields()).thenReturn(null);
 
-    final List<UpdateAction<Product>> updateActions =
-        buildNonNullCustomFieldsUpdateActions(
+    // Mock new price
+    final Price price =
+        PriceBuilder.of()
+            .id("1")
+            .value(
+                builder ->
+                    builder
+                        .centPrecisionBuilder()
+                        .centAmount(10L)
+                        .currencyCode("EUR")
+                        .fractionDigits(0))
+            .build();
+
+    final List<ProductUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildNonNullCustomFieldsUpdateActions(
             oldCustomFieldsMock,
             newCustomFieldsMock,
-            mock(Price.class),
+            PriceCustomTypeAdapter.of(price),
             new PriceCustomActionBuilder(),
-            1,
-            Price::getId,
-            priceResource -> Price.resourceTypeId(),
-            Price::getId,
+            1L,
+            PriceCustomTypeAdapter::getId,
+            asset -> ResourceTypeId.PRODUCT_PRICE.getJsonName(),
+            PriceCustomTypeAdapter::getId,
             ProductSyncOptionsBuilder.of(CTP_CLIENT).build());
 
     assertThat(updateActions).isNotNull();
     assertThat(updateActions).hasSize(1);
-    assertThat(updateActions.get(0)).isInstanceOf(SetProductPriceCustomType.class);
+    assertThat(updateActions.get(0)).isInstanceOf(ProductSetProductPriceCustomFieldAction.class);
   }
 
   @Test
   void buildNonNullCustomFieldsUpdateActions_WithNullIds_ShouldThrowBuildUpdateActionException() {
-    final Reference<Type> productPriceTypeReference = Type.referenceOfId(null);
+    final TypeReference productPriceTypeReference = TypeReferenceBuilder.of().id("").build();
 
     // Mock old CustomFields
-    final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
-    when(oldCustomFieldsMock.getType()).thenReturn(productPriceTypeReference);
+    final CustomFields oldCustomFieldsMock =
+        CustomFieldsBuilder.of()
+            .type(productPriceTypeReference)
+            .fields(fieldContainerBuilder -> fieldContainerBuilder.values(Collections.emptyMap()))
+            .build();
 
     // Mock new CustomFieldsDraft
     final CustomFieldsDraft newCustomFieldsMock = mock(CustomFieldsDraft.class);
-    when(newCustomFieldsMock.getType()).thenReturn(productPriceTypeReference);
+    when(newCustomFieldsMock.getType())
+        .thenReturn(productPriceTypeReference.toResourceIdentifier());
+
+    // Mock new price
+    final Price price =
+        PriceBuilder.of()
+            .id("1")
+            .value(
+                builder ->
+                    builder
+                        .centPrecisionBuilder()
+                        .centAmount(10L)
+                        .currencyCode("EUR")
+                        .fractionDigits(0))
+            .build();
 
     assertThatThrownBy(
             () ->
-                buildNonNullCustomFieldsUpdateActions(
+                CustomUpdateActionUtils.buildNonNullCustomFieldsUpdateActions(
                     oldCustomFieldsMock,
                     newCustomFieldsMock,
-                    mock(Price.class),
+                    PriceCustomTypeAdapter.of(price),
                     new PriceCustomActionBuilder(),
-                    1,
-                    Price::getId,
-                    priceResource -> Price.resourceTypeId(),
-                    Price::getId,
+                    1L,
+                    PriceCustomTypeAdapter::getId,
+                    asset -> ResourceTypeId.PRODUCT_PRICE.getJsonName(),
+                    PriceCustomTypeAdapter::getId,
                     ProductSyncOptionsBuilder.of(CTP_CLIENT).build()))
         .isInstanceOf(BuildUpdateActionException.class)
         .hasMessageMatching("Custom type ids are not set for both the old and new product-price.");
@@ -517,81 +497,119 @@ class CustomUpdateActionUtilsTest {
 
   @Test
   void buildSetCustomFieldsUpdateActions_WithDifferentCustomFieldValues_ShouldBuildUpdateActions() {
-    final Map<String, JsonNode> oldCustomFields = new HashMap<>();
-    oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
-    oldCustomFields.put(
-        "backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
+    final Map<String, Object> oldCustomFields = new HashMap<>();
+    oldCustomFields.put("invisibleInShop", true);
+    oldCustomFields.put("backgroundColor", Map.of("de", "rot", "en", "red"));
 
-    final Map<String, JsonNode> newCustomFields = new HashMap<>();
+    final Map<String, Object> newCustomFields = new HashMap<>();
     newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
     newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
 
-    final List<UpdateAction<Product>> updateActions =
-        buildSetCustomFieldsUpdateActions(
+    // Mock new price
+    final Price price =
+        PriceBuilder.of()
+            .id("1")
+            .value(
+                builder ->
+                    builder
+                        .centPrecisionBuilder()
+                        .centAmount(10L)
+                        .currencyCode("EUR")
+                        .fractionDigits(0))
+            .build();
+
+    final List<ProductUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions(
             oldCustomFields,
             newCustomFields,
-            mock(Price.class),
+            PriceCustomTypeAdapter.of(price),
             new PriceCustomActionBuilder(),
-            1,
-            Price::getId);
+            1L,
+            PriceCustomTypeAdapter::getId);
 
     assertThat(updateActions).isNotNull();
     assertThat(updateActions).isNotEmpty();
-    assertThat(updateActions).hasSize(2);
-    final UpdateAction<Product> categoryUpdateAction = updateActions.get(0);
+    assertThat(updateActions).hasSize(1);
+    final ProductUpdateAction categoryUpdateAction = updateActions.get(0);
     assertThat(categoryUpdateAction).isNotNull();
-    assertThat(categoryUpdateAction).isInstanceOf(SetProductPriceCustomField.class);
+    assertThat(categoryUpdateAction).isInstanceOf(ProductSetProductPriceCustomFieldAction.class);
   }
 
   @Test
   void buildSetCustomFieldsUpdateActions_WithNewCustomFields_ShouldBuildUpdateActions() {
-    final Map<String, JsonNode> oldCustomFields = new HashMap<>();
+    final Map<String, Object> oldCustomFields = new HashMap<>();
 
-    final Map<String, JsonNode> newCustomFields = new HashMap<>();
+    final Map<String, Object> newCustomFields = new HashMap<>();
     newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
     newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
-    newCustomFields.put("url", JsonNodeFactory.instance.objectNode().put("domain", "domain.com"));
-    newCustomFields.put("size", JsonNodeFactory.instance.objectNode().put("cm", 34));
+    newCustomFields.put("url", Map.of("domain", "domain.com"));
+    newCustomFields.put("size", Map.of("cm", 34));
 
-    final List<UpdateAction<Product>> updateActions =
-        buildSetCustomFieldsUpdateActions(
+    // Mock new price
+    final Price price =
+        PriceBuilder.of()
+            .id("1")
+            .value(
+                builder ->
+                    builder
+                        .centPrecisionBuilder()
+                        .centAmount(10L)
+                        .currencyCode("EUR")
+                        .fractionDigits(0))
+            .build();
+
+    final List<ProductUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions(
             oldCustomFields,
             newCustomFields,
-            mock(Price.class),
+            PriceCustomTypeAdapter.of(price),
             new PriceCustomActionBuilder(),
-            1,
-            Price::getId);
+            1L,
+            PriceCustomTypeAdapter::getId);
 
     assertThat(updateActions).hasSize(4);
   }
 
   @Test
   void buildSetCustomFieldsUpdateActions_WithRemovedCustomFields_ShouldBuildUpdateActions() {
-    final Map<String, JsonNode> oldCustomFields = new HashMap<>();
-    oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
-    oldCustomFields.put(
-        "backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
+    final Map<String, Object> oldCustomFields = new HashMap<>();
+    oldCustomFields.put("invisibleInShop", true);
+    oldCustomFields.put("backgroundColor", Map.of("de", "rot", "en", "red"));
 
-    final Map<String, JsonNode> newCustomFields = new HashMap<>();
+    final Map<String, Object> newCustomFields = new HashMap<>();
     newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
-    final List<UpdateAction<Product>> updateActions =
-        buildSetCustomFieldsUpdateActions(
+    // Mock new price
+    final Price price =
+        PriceBuilder.of()
+            .id("1")
+            .value(
+                builder ->
+                    builder
+                        .centPrecisionBuilder()
+                        .centAmount(10L)
+                        .currencyCode("EUR")
+                        .fractionDigits(0))
+            .build();
+
+    final List<ProductUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions(
             oldCustomFields,
             newCustomFields,
-            mock(Price.class),
+            PriceCustomTypeAdapter.of(price),
             new PriceCustomActionBuilder(),
-            1,
-            Price::getId);
+            1L,
+            PriceCustomTypeAdapter::getId);
 
     assertThat(updateActions)
         .hasSize(1)
         .singleElement()
         .matches(
             action -> {
-              assertThat(action).isInstanceOf(SetProductPriceCustomField.class);
-              final SetProductPriceCustomField setProductPriceCustomFieldAction =
-                  (SetProductPriceCustomField) action;
+              assertThat(action).isInstanceOf(ProductSetProductPriceCustomFieldAction.class);
+              final ProductSetProductPriceCustomFieldAction setProductPriceCustomFieldAction =
+                  (ProductSetProductPriceCustomFieldAction) action;
+
               assertThat(setProductPriceCustomFieldAction.getName()).isEqualTo("backgroundColor");
               assertThat(setProductPriceCustomFieldAction.getValue()).isEqualTo(null);
               return true;
@@ -600,22 +618,25 @@ class CustomUpdateActionUtilsTest {
 
   @Test
   void buildSetCustomFieldsUpdateActions_WithSameCustomFieldValues_ShouldNotBuildUpdateActions() {
-    final Map<String, JsonNode> oldCustomFields = new HashMap<>();
-    oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
-    oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
+    final Map<String, Object> oldCustomFields = new HashMap<>();
+    oldCustomFields.put("invisibleInShop", true);
+    oldCustomFields.put("backgroundColor", Map.of("de", "rot"));
 
-    final Map<String, JsonNode> newCustomFields = new HashMap<>();
+    final Map<String, Object> newCustomFields = new HashMap<>();
     newCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
     newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
 
-    final List<UpdateAction<Category>> updateActions =
-        buildSetCustomFieldsUpdateActions(
+    final Asset newAssetDraft =
+        AssetBuilder.of().id("test").sources(emptyList()).name(ofEnglish("assetName")).build();
+
+    final List<CategoryUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions(
             oldCustomFields,
             newCustomFields,
-            mock(Asset.class),
+            AssetCustomTypeAdapter.of(newAssetDraft),
             new CategoryCustomActionBuilder(),
-            1,
-            Asset::getId);
+            1L,
+            AssetCustomTypeAdapter::getId);
 
     assertThat(updateActions).isNotNull();
     assertThat(updateActions).isEmpty();
@@ -624,24 +645,25 @@ class CustomUpdateActionUtilsTest {
   @Test
   void
       buildSetCustomFieldsUpdateActions_WithDifferentOrderOfCustomFieldValues_ShouldNotBuildUpdateActions() {
-    final Map<String, JsonNode> oldCustomFields = new HashMap<>();
-    oldCustomFields.put(
-        "backgroundColor",
-        JsonNodeFactory.instance.objectNode().put("de", "rot").put("es", "rojo"));
+    final Map<String, Object> oldCustomFields = new HashMap<>();
+    oldCustomFields.put("backgroundColor", Map.of("de", "rot", "es", "rojo"));
 
-    final Map<String, JsonNode> newCustomFields = new HashMap<>();
+    final Map<String, Object> newCustomFields = new HashMap<>();
     newCustomFields.put(
         "backgroundColor",
         JsonNodeFactory.instance.objectNode().put("es", "rojo").put("de", "rot"));
 
-    final List<UpdateAction<Category>> updateActions =
-        buildSetCustomFieldsUpdateActions(
+    final Asset newAssetDraft =
+        AssetBuilder.of().id("test").sources(emptyList()).name(ofEnglish("assetName")).build();
+
+    final List<CategoryUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions(
             oldCustomFields,
             newCustomFields,
-            mock(Asset.class),
+            AssetCustomTypeAdapter.of(newAssetDraft),
             new com.commercetools.sync.categories.helpers.AssetCustomActionBuilder(),
-            1,
-            Asset::getId);
+            1L,
+            AssetCustomTypeAdapter::getId);
 
     assertThat(updateActions).isNotNull();
     assertThat(updateActions).isEmpty();
@@ -649,20 +671,23 @@ class CustomUpdateActionUtilsTest {
 
   @Test
   void buildSetCustomFieldsUpdateActions_WithEmptyCustomFieldValues_ShouldNotBuildUpdateActions() {
-    final Map<String, JsonNode> oldCustomFields = new HashMap<>();
-    oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode());
+    final Map<String, Object> oldCustomFields = new HashMap<>();
+    oldCustomFields.put("backgroundColor", "");
 
-    final Map<String, JsonNode> newCustomFields = new HashMap<>();
-    newCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode());
+    final Map<String, Object> newCustomFields = new HashMap<>();
+    newCustomFields.put("backgroundColor", JsonNodeFactory.instance.textNode(""));
 
-    final List<UpdateAction<Product>> updateActions =
-        buildSetCustomFieldsUpdateActions(
+    final Asset newAssetDraft =
+        AssetBuilder.of().id("test").sources(emptyList()).name(ofEnglish("assetName")).build();
+
+    final List<CategoryUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions(
             oldCustomFields,
             newCustomFields,
-            mock(Asset.class),
-            new AssetCustomActionBuilder(),
-            1,
-            Asset::getId);
+            AssetCustomTypeAdapter.of(newAssetDraft),
+            new com.commercetools.sync.categories.helpers.AssetCustomActionBuilder(),
+            1L,
+            AssetCustomTypeAdapter::getId);
 
     assertThat(updateActions).isNotNull();
     assertThat(updateActions).isEmpty();
@@ -670,18 +695,21 @@ class CustomUpdateActionUtilsTest {
 
   @Test
   void buildSetCustomFieldsUpdateActions_WithEmptyCustomFields_ShouldNotBuildUpdateActions() {
-    final Map<String, JsonNode> oldCustomFields = new HashMap<>();
+    final Map<String, Object> oldCustomFields = new HashMap<>();
 
-    final Map<String, JsonNode> newCustomFields = new HashMap<>();
+    final Map<String, Object> newCustomFields = new HashMap<>();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildSetCustomFieldsUpdateActions(
+    final Asset newAssetDraft =
+        AssetBuilder.of().id("test").sources(emptyList()).name(ofEnglish("assetName")).build();
+
+    final List<CategoryUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions(
             oldCustomFields,
             newCustomFields,
-            mock(Asset.class),
-            new AssetCustomActionBuilder(),
-            1,
-            Asset::getId);
+            AssetCustomTypeAdapter.of(newAssetDraft),
+            new com.commercetools.sync.categories.helpers.AssetCustomActionBuilder(),
+            1L,
+            AssetCustomTypeAdapter::getId);
 
     assertThat(updateActions).isNotNull();
     assertThat(updateActions).isEmpty();
@@ -690,251 +718,292 @@ class CustomUpdateActionUtilsTest {
   @Test
   void buildSetCustomFieldsUpdateActions_WithNullNewValue_ShouldBuildSetAction() {
     // preparation
-    final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
-    oldCustomFieldsMap.put(
-        "setOfBooleans",
-        JsonNodeFactory.instance.arrayNode().add(JsonNodeFactory.instance.booleanNode(false)));
+    final Map<String, Object> oldCustomFieldsMap = new HashMap<>();
+    oldCustomFieldsMap.put("setOfBooleans", List.of(true));
 
     final CustomFields oldCustomFields = mock(CustomFields.class);
-    when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+    when(oldCustomFields.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(oldCustomFieldsMap).build());
 
     final Asset oldAsset = mock(Asset.class);
     when(oldAsset.getCustom()).thenReturn(oldCustomFields);
 
-    final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
+    final Map<String, Object> newCustomFieldsMap = new HashMap<>();
     newCustomFieldsMap.put("setOfBooleans", null);
 
     // test
-    final List<UpdateAction<Product>> updateActions =
-        buildSetCustomFieldsUpdateActions(
+    final List<CategoryUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions(
             oldCustomFieldsMap,
             newCustomFieldsMap,
-            mock(Asset.class),
-            new AssetCustomActionBuilder(),
-            1,
-            Asset::getId);
+            AssetCustomTypeAdapter.of(mock(Asset.class)),
+            new com.commercetools.sync.categories.helpers.AssetCustomActionBuilder(),
+            1L,
+            AssetCustomTypeAdapter::getId);
 
     // assertion
     assertThat(updateActions)
         .containsExactly(
-            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(
-                1, oldAsset.getKey(), "setOfBooleans", null, true));
+            CategorySetAssetCustomFieldActionBuilder.of()
+                .assetKey(oldAsset.getKey())
+                .name("setOfBooleans")
+                .value(null)
+                .build());
   }
 
   @Test
   void buildSetCustomFieldsUpdateActions_WithEmptyArrayAsDiffValue_ShouldBuildSetAction() {
     // preparation
-    final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
-    oldCustomFieldsMap.put(
-        "setOfBooleans",
-        JsonNodeFactory.instance.arrayNode().add(JsonNodeFactory.instance.booleanNode(false)));
+    final Map<String, Object> oldCustomFieldsMap = new HashMap<>();
+    oldCustomFieldsMap.put("setOfBooleans", Collections.singletonList(true));
 
     final CustomFields oldCustomFields = mock(CustomFields.class);
-    when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+    when(oldCustomFields.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(oldCustomFieldsMap).build());
 
     final Asset oldAsset = mock(Asset.class);
     when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+    when(oldAsset.getKey()).thenReturn("oldKey");
 
-    final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
-    newCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.arrayNode());
+    final Map<String, Object> newCustomFieldsMap = new HashMap<>();
+    newCustomFieldsMap.put(
+        "setOfBooleans", new ObjectMapper().convertValue(Collections.emptyList(), List.class));
 
     // test
-    final List<UpdateAction<Product>> updateActions =
-        buildSetCustomFieldsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions(
             oldCustomFieldsMap,
             newCustomFieldsMap,
-            mock(Asset.class),
+            AssetCustomTypeAdapter.of(oldAsset),
             new AssetCustomActionBuilder(),
-            1,
-            Asset::getId);
+            1L,
+            AssetCustomTypeAdapter::getKey);
 
     // assertion
     assertThat(updateActions)
         .containsExactly(
-            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(
-                1, oldAsset.getKey(), "setOfBooleans", JsonNodeFactory.instance.arrayNode(), true));
+            ProductSetAssetCustomFieldActionBuilder.of()
+                .assetKey(oldAsset.getKey())
+                .variantId(1L)
+                .name("setOfBooleans")
+                .value(emptyList())
+                .staged(true)
+                .build());
   }
 
   @Test
   void buildSetCustomFieldsUpdateActions_WithEmptyArrayAndNullOldValue_ShouldBuildSetAction() {
     // preparation
-    final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
+    final Map<String, Object> oldCustomFieldsMap = new HashMap<>();
     oldCustomFieldsMap.put("setOfBooleans", null);
 
     final CustomFields oldCustomFields = mock(CustomFields.class);
-    when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+    when(oldCustomFields.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(oldCustomFieldsMap).build());
 
     final Asset oldAsset = mock(Asset.class);
     when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+    when(oldAsset.getKey()).thenReturn("oldKey");
 
-    final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
-    newCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.arrayNode());
+    final Map<String, Object> newCustomFieldsMap = new HashMap<>();
+    newCustomFieldsMap.put("setOfBooleans", Collections.emptyList());
 
     // test
-    final List<UpdateAction<Product>> updateActions =
-        buildSetCustomFieldsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions(
             oldCustomFieldsMap,
             newCustomFieldsMap,
-            mock(Asset.class),
+            AssetCustomTypeAdapter.of(oldAsset),
             new AssetCustomActionBuilder(),
-            1,
-            Asset::getId);
+            1L,
+            AssetCustomTypeAdapter::getKey);
 
     // assertion
     assertThat(updateActions)
         .containsExactly(
-            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(
-                1, oldAsset.getKey(), "setOfBooleans", JsonNodeFactory.instance.arrayNode(), true));
+            ProductSetAssetCustomFieldActionBuilder.of()
+                .assetKey(oldAsset.getKey())
+                .variantId(1L)
+                .name("setOfBooleans")
+                .value(emptyList())
+                .staged(true)
+                .build());
   }
 
   @Test
   void buildSetCustomFieldsUpdateActions_WithEmptyArrayAndNullNodeOldValue_ShouldBuildSetAction() {
     // preparation
-    final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
-    oldCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.nullNode());
+    final Map<String, Object> oldCustomFieldsMap = new HashMap<>();
+    oldCustomFieldsMap.put("setOfBooleans", null);
 
     final CustomFields oldCustomFields = mock(CustomFields.class);
-    when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+    when(oldCustomFields.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(oldCustomFieldsMap).build());
 
     final Asset oldAsset = mock(Asset.class);
     when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+    when(oldAsset.getKey()).thenReturn("oldKey");
 
-    final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
-    newCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.arrayNode());
+    final Map<String, Object> newCustomFieldsMap = new HashMap<>();
+    newCustomFieldsMap.put("setOfBooleans", Collections.emptyList());
 
     // test
-    final List<UpdateAction<Product>> updateActions =
-        buildSetCustomFieldsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions(
             oldCustomFieldsMap,
             newCustomFieldsMap,
-            mock(Asset.class),
+            AssetCustomTypeAdapter.of(oldAsset),
             new AssetCustomActionBuilder(),
-            1,
-            Asset::getId);
+            1L,
+            AssetCustomTypeAdapter::getKey);
 
     // assertion
     assertThat(updateActions)
         .containsExactly(
-            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(
-                1, oldAsset.getKey(), "setOfBooleans", JsonNodeFactory.instance.arrayNode(), true));
+            ProductSetAssetCustomFieldActionBuilder.of()
+                .assetKey(oldAsset.getKey())
+                .variantId(1L)
+                .name("setOfBooleans")
+                .value(emptyList())
+                .staged(true)
+                .build());
   }
 
   @Test
   void buildSetCustomFieldsUpdateActions_WithEmptyArrayAsNewValue_ShouldBuildSetAction() {
     // preparation
     final CustomFields oldCustomFields = mock(CustomFields.class);
-    when(oldCustomFields.getFieldsJsonMap()).thenReturn(new HashMap<>());
+    when(oldCustomFields.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(new HashMap<>()).build());
 
     final Asset oldAsset = mock(Asset.class);
     when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+    when(oldAsset.getKey()).thenReturn("oldKey");
 
-    final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
-    newCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.arrayNode());
+    final Map<String, Object> newCustomFieldsMap = new HashMap<>();
+    newCustomFieldsMap.put("setOfBooleans", Collections.emptyList());
 
     // test
-    final List<UpdateAction<Product>> updateActions =
-        buildSetCustomFieldsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions(
             new HashMap<>(),
             newCustomFieldsMap,
-            mock(Asset.class),
+            AssetCustomTypeAdapter.of(oldAsset),
             new AssetCustomActionBuilder(),
-            1,
-            Asset::getId);
+            1L,
+            AssetCustomTypeAdapter::getKey);
 
     // assertion
     assertThat(updateActions)
         .containsExactly(
-            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(
-                1, oldAsset.getKey(), "setOfBooleans", JsonNodeFactory.instance.arrayNode(), true));
+            ProductSetAssetCustomFieldActionBuilder.of()
+                .assetKey(oldAsset.getKey())
+                .variantId(1L)
+                .name("setOfBooleans")
+                .value(emptyList())
+                .staged(true)
+                .build());
   }
 
   @Test
   void buildSetCustomFieldsUpdateActions_WithEmptyArrayAsSameValue_ShouldBuildSetAction() {
     // preparation
-    final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
-    oldCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.arrayNode());
+    final Map<String, Object> oldCustomFieldsMap = new HashMap<>();
+    oldCustomFieldsMap.put("setOfBooleans", Collections.emptyList());
 
     final CustomFields oldCustomFields = mock(CustomFields.class);
-    when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+    when(oldCustomFields.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(oldCustomFieldsMap).build());
 
     final Asset oldAsset = mock(Asset.class);
     when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+    when(oldAsset.getKey()).thenReturn("oldKey");
 
-    final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
-    newCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.arrayNode());
+    final Map<String, Object> newCustomFieldsMap = new HashMap<>();
+    newCustomFieldsMap.put("setOfBooleans", Collections.emptyList());
 
     // test
-    final List<UpdateAction<Product>> updateActions =
-        buildSetCustomFieldsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions(
             new HashMap<>(),
             newCustomFieldsMap,
-            mock(Asset.class),
+            AssetCustomTypeAdapter.of(oldAsset),
             new AssetCustomActionBuilder(),
-            1,
-            Asset::getId);
+            1L,
+            AssetCustomTypeAdapter::getKey);
 
     // assertion
     assertThat(updateActions)
         .containsExactly(
-            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(
-                1, oldAsset.getKey(), "setOfBooleans", JsonNodeFactory.instance.arrayNode(), true));
+            ProductSetAssetCustomFieldActionBuilder.of()
+                .assetKey(oldAsset.getKey())
+                .variantId(1L)
+                .name("setOfBooleans")
+                .value(emptyList())
+                .staged(true)
+                .build());
   }
 
   @Test
   void buildSetCustomFieldsUpdateActions_WithNullJsonNodeNewValue_ShouldBuildAction() {
     // preparation
-    final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
-    oldCustomFieldsMap.put(
-        "setOfBooleans",
-        JsonNodeFactory.instance.arrayNode().add(JsonNodeFactory.instance.booleanNode(false)));
+    final Map<String, Object> oldCustomFieldsMap = new HashMap<>();
+    oldCustomFieldsMap.put("setOfBooleans", Collections.singletonList(false));
 
     final CustomFields oldCustomFields = mock(CustomFields.class);
-    when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+    when(oldCustomFields.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(oldCustomFieldsMap).build());
 
     final Asset oldAsset = mock(Asset.class);
     when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+    when(oldAsset.getKey()).thenReturn("oldKey");
 
-    final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
+    final Map<String, Object> newCustomFieldsMap = new HashMap<>();
     newCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.nullNode());
 
     // test
-    final List<UpdateAction<Product>> updateActions =
-        buildSetCustomFieldsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions(
             oldCustomFieldsMap,
             newCustomFieldsMap,
-            mock(Asset.class),
+            AssetCustomTypeAdapter.of(oldAsset),
             new AssetCustomActionBuilder(),
-            1,
-            Asset::getId);
+            1L,
+            AssetCustomTypeAdapter::getKey);
 
-    // assertion
     assertThat(updateActions)
         .containsExactly(
-            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(
-                1, oldAsset.getKey(), "setOfBooleans", null, true));
+            ProductSetAssetCustomFieldActionBuilder.of()
+                .assetKey(oldAsset.getKey())
+                .variantId(1L)
+                .name("setOfBooleans")
+                .value(null)
+                .staged(true)
+                .build());
   }
 
   @Test
   void buildSetCustomFieldsUpdateActions_WithNullNewValueOfNewField_ShouldNotBuildAction() {
     // preparation
     final CustomFields oldCustomFields = mock(CustomFields.class);
-    when(oldCustomFields.getFieldsJsonMap()).thenReturn(new HashMap<>());
+    when(oldCustomFields.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(new HashMap<>()).build());
 
     final Asset oldAsset = mock(Asset.class);
     when(oldAsset.getCustom()).thenReturn(oldCustomFields);
 
-    final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
-    newCustomFieldsMap.put("setOfBooleans", null);
+    final Map<String, Object> newCustomFieldsMap = new HashMap<>();
+    newCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.nullNode());
 
     // test
-    final List<UpdateAction<Product>> updateActions =
-        buildSetCustomFieldsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions(
             new HashMap<>(),
             newCustomFieldsMap,
-            mock(Asset.class),
+            AssetCustomTypeAdapter.of(mock(Asset.class)),
             new AssetCustomActionBuilder(),
-            1,
-            Asset::getId);
+            1L,
+            AssetCustomTypeAdapter::getId);
 
     // assertion
     assertThat(updateActions).isEmpty();
@@ -944,23 +1013,24 @@ class CustomUpdateActionUtilsTest {
   void buildSetCustomFieldsUpdateActions_WithNullJsonNodeNewValueOfNewField_ShouldNotBuildAction() {
     // preparation
     final CustomFields oldCustomFields = mock(CustomFields.class);
-    when(oldCustomFields.getFieldsJsonMap()).thenReturn(new HashMap<>());
+    when(oldCustomFields.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(new HashMap<>()).build());
 
     final Asset oldAsset = mock(Asset.class);
     when(oldAsset.getCustom()).thenReturn(oldCustomFields);
 
-    final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
-    newCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.nullNode());
+    final Map<String, Object> newCustomFieldsMap = new HashMap<>();
+    newCustomFieldsMap.put("setOfBooleans", null);
 
     // test
-    final List<UpdateAction<Product>> updateActions =
-        buildSetCustomFieldsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions(
             new HashMap<>(),
             newCustomFieldsMap,
-            mock(Asset.class),
+            AssetCustomTypeAdapter.of(mock(Asset.class)),
             new AssetCustomActionBuilder(),
-            1,
-            Asset::getId);
+            1L,
+            AssetCustomTypeAdapter::getId);
 
     // assertion
     assertThat(updateActions).isEmpty();

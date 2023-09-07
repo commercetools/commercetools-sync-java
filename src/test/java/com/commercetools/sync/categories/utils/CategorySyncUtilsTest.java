@@ -1,34 +1,19 @@
 package com.commercetools.sync.categories.utils;
 
-import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.category.*;
+import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.api.models.common.AssetDraftBuilder;
+import com.commercetools.api.models.common.AssetSourceBuilder;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.sync.categories.CategorySyncMockUtils;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.categories.CategoryDraftBuilder;
-import io.sphere.sdk.categories.commands.updateactions.AddAsset;
-import io.sphere.sdk.categories.commands.updateactions.ChangeName;
-import io.sphere.sdk.categories.commands.updateactions.ChangeOrderHint;
-import io.sphere.sdk.categories.commands.updateactions.ChangeParent;
-import io.sphere.sdk.categories.commands.updateactions.ChangeSlug;
-import io.sphere.sdk.categories.commands.updateactions.SetDescription;
-import io.sphere.sdk.categories.commands.updateactions.SetExternalId;
-import io.sphere.sdk.categories.commands.updateactions.SetMetaDescription;
-import io.sphere.sdk.categories.commands.updateactions.SetMetaKeywords;
-import io.sphere.sdk.categories.commands.updateactions.SetMetaTitle;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.models.AssetDraftBuilder;
-import io.sphere.sdk.models.AssetSourceBuilder;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.ResourceIdentifier;
 import java.util.List;
 import java.util.Locale;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +22,7 @@ import org.junit.jupiter.api.Test;
 class CategorySyncUtilsTest {
   private Category mockOldCategory;
   private CategorySyncOptions categorySyncOptions;
-  private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
+  private static final ProjectApiRoot CTP_CLIENT = mock(ProjectApiRoot.class);
   private static final Locale LOCALE = Locale.GERMAN;
   private static final String CATEGORY_PARENT_ID = "1";
   private static final String CATEGORY_NAME = "categoryName";
@@ -51,12 +36,14 @@ class CategorySyncUtilsTest {
   private static final String CATEGORY_ORDER_HINT = "123";
   private static final List<AssetDraft> ASSET_DRAFTS =
       asList(
-          AssetDraftBuilder.of(
-                  singletonList(AssetSourceBuilder.ofUri("uri").build()), ofEnglish("name"))
+          AssetDraftBuilder.of()
+              .name(ofEnglish("name"))
+              .sources(AssetSourceBuilder.of().uri("uri").build())
               .key("1")
               .build(),
-          AssetDraftBuilder.of(
-                  singletonList(AssetSourceBuilder.ofUri("uri").build()), ofEnglish("name"))
+          AssetDraftBuilder.of()
+              .name(ofEnglish("name"))
+              .sources(AssetSourceBuilder.of().uri("uri").build())
               .key("2")
               .build());
 
@@ -66,7 +53,7 @@ class CategorySyncUtilsTest {
     categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT).build();
 
     mockOldCategory =
-        getMockCategory(
+        CategorySyncMockUtils.getMockCategory(
             LOCALE,
             CATEGORY_NAME,
             CATEGORY_SLUG,
@@ -83,9 +70,9 @@ class CategorySyncUtilsTest {
   @Test
   void buildActions_FromDraftsWithDifferentNameValues_ShouldBuildUpdateActions() {
     final CategoryDraft newCategoryDraft =
-        CategoryDraftBuilder.of(
-                LocalizedString.of(LOCALE, "differentName"),
-                LocalizedString.of(LOCALE, CATEGORY_SLUG))
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(LOCALE, "differentName"))
+            .slug(LocalizedString.of(LOCALE, CATEGORY_SLUG))
             .key(CATEGORY_KEY)
             .externalId(CATEGORY_EXTERNAL_ID)
             .description(LocalizedString.of(LOCALE, CATEGORY_DESC))
@@ -93,23 +80,26 @@ class CategorySyncUtilsTest {
             .metaTitle(LocalizedString.of(LOCALE, CATEGORY_META_TITLE))
             .metaKeywords(LocalizedString.of(LOCALE, CATEGORY_KEYWORDS))
             .orderHint(CATEGORY_ORDER_HINT)
-            .parent(ResourceIdentifier.ofId(CATEGORY_PARENT_ID))
+            .parent(CategoryResourceIdentifierBuilder.of().id(CATEGORY_PARENT_ID).build())
             .build();
 
-    final List<UpdateAction<Category>> updateActions =
+    final List<CategoryUpdateAction> updateActions =
         CategorySyncUtils.buildActions(mockOldCategory, newCategoryDraft, categorySyncOptions);
     assertThat(updateActions).isNotNull();
     assertThat(updateActions)
-        .containsExactly(ChangeName.of(LocalizedString.of(LOCALE, "differentName")));
+        .containsExactly(
+            CategoryChangeNameActionBuilder.of()
+                .name(LocalizedString.of(LOCALE, "differentName"))
+                .build());
   }
 
   @Test
   void buildActions_FromDraftsWithMultipleDifferentValues_ShouldBuildUpdateActions() {
 
     final CategoryDraft newCategoryDraft =
-        CategoryDraftBuilder.of(
-                LocalizedString.of(LOCALE, "differentName"),
-                LocalizedString.of(LOCALE, "differentSlug"))
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(LOCALE, "differentName"))
+            .slug(LocalizedString.of(LOCALE, "differentSlug"))
             .key(CATEGORY_KEY)
             .externalId("differentExternalId")
             .description(LocalizedString.of(LOCALE, "differentDescription"))
@@ -117,26 +107,40 @@ class CategorySyncUtilsTest {
             .metaTitle(LocalizedString.of(LOCALE, "differentMetaTitle"))
             .metaKeywords(LocalizedString.of(LOCALE, "differentMetaKeywords"))
             .orderHint("differentOrderHint")
-            .parent(ResourceIdentifier.ofId("differentParentId"))
+            .parent(CategoryResourceIdentifierBuilder.of().id("differentParentId").build())
             .assets(ASSET_DRAFTS)
             .build();
 
-    final List<UpdateAction<Category>> updateActions =
+    final List<CategoryUpdateAction> updateActions =
         CategorySyncUtils.buildActions(mockOldCategory, newCategoryDraft, categorySyncOptions);
     assertThat(updateActions).isNotNull();
 
     assertThat(updateActions)
         .containsExactly(
-            ChangeName.of(LocalizedString.of(LOCALE, "differentName")),
-            ChangeSlug.of(LocalizedString.of(LOCALE, "differentSlug")),
-            SetExternalId.of("differentExternalId"),
-            SetDescription.of(LocalizedString.of(LOCALE, "differentDescription")),
-            ChangeParent.of(ResourceIdentifier.ofId("differentParentId")),
-            ChangeOrderHint.of("differentOrderHint"),
-            SetMetaTitle.of(LocalizedString.of(LOCALE, "differentMetaTitle")),
-            SetMetaDescription.of(LocalizedString.of(LOCALE, "differentMetaDescription")),
-            SetMetaKeywords.of(LocalizedString.of(LOCALE, "differentMetaKeywords")),
-            AddAsset.of(ASSET_DRAFTS.get(0), 0),
-            AddAsset.of(ASSET_DRAFTS.get(1), 1));
+            CategoryChangeNameActionBuilder.of()
+                .name(LocalizedString.of(LOCALE, "differentName"))
+                .build(),
+            CategoryChangeSlugActionBuilder.of()
+                .slug(LocalizedString.of(LOCALE, "differentSlug"))
+                .build(),
+            CategorySetExternalIdActionBuilder.of().externalId("differentExternalId").build(),
+            CategorySetDescriptionActionBuilder.of()
+                .description(LocalizedString.of(LOCALE, "differentDescription"))
+                .build(),
+            CategoryChangeParentActionBuilder.of()
+                .parent(CategoryResourceIdentifierBuilder.of().id("differentParentId").build())
+                .build(),
+            CategoryChangeOrderHintActionBuilder.of().orderHint("differentOrderHint").build(),
+            CategorySetMetaTitleActionBuilder.of()
+                .metaTitle(LocalizedString.of(LOCALE, "differentMetaTitle"))
+                .build(),
+            CategorySetMetaDescriptionActionBuilder.of()
+                .metaDescription(LocalizedString.of(LOCALE, "differentMetaDescription"))
+                .build(),
+            CategorySetMetaKeywordsActionBuilder.of()
+                .metaKeywords(LocalizedString.of(LOCALE, "differentMetaKeywords"))
+                .build(),
+            CategoryAddAssetActionBuilder.of().asset(ASSET_DRAFTS.get(0)).position(0).build(),
+            CategoryAddAssetActionBuilder.of().asset(ASSET_DRAFTS.get(1)).position(1).build());
   }
 }

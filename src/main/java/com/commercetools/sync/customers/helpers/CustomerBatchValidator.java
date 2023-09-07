@@ -4,10 +4,10 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import com.commercetools.api.models.common.BaseAddress;
+import com.commercetools.api.models.customer.CustomerDraft;
 import com.commercetools.sync.commons.helpers.BaseBatchValidator;
 import com.commercetools.sync.customers.CustomerSyncOptions;
-import io.sphere.sdk.customers.CustomerDraft;
-import io.sphere.sdk.models.Address;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -61,8 +61,8 @@ public class CustomerBatchValidator
   /**
    * Given the {@link List}&lt;{@link CustomerDraft}&gt; of drafts this method attempts to validate
    * drafts and return an {@link ImmutablePair}&lt;{@link Set}&lt;{@link CustomerDraft}&gt;, {@link
-   * CustomerBatchValidator.ReferencedKeys}&gt; which contains the {@link Set} of valid drafts and
-   * referenced keys within a wrapper.
+   * ReferencedKeys}&gt; which contains the {@link Set} of valid drafts and referenced keys within a
+   * wrapper.
    *
    * <p>A valid customer draft is one which satisfies the following conditions:
    *
@@ -82,8 +82,8 @@ public class CustomerBatchValidator
    *
    * @param customerDrafts the customer drafts to validate and collect referenced keys.
    * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@link CustomerDraft}&gt;, {@link
-   *     CustomerBatchValidator.ReferencedKeys}&gt; which contains the {@link Set} of valid drafts
-   *     and referenced keys within a wrapper.
+   *     ReferencedKeys}&gt; which contains the {@link Set} of valid drafts and referenced keys
+   *     within a wrapper.
    */
   @Override
   public ImmutablePair<Set<CustomerDraft>, ReferencedKeys> validateAndCollectReferencedKeys(
@@ -117,8 +117,11 @@ public class CustomerBatchValidator
 
   private boolean hasValidAddresses(@Nonnull final CustomerDraft customerDraft) {
 
-    final List<Address> addressList = customerDraft.getAddresses();
+    final List<BaseAddress> addressList = customerDraft.getAddresses();
     if (addressList == null || addressList.isEmpty()) {
+      return true;
+    }
+    if (addressList.stream().noneMatch(Objects::nonNull)) {
       return true;
     }
 
@@ -136,8 +139,8 @@ public class CustomerBatchValidator
       return false;
     }
 
-    final Predicate<Address> searchDuplicateKeys =
-        (Address address) ->
+    final Predicate<BaseAddress> searchDuplicateKeys =
+        (BaseAddress address) ->
             addressList.stream().filter(a -> Objects.equals(a.getKey(), address.getKey())).count()
                 > 1;
 
@@ -157,7 +160,7 @@ public class CustomerBatchValidator
 
   @Nonnull
   private List<Integer> getIndexes(
-      @Nonnull final List<Address> list, @Nonnull final Predicate<Address> predicate) {
+      @Nonnull final List<BaseAddress> list, @Nonnull final Predicate<BaseAddress> predicate) {
 
     final List<Integer> indexes = new ArrayList<>();
     for (int i = 0; i < list.size(); i++) {
@@ -184,7 +187,7 @@ public class CustomerBatchValidator
        }
     */
 
-    final List<Address> addressList = customerDraft.getAddresses();
+    final List<BaseAddress> addressList = customerDraft.getAddresses();
     final Predicate<Integer> isInvalidIndex =
         index ->
             index == null
@@ -232,8 +235,7 @@ public class CustomerBatchValidator
   }
 
   private void collectReferencedKeys(
-      @Nonnull final CustomerBatchValidator.ReferencedKeys referencedKeys,
-      @Nonnull final CustomerDraft customerDraft) {
+      @Nonnull final ReferencedKeys referencedKeys, @Nonnull final CustomerDraft customerDraft) {
 
     collectReferencedKeyFromResourceIdentifier(
         customerDraft.getCustomerGroup(), referencedKeys.customerGroupKeys::add);

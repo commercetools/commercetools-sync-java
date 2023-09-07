@@ -5,16 +5,17 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
 
+import com.commercetools.api.client.ByProjectKeyCustomObjectsByContainerGet;
+import com.commercetools.api.models.custom_object.CustomObject;
+import com.commercetools.api.models.custom_object.CustomObjectDraft;
+import com.commercetools.api.models.custom_object.CustomObjectDraftBuilder;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.commons.utils.ChunkUtils;
 import com.commercetools.sync.services.UnresolvedReferencesService;
-import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.customobjects.CustomObjectDraft;
-import io.sphere.sdk.customobjects.commands.CustomObjectDeleteCommand;
-import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
-import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -25,10 +26,13 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class UnresolvedReferencesServiceImpl<T extends WaitingToBeResolved>
-    implements UnresolvedReferencesService<T> {
+public class UnresolvedReferencesServiceImpl<WaitingToBeResolvedT extends WaitingToBeResolved>
+    implements UnresolvedReferencesService<WaitingToBeResolvedT> {
 
   private final BaseSyncOptions syncOptions;
+
+  private static final ObjectMapper OBJECT_MAPPER =
+      new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
   private static final String SAVE_FAILED =
       "Failed to save CustomObject with key: '%s' (hash of product key: '%s').";
@@ -53,10 +57,10 @@ public class UnresolvedReferencesServiceImpl<T extends WaitingToBeResolved>
 
   @Nonnull
   @Override
-  public CompletionStage<Set<T>> fetch(
+  public CompletionStage<Set<WaitingToBeResolvedT>> fetch(
       @Nonnull final Set<String> keys,
       @Nonnull final String containerKey,
-      @Nonnull final Class<T> clazz) {
+      @Nonnull final Class<WaitingToBeResolvedT> clazz) {
 
     if (keys.isEmpty()) {
       return CompletableFuture.completedFuture(Collections.emptySet());
@@ -71,35 +75,57 @@ public class UnresolvedReferencesServiceImpl<T extends WaitingToBeResolved>
     final Set<String> hashedKeys = keys.stream().map(this::hash).collect(Collectors.toSet());
     final List<List<String>> chunkedKeys = ChunkUtils.chunk(hashedKeys, CHUNK_SIZE);
 
-    final List<CustomObjectQuery<T>> chunkedRequests =
+    final List<ByProjectKeyCustomObjectsByContainerGet> chunkedRequests =
         chunkedKeys.stream()
             .map(
                 _keys ->
-                    CustomObjectQuery.of(clazz)
-                        .byContainer(containerKey)
-                        .plusPredicates(p -> p.key().isIn(_keys)))
+                    syncOptions
+                        .getCtpClient()
+                        .customObjects()
+                        .withContainer(containerKey)
+                        .get()
+                        .withWhere("key in :keys")
+                        .withPredicateVar("keys", _keys))
             .collect(toList());
 
-    return ChunkUtils.executeChunks(syncOptions.getCtpClient(), chunkedRequests)
-        .thenApply(ChunkUtils::flattenPagedQueryResults)
+    return ChunkUtils.executeChunks(chunkedRequests)
         .thenApply(
-            customObjects -> customObjects.stream().map(CustomObject::getValue).collect(toSet()));
+            apiHttpResponses ->
+                apiHttpResponses.stream()
+                    .map(apiHttpResponse -> apiHttpResponse.getBody().getResults())
+                    .flatMap(List::stream)
+                    .collect(toList()))
+        .thenApply(
+            customObjects ->
+                customObjects.stream()
+                    .map(customObject -> OBJECT_MAPPER.convertValue(customObject.getValue(), clazz))
+                    .collect(toSet()));
   }
 
   @Nonnull
   @Override
-  public CompletionStage<Optional<T>> save(
-      @Nonnull final T draft, @Nonnull final String containerKey, @Nonnull final Class<T> clazz) {
-    final CustomObjectDraft<T> customObjectDraft =
-        CustomObjectDraft.ofUnversionedUpsert(containerKey, hash(draft.getKey()), draft, clazz);
+  public CompletionStage<Optional<WaitingToBeResolvedT>> save(
+      @Nonnull final WaitingToBeResolvedT draft,
+      @Nonnull final String containerKey,
+      @Nonnull final Class<WaitingToBeResolvedT> clazz) {
+    final CustomObjectDraft customObjectDraft =
+        CustomObjectDraftBuilder.of()
+            .container(containerKey)
+            .key(hash(draft.getKey()))
+            .value(draft)
+            .build();
 
     return syncOptions
         .getCtpClient()
-        .execute(CustomObjectUpsertCommand.of(customObjectDraft))
+        .customObjects()
+        .post(customObjectDraft)
+        .execute()
         .handle(
             (resource, exception) -> {
               if (exception == null) {
-                return Optional.of((T) resource.getValue());
+                final CustomObject customObject = resource.getBody();
+                return Optional.ofNullable(customObject)
+                    .map(co -> OBJECT_MAPPER.convertValue(co.getValue(), clazz));
               } else {
                 syncOptions.applyErrorCallback(
                     new SyncException(
@@ -112,18 +138,22 @@ public class UnresolvedReferencesServiceImpl<T extends WaitingToBeResolved>
 
   @Nonnull
   @Override
-  public CompletionStage<Optional<T>> delete(
+  public CompletionStage<Optional<WaitingToBeResolvedT>> delete(
       @Nonnull final String key,
       @Nonnull final String containerKey,
-      @Nonnull final Class<T> clazz) {
+      @Nonnull final Class<WaitingToBeResolvedT> clazz) {
 
     return syncOptions
         .getCtpClient()
-        .execute(CustomObjectDeleteCommand.of(containerKey, hash(key), clazz))
+        .customObjects()
+        .withContainerAndKey(containerKey, hash(key))
+        .delete()
+        .execute()
         .handle(
             (resource, exception) -> {
               if (exception == null) {
-                return Optional.of(resource.getValue());
+                return Optional.of(
+                    OBJECT_MAPPER.convertValue(resource.getBody().getValue(), clazz));
               } else {
                 syncOptions.applyErrorCallback(
                     new SyncException(format(DELETE_FAILED, hash(key), key), exception));

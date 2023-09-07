@@ -1,55 +1,58 @@
 package com.commercetools.sync.integration.commons.utils;
 
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static java.lang.String.format;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
+import static java.util.Collections.*;
 import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.commercetools.sync.commons.utils.CtpQueryUtils;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.client.QueryUtils;
+import com.commercetools.api.client.error.ConcurrentModificationException;
+import com.commercetools.api.models.common.Asset;
+import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.api.models.common.AssetDraftBuilder;
+import com.commercetools.api.models.common.AssetSourceBuilder;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.common.LocalizedStringBuilder;
+import com.commercetools.api.models.common.PriceDraft;
+import com.commercetools.api.models.error.ErrorResponse;
+import com.commercetools.api.models.error.ErrorResponseBuilder;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.type.CustomFieldBooleanType;
+import com.commercetools.api.models.type.CustomFieldBooleanTypeBuilder;
+import com.commercetools.api.models.type.CustomFieldLocalizedStringType;
+import com.commercetools.api.models.type.CustomFieldLocalizedStringTypeBuilder;
+import com.commercetools.api.models.type.CustomFieldSetTypeBuilder;
+import com.commercetools.api.models.type.CustomFieldStringTypeBuilder;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.FieldContainer;
+import com.commercetools.api.models.type.FieldContainerBuilder;
+import com.commercetools.api.models.type.FieldDefinition;
+import com.commercetools.api.models.type.FieldDefinitionBuilder;
+import com.commercetools.api.models.type.ResourceTypeId;
+import com.commercetools.api.models.type.Type;
+import com.commercetools.api.models.type.TypeDraft;
+import com.commercetools.api.models.type.TypeDraftBuilder;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.client.SphereRequest;
-import io.sphere.sdk.models.Asset;
-import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.models.AssetDraftBuilder;
-import io.sphere.sdk.models.AssetSourceBuilder;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.Resource;
-import io.sphere.sdk.products.PriceDraft;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.ProductVariantDraftBuilder;
-import io.sphere.sdk.queries.PagedResult;
-import io.sphere.sdk.queries.QueryDsl;
-import io.sphere.sdk.queries.QueryPredicate;
-import io.sphere.sdk.types.BooleanFieldType;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.FieldDefinition;
-import io.sphere.sdk.types.LocalizedStringFieldType;
-import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
-import io.sphere.sdk.types.SetFieldType;
-import io.sphere.sdk.types.StringFieldType;
-import io.sphere.sdk.types.Type;
-import io.sphere.sdk.types.TypeDraft;
-import io.sphere.sdk.types.TypeDraftBuilder;
-import io.sphere.sdk.types.commands.TypeCreateCommand;
-import io.sphere.sdk.types.commands.TypeDeleteCommand;
-import io.sphere.sdk.types.queries.TypeQuery;
-import io.sphere.sdk.types.queries.TypeQueryBuilder;
-import java.util.HashMap;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.error.BadGatewayException;
+import io.vrap.rmf.base.client.error.NotFoundException;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -64,40 +67,21 @@ public final class ITUtils {
   public static final String NULL_SET_CUSTOM_FIELD_NAME = "null";
 
   /**
-   * This method blocks to create an asset custom Type on the CTP project defined by the supplied
-   * {@code ctpClient}, with the supplied data.
-   *
-   * @param typeKey the type key
-   * @param locale the locale to be used for specifying the type name and field definitions names.
-   * @param name the name of the custom type.
-   * @param ctpClient defines the CTP project to create the type on.
-   */
-  public static Type createAssetsCustomType(
-      @Nonnull final String typeKey,
-      @Nonnull final Locale locale,
-      @Nonnull final String name,
-      @Nonnull final SphereClient ctpClient) {
-
-    return createTypeIfNotAlreadyExisting(
-        typeKey, locale, name, ResourceTypeIdsSetBuilder.of().addAssets(), ctpClient);
-  }
-
-  /**
    * This method blocks to create a custom Type on the CTP project defined by the supplied {@code
    * ctpClient}, with the supplied data.
    *
    * @param typeKey the type key
    * @param locale the locale to be used for specifying the type name and field definitions names.
    * @param name the name of the custom type.
-   * @param resourceTypeIdsSetBuilder builds the resource type ids for the created type.
+   * @param resourceTypeIds the resource type ids for the created type.
    * @param ctpClient defines the CTP project to create the type on.
    */
   public static Type createTypeIfNotAlreadyExisting(
       @Nonnull final String typeKey,
       @Nonnull final Locale locale,
       @Nonnull final String name,
-      @Nonnull final ResourceTypeIdsSetBuilder resourceTypeIdsSetBuilder,
-      @Nonnull final SphereClient ctpClient) {
+      @Nonnull final List<ResourceTypeId> resourceTypeIds,
+      @Nonnull final ProjectApiRoot ctpClient) {
 
     return typeExists(typeKey, ctpClient)
         .thenCompose(
@@ -106,33 +90,63 @@ public final class ITUtils {
                     .orElseGet(
                         () -> {
                           final TypeDraft typeDraft =
-                              TypeDraftBuilder.of(
-                                      typeKey,
-                                      LocalizedString.of(locale, name),
-                                      resourceTypeIdsSetBuilder)
+                              TypeDraftBuilder.of()
+                                  .key(typeKey)
+                                  .name(
+                                      LocalizedStringBuilder.of()
+                                          .addValue(locale.toLanguageTag(), name)
+                                          .build())
+                                  .resourceTypeIds(resourceTypeIds)
                                   .fieldDefinitions(createCustomTypeFieldDefinitions(locale))
                                   .build();
                           return ctpClient
-                              .execute(TypeCreateCommand.of(typeDraft))
-                              .toCompletableFuture();
+                              .types()
+                              .post(typeDraft)
+                              .execute()
+                              .thenApply(ApiHttpResponse::getBody);
                         }))
         .toCompletableFuture()
         .join();
   }
 
-  private static CompletionStage<Optional<Type>> typeExists(
-      @Nonnull final String typeKey, @Nonnull final SphereClient ctpClient) {
+  public static Type ensureTypeByTypeDraft(
+      @Nonnull final TypeDraft typeDraft, @Nonnull final ProjectApiRoot ctpClient) {
+    return typeExists(typeDraft.getKey(), ctpClient)
+        .thenCompose(
+            type ->
+                type.map(CompletableFuture::completedFuture)
+                    .orElseGet(
+                        () ->
+                            ctpClient
+                                .types()
+                                .post(typeDraft)
+                                .execute()
+                                .thenApply(ApiHttpResponse::getBody)))
+        .toCompletableFuture()
+        .join();
+  }
+
+  static CompletionStage<Optional<Type>> typeExists(
+      @Nonnull final String typeKey, @Nonnull final ProjectApiRoot ctpClient) {
+
     return ctpClient
-        .execute(
-            TypeQueryBuilder.of()
-                .predicates(QueryPredicate.of(format("key=\"%s\"", typeKey)))
-                .build())
-        .thenApply(PagedResult::head);
+        .types()
+        .withKey(typeKey)
+        .get()
+        .execute()
+        .handle(
+            (typeApiHttpResponse, throwable) -> {
+              if (throwable != null) {
+                return Optional.empty();
+              }
+              return Optional.of(typeApiHttpResponse.getBody().get());
+            });
   }
 
   /**
-   * Builds a list of two field definitions; one for a {@link LocalizedStringFieldType} and one for
-   * a {@link BooleanFieldType}. The JSON of the created field definition list looks as follows:
+   * Builds a list of two field definitions; one for a {@link CustomFieldLocalizedStringType} and
+   * one for a {@link CustomFieldBooleanType}. The JSON of the created field definition list looks
+   * as follows:
    *
    * <p>"fieldDefinitions": [ { "name": "backgroundColor", "label": { "en": "backgroundColor" },
    * "required": false, "type": { "name": "LocalizedString" }, "inputHint": "SingleLine" }, {
@@ -145,62 +159,113 @@ public final class ITUtils {
   private static List<FieldDefinition> createCustomTypeFieldDefinitions(
       @Nonnull final Locale locale) {
     return asList(
-        FieldDefinition.of(
-            LocalizedStringFieldType.of(),
-            LOCALISED_STRING_CUSTOM_FIELD_NAME,
-            LocalizedString.of(locale, LOCALISED_STRING_CUSTOM_FIELD_NAME),
-            false),
-        FieldDefinition.of(
-            BooleanFieldType.of(),
-            BOOLEAN_CUSTOM_FIELD_NAME,
-            LocalizedString.of(locale, BOOLEAN_CUSTOM_FIELD_NAME),
-            false),
-        FieldDefinition.of(
-            SetFieldType.of(StringFieldType.of()),
-            EMPTY_SET_CUSTOM_FIELD_NAME,
-            LocalizedString.of(locale, EMPTY_SET_CUSTOM_FIELD_NAME),
-            false),
-        FieldDefinition.of(
-            SetFieldType.of(StringFieldType.of()),
-            NON_EMPTY_SEY_CUSTOM_FIELD_NAME,
-            LocalizedString.of(locale, NON_EMPTY_SEY_CUSTOM_FIELD_NAME),
-            false),
-        FieldDefinition.of(
-            SetFieldType.of(StringFieldType.of()),
-            NULL_NODE_SET_CUSTOM_FIELD_NAME,
-            LocalizedString.of(locale, NULL_NODE_SET_CUSTOM_FIELD_NAME),
-            false),
-        FieldDefinition.of(
-            SetFieldType.of(StringFieldType.of()),
-            NULL_SET_CUSTOM_FIELD_NAME,
-            LocalizedString.of(locale, NULL_SET_CUSTOM_FIELD_NAME),
-            false));
+        FieldDefinitionBuilder.of()
+            .type(CustomFieldLocalizedStringTypeBuilder.of().build())
+            .name(LOCALISED_STRING_CUSTOM_FIELD_NAME)
+            .label(
+                LocalizedStringBuilder.of()
+                    .addValue(locale.toLanguageTag(), LOCALISED_STRING_CUSTOM_FIELD_NAME)
+                    .build())
+            .required(false)
+            .build(),
+        FieldDefinitionBuilder.of()
+            .type(CustomFieldBooleanTypeBuilder.of().build())
+            .name(BOOLEAN_CUSTOM_FIELD_NAME)
+            .label(
+                LocalizedStringBuilder.of()
+                    .addValue(locale.toLanguageTag(), BOOLEAN_CUSTOM_FIELD_NAME)
+                    .build())
+            .required(false)
+            .build(),
+        FieldDefinitionBuilder.of()
+            .type(
+                CustomFieldSetTypeBuilder.of()
+                    .elementType(CustomFieldStringTypeBuilder.of().build())
+                    .build())
+            .name(EMPTY_SET_CUSTOM_FIELD_NAME)
+            .label(
+                LocalizedStringBuilder.of()
+                    .addValue(locale.toLanguageTag(), EMPTY_SET_CUSTOM_FIELD_NAME)
+                    .build())
+            .required(false)
+            .build(),
+        FieldDefinitionBuilder.of()
+            .type(
+                CustomFieldSetTypeBuilder.of()
+                    .elementType(CustomFieldStringTypeBuilder.of().build())
+                    .build())
+            .name(NON_EMPTY_SEY_CUSTOM_FIELD_NAME)
+            .label(
+                LocalizedStringBuilder.of()
+                    .addValue(locale.toLanguageTag(), NON_EMPTY_SEY_CUSTOM_FIELD_NAME)
+                    .build())
+            .required(false)
+            .build(),
+        FieldDefinitionBuilder.of()
+            .type(
+                CustomFieldSetTypeBuilder.of()
+                    .elementType(CustomFieldStringTypeBuilder.of().build())
+                    .build())
+            .name(NULL_NODE_SET_CUSTOM_FIELD_NAME)
+            .label(
+                LocalizedStringBuilder.of()
+                    .addValue(locale.toLanguageTag(), NULL_NODE_SET_CUSTOM_FIELD_NAME)
+                    .build())
+            .required(false)
+            .build(),
+        FieldDefinitionBuilder.of()
+            .type(
+                CustomFieldSetTypeBuilder.of()
+                    .elementType(CustomFieldStringTypeBuilder.of().build())
+                    .build())
+            .name(NULL_SET_CUSTOM_FIELD_NAME)
+            .label(
+                LocalizedStringBuilder.of()
+                    .addValue(locale.toLanguageTag(), NULL_SET_CUSTOM_FIELD_NAME)
+                    .build())
+            .required(false)
+            .build());
   }
 
   /**
-   * Builds a {@link Map} for the custom fields to their {@link JsonNode} values that looks as
-   * follows in JSON format:
+   * Builds a {@link FieldContainer} for the custom fields to their values that looks as follows in
+   * JSON format:
    *
    * <p>"fields": {"invisibleInShop": false, "backgroundColor": { "en": "red", "de": "rot"}}
    *
-   * @return a Map of the custom fields to their JSON values with dummy data.
+   * @return FieldContainer includes a Map of the custom fields to their JSON values with dummy
+   *     data.
    */
-  public static Map<String, JsonNode> createCustomFieldsJsonMap() {
-    final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
-    customFieldsJsons.put(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(false));
-    customFieldsJsons.put(
+  public static FieldContainer createCustomFieldsJsonMap() {
+    final FieldContainerBuilder customFields = FieldContainerBuilder.of();
+    customFields.addValue(BOOLEAN_CUSTOM_FIELD_NAME, false);
+    customFields.addValue(
         LOCALISED_STRING_CUSTOM_FIELD_NAME,
-        JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
-    return customFieldsJsons;
+        LocalizedStringBuilder.of().addValue("de", "rot").addValue("en", "red").build());
+    return customFields.build();
+  }
+
+  public static FieldContainer createCustomFieldsJsonMap(
+      @Nonnull final String fieldName, @Nullable final Object value) {
+    final FieldContainerBuilder customFields = FieldContainerBuilder.of();
+    customFields.addValue(fieldName, value);
+    return customFields.build();
   }
 
   /**
-   * Deletes all Types from CTP projects defined by the {@code sphereClient}
+   * Creates an {@link ObjectNode} that represents a reference with the supplied {@code id} in the
+   * id field and {@code typeId} field in the typeId field.
    *
-   * @param ctpClient defines the CTP project to delete the Types from.
+   * @return an {@link ObjectNode} that represents a product reference with the supplied {@code id}
+   *     in the id field and {@code typeId} field in the typeId field.
    */
-  public static void deleteTypes(@Nonnull final SphereClient ctpClient) {
-    queryAndExecute(ctpClient, TypeQuery.of(), TypeDeleteCommand::of);
+  @Nonnull
+  public static ObjectNode createReferenceObjectJson(
+      @Nonnull final String id, @Nonnull final String typeId) {
+    final ObjectNode reference = JsonNodeFactory.instance.objectNode();
+    reference.put(REFERENCE_TYPE_ID_FIELD, typeId);
+    reference.put(REFERENCE_ID_FIELD, id);
+    return reference;
   }
 
   /**
@@ -213,59 +278,53 @@ public final class ITUtils {
   }
 
   /**
-   * Applies the {@code resourceToRequestMapper} function on each page, resulting from the {@code
-   * query} executed by the {@code ctpClient}, to map each resource to a {@link SphereRequest} and
-   * then executes these requests in parallel within each page.
+   * Deletes all Types from CTP projects defined by the {@code ctpClient}
    *
-   * @param ctpClient defines the CTP project to apply the query on.
-   * @param query query that should be made on the CTP project.
-   * @param resourceToRequestMapper defines a mapper function that should be applied on each
-   *     resource, in the fetched page from the query on the specified CTP project, to map it to a
-   *     {@link SphereRequest}.
+   * @param ctpClient defines the CTP project to delete the Types from.
    */
-  public static <T extends Resource, C extends QueryDsl<T, C>> void queryAndExecute(
-      @Nonnull final SphereClient ctpClient,
-      @Nonnull final QueryDsl<T, C> query,
-      @Nonnull final Function<T, SphereRequest<T>> resourceToRequestMapper) {
-
-    queryAndCompose(
-        ctpClient, query, resource -> ctpClient.execute(resourceToRequestMapper.apply(resource)));
+  public static void deleteTypes(@Nonnull final ProjectApiRoot ctpClient) {
+    QueryUtils.queryAll(
+        ctpClient.types().get(),
+        types -> {
+          return CompletableFuture.allOf(
+              types.stream()
+                  .map(
+                      type ->
+                          ctpClient
+                              .types()
+                              .delete(type)
+                              .execute()
+                              .thenApply(ApiHttpResponse::getBody))
+                  .map(CompletionStage::toCompletableFuture)
+                  .toArray(CompletableFuture[]::new));
+        });
   }
 
   /**
-   * Applies the {@code resourceToStageMapper} function on each page, resulting from the {@code
-   * query} executed by the {@code ctpClient}, to map each resource to a {@link CompletionStage} and
-   * then executes these stages in parallel within each page.
+   * This method blocks to create an asset custom Type on the CTP project defined by the supplied
+   * {@code ctpClient}, with the supplied data.
    *
-   * @param ctpClient defines the CTP project to apply the query on.
-   * @param query query that should be made on the CTP project.
-   * @param resourceToStageMapper defines a mapper function that should be applied on each resource,
-   *     in the fetched page from the query on the specified CTP project, to map it to a {@link
-   *     CompletionStage} which will be executed (in a blocking fashion) after every page fetch.
+   * @param typeKey the type key
+   * @param locale the locale to be used for specifying the type name and field definitions names.
+   * @param name the name of the custom type.
+   * @param ctpClient defines the CTP project to create the type on.
    */
-  public static <T extends Resource, C extends QueryDsl<T, C>, S> void queryAndCompose(
-      @Nonnull final SphereClient ctpClient,
-      @Nonnull final QueryDsl<T, C> query,
-      @Nonnull final Function<T, CompletionStage<S>> resourceToStageMapper) {
+  public static Type ensureAssetsCustomType(
+      @Nonnull final String typeKey,
+      @Nonnull final Locale locale,
+      @Nonnull final String name,
+      @Nonnull final ProjectApiRoot ctpClient) {
 
-    final Consumer<List<T>> pageConsumer =
-        pageElements ->
-            CompletableFuture.allOf(
-                    pageElements.stream()
-                        .map(resourceToStageMapper)
-                        .map(CompletionStage::toCompletableFuture)
-                        .toArray(CompletableFuture[]::new))
-                .join();
-
-    CtpQueryUtils.queryAll(ctpClient, query, pageConsumer).toCompletableFuture().join();
+    return createTypeIfNotAlreadyExisting(
+        typeKey, locale, name, singletonList(ResourceTypeId.ASSET), ctpClient);
   }
 
   /**
-   * Creates an {@link AssetDraft} with the with the given key and name.
+   * Creates an {@link AssetDraft} with the given key and name.
    *
    * @param assetKey asset draft key.
    * @param assetName asset draft name.
-   * @return an {@link AssetDraft} with the with the given key and name.
+   * @return an {@link AssetDraft} with the given key and name.
    */
   public static AssetDraft createAssetDraft(
       @Nonnull final String assetKey, @Nonnull final LocalizedString assetName) {
@@ -273,16 +332,16 @@ public final class ITUtils {
   }
 
   /**
-   * Creates an {@link AssetDraft} with the with the given key and name. The asset draft created
-   * will have custom field with the type id supplied ({@code assetCustomTypeId} and the fields
-   * built from the method {@link ITUtils#createCustomFieldsJsonMap()}.
+   * Creates an {@link AssetDraft} with the given key and name. The asset draft created will have
+   * custom field with the type id supplied ({@code assetCustomTypeId} and the fields built from the
+   * method {@link ITUtils#createCustomFieldsJsonMap()}.
    *
    * @param assetKey asset draft key.
    * @param assetName asset draft name.
    * @param assetCustomTypeId the asset custom type id.
-   * @return an {@link AssetDraft} with the with the given key and name. The asset draft created
-   *     will have custom field with the type id supplied ({@code assetCustomTypeId} and the fields
-   *     built from the method {@link ITUtils#createCustomFieldsJsonMap()}.
+   * @return an {@link AssetDraft} with the given key and name. The asset draft created will have
+   *     custom field with the type id supplied ({@code assetCustomTypeId} and the fields built from
+   *     the method {@link ITUtils#createCustomFieldsJsonMap()}.
    */
   public static AssetDraft createAssetDraft(
       @Nonnull final String assetKey,
@@ -290,41 +349,46 @@ public final class ITUtils {
       @Nonnull final String assetCustomTypeId) {
     return createAssetDraft(assetKey, assetName, assetCustomTypeId, createCustomFieldsJsonMap());
   }
-
   /**
-   * Creates an {@link AssetDraft} with the with the given key and name. The asset draft created
-   * will have custom field with the type id supplied ({@code assetCustomTypeId} and the custom
-   * fields will be defined by the {@code customFieldsJsonMap} supplied.
+   * Creates an {@link AssetDraft} with the given key and name. The asset draft created will have
+   * custom field with the type id supplied ({@code assetCustomTypeId} and the custom fields will be
+   * defined by the {@code customFieldsJsonMap} supplied.
    *
    * @param assetKey asset draft key.
    * @param assetName asset draft name.
    * @param assetCustomTypeId the asset custom type id.
    * @param customFieldsJsonMap the custom fields of the asset custom type.
-   * @return an {@link AssetDraft} with the with the given key and name. The asset draft created
-   *     will have custom field with the type id supplied ({@code assetCustomTypeId} and the custom
-   *     fields will be defined by the {@code customFieldsJsonMap} supplied.
+   * @return an {@link AssetDraft} with the given key and name. The asset draft created will have
+   *     custom field with the type id supplied ({@code assetCustomTypeId} and the custom fields
+   *     will be defined by the {@code customFieldsJsonMap} supplied.
    */
   public static AssetDraft createAssetDraft(
       @Nonnull final String assetKey,
       @Nonnull final LocalizedString assetName,
       @Nonnull final String assetCustomTypeId,
-      @Nonnull final Map<String, JsonNode> customFieldsJsonMap) {
+      @Nonnull final FieldContainer customFieldsJsonMap) {
     return createAssetDraftBuilder(assetKey, assetName)
-        .custom(CustomFieldsDraft.ofTypeIdAndJson(assetCustomTypeId, customFieldsJsonMap))
+        .custom(
+            CustomFieldsDraftBuilder.of()
+                .type(
+                    typeResourceIdentifierBuilder ->
+                        typeResourceIdentifierBuilder.id(assetCustomTypeId))
+                .fields(customFieldsJsonMap)
+                .build())
         .build();
   }
 
   /**
-   * Creates an {@link AssetDraft} with the with the given key and name. The asset draft created
-   * will have custom field with the type key supplied ({@code assetCustomTypeKey} and the fields
-   * built from the method {@link ITUtils#createCustomFieldsJsonMap()}.
+   * Creates an {@link AssetDraft} with the given key and name. The asset draft created will have
+   * custom field with the type key supplied ({@code assetCustomTypeKey} and the fields built from
+   * the method {@link ITUtils#createCustomFieldsJsonMap()}.
    *
    * @param assetKey asset draft key.
    * @param assetName asset draft name.
    * @param assetCustomTypeKey the asset custom type key.
-   * @return an {@link AssetDraft} with the with the given key and name. The asset draft created
-   *     will have custom field with the type key supplied ({@code assetCustomTypeKey} and the
-   *     fields built from the method {@link ITUtils#createCustomFieldsJsonMap()}.
+   * @return an {@link AssetDraft} with the given key and name. The asset draft created will have
+   *     custom field with the type key supplied ({@code assetCustomTypeKey} and the fields built
+   *     from the method {@link ITUtils#createCustomFieldsJsonMap()}.
    */
   public static AssetDraft createAssetDraftWithKey(
       @Nonnull final String assetKey,
@@ -335,45 +399,52 @@ public final class ITUtils {
   }
 
   /**
-   * Creates an {@link AssetDraft} with the with the given key and name. The asset draft created
-   * will have custom field with the type key supplied ({@code assetCustomTypeKey} and the custom
-   * fields will be defined by the {@code customFieldsJsonMap} supplied.
+   * Creates an {@link AssetDraft} with the given key and name. The asset draft created will have
+   * custom field with the type key supplied ({@code assetCustomTypeKey} and the custom fields will
+   * be defined by the {@code customFieldsJsonMap} supplied.
    *
    * @param assetKey asset draft key.
    * @param assetName asset draft name.
    * @param assetCustomTypeKey the asset custom type key.
    * @param customFieldsJsonMap the custom fields of the asset custom type.
-   * @return an {@link AssetDraft} with the with the given key and name. The asset draft created
-   *     will have custom field with the type id supplied ({@code assetCustomTypeId} and the custom
-   *     fields will be defined by the {@code customFieldsJsonMap} supplied.
+   * @return an {@link AssetDraft} with the given key and name. The asset draft created will have
+   *     custom field with the type id supplied ({@code assetCustomTypeId} and the custom fields
+   *     will be defined by the {@code customFieldsJsonMap} supplied.
    */
   public static AssetDraft createAssetDraftWithKey(
       @Nonnull final String assetKey,
       @Nonnull final LocalizedString assetName,
       @Nonnull final String assetCustomTypeKey,
-      @Nonnull final Map<String, JsonNode> customFieldsJsonMap) {
+      @Nonnull final FieldContainer customFieldsJsonMap) {
     return createAssetDraftBuilder(assetKey, assetName)
-        .custom(CustomFieldsDraft.ofTypeKeyAndJson(assetCustomTypeKey, customFieldsJsonMap))
+        .custom(
+            CustomFieldsDraftBuilder.of()
+                .type(
+                    typeResourceIdentifierBuilder ->
+                        typeResourceIdentifierBuilder.key(assetCustomTypeKey))
+                .fields(customFieldsJsonMap)
+                .build())
         .build();
   }
 
   /**
-   * Creates an {@link AssetDraftBuilder} with the with the given key and name. The builder created
-   * will contain one tag with the same value as the key and will contain one {@link
-   * io.sphere.sdk.models.AssetSource} with the uri {@code sourceUri}.
+   * Creates an {@link AssetDraftBuilder} with the given key and name. The builder created will
+   * contain one tag with the same value as the key and will contain one {@link
+   * com.commercetools.api.models.common.AssetSource} with the uri {@code sourceUri}.
    *
    * @param assetKey asset draft key.
    * @param assetName asset draft name.
-   * @return an {@link AssetDraftBuilder} with the with the given key and name. The builder created
-   *     will contain one tag with the same value as the key and will contain one {@link
-   *     io.sphere.sdk.models.AssetSource} with the uri {@code sourceUri}.
+   * @return an {@link AssetDraftBuilder} with the given key and name. The builder created will
+   *     contain one tag with the same value as the key and will contain one {@link
+   *     com.commercetools.api.models.common.AssetSource} with the uri {@code sourceUri}.
    */
   private static AssetDraftBuilder createAssetDraftBuilder(
       @Nonnull final String assetKey, @Nonnull final LocalizedString assetName) {
-    return AssetDraftBuilder.of(emptyList(), assetName)
+    return AssetDraftBuilder.of()
+        .name(assetName)
         .key(assetKey)
-        .tags(singleton(assetKey))
-        .sources(singletonList(AssetSourceBuilder.ofUri("sourceUri").build()));
+        .tags(singletonList(assetKey))
+        .sources(singletonList(AssetSourceBuilder.of().uri("sourceUri").build()));
   }
 
   /**
@@ -398,7 +469,6 @@ public final class ITUtils {
         .prices(priceDrafts)
         .build();
   }
-
   /**
    * Asserts that a list of {@link Asset} and a list of {@link AssetDraft} have the same ordering of
    * assets (assets are matched by key). It asserts that the matching assets have the same name,
@@ -423,13 +493,52 @@ public final class ITUtils {
                   .ifPresent(
                       customFields -> {
                         assertThat(createdAsset.getCustom()).isNotNull();
-                        assertThat(createdAsset.getCustom().getFieldsJsonMap())
+                        assertThat(createdAsset.getCustom().getFields())
                             .isEqualTo(assetDraft.getCustom().getFields());
                       });
 
               assertThat(createdAsset.getTags()).isEqualTo(assetDraft.getTags());
               assertThat(createdAsset.getSources()).isEqualTo(assetDraft.getSources());
             });
+  }
+
+  public static NotFoundException createNotFoundException() {
+    final String json = getErrorResponseJsonString(404);
+
+    return new NotFoundException(
+        404, "", null, "", new ApiHttpResponse<>(404, null, json.getBytes(StandardCharsets.UTF_8)));
+  }
+
+  public static ConcurrentModificationException createConcurrentModificationException() {
+    final String json = getErrorResponseJsonString(409);
+
+    return new ConcurrentModificationException(
+        409, "", null, "", new ApiHttpResponse<>(409, null, json.getBytes(StandardCharsets.UTF_8)));
+  }
+
+  public static BadGatewayException createBadGatewayException() {
+    final String json = getErrorResponseJsonString(500);
+    return new BadGatewayException(
+        500, "", null, "", new ApiHttpResponse<>(500, null, json.getBytes(StandardCharsets.UTF_8)));
+  }
+
+  private static String getErrorResponseJsonString(Integer errorCode) {
+    final ErrorResponse errorResponse =
+        ErrorResponseBuilder.of()
+            .statusCode(errorCode)
+            .errors(Collections.emptyList())
+            .message("test")
+            .build();
+
+    final ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+    String json;
+    try {
+      json = ow.writeValueAsString(errorResponse);
+    } catch (JsonProcessingException e) {
+      // ignore the error
+      json = null;
+    }
+    return json;
   }
 
   private ITUtils() {}

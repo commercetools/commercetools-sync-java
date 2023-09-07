@@ -1,15 +1,13 @@
 package com.commercetools.sync.commons.utils;
 
-import static com.commercetools.sync.commons.MockUtils.getAssetMockWithCustomFields;
-import static com.commercetools.sync.commons.utils.AssetReferenceResolutionUtils.mapToAssetDrafts;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.sphere.sdk.models.Asset;
-import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.types.Type;
+import com.commercetools.api.models.common.Asset;
+import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.api.models.type.TypeReferenceBuilder;
+import com.commercetools.sync.commons.MockUtils;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -35,12 +33,11 @@ class AssetReferenceResolutionUtilsTest {
     referenceIdToKeyCache.add(customTypeId, customTypeKey);
 
     final Asset asset =
-        getAssetMockWithCustomFields(
-            Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), customTypeId));
+        MockUtils.getAssetMockWithCustomFields(TypeReferenceBuilder.of().id(customTypeId).build());
 
     // test
     final List<AssetDraft> referenceReplacedDrafts =
-        mapToAssetDrafts(singletonList(asset), referenceIdToKeyCache);
+        AssetReferenceResolutionUtils.mapToAssetDrafts(singletonList(asset), referenceIdToKeyCache);
 
     // assertion
     referenceReplacedDrafts.forEach(
@@ -61,15 +58,15 @@ class AssetReferenceResolutionUtilsTest {
     referenceIdToKeyCache.add(customTypeId, customTypeKey);
 
     final Asset asset1 =
-        getAssetMockWithCustomFields(
-            Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), customTypeId));
+        MockUtils.getAssetMockWithCustomFields(TypeReferenceBuilder.of().id(customTypeId).build());
     final Asset asset2 =
-        getAssetMockWithCustomFields(
-            Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), UUID.randomUUID().toString()));
+        MockUtils.getAssetMockWithCustomFields(
+            TypeReferenceBuilder.of().id(UUID.randomUUID().toString()).build());
 
     // test
     final List<AssetDraft> referenceReplacedDrafts =
-        mapToAssetDrafts(asList(asset1, asset2), referenceIdToKeyCache);
+        AssetReferenceResolutionUtils.mapToAssetDrafts(
+            asList(asset1, asset2), referenceIdToKeyCache);
 
     // assertion
     assertThat(referenceReplacedDrafts).hasSize(2);
@@ -88,12 +85,11 @@ class AssetReferenceResolutionUtilsTest {
     final String customTypeId = UUID.randomUUID().toString();
 
     final Asset asset =
-        getAssetMockWithCustomFields(
-            Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), customTypeId));
+        MockUtils.getAssetMockWithCustomFields(TypeReferenceBuilder.of().id(customTypeId).build());
 
     // test
     final List<AssetDraft> referenceReplacedDrafts =
-        mapToAssetDrafts(singletonList(asset), referenceIdToKeyCache);
+        AssetReferenceResolutionUtils.mapToAssetDrafts(singletonList(asset), referenceIdToKeyCache);
 
     // assertion
     referenceReplacedDrafts.forEach(

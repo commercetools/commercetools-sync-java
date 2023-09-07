@@ -1,30 +1,20 @@
 package com.commercetools.sync.taxcategories.helpers;
 
-import static com.commercetools.sync.taxcategories.helpers.TaxCategoryBatchValidator.TAX_CATEGORY_DRAFT_IS_NULL;
-import static com.commercetools.sync.taxcategories.helpers.TaxCategoryBatchValidator.TAX_CATEGORY_DRAFT_KEY_NOT_SET;
-import static com.commercetools.sync.taxcategories.helpers.TaxCategoryBatchValidator.TAX_CATEGORY_DUPLICATED_COUNTRY;
-import static com.commercetools.sync.taxcategories.helpers.TaxCategoryBatchValidator.TAX_CATEGORY_DUPLICATED_COUNTRY_AND_STATE;
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.tax_category.TaxCategoryDraft;
+import com.commercetools.api.models.tax_category.TaxCategoryDraftBuilder;
+import com.commercetools.api.models.tax_category.TaxRateDraft;
+import com.commercetools.api.models.tax_category.TaxRateDraftBuilder;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptions;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptionsBuilder;
 import com.neovisionaries.i18n.CountryCode;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.taxcategories.TaxCategoryDraft;
-import io.sphere.sdk.taxcategories.TaxCategoryDraftBuilder;
-import io.sphere.sdk.taxcategories.TaxRateDraftBuilder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,7 +28,7 @@ class TaxCategoryBatchValidatorTest {
   @BeforeEach
   void setup() {
     errorCallBackMessages = new ArrayList<>();
-    final SphereClient ctpClient = mock(SphereClient.class);
+    final ProjectApiRoot ctpClient = mock(ProjectApiRoot.class);
     syncOptions =
         TaxCategorySyncOptionsBuilder.of(ctpClient)
             .errorCallback(
@@ -63,7 +53,8 @@ class TaxCategoryBatchValidatorTest {
     final Set<TaxCategoryDraft> validDrafts = getValidDrafts(Collections.singletonList(null));
 
     assertThat(errorCallBackMessages).hasSize(1);
-    assertThat(errorCallBackMessages.get(0)).isEqualTo(TAX_CATEGORY_DRAFT_IS_NULL);
+    assertThat(errorCallBackMessages.get(0))
+        .isEqualTo(TaxCategoryBatchValidator.TAX_CATEGORY_DRAFT_IS_NULL);
     assertThat(validDrafts).isEmpty();
   }
 
@@ -76,7 +67,10 @@ class TaxCategoryBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(TAX_CATEGORY_DRAFT_KEY_NOT_SET, taxCategoryDraft.getName()));
+        .isEqualTo(
+            String.format(
+                TaxCategoryBatchValidator.TAX_CATEGORY_DRAFT_KEY_NOT_SET,
+                taxCategoryDraft.getName()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -90,55 +84,103 @@ class TaxCategoryBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(TAX_CATEGORY_DRAFT_KEY_NOT_SET, taxCategoryDraft.getName()));
+        .isEqualTo(
+            String.format(
+                TaxCategoryBatchValidator.TAX_CATEGORY_DRAFT_KEY_NOT_SET,
+                taxCategoryDraft.getName()));
     assertThat(validDrafts).isEmpty();
   }
 
   @Test
   void validateAndCollectReferencedKeys_WithMixOfValidAndInvalidDrafts_ShouldValidateCorrectly() {
     final TaxCategoryDraft validDraft =
-        TaxCategoryDraftBuilder.of(
-                "foo",
-                singletonList(
-                    TaxRateDraftBuilder.of("foo", 2.0, false, CountryCode.FR)
-                        .state("PARIS")
-                        .build()),
-                "desc")
+        TaxCategoryDraftBuilder.of()
+            .name("foo")
+            .rates(
+                TaxRateDraftBuilder.of()
+                    .name("foo")
+                    .amount(2.0)
+                    .includedInPrice(false)
+                    .country(CountryCode.FR.getAlpha2())
+                    .state("PARIS")
+                    .build())
+            .description("desc")
             .key("foo")
             .build();
 
     final TaxCategoryDraft withEmptyKey =
-        TaxCategoryDraftBuilder.of("foo", emptyList(), null).key("").build();
+        TaxCategoryDraftBuilder.of().name("foo").rates(emptyList()).key("").build();
 
     final TaxCategoryDraft withNullKey =
-        TaxCategoryDraftBuilder.of("foo", emptyList(), null).key(null).build();
+        TaxCategoryDraftBuilder.of().name("foo").rates(emptyList()).key(null).build();
+
+    final TaxRateDraft taxRateGermanyBerlin =
+        TaxRateDraftBuilder.of()
+            .name("foo")
+            .amount(2.0)
+            .includedInPrice(false)
+            .country(CountryCode.DE.getAlpha2())
+            .state("BERLIN")
+            .build();
 
     final TaxCategoryDraft withDuplicatedState =
-        TaxCategoryDraftBuilder.of(
-                "foo",
-                asList(
-                    TaxRateDraftBuilder.of("foo", 2.0, false, CountryCode.FR).state("NYON").build(),
-                    TaxRateDraftBuilder.of("foo", 2.0, false, CountryCode.FR)
-                        .state("PARIS")
-                        .build(),
-                    TaxRateDraftBuilder.of("foo", 3.0, false, CountryCode.DE)
-                        .state("BERLIN")
-                        .build(),
-                    TaxRateDraftBuilder.of("foo", 3.0, false, CountryCode.DE)
-                        .state("BERLIN")
-                        .build()),
-                "desc")
+        TaxCategoryDraftBuilder.of()
+            .name("foo")
+            .rates(
+                TaxRateDraftBuilder.of()
+                    .name("foo")
+                    .amount(2.0)
+                    .includedInPrice(false)
+                    .country(CountryCode.FR.getAlpha2())
+                    .state("LYON")
+                    .build(),
+                TaxRateDraftBuilder.of()
+                    .name("foo")
+                    .amount(2.0)
+                    .includedInPrice(false)
+                    .country(CountryCode.FR.getAlpha2())
+                    .state("PARIS")
+                    .build(),
+                taxRateGermanyBerlin,
+                taxRateGermanyBerlin)
+            .description("desc")
             .key("duplicatedState")
             .build();
 
+    final TaxRateDraft taxRateFranceBerlin = TaxRateDraft.deepCopy(taxRateGermanyBerlin);
+    taxRateFranceBerlin.setCountry(CountryCode.ES.getAlpha2());
+    final TaxCategoryDraft withSameStateButDifferenCountry =
+        TaxCategoryDraftBuilder.of()
+            .name("foo")
+            .rates(taxRateGermanyBerlin, taxRateFranceBerlin)
+            .description("desc")
+            .key("sameStateDifferentCountry")
+            .build();
+
+    final TaxRateDraft taxRateFrance =
+        TaxRateDraftBuilder.of()
+            .name("foo")
+            .amount(2.0)
+            .includedInPrice(false)
+            .country(CountryCode.FR.getAlpha2())
+            .build();
+
     final TaxCategoryDraft withDuplicatedCountry =
-        TaxCategoryDraftBuilder.of(
-                "foo",
-                asList(
-                    TaxRateDraftBuilder.of("foo", 2.0, false, CountryCode.FR).build(),
-                    TaxRateDraftBuilder.of("foo", 2.0, false, CountryCode.FR).build()),
-                "desc")
+        TaxCategoryDraftBuilder.of()
+            .name("foo")
+            .rates(taxRateFrance, taxRateFrance)
+            .description("desc")
             .key("duplicatedCountry")
+            .build();
+
+    final TaxRateDraft taxRateMissingCountry = TaxRateDraft.deepCopy(taxRateFrance);
+    taxRateMissingCountry.setCountry(null);
+    final TaxCategoryDraft withMissingCountry =
+        TaxCategoryDraftBuilder.of()
+            .name("foo")
+            .rates(taxRateFrance)
+            .description("desc")
+            .key("missingCountry")
             .build();
 
     final TaxCategoryBatchValidator batchValidator =
@@ -151,21 +193,32 @@ class TaxCategoryBatchValidatorTest {
                 withEmptyKey,
                 withNullKey,
                 withDuplicatedState,
-                withDuplicatedCountry));
+                withDuplicatedCountry,
+                withMissingCountry,
+                withSameStateButDifferenCountry));
 
-    assertThat(pair.getLeft()).containsExactlyInAnyOrder(validDraft);
-    assertThat(pair.getRight()).containsExactlyInAnyOrder("foo");
+    assertThat(pair.getLeft())
+        .containsExactlyInAnyOrder(validDraft, withMissingCountry, withSameStateButDifferenCountry);
+    assertThat(pair.getRight())
+        .containsExactlyInAnyOrder("foo", "missingCountry", "sameStateDifferentCountry");
 
     assertThat(errorCallBackMessages).hasSize(5);
-    assertThat(errorCallBackMessages.get(0)).isEqualTo(TAX_CATEGORY_DRAFT_IS_NULL);
+    assertThat(errorCallBackMessages.get(0))
+        .isEqualTo(TaxCategoryBatchValidator.TAX_CATEGORY_DRAFT_IS_NULL);
     assertThat(errorCallBackMessages.get(1))
-        .isEqualTo(format(TAX_CATEGORY_DRAFT_KEY_NOT_SET, "foo"));
+        .isEqualTo(String.format(TaxCategoryBatchValidator.TAX_CATEGORY_DRAFT_KEY_NOT_SET, "foo"));
     assertThat(errorCallBackMessages.get(2))
-        .isEqualTo(format(TAX_CATEGORY_DRAFT_KEY_NOT_SET, "foo"));
+        .isEqualTo(String.format(TaxCategoryBatchValidator.TAX_CATEGORY_DRAFT_KEY_NOT_SET, "foo"));
     assertThat(errorCallBackMessages.get(3))
-        .isEqualTo(format(TAX_CATEGORY_DUPLICATED_COUNTRY_AND_STATE, CountryCode.DE, "BERLIN"));
+        .isEqualTo(
+            String.format(
+                TaxCategoryBatchValidator.TAX_CATEGORY_DUPLICATED_COUNTRY_AND_STATE,
+                CountryCode.DE,
+                "BERLIN"));
     assertThat(errorCallBackMessages.get(4))
-        .isEqualTo(format(TAX_CATEGORY_DUPLICATED_COUNTRY, CountryCode.FR));
+        .isEqualTo(
+            String.format(
+                TaxCategoryBatchValidator.TAX_CATEGORY_DUPLICATED_COUNTRY, CountryCode.FR));
   }
 
   @Nonnull

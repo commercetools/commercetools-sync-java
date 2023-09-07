@@ -1,7 +1,5 @@
 package com.commercetools.sync.commons.exceptions;
 
-import static com.commercetools.sync.commons.exceptions.ExceptionUtils.buildMessage;
-
 import java.util.Set;
 import javax.annotation.Nonnull;
 
@@ -10,7 +8,7 @@ public class InvalidProductTypeException extends Exception {
 
   public InvalidProductTypeException(
       @Nonnull final String message, @Nonnull final Set<Throwable> causes) {
-    super(buildMessage(message, causes, 2));
+    super(ExceptionUtils.buildMessage(message, causes, 2));
     this.causes = causes;
   }
 

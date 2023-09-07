@@ -7,16 +7,16 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
+import com.commercetools.api.models.custom_object.CustomObject;
+import com.commercetools.api.models.custom_object.CustomObjectDraft;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.customobjects.helpers.CustomObjectBatchValidator;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.customobjects.helpers.CustomObjectSyncStatistics;
+import com.commercetools.sync.customobjects.models.NoopResourceUpdateAction;
 import com.commercetools.sync.customobjects.utils.CustomObjectSyncUtils;
 import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.impl.CustomObjectServiceImpl;
-import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.customobjects.CustomObjectDraft;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,8 +31,9 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
  */
 public class CustomObjectSync
     extends BaseSync<
-        CustomObjectDraft<JsonNode>,
-        CustomObject<JsonNode>,
+        CustomObject,
+        CustomObjectDraft,
+        NoopResourceUpdateAction,
         CustomObjectSyncStatistics,
         CustomObjectSyncOptions> {
 
@@ -84,8 +85,8 @@ public class CustomObjectSync
    *     all sync processes performed by this sync instance.
    */
   protected CompletionStage<CustomObjectSyncStatistics> process(
-      @Nonnull final List<CustomObjectDraft<JsonNode>> customObjectDrafts) {
-    final List<List<CustomObjectDraft<JsonNode>>> batches =
+      @Nonnull final List<CustomObjectDraft> customObjectDrafts) {
+    final List<List<CustomObjectDraft>> batches =
         batchElements(customObjectDrafts, syncOptions.getBatchSize());
     return syncBatches(batches, CompletableFuture.completedFuture(statistics));
   }
@@ -107,12 +108,12 @@ public class CustomObjectSync
    *     project.
    */
   protected CompletionStage<CustomObjectSyncStatistics> processBatch(
-      @Nonnull final List<CustomObjectDraft<JsonNode>> batch) {
+      @Nonnull final List<CustomObjectDraft> batch) {
 
-    final ImmutablePair<Set<CustomObjectDraft<JsonNode>>, Set<CustomObjectCompositeIdentifier>>
-        result = batchValidator.validateAndCollectReferencedKeys(batch);
+    final ImmutablePair<Set<CustomObjectDraft>, Set<CustomObjectCompositeIdentifier>> result =
+        batchValidator.validateAndCollectReferencedKeys(batch);
 
-    final Set<CustomObjectDraft<JsonNode>> validDrafts = result.getLeft();
+    final Set<CustomObjectDraft> validDrafts = result.getLeft();
     if (validDrafts.isEmpty()) {
       statistics.incrementProcessed(batch.size());
       return CompletableFuture.completedFuture(statistics);
@@ -124,7 +125,7 @@ public class CustomObjectSync
         .handle(ImmutablePair::new)
         .thenCompose(
             fetchResponse -> {
-              final Set<CustomObject<JsonNode>> fetchedCustomObjects = fetchResponse.getKey();
+              final Set<CustomObject> fetchedCustomObjects = fetchResponse.getKey();
               final Throwable exception = fetchResponse.getValue();
 
               if (exception != null) {
@@ -154,24 +155,21 @@ public class CustomObjectSync
    */
   @Nonnull
   private CompletionStage<Void> syncBatch(
-      @Nonnull final Set<CustomObject<JsonNode>> oldCustomObjects,
-      @Nonnull final Set<CustomObjectDraft<JsonNode>> newCustomObjectDrafts) {
+      @Nonnull final Set<CustomObject> oldCustomObjects,
+      @Nonnull final Set<CustomObjectDraft> newCustomObjectDrafts) {
 
-    final Map<String, CustomObject<JsonNode>> oldCustomObjectMap =
+    final Map<String, CustomObject> oldCustomObjectMap =
         oldCustomObjects.stream()
             .collect(
                 toMap(
-                    customObject ->
-                        CustomObjectCompositeIdentifier.of(
-                                customObject.getKey(), customObject.getContainer())
-                            .toString(),
+                    customObject -> CustomObjectCompositeIdentifier.of(customObject).toString(),
                     identity()));
 
     return CompletableFuture.allOf(
         newCustomObjectDrafts.stream()
             .map(
                 newCustomObjectDraft -> {
-                  final CustomObject<JsonNode> oldCustomObject =
+                  final CustomObject oldCustomObject =
                       oldCustomObjectMap.get(
                           CustomObjectCompositeIdentifier.of(newCustomObjectDraft).toString());
                   return ofNullable(oldCustomObject)
@@ -192,8 +190,8 @@ public class CustomObjectSync
    *     of the create. Otherwise it contains an empty result in case of failure.
    */
   @Nonnull
-  private CompletionStage<Optional<CustomObject<JsonNode>>> applyCallbackAndCreate(
-      @Nonnull final CustomObjectDraft<JsonNode> customObjectDraft) {
+  private CompletionStage<Optional<CustomObject>> applyCallbackAndCreate(
+      @Nonnull final CustomObjectDraft customObjectDraft) {
 
     return syncOptions
         .applyBeforeCreateCallback(customObjectDraft)
@@ -240,9 +238,9 @@ public class CustomObjectSync
    * @return a {@link CompletionStage} which contains an empty result after execution of the update.
    */
   @Nonnull
-  private CompletionStage<Optional<CustomObject<JsonNode>>> updateCustomObject(
-      @Nonnull final CustomObject<JsonNode> oldCustomObject,
-      @Nonnull final CustomObjectDraft<JsonNode> newCustomObject) {
+  private CompletionStage<Optional<CustomObject>> updateCustomObject(
+      @Nonnull final CustomObject oldCustomObject,
+      @Nonnull final CustomObjectDraft newCustomObject) {
 
     if (!CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObject)) {
       return customObjectService
@@ -250,7 +248,7 @@ public class CustomObjectSync
           .handle(ImmutablePair::new)
           .thenCompose(
               updatedResponseEntry -> {
-                final Optional<CustomObject<JsonNode>> updateCustomObjectOptional =
+                final Optional<CustomObject> updateCustomObjectOptional =
                     updatedResponseEntry.getKey();
                 final Throwable sphereException = updatedResponseEntry.getValue();
                 if (sphereException != null) {
@@ -283,9 +281,9 @@ public class CustomObjectSync
   }
 
   @Nonnull
-  private CompletionStage<Optional<CustomObject<JsonNode>>> fetchAndUpdate(
-      @Nonnull final CustomObject<JsonNode> oldCustomObject,
-      @Nonnull final CustomObjectDraft<JsonNode> customObjectDraft) {
+  private CompletionStage<Optional<CustomObject>> fetchAndUpdate(
+      @Nonnull final CustomObject oldCustomObject,
+      @Nonnull final CustomObjectDraft customObjectDraft) {
 
     final CustomObjectCompositeIdentifier identifier =
         CustomObjectCompositeIdentifier.of(oldCustomObject);
@@ -295,7 +293,7 @@ public class CustomObjectSync
         .handle(ImmutablePair::new)
         .thenCompose(
             fetchedResponseEntry -> {
-              final Optional<CustomObject<JsonNode>> fetchedCustomObjectOptional =
+              final Optional<CustomObject> fetchedCustomObjectOptional =
                   fetchedResponseEntry.getKey();
               final Throwable exception = fetchedResponseEntry.getValue();
 

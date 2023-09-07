@@ -1,25 +1,29 @@
 package com.commercetools.sync.products;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductUpdateAction;
 import com.commercetools.sync.commons.BaseSyncOptionsBuilder;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductProjection;
 import javax.annotation.Nonnull;
 
 public final class ProductSyncOptionsBuilder
     extends BaseSyncOptionsBuilder<
-        ProductSyncOptionsBuilder, ProductSyncOptions, ProductProjection, ProductDraft, Product> {
+        ProductSyncOptionsBuilder,
+        ProductSyncOptions,
+        ProductProjection,
+        ProductDraft,
+        ProductUpdateAction> {
   public static final int BATCH_SIZE_DEFAULT = 30;
   private SyncFilter syncFilter;
   static final boolean ENSURE_CHANNELS_DEFAULT = false;
   private boolean ensurePriceChannels = ENSURE_CHANNELS_DEFAULT;
 
-  private ProductSyncOptionsBuilder(final SphereClient ctpClient) {
+  private ProductSyncOptionsBuilder(final ProjectApiRoot ctpClient) {
     this.ctpClient = ctpClient;
   }
 
-  public static ProductSyncOptionsBuilder of(@Nonnull final SphereClient ctpClient) {
+  public static ProductSyncOptionsBuilder of(@Nonnull final ProjectApiRoot ctpClient) {
     return new ProductSyncOptionsBuilder(ctpClient).batchSize(BATCH_SIZE_DEFAULT);
   }
 

@@ -1,23 +1,12 @@
 package com.commercetools.sync.taxcategories.utils;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
-import com.neovisionaries.i18n.CountryCode;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.taxcategories.TaxCategory;
-import io.sphere.sdk.taxcategories.TaxRate;
-import io.sphere.sdk.taxcategories.TaxRateDraft;
-import io.sphere.sdk.taxcategories.TaxRateDraftBuilder;
-import io.sphere.sdk.taxcategories.commands.updateactions.AddTaxRate;
-import io.sphere.sdk.taxcategories.commands.updateactions.RemoveTaxRate;
-import io.sphere.sdk.taxcategories.commands.updateactions.ReplaceTaxRate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import com.commercetools.api.models.tax_category.*;
+import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
@@ -29,8 +18,8 @@ final class TaxRatesUpdateActionUtils {
 
   /**
    * Compares a list of {@link TaxRate}s with a list of {@link TaxRateDraft}s to returns a {@link
-   * List} of {@link UpdateAction}&lt;{@link TaxCategory}&gt;. If both lists have identical
-   * TaxRates, then no update actions are needed and hence an empty {@link List} is returned.
+   * List} of {@link TaxCategoryUpdateAction}. If both lists have identical TaxRates, then no update
+   * actions are needed and hence an empty {@link List} is returned.
    *
    * <p>If the list of new {@link TaxRateDraft}s is empty, then remove actions are built for every
    * existing tax rate in the {@code oldTaxRates} list.
@@ -50,7 +39,7 @@ final class TaxRatesUpdateActionUtils {
    *     Otherwise, if the tax rates are identical, an empty list is returned.
    */
   @Nonnull
-  static List<UpdateAction<TaxCategory>> buildTaxRatesUpdateActions(
+  static List<TaxCategoryUpdateAction> buildTaxRatesUpdateActions(
       @Nonnull final List<TaxRate> oldTaxRates, final List<TaxRateDraft> newTaxRatesDrafts) {
 
     if (newTaxRatesDrafts != null && !newTaxRatesDrafts.isEmpty()) {
@@ -60,7 +49,7 @@ final class TaxRatesUpdateActionUtils {
       return oldTaxRates.stream()
           .map(TaxRate::getId)
           .filter(Objects::nonNull)
-          .map(RemoveTaxRate::of)
+          .map(id -> TaxCategoryRemoveTaxRateActionBuilder.of().taxRateId(id).build())
           .collect(Collectors.toList());
     }
   }
@@ -76,13 +65,13 @@ final class TaxRatesUpdateActionUtils {
    *     Otherwise, if the tax rates are identical, an empty list is returned.
    */
   @Nonnull
-  private static List<UpdateAction<TaxCategory>> buildUpdateActions(
+  private static List<TaxCategoryUpdateAction> buildUpdateActions(
       @Nonnull final List<TaxRate> oldTaxRates,
       @Nonnull final List<TaxRateDraft> newTaxRatesDrafts) {
 
     List<TaxRateDraft> newTaxRateDraftsCopy = new ArrayList<>(newTaxRatesDrafts);
 
-    final List<UpdateAction<TaxCategory>> updateActions =
+    final List<TaxCategoryUpdateAction> updateActions =
         buildRemoveOrReplaceTaxRateUpdateActions(oldTaxRates, newTaxRateDraftsCopy);
     updateActions.addAll(buildAddTaxRateUpdateActions(oldTaxRates, newTaxRateDraftsCopy));
     return updateActions;
@@ -102,7 +91,7 @@ final class TaxRatesUpdateActionUtils {
    *     identical, an empty list is returned.
    */
   @Nonnull
-  private static List<UpdateAction<TaxCategory>> buildRemoveOrReplaceTaxRateUpdateActions(
+  private static List<TaxCategoryUpdateAction> buildRemoveOrReplaceTaxRateUpdateActions(
       @Nonnull final List<TaxRate> oldTaxRates,
       @Nonnull final List<TaxRateDraft> newTaxRatesDrafts) {
 
@@ -121,12 +110,20 @@ final class TaxRatesUpdateActionUtils {
                           if (!hasSameFields(oldTaxRate, matchedTaxRateDraft)) {
                             newTaxRatesDrafts.remove(matchedTaxRateDraft);
                             return singletonList(
-                                ReplaceTaxRate.of(oldTaxRate.getId(), matchedTaxRateDraft));
+                                TaxCategoryReplaceTaxRateActionBuilder.of()
+                                    .taxRateId(oldTaxRate.getId())
+                                    .taxRate(matchedTaxRateDraft)
+                                    .build());
                           } else {
-                            return new ArrayList<UpdateAction<TaxCategory>>();
+                            return new ArrayList<TaxCategoryUpdateAction>();
                           }
                         })
-                    .orElseGet(() -> singletonList(RemoveTaxRate.of(oldTaxRate.getId()))))
+                    .orElseGet(
+                        () ->
+                            singletonList(
+                                TaxCategoryRemoveTaxRateActionBuilder.of()
+                                    .taxRateId(oldTaxRate.getId())
+                                    .build())))
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
   }
@@ -142,7 +139,7 @@ final class TaxRatesUpdateActionUtils {
    *     Otherwise, if the tax rates are identical, an empty list is returned.
    */
   @Nonnull
-  private static List<UpdateAction<TaxCategory>> buildAddTaxRateUpdateActions(
+  private static List<TaxCategoryUpdateAction> buildAddTaxRateUpdateActions(
       @Nonnull final List<TaxRate> oldTaxRates,
       @Nonnull final List<TaxRateDraft> newTaxRateDrafts) {
 
@@ -159,19 +156,31 @@ final class TaxRatesUpdateActionUtils {
                 taxRateDraft.getCountry() != null
                     && !taxRateDraftMap.containsKey(
                         getTaxRateDraftMapKey(taxRateDraft.getCountry(), taxRateDraft.getState())))
-        .map(AddTaxRate::of)
+        .map(draft -> TaxCategoryAddTaxRateActionBuilder.of().taxRate(draft).build())
         .collect(toList());
   }
 
   @Nonnull
-  private static String getTaxRateDraftMapKey(final CountryCode countryCode, final String state) {
-    return StringUtils.isEmpty(state)
-        ? countryCode.toString()
-        : String.format("%s_%s", countryCode, state);
+  private static String getTaxRateDraftMapKey(
+      @Nonnull final String countryCode, final String state) {
+    return StringUtils.isEmpty(state) ? countryCode : String.format("%s_%s", countryCode, state);
   }
 
   private static boolean hasSameFields(
       @Nonnull final TaxRate oldTaxRate, @Nonnull final TaxRateDraft newTaxRate) {
-    return TaxRateDraftBuilder.of(oldTaxRate).build().equals(newTaxRate);
+    if (newTaxRate.getSubRates() == null) {
+      newTaxRate.setSubRates(emptyList());
+    }
+    final TaxRateDraft oldTaxRateAsDraft =
+        TaxRateDraftBuilder.of()
+            .amount(oldTaxRate.getAmount())
+            .name(oldTaxRate.getName())
+            .includedInPrice(oldTaxRate.getIncludedInPrice())
+            .country(oldTaxRate.getCountry())
+            .state(oldTaxRate.getState())
+            .subRates(oldTaxRate.getSubRates())
+            .key(oldTaxRate.getKey())
+            .build();
+    return oldTaxRateAsDraft.equals(newTaxRate);
   }
 }

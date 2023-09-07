@@ -1,16 +1,6 @@
 package com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes;
 
-import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA;
-import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION;
-import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.NULL_PRODUCT_VARIANT_ATTRIBUTE;
-import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.BOOLEAN_ATTRIBUTE_FALSE;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.TEXT_ATTRIBUTE_BAR;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.TEXT_ATTRIBUTE_FOO;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.TIME_ATTRIBUTE_10_08_46;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static java.lang.String.format;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -18,27 +8,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.product.Attribute;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductSetAttributeActionBuilder;
+import com.commercetools.api.models.product.ProductSetAttributeInAllVariantsActionBuilder;
+import com.commercetools.api.models.product.ProductUpdateAction;
+import com.commercetools.api.models.product.ProductVariant;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product_type.AttributeBooleanTypeBuilder;
+import com.commercetools.api.models.product_type.AttributeConstraintEnum;
+import com.commercetools.api.models.product_type.AttributeDefinition;
+import com.commercetools.api.models.product_type.AttributeDefinitionBuilder;
+import com.commercetools.api.models.product_type.AttributeTextTypeBuilder;
+import com.commercetools.api.models.product_type.AttributeTimeTypeBuilder;
+import com.commercetools.api.models.product_type.TextInputHint;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.ProductVariant;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.attributes.Attribute;
-import io.sphere.sdk.products.attributes.AttributeConstraint;
-import io.sphere.sdk.products.attributes.AttributeDefinition;
-import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
-import io.sphere.sdk.products.attributes.AttributeDraft;
-import io.sphere.sdk.products.attributes.AttributeDraftBuilder;
-import io.sphere.sdk.products.attributes.BooleanAttributeType;
-import io.sphere.sdk.products.attributes.StringAttributeType;
-import io.sphere.sdk.products.attributes.TimeAttributeType;
-import io.sphere.sdk.products.commands.updateactions.SetAttribute;
-import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
+import com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils;
+import com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,7 +43,7 @@ class BuildProductVariantAttributesUpdateActionsTest {
   private final ProductVariantDraft newProductVariant = mock(ProductVariantDraft.class);
   private List<String> errorMessages;
   private final ProductSyncOptions syncOptions =
-      ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+      ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
           .errorCallback(
               (exception, oldResource, newResource, updateActions) ->
                   errorMessages.add(exception.getMessage()))
@@ -71,8 +61,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
     when(oldProductVariant.getAttributes()).thenReturn(emptyList());
 
     // Test
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAttributesUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions(
             oldProduct,
             newProductDraft,
             oldProductVariant,
@@ -90,32 +80,46 @@ class BuildProductVariantAttributesUpdateActionsTest {
     final String productKey = "foo";
     final String variantKey = "foo";
     when(oldProduct.getKey()).thenReturn(productKey);
-    final List<AttributeDraft> newAttributes =
-        asList(AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build(), null);
+    final List<Attribute> newAttributes = asList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE, null);
     when(newProductVariant.getAttributes()).thenReturn(newAttributes);
     when(newProductVariant.getKey()).thenReturn(variantKey);
 
-    final List<Attribute> oldAttributes = asList(BOOLEAN_ATTRIBUTE_TRUE, TEXT_ATTRIBUTE_BAR);
+    final List<Attribute> oldAttributes =
+        asList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE, AttributeFixtures.TEXT_ATTRIBUTE_BAR);
     when(oldProductVariant.getAttributes()).thenReturn(oldAttributes);
     when(oldProductVariant.getKey()).thenReturn(variantKey);
 
     final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
     final AttributeDefinition booleanAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                BOOLEAN_ATTRIBUTE_TRUE.getName(), ofEnglish("label"), BooleanAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeBooleanTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     final AttributeDefinition textAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                TEXT_ATTRIBUTE_BAR.getName(), ofEnglish("label"), StringAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeTextTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     attributesMetaData.put(
-        BOOLEAN_ATTRIBUTE_TRUE.getName(), AttributeMetaData.of(booleanAttributeDefinition));
+        AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName(),
+        AttributeMetaData.of(booleanAttributeDefinition));
     attributesMetaData.put(
-        TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
+        AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName(),
+        AttributeMetaData.of(textAttributeDefinition));
 
     // Test
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAttributesUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions(
             oldProduct,
             newProductDraft,
             oldProductVariant,
@@ -126,16 +130,19 @@ class BuildProductVariantAttributesUpdateActionsTest {
     // Assertion
     assertThat(updateActions)
         .containsExactly(
-            SetAttribute.ofUnsetAttribute(
-                oldProductVariant.getId(), TEXT_ATTRIBUTE_BAR.getName(), true));
+            ProductSetAttributeActionBuilder.of()
+                .variantId(oldProductVariant.getId())
+                .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+                .staged(true)
+                .build());
     assertThat(errorMessages)
         .containsExactly(
-            format(
-                FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
+            String.format(
+                ProductVariantUpdateActionUtils.FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
                 null,
                 variantKey,
                 productKey,
-                NULL_PRODUCT_VARIANT_ATTRIBUTE));
+                ProductVariantUpdateActionUtils.NULL_PRODUCT_VARIANT_ATTRIBUTE));
   }
 
   @Test
@@ -150,8 +157,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
     when(newProductVariant.getKey()).thenReturn(variantKey);
 
     // Test
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAttributesUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions(
             oldProduct,
             newProductDraft,
             oldProductVariant,
@@ -169,34 +176,47 @@ class BuildProductVariantAttributesUpdateActionsTest {
     final String productKey = "foo";
     final String variantKey = "foo";
     when(oldProduct.getKey()).thenReturn(productKey);
-    final List<AttributeDraft> newAttributes =
-        asList(
-            AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build(),
-            AttributeDraftBuilder.of(TEXT_ATTRIBUTE_BAR).build());
+    final List<Attribute> newAttributes =
+        asList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE, AttributeFixtures.TEXT_ATTRIBUTE_BAR);
     when(newProductVariant.getAttributes()).thenReturn(newAttributes);
     when(newProductVariant.getKey()).thenReturn(variantKey);
 
-    final List<Attribute> oldAttributes = asList(BOOLEAN_ATTRIBUTE_TRUE, TEXT_ATTRIBUTE_BAR);
+    final List<Attribute> oldAttributes =
+        asList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE, AttributeFixtures.TEXT_ATTRIBUTE_BAR);
     when(oldProductVariant.getAttributes()).thenReturn(oldAttributes);
     when(oldProductVariant.getKey()).thenReturn(variantKey);
 
     final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
     final AttributeDefinition booleanAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                BOOLEAN_ATTRIBUTE_TRUE.getName(), ofEnglish("label"), BooleanAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeBooleanTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     final AttributeDefinition textAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                TEXT_ATTRIBUTE_BAR.getName(), ofEnglish("label"), StringAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeTextTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     attributesMetaData.put(
-        BOOLEAN_ATTRIBUTE_TRUE.getName(), AttributeMetaData.of(booleanAttributeDefinition));
+        AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName(),
+        AttributeMetaData.of(booleanAttributeDefinition));
     attributesMetaData.put(
-        TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
+        AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName(),
+        AttributeMetaData.of(textAttributeDefinition));
 
     // Test
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAttributesUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions(
             oldProduct,
             newProductDraft,
             oldProductVariant,
@@ -214,10 +234,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
     final String productKey = "foo";
     final String variantKey = "foo";
     when(oldProduct.getKey()).thenReturn(productKey);
-    final List<AttributeDraft> newAttributes =
-        asList(
-            AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build(),
-            AttributeDraftBuilder.of(TEXT_ATTRIBUTE_BAR).build());
+    final List<Attribute> newAttributes =
+        asList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE, AttributeFixtures.TEXT_ATTRIBUTE_BAR);
     when(newProductVariant.getAttributes()).thenReturn(newAttributes);
     when(newProductVariant.getKey()).thenReturn(variantKey);
 
@@ -226,21 +244,35 @@ class BuildProductVariantAttributesUpdateActionsTest {
 
     final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
     final AttributeDefinition booleanAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                BOOLEAN_ATTRIBUTE_TRUE.getName(), ofEnglish("label"), BooleanAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeBooleanTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     final AttributeDefinition textAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                TEXT_ATTRIBUTE_BAR.getName(), ofEnglish("label"), StringAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeTextTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     attributesMetaData.put(
-        BOOLEAN_ATTRIBUTE_TRUE.getName(), AttributeMetaData.of(booleanAttributeDefinition));
+        AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName(),
+        AttributeMetaData.of(booleanAttributeDefinition));
     attributesMetaData.put(
-        TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
+        AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName(),
+        AttributeMetaData.of(textAttributeDefinition));
 
     // Test
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAttributesUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions(
             oldProduct,
             newProductDraft,
             oldProductVariant,
@@ -251,8 +283,18 @@ class BuildProductVariantAttributesUpdateActionsTest {
     // Assertion
     assertThat(updateActions)
         .containsExactlyInAnyOrder(
-            SetAttribute.of(oldProductVariant.getId(), newAttributes.get(0), true),
-            SetAttribute.of(oldProductVariant.getId(), newAttributes.get(1), true));
+            ProductSetAttributeActionBuilder.of()
+                .variantId(oldProductVariant.getId())
+                .name(newAttributes.get(0).getName())
+                .value(newAttributes.get(0).getValue())
+                .staged(true)
+                .build(),
+            ProductSetAttributeActionBuilder.of()
+                .variantId(oldProductVariant.getId())
+                .name(newAttributes.get(1).getName())
+                .value(newAttributes.get(1).getValue())
+                .staged(true)
+                .build());
   }
 
   @Test
@@ -261,41 +303,63 @@ class BuildProductVariantAttributesUpdateActionsTest {
     final String productKey = "foo";
     final String variantKey = "foo";
     when(oldProduct.getKey()).thenReturn(productKey);
-    final List<AttributeDraft> newAttributes =
+    final List<Attribute> newAttributes =
         asList(
-            AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build(),
-            AttributeDraftBuilder.of(TEXT_ATTRIBUTE_BAR).build(),
-            AttributeDraftBuilder.of(TIME_ATTRIBUTE_10_08_46).build());
+            AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE,
+            AttributeFixtures.TEXT_ATTRIBUTE_BAR,
+            AttributeFixtures.TIME_ATTRIBUTE_10_08_46);
     when(newProductVariant.getAttributes()).thenReturn(newAttributes);
     when(newProductVariant.getKey()).thenReturn(variantKey);
 
-    final List<Attribute> oldAttributes = asList(BOOLEAN_ATTRIBUTE_TRUE, TEXT_ATTRIBUTE_BAR);
+    final List<Attribute> oldAttributes =
+        asList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE, AttributeFixtures.TEXT_ATTRIBUTE_BAR);
     when(oldProductVariant.getAttributes()).thenReturn(oldAttributes);
     when(oldProductVariant.getKey()).thenReturn(variantKey);
 
     final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
     final AttributeDefinition booleanAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                BOOLEAN_ATTRIBUTE_TRUE.getName(), ofEnglish("label"), BooleanAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeBooleanTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     final AttributeDefinition textAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                TEXT_ATTRIBUTE_BAR.getName(), ofEnglish("label"), StringAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeTextTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     final AttributeDefinition timeAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                TIME_ATTRIBUTE_10_08_46.getName(), ofEnglish("label"), TimeAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.TIME_ATTRIBUTE_10_08_46.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeTimeTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     attributesMetaData.put(
-        BOOLEAN_ATTRIBUTE_TRUE.getName(), AttributeMetaData.of(booleanAttributeDefinition));
+        AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName(),
+        AttributeMetaData.of(booleanAttributeDefinition));
     attributesMetaData.put(
-        TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
+        AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName(),
+        AttributeMetaData.of(textAttributeDefinition));
     attributesMetaData.put(
-        TIME_ATTRIBUTE_10_08_46.getName(), AttributeMetaData.of(timeAttributeDefinition));
+        AttributeFixtures.TIME_ATTRIBUTE_10_08_46.getName(),
+        AttributeMetaData.of(timeAttributeDefinition));
 
     // Test
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAttributesUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions(
             oldProduct,
             newProductDraft,
             oldProductVariant,
@@ -306,10 +370,12 @@ class BuildProductVariantAttributesUpdateActionsTest {
     // Assertion
     assertThat(updateActions)
         .containsExactly(
-            SetAttribute.of(
-                oldProductVariant.getId(),
-                AttributeDraftBuilder.of(TIME_ATTRIBUTE_10_08_46).build(),
-                true));
+            ProductSetAttributeActionBuilder.of()
+                .variantId(oldProductVariant.getId())
+                .name(AttributeFixtures.TIME_ATTRIBUTE_10_08_46.getName())
+                .value(AttributeFixtures.TIME_ATTRIBUTE_10_08_46.getValue())
+                .staged(true)
+                .build());
   }
 
   @Test
@@ -321,27 +387,42 @@ class BuildProductVariantAttributesUpdateActionsTest {
     when(newProductVariant.getAttributes()).thenReturn(null);
     when(newProductVariant.getKey()).thenReturn(variantKey);
 
-    final List<Attribute> oldAttributes = asList(BOOLEAN_ATTRIBUTE_TRUE, TEXT_ATTRIBUTE_BAR);
+    final List<Attribute> oldAttributes =
+        asList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE, AttributeFixtures.TEXT_ATTRIBUTE_BAR);
     when(oldProductVariant.getAttributes()).thenReturn(oldAttributes);
     when(oldProductVariant.getKey()).thenReturn(variantKey);
 
     final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
     final AttributeDefinition booleanAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                BOOLEAN_ATTRIBUTE_TRUE.getName(), ofEnglish("label"), BooleanAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeBooleanTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     final AttributeDefinition textAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                TEXT_ATTRIBUTE_BAR.getName(), ofEnglish("label"), StringAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeTextTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     attributesMetaData.put(
-        BOOLEAN_ATTRIBUTE_TRUE.getName(), AttributeMetaData.of(booleanAttributeDefinition));
+        AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName(),
+        AttributeMetaData.of(booleanAttributeDefinition));
     attributesMetaData.put(
-        TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
+        AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName(),
+        AttributeMetaData.of(textAttributeDefinition));
 
     // Test
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAttributesUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions(
             oldProduct,
             newProductDraft,
             oldProductVariant,
@@ -352,10 +433,16 @@ class BuildProductVariantAttributesUpdateActionsTest {
     // Assertion
     assertThat(updateActions)
         .containsExactly(
-            SetAttribute.ofUnsetAttribute(
-                oldProductVariant.getId(), BOOLEAN_ATTRIBUTE_TRUE.getName(), true),
-            SetAttribute.ofUnsetAttribute(
-                oldProductVariant.getId(), TEXT_ATTRIBUTE_BAR.getName(), true));
+            ProductSetAttributeActionBuilder.of()
+                .variantId(oldProductVariant.getId())
+                .name(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())
+                .staged(true)
+                .build(),
+            ProductSetAttributeActionBuilder.of()
+                .variantId(oldProductVariant.getId())
+                .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+                .staged(true)
+                .build());
   }
 
   @Test
@@ -367,29 +454,42 @@ class BuildProductVariantAttributesUpdateActionsTest {
     when(newProductVariant.getAttributes()).thenReturn(null);
     when(newProductVariant.getKey()).thenReturn(variantKey);
 
-    final List<Attribute> oldAttributes = asList(BOOLEAN_ATTRIBUTE_TRUE, TEXT_ATTRIBUTE_BAR);
+    final List<Attribute> oldAttributes =
+        asList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE, AttributeFixtures.TEXT_ATTRIBUTE_BAR);
     when(oldProductVariant.getAttributes()).thenReturn(oldAttributes);
     when(oldProductVariant.getKey()).thenReturn(variantKey);
 
     final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
     final AttributeDefinition booleanAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                BOOLEAN_ATTRIBUTE_TRUE.getName(), ofEnglish("label"), BooleanAttributeType.of())
-            .attributeConstraint(AttributeConstraint.SAME_FOR_ALL)
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeBooleanTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.SAME_FOR_ALL)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     final AttributeDefinition textAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                TEXT_ATTRIBUTE_BAR.getName(), ofEnglish("label"), StringAttributeType.of())
-            .attributeConstraint(AttributeConstraint.SAME_FOR_ALL)
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeTextTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.SAME_FOR_ALL)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     attributesMetaData.put(
-        BOOLEAN_ATTRIBUTE_TRUE.getName(), AttributeMetaData.of(booleanAttributeDefinition));
+        AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName(),
+        AttributeMetaData.of(booleanAttributeDefinition));
     attributesMetaData.put(
-        TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
+        AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName(),
+        AttributeMetaData.of(textAttributeDefinition));
 
     // Test
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAttributesUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions(
             oldProduct,
             newProductDraft,
             oldProductVariant,
@@ -400,8 +500,14 @@ class BuildProductVariantAttributesUpdateActionsTest {
     // Assertion
     assertThat(updateActions)
         .containsExactly(
-            SetAttributeInAllVariants.ofUnsetAttribute(BOOLEAN_ATTRIBUTE_TRUE.getName(), true),
-            SetAttributeInAllVariants.ofUnsetAttribute(TEXT_ATTRIBUTE_BAR.getName(), true));
+            ProductSetAttributeInAllVariantsActionBuilder.of()
+                .name(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())
+                .staged(true)
+                .build(),
+            ProductSetAttributeInAllVariantsActionBuilder.of()
+                .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+                .staged(true)
+                .build());
   }
 
   @Test
@@ -413,27 +519,42 @@ class BuildProductVariantAttributesUpdateActionsTest {
     when(newProductVariant.getAttributes()).thenReturn(emptyList());
     when(newProductVariant.getKey()).thenReturn(variantKey);
 
-    final List<Attribute> oldAttributes = asList(BOOLEAN_ATTRIBUTE_TRUE, TEXT_ATTRIBUTE_BAR);
+    final List<Attribute> oldAttributes =
+        asList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE, AttributeFixtures.TEXT_ATTRIBUTE_BAR);
     when(oldProductVariant.getAttributes()).thenReturn(oldAttributes);
     when(oldProductVariant.getKey()).thenReturn(variantKey);
 
     final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
     final AttributeDefinition booleanAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                BOOLEAN_ATTRIBUTE_TRUE.getName(), ofEnglish("label"), BooleanAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeBooleanTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     final AttributeDefinition textAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                TEXT_ATTRIBUTE_BAR.getName(), ofEnglish("label"), StringAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeTextTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     attributesMetaData.put(
-        BOOLEAN_ATTRIBUTE_TRUE.getName(), AttributeMetaData.of(booleanAttributeDefinition));
+        AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName(),
+        AttributeMetaData.of(booleanAttributeDefinition));
     attributesMetaData.put(
-        TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
+        AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName(),
+        AttributeMetaData.of(textAttributeDefinition));
 
     // Test
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAttributesUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions(
             oldProduct,
             newProductDraft,
             oldProductVariant,
@@ -444,10 +565,16 @@ class BuildProductVariantAttributesUpdateActionsTest {
     // Assertion
     assertThat(updateActions)
         .containsExactly(
-            SetAttribute.ofUnsetAttribute(
-                oldProductVariant.getId(), BOOLEAN_ATTRIBUTE_TRUE.getName(), true),
-            SetAttribute.ofUnsetAttribute(
-                oldProductVariant.getId(), TEXT_ATTRIBUTE_BAR.getName(), true));
+            ProductSetAttributeActionBuilder.of()
+                .variantId(oldProductVariant.getId())
+                .name(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())
+                .staged(true)
+                .build(),
+            ProductSetAttributeActionBuilder.of()
+                .variantId(oldProductVariant.getId())
+                .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+                .staged(true)
+                .build());
   }
 
   @Test
@@ -460,15 +587,16 @@ class BuildProductVariantAttributesUpdateActionsTest {
     when(newProductVariant.getAttributes()).thenReturn(emptyList());
     when(newProductVariant.getKey()).thenReturn(variantKey);
 
-    final List<Attribute> oldAttributes = asList(BOOLEAN_ATTRIBUTE_TRUE, TEXT_ATTRIBUTE_BAR);
+    final List<Attribute> oldAttributes =
+        asList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE, AttributeFixtures.TEXT_ATTRIBUTE_BAR);
     when(oldProductVariant.getAttributes()).thenReturn(oldAttributes);
     when(oldProductVariant.getKey()).thenReturn(variantKey);
 
     final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
 
     // Test
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAttributesUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions(
             oldProduct,
             newProductDraft,
             oldProductVariant,
@@ -480,18 +608,22 @@ class BuildProductVariantAttributesUpdateActionsTest {
     assertThat(updateActions).isEmpty();
     assertThat(errorMessages)
         .containsExactlyInAnyOrder(
-            format(
-                FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
-                TEXT_ATTRIBUTE_BAR.getName(),
+            String.format(
+                ProductVariantUpdateActionUtils.FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
+                AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName(),
                 variantKey,
                 productKey,
-                format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, TEXT_ATTRIBUTE_BAR.getName())),
-            format(
-                FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
-                BOOLEAN_ATTRIBUTE_TRUE.getName(),
+                String.format(
+                    ProductVariantAttributeUpdateActionUtils.ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA,
+                    AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())),
+            String.format(
+                ProductVariantUpdateActionUtils.FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
+                AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName(),
                 variantKey,
                 productKey,
-                format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, BOOLEAN_ATTRIBUTE_TRUE.getName())));
+                String.format(
+                    ProductVariantAttributeUpdateActionUtils.ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA,
+                    AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())));
   }
 
   @Test
@@ -500,32 +632,46 @@ class BuildProductVariantAttributesUpdateActionsTest {
     final String productKey = "foo";
     final String variantKey = "foo";
     when(oldProduct.getKey()).thenReturn(productKey);
-    final List<AttributeDraft> newAttributes =
-        singletonList(AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build());
+    final List<Attribute> newAttributes = singletonList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE);
     when(newProductVariant.getAttributes()).thenReturn(newAttributes);
     when(newProductVariant.getKey()).thenReturn(variantKey);
 
-    final List<Attribute> oldAttributes = asList(BOOLEAN_ATTRIBUTE_TRUE, TEXT_ATTRIBUTE_BAR);
+    final List<Attribute> oldAttributes =
+        asList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE, AttributeFixtures.TEXT_ATTRIBUTE_BAR);
     when(oldProductVariant.getAttributes()).thenReturn(oldAttributes);
     when(oldProductVariant.getKey()).thenReturn(variantKey);
 
     final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
     final AttributeDefinition booleanAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                BOOLEAN_ATTRIBUTE_TRUE.getName(), ofEnglish("label"), BooleanAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeBooleanTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     final AttributeDefinition textAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                TEXT_ATTRIBUTE_BAR.getName(), ofEnglish("label"), StringAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeBooleanTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     attributesMetaData.put(
-        BOOLEAN_ATTRIBUTE_TRUE.getName(), AttributeMetaData.of(booleanAttributeDefinition));
+        AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName(),
+        AttributeMetaData.of(booleanAttributeDefinition));
     attributesMetaData.put(
-        TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
+        AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName(),
+        AttributeMetaData.of(textAttributeDefinition));
 
     // Test
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAttributesUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions(
             oldProduct,
             newProductDraft,
             oldProductVariant,
@@ -536,8 +682,11 @@ class BuildProductVariantAttributesUpdateActionsTest {
     // Assertion
     assertThat(updateActions)
         .containsExactly(
-            SetAttribute.ofUnsetAttribute(
-                oldProductVariant.getId(), TEXT_ATTRIBUTE_BAR.getName(), true));
+            ProductSetAttributeActionBuilder.of()
+                .variantId(oldProductVariant.getId())
+                .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+                .staged(true)
+                .build());
   }
 
   @Test
@@ -546,32 +695,45 @@ class BuildProductVariantAttributesUpdateActionsTest {
     final String productKey = "foo";
     final String variantKey = "foo";
     when(oldProduct.getKey()).thenReturn(productKey);
-    final List<AttributeDraft> newAttributes =
-        singletonList(AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build());
+    final List<Attribute> newAttributes = singletonList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE);
     when(newProductVariant.getAttributes()).thenReturn(newAttributes);
     when(newProductVariant.getKey()).thenReturn(variantKey);
 
-    final List<Attribute> oldAttributes = singletonList(TEXT_ATTRIBUTE_BAR);
+    final List<Attribute> oldAttributes = singletonList(AttributeFixtures.TEXT_ATTRIBUTE_BAR);
     when(oldProductVariant.getAttributes()).thenReturn(oldAttributes);
     when(oldProductVariant.getKey()).thenReturn(variantKey);
 
     final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
     final AttributeDefinition booleanAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                BOOLEAN_ATTRIBUTE_TRUE.getName(), ofEnglish("label"), BooleanAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeBooleanTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     final AttributeDefinition textAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                TEXT_ATTRIBUTE_BAR.getName(), ofEnglish("label"), StringAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeTextTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     attributesMetaData.put(
-        BOOLEAN_ATTRIBUTE_TRUE.getName(), AttributeMetaData.of(booleanAttributeDefinition));
+        AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName(),
+        AttributeMetaData.of(booleanAttributeDefinition));
     attributesMetaData.put(
-        TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
+        AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName(),
+        AttributeMetaData.of(textAttributeDefinition));
 
     // Test
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAttributesUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions(
             oldProduct,
             newProductDraft,
             oldProductVariant,
@@ -582,12 +744,17 @@ class BuildProductVariantAttributesUpdateActionsTest {
     // Assertion
     assertThat(updateActions)
         .containsExactlyInAnyOrder(
-            SetAttribute.ofUnsetAttribute(
-                oldProductVariant.getId(), TEXT_ATTRIBUTE_BAR.getName(), true),
-            SetAttribute.of(
-                oldProductVariant.getId(),
-                AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build(),
-                true));
+            ProductSetAttributeActionBuilder.of()
+                .variantId(oldProductVariant.getId())
+                .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+                .staged(true)
+                .build(),
+            ProductSetAttributeActionBuilder.of()
+                .variantId(oldProductVariant.getId())
+                .name(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())
+                .value(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getValue())
+                .staged(true)
+                .build());
   }
 
   @Test
@@ -597,26 +764,32 @@ class BuildProductVariantAttributesUpdateActionsTest {
     final String productKey = "foo";
     final String variantKey = "foo";
     when(oldProduct.getKey()).thenReturn(productKey);
-    final List<AttributeDraft> newAttributes =
-        singletonList(AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build());
+    final List<Attribute> newAttributes = singletonList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE);
     when(newProductVariant.getAttributes()).thenReturn(newAttributes);
     when(newProductVariant.getKey()).thenReturn(variantKey);
 
-    final List<Attribute> oldAttributes = singletonList(TEXT_ATTRIBUTE_BAR);
+    final List<Attribute> oldAttributes = singletonList(AttributeFixtures.TEXT_ATTRIBUTE_BAR);
     when(oldProductVariant.getAttributes()).thenReturn(oldAttributes);
     when(oldProductVariant.getKey()).thenReturn(variantKey);
 
     final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
     final AttributeDefinition textAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                TEXT_ATTRIBUTE_BAR.getName(), ofEnglish("label"), StringAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeTextTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     attributesMetaData.put(
-        TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
+        AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName(),
+        AttributeMetaData.of(textAttributeDefinition));
 
     // Test
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAttributesUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions(
             oldProduct,
             newProductDraft,
             oldProductVariant,
@@ -627,16 +800,21 @@ class BuildProductVariantAttributesUpdateActionsTest {
     // Assertion
     assertThat(updateActions)
         .containsExactly(
-            SetAttribute.ofUnsetAttribute(
-                oldProductVariant.getId(), TEXT_ATTRIBUTE_BAR.getName(), true));
+            ProductSetAttributeActionBuilder.of()
+                .variantId(oldProductVariant.getId())
+                .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+                .staged(true)
+                .build());
     assertThat(errorMessages)
         .containsExactly(
-            format(
-                FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
-                BOOLEAN_ATTRIBUTE_TRUE.getName(),
+            String.format(
+                ProductVariantUpdateActionUtils.FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
+                AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName(),
                 variantKey,
                 productKey,
-                format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, BOOLEAN_ATTRIBUTE_TRUE.getName())));
+                String.format(
+                    ProductVariantAttributeUpdateActionUtils.ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA,
+                    AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())));
   }
 
   @Test
@@ -646,20 +824,19 @@ class BuildProductVariantAttributesUpdateActionsTest {
     final String productKey = "foo";
     final String variantKey = "foo";
     when(oldProduct.getKey()).thenReturn(productKey);
-    final List<AttributeDraft> newAttributes =
-        singletonList(AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build());
+    final List<Attribute> newAttributes = singletonList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE);
     when(newProductVariant.getAttributes()).thenReturn(newAttributes);
     when(newProductVariant.getKey()).thenReturn(variantKey);
 
-    final List<Attribute> oldAttributes = singletonList(TEXT_ATTRIBUTE_BAR);
+    final List<Attribute> oldAttributes = singletonList(AttributeFixtures.TEXT_ATTRIBUTE_BAR);
     when(oldProductVariant.getAttributes()).thenReturn(oldAttributes);
     when(oldProductVariant.getKey()).thenReturn(variantKey);
 
     final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
 
     // Test
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAttributesUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions(
             oldProduct,
             newProductDraft,
             oldProductVariant,
@@ -671,18 +848,22 @@ class BuildProductVariantAttributesUpdateActionsTest {
     assertThat(updateActions).isEmpty();
     assertThat(errorMessages)
         .containsExactlyInAnyOrder(
-            format(
-                FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
-                TEXT_ATTRIBUTE_BAR.getName(),
+            String.format(
+                ProductVariantUpdateActionUtils.FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
+                AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName(),
                 variantKey,
                 productKey,
-                format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, TEXT_ATTRIBUTE_BAR.getName())),
-            format(
-                FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
-                BOOLEAN_ATTRIBUTE_TRUE.getName(),
+                String.format(
+                    ProductVariantAttributeUpdateActionUtils.ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA,
+                    AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())),
+            String.format(
+                ProductVariantUpdateActionUtils.FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
+                AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName(),
                 variantKey,
                 productKey,
-                format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, BOOLEAN_ATTRIBUTE_TRUE.getName())));
+                String.format(
+                    ProductVariantAttributeUpdateActionUtils.ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA,
+                    AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())));
   }
 
   @Test
@@ -691,34 +872,47 @@ class BuildProductVariantAttributesUpdateActionsTest {
     final String productKey = "foo";
     final String variantKey = "foo";
     when(oldProduct.getKey()).thenReturn(productKey);
-    final List<AttributeDraft> newAttributes =
-        asList(
-            AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build(),
-            AttributeDraftBuilder.of(TEXT_ATTRIBUTE_FOO).build());
+    final List<Attribute> newAttributes =
+        asList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE, AttributeFixtures.TEXT_ATTRIBUTE_FOO);
     when(newProductVariant.getAttributes()).thenReturn(newAttributes);
     when(newProductVariant.getKey()).thenReturn(variantKey);
 
-    final List<Attribute> oldAttributes = asList(BOOLEAN_ATTRIBUTE_FALSE, TEXT_ATTRIBUTE_BAR);
+    final List<Attribute> oldAttributes =
+        asList(AttributeFixtures.BOOLEAN_ATTRIBUTE_FALSE, AttributeFixtures.TEXT_ATTRIBUTE_BAR);
     when(oldProductVariant.getAttributes()).thenReturn(oldAttributes);
     when(oldProductVariant.getKey()).thenReturn(variantKey);
 
     final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
     final AttributeDefinition booleanAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                BOOLEAN_ATTRIBUTE_TRUE.getName(), ofEnglish("label"), BooleanAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeBooleanTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     final AttributeDefinition textAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                TEXT_ATTRIBUTE_BAR.getName(), ofEnglish("label"), StringAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeTextTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     attributesMetaData.put(
-        BOOLEAN_ATTRIBUTE_TRUE.getName(), AttributeMetaData.of(booleanAttributeDefinition));
+        AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName(),
+        AttributeMetaData.of(booleanAttributeDefinition));
     attributesMetaData.put(
-        TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
+        AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName(),
+        AttributeMetaData.of(textAttributeDefinition));
 
     // Test
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAttributesUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions(
             oldProduct,
             newProductDraft,
             oldProductVariant,
@@ -729,14 +923,18 @@ class BuildProductVariantAttributesUpdateActionsTest {
     // Assertion
     assertThat(updateActions)
         .containsExactlyInAnyOrder(
-            SetAttribute.of(
-                oldProductVariant.getId(),
-                AttributeDraftBuilder.of(TEXT_ATTRIBUTE_FOO).build(),
-                true),
-            SetAttribute.of(
-                oldProductVariant.getId(),
-                AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build(),
-                true));
+            ProductSetAttributeActionBuilder.of()
+                .variantId(oldProductVariant.getId())
+                .name(AttributeFixtures.TEXT_ATTRIBUTE_FOO.getName())
+                .value(AttributeFixtures.TEXT_ATTRIBUTE_FOO.getValue())
+                .staged(true)
+                .build(),
+            ProductSetAttributeActionBuilder.of()
+                .variantId(oldProductVariant.getId())
+                .name(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())
+                .value(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getValue())
+                .staged(true)
+                .build());
   }
 
   @Test
@@ -746,28 +944,34 @@ class BuildProductVariantAttributesUpdateActionsTest {
     final String productKey = "foo";
     final String variantKey = "foo";
     when(oldProduct.getKey()).thenReturn(productKey);
-    final List<AttributeDraft> newAttributes =
-        asList(
-            AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build(),
-            AttributeDraftBuilder.of(TEXT_ATTRIBUTE_FOO).build());
+    final List<Attribute> newAttributes =
+        asList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE, AttributeFixtures.TEXT_ATTRIBUTE_FOO);
     when(newProductVariant.getAttributes()).thenReturn(newAttributes);
     when(newProductVariant.getKey()).thenReturn(variantKey);
 
-    final List<Attribute> oldAttributes = asList(BOOLEAN_ATTRIBUTE_FALSE, TEXT_ATTRIBUTE_BAR);
+    final List<Attribute> oldAttributes =
+        asList(AttributeFixtures.BOOLEAN_ATTRIBUTE_FALSE, AttributeFixtures.TEXT_ATTRIBUTE_BAR);
     when(oldProductVariant.getAttributes()).thenReturn(oldAttributes);
     when(oldProductVariant.getKey()).thenReturn(variantKey);
 
     final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
     final AttributeDefinition textAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                TEXT_ATTRIBUTE_BAR.getName(), ofEnglish("label"), StringAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeTextTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     attributesMetaData.put(
-        TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
+        AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName(),
+        AttributeMetaData.of(textAttributeDefinition));
 
     // Test
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAttributesUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions(
             oldProduct,
             newProductDraft,
             oldProductVariant,
@@ -778,18 +982,22 @@ class BuildProductVariantAttributesUpdateActionsTest {
     // Assertion
     assertThat(updateActions)
         .containsExactly(
-            SetAttribute.of(
-                oldProductVariant.getId(),
-                AttributeDraftBuilder.of(TEXT_ATTRIBUTE_FOO).build(),
-                true));
+            ProductSetAttributeActionBuilder.of()
+                .variantId(oldProductVariant.getId())
+                .name(AttributeFixtures.TEXT_ATTRIBUTE_FOO.getName())
+                .value(AttributeFixtures.TEXT_ATTRIBUTE_FOO.getValue())
+                .staged(true)
+                .build());
     assertThat(errorMessages)
         .containsExactly(
-            format(
-                FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
-                BOOLEAN_ATTRIBUTE_TRUE.getName(),
+            String.format(
+                ProductVariantUpdateActionUtils.FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
+                AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName(),
                 variantKey,
                 productKey,
-                format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, BOOLEAN_ATTRIBUTE_TRUE.getName())));
+                String.format(
+                    ProductVariantAttributeUpdateActionUtils.ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA,
+                    AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())));
   }
 
   @Test
@@ -798,34 +1006,47 @@ class BuildProductVariantAttributesUpdateActionsTest {
     final String productKey = "foo";
     final String variantKey = "foo";
     when(oldProduct.getKey()).thenReturn(productKey);
-    final List<AttributeDraft> newAttributes =
-        asList(
-            AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build(),
-            AttributeDraftBuilder.of(TEXT_ATTRIBUTE_FOO).build());
+    final List<Attribute> newAttributes =
+        asList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE, AttributeFixtures.TEXT_ATTRIBUTE_FOO);
     when(newProductVariant.getAttributes()).thenReturn(newAttributes);
     when(newProductVariant.getKey()).thenReturn(variantKey);
 
-    final List<Attribute> oldAttributes = asList(BOOLEAN_ATTRIBUTE_TRUE, TEXT_ATTRIBUTE_BAR);
+    final List<Attribute> oldAttributes =
+        asList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE, AttributeFixtures.TEXT_ATTRIBUTE_BAR);
     when(oldProductVariant.getAttributes()).thenReturn(oldAttributes);
     when(oldProductVariant.getKey()).thenReturn(variantKey);
 
     final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
     final AttributeDefinition booleanAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                BOOLEAN_ATTRIBUTE_TRUE.getName(), ofEnglish("label"), BooleanAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeBooleanTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     final AttributeDefinition textAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                TEXT_ATTRIBUTE_BAR.getName(), ofEnglish("label"), StringAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeTextTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     attributesMetaData.put(
-        BOOLEAN_ATTRIBUTE_TRUE.getName(), AttributeMetaData.of(booleanAttributeDefinition));
+        AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName(),
+        AttributeMetaData.of(booleanAttributeDefinition));
     attributesMetaData.put(
-        TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
+        AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName(),
+        AttributeMetaData.of(textAttributeDefinition));
 
     // Test
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAttributesUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions(
             oldProduct,
             newProductDraft,
             oldProductVariant,
@@ -836,10 +1057,12 @@ class BuildProductVariantAttributesUpdateActionsTest {
     // Assertion
     assertThat(updateActions)
         .containsExactly(
-            SetAttribute.of(
-                oldProductVariant.getId(),
-                AttributeDraftBuilder.of(TEXT_ATTRIBUTE_FOO).build(),
-                true));
+            ProductSetAttributeActionBuilder.of()
+                .variantId(oldProductVariant.getId())
+                .name(AttributeFixtures.TEXT_ATTRIBUTE_FOO.getName())
+                .value(AttributeFixtures.TEXT_ATTRIBUTE_FOO.getValue())
+                .staged(true)
+                .build());
   }
 
   @Test
@@ -849,22 +1072,21 @@ class BuildProductVariantAttributesUpdateActionsTest {
     final String productKey = "foo";
     final String variantKey = "foo";
     when(oldProduct.getKey()).thenReturn(productKey);
-    final List<AttributeDraft> newAttributes =
-        asList(
-            AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build(),
-            AttributeDraftBuilder.of(TEXT_ATTRIBUTE_FOO).build());
+    final List<Attribute> newAttributes =
+        asList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE, AttributeFixtures.TEXT_ATTRIBUTE_FOO);
     when(newProductVariant.getAttributes()).thenReturn(newAttributes);
     when(newProductVariant.getKey()).thenReturn(variantKey);
 
-    final List<Attribute> oldAttributes = asList(BOOLEAN_ATTRIBUTE_TRUE, TEXT_ATTRIBUTE_BAR);
+    final List<Attribute> oldAttributes =
+        asList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE, AttributeFixtures.TEXT_ATTRIBUTE_BAR);
     when(oldProductVariant.getAttributes()).thenReturn(oldAttributes);
     when(oldProductVariant.getKey()).thenReturn(variantKey);
 
     final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
 
     // Test
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAttributesUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions(
             oldProduct,
             newProductDraft,
             oldProductVariant,
@@ -876,18 +1098,22 @@ class BuildProductVariantAttributesUpdateActionsTest {
     assertThat(updateActions).isEmpty();
     assertThat(errorMessages)
         .containsExactlyInAnyOrder(
-            format(
-                FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
-                TEXT_ATTRIBUTE_BAR.getName(),
+            String.format(
+                ProductVariantUpdateActionUtils.FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
+                AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName(),
                 variantKey,
                 productKey,
-                format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, TEXT_ATTRIBUTE_BAR.getName())),
-            format(
-                FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
-                BOOLEAN_ATTRIBUTE_TRUE.getName(),
+                String.format(
+                    ProductVariantAttributeUpdateActionUtils.ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA,
+                    AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())),
+            String.format(
+                ProductVariantUpdateActionUtils.FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION,
+                AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName(),
                 variantKey,
                 productKey,
-                format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, BOOLEAN_ATTRIBUTE_TRUE.getName())));
+                String.format(
+                    ProductVariantAttributeUpdateActionUtils.ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA,
+                    AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())));
   }
 
   @Test
@@ -896,32 +1122,45 @@ class BuildProductVariantAttributesUpdateActionsTest {
     final String productKey = "foo";
     final String variantKey = "foo";
     when(oldProduct.getKey()).thenReturn(productKey);
-    final List<AttributeDraft> newAttributes =
-        singletonList(AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build());
+    final List<Attribute> newAttributes = singletonList(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE);
     when(newProductVariant.getAttributes()).thenReturn(newAttributes);
     when(newProductVariant.getKey()).thenReturn(variantKey);
 
-    final List<Attribute> oldAttributes = singletonList(TEXT_ATTRIBUTE_BAR);
+    final List<Attribute> oldAttributes = singletonList(AttributeFixtures.TEXT_ATTRIBUTE_BAR);
     when(oldProductVariant.getAttributes()).thenReturn(oldAttributes);
     when(oldProductVariant.getKey()).thenReturn(variantKey);
 
     final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
     final AttributeDefinition booleanAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                BOOLEAN_ATTRIBUTE_TRUE.getName(), ofEnglish("label"), BooleanAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeBooleanTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     final AttributeDefinition textAttributeDefinition =
-        AttributeDefinitionBuilder.of(
-                TEXT_ATTRIBUTE_BAR.getName(), ofEnglish("label"), StringAttributeType.of())
+        AttributeDefinitionBuilder.of()
+            .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+            .label(ofEnglish("label"))
+            .type(AttributeTextTypeBuilder.of().build())
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
             .build();
     attributesMetaData.put(
-        BOOLEAN_ATTRIBUTE_TRUE.getName(), AttributeMetaData.of(booleanAttributeDefinition));
+        AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName(),
+        AttributeMetaData.of(booleanAttributeDefinition));
     attributesMetaData.put(
-        TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
+        AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName(),
+        AttributeMetaData.of(textAttributeDefinition));
 
     // Test
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAttributesUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAttributesUpdateActions(
             oldProduct,
             newProductDraft,
             oldProductVariant,
@@ -932,11 +1171,16 @@ class BuildProductVariantAttributesUpdateActionsTest {
     // Assertion
     assertThat(updateActions)
         .containsExactly(
-            SetAttribute.ofUnsetAttribute(
-                oldProductVariant.getId(), TEXT_ATTRIBUTE_BAR.getName(), true),
-            SetAttribute.of(
-                oldProductVariant.getId(),
-                AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build(),
-                true));
+            ProductSetAttributeActionBuilder.of()
+                .variantId(oldProductVariant.getId())
+                .name(AttributeFixtures.TEXT_ATTRIBUTE_BAR.getName())
+                .staged(true)
+                .build(),
+            ProductSetAttributeActionBuilder.of()
+                .variantId(oldProductVariant.getId())
+                .name(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getName())
+                .value(AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE.getValue())
+                .staged(true)
+                .build());
   }
 }

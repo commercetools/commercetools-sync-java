@@ -2,15 +2,31 @@ package com.commercetools.sync.products.helpers;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
-import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
+import static com.spotify.futures.CompletableFutures.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.*;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryReference;
+import com.commercetools.api.models.category.CategoryResourceIdentifier;
+import com.commercetools.api.models.category.CategoryResourceIdentifierBuilder;
+import com.commercetools.api.models.product.CategoryOrderHints;
+import com.commercetools.api.models.product.CategoryOrderHintsBuilder;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductDraftBuilder;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product_type.ProductTypeReference;
+import com.commercetools.api.models.product_type.ProductTypeResourceIdentifier;
+import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
+import com.commercetools.api.models.state.StateReference;
+import com.commercetools.api.models.state.StateResourceIdentifier;
+import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
+import com.commercetools.api.models.tax_category.TaxCategoryReference;
+import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifier;
+import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifierBuilder;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
@@ -25,15 +41,6 @@ import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.TypeService;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.CategoryOrderHints;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.taxcategories.TaxCategory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -130,13 +137,15 @@ public final class ProductReferenceResolver
 
   /**
    * Given a {@link ProductDraft} this method attempts to resolve the product type, categories,
-   * variants, tax category and product state references to return a {@link CompletionStage} which
-   * contains a new instance of the draft with the resolved references.
+   * variants, tax category and product state references to return a {@link
+   * java.util.concurrent.CompletionStage} which contains a new instance of the draft with the
+   * resolved references.
    *
    * @param productDraft the productDraft to resolve it's references.
-   * @return a {@link CompletionStage} that contains as a result a new productDraft instance with
-   *     resolved references or, in case an error occurs during reference resolution, a {@link
-   *     ReferenceResolutionException}.
+   * @return a {@link java.util.concurrent.CompletionStage} that contains as a result a new
+   *     productDraft instance with resolved references or, in case an error occurs during reference
+   *     resolution, a {@link
+   *     com.commercetools.sync.commons.exceptions.ReferenceResolutionException}.
    */
   @Override
   public CompletionStage<ProductDraft> resolveReferences(@Nonnull final ProductDraft productDraft) {
@@ -163,6 +172,9 @@ public final class ProductReferenceResolver
       @Nonnull final ProductDraftBuilder draftBuilder) {
     final List<ProductVariantDraft> productDraftVariants = draftBuilder.getVariants();
 
+    if (productDraftVariants == null) {
+      return CompletableFuture.completedFuture(draftBuilder);
+    }
     return mapValuesToFutureOfCompletedValues(
             productDraftVariants, variantReferenceResolver::resolveReferences, toList())
         .thenApply(draftBuilder::variants);
@@ -170,20 +182,21 @@ public final class ProductReferenceResolver
 
   /**
    * Given a {@link ProductDraftBuilder} this method attempts to resolve the product type to return
-   * a {@link CompletionStage} which contains a new instance of the builder with the resolved
-   * product type reference.
+   * a {@link java.util.concurrent.CompletionStage} which contains a new instance of the builder
+   * with the resolved product type reference.
    *
    * @param draftBuilder the productDraft to resolve its product type reference.
-   * @return a {@link CompletionStage} that contains as a result a new builder instance with
-   *     resolved product type reference or, in case an error occurs during reference resolution, a
-   *     {@link ReferenceResolutionException}.
+   * @return a {@link java.util.concurrent.CompletionStage} that contains as a result a new builder
+   *     instance with resolved product type reference or, in case an error occurs during reference
+   *     resolution, a {@link
+   *     com.commercetools.sync.commons.exceptions.ReferenceResolutionException}.
    */
   @Nonnull
   public CompletionStage<ProductDraftBuilder> resolveProductTypeReference(
       @Nonnull final ProductDraftBuilder draftBuilder) {
 
-    final ResourceIdentifier<ProductType> productTypeReference = draftBuilder.getProductType();
-    if (productTypeReference != null && productTypeReference.getId() == null) {
+    final ProductTypeResourceIdentifier productTypeReference = draftBuilder.getProductType();
+    if (productTypeReference != null && isBlank(productTypeReference.getId())) {
       String productTypeKey;
       try {
         productTypeKey = getKeyFromResourceIdentifier(productTypeReference);
@@ -192,7 +205,7 @@ public final class ProductReferenceResolver
             new ReferenceResolutionException(
                 format(
                     FAILED_TO_RESOLVE_REFERENCE,
-                    ProductType.referenceTypeId(),
+                    ProductTypeReference.PRODUCT_TYPE,
                     draftBuilder.getKey(),
                     referenceResolutionException.getMessage())));
       }
@@ -215,8 +228,9 @@ public final class ProductReferenceResolver
                         resolvedProductTypeId ->
                             completedFuture(
                                 draftBuilder.productType(
-                                    ProductType.referenceOfId(resolvedProductTypeId)
-                                        .toResourceIdentifier())))
+                                    ProductTypeResourceIdentifierBuilder.of()
+                                        .id(resolvedProductTypeId)
+                                        .build())))
                     .orElseGet(
                         () -> {
                           final String errorMessage =
@@ -225,7 +239,7 @@ public final class ProductReferenceResolver
                               new ReferenceResolutionException(
                                   format(
                                       FAILED_TO_RESOLVE_REFERENCE,
-                                      ProductType.referenceTypeId(),
+                                      ProductTypeReference.PRODUCT_TYPE,
                                       draftBuilder.getKey(),
                                       errorMessage)));
                         }));
@@ -233,24 +247,28 @@ public final class ProductReferenceResolver
 
   /**
    * Given a {@link ProductDraftBuilder} this method attempts to resolve the categories and
-   * categoryOrderHints to return a {@link CompletionStage} which contains a new instance of the
-   * builder with the resolved references.
+   * categoryOrderHints to return a {@link java.util.concurrent.CompletionStage} which contains a
+   * new instance of the builder with the resolved references.
    *
    * @param draftBuilder the productDraft to resolve its category and categoryOrderHints references.
-   * @return a {@link CompletionStage} that contains as a result a new builder instance with
-   *     resolved references or, in case an error occurs during reference resolution, a {@link
-   *     ReferenceResolutionException}.
+   * @return a {@link java.util.concurrent.CompletionStage} that contains as a result a new builder
+   *     instance with resolved references or, in case an error occurs during reference resolution,
+   *     a {@link com.commercetools.sync.commons.exceptions.ReferenceResolutionException}.
    */
   @Nonnull
   public CompletionStage<ProductDraftBuilder> resolveCategoryReferences(
       @Nonnull final ProductDraftBuilder draftBuilder) {
 
-    final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers =
+    final List<CategoryResourceIdentifier> categoryResourceIdentifiers =
         draftBuilder.getCategories();
+    if (categoryResourceIdentifiers == null) {
+      return CompletableFuture.completedFuture(draftBuilder);
+    }
+
     final Set<String> categoryKeys = new HashSet<>();
-    final List<ResourceIdentifier<Category>> directCategoryResourceIdentifiers = new ArrayList<>();
-    for (ResourceIdentifier<Category> categoryResourceIdentifier : categoryResourceIdentifiers) {
-      if (categoryResourceIdentifier != null && categoryResourceIdentifier.getId() == null) {
+    final List<CategoryResourceIdentifier> directCategoryResourceIdentifiers = new ArrayList<>();
+    for (CategoryResourceIdentifier categoryResourceIdentifier : categoryResourceIdentifiers) {
+      if (categoryResourceIdentifier != null && isBlank(categoryResourceIdentifier.getId())) {
         try {
           final String categoryKey = getKeyFromResourceIdentifier(categoryResourceIdentifier);
           categoryKeys.add(categoryKey);
@@ -259,7 +277,7 @@ public final class ProductReferenceResolver
               new ReferenceResolutionException(
                   format(
                       FAILED_TO_RESOLVE_REFERENCE,
-                      Category.referenceTypeId(),
+                      CategoryReference.CATEGORY,
                       draftBuilder.getKey(),
                       referenceResolutionException.getMessage())));
         }
@@ -275,7 +293,7 @@ public final class ProductReferenceResolver
   private CompletionStage<ProductDraftBuilder> fetchAndResolveCategoryReferences(
       @Nonnull final ProductDraftBuilder draftBuilder,
       @Nonnull final Set<String> categoryKeys,
-      @Nonnull final List<ResourceIdentifier<Category>> directCategoryReferences) {
+      @Nonnull final List<CategoryResourceIdentifier> directCategoryReferences) {
 
     final Map<String, String> categoryOrderHintsMap = new HashMap<>();
     final CategoryOrderHints categoryOrderHints = draftBuilder.getCategoryOrderHints();
@@ -289,16 +307,18 @@ public final class ProductReferenceResolver
                         category -> {
                           keyToCategory.put(category.getKey(), category);
                           if (categoryOrderHints != null) {
-                            ofNullable(categoryOrderHints.get(category.getKey()))
+                            ofNullable(categoryOrderHints.values().get(category.getKey()))
                                 .ifPresent(
                                     orderHintValue ->
                                         categoryOrderHintsMap.put(
                                             category.getId(), orderHintValue));
                           }
 
-                          return Category.referenceOfId(category.getId()).toResourceIdentifier();
+                          return CategoryResourceIdentifierBuilder.of()
+                              .id(category.getId())
+                              .build();
                         })
-                    .collect(toSet()))
+                    .collect(toList()))
         .thenCompose(
             categoryReferences -> {
               String keysNotExists =
@@ -312,7 +332,7 @@ public final class ProductReferenceResolver
                     new ReferenceResolutionException(
                         format(
                             FAILED_TO_RESOLVE_REFERENCE,
-                            Category.resourceTypeId(),
+                            CategoryReference.CATEGORY,
                             draftBuilder.getKey(),
                             errorMessage)));
               }
@@ -322,26 +342,28 @@ public final class ProductReferenceResolver
               return completedFuture(
                   draftBuilder
                       .categories(categoryReferences)
-                      .categoryOrderHints(CategoryOrderHints.of(categoryOrderHintsMap)));
+                      .categoryOrderHints(
+                          CategoryOrderHintsBuilder.of().values(categoryOrderHintsMap).build()));
             });
   }
 
   /**
    * Given a {@link ProductDraftBuilder} this method attempts to resolve the tax category to return
-   * a {@link CompletionStage} which contains a new instance of the builder with the resolved tax
-   * category reference.
+   * a {@link java.util.concurrent.CompletionStage} which contains a new instance of the builder
+   * with the resolved tax category reference.
    *
    * @param draftBuilder the productDraft to resolve its tax category reference.
-   * @return a {@link CompletionStage} that contains as a result a new builder instance with
-   *     resolved tax category reference or, in case an error occurs during reference resolution, a
-   *     {@link ReferenceResolutionException}.
+   * @return a {@link java.util.concurrent.CompletionStage} that contains as a result a new builder
+   *     instance with resolved tax category reference or, in case an error occurs during reference
+   *     resolution, a {@link
+   *     com.commercetools.sync.commons.exceptions.ReferenceResolutionException}.
    */
   @Nonnull
   public CompletionStage<ProductDraftBuilder> resolveTaxCategoryReference(
       @Nonnull final ProductDraftBuilder draftBuilder) {
-    final ResourceIdentifier<TaxCategory> taxCategoryResourceIdentifier =
+    final TaxCategoryResourceIdentifier taxCategoryResourceIdentifier =
         draftBuilder.getTaxCategory();
-    if (taxCategoryResourceIdentifier != null && taxCategoryResourceIdentifier.getId() == null) {
+    if (taxCategoryResourceIdentifier != null && isBlank(taxCategoryResourceIdentifier.getId())) {
       String taxCategoryKey;
       try {
         taxCategoryKey = getKeyFromResourceIdentifier(taxCategoryResourceIdentifier);
@@ -350,7 +372,7 @@ public final class ProductReferenceResolver
             new ReferenceResolutionException(
                 format(
                     FAILED_TO_RESOLVE_REFERENCE,
-                    TaxCategory.referenceTypeId(),
+                    TaxCategoryReference.TAX_CATEGORY,
                     draftBuilder.getKey(),
                     referenceResolutionException.getMessage())));
       }
@@ -373,8 +395,9 @@ public final class ProductReferenceResolver
                         resolvedTaxCategoryId ->
                             completedFuture(
                                 draftBuilder.taxCategory(
-                                    TaxCategory.referenceOfId(resolvedTaxCategoryId)
-                                        .toResourceIdentifier())))
+                                    TaxCategoryResourceIdentifierBuilder.of()
+                                        .id(resolvedTaxCategoryId)
+                                        .build())))
                     .orElseGet(
                         () -> {
                           final String errorMessage =
@@ -383,7 +406,7 @@ public final class ProductReferenceResolver
                               new ReferenceResolutionException(
                                   format(
                                       FAILED_TO_RESOLVE_REFERENCE,
-                                      TaxCategory.referenceTypeId(),
+                                      TaxCategoryReference.TAX_CATEGORY,
                                       draftBuilder.getKey(),
                                       errorMessage)));
                         }));
@@ -391,21 +414,22 @@ public final class ProductReferenceResolver
 
   /**
    * Given a {@link ProductDraftBuilder} this method attempts to resolve the state to return a
-   * {@link CompletionStage} which contains a new instance of the builder with the resolved state
-   * reference.
+   * {@link java.util.concurrent.CompletionStage} which contains a new instance of the builder with
+   * the resolved state reference.
    *
    * <p>Note: The key of the state reference taken from the value of the id field of the reference.
    *
    * @param draftBuilder the productDraft to resolve its state reference.
-   * @return a {@link CompletionStage} that contains as a result a new builder instance with
-   *     resolved state reference or, in case an error occurs during reference resolution, the
-   *     future is completed exceptionally with a {@link ReferenceResolutionException}.
+   * @return a {@link java.util.concurrent.CompletionStage} that contains as a result a new builder
+   *     instance with resolved state reference or, in case an error occurs during reference
+   *     resolution, the future is completed exceptionally with a {@link
+   *     com.commercetools.sync.commons.exceptions.ReferenceResolutionException}.
    */
   @Nonnull
   public CompletionStage<ProductDraftBuilder> resolveStateReference(
       @Nonnull final ProductDraftBuilder draftBuilder) {
-    final ResourceIdentifier<State> stateReference = draftBuilder.getState();
-    if (stateReference != null && stateReference.getId() == null) {
+    final StateResourceIdentifier stateReference = draftBuilder.getState();
+    if (stateReference != null && isBlank(stateReference.getId())) {
       String stateKey;
       try {
         stateKey = getKeyFromResourceIdentifier(stateReference);
@@ -414,7 +438,7 @@ public final class ProductReferenceResolver
             new ReferenceResolutionException(
                 format(
                     FAILED_TO_RESOLVE_REFERENCE,
-                    State.referenceTypeId(),
+                    StateReference.STATE,
                     draftBuilder.getKey(),
                     referenceResolutionException.getMessage())));
       }
@@ -436,7 +460,10 @@ public final class ProductReferenceResolver
                     .map(
                         resolvedStateId ->
                             completedFuture(
-                                draftBuilder.state(State.referenceOfId(resolvedStateId))))
+                                draftBuilder.state(
+                                    StateResourceIdentifierBuilder.of()
+                                        .id(resolvedStateId)
+                                        .build())))
                     .orElseGet(
                         () -> {
                           final String errorMessage = format(STATE_DOES_NOT_EXIST, stateKey);
@@ -444,7 +471,7 @@ public final class ProductReferenceResolver
                               new ReferenceResolutionException(
                                   format(
                                       FAILED_TO_RESOLVE_REFERENCE,
-                                      State.referenceTypeId(),
+                                      StateReference.STATE,
                                       draftBuilder.getKey(),
                                       errorMessage)));
                         }));
@@ -458,9 +485,9 @@ public final class ProductReferenceResolver
    * <p>Note: This method is meant be only used internally by the library to improve performance.
    *
    * @param referencedKeys a wrapper for the product references to fetch and cache the id's for.
-   * @return {@link CompletionStage}&lt;{@link Map}&lt;{@link String}&gt;{@link String}&gt;&gt; in
-   *     which the results of it's completions contains a map of requested references keys -&gt; ids
-   *     of product references.
+   * @return {@link java.util.concurrent.CompletionStage}&lt;{@link java.util.Map}&lt;{@link
+   *     String}&gt;{@link String}&gt;&gt; in which the results of it's completions contains a map
+   *     of requested references keys -&gt; ids of product references.
    */
   @Nonnull
   public CompletableFuture<Map<String, String>> populateKeyToIdCachesForReferencedKeys(

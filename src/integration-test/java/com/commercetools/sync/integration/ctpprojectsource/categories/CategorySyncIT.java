@@ -1,21 +1,19 @@
 package com.commercetools.sync.integration.ctpprojectsource.categories;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createChildren;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDraftsWithPrefix;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsDraft;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.commercetools.api.client.error.BadRequestException;
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryDraft;
+import com.commercetools.api.models.category.CategoryDraftBuilder;
+import com.commercetools.api.models.category.CategoryResourceIdentifierBuilder;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.error.DuplicateFieldError;
+import com.commercetools.api.models.error.DuplicateFieldErrorBuilder;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.commercetools.sync.categories.CategorySync;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
@@ -23,22 +21,16 @@ import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.categories.utils.CategoryTransformUtils;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.categories.CategoryDraftBuilder;
-import io.sphere.sdk.categories.commands.CategoryCreateCommand;
-import io.sphere.sdk.categories.queries.CategoryQuery;
-import io.sphere.sdk.client.ErrorResponseException;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.models.errors.DuplicateFieldError;
-import io.sphere.sdk.queries.QueryExecutionUtils;
-import io.sphere.sdk.types.CustomFieldsDraft;
+import com.commercetools.sync.integration.commons.utils.CategoryITUtils;
+import com.commercetools.sync.integration.commons.utils.ITUtils;
+import com.commercetools.sync.integration.commons.utils.TestClientUtils;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,13 +50,16 @@ class CategorySyncIT {
    */
   @BeforeAll
   static void setup() {
-    deleteAllCategories(CTP_TARGET_CLIENT);
-    deleteAllCategories(CTP_SOURCE_CLIENT);
-    deleteTypesFromTargetAndSource();
-    createCategoriesCustomType(
-        OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH, "anyName", CTP_TARGET_CLIENT);
-    createCategoriesCustomType(
-        OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH, "anyName", CTP_SOURCE_CLIENT);
+    CategoryITUtils.ensureCategoriesCustomType(
+        CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY,
+        Locale.ENGLISH,
+        "anyName",
+        TestClientUtils.CTP_TARGET_CLIENT);
+    CategoryITUtils.ensureCategoriesCustomType(
+        CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY,
+        Locale.ENGLISH,
+        "anyName",
+        TestClientUtils.CTP_SOURCE_CLIENT);
   }
 
   /**
@@ -73,10 +68,11 @@ class CategorySyncIT {
    */
   @BeforeEach
   void setupTest() {
-    deleteAllCategories(CTP_TARGET_CLIENT);
-    deleteAllCategories(CTP_SOURCE_CLIENT);
+    CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_TARGET_CLIENT);
+    CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_SOURCE_CLIENT);
 
-    createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
+    CategoryITUtils.ensureCategories(
+        TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2));
 
     callBackErrorResponses = new ArrayList<>();
     callBackExceptions = new ArrayList<>();
@@ -86,7 +82,7 @@ class CategorySyncIT {
   }
 
   private CategorySyncOptions buildCategorySyncOptions(final int batchSize) {
-    return CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+    return CategorySyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT)
         .batchSize(batchSize)
         .errorCallback(
             (exception, oldResource, newResource, updateActions) -> {
@@ -102,22 +98,29 @@ class CategorySyncIT {
   /** Cleans up the target and source test data that were built in this test class. */
   @AfterAll
   static void tearDown() {
-    deleteAllCategories(CTP_TARGET_CLIENT);
-    deleteAllCategories(CTP_SOURCE_CLIENT);
-    deleteTypesFromTargetAndSource();
+    CategoryITUtils.deleteCategorySyncTestData(TestClientUtils.CTP_TARGET_CLIENT);
+    CategoryITUtils.deleteCategorySyncTestData(TestClientUtils.CTP_SOURCE_CLIENT);
   }
 
   @Test
-  void syncDrafts_withChangesOnly_ShouldUpdateCategories() {
-    createCategories(
-        CTP_SOURCE_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new", null, 2));
+  void syncDrafts_withChangesInExistingCategories_ShouldUpdate2Categories() {
+    CategoryITUtils.ensureCategories(
+        TestClientUtils.CTP_SOURCE_CLIENT,
+        CategoryITUtils.getCategoryDraftsWithPrefix(Locale.ENGLISH, "new", null, 2));
 
     final List<Category> categories =
-        CTP_SOURCE_CLIENT.execute(CategoryQuery.of()).toCompletableFuture().join().getResults();
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .categories()
+            .get()
+            .execute()
+            .toCompletableFuture()
+            .join()
+            .getBody()
+            .getResults();
 
     final List<CategoryDraft> categoryDrafts =
         CategoryTransformUtils.toCategoryDrafts(
-                CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
             .join();
 
     final CategorySyncStatistics syncStatistics =
@@ -130,16 +133,25 @@ class CategorySyncIT {
   }
 
   @Test
-  void syncDrafts_withNewCategories_ShouldCreateCategories() {
-    createCategories(
-        CTP_SOURCE_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new", null, 3));
+  void
+      syncDrafts_withChangesInExistingCategoriesAndNewCategories_ShouldUpdate2CategoriesAndCreate1Category() {
+    CategoryITUtils.ensureCategories(
+        TestClientUtils.CTP_SOURCE_CLIENT,
+        CategoryITUtils.getCategoryDraftsWithPrefix(Locale.ENGLISH, "new", null, 3));
 
     final List<Category> categories =
-        CTP_SOURCE_CLIENT.execute(CategoryQuery.of()).toCompletableFuture().join().getResults();
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .categories()
+            .get()
+            .execute()
+            .toCompletableFuture()
+            .join()
+            .getBody()
+            .getResults();
 
     final List<CategoryDraft> categoryDrafts =
         CategoryTransformUtils.toCategoryDrafts(
-                CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
             .join();
 
     final CategorySyncStatistics syncStatistics =
@@ -153,33 +165,38 @@ class CategorySyncIT {
 
   @Test
   void syncDrafts_withNewShuffledBatchOfCategories_ShouldCreateCategories() {
-    // -----------------Test Setup------------------------------------
-    // Delete all categories in target project
-    deleteAllCategories(CTP_TARGET_CLIENT);
+    // Create 5 categories in the source project
+    final List<Category> subFamily =
+        CategoryITUtils.createChildren(5, null, "root", TestClientUtils.CTP_SOURCE_CLIENT);
 
-    // Create a total of 130 categories in the source project
-    final List<Category> subFamily = createChildren(5, null, "root", CTP_SOURCE_CLIENT);
-
+    // Create 125 categories in the source project
     for (final Category child : subFamily) {
       final List<Category> subsubFamily =
-          createChildren(5, child, child.getName().get(Locale.ENGLISH), CTP_SOURCE_CLIENT);
+          CategoryITUtils.createChildren(
+              5, child, child.getName().get(Locale.ENGLISH), TestClientUtils.CTP_SOURCE_CLIENT);
       for (final Category subChild : subsubFamily) {
-        createChildren(4, subChild, subChild.getName().get(Locale.ENGLISH), CTP_SOURCE_CLIENT);
+        CategoryITUtils.createChildren(
+            4, subChild, subChild.getName().get(Locale.ENGLISH), TestClientUtils.CTP_SOURCE_CLIENT);
       }
     }
+    // Total number of categories in the source project: 130
     // ---------------------------------------------------------------
 
     // Fetch categories from source project
     final List<Category> categories =
-        CTP_SOURCE_CLIENT
-            .execute(CategoryQuery.of().withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE))
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .categories()
+            .get()
+            .withLimit(500)
+            .execute()
             .toCompletableFuture()
             .join()
+            .getBody()
             .getResults();
 
     final List<CategoryDraft> categoryDrafts =
         CategoryTransformUtils.toCategoryDrafts(
-                CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
             .join();
 
     // Make sure there is no hierarchical order
@@ -198,51 +215,62 @@ class CategorySyncIT {
   @Test
   void
       syncDrafts_withExistingShuffledCategoriesWithChangingCategoryHierarchy_ShouldUpdateCategories() {
-    // -----------------Test Setup------------------------------------
-    // Delete all categories in target project
-    deleteAllCategories(CTP_TARGET_CLIENT);
-
     // Create a total of 130 categories in the target project
-    final List<Category> subFamily = createChildren(5, null, "root", CTP_TARGET_CLIENT);
+    final List<Category> subFamily =
+        CategoryITUtils.createChildren(5, null, "root", TestClientUtils.CTP_TARGET_CLIENT);
 
     for (final Category child : subFamily) {
       final List<Category> subsubFamily =
-          createChildren(5, child, child.getName().get(Locale.ENGLISH), CTP_TARGET_CLIENT);
+          CategoryITUtils.createChildren(
+              5, child, child.getName().get(Locale.ENGLISH), TestClientUtils.CTP_TARGET_CLIENT);
       for (final Category subChild : subsubFamily) {
-        createChildren(4, subChild, subChild.getName().get(Locale.ENGLISH), CTP_TARGET_CLIENT);
+        CategoryITUtils.createChildren(
+            4, subChild, subChild.getName().get(Locale.ENGLISH), TestClientUtils.CTP_TARGET_CLIENT);
       }
     }
     // ---------------------------------------------------------------
 
     // Create a total of 130 categories in the source project
-    final List<Category> sourceSubFamily = createChildren(5, null, "root", CTP_SOURCE_CLIENT);
+    final List<Category> sourceSubFamily =
+        CategoryITUtils.createChildren(5, null, "root", TestClientUtils.CTP_SOURCE_CLIENT);
 
     for (final Category child : sourceSubFamily) {
       final List<Category> subsubFamily =
-          createChildren(
-              5, sourceSubFamily.get(0), child.getName().get(Locale.ENGLISH), CTP_SOURCE_CLIENT);
+          CategoryITUtils.createChildren(
+              5,
+              sourceSubFamily.get(0),
+              child.getName().get(Locale.ENGLISH),
+              TestClientUtils.CTP_SOURCE_CLIENT);
       for (final Category subChild : subsubFamily) {
-        createChildren(
-            4, sourceSubFamily.get(0), subChild.getName().get(Locale.ENGLISH), CTP_SOURCE_CLIENT);
+        CategoryITUtils.createChildren(
+            4,
+            sourceSubFamily.get(0),
+            subChild.getName().get(Locale.ENGLISH),
+            TestClientUtils.CTP_SOURCE_CLIENT);
       }
     }
     // ---------------------------------------------------------------
 
     // Fetch categories from source project
     final List<Category> categories =
-        CTP_SOURCE_CLIENT
-            .execute(CategoryQuery.of().withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE))
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .categories()
+            .get()
+            .withLimit(500)
+            .execute()
             .toCompletableFuture()
             .join()
+            .getBody()
             .getResults();
 
     final List<CategoryDraft> categoryDrafts =
         CategoryTransformUtils.toCategoryDrafts(
-                CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
             .join();
     Collections.shuffle(categoryDrafts);
 
-    CategorySync categorySyncWith13BatcheSize = new CategorySync(buildCategorySyncOptions(13));
+    final CategorySync categorySyncWith13BatcheSize =
+        new CategorySync(buildCategorySyncOptions(13));
     final CategorySyncStatistics syncStatistics =
         categorySyncWith13BatcheSize.sync(categoryDrafts).toCompletableFuture().join();
 
@@ -254,36 +282,41 @@ class CategorySyncIT {
 
   @Test
   void syncDrafts_withExistingCategoriesThatChangeParents_ShouldUpdateCategories() {
-    // -----------------Test Setup------------------------------------
-    // Delete all categories in target project
-    deleteAllCategories(CTP_TARGET_CLIENT);
-
     // Create a total of 3 categories in the target project (2 roots and 1 child to the first root)
-    final List<Category> subFamily = createChildren(2, null, "root", CTP_TARGET_CLIENT);
+    final List<Category> subFamily =
+        CategoryITUtils.createChildren(2, null, "root", TestClientUtils.CTP_TARGET_CLIENT);
 
     final Category firstRoot = subFamily.get(0);
-    createChildren(1, firstRoot, "child", CTP_TARGET_CLIENT);
+    CategoryITUtils.createChildren(1, firstRoot, "child", TestClientUtils.CTP_TARGET_CLIENT);
 
     // ---------------------------------------------------------------
 
     // Create a total of 2 categories in the source project (2 roots and 1 child to the second root)
-    final List<Category> sourceSubFamily = createChildren(2, null, "root", CTP_SOURCE_CLIENT);
+    final List<Category> sourceSubFamily =
+        CategoryITUtils.createChildren(2, null, "root", TestClientUtils.CTP_SOURCE_CLIENT);
 
     final Category secondRoot = sourceSubFamily.get(1);
-    createChildren(1, secondRoot, "child", CTP_SOURCE_CLIENT);
+    CategoryITUtils.createChildren(1, secondRoot, "child", TestClientUtils.CTP_SOURCE_CLIENT);
     // ---------------------------------------------------------------
 
     // Fetch categories from source project
     final List<Category> categories =
-        CTP_SOURCE_CLIENT.execute(CategoryQuery.of()).toCompletableFuture().join().getResults();
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .categories()
+            .get()
+            .execute()
+            .toCompletableFuture()
+            .join()
+            .getBody()
+            .getResults();
 
     final List<CategoryDraft> categoryDrafts =
         CategoryTransformUtils.toCategoryDrafts(
-                CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
             .join();
     Collections.shuffle(categoryDrafts);
 
-    CategorySync categorySyncWith1BatchSize = new CategorySync(buildCategorySyncOptions(1));
+    final CategorySync categorySyncWith1BatchSize = new CategorySync(buildCategorySyncOptions(1));
     final CategorySyncStatistics syncStatistics =
         categorySyncWith1BatchSize.sync(categoryDrafts).toCompletableFuture().join();
 
@@ -295,78 +328,117 @@ class CategorySyncIT {
 
   @Test
   void syncDrafts_withANonExistingNewParent_ShouldUpdateCategories() {
-    // -----------------Test Setup------------------------------------
-    // Delete all categories in target project
-    deleteAllCategories(CTP_TARGET_CLIENT);
-    String parentKey = "parent";
+    final String parentKey = "parent";
     // Create a total of 2 categories in the target project.
     final CategoryDraft parentDraft =
-        CategoryDraftBuilder.of(
-                LocalizedString.of(Locale.ENGLISH, "parent"),
-                LocalizedString.of(Locale.ENGLISH, "parent"))
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "parent"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "parent"))
             .key(parentKey)
             .custom(
-                CustomFieldsDraft.ofTypeKeyAndJson(
-                    OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
+                CustomFieldsDraftBuilder.of()
+                    .type(
+                        TypeResourceIdentifierBuilder.of()
+                            .key(CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY)
+                            .build())
+                    .fields(ITUtils.createCustomFieldsJsonMap())
+                    .build())
             .build();
 
-    CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(parentDraft)).toCompletableFuture().join();
+    TestClientUtils.CTP_TARGET_CLIENT
+        .categories()
+        .create(parentDraft)
+        .execute()
+        .toCompletableFuture()
+        .join();
 
+    final String childKey = "child";
     final CategoryDraft childDraft =
-        CategoryDraftBuilder.of(
-                LocalizedString.of(Locale.ENGLISH, "child"),
-                LocalizedString.of(Locale.ENGLISH, "child"))
-            .key("child")
-            .parent(ResourceIdentifier.ofKey(parentKey))
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, childKey))
+            .slug(LocalizedString.of(Locale.ENGLISH, childKey))
+            .key(childKey)
+            .parent(CategoryResourceIdentifierBuilder.of().key(parentKey).build())
             .custom(
-                CustomFieldsDraft.ofTypeKeyAndJson(
-                    OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
+                CustomFieldsDraftBuilder.of()
+                    .type(
+                        TypeResourceIdentifierBuilder.of()
+                            .key(CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY)
+                            .build())
+                    .fields(ITUtils.createCustomFieldsJsonMap())
+                    .build())
             .build();
-    CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(childDraft)).toCompletableFuture().join();
+
+    TestClientUtils.CTP_TARGET_CLIENT
+        .categories()
+        .create(childDraft)
+        .execute()
+        .toCompletableFuture()
+        .join();
     // ------------------------------------------------------------------------------------------------------------
     // Create a total of 2 categories in the source project
     String newParentKey = "new-parent";
     final CategoryDraft sourceParentDraft =
-        CategoryDraftBuilder.of(
-                LocalizedString.of(Locale.ENGLISH, "new-parent"),
-                LocalizedString.of(Locale.ENGLISH, "new-parent"))
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "new-parent"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "new-parent"))
             .key(newParentKey)
             .custom(
-                CustomFieldsDraft.ofTypeKeyAndJson(
-                    OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
+                CustomFieldsDraftBuilder.of()
+                    .type(
+                        TypeResourceIdentifierBuilder.of()
+                            .key(CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY)
+                            .build())
+                    .fields(ITUtils.createCustomFieldsJsonMap())
+                    .build())
             .build();
-    CTP_SOURCE_CLIENT
-        .execute(CategoryCreateCommand.of(sourceParentDraft))
+
+    TestClientUtils.CTP_SOURCE_CLIENT
+        .categories()
+        .create(sourceParentDraft)
+        .execute()
         .toCompletableFuture()
         .join();
 
     final CategoryDraft sourceChildDraft =
-        CategoryDraftBuilder.of(
-                LocalizedString.of(Locale.ENGLISH, "child-new-name"),
-                LocalizedString.of(Locale.ENGLISH, "child"))
-            .key("child")
-            .parent(ResourceIdentifier.ofKey(newParentKey))
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "new-child"))
+            .slug(LocalizedString.of(Locale.ENGLISH, childKey))
+            .key(childKey)
+            .parent(CategoryResourceIdentifierBuilder.of().key(newParentKey).build())
             .custom(
-                CustomFieldsDraft.ofTypeKeyAndJson(
-                    OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
+                CustomFieldsDraftBuilder.of()
+                    .type(
+                        TypeResourceIdentifierBuilder.of()
+                            .key(CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY)
+                            .build())
+                    .fields(ITUtils.createCustomFieldsJsonMap())
+                    .build())
             .build();
-    CTP_SOURCE_CLIENT
-        .execute(CategoryCreateCommand.of(sourceChildDraft))
+
+    TestClientUtils.CTP_SOURCE_CLIENT
+        .categories()
+        .create(sourceChildDraft)
+        .execute()
         .toCompletableFuture()
         .join();
     // ---------------------------------------------------------------
 
     // Fetch categories from source project
     final List<Category> categories =
-        CTP_SOURCE_CLIENT
-            .execute(CategoryQuery.of().withSort(sorting -> sorting.createdAt().sort().asc()))
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .categories()
+            .get()
+            .withSort("createdAt asc")
+            .execute()
             .toCompletableFuture()
             .join()
+            .getBody()
             .getResults();
 
     final List<CategoryDraft> categoryDrafts =
         CategoryTransformUtils.toCategoryDrafts(
-                CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
             .join();
 
     // To simulate the new parent coming in a later draft
@@ -385,30 +457,34 @@ class CategorySyncIT {
   @Test
   void syncDrafts_fromCategoriesWithoutKeys_ShouldNotUpdateCategories() {
     final CategoryDraft oldCategoryDraft1 =
-        CategoryDraftBuilder.of(
-                LocalizedString.of(Locale.ENGLISH, "cat1"),
-                LocalizedString.of(Locale.ENGLISH, "furniture1"))
-            .custom(getCustomFieldsDraft())
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "cat1"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "furniture1"))
             .key("newKey1")
+            .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
 
     final CategoryDraft oldCategoryDraft2 =
-        CategoryDraftBuilder.of(
-                LocalizedString.of(Locale.ENGLISH, "cat2"),
-                LocalizedString.of(Locale.ENGLISH, "furniture2"))
-            .custom(getCustomFieldsDraft())
+        CategoryDraftBuilder.of()
+            .name(LocalizedString.of(Locale.ENGLISH, "cat2"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "furniture2"))
             .key("newKey2")
+            .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
 
     // Create two categories in the source with Keys.
-    List<CompletableFuture<Category>> futureCreations = new ArrayList<>();
+    List<CompletableFuture<ApiHttpResponse<Category>>> futureCreations = new ArrayList<>();
     futureCreations.add(
-        CTP_SOURCE_CLIENT
-            .execute(CategoryCreateCommand.of(oldCategoryDraft1))
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .categories()
+            .create(oldCategoryDraft1)
+            .execute()
             .toCompletableFuture());
     futureCreations.add(
-        CTP_SOURCE_CLIENT
-            .execute(CategoryCreateCommand.of(oldCategoryDraft2))
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .categories()
+            .create(oldCategoryDraft2)
+            .execute()
             .toCompletableFuture());
     CompletableFuture.allOf(futureCreations.toArray(new CompletableFuture[futureCreations.size()]))
         .join();
@@ -420,12 +496,16 @@ class CategorySyncIT {
     final CategoryDraft newCategoryDraft2 =
         CategoryDraftBuilder.of(oldCategoryDraft2).key(null).build();
     futureCreations.add(
-        CTP_TARGET_CLIENT
-            .execute(CategoryCreateCommand.of(newCategoryDraft1))
+        TestClientUtils.CTP_TARGET_CLIENT
+            .categories()
+            .create(newCategoryDraft1)
+            .execute()
             .toCompletableFuture());
     futureCreations.add(
-        CTP_TARGET_CLIENT
-            .execute(CategoryCreateCommand.of(newCategoryDraft2))
+        TestClientUtils.CTP_TARGET_CLIENT
+            .categories()
+            .create(newCategoryDraft2)
+            .execute()
             .toCompletableFuture());
 
     CompletableFuture.allOf(futureCreations.toArray(new CompletableFuture[futureCreations.size()]))
@@ -434,11 +514,18 @@ class CategorySyncIT {
     // ---------
 
     final List<Category> categories =
-        CTP_SOURCE_CLIENT.execute(CategoryQuery.of()).toCompletableFuture().join().getResults();
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .categories()
+            .get()
+            .execute()
+            .toCompletableFuture()
+            .join()
+            .getBody()
+            .getResults();
 
     final List<CategoryDraft> categoryDrafts =
         CategoryTransformUtils.toCategoryDrafts(
-                CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, categories)
             .join();
 
     final CategorySyncStatistics syncStatistics =
@@ -457,16 +544,19 @@ class CategorySyncIT {
     assertThat(callBackExceptions)
         .hasSize(2)
         .allSatisfy(
-            exception -> {
-              assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
-              final ErrorResponseException errorResponse = ((ErrorResponseException) exception);
+            throwable -> {
+              assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
+              assertThat(throwable).hasCauseExactlyInstanceOf(BadRequestException.class);
+              final BadRequestException errorResponse = (BadRequestException) throwable.getCause();
 
               final List<DuplicateFieldError> fieldErrors =
-                  errorResponse.getErrors().stream()
+                  errorResponse.getErrorResponse().getErrors().stream()
                       .map(
-                          sphereError -> {
-                            assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
-                            return sphereError.as(DuplicateFieldError.class);
+                          ctpError -> {
+                            assertThat(ctpError.getCode())
+                                .isEqualTo(DuplicateFieldError.DUPLICATE_FIELD);
+                            return DuplicateFieldErrorBuilder.of((DuplicateFieldError) ctpError)
+                                .build();
                           })
                       .collect(toList());
               assertThat(fieldErrors).hasSize(1);

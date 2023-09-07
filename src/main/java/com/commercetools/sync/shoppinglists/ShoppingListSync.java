@@ -1,13 +1,15 @@
 package com.commercetools.sync.shoppinglists;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
-import static com.commercetools.sync.shoppinglists.utils.ShoppingListSyncUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
+import com.commercetools.api.models.shopping_list.ShoppingList;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
 import com.commercetools.sync.services.CustomerService;
@@ -19,9 +21,7 @@ import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListBatchValidator;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListReferenceResolver;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
+import com.commercetools.sync.shoppinglists.utils.ShoppingListSyncUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,7 +37,11 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
  */
 public class ShoppingListSync
     extends BaseSync<
-        ShoppingListDraft, ShoppingList, ShoppingListSyncStatistics, ShoppingListSyncOptions> {
+        ShoppingList,
+        ShoppingListDraft,
+        ShoppingListUpdateAction,
+        ShoppingListSyncStatistics,
+        ShoppingListSyncOptions> {
 
   private static final String CTP_SHOPPING_LIST_UPDATE_FAILED =
       "Failed to update shopping lists with key: '%s'. Reason: %s";
@@ -101,20 +105,21 @@ public class ShoppingListSync
 
   /**
    * Iterates through the whole {@code ShoppingListDraft}'s list and accumulates its valid drafts to
-   * batches. Every batch is then processed by {@link ShoppingListSync#processBatch(List)}.
+   * batches. Every batch is then processed by {@link
+   * ShoppingListSync#processBatch(java.util.List)}.
    *
    * <p><strong>Inherited doc:</strong> {@inheritDoc}
    *
-   * @param shoppingListDrafts {@link List} of {@link ShoppingListDraft}'s that would be synced into
-   *     CTP project.
-   * @return {@link CompletionStage} with {@link ShoppingListSyncStatistics} holding statistics of
-   *     all sync processes performed by this sync instance.
+   * @param shoppingListDrafts {@link java.util.List} of {@link ShoppingListDraft}'s that would be
+   *     synced into CTP project.
+   * @return {@link java.util.concurrent.CompletionStage} with {@link ShoppingListSyncStatistics}
+   *     holding statistics of all sync processes performed by this sync instance.
    */
   @Override
   protected CompletionStage<ShoppingListSyncStatistics> process(
       @Nonnull final List<ShoppingListDraft> shoppingListDrafts) {
 
-    List<List<ShoppingListDraft>> batches =
+    final List<List<ShoppingListDraft>> batches =
         batchElements(shoppingListDrafts, syncOptions.getBatchSize());
     return syncBatches(batches, completedFuture(statistics));
   }
@@ -123,7 +128,7 @@ public class ShoppingListSync
   protected CompletionStage<ShoppingListSyncStatistics> processBatch(
       @Nonnull final List<ShoppingListDraft> batch) {
 
-    ImmutablePair<Set<ShoppingListDraft>, ShoppingListBatchValidator.ReferencedKeys>
+    final ImmutablePair<Set<ShoppingListDraft>, ShoppingListBatchValidator.ReferencedKeys>
         validationResult = shoppingListBatchValidator.validateAndCollectReferencedKeys(batch);
 
     final Set<ShoppingListDraft> shoppingListDrafts = validationResult.getLeft();
@@ -188,7 +193,7 @@ public class ShoppingListSync
       @Nonnull final Set<ShoppingList> oldShoppingLists,
       @Nonnull final Set<ShoppingListDraft> newShoppingListDrafts) {
 
-    Map<String, ShoppingList> keyShoppingListsMap =
+    final Map<String, ShoppingList> keyShoppingListsMap =
         oldShoppingLists.stream().collect(toMap(ShoppingList::getKey, identity()));
 
     return CompletableFuture.allOf(
@@ -236,10 +241,10 @@ public class ShoppingListSync
       @Nonnull final ShoppingList oldShoppingList,
       @Nonnull final ShoppingListDraft newShoppingListDraft) {
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildActions(oldShoppingList, newShoppingListDraft, syncOptions);
+    final List<ShoppingListUpdateAction> updateActions =
+        ShoppingListSyncUtils.buildActions(oldShoppingList, newShoppingListDraft, syncOptions);
 
-    final List<UpdateAction<ShoppingList>> updateActionsAfterCallback =
+    final List<ShoppingListUpdateAction> updateActionsAfterCallback =
         syncOptions.applyBeforeUpdateCallback(updateActions, newShoppingListDraft, oldShoppingList);
 
     if (!updateActionsAfterCallback.isEmpty()) {
@@ -253,7 +258,7 @@ public class ShoppingListSync
   private CompletionStage<Void> updateShoppinglist(
       @Nonnull final ShoppingList oldShoppingList,
       @Nonnull final ShoppingListDraft newShoppingListDraft,
-      @Nonnull final List<UpdateAction<ShoppingList>> updateActionsAfterCallback) {
+      @Nonnull final List<ShoppingListUpdateAction> updateActionsAfterCallback) {
 
     return shoppingListService
         .updateShoppingList(oldShoppingList, updateActionsAfterCallback)

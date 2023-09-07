@@ -1,7 +1,6 @@
 package com.commercetools.sync.products.helpers;
 
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.isReferenceOfType;
 import static java.lang.String.format;
 import static java.util.Collections.emptySet;
@@ -9,18 +8,19 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import com.commercetools.api.models.category.CategoryReference;
+import com.commercetools.api.models.custom_object.CustomObjectReference;
+import com.commercetools.api.models.product.Attribute;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductReference;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product_type.ProductTypeReference;
 import com.commercetools.sync.commons.helpers.BaseBatchValidator;
 import com.commercetools.sync.commons.utils.SyncUtils;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.utils.AttributeUtils;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.attributes.AttributeDraft;
-import io.sphere.sdk.producttypes.ProductType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,8 +58,8 @@ public class ProductBatchValidator
   /**
    * Given the {@link List}&lt;{@link ProductDraft}&gt; of drafts this method attempts to validate
    * drafts and collect referenced keys from the draft and return an {@link ImmutablePair}&lt;{@link
-   * Set}&lt; {@link ProductDraft}&gt;,{@link ProductBatchValidator.ReferencedKeys}&gt; which
-   * contains the {@link Set} of valid drafts and referenced keys within a wrapper.
+   * Set}&lt; {@link ProductDraft}&gt;,{@link ReferencedKeys}&gt; which contains the {@link Set} of
+   * valid drafts and referenced keys within a wrapper.
    *
    * <p>A valid product draft is one which satisfies the following conditions:
    *
@@ -76,8 +76,8 @@ public class ProductBatchValidator
    *
    * @param productDrafts the product drafts to validate and collect referenced keys.
    * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@link ProductDraft}&gt;, {@link
-   *     ProductBatchValidator.ReferencedKeys}&gt; which contains the {@link Set} of valid drafts
-   *     and referenced keys within a wrapper.
+   *     ReferencedKeys}&gt; which contains the {@link Set} of valid drafts and referenced keys
+   *     within a wrapper.
    */
   @Override
   public ImmutablePair<Set<ProductDraft>, ReferencedKeys> validateAndCollectReferencedKeys(
@@ -124,12 +124,14 @@ public class ProductBatchValidator
   private void collectReferencedKeysInCategories(
       @Nonnull final ReferencedKeys referencedKeys, @Nonnull final ProductDraft productDraft) {
 
-    productDraft.getCategories().stream()
-        .filter(Objects::nonNull)
-        .forEach(
-            resourceIdentifier ->
-                collectReferencedKeyFromResourceIdentifier(
-                    resourceIdentifier, referencedKeys.categoryKeys::add));
+    if (productDraft.getCategories() != null) {
+      productDraft.getCategories().stream()
+          .filter(Objects::nonNull)
+          .forEach(
+              resourceIdentifier ->
+                  collectReferencedKeyFromResourceIdentifier(
+                      resourceIdentifier, referencedKeys.categoryKeys::add));
+    }
   }
 
   private void collectReferencedKeysInVariants(
@@ -185,13 +187,14 @@ public class ProductBatchValidator
     referencedKeys.productKeys.addAll(getReferencedProductKeys(variantDraft));
 
     referencedKeys.categoryKeys.addAll(
-        getReferencedKeysWithReferenceTypeId(variantDraft, Category.referenceTypeId()));
+        getReferencedKeysWithReferenceTypeId(variantDraft, CategoryReference.CATEGORY));
 
     referencedKeys.productTypeKeys.addAll(
-        getReferencedKeysWithReferenceTypeId(variantDraft, ProductType.referenceTypeId()));
+        getReferencedKeysWithReferenceTypeId(variantDraft, ProductTypeReference.PRODUCT_TYPE));
 
     referencedKeys.customObjectCompositeIdentifiers.addAll(
-        getReferencedKeysWithReferenceTypeId(variantDraft, CustomObject.referenceTypeId()));
+        getReferencedKeysWithReferenceTypeId(
+            variantDraft, CustomObjectReference.KEY_VALUE_DOCUMENT));
   }
 
   @Nonnull
@@ -202,7 +205,10 @@ public class ProductBatchValidator
     // don't filter the nulls
     final List<ProductVariantDraft> allVariants = new ArrayList<>();
     allVariants.add(productDraft.getMasterVariant());
-    allVariants.addAll(productDraft.getVariants());
+    final List<ProductVariantDraft> variants = productDraft.getVariants();
+    if (variants != null) {
+      allVariants.addAll(variants);
+    }
 
     for (int i = 0; i < allVariants.size(); i++) {
       errorMessages.addAll(
@@ -247,35 +253,35 @@ public class ProductBatchValidator
   @Nonnull
   public static Set<String> getReferencedProductKeys(
       @Nonnull final ProductVariantDraft variantDraft) {
-    return getReferencedKeysWithReferenceTypeId(variantDraft, Product.referenceTypeId());
+    return getReferencedKeysWithReferenceTypeId(variantDraft, ProductReference.PRODUCT);
   }
 
   private static Set<String> getReferencedKeysWithReferenceTypeId(
       @Nonnull final ProductVariantDraft variantDraft, @Nonnull final String referenceTypeId) {
 
-    final List<AttributeDraft> attributeDrafts = variantDraft.getAttributes();
-    if (attributeDrafts == null) {
+    final List<Attribute> attributes = variantDraft.getAttributes();
+    if (attributes == null) {
       return emptySet();
     }
-    return attributeDrafts.stream()
+    return attributes.stream()
         .filter(Objects::nonNull)
-        .map(
-            attributeDraft -> getReferencedKeysWithReferenceTypeId(attributeDraft, referenceTypeId))
+        .map(attribute -> getReferencedKeysWithReferenceTypeId(attribute, referenceTypeId))
         .flatMap(Collection::stream)
         .collect(Collectors.toSet());
   }
 
   @Nonnull
   private static Set<String> getReferencedKeysWithReferenceTypeId(
-      @Nonnull final AttributeDraft attributeDraft, @Nonnull final String referenceTypeId) {
+      @Nonnull final Attribute attribute, @Nonnull final String referenceTypeId) {
 
-    final JsonNode attributeDraftValue = attributeDraft.getValue();
-    if (attributeDraftValue == null) {
+    final JsonNode attributeValueAsJson =
+        AttributeUtils.replaceAttributeValueWithJsonAndReturnValue(attribute);
+    final List<JsonNode> allAttributeReferences =
+        AttributeUtils.getAttributeReferences(attributeValueAsJson);
+
+    if (allAttributeReferences.isEmpty()) {
       return emptySet();
     }
-
-    final List<JsonNode> allAttributeReferences =
-        attributeDraftValue.findParents(REFERENCE_TYPE_ID_FIELD);
 
     return allAttributeReferences.stream()
         .filter(reference -> isReferenceOfType(reference, referenceTypeId))
@@ -333,7 +339,8 @@ public class ProductBatchValidator
      * CustomObjectCompositeIdentifier}&gt; to be used for caching purposes.
      *
      * <p>Note: Invalid identifiers and uuid formatted identifiers will be filtered out. Validation
-     * handling will be part of the {@link VariantReferenceResolver}.
+     * handling will be part of the {@link
+     * com.commercetools.sync.products.helpers.VariantReferenceResolver}.
      *
      * @return a result set with valid identifiers mapped to {@link
      *     CustomObjectCompositeIdentifier}.

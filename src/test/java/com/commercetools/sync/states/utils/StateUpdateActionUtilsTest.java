@@ -1,38 +1,32 @@
 package com.commercetools.sync.states.utils;
 
-import static com.commercetools.sync.states.utils.StateUpdateActionUtils.buildChangeInitialAction;
-import static com.commercetools.sync.states.utils.StateUpdateActionUtils.buildChangeTypeAction;
-import static com.commercetools.sync.states.utils.StateUpdateActionUtils.buildRolesUpdateActions;
-import static com.commercetools.sync.states.utils.StateUpdateActionUtils.buildSetDescriptionAction;
-import static com.commercetools.sync.states.utils.StateUpdateActionUtils.buildSetNameAction;
-import static com.commercetools.sync.states.utils.StateUpdateActionUtils.buildSetTransitionsAction;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.states.StateDraft;
-import io.sphere.sdk.states.StateRole;
-import io.sphere.sdk.states.StateType;
-import io.sphere.sdk.states.commands.updateactions.AddRoles;
-import io.sphere.sdk.states.commands.updateactions.ChangeInitial;
-import io.sphere.sdk.states.commands.updateactions.ChangeType;
-import io.sphere.sdk.states.commands.updateactions.RemoveRoles;
-import io.sphere.sdk.states.commands.updateactions.SetDescription;
-import io.sphere.sdk.states.commands.updateactions.SetName;
-import io.sphere.sdk.states.commands.updateactions.SetTransitions;
-import java.util.Collections;
-import java.util.HashSet;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.state.State;
+import com.commercetools.api.models.state.StateAddRolesActionBuilder;
+import com.commercetools.api.models.state.StateChangeInitialActionBuilder;
+import com.commercetools.api.models.state.StateChangeTypeActionBuilder;
+import com.commercetools.api.models.state.StateDraft;
+import com.commercetools.api.models.state.StateDraftBuilder;
+import com.commercetools.api.models.state.StateReference;
+import com.commercetools.api.models.state.StateReferenceBuilder;
+import com.commercetools.api.models.state.StateRemoveRolesActionBuilder;
+import com.commercetools.api.models.state.StateResourceIdentifier;
+import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
+import com.commercetools.api.models.state.StateRoleEnum;
+import com.commercetools.api.models.state.StateSetDescriptionActionBuilder;
+import com.commercetools.api.models.state.StateSetNameActionBuilder;
+import com.commercetools.api.models.state.StateSetTransitionsAction;
+import com.commercetools.api.models.state.StateSetTransitionsActionBuilder;
+import com.commercetools.api.models.state.StateTypeEnum;
+import com.commercetools.api.models.state.StateUpdateAction;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -46,152 +40,190 @@ class StateUpdateActionUtilsTest {
 
   @BeforeEach
   void setup() {
-    final StateType type = StateType.LINE_ITEM_STATE;
+    final StateTypeEnum type = StateTypeEnum.LINE_ITEM_STATE;
     final LocalizedString name = LocalizedString.of(Locale.GERMANY, "name");
     final LocalizedString description = LocalizedString.of(Locale.GERMANY, "description");
-    final Set<StateRole> roles =
-        new HashSet<>(singletonList(StateRole.REVIEW_INCLUDED_IN_STATISTICS));
+    final List<StateRoleEnum> roles = List.of(StateRoleEnum.REVIEW_INCLUDED_IN_STATISTICS);
 
     state = mock(State.class);
     when(state.getKey()).thenReturn(KEY);
     when(state.getType()).thenReturn(type);
     when(state.getName()).thenReturn(name);
     when(state.getDescription()).thenReturn(description);
-    when(state.isInitial()).thenReturn(true);
+    when(state.getInitial()).thenReturn(true);
     when(state.getRoles()).thenReturn(roles);
 
     newSameStateDraft =
-        StateDraft.of(KEY, type)
-            .withName(name)
-            .withDescription(description)
-            .withRoles(roles)
-            .withInitial(true);
+        StateDraftBuilder.of()
+            .key(KEY)
+            .type(type)
+            .name(name)
+            .description(description)
+            .roles(roles)
+            .initial(true)
+            .transitions(List.of())
+            .build();
 
     newDifferentStateDraft =
-        StateDraft.of("key2", StateType.PRODUCT_STATE)
-            .withName(LocalizedString.of(Locale.GERMANY, "new name"))
-            .withDescription(LocalizedString.of(Locale.GERMANY, "new desc"))
-            .withRoles(new HashSet<>(singletonList(StateRole.RETURN)))
-            .withInitial(false);
+        StateDraftBuilder.of()
+            .key("key2")
+            .type(StateTypeEnum.PRODUCT_STATE)
+            .name(LocalizedString.of(Locale.GERMANY, "new name"))
+            .description(LocalizedString.of(Locale.GERMANY, "new desc"))
+            .roles(List.of(StateRoleEnum.RETURN))
+            .initial(false)
+            .build();
   }
 
   @Test
   void buildChangeTypeAction_WithDifferentValues_ShouldReturnAction() {
-    final Optional<UpdateAction<State>> result =
-        buildChangeTypeAction(state, newDifferentStateDraft);
+    final Optional<StateUpdateAction> result =
+        StateUpdateActionUtils.buildChangeTypeAction(state, newDifferentStateDraft);
 
-    assertThat(result).contains(ChangeType.of(newDifferentStateDraft.getType()));
+    assertThat(result)
+        .contains(StateChangeTypeActionBuilder.of().type(newDifferentStateDraft.getType()).build());
   }
 
   @Test
   void buildChangeTypeAction_WithSameValues_ShouldReturnEmptyOptional() {
-    final Optional<UpdateAction<State>> result = buildChangeTypeAction(state, newSameStateDraft);
+    final Optional<StateUpdateAction> result =
+        StateUpdateActionUtils.buildChangeTypeAction(state, newSameStateDraft);
 
     assertThat(result).isEmpty();
   }
 
   @Test
   void buildSetNameAction_WithDifferentValues_ShouldReturnAction() {
-    final Optional<UpdateAction<State>> result = buildSetNameAction(state, newDifferentStateDraft);
+    final Optional<StateUpdateAction> result =
+        StateUpdateActionUtils.buildSetNameAction(state, newDifferentStateDraft);
 
-    assertThat(result).contains(SetName.of(newDifferentStateDraft.getName()));
+    assertThat(result)
+        .contains(StateSetNameActionBuilder.of().name(newDifferentStateDraft.getName()).build());
   }
 
   @Test
   void buildSetNameAction_WithSameValues_ShouldReturnEmptyOptional() {
-    final Optional<UpdateAction<State>> result = buildSetNameAction(state, newSameStateDraft);
+    final Optional<StateUpdateAction> result =
+        StateUpdateActionUtils.buildSetNameAction(state, newSameStateDraft);
 
     assertThat(result).isEmpty();
   }
 
   @Test
   void buildSetDescriptionAction_WithDifferentValues_ShouldReturnAction() {
-    final Optional<UpdateAction<State>> result =
-        buildSetDescriptionAction(state, newDifferentStateDraft);
+    final Optional<StateUpdateAction> result =
+        StateUpdateActionUtils.buildSetDescriptionAction(state, newDifferentStateDraft);
 
-    assertThat(result).contains(SetDescription.of(newDifferentStateDraft.getDescription()));
+    assertThat(result)
+        .contains(
+            StateSetDescriptionActionBuilder.of()
+                .description(newDifferentStateDraft.getDescription())
+                .build());
   }
 
   @Test
   void buildSetDescriptionAction_WithSameValues_ShouldReturnEmptyOptional() {
-    final Optional<UpdateAction<State>> result =
-        buildSetDescriptionAction(state, newSameStateDraft);
+    final Optional<StateUpdateAction> result =
+        StateUpdateActionUtils.buildSetDescriptionAction(state, newSameStateDraft);
 
     assertThat(result).isEmpty();
   }
 
   @Test
   void buildChangeInitialAction_WithDifferentValues_ShouldReturnAction() {
-    final Optional<UpdateAction<State>> result =
-        buildChangeInitialAction(state, newDifferentStateDraft);
+    final Optional<StateUpdateAction> result =
+        StateUpdateActionUtils.buildChangeInitialAction(state, newDifferentStateDraft);
 
-    assertThat(result).contains(ChangeInitial.of(newDifferentStateDraft.isInitial()));
+    assertThat(result)
+        .contains(
+            StateChangeInitialActionBuilder.of()
+                .initial(newDifferentStateDraft.getInitial())
+                .build());
   }
 
   @Test
   void buildChangeInitialAction_WithSameValues_ShouldReturnEmptyOptional() {
-    final Optional<UpdateAction<State>> result = buildChangeInitialAction(state, newSameStateDraft);
+    final Optional<StateUpdateAction> result =
+        StateUpdateActionUtils.buildChangeInitialAction(state, newSameStateDraft);
 
     assertThat(result).isEmpty();
   }
 
   @Test
   void buildRolesUpdateActions_WithSameValues_ShouldNotBuildAction() {
-    final List<UpdateAction<State>> result = buildRolesUpdateActions(state, newSameStateDraft);
+    final List<StateUpdateAction> result =
+        StateUpdateActionUtils.buildRolesUpdateActions(state, newSameStateDraft);
 
     assertThat(result).isEmpty();
   }
 
   @Test
   void buildRolesUpdateActions_WithDifferentValues_ShouldReturnActionWithRightOrder() {
-    final List<UpdateAction<State>> result = buildRolesUpdateActions(state, newDifferentStateDraft);
+    final List<StateUpdateAction> result =
+        StateUpdateActionUtils.buildRolesUpdateActions(state, newDifferentStateDraft);
 
     assertThat(result)
         .containsExactly(
-            RemoveRoles.of(state.getRoles()), AddRoles.of(newDifferentStateDraft.getRoles()));
+            StateRemoveRolesActionBuilder.of().roles(state.getRoles()).build(),
+            StateAddRolesActionBuilder.of().roles(newDifferentStateDraft.getRoles()).build());
   }
 
   @Test
   void buildRolesUpdateActions_WithNewValues_ShouldReturnAction() {
     StateDraft newState =
-        StateDraft.of(KEY, StateType.PRODUCT_STATE)
-            .withRoles(
-                new HashSet<>(asList(StateRole.RETURN, StateRole.REVIEW_INCLUDED_IN_STATISTICS)));
+        StateDraftBuilder.of()
+            .key(KEY)
+            .type(StateTypeEnum.PRODUCT_STATE)
+            .roles(List.of(StateRoleEnum.RETURN, StateRoleEnum.REVIEW_INCLUDED_IN_STATISTICS))
+            .build();
 
-    final List<UpdateAction<State>> result = buildRolesUpdateActions(state, newState);
+    final List<StateUpdateAction> result =
+        StateUpdateActionUtils.buildRolesUpdateActions(state, newState);
 
-    assertThat(result).containsExactly(AddRoles.of(new HashSet<>(singletonList(StateRole.RETURN))));
+    assertThat(result)
+        .containsExactly(
+            StateAddRolesActionBuilder.of().roles(List.of(StateRoleEnum.RETURN)).build());
   }
 
   @Test
   void buildRolesUpdateActions_WithRemovedRoles_ShouldReturnOnlyRemoveAction() {
-    final Set<StateRole> roles =
-        new HashSet<>(asList(StateRole.RETURN, StateRole.REVIEW_INCLUDED_IN_STATISTICS));
+    final List<StateRoleEnum> roles =
+        List.of(StateRoleEnum.RETURN, StateRoleEnum.REVIEW_INCLUDED_IN_STATISTICS);
 
     State oldState = mock(State.class);
     when(oldState.getKey()).thenReturn(KEY);
     when(oldState.getRoles()).thenReturn(roles);
 
     StateDraft newState =
-        StateDraft.of(KEY, StateType.PRODUCT_STATE)
-            .withRoles(new HashSet<>(singletonList(StateRole.REVIEW_INCLUDED_IN_STATISTICS)));
+        StateDraftBuilder.of()
+            .key(KEY)
+            .type(StateTypeEnum.PRODUCT_STATE)
+            .roles(List.of(StateRoleEnum.REVIEW_INCLUDED_IN_STATISTICS))
+            .build();
 
-    final List<UpdateAction<State>> result = buildRolesUpdateActions(oldState, newState);
+    final List<StateUpdateAction> result =
+        StateUpdateActionUtils.buildRolesUpdateActions(oldState, newState);
 
     assertThat(result)
-        .containsExactly(RemoveRoles.of(new HashSet<>(singletonList(StateRole.RETURN))));
+        .containsExactly(
+            StateRemoveRolesActionBuilder.of().roles(List.of(StateRoleEnum.RETURN)).build());
   }
 
   @Test
   void buildRolesUpdateActions_WithNullRoles_ShouldNotReturnAction() {
     StateDraft newState =
-        StateDraft.of(KEY, StateType.PRODUCT_STATE).withRoles((Set<StateRole>) null);
+        StateDraftBuilder.of()
+            .key(KEY)
+            .type(StateTypeEnum.PRODUCT_STATE)
+            .roles((List<StateRoleEnum>) null)
+            .build();
 
     State oldState = mock(State.class);
     when(oldState.getKey()).thenReturn(KEY);
     when(oldState.getRoles()).thenReturn(null);
 
-    final List<UpdateAction<State>> result = buildRolesUpdateActions(oldState, newState);
+    final List<StateUpdateAction> result =
+        StateUpdateActionUtils.buildRolesUpdateActions(oldState, newState);
 
     assertThat(result).isEmpty();
   }
@@ -199,126 +231,162 @@ class StateUpdateActionUtilsTest {
   @Test
   void buildRolesUpdateActions_WithEmptyRoles_ShouldNotReturnAction() {
     StateDraft newState =
-        StateDraft.of(KEY, StateType.PRODUCT_STATE).withRoles(Collections.emptySet());
+        StateDraftBuilder.of().key(KEY).type(StateTypeEnum.PRODUCT_STATE).roles(List.of()).build();
 
     State oldState = mock(State.class);
     when(oldState.getKey()).thenReturn(KEY);
-    when(oldState.getRoles()).thenReturn(Collections.emptySet());
+    when(oldState.getRoles()).thenReturn(List.of());
 
-    final List<UpdateAction<State>> result = buildRolesUpdateActions(oldState, newState);
+    final List<StateUpdateAction> result =
+        StateUpdateActionUtils.buildRolesUpdateActions(oldState, newState);
 
     assertThat(result).isEmpty();
   }
 
   @Test
   void buildSetTransitionsAction_WithEmptyValues_ShouldReturnEmptyOptional() {
-    final Optional<UpdateAction<State>> result =
-        buildSetTransitionsAction(state, newSameStateDraft);
+    final Optional<StateUpdateAction> result =
+        StateUpdateActionUtils.buildSetTransitionsAction(state, newSameStateDraft);
 
     assertThat(result).isEmpty();
   }
 
   @Test
   void buildSetTransitionsAction_WithNullValuesInList_ShouldReturnEmptyOptional() {
-    final Set<Reference<State>> oldTransitions = new HashSet<>(singletonList(null));
+    final List<StateReference> oldTransitions = List.of();
     when(state.getTransitions()).thenReturn(oldTransitions);
 
     final StateDraft stateDraft =
-        StateDraft.of(KEY, StateType.LINE_ITEM_STATE)
-            .withTransitions(new HashSet<>(singletonList(null)));
+        StateDraftBuilder.of()
+            .key(KEY)
+            .type(StateTypeEnum.LINE_ITEM_STATE)
+            .transitions((StateResourceIdentifier) null)
+            .build();
 
-    final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, stateDraft);
+    final Optional<StateUpdateAction> result =
+        StateUpdateActionUtils.buildSetTransitionsAction(state, stateDraft);
     assertThat(result).isEmpty();
   }
 
   @Test
   void buildSetTransitionsAction_WithEmptyNewTransitionsValues_ShouldReturnAction() {
-    final Set<Reference<State>> oldTransitions =
-        new HashSet<>(singletonList(State.referenceOfId("id")));
+    final List<StateReference> oldTransitions =
+        List.of(StateReferenceBuilder.of().id("id").build());
     when(state.getTransitions()).thenReturn(oldTransitions);
 
-    final Optional<UpdateAction<State>> result =
-        buildSetTransitionsAction(state, newSameStateDraft);
+    final Optional<StateUpdateAction> result =
+        StateUpdateActionUtils.buildSetTransitionsAction(state, newSameStateDraft);
 
-    assertThat(result).contains(SetTransitions.of(emptySet()));
+    assertThat(result)
+        .contains(StateSetTransitionsActionBuilder.of().transitions(List.of()).build());
   }
 
   @Test
   void buildSetTransitionsAction_WithSameValues_ShouldReturnEmptyOptional() {
-    final Set<Reference<State>> oldTransitions =
-        new HashSet<>(
-            asList(State.referenceOfId("state-key-1"), State.referenceOfId("state-key-2")));
-    final Set<Reference<State>> newTransitions =
-        new HashSet<>(
-            asList(State.referenceOfId("state-key-1"), State.referenceOfId("state-key-2")));
+    final List<StateReference> oldTransitions =
+        List.of(
+            StateReferenceBuilder.of().id("state-key-1").build(),
+            StateReferenceBuilder.of().id("state-key-2").build());
+    final List<StateResourceIdentifier> newTransitions =
+        List.of(
+            StateResourceIdentifierBuilder.of().id("state-key-1").build(),
+            StateResourceIdentifierBuilder.of().id("state-key-2").build());
 
     when(state.getTransitions()).thenReturn(oldTransitions);
     final StateDraft newDifferent =
-        StateDraft.of(KEY, StateType.LINE_ITEM_STATE).withTransitions(newTransitions);
+        StateDraftBuilder.of()
+            .key(KEY)
+            .type(StateTypeEnum.LINE_ITEM_STATE)
+            .transitions(newTransitions)
+            .build();
 
-    final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newDifferent);
+    final Optional<StateUpdateAction> result =
+        StateUpdateActionUtils.buildSetTransitionsAction(state, newDifferent);
 
     assertThat(result).isEmpty();
   }
 
   @Test
   void buildSetTransitionsAction_WithAllDifferentValues_ShouldReturnAction() {
-    final Set<Reference<State>> oldTransitions =
-        new HashSet<>(
-            asList(State.referenceOfId("old-state-1"), State.referenceOfId("old-state-2")));
+    final List<StateReference> oldTransitions =
+        List.of(
+            StateReferenceBuilder.of().id("old-state-1").build(),
+            StateReferenceBuilder.of().id("old-state-2").build());
 
-    final Set<Reference<State>> newTransitions =
-        new HashSet<>(
-            asList(State.referenceOfId("new-state-1"), State.referenceOfId("new-state-2")));
+    final List<StateResourceIdentifier> newTransitions =
+        List.of(
+            StateResourceIdentifierBuilder.of().id("new-state-1").build(),
+            StateResourceIdentifierBuilder.of().id("new-state-2").build());
 
     when(state.getTransitions()).thenReturn(oldTransitions);
     final StateDraft newDifferent =
-        StateDraft.of(KEY, StateType.LINE_ITEM_STATE).withTransitions(newTransitions);
+        StateDraftBuilder.of()
+            .key(KEY)
+            .type(StateTypeEnum.LINE_ITEM_STATE)
+            .transitions(newTransitions)
+            .build();
 
-    final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newDifferent);
-    HashSet<Reference<State>> expectedTransitions =
-        new HashSet<>(
-            asList(State.referenceOfId("new-state-1"), State.referenceOfId("new-state-2")));
-    assertThat(result).contains(SetTransitions.of(expectedTransitions));
+    final Optional<StateUpdateAction> result =
+        StateUpdateActionUtils.buildSetTransitionsAction(state, newDifferent);
+    assertThat(result.get()).isInstanceOf(StateSetTransitionsAction.class);
+    assertThat(((StateSetTransitionsAction) result.get()).getTransitions())
+        .contains(
+            StateResourceIdentifierBuilder.of().id("new-state-1").build(),
+            StateResourceIdentifierBuilder.of().id("new-state-2").build());
   }
 
   @Test
   void buildSetTransitionsAction_WithAnyDifferentValues_ShouldReturnAction() {
-    final Set<Reference<State>> oldTransitions =
-        new HashSet<>(
-            asList(State.referenceOfId("old-state-1"), State.referenceOfId("old-state-2")));
+    final List<StateReference> oldTransitions =
+        List.of(
+            StateReferenceBuilder.of().id("old-state-1").build(),
+            StateReferenceBuilder.of().id("old-state-2").build());
 
-    final Set<Reference<State>> newTransitions =
-        new HashSet<>(
-            asList(State.referenceOfId("old-state-1"), State.referenceOfId("new-state-2")));
+    final List<StateResourceIdentifier> newTransitions =
+        List.of(
+            StateResourceIdentifierBuilder.of().id("old-state-1").build(),
+            StateResourceIdentifierBuilder.of().id("new-state-2").build());
 
     when(state.getTransitions()).thenReturn(oldTransitions);
     final StateDraft newDifferent =
-        StateDraft.of(KEY, StateType.LINE_ITEM_STATE).withTransitions(newTransitions);
+        StateDraftBuilder.of()
+            .key(KEY)
+            .type(StateTypeEnum.LINE_ITEM_STATE)
+            .transitions(newTransitions)
+            .build();
 
-    final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newDifferent);
-    HashSet<Reference<State>> expectedTransitions =
-        new HashSet<>(
-            asList(State.referenceOfId("old-state-1"), State.referenceOfId("new-state-2")));
-    assertThat(result).contains(SetTransitions.of(expectedTransitions));
+    final Optional<StateUpdateAction> result =
+        StateUpdateActionUtils.buildSetTransitionsAction(state, newDifferent);
+    assertThat(result.get()).isInstanceOf(StateSetTransitionsAction.class);
+    assertThat(((StateSetTransitionsAction) result.get()).getTransitions())
+        .contains(
+            StateResourceIdentifierBuilder.of().id("old-state-1").build(),
+            StateResourceIdentifierBuilder.of().id("new-state-2").build());
   }
 
   @Test
   void buildSetTransitionsAction_WitNullTransitions_ShouldReturnAction() {
-    final Set<Reference<State>> oldTransitions =
-        new HashSet<>(
-            asList(State.referenceOfId("old-state-1"), State.referenceOfId("old-state-2")));
+    final List<StateReference> oldTransitions =
+        List.of(
+            StateReferenceBuilder.of().id("old-state-1").build(),
+            StateReferenceBuilder.of().id("old-state-2").build());
 
-    final Set<Reference<State>> newTransitions =
-        new HashSet<>(asList(null, State.referenceOfId("new-state-2")));
+    final List<StateResourceIdentifier> newTransitions =
+        asList(null, StateResourceIdentifierBuilder.of().id("new-state-2").build());
 
     when(state.getTransitions()).thenReturn(oldTransitions);
     final StateDraft newDifferent =
-        StateDraft.of(KEY, StateType.LINE_ITEM_STATE).withTransitions(newTransitions);
+        StateDraftBuilder.of()
+            .key(KEY)
+            .type(StateTypeEnum.LINE_ITEM_STATE)
+            .transitions(newTransitions)
+            .build();
 
-    final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newDifferent);
-    HashSet<Reference<State>> expectedTransitions =
-        new HashSet<>(singletonList(State.referenceOfId("new-state-2")));
-    assertThat(result).contains(SetTransitions.of(expectedTransitions));
+    final Optional<StateUpdateAction> result =
+        StateUpdateActionUtils.buildSetTransitionsAction(state, newDifferent);
+    final List<StateResourceIdentifier> expectedTransitions =
+        List.of(StateResourceIdentifierBuilder.of().id("new-state-2").build());
+    assertThat(result)
+        .contains(StateSetTransitionsActionBuilder.of().transitions(expectedTransitions).build());
   }
 }

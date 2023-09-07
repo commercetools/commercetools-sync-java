@@ -1,23 +1,19 @@
 package com.commercetools.sync.states.helpers;
 
-import static com.commercetools.sync.states.helpers.StateBatchValidator.STATE_DRAFT_IS_NULL;
-import static com.commercetools.sync.states.helpers.StateBatchValidator.STATE_DRAFT_KEY_NOT_SET;
-import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.state.StateDraft;
+import com.commercetools.api.models.state.StateResourceIdentifier;
+import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
 import com.commercetools.sync.states.StateSyncOptions;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.states.StateDraft;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -34,7 +30,7 @@ class StateBatchValidatorTest {
   @BeforeEach
   void setup() {
     errorCallBackMessages = new ArrayList<>();
-    final SphereClient ctpClient = mock(SphereClient.class);
+    final ProjectApiRoot ctpClient = mock(ProjectApiRoot.class);
 
     syncOptions =
         StateSyncOptionsBuilder.of(ctpClient)
@@ -59,7 +55,7 @@ class StateBatchValidatorTest {
     final Set<StateDraft> validDrafts = getValidDrafts(Collections.singletonList(null));
 
     assertThat(errorCallBackMessages).hasSize(1);
-    assertThat(errorCallBackMessages.get(0)).isEqualTo(STATE_DRAFT_IS_NULL);
+    assertThat(errorCallBackMessages.get(0)).isEqualTo(StateBatchValidator.STATE_DRAFT_IS_NULL);
     assertThat(validDrafts).isEmpty();
   }
 
@@ -71,7 +67,8 @@ class StateBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(STATE_DRAFT_KEY_NOT_SET, StateDraft.getName()));
+        .isEqualTo(
+            String.format(StateBatchValidator.STATE_DRAFT_KEY_NOT_SET, StateDraft.getName()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -84,7 +81,8 @@ class StateBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(STATE_DRAFT_KEY_NOT_SET, stateDraft.getName()));
+        .isEqualTo(
+            String.format(StateBatchValidator.STATE_DRAFT_KEY_NOT_SET, stateDraft.getName()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -92,10 +90,12 @@ class StateBatchValidatorTest {
   void validateAndCollectReferencedKeys_WithValidDrafts_ShouldReturnCorrectResults() {
     final StateDraft validStateDraft = mock(StateDraft.class);
     when(validStateDraft.getKey()).thenReturn("validDraftKey");
-    final Set<Reference<State>> transitionRefs = new HashSet<>();
-    transitionRefs.add(State.referenceOfId("transition-key-1"));
-    transitionRefs.add(State.referenceOfId("transition-key-2"));
-    when(validStateDraft.getTransitions()).thenReturn(transitionRefs);
+    final List<StateResourceIdentifier> transitionResourceIdentifiers = new ArrayList<>();
+    transitionResourceIdentifiers.add(
+        StateResourceIdentifierBuilder.of().key("transition-key-1").build());
+    transitionResourceIdentifiers.add(
+        StateResourceIdentifierBuilder.of().key("transition-key-2").build());
+    when(validStateDraft.getTransitions()).thenReturn(transitionResourceIdentifiers);
 
     final StateDraft validMainStateDraft = mock(StateDraft.class);
     when(validMainStateDraft.getKey()).thenReturn("validDraftKey1");
@@ -110,7 +110,10 @@ class StateBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(STATE_DRAFT_KEY_NOT_SET, invalidStateDraft.getName()));
+        .isEqualTo(
+            String.format(
+                com.commercetools.sync.states.helpers.StateBatchValidator.STATE_DRAFT_KEY_NOT_SET,
+                invalidStateDraft.getName()));
     assertThat(pair.getLeft()).containsExactlyInAnyOrder(validStateDraft, validMainStateDraft);
     assertThat(pair.getRight()).containsExactlyInAnyOrder("transition-key-1", "transition-key-2");
   }

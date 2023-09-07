@@ -4,14 +4,17 @@ import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolution
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
 
+import com.commercetools.api.models.channel.Channel;
+import com.commercetools.api.models.channel.ChannelReference;
+import com.commercetools.api.models.channel.ChannelResourceIdentifier;
+import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
+import com.commercetools.api.models.inventory.InventoryEntry;
+import com.commercetools.api.models.inventory.InventoryEntryDraft;
+import com.commercetools.api.models.inventory.InventoryEntryDraftBuilder;
+import com.commercetools.api.models.type.Type;
+import com.commercetools.api.models.type.TypeReference;
+import com.commercetools.api.models.type.TypeResourceIdentifier;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.inventory.InventoryEntry;
-import io.sphere.sdk.inventory.InventoryEntryDraft;
-import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.types.Type;
 import java.util.List;
 import javax.annotation.Nonnull;
 
@@ -38,13 +41,13 @@ public final class InventoryReferenceResolutionUtils {
    *   <tbody>
    *     <tr>
    *       <td>supplyChannel</td>
-   *       <td>{@link Reference}&lt;{@link Channel}&gt;</td>
-   *       <td>{@link ResourceIdentifier}&lt;{@link Channel}&gt;</td>
+   *       <td>{@link ChannelReference}</td>
+   *       <td>{@link ChannelResourceIdentifier}</td>
    *     </tr>
    *     <tr>
    *        <td>custom.type</td>
-   *        <td>{@link Reference}&lt;{@link Type}&gt;</td>
-   *        <td>{@link ResourceIdentifier}&lt;{@link Type}&gt;</td>
+   *        <td>{@link TypeReference}</td>
+   *        <td>{@link TypeResourceIdentifier}</td>
    *     </tr>
    *   </tbody>
    * </table>
@@ -74,10 +77,27 @@ public final class InventoryReferenceResolutionUtils {
   private static InventoryEntryDraft mapToInventoryEntryDraft(
       @Nonnull final InventoryEntry inventoryEntry,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
-    return InventoryEntryDraftBuilder.of(inventoryEntry)
+    final ChannelResourceIdentifier channelResourceIdentifier =
+        getResourceIdentifierWithKey(
+            inventoryEntry.getSupplyChannel(),
+            referenceIdToKeyCache,
+            (id, key) -> {
+              final ChannelResourceIdentifierBuilder builder =
+                  ChannelResourceIdentifierBuilder.of();
+              if (id == null) {
+                return builder.key(key).build();
+              } else {
+                return builder.id(id).build();
+              }
+            });
+    return InventoryEntryDraftBuilder.of()
+        .sku(inventoryEntry.getSku())
+        .quantityOnStock(inventoryEntry.getQuantityOnStock())
+        .expectedDelivery(inventoryEntry.getExpectedDelivery())
+        .restockableInDays(inventoryEntry.getRestockableInDays())
+        .key(inventoryEntry.getKey())
         .custom(mapToCustomFieldsDraft(inventoryEntry, referenceIdToKeyCache))
-        .supplyChannel(
-            getResourceIdentifierWithKey(inventoryEntry.getSupplyChannel(), referenceIdToKeyCache))
+        .supplyChannel(channelResourceIdentifier)
         .build();
   }
 

@@ -1,28 +1,23 @@
 package com.commercetools.sync.shoppinglists.utils;
 
-import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildChangeNameUpdateAction;
-import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetAnonymousIdUpdateAction;
-import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetCustomerUpdateAction;
-import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetDeleteDaysAfterLastModificationUpdateAction;
-import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetDescriptionUpdateAction;
-import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetSlugUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
-import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetAnonymousId;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetCustomer;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetDeleteDaysAfterLastModification;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetDescription;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetSlug;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.customer.CustomerReference;
+import com.commercetools.api.models.customer.CustomerReferenceBuilder;
+import com.commercetools.api.models.customer.CustomerResourceIdentifier;
+import com.commercetools.api.models.customer.CustomerResourceIdentifierBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingList;
+import com.commercetools.api.models.shopping_list.ShoppingListChangeNameAction;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListSetAnonymousIdAction;
+import com.commercetools.api.models.shopping_list.ShoppingListSetCustomerAction;
+import com.commercetools.api.models.shopping_list.ShoppingListSetDeleteDaysAfterLastModificationAction;
+import com.commercetools.api.models.shopping_list.ShoppingListSetDescriptionAction;
+import com.commercetools.api.models.shopping_list.ShoppingListSetSlugAction;
+import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,12 +34,13 @@ class ShoppingListUpdateActionUtilsTest {
     final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
     when(newShoppingList.getSlug()).thenReturn(LocalizedString.of(LOCALE, "newSlug"));
 
-    final UpdateAction<ShoppingList> setSlugUpdateAction =
-        buildSetSlugUpdateAction(oldShoppingList, newShoppingList).orElse(null);
+    final ShoppingListUpdateAction setSlugUpdateAction =
+        ShoppingListUpdateActionUtils.buildSetSlugUpdateAction(oldShoppingList, newShoppingList)
+            .orElse(null);
 
     assertThat(setSlugUpdateAction).isNotNull();
     assertThat(setSlugUpdateAction.getAction()).isEqualTo("setSlug");
-    assertThat(((SetSlug) setSlugUpdateAction).getSlug())
+    assertThat(((ShoppingListSetSlugAction) setSlugUpdateAction).getSlug())
         .isEqualTo(LocalizedString.of(LOCALE, "newSlug"));
   }
 
@@ -56,12 +52,13 @@ class ShoppingListUpdateActionUtilsTest {
     final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
     when(newShoppingList.getSlug()).thenReturn(null);
 
-    final UpdateAction<ShoppingList> setSlugUpdateAction =
-        buildSetSlugUpdateAction(oldShoppingList, newShoppingList).orElse(null);
+    final ShoppingListUpdateAction setSlugUpdateAction =
+        ShoppingListUpdateActionUtils.buildSetSlugUpdateAction(oldShoppingList, newShoppingList)
+            .orElse(null);
 
     assertThat(setSlugUpdateAction).isNotNull();
     assertThat(setSlugUpdateAction.getAction()).isEqualTo("setSlug");
-    assertThat(((SetSlug) setSlugUpdateAction).getSlug()).isNull();
+    assertThat(((ShoppingListSetSlugAction) setSlugUpdateAction).getSlug()).isNull();
   }
 
   @Test
@@ -72,8 +69,8 @@ class ShoppingListUpdateActionUtilsTest {
     final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
     when(newShoppingList.getSlug()).thenReturn(LocalizedString.of(LOCALE, "oldSlug"));
 
-    final Optional<UpdateAction<ShoppingList>> setSlugUpdateAction =
-        buildSetSlugUpdateAction(oldShoppingList, newShoppingList);
+    final Optional<ShoppingListUpdateAction> setSlugUpdateAction =
+        ShoppingListUpdateActionUtils.buildSetSlugUpdateAction(oldShoppingList, newShoppingList);
 
     assertThat(setSlugUpdateAction).isNotNull();
     assertThat(setSlugUpdateAction).isNotPresent();
@@ -87,29 +84,32 @@ class ShoppingListUpdateActionUtilsTest {
     final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
     when(newShoppingList.getName()).thenReturn(LocalizedString.of(LOCALE, "newName"));
 
-    final UpdateAction<ShoppingList> changeNameUpdateAction =
-        buildChangeNameUpdateAction(oldShoppingList, newShoppingList).orElse(null);
+    final ShoppingListUpdateAction changeNameUpdateAction =
+        ShoppingListUpdateActionUtils.buildChangeNameUpdateAction(oldShoppingList, newShoppingList)
+            .orElse(null);
 
     assertThat(changeNameUpdateAction).isNotNull();
     assertThat(changeNameUpdateAction.getAction()).isEqualTo("changeName");
-    assertThat(((ChangeName) changeNameUpdateAction).getName())
+    assertThat(((ShoppingListChangeNameAction) changeNameUpdateAction).getName())
         .isEqualTo(LocalizedString.of(LOCALE, "newName"));
   }
 
   @Test
-  void buildChangeNameUpdateAction_WithNullValues_ShouldBuildUpdateAction() {
+  void buildChangeNameUpdateAction_WithEmptyValues_ShouldBuildUpdateAction() {
     final ShoppingList oldShoppingList = mock(ShoppingList.class);
     when(oldShoppingList.getName()).thenReturn(LocalizedString.of(LOCALE, "oldName"));
 
     final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
-    when(newShoppingList.getName()).thenReturn(null);
+    when(newShoppingList.getName()).thenReturn(LocalizedString.ofEnglish(""));
 
-    final UpdateAction<ShoppingList> changeNameUpdateAction =
-        buildChangeNameUpdateAction(oldShoppingList, newShoppingList).orElse(null);
+    final ShoppingListUpdateAction changeNameUpdateAction =
+        ShoppingListUpdateActionUtils.buildChangeNameUpdateAction(oldShoppingList, newShoppingList)
+            .orElse(null);
 
     assertThat(changeNameUpdateAction).isNotNull();
     assertThat(changeNameUpdateAction.getAction()).isEqualTo("changeName");
-    assertThat(((ChangeName) changeNameUpdateAction).getName()).isNull();
+    assertThat(((ShoppingListChangeNameAction) changeNameUpdateAction).getName())
+        .isEqualTo(LocalizedString.ofEnglish(""));
   }
 
   @Test
@@ -120,8 +120,9 @@ class ShoppingListUpdateActionUtilsTest {
     final ShoppingListDraft newShoppingListWithSameName = mock(ShoppingListDraft.class);
     when(newShoppingListWithSameName.getName()).thenReturn(LocalizedString.of(LOCALE, "oldName"));
 
-    final Optional<UpdateAction<ShoppingList>> changeNameUpdateAction =
-        buildChangeNameUpdateAction(oldShoppingList, newShoppingListWithSameName);
+    final Optional<ShoppingListUpdateAction> changeNameUpdateAction =
+        ShoppingListUpdateActionUtils.buildChangeNameUpdateAction(
+            oldShoppingList, newShoppingListWithSameName);
 
     assertThat(changeNameUpdateAction).isNotNull();
     assertThat(changeNameUpdateAction).isNotPresent();
@@ -135,12 +136,14 @@ class ShoppingListUpdateActionUtilsTest {
     final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
     when(newShoppingList.getDescription()).thenReturn(LocalizedString.of(LOCALE, "newDescription"));
 
-    final UpdateAction<ShoppingList> setDescriptionUpdateAction =
-        buildSetDescriptionUpdateAction(oldShoppingList, newShoppingList).orElse(null);
+    final ShoppingListUpdateAction setDescriptionUpdateAction =
+        ShoppingListUpdateActionUtils.buildSetDescriptionUpdateAction(
+                oldShoppingList, newShoppingList)
+            .orElse(null);
 
     assertThat(setDescriptionUpdateAction).isNotNull();
     assertThat(setDescriptionUpdateAction.getAction()).isEqualTo("setDescription");
-    assertThat(((SetDescription) setDescriptionUpdateAction).getDescription())
+    assertThat(((ShoppingListSetDescriptionAction) setDescriptionUpdateAction).getDescription())
         .isEqualTo(LocalizedString.of(LOCALE, "newDescription"));
   }
 
@@ -152,12 +155,15 @@ class ShoppingListUpdateActionUtilsTest {
     final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
     when(newShoppingList.getDescription()).thenReturn(null);
 
-    final UpdateAction<ShoppingList> setDescriptionUpdateAction =
-        buildSetDescriptionUpdateAction(oldShoppingList, newShoppingList).orElse(null);
+    final ShoppingListUpdateAction setDescriptionUpdateAction =
+        ShoppingListUpdateActionUtils.buildSetDescriptionUpdateAction(
+                oldShoppingList, newShoppingList)
+            .orElse(null);
 
     assertThat(setDescriptionUpdateAction).isNotNull();
     assertThat(setDescriptionUpdateAction.getAction()).isEqualTo("setDescription");
-    assertThat(((SetDescription) setDescriptionUpdateAction).getDescription()).isEqualTo(null);
+    assertThat(((ShoppingListSetDescriptionAction) setDescriptionUpdateAction).getDescription())
+        .isEqualTo(null);
   }
 
   @Test
@@ -168,8 +174,9 @@ class ShoppingListUpdateActionUtilsTest {
     final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
     when(newShoppingList.getDescription()).thenReturn(LocalizedString.of(LOCALE, "oldDescription"));
 
-    final Optional<UpdateAction<ShoppingList>> setDescriptionUpdateAction =
-        buildSetDescriptionUpdateAction(oldShoppingList, newShoppingList);
+    final Optional<ShoppingListUpdateAction> setDescriptionUpdateAction =
+        ShoppingListUpdateActionUtils.buildSetDescriptionUpdateAction(
+            oldShoppingList, newShoppingList);
 
     assertThat(setDescriptionUpdateAction).isNotNull();
     assertThat(setDescriptionUpdateAction).isNotPresent();
@@ -178,39 +185,42 @@ class ShoppingListUpdateActionUtilsTest {
   @Test
   void buildSetCustomerUpdateAction_WithDifferentReference_ShouldBuildUpdateAction() {
     final String customerId = UUID.randomUUID().toString();
-    final Reference<Customer> customerReference =
-        Reference.of(Customer.referenceTypeId(), customerId);
+    final CustomerReference customerReference =
+        CustomerReferenceBuilder.of().id(customerId).build();
     final ShoppingList oldShoppingList = mock(ShoppingList.class);
     when(oldShoppingList.getCustomer()).thenReturn(customerReference);
 
     final String resolvedCustomerId = UUID.randomUUID().toString();
-    final Reference<Customer> newCustomerReference =
-        Reference.of(Customer.referenceTypeId(), resolvedCustomerId);
+    final CustomerResourceIdentifier newCustomerReference =
+        CustomerResourceIdentifierBuilder.of().id(resolvedCustomerId).build();
     final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
     when(newShoppingList.getCustomer()).thenReturn(newCustomerReference);
 
-    final Optional<UpdateAction<ShoppingList>> setCustomerUpdateAction =
-        buildSetCustomerUpdateAction(oldShoppingList, newShoppingList);
+    final Optional<ShoppingListUpdateAction> setCustomerUpdateAction =
+        ShoppingListUpdateActionUtils.buildSetCustomerUpdateAction(
+            oldShoppingList, newShoppingList);
 
     assertThat(setCustomerUpdateAction).isNotEmpty();
-    assertThat(setCustomerUpdateAction).containsInstanceOf(SetCustomer.class);
-    assertThat(((SetCustomer) setCustomerUpdateAction.get()).getCustomer())
-        .isEqualTo(Reference.of(Customer.referenceTypeId(), resolvedCustomerId));
+    assertThat(setCustomerUpdateAction).containsInstanceOf(ShoppingListSetCustomerAction.class);
+    assertThat(((ShoppingListSetCustomerAction) setCustomerUpdateAction.get()).getCustomer())
+        .isEqualTo(CustomerResourceIdentifierBuilder.of().id(resolvedCustomerId).build());
   }
 
   @Test
   void buildSetCustomerUpdateAction_WithSameReference_ShouldNotBuildUpdateAction() {
     final String customerId = UUID.randomUUID().toString();
-    final Reference<Customer> customerReference =
-        Reference.of(Customer.referenceTypeId(), customerId);
+    final CustomerReference customerReference =
+        CustomerReferenceBuilder.of().id(customerId).build();
     final ShoppingList oldShoppingList = mock(ShoppingList.class);
     when(oldShoppingList.getCustomer()).thenReturn(customerReference);
 
     final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
-    when(newShoppingList.getCustomer()).thenReturn(ResourceIdentifier.ofId(customerId));
+    when(newShoppingList.getCustomer())
+        .thenReturn(CustomerResourceIdentifierBuilder.of().id(customerId).build());
 
-    final Optional<UpdateAction<ShoppingList>> setCustomerUpdateAction =
-        buildSetCustomerUpdateAction(oldShoppingList, newShoppingList);
+    final Optional<ShoppingListUpdateAction> setCustomerUpdateAction =
+        ShoppingListUpdateActionUtils.buildSetCustomerUpdateAction(
+            oldShoppingList, newShoppingList);
 
     assertThat(setCustomerUpdateAction).isEmpty();
   }
@@ -221,36 +231,40 @@ class ShoppingListUpdateActionUtilsTest {
 
     final String newCustomerId = UUID.randomUUID().toString();
     final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
-    when(newShoppingList.getCustomer()).thenReturn(ResourceIdentifier.ofId(newCustomerId));
+    when(newShoppingList.getCustomer())
+        .thenReturn(CustomerResourceIdentifierBuilder.of().id(newCustomerId).build());
 
-    final Optional<UpdateAction<ShoppingList>> setCustomerUpdateAction =
-        buildSetCustomerUpdateAction(oldShoppingList, newShoppingList);
+    final Optional<ShoppingListUpdateAction> setCustomerUpdateAction =
+        ShoppingListUpdateActionUtils.buildSetCustomerUpdateAction(
+            oldShoppingList, newShoppingList);
 
     assertThat(setCustomerUpdateAction).isNotEmpty();
-    assertThat(setCustomerUpdateAction).containsInstanceOf(SetCustomer.class);
-    assertThat(((SetCustomer) setCustomerUpdateAction.get()).getCustomer())
-        .isEqualTo(ResourceIdentifier.ofId(newCustomerId));
+    assertThat(setCustomerUpdateAction).containsInstanceOf(ShoppingListSetCustomerAction.class);
+    assertThat(((ShoppingListSetCustomerAction) setCustomerUpdateAction.get()).getCustomer())
+        .isEqualTo(CustomerResourceIdentifierBuilder.of().id(newCustomerId).build());
   }
 
   @Test
   void buildSetCustomerUpdateAction_WithoutNewReference_ShouldReturnUnsetAction() {
     final String customerId = UUID.randomUUID().toString();
-    final Reference<Customer> customerReference =
-        Reference.of(Customer.referenceTypeId(), customerId);
+    final CustomerReference customerReference =
+        CustomerReferenceBuilder.of().id(customerId).build();
     final ShoppingList oldShoppingList = mock(ShoppingList.class);
     when(oldShoppingList.getCustomer()).thenReturn(customerReference);
 
     final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
     when(newShoppingList.getCustomer()).thenReturn(null);
 
-    final Optional<UpdateAction<ShoppingList>> setCustomerUpdateAction =
-        buildSetCustomerUpdateAction(oldShoppingList, newShoppingList);
+    final Optional<ShoppingListUpdateAction> setCustomerUpdateAction =
+        ShoppingListUpdateActionUtils.buildSetCustomerUpdateAction(
+            oldShoppingList, newShoppingList);
 
     assertThat(setCustomerUpdateAction).isNotEmpty();
-    assertThat(setCustomerUpdateAction).containsInstanceOf(SetCustomer.class);
+    assertThat(setCustomerUpdateAction).containsInstanceOf(ShoppingListSetCustomerAction.class);
     // Note: If the old value is set, but the new one is empty - the command will unset the
     // customer.
-    assertThat(((SetCustomer) setCustomerUpdateAction.get()).getCustomer()).isNull();
+    assertThat(((ShoppingListSetCustomerAction) setCustomerUpdateAction.get()).getCustomer())
+        .isNull();
   }
 
   @Test
@@ -261,11 +275,13 @@ class ShoppingListUpdateActionUtilsTest {
     final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
     when(newShoppingList.getAnonymousId()).thenReturn("567");
 
-    final Optional<UpdateAction<ShoppingList>> setAnonymousIdUpdateAction =
-        buildSetAnonymousIdUpdateAction(oldShoppingList, newShoppingList);
+    final Optional<ShoppingListUpdateAction> setAnonymousIdUpdateAction =
+        ShoppingListUpdateActionUtils.buildSetAnonymousIdUpdateAction(
+            oldShoppingList, newShoppingList);
 
     assertThat(setAnonymousIdUpdateAction).isNotNull();
-    assertThat(setAnonymousIdUpdateAction).containsInstanceOf(SetAnonymousId.class);
+    assertThat(setAnonymousIdUpdateAction)
+        .containsInstanceOf(ShoppingListSetAnonymousIdAction.class);
   }
 
   @Test
@@ -276,11 +292,13 @@ class ShoppingListUpdateActionUtilsTest {
     final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
     when(newShoppingList.getAnonymousId()).thenReturn(null);
 
-    final Optional<UpdateAction<ShoppingList>> setAnonymousIdUpdateAction =
-        buildSetAnonymousIdUpdateAction(oldShoppingList, newShoppingList);
+    final Optional<ShoppingListUpdateAction> setAnonymousIdUpdateAction =
+        ShoppingListUpdateActionUtils.buildSetAnonymousIdUpdateAction(
+            oldShoppingList, newShoppingList);
 
     assertThat(setAnonymousIdUpdateAction).isNotNull();
-    assertThat(setAnonymousIdUpdateAction).containsInstanceOf(SetAnonymousId.class);
+    assertThat(setAnonymousIdUpdateAction)
+        .containsInstanceOf(ShoppingListSetAnonymousIdAction.class);
   }
 
   @Test
@@ -291,8 +309,9 @@ class ShoppingListUpdateActionUtilsTest {
     final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
     when(newShoppingList.getAnonymousId()).thenReturn("123");
 
-    final Optional<UpdateAction<ShoppingList>> setAnonymousIdUpdateAction =
-        buildSetAnonymousIdUpdateAction(oldShoppingList, newShoppingList);
+    final Optional<ShoppingListUpdateAction> setAnonymousIdUpdateAction =
+        ShoppingListUpdateActionUtils.buildSetAnonymousIdUpdateAction(
+            oldShoppingList, newShoppingList);
 
     assertThat(setAnonymousIdUpdateAction).isEmpty();
   }
@@ -301,33 +320,35 @@ class ShoppingListUpdateActionUtilsTest {
   void
       buildSetDeleteDaysAfterLastModificationUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
     final ShoppingList oldShoppingList = mock(ShoppingList.class);
-    when(oldShoppingList.getDeleteDaysAfterLastModification()).thenReturn(50);
+    when(oldShoppingList.getDeleteDaysAfterLastModification()).thenReturn(50L);
 
     final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
-    when(newShoppingList.getDeleteDaysAfterLastModification()).thenReturn(70);
+    when(newShoppingList.getDeleteDaysAfterLastModification()).thenReturn(70L);
 
-    final Optional<UpdateAction<ShoppingList>> setDeleteDaysUpdateAction =
-        buildSetDeleteDaysAfterLastModificationUpdateAction(oldShoppingList, newShoppingList);
+    final Optional<ShoppingListUpdateAction> setDeleteDaysUpdateAction =
+        ShoppingListUpdateActionUtils.buildSetDeleteDaysAfterLastModificationUpdateAction(
+            oldShoppingList, newShoppingList);
 
     assertThat(setDeleteDaysUpdateAction).isNotNull();
     assertThat(setDeleteDaysUpdateAction)
-        .containsInstanceOf(SetDeleteDaysAfterLastModification.class);
+        .containsInstanceOf(ShoppingListSetDeleteDaysAfterLastModificationAction.class);
   }
 
   @Test
   void
       buildSetDeleteDaysAfterLastModificationUpdateAction_WithNullValues_ShouldBuildUpdateAction() {
     final ShoppingList oldShoppingList = mock(ShoppingList.class);
-    when(oldShoppingList.getDeleteDaysAfterLastModification()).thenReturn(50);
+    when(oldShoppingList.getDeleteDaysAfterLastModification()).thenReturn(50L);
 
     final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
     when(newShoppingList.getDeleteDaysAfterLastModification()).thenReturn(null);
 
-    final Optional<UpdateAction<ShoppingList>> setDeleteDaysUpdateAction =
-        buildSetDeleteDaysAfterLastModificationUpdateAction(oldShoppingList, newShoppingList);
+    final Optional<ShoppingListUpdateAction> setDeleteDaysUpdateAction =
+        ShoppingListUpdateActionUtils.buildSetDeleteDaysAfterLastModificationUpdateAction(
+            oldShoppingList, newShoppingList);
 
     assertThat(setDeleteDaysUpdateAction).isNotNull();
     assertThat(setDeleteDaysUpdateAction)
-        .containsInstanceOf(SetDeleteDaysAfterLastModification.class);
+        .containsInstanceOf(ShoppingListSetDeleteDaysAfterLastModificationAction.class);
   }
 }

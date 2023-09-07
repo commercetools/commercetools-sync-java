@@ -1,18 +1,16 @@
 package com.commercetools.sync.states.helpers;
 
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_REFERENCE;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import com.commercetools.api.models.state.StateDraft;
+import com.commercetools.api.models.state.StateResourceIdentifier;
 import com.commercetools.sync.commons.exceptions.InvalidReferenceException;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.helpers.BaseBatchValidator;
 import com.commercetools.sync.states.StateSyncOptions;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.states.StateDraft;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -39,10 +37,11 @@ public class StateBatchValidator
   }
 
   /**
-   * Given the {@link List}&lt;{@link StateDraft}&gt; of drafts this method attempts to validate
-   * drafts and collect referenced keys from the draft and return an {@link ImmutablePair}&lt;{@link
-   * Set}&lt;{@link StateDraft}&gt; ,{@link Set}&lt;{@link String}&gt;&gt; which contains the {@link
-   * Set} of valid drafts and referenced state transition keys.
+   * Given the {@link java.util.List}&lt;{@link StateDraft}&gt; of drafts this method attempts to
+   * validate drafts and collect referenced keys from the draft and return an {@link
+   * org.apache.commons.lang3.tuple.ImmutablePair}&lt;{@link java.util.Set}&lt;{@link
+   * StateDraft}&gt; ,{@link java.util.Set}&lt;{@link String}&gt;&gt; which contains the {@link
+   * java.util.Set} of valid drafts and referenced state transition keys.
    *
    * <p>A valid state draft is one which satisfies the following conditions:
    *
@@ -54,9 +53,9 @@ public class StateBatchValidator
    * </ol>
    *
    * @param stateDrafts the state drafts to validate and collect referenced state transition keys.
-   * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@link ProductTypeDraft}&gt;, {@link
-   *     Set}&lt;{@link String}&gt;&gt; which contains the {@link Set} of valid drafts and
-   *     referenced product type keys.
+   * @return {@link org.apache.commons.lang3.tuple.ImmutablePair}&lt;{@link java.util.Set}&lt;{@link
+   *     StateDraft}&gt;, {@link java.util.Set}&lt;{@link String}&gt;&gt; which contains the {@link
+   *     java.util.Set} of valid drafts and referenced product type keys.
    */
   @Override
   public ImmutablePair<Set<StateDraft>, Set<String>> validateAndCollectReferencedKeys(
@@ -78,7 +77,19 @@ public class StateBatchValidator
     if (stateDraft == null) {
       handleError(STATE_DRAFT_IS_NULL);
     } else if (isBlank(stateDraft.getKey())) {
-      handleError(format(STATE_DRAFT_KEY_NOT_SET, stateDraft.getName()));
+      handleError(
+          format(
+              STATE_DRAFT_KEY_NOT_SET,
+              stateDraft.getName() == null
+                  ? null
+                  : stateDraft.getName().stream()
+                      .map(
+                          localizedStringEntry ->
+                              format(
+                                  "LocalizedString(%s -> %s)",
+                                  localizedStringEntry.getLocale(),
+                                  localizedStringEntry.getValue()))
+                      .collect(Collectors.joining())));
     } else {
       try {
         final Set<String> referencesStateKeys = getTransitionKeys(stateDraft);
@@ -96,14 +107,14 @@ public class StateBatchValidator
   private static Set<String> getTransitionKeys(@Nonnull final StateDraft stateDraft)
       throws SyncException {
 
-    final Set<Reference<State>> transitions = stateDraft.getTransitions();
+    final List<StateResourceIdentifier> transitions = stateDraft.getTransitions();
     if (transitions == null || transitions.isEmpty()) {
       return emptySet();
     }
 
     final Set<String> referencedStateKeys = new HashSet<>();
-    final List<Reference<State>> invalidStates = new ArrayList<>();
-    for (Reference<State> transition : transitions) {
+    final List<StateResourceIdentifier> invalidStates = new ArrayList<>();
+    for (StateResourceIdentifier transition : transitions) {
       if (transition != null) {
         try {
           referencedStateKeys.add(getStateKey(transition));
@@ -116,18 +127,18 @@ public class StateBatchValidator
     if (!invalidStates.isEmpty()) {
       final String errorMessage = format(STATE_HAS_INVALID_REFERENCES, stateDraft.getKey());
       throw new SyncException(
-          errorMessage, new InvalidReferenceException(BLANK_ID_VALUE_ON_REFERENCE));
+          errorMessage, new InvalidReferenceException(BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
     return referencedStateKeys;
   }
 
   @Nonnull
-  private static String getStateKey(@Nonnull final Reference<State> stateReference)
+  private static String getStateKey(@Nonnull final StateResourceIdentifier stateResourceIdentifier)
       throws InvalidReferenceException {
 
-    final String key = stateReference.getId();
+    final String key = stateResourceIdentifier.getKey();
     if (isBlank(key)) {
-      throw new InvalidReferenceException(BLANK_ID_VALUE_ON_REFERENCE);
+      throw new InvalidReferenceException(BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER);
     }
     return key;
   }

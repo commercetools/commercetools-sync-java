@@ -1,17 +1,32 @@
 package com.commercetools.sync.integration.ctpprojectsource.products;
 
+import static com.commercetools.api.models.common.DefaultCurrencyUnits.EUR;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.createPriceDraft;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.neovisionaries.i18n.CountryCode.DE;
-import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.common.Price;
+import com.commercetools.api.models.common.PriceDraft;
+import com.commercetools.api.models.common.PriceDraftBuilder;
+import com.commercetools.api.models.common.PriceTier;
+import com.commercetools.api.models.common.PriceTierDraft;
+import com.commercetools.api.models.common.PriceTierDraftBuilder;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductDraftBuilder;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductProjectionPagedQueryResponse;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.product_type.ProductTypeDraft;
+import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
+import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.products.ProductSync;
@@ -19,26 +34,7 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.products.utils.ProductTransformUtils;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.products.Price;
-import io.sphere.sdk.products.PriceDraft;
-import io.sphere.sdk.products.PriceDraftBuilder;
-import io.sphere.sdk.products.PriceTier;
-import io.sphere.sdk.products.PriceTierBuilder;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.ProductProjectionType;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.ProductVariantDraftBuilder;
-import io.sphere.sdk.products.commands.ProductCreateCommand;
-import io.sphere.sdk.products.queries.ProductProjectionByKeyGet;
-import io.sphere.sdk.products.queries.ProductProjectionQuery;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
-import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
-import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
-import io.sphere.sdk.utils.MoneyImpl;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +47,6 @@ import org.junit.jupiter.api.Test;
 class ProductSyncWithPricesIT {
 
   private static final String RESOURCE_KEY = "foo";
-  private static ProductProjectionQuery productQuery;
 
   private ProductSync productSync;
   private List<String> errorCallBackMessages;
@@ -96,9 +91,14 @@ class ProductSyncWithPricesIT {
   void sync_withNewProductWithPriceTiers_shouldCreateProduct() {
 
     createProductType(CTP_TARGET_CLIENT);
-    final PriceTier priceTier = PriceTierBuilder.of(2, MoneyImpl.of(BigDecimal.TEN, EUR)).build();
+    final PriceTierDraft priceDraftTier =
+        PriceTierDraftBuilder.of()
+            .value(moneyBuilder -> moneyBuilder.centAmount(10L).currencyCode(EUR.getCurrencyCode()))
+            .minimumQuantity(2L)
+            .build();
 
-    final List<ProductProjection> products = prepareDataWithPriceTier(priceTier, CTP_SOURCE_CLIENT);
+    final List<ProductProjection> products =
+        prepareDataWithPriceTier(priceDraftTier, CTP_SOURCE_CLIENT);
 
     final List<ProductDraft> productDrafts =
         ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
@@ -109,19 +109,25 @@ class ProductSyncWithPricesIT {
         productSync.sync(productDrafts).toCompletableFuture().join();
 
     // assertion
-    AssertionsForStatistics.assertThat(syncStatistics).hasValues(1, 1, 0, 0);
-    assertProductsWithPriceTier(priceTier);
+    assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+    assertProductsWithPriceTier(priceDraftTier);
   }
 
   @Test
   void sync_withMatchingProductWithPriceTierChanges_shouldUpdateProduct() {
 
-    final PriceTier targetPriceTier =
-        PriceTierBuilder.of(3, MoneyImpl.of(BigDecimal.ONE, EUR)).build();
+    final PriceTierDraft targetPriceTier =
+        PriceTierDraftBuilder.of()
+            .minimumQuantity(3L)
+            .value(moneyBuilder -> moneyBuilder.currencyCode(EUR.getCurrencyCode()).centAmount(1L))
+            .build();
     prepareDataWithPriceTier(targetPriceTier, CTP_TARGET_CLIENT);
 
-    final PriceTier sourcePriceTier =
-        PriceTierBuilder.of(2, MoneyImpl.of(BigDecimal.TEN, EUR)).build();
+    final PriceTierDraft sourcePriceTier =
+        PriceTierDraftBuilder.of()
+            .minimumQuantity(2L)
+            .value(moneyBuilder -> moneyBuilder.centAmount(10L).currencyCode(EUR.getCurrencyCode()))
+            .build();
 
     final List<ProductProjection> products =
         prepareDataWithPriceTier(sourcePriceTier, CTP_SOURCE_CLIENT);
@@ -135,13 +141,13 @@ class ProductSyncWithPricesIT {
         productSync.sync(productDrafts).toCompletableFuture().join();
 
     // assertion
-    AssertionsForStatistics.assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+    assertThat(syncStatistics).hasValues(1, 0, 1, 0);
     assertProductsWithPriceTier(sourcePriceTier);
   }
 
   @Nonnull
   private List<ProductProjection> prepareDataWithPriceTier(
-      @Nonnull final PriceTier priceTier, @Nonnull final SphereClient client) {
+      @Nonnull final PriceTierDraft priceTierDraft, @Nonnull final ProjectApiRoot client) {
     final ProductType productType = createProductType(client);
 
     final PriceDraft priceBuilder =
@@ -156,37 +162,52 @@ class ProductSyncWithPricesIT {
                     null,
                     null,
                     null,
-                    asList(priceTier)))
+                    List.of(priceTierDraft)))
             .build();
 
     final ProductVariantDraft variantDraft1 =
         ProductVariantDraftBuilder.of().key("variantKey").sku("sku1").prices(priceBuilder).build();
 
     final ProductDraft productDraft =
-        ProductDraftBuilder.of(
-                productType, ofEnglish("V-neck Tee"), ofEnglish("v-neck-tee"), variantDraft1)
-            .productType(ProductType.referenceOfId(productType.getId()))
+        ProductDraftBuilder.of()
+            .productType(productType.toResourceIdentifier())
+            .name(ofEnglish("V-neck Tee"))
+            .slug(ofEnglish("v-neck-tee"))
+            .masterVariant(variantDraft1)
+            .productType(ProductTypeResourceIdentifierBuilder.of().id(productType.getId()).build())
             .key(RESOURCE_KEY)
             .publish(true)
             .build();
 
-    client.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
-    productQuery = ProductProjectionQuery.ofStaged();
-    return client.execute(productQuery).toCompletableFuture().join().getResults();
+    client.products().create(productDraft).executeBlocking();
+    return client
+        .productProjections()
+        .get()
+        .withStaged(true)
+        .execute()
+        .thenApply(ApiHttpResponse::getBody)
+        .thenApply(ProductProjectionPagedQueryResponse::getResults)
+        .join();
   }
 
   @Nonnull
-  private ProductType createProductType(@Nonnull final SphereClient client) {
+  private ProductType createProductType(@Nonnull final ProjectApiRoot client) {
     final ProductTypeDraft productTypeDraft =
-        ProductTypeDraftBuilder.of(
-                RESOURCE_KEY, "sample-product-type", "a productType for t-shirts", emptyList())
+        ProductTypeDraftBuilder.of()
+            .key(RESOURCE_KEY)
+            .name("sample-product-type")
+            .description("a productType for t-shirts")
+            .attributes(List.of())
             .build();
-    final ProductType productType =
-        client.execute(ProductTypeCreateCommand.of(productTypeDraft)).toCompletableFuture().join();
-    return productType;
+    return client
+        .productTypes()
+        .create(productTypeDraft)
+        .execute()
+        .thenApply(ApiHttpResponse::getBody)
+        .join();
   }
 
-  private void assertProductsWithPriceTier(PriceTier sourcePriceTier) {
+  private void assertProductsWithPriceTier(PriceTierDraft sourcePriceTier) {
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
@@ -194,8 +215,12 @@ class ProductSyncWithPricesIT {
     // Assert that the target product was created/updated with sourcePriceTiers.
     final ProductProjection productProjection =
         CTP_TARGET_CLIENT
-            .execute(ProductProjectionByKeyGet.of(RESOURCE_KEY, ProductProjectionType.STAGED))
-            .toCompletableFuture()
+            .productProjections()
+            .withKey(RESOURCE_KEY)
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .join();
 
     assertThat(productProjection).isNotNull();
@@ -204,7 +229,13 @@ class ProductSyncWithPricesIT {
         .anySatisfy(
             price -> {
               assertThat(price.getTiers()).isNotNull();
-              assertThat(price.getTiers().get(0)).isEqualTo(sourcePriceTier);
+              final PriceTier priceTier = price.getTiers().get(0);
+              assertThat(priceTier.getMinimumQuantity())
+                  .isEqualTo(sourcePriceTier.getMinimumQuantity());
+              assertThat(priceTier.getValue().getCurrencyCode())
+                  .isEqualTo(sourcePriceTier.getValue().getCurrencyCode());
+              assertThat(priceTier.getValue().getCentAmount())
+                  .isEqualTo(sourcePriceTier.getValue().getCentAmount());
             });
   }
 }

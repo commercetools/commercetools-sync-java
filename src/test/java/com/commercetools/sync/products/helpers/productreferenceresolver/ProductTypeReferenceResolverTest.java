@@ -1,37 +1,27 @@
 package com.commercetools.sync.products.helpers.productreferenceresolver;
 
-import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithProductTypeRefKey;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithRandomProductType;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomObjectService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockStateService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockTaxCategoryService;
-import static com.commercetools.sync.products.helpers.ProductReferenceResolver.FAILED_TO_RESOLVE_REFERENCE;
-import static com.commercetools.sync.products.helpers.ProductReferenceResolver.PRODUCT_TYPE_DOES_NOT_EXIST;
-import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.client.error.ConcurrentModificationException;
+import com.commercetools.api.models.product.ProductDraftBuilder;
+import com.commercetools.api.models.product_type.ProductTypeReference;
+import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
+import com.commercetools.sync.commons.ExceptionUtils;
+import com.commercetools.sync.commons.MockUtils;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
+import com.commercetools.sync.inventories.InventorySyncMockUtils;
+import com.commercetools.sync.products.ProductSyncMockUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductTypeService;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.models.SphereException;
-import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.producttypes.ProductType;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -39,6 +29,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class ProductTypeReferenceResolverTest {
   private static final String CHANNEL_KEY = "channel-key_1";
@@ -56,27 +47,29 @@ class ProductTypeReferenceResolverTest {
   /** Sets up the services and the options needed for reference resolution. */
   @BeforeEach
   void setup() {
-    productTypeService = getMockProductTypeService(PRODUCT_TYPE_ID);
+    productTypeService = ProductSyncMockUtils.getMockProductTypeService(PRODUCT_TYPE_ID);
     final ProductSyncOptions syncOptions =
-        ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
     referenceResolver =
         new ProductReferenceResolver(
             syncOptions,
             productTypeService,
-            mock(CategoryService.class),
-            getMockTypeService(),
-            getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
-            mock(CustomerGroupService.class),
-            getMockTaxCategoryService(TAX_CATEGORY_ID),
-            getMockStateService(STATE_ID),
-            getMockProductService(PRODUCT_ID),
-            getMockCustomObjectService(CUSTOM_OBJECT_ID),
-            getMockCustomerService(CUSTOMER_ID));
+            Mockito.mock(CategoryService.class),
+            MockUtils.getMockTypeService(),
+            InventorySyncMockUtils.getMockChannelService(
+                InventorySyncMockUtils.getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
+            Mockito.mock(CustomerGroupService.class),
+            ProductSyncMockUtils.getMockTaxCategoryService(TAX_CATEGORY_ID),
+            ProductSyncMockUtils.getMockStateService(STATE_ID),
+            ProductSyncMockUtils.getMockProductService(PRODUCT_ID),
+            ProductSyncMockUtils.getMockCustomObjectService(CUSTOM_OBJECT_ID),
+            ProductSyncMockUtils.getMockCustomerService(CUSTOMER_ID));
   }
 
   @Test
   void resolveProductTypeReference_WithKeys_ShouldResolveReference() {
-    final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRefKey("productTypeKey");
+    final ProductDraftBuilder productBuilder =
+        ProductSyncMockUtils.getBuilderWithProductTypeRefKey("productTypeKey");
 
     final ProductDraftBuilder resolvedDraft =
         referenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture().join();
@@ -88,17 +81,17 @@ class ProductTypeReferenceResolverTest {
   @Test
   void resolveProductTypeReference_WithNonExistentProductType_ShouldNotResolveReference() {
     final ProductDraftBuilder productBuilder =
-        getBuilderWithProductTypeRefKey("anyKey").key("dummyKey");
+        ProductSyncMockUtils.getBuilderWithProductTypeRefKey("anyKey").key("dummyKey");
 
     when(productTypeService.fetchCachedProductTypeId(anyString()))
         .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
     final String expectedMessageWithCause =
-        format(
-            FAILED_TO_RESOLVE_REFERENCE,
-            ProductType.resourceTypeId(),
+        String.format(
+            ProductReferenceResolver.FAILED_TO_RESOLVE_REFERENCE,
+            ProductTypeReference.PRODUCT_TYPE,
             "dummyKey",
-            format(PRODUCT_TYPE_DOES_NOT_EXIST, "anyKey"));
+            String.format(ProductReferenceResolver.PRODUCT_TYPE_DOES_NOT_EXIST, "anyKey"));
 
     referenceResolver
         .resolveProductTypeReference(productBuilder)
@@ -115,61 +108,63 @@ class ProductTypeReferenceResolverTest {
   @Test
   void resolveProductTypeReference_WithNullKeyOnProductTypeReference_ShouldNotResolveReference() {
     final ProductDraftBuilder productBuilder =
-        getBuilderWithProductTypeRefKey(null).key("dummyKey");
+        ProductSyncMockUtils.getBuilderWithProductTypeRefKey(null).key("dummyKey");
 
     assertThat(referenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
         .failsWithin(1, TimeUnit.SECONDS)
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
         .withMessageContaining(
-            format(
+            String.format(
                 "Failed to resolve '%s' resource identifier on ProductDraft"
                     + " with key:'%s'. Reason: %s",
-                ProductType.referenceTypeId(),
+                ProductTypeReference.PRODUCT_TYPE,
                 productBuilder.getKey(),
-                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
   }
 
   @Test
   void resolveProductTypeReference_WithEmptyKeyOnProductTypeReference_ShouldNotResolveReference() {
-    final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRefKey("").key("dummyKey");
+    final ProductDraftBuilder productBuilder =
+        ProductSyncMockUtils.getBuilderWithProductTypeRefKey("").key("dummyKey");
 
     assertThat(referenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
         .failsWithin(1, TimeUnit.SECONDS)
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
         .withMessageContaining(
-            format(
+            String.format(
                 "Failed to resolve '%s' resource identifier on ProductDraft"
                     + " with key:'%s'. Reason: %s",
-                ProductType.referenceTypeId(),
+                ProductTypeReference.PRODUCT_TYPE,
                 productBuilder.getKey(),
-                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
   }
 
   @Test
   void resolveProductTypeReference_WithExceptionOnProductTypeFetch_ShouldNotResolveReference() {
     final ProductDraftBuilder productBuilder =
-        getBuilderWithProductTypeRefKey("anyKey").key("dummyKey");
+        ProductSyncMockUtils.getBuilderWithProductTypeRefKey("anyKey").key("dummyKey");
 
     final CompletableFuture<Optional<String>> futureThrowingSphereException =
         new CompletableFuture<>();
-    futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
+    futureThrowingSphereException.completeExceptionally(
+        ExceptionUtils.createConcurrentModificationException("CTP error on fetch"));
     when(productTypeService.fetchCachedProductTypeId(anyString()))
         .thenReturn(futureThrowingSphereException);
 
     assertThat(referenceResolver.resolveProductTypeReference(productBuilder))
         .failsWithin(1, TimeUnit.SECONDS)
         .withThrowableOfType(ExecutionException.class)
-        .withCauseExactlyInstanceOf(SphereException.class)
+        .withCauseExactlyInstanceOf(ConcurrentModificationException.class)
         .withMessageContaining("CTP error on fetch");
   }
 
   @Test
   void resolveProductTypeReference_WithIdOnProductTypeReference_ShouldNotResolveReference() {
     final ProductDraftBuilder productBuilder =
-        getBuilderWithRandomProductType()
-            .productType(ResourceIdentifier.ofId("existing-id"))
+        ProductSyncMockUtils.getBuilderWithRandomProductType()
+            .productType(ProductTypeResourceIdentifierBuilder.of().id("existing-id").build())
             .key("dummyKey");
 
     assertThat(referenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())

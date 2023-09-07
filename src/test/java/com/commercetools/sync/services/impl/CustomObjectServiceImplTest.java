@@ -1,30 +1,31 @@
 package com.commercetools.sync.services.impl;
 
-import static io.sphere.sdk.customobjects.CustomObjectUtils.getCustomObjectJavaTypeForValue;
-import static io.sphere.sdk.json.SphereJsonUtils.convertToJavaType;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import com.commercetools.api.client.ByProjectKeyCustomObjectsByContainerByKeyGet;
+import com.commercetools.api.client.ByProjectKeyCustomObjectsGet;
+import com.commercetools.api.client.ByProjectKeyCustomObjectsPost;
+import com.commercetools.api.client.ByProjectKeyCustomObjectsRequestBuilder;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.client.error.ConcurrentModificationException;
+import com.commercetools.api.models.custom_object.CustomObject;
+import com.commercetools.api.models.custom_object.CustomObjectDraft;
+import com.commercetools.api.models.custom_object.CustomObjectDraftBuilder;
+import com.commercetools.api.models.custom_object.CustomObjectPagedQueryResponse;
+import com.commercetools.api.models.error.ErrorResponse;
+import com.commercetools.api.models.error.ErrorResponseBuilder;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.sphere.sdk.client.BadRequestException;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.customobjects.CustomObjectDraft;
-import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
-import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
-import io.sphere.sdk.queries.PagedQueryResult;
-import io.sphere.sdk.utils.CompletableFutureUtils;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,22 +44,32 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings("unchecked")
 class CustomObjectServiceImplTest {
 
-  private final SphereClient client = mock(SphereClient.class);
+  private final ProjectApiRoot client = mock(ProjectApiRoot.class);
 
   private CustomObjectServiceImpl service;
 
   private String customObjectId;
   private String customObjectContainer;
   private String customObjectKey;
+  private List<String> errorMessages;
+  private List<Throwable> errorExceptions;
 
   @BeforeEach
   void setup() {
     customObjectId = RandomStringUtils.random(15, true, true);
     customObjectContainer = RandomStringUtils.random(15, true, true);
     customObjectKey = RandomStringUtils.random(15, true, true);
+    errorMessages = new ArrayList<>();
+    errorExceptions = new ArrayList<>();
 
-    CustomObjectSyncOptions customObjectSyncOptions =
-        CustomObjectSyncOptionsBuilder.of(client).build();
+    final CustomObjectSyncOptions customObjectSyncOptions =
+        CustomObjectSyncOptionsBuilder.of(client)
+            .errorCallback(
+                (exception, oldResource, newResource, updateActions) -> {
+                  errorMessages.add(exception.getMessage());
+                  errorExceptions.add(exception.getCause());
+                })
+            .build();
 
     service = new CustomObjectServiceImpl(customObjectSyncOptions);
   }
@@ -67,8 +78,6 @@ class CustomObjectServiceImplTest {
   void cleanup() {
     reset(client);
   }
-
-  private interface CustomObjectPagedQueryResult extends PagedQueryResult<CustomObject> {}
 
   @Test
   void fetchCachedCustomObjectId_WithKeyAndContainer_ShouldFetchCustomObject() {
@@ -81,10 +90,31 @@ class CustomObjectServiceImplTest {
     when(mock.getContainer()).thenReturn(container);
     when(mock.getKey()).thenReturn(key);
 
-    final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
-    when(result.getResults()).thenReturn(Collections.singletonList(mock));
+    final ByProjectKeyCustomObjectsGet byProjectKeyCustomObjectsGet =
+        mock(ByProjectKeyCustomObjectsGet.class);
 
-    when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
+    when(client.customObjects()).thenReturn(mock(ByProjectKeyCustomObjectsRequestBuilder.class));
+    when(client.customObjects().get()).thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withWhere(anyString()))
+        .thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withPredicateVar(anyString(), anyString()))
+        .thenReturn(byProjectKeyCustomObjectsGet, byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withLimit(anyInt())).thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withWithTotal(anyBoolean()))
+        .thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withSort(anyString()))
+        .thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withSort(anyString()))
+        .thenReturn(byProjectKeyCustomObjectsGet);
+
+    final ApiHttpResponse<CustomObjectPagedQueryResponse> apiHttpResponse =
+        mock(ApiHttpResponse.class);
+    final CustomObjectPagedQueryResponse customObjectPagedQueryResponse =
+        mock(CustomObjectPagedQueryResponse.class);
+    when(byProjectKeyCustomObjectsGet.execute())
+        .thenReturn(CompletableFuture.completedFuture(apiHttpResponse));
+    when(apiHttpResponse.getBody()).thenReturn(customObjectPagedQueryResponse);
+    when(customObjectPagedQueryResponse.getResults()).thenReturn(Collections.singletonList(mock));
 
     final Optional<String> fetchedId =
         service
@@ -93,7 +123,7 @@ class CustomObjectServiceImplTest {
             .join();
 
     assertThat(fetchedId).contains(id);
-    verify(client).execute(any(CustomObjectQuery.class));
+    verify(byProjectKeyCustomObjectsGet).execute();
   }
 
   @Test
@@ -117,19 +147,40 @@ class CustomObjectServiceImplTest {
     when(mock2.getKey()).thenReturn(key2);
     when(mock2.getContainer()).thenReturn(container2);
 
-    final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
-    when(result.getResults()).thenReturn(Arrays.asList(mock1, mock2));
+    final ByProjectKeyCustomObjectsGet byProjectKeyCustomObjectsGet =
+        mock(ByProjectKeyCustomObjectsGet.class);
 
-    when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
+    when(client.customObjects()).thenReturn(mock(ByProjectKeyCustomObjectsRequestBuilder.class));
+    when(client.customObjects().get()).thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withWhere(anyString()))
+        .thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withPredicateVar(anyString(), anyString()))
+        .thenReturn(byProjectKeyCustomObjectsGet, byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withLimit(anyInt())).thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withWithTotal(anyBoolean()))
+        .thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withSort(anyString()))
+        .thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withSort(anyString()))
+        .thenReturn(byProjectKeyCustomObjectsGet);
 
-    final Set<CustomObject<JsonNode>> customObjects =
+    final ApiHttpResponse<CustomObjectPagedQueryResponse> apiHttpResponse =
+        mock(ApiHttpResponse.class);
+    final CustomObjectPagedQueryResponse customObjectPagedQueryResponse =
+        mock(CustomObjectPagedQueryResponse.class);
+    when(byProjectKeyCustomObjectsGet.execute())
+        .thenReturn(CompletableFuture.completedFuture(apiHttpResponse));
+    when(apiHttpResponse.getBody()).thenReturn(customObjectPagedQueryResponse);
+    when(customObjectPagedQueryResponse.getResults()).thenReturn(Arrays.asList(mock1, mock2));
+
+    final Set<CustomObject> customObjects =
         service
             .fetchMatchingCustomObjects(customObjectCompositeIdentifiers)
             .toCompletableFuture()
             .join();
 
     List<CustomObjectCompositeIdentifier> customObjectCompositeIdlist =
-        new ArrayList<CustomObjectCompositeIdentifier>(customObjectCompositeIdentifiers);
+        new ArrayList<>(customObjectCompositeIdentifiers);
 
     assertAll(
         () -> assertThat(customObjects).contains(mock1, mock2),
@@ -138,7 +189,7 @@ class CustomObjectServiceImplTest {
                 .containsKeys(
                     String.valueOf(customObjectCompositeIdlist.get(0)),
                     String.valueOf(customObjectCompositeIdlist.get(1))));
-    verify(client).execute(any(CustomObjectQuery.class));
+    verify(byProjectKeyCustomObjectsGet).execute();
   }
 
   @Test
@@ -147,12 +198,21 @@ class CustomObjectServiceImplTest {
     when(mock.getId()).thenReturn(customObjectId);
     when(mock.getKey()).thenReturn(customObjectKey);
     when(mock.getContainer()).thenReturn(customObjectContainer);
-    final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
-    when(result.head()).thenReturn(Optional.of(mock));
+    final ByProjectKeyCustomObjectsByContainerByKeyGet
+        byProjectKeyCustomObjectsByContainerByKeyGet =
+            mock(ByProjectKeyCustomObjectsByContainerByKeyGet.class);
 
-    when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
+    when(client.customObjects()).thenReturn(mock(ByProjectKeyCustomObjectsRequestBuilder.class));
+    when(client.customObjects().withContainerAndKey(anyString(), anyString())).thenReturn(mock());
+    when(client.customObjects().withContainerAndKey(anyString(), anyString()).get())
+        .thenReturn(byProjectKeyCustomObjectsByContainerByKeyGet);
 
-    final Optional<CustomObject<JsonNode>> customObjectOptional =
+    final ApiHttpResponse<CustomObject> apiHttpResponse = mock(ApiHttpResponse.class);
+    when(byProjectKeyCustomObjectsByContainerByKeyGet.execute())
+        .thenReturn(CompletableFuture.completedFuture(apiHttpResponse));
+    when(apiHttpResponse.getBody()).thenReturn(mock);
+
+    final Optional<CustomObject> customObjectOptional =
         service
             .fetchCustomObject(
                 CustomObjectCompositeIdentifier.of(customObjectKey, customObjectContainer))
@@ -171,7 +231,7 @@ class CustomObjectServiceImplTest {
                                     customObjectKey, customObjectContainer)
                                 .toString()))
                 .isEqualTo(customObjectId));
-    verify(client).execute(any(CustomObjectQuery.class));
+    verify(byProjectKeyCustomObjectsByContainerByKeyGet).execute();
   }
 
   @Test
@@ -181,46 +241,83 @@ class CustomObjectServiceImplTest {
     when(mock.getKey()).thenReturn(customObjectKey);
     when(mock.getContainer()).thenReturn(customObjectContainer);
 
-    when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(mock));
+    final ByProjectKeyCustomObjectsPost byProjectKeyCustomObjectsPost =
+        mock(ByProjectKeyCustomObjectsPost.class);
+
+    when(client.customObjects()).thenReturn(mock(ByProjectKeyCustomObjectsRequestBuilder.class));
+    when(client.customObjects().post(any(CustomObjectDraft.class)))
+        .thenReturn(byProjectKeyCustomObjectsPost);
+    final ApiHttpResponse<CustomObject> apiHttpResponse = mock(ApiHttpResponse.class);
+    when(byProjectKeyCustomObjectsPost.execute())
+        .thenReturn(CompletableFuture.completedFuture(apiHttpResponse));
+    when(apiHttpResponse.getBody()).thenReturn(mock);
 
     final ObjectNode customObjectValue = JsonNodeFactory.instance.objectNode();
     customObjectValue.put("currentHash", "1234-5678-0912-3456");
     customObjectValue.put("convertedAmount", "100");
 
-    final CustomObjectDraft<JsonNode> draft =
-        CustomObjectDraft.ofUnversionedUpsert(
-            customObjectContainer, customObjectKey, customObjectValue);
+    final CustomObjectDraft draft =
+        CustomObjectDraftBuilder.of()
+            .container(customObjectContainer)
+            .key(customObjectKey)
+            .value(customObjectValue)
+            .build();
 
-    final Optional<CustomObject<JsonNode>> customObjectOptional =
+    final Optional<CustomObject> customObjectOptional =
         service.upsertCustomObject(draft).toCompletableFuture().join();
 
     assertThat(customObjectOptional).containsSame(mock);
-    verify(client).execute(eq(CustomObjectUpsertCommand.of(draft)));
+    verify(byProjectKeyCustomObjectsPost).execute();
   }
 
   @Test
-  void createCustomObject_WithRequestException_ShouldNotCreateCustomObject() {
+  void createCustomObject_WithRequestException_ShouldNotCreateCustomObject()
+      throws JsonProcessingException {
     final CustomObject mock = mock(CustomObject.class);
     when(mock.getId()).thenReturn(customObjectId);
 
-    when(client.execute(any()))
-        .thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
+    when(client.customObjects()).thenReturn(mock());
 
-    final CustomObjectDraft<JsonNode> draftMock = mock(CustomObjectDraft.class);
+    final ByProjectKeyCustomObjectsPost byProjectKeyCustomObjectsPost =
+        mock(ByProjectKeyCustomObjectsPost.class);
+    when(client.customObjects().post(any(CustomObjectDraft.class)))
+        .thenReturn(byProjectKeyCustomObjectsPost);
+
+    final ApiHttpResponse<Object> apiHttpResponse = mock(ApiHttpResponse.class);
+    when(apiHttpResponse.getBody()).thenReturn(null);
+    final ErrorResponse errorResponse =
+        ErrorResponseBuilder.of()
+            .statusCode(409)
+            .errors(Collections.emptyList())
+            .message("test")
+            .build();
+
+    final ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+    final String json = ow.writeValueAsString(errorResponse);
+    when(byProjectKeyCustomObjectsPost.execute())
+        .thenReturn(
+            CompletableFuture.failedFuture(
+                new ConcurrentModificationException(
+                    409,
+                    "",
+                    null,
+                    "",
+                    new ApiHttpResponse<>(409, null, json.getBytes(StandardCharsets.UTF_8)))));
+
+    final CustomObjectDraft draftMock = mock(CustomObjectDraft.class);
     when(draftMock.getKey()).thenReturn(customObjectKey);
     when(draftMock.getContainer()).thenReturn(customObjectContainer);
-    when(draftMock.getJavaType())
-        .thenReturn(getCustomObjectJavaTypeForValue(convertToJavaType(JsonNode.class)));
 
-    final CompletableFuture<Optional<CustomObject<JsonNode>>> future =
+    final CompletableFuture<Optional<CustomObject>> future =
         service.upsertCustomObject(draftMock).toCompletableFuture();
 
+    // assertion
     assertAll(
         () -> assertThat(future.isCompletedExceptionally()).isTrue(),
         () ->
             assertThat(future)
                 .failsWithin(1, TimeUnit.SECONDS)
                 .withThrowableOfType(ExecutionException.class)
-                .withCauseExactlyInstanceOf(BadRequestException.class));
+                .withCauseExactlyInstanceOf(ConcurrentModificationException.class));
   }
 }

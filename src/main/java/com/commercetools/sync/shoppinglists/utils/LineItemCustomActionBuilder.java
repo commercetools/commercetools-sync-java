@@ -1,44 +1,48 @@
 package com.commercetools.sync.shoppinglists.utils;
 
+import com.commercetools.api.models.shopping_list.ShoppingListSetLineItemCustomFieldActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListSetLineItemCustomTypeActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
 import com.commercetools.sync.commons.helpers.GenericCustomActionBuilder;
-import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetLineItemCustomField;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetLineItemCustomType;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class LineItemCustomActionBuilder implements GenericCustomActionBuilder<ShoppingList> {
+public final class LineItemCustomActionBuilder
+    implements GenericCustomActionBuilder<ShoppingListUpdateAction> {
 
   @Nonnull
   @Override
-  public UpdateAction<ShoppingList> buildRemoveCustomTypeAction(
-      @Nullable final Integer variantId, @Nullable final String lineItemId) {
-
-    return SetLineItemCustomType.ofRemoveType(lineItemId);
+  public ShoppingListUpdateAction buildRemoveCustomTypeAction(
+      @Nullable final Long variantId, @Nullable final String lineItemId) {
+    return ShoppingListSetLineItemCustomTypeActionBuilder.of().lineItemId(lineItemId).build();
   }
 
   @Nonnull
   @Override
-  public UpdateAction<ShoppingList> buildSetCustomTypeAction(
-      @Nullable final Integer variantId,
+  public ShoppingListUpdateAction buildSetCustomTypeAction(
+      @Nullable final Long variantId,
       @Nullable final String lineItemId,
       @Nonnull final String customTypeId,
-      @Nullable final Map<String, JsonNode> customFieldsJsonMap) {
-
-    return SetLineItemCustomType.ofTypeIdAndJson(customTypeId, customFieldsJsonMap, lineItemId);
+      @Nullable final Map<String, Object> customFieldsJsonMap) {
+    return ShoppingListSetLineItemCustomTypeActionBuilder.of()
+        .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.id(customTypeId))
+        .lineItemId(lineItemId)
+        .fields(fieldContainerBuilder -> fieldContainerBuilder.values(customFieldsJsonMap))
+        .build();
   }
 
   @Nonnull
   @Override
-  public UpdateAction<ShoppingList> buildSetCustomFieldAction(
-      @Nullable final Integer variantId,
+  public ShoppingListUpdateAction buildSetCustomFieldAction(
+      @Nullable final Long variantId,
       @Nullable final String lineItemId,
       @Nullable final String customFieldName,
-      @Nullable final JsonNode customFieldValue) {
-
-    return SetLineItemCustomField.ofJson(customFieldName, customFieldValue, lineItemId);
+      @Nullable final Object customFieldValue) {
+    return ShoppingListSetLineItemCustomFieldActionBuilder.of()
+        .name(customFieldName)
+        .value(customFieldValue)
+        .lineItemId(lineItemId)
+        .build();
   }
 }

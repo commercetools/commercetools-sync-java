@@ -1,11 +1,6 @@
 package com.commercetools.sync.producttypes.helpers;
 
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_REFERENCE;
-import static com.commercetools.sync.producttypes.helpers.ProductTypeBatchValidator.PRODUCT_TYPE_DRAFT_IS_NULL;
-import static com.commercetools.sync.producttypes.helpers.ProductTypeBatchValidator.PRODUCT_TYPE_DRAFT_KEY_NOT_SET;
-import static com.commercetools.sync.producttypes.helpers.ProductTypeBatchValidator.PRODUCT_TYPE_HAS_INVALID_REFERENCES;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static java.lang.String.format;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -14,19 +9,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
+import com.commercetools.api.models.product_type.AttributeDefinitionDraftBuilder;
+import com.commercetools.api.models.product_type.AttributeTypeBuilder;
+import com.commercetools.api.models.product_type.ProductTypeDraft;
+import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
 import com.commercetools.sync.commons.exceptions.InvalidReferenceException;
 import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
-import io.sphere.sdk.products.attributes.NestedAttributeType;
-import io.sphere.sdk.products.attributes.SetAttributeType;
-import io.sphere.sdk.products.attributes.StringAttributeType;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
-import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -48,7 +41,7 @@ class ProductTypeBatchValidatorTest {
   void setup() {
     errorCallBackMessages = new ArrayList<>();
     errorCallBackExceptions = new ArrayList<>();
-    final SphereClient ctpClient = mock(SphereClient.class);
+    final ProjectApiRoot ctpClient = mock(ProjectApiRoot.class);
     syncOptions =
         ProductTypeSyncOptionsBuilder.of(ctpClient)
             .errorCallback(
@@ -74,7 +67,8 @@ class ProductTypeBatchValidatorTest {
     final Set<ProductTypeDraft> validDrafts = getValidDrafts(Collections.singletonList(null));
 
     assertThat(errorCallBackMessages).hasSize(1);
-    assertThat(errorCallBackMessages.get(0)).isEqualTo(PRODUCT_TYPE_DRAFT_IS_NULL);
+    assertThat(errorCallBackMessages.get(0))
+        .isEqualTo(ProductTypeBatchValidator.PRODUCT_TYPE_DRAFT_IS_NULL);
     assertThat(validDrafts).isEmpty();
   }
 
@@ -87,7 +81,10 @@ class ProductTypeBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(PRODUCT_TYPE_DRAFT_KEY_NOT_SET, productTypeDraft.getName()));
+        .isEqualTo(
+            String.format(
+                ProductTypeBatchValidator.PRODUCT_TYPE_DRAFT_KEY_NOT_SET,
+                productTypeDraft.getName()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -101,7 +98,10 @@ class ProductTypeBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(PRODUCT_TYPE_DRAFT_KEY_NOT_SET, productTypeDraft.getName()));
+        .isEqualTo(
+            String.format(
+                ProductTypeBatchValidator.PRODUCT_TYPE_DRAFT_KEY_NOT_SET,
+                productTypeDraft.getName()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -109,15 +109,24 @@ class ProductTypeBatchValidatorTest {
   void
       validateAndCollectReferencedKeys_WithADraftWithAValidNestedReference_ShouldNotResultInAnError() {
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(StringAttributeType.of(), "foo", ofEnglish("koko"), true)
+        AttributeDefinitionDraftBuilder.of()
+            .type(AttributeTypeBuilder::textBuilder)
+            .name("foo")
+            .label(ofEnglish("koko"))
+            .isRequired(true)
             .build();
 
     final AttributeDefinitionDraft nestedTypeAttrDefDraft =
-        AttributeDefinitionDraftBuilder.of(
-                NestedAttributeType.of(ProductType.referenceOfId("x")),
-                "nested",
-                ofEnglish("koko"),
-                true)
+        AttributeDefinitionDraftBuilder.of()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .nestedBuilder()
+                        .typeReference(
+                            productTypeReferenceBuilder -> productTypeReferenceBuilder.id("x")))
+            .name("nested")
+            .label(ofEnglish("koko"))
+            .isRequired(true)
             .build();
 
     final List<AttributeDefinitionDraft> attributes = new ArrayList<>();
@@ -126,7 +135,12 @@ class ProductTypeBatchValidatorTest {
     attributes.add(null);
 
     final ProductTypeDraft productTypeDraft =
-        ProductTypeDraftBuilder.of("mainProductType", "foo", "foo", attributes).build();
+        ProductTypeDraftBuilder.of()
+            .key("mainProductType")
+            .name("foo")
+            .description("foo")
+            .attributes(attributes)
+            .build();
 
     final ProductTypeBatchValidator batchValidator =
         new ProductTypeBatchValidator(syncOptions, syncStatistics);
@@ -142,15 +156,24 @@ class ProductTypeBatchValidatorTest {
   void
       validateAndCollectReferencedKeys_WithADraftWithAnInvalidNestedReference_ShouldResultInAnError() {
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(StringAttributeType.of(), "foo", ofEnglish("koko"), true)
+        AttributeDefinitionDraftBuilder.of()
+            .type(AttributeTypeBuilder::textBuilder)
+            .name("foo")
+            .label(ofEnglish("koko"))
+            .isRequired(true)
             .build();
 
     final AttributeDefinitionDraft invalidNestedTypeAttrDefDraft =
-        AttributeDefinitionDraftBuilder.of(
-                NestedAttributeType.of(ProductType.referenceOfId("")),
-                "invalidNested",
-                ofEnglish("koko"),
-                true)
+        AttributeDefinitionDraftBuilder.of()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .nestedBuilder()
+                        .typeReference(
+                            productTypeReferenceBuilder -> productTypeReferenceBuilder.id("")))
+            .name("invalidNested")
+            .label(ofEnglish("koko"))
+            .isRequired(true)
             .build();
 
     final List<AttributeDefinitionDraft> attributes = new ArrayList<>();
@@ -158,7 +181,12 @@ class ProductTypeBatchValidatorTest {
     attributes.add(invalidNestedTypeAttrDefDraft);
 
     final ProductTypeDraft productTypeDraft =
-        ProductTypeDraftBuilder.of("foo", "foo", "foo", attributes).build();
+        ProductTypeDraftBuilder.of()
+            .key("foo")
+            .name("foo")
+            .description("foo")
+            .attributes(attributes)
+            .build();
 
     final ProductTypeBatchValidator batchValidator =
         new ProductTypeBatchValidator(syncOptions, syncStatistics);
@@ -169,7 +197,10 @@ class ProductTypeBatchValidatorTest {
     assertThat(pair.getRight()).isEmpty();
 
     final String expectedExceptionMessage =
-        format(PRODUCT_TYPE_HAS_INVALID_REFERENCES, productTypeDraft.getKey(), "[invalidNested]");
+        String.format(
+            ProductTypeBatchValidator.PRODUCT_TYPE_HAS_INVALID_REFERENCES,
+            productTypeDraft.getKey(),
+            "[invalidNested]");
     assertThat(errorCallBackMessages).containsExactly(expectedExceptionMessage);
     assertThat(errorCallBackExceptions)
         .singleElement()
@@ -178,7 +209,8 @@ class ProductTypeBatchValidatorTest {
               assertThat(throwable).isInstanceOf(SyncException.class);
               assertThat(throwable.getMessage()).isEqualTo(expectedExceptionMessage);
               assertThat(throwable.getCause()).isInstanceOf(InvalidReferenceException.class);
-              assertThat(throwable.getCause().getMessage()).isEqualTo(BLANK_ID_VALUE_ON_REFERENCE);
+              assertThat(throwable.getCause().getMessage())
+                  .isEqualTo(BaseReferenceResolver.BLANK_ID_VALUE_ON_REFERENCE);
               return true;
             });
   }
@@ -187,39 +219,73 @@ class ProductTypeBatchValidatorTest {
   void
       validateAndCollectReferencedKeys_WithADraftWithMultipleInvalidNestedReferences_ShouldResultInAnError() {
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(StringAttributeType.of(), "foo", ofEnglish("koko"), true)
+        AttributeDefinitionDraftBuilder.of()
+            .type(AttributeTypeBuilder::textBuilder)
+            .name("foo")
+            .label(ofEnglish("koko"))
+            .isRequired(true)
             .build();
 
     final AttributeDefinitionDraft nestedTypeAttrDefDraft =
-        AttributeDefinitionDraftBuilder.of(
-                NestedAttributeType.of(ProductType.referenceOfId("foo")),
-                "validNested",
-                ofEnglish("koko"),
-                true)
+        AttributeDefinitionDraftBuilder.of()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .nestedBuilder()
+                        .typeReference(
+                            productTypeReferenceBuilder -> productTypeReferenceBuilder.id("foo")))
+            .name("validNested")
+            .label(ofEnglish("koko"))
+            .isRequired(true)
             .build();
 
     final AttributeDefinitionDraft setOfNestedTypeAttrDefDraft =
-        AttributeDefinitionDraftBuilder.of(
-                SetAttributeType.of(NestedAttributeType.of(ProductType.referenceOfId("foo"))),
-                "setOfNested",
-                ofEnglish("koko"),
-                true)
+        AttributeDefinitionDraftBuilder.of()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            attributeTypeBuilder1 ->
+                                attributeTypeBuilder1
+                                    .nestedBuilder()
+                                    .typeReference(
+                                        productTypeReferenceBuilder ->
+                                            productTypeReferenceBuilder.id("foo"))))
+            .name("setOfNested")
+            .label(ofEnglish("koko"))
+            .isRequired(true)
             .build();
 
     final AttributeDefinitionDraft invalidNestedTypeAttrDefDraft =
-        AttributeDefinitionDraftBuilder.of(
-                NestedAttributeType.of(ProductType.referenceOfId("")),
-                "invalidNested",
-                ofEnglish("koko"),
-                true)
+        AttributeDefinitionDraftBuilder.of()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .nestedBuilder()
+                        .typeReference(
+                            productTypeReferenceBuilder -> productTypeReferenceBuilder.id("")))
+            .name("invalidNested")
+            .label(ofEnglish("koko"))
+            .isRequired(true)
             .build();
 
     final AttributeDefinitionDraft setOfInvalidNestedTypeAttrDefDraft =
-        AttributeDefinitionDraftBuilder.of(
-                SetAttributeType.of(NestedAttributeType.of(ProductType.referenceOfId(null))),
-                "setOfInvalidNested",
-                ofEnglish("koko"),
-                true)
+        AttributeDefinitionDraftBuilder.of()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            attributeTypeBuilder1 ->
+                                attributeTypeBuilder1
+                                    .nestedBuilder()
+                                    .typeReference(
+                                        productTypeReferenceBuilder ->
+                                            productTypeReferenceBuilder.id(""))))
+            .name("setOfInvalidNested")
+            .label(ofEnglish("koko"))
+            .isRequired(true)
             .build();
 
     final List<AttributeDefinitionDraft> attributes = new ArrayList<>();
@@ -231,7 +297,12 @@ class ProductTypeBatchValidatorTest {
     attributes.add(null);
 
     final ProductTypeDraft productTypeDraft =
-        ProductTypeDraftBuilder.of("foo", "foo", "foo", attributes).build();
+        ProductTypeDraftBuilder.of()
+            .key("foo")
+            .name("foo")
+            .description("foo")
+            .attributes(attributes)
+            .build();
 
     final ProductTypeBatchValidator batchValidator =
         new ProductTypeBatchValidator(syncOptions, syncStatistics);
@@ -242,8 +313,8 @@ class ProductTypeBatchValidatorTest {
     assertThat(pair.getRight()).isEmpty();
 
     final String expectedExceptionMessage =
-        format(
-            PRODUCT_TYPE_HAS_INVALID_REFERENCES,
+        String.format(
+            ProductTypeBatchValidator.PRODUCT_TYPE_HAS_INVALID_REFERENCES,
             productTypeDraft.getKey(),
             "[invalidNested, setOfInvalidNested]");
     assertThat(errorCallBackMessages).containsExactly(expectedExceptionMessage);
@@ -254,7 +325,8 @@ class ProductTypeBatchValidatorTest {
               assertThat(throwable).isInstanceOf(SyncException.class);
               assertThat(throwable.getMessage()).isEqualTo(expectedExceptionMessage);
               assertThat(throwable.getCause()).isInstanceOf(InvalidReferenceException.class);
-              assertThat(throwable.getCause().getMessage()).isEqualTo(BLANK_ID_VALUE_ON_REFERENCE);
+              assertThat(throwable.getCause().getMessage())
+                  .isEqualTo(BaseReferenceResolver.BLANK_ID_VALUE_ON_REFERENCE);
               return true;
             });
   }
@@ -262,39 +334,73 @@ class ProductTypeBatchValidatorTest {
   @Test
   void validateAndCollectReferencedKeys_WithMixOfValidAndInvalidDrafts_ShouldValidateCorrectly() {
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(StringAttributeType.of(), "foo", ofEnglish("koko"), true)
+        AttributeDefinitionDraftBuilder.of()
+            .type(AttributeTypeBuilder::textBuilder)
+            .name("foo")
+            .label(ofEnglish("koko"))
+            .isRequired(true)
             .build();
 
     final AttributeDefinitionDraft nestedTypeAttrDefDraft =
-        AttributeDefinitionDraftBuilder.of(
-                NestedAttributeType.of(ProductType.referenceOfId("x")),
-                "validNested",
-                ofEnglish("koko"),
-                true)
+        AttributeDefinitionDraftBuilder.of()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .nestedBuilder()
+                        .typeReference(
+                            productTypeReferenceBuilder -> productTypeReferenceBuilder.id("x")))
+            .name("validNested")
+            .label(ofEnglish("koko"))
+            .isRequired(true)
             .build();
 
     final AttributeDefinitionDraft setOfNestedTypeAttrDefDraft =
-        AttributeDefinitionDraftBuilder.of(
-                SetAttributeType.of(NestedAttributeType.of(ProductType.referenceOfId("y"))),
-                "setOfNested",
-                ofEnglish("koko"),
-                true)
+        AttributeDefinitionDraftBuilder.of()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            attributeTypeBuilder1 ->
+                                attributeTypeBuilder1
+                                    .nestedBuilder()
+                                    .typeReference(
+                                        productTypeReferenceBuilder ->
+                                            productTypeReferenceBuilder.id("y"))))
+            .name("setOfNested")
+            .label(ofEnglish("koko"))
+            .isRequired(true)
             .build();
 
     final AttributeDefinitionDraft invalidNestedTypeAttrDefDraft =
-        AttributeDefinitionDraftBuilder.of(
-                NestedAttributeType.of(ProductType.referenceOfId("")),
-                "invalidNested",
-                ofEnglish("koko"),
-                true)
+        AttributeDefinitionDraftBuilder.of()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .nestedBuilder()
+                        .typeReference(
+                            productTypeReferenceBuilder -> productTypeReferenceBuilder.id("")))
+            .name("invalidNested")
+            .label(ofEnglish("koko"))
+            .isRequired(true)
             .build();
 
     final AttributeDefinitionDraft setOfInvalidNestedTypeAttrDefDraft =
-        AttributeDefinitionDraftBuilder.of(
-                SetAttributeType.of(NestedAttributeType.of(ProductType.referenceOfId(""))),
-                "setOfInvalidNested",
-                ofEnglish("koko"),
-                true)
+        AttributeDefinitionDraftBuilder.of()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            attributeTypeBuilder1 ->
+                                attributeTypeBuilder1
+                                    .nestedBuilder()
+                                    .typeReference(
+                                        productTypeReferenceBuilder ->
+                                            productTypeReferenceBuilder.id(""))))
+            .name("setOfInvalidNested")
+            .label(ofEnglish("koko"))
+            .isRequired(true)
             .build();
 
     final List<AttributeDefinitionDraft> attributes = new ArrayList<>();
@@ -305,25 +411,46 @@ class ProductTypeBatchValidatorTest {
     attributes.add(setOfInvalidNestedTypeAttrDefDraft);
 
     final ProductTypeDraft productTypeDraft =
-        ProductTypeDraftBuilder.of("foo", "foo", "foo", attributes).build();
+        ProductTypeDraftBuilder.of()
+            .key("foo")
+            .name("foo")
+            .description("foo")
+            .attributes(attributes)
+            .build();
 
     final ProductTypeDraft productTypeDraftWithEmptyKey =
-        ProductTypeDraftBuilder.of("", "foo", "foo", attributes).build();
+        ProductTypeDraftBuilder.of()
+            .key("")
+            .name("foo")
+            .description("foo")
+            .attributes(attributes)
+            .build();
 
     final ProductTypeDraft validProductTypeDraftWithReferences =
-        ProductTypeDraftBuilder.of(
-                "bar",
-                "bar",
-                "bar",
+        ProductTypeDraftBuilder.of()
+            .key("bar")
+            .name("bar")
+            .description("bar")
+            .attributes(
                 asList(
                     attributeDefinitionDraft, nestedTypeAttrDefDraft, setOfNestedTypeAttrDefDraft))
             .build();
 
     final ProductTypeDraft draftWithEmptyAttributes =
-        ProductTypeDraftBuilder.of("bar", "bar", "bar", emptyList()).build();
+        ProductTypeDraftBuilder.of()
+            .key("bar")
+            .name("bar")
+            .description("bar")
+            .attributes(emptyList())
+            .build();
 
     final ProductTypeDraft draftWithNullAttributes =
-        ProductTypeDraftBuilder.of("bar", "bar", "bar", null).build();
+        ProductTypeDraftBuilder.of()
+            .key("bar")
+            .name("bar")
+            .description("bar")
+            .attributes((AttributeDefinitionDraft) null)
+            .build();
 
     final List<ProductTypeDraft> productTypeDrafts = new ArrayList<>();
     productTypeDrafts.add(productTypeDraft);
@@ -344,21 +471,24 @@ class ProductTypeBatchValidatorTest {
     assertThat(pair.getRight()).containsExactlyInAnyOrder("x", "y");
 
     final String expectedExceptionMessage =
-        format(
-            PRODUCT_TYPE_HAS_INVALID_REFERENCES,
+        String.format(
+            ProductTypeBatchValidator.PRODUCT_TYPE_HAS_INVALID_REFERENCES,
             productTypeDraft.getKey(),
             "[invalidNested, setOfInvalidNested]");
     assertThat(errorCallBackMessages)
         .containsExactlyInAnyOrderElementsOf(
             asList(
                 expectedExceptionMessage,
-                PRODUCT_TYPE_DRAFT_IS_NULL,
-                format(PRODUCT_TYPE_DRAFT_KEY_NOT_SET, productTypeDraftWithEmptyKey.getName())));
+                ProductTypeBatchValidator.PRODUCT_TYPE_DRAFT_IS_NULL,
+                String.format(
+                    ProductTypeBatchValidator.PRODUCT_TYPE_DRAFT_KEY_NOT_SET,
+                    productTypeDraftWithEmptyKey.getName())));
 
     final Predicate<Throwable> invalidReferencePredicate =
         throwable ->
             expectedExceptionMessage.equals(throwable.getMessage())
-                && BLANK_ID_VALUE_ON_REFERENCE.equals(throwable.getCause().getMessage());
+                && BaseReferenceResolver.BLANK_ID_VALUE_ON_REFERENCE.equals(
+                    throwable.getCause().getMessage());
 
     final Condition<Throwable> invalidReferenceCondition =
         new Condition<>(
@@ -368,7 +498,7 @@ class ProductTypeBatchValidatorTest {
 
     final Predicate<Throwable> nullDraftPredicate =
         throwable ->
-            PRODUCT_TYPE_DRAFT_IS_NULL.equals(throwable.getMessage())
+            ProductTypeBatchValidator.PRODUCT_TYPE_DRAFT_IS_NULL.equals(throwable.getMessage())
                 && throwable instanceof SyncException;
 
     final Condition<Throwable> nullDraftCondition =
@@ -376,7 +506,9 @@ class ProductTypeBatchValidatorTest {
 
     final Predicate<Throwable> blankProductTypeKeyPredicate =
         throwable ->
-            format(PRODUCT_TYPE_DRAFT_KEY_NOT_SET, productTypeDraftWithEmptyKey.getName())
+            String.format(
+                        ProductTypeBatchValidator.PRODUCT_TYPE_DRAFT_KEY_NOT_SET,
+                        productTypeDraftWithEmptyKey.getName())
                     .equals(throwable.getMessage())
                 && throwable instanceof SyncException;
 

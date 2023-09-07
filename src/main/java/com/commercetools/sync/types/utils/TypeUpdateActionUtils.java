@@ -4,15 +4,11 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.type.*;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.types.TypeSyncOptions;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.types.Type;
-import io.sphere.sdk.types.TypeDraft;
-import io.sphere.sdk.types.commands.updateactions.ChangeName;
-import io.sphere.sdk.types.commands.updateactions.SetDescription;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -21,25 +17,27 @@ public final class TypeUpdateActionUtils {
 
   /**
    * Compares the {@link LocalizedString} name values of a {@link Type} and a {@link TypeDraft} and
-   * returns an {@link Optional} of update action, which would contain the {@code "changeName"}
-   * {@link UpdateAction} if values are different.
+   * returns an {@link Optional} of update action, which would contain the {@link
+   * TypeChangeNameAction} if values are different.
    *
    * @param oldType the type that should be updated.
    * @param newType the type draft which contains the new name.
    * @return optional containing update action or empty optional if names are identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<Type>> buildChangeNameUpdateAction(
+  public static Optional<TypeUpdateAction> buildChangeNameUpdateAction(
       @Nonnull final Type oldType, @Nonnull final TypeDraft newType) {
 
     return buildUpdateAction(
-        oldType.getName(), newType.getName(), () -> ChangeName.of(newType.getName()));
+        oldType.getName(),
+        newType.getName(),
+        () -> TypeChangeNameActionBuilder.of().name(newType.getName()).build());
   }
 
   /**
    * Compares the {@link LocalizedString} descriptions of a {@link Type} and a {@link TypeDraft} and
-   * returns an {@link UpdateAction}&lt;{@link Type}&gt; as a result in an {@link Optional} of
-   * update action if values are different.
+   * returns an {@link TypeSetDescriptionAction} as a result in an {@link Optional} of update action
+   * if values are different.
    *
    * @param oldType the type which should be updated.
    * @param newType the type draft where we get the new description.
@@ -47,30 +45,26 @@ public final class TypeUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<Type>> buildSetDescriptionUpdateAction(
+  public static Optional<TypeUpdateAction> buildSetDescriptionUpdateAction(
       @Nonnull final Type oldType, @Nonnull final TypeDraft newType) {
 
     return buildUpdateAction(
         oldType.getDescription(),
         newType.getDescription(),
-        () -> SetDescription.of(newType.getDescription()));
+        () -> TypeSetDescriptionActionBuilder.of().description(newType.getDescription()).build());
   }
 
   /**
    * Compares the field definitions of a {@link Type} and a {@link TypeDraft} and returns a list of
-   * {@link UpdateAction}&lt;{@link Type}&gt; as a result if the values are different. In case, the
-   * new type draft has a list of field definitions in which a duplicate name exists, the error
-   * callback is triggered and an empty list is returned.
+   * {@link TypeUpdateAction} as a result if the values are different. In case, the new type draft
+   * has a list of field definitions in which a duplicate name exists, the error callback is
+   * triggered and an empty list is returned.
    *
-   * <p>Note: Currently this util doesn't support the following:
+   * <p>Note: Currently commercetools API doesn't support the following:
    *
    * <ul>
-   *   <li>updating the inputHint of a FieldDefinition
    *   <li>removing the EnumValue/LocalizedEnumValue of a FieldDefinition
-   *   <li>updating the label of a EnumValue/LocalizedEnumValue of a FieldDefinition
    * </ul>
-   *
-   * TODO: Check GITHUB ISSUE#339 for missing FieldDefinition update actions.
    *
    * @param oldType the type which should be updated.
    * @param newType the type draft where we get the key.
@@ -79,7 +73,7 @@ public final class TypeUpdateActionUtils {
    * @return A list with the update actions or an empty list if the field definitions are identical.
    */
   @Nonnull
-  public static List<UpdateAction<Type>> buildFieldDefinitionsUpdateActions(
+  public static List<TypeUpdateAction> buildFieldDefinitionsUpdateActions(
       @Nonnull final Type oldType,
       @Nonnull final TypeDraft newType,
       @Nonnull final TypeSyncOptions syncOptions) {

@@ -1,14 +1,14 @@
 package com.commercetools.sync.producttypes;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.product_type.ProductTypeDraft;
+import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -16,15 +16,15 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public final class ProductTypeSyncOptions
-    extends BaseSyncOptions<ProductType, ProductTypeDraft, ProductType> {
+    extends BaseSyncOptions<ProductType, ProductTypeDraft, ProductTypeUpdateAction> {
   ProductTypeSyncOptions(
-      @Nonnull final SphereClient ctpClient,
+      @Nonnull final ProjectApiRoot ctpClient,
       @Nullable
           final QuadConsumer<
                   SyncException,
                   Optional<ProductTypeDraft>,
                   Optional<ProductType>,
-                  List<UpdateAction<ProductType>>>
+                  List<ProductTypeUpdateAction>>
               errorCallback,
       @Nullable
           final TriConsumer<SyncException, Optional<ProductTypeDraft>, Optional<ProductType>>
@@ -32,10 +32,10 @@ public final class ProductTypeSyncOptions
       final int batchSize,
       @Nullable
           final TriFunction<
-                  List<UpdateAction<ProductType>>,
+                  List<ProductTypeUpdateAction>,
                   ProductTypeDraft,
                   ProductType,
-                  List<UpdateAction<ProductType>>>
+                  List<ProductTypeUpdateAction>>
               beforeUpdateCallback,
       @Nullable final Function<ProductTypeDraft, ProductTypeDraft> beforeCreateCallback,
       final long cacheSize) {

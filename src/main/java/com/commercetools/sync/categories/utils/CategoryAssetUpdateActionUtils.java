@@ -3,18 +3,20 @@ package com.commercetools.sync.categories.utils;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 
+import com.commercetools.api.models.category.CategoryChangeAssetNameActionBuilder;
+import com.commercetools.api.models.category.CategoryDraft;
+import com.commercetools.api.models.category.CategorySetAssetDescriptionActionBuilder;
+import com.commercetools.api.models.category.CategorySetAssetSourcesActionBuilder;
+import com.commercetools.api.models.category.CategorySetAssetTagsActionBuilder;
+import com.commercetools.api.models.category.CategoryUpdateAction;
+import com.commercetools.api.models.common.Asset;
+import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.api.models.type.ResourceTypeId;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.helpers.AssetCustomActionBuilder;
+import com.commercetools.sync.commons.models.AssetCustomTypeAdapter;
+import com.commercetools.sync.commons.models.AssetDraftCustomTypeAdapter;
 import com.commercetools.sync.commons.utils.CustomUpdateActionUtils;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.commands.updateactions.ChangeAssetName;
-import io.sphere.sdk.categories.commands.updateactions.SetAssetDescription;
-import io.sphere.sdk.categories.commands.updateactions.SetAssetSources;
-import io.sphere.sdk.categories.commands.updateactions.SetAssetTags;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Asset;
-import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.models.LocalizedString;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -23,11 +25,10 @@ public final class CategoryAssetUpdateActionUtils {
 
   /**
    * Compares all the fields of an {@link Asset} and an {@link AssetDraft} and returns a list of
-   * {@link UpdateAction}&lt;{@link Category}&gt; as a result. If both the {@link Asset} and the
-   * {@link AssetDraft} have identical fields, then no update action is needed and hence an empty
-   * {@link List} is returned.
+   * {@link com.commercetools.api.models.category.CategoryUpdateAction} as a result. If both the
+   * {@link Asset} and the {@link AssetDraft} have identical fields, then no update action is needed
+   * and hence an empty {@link java.util.List} is returned.
    *
-   * @param <D> Type of the mainresource draft
    * @param newResource new mainresource draft, which contains the asset to update.
    * @param oldAsset the asset which should be updated.
    * @param newAsset the asset draft where we get the new fields.
@@ -36,13 +37,13 @@ public final class CategoryAssetUpdateActionUtils {
    * @return A list with the update actions or an empty list if the asset fields are identical.
    */
   @Nonnull
-  public static <D> List<UpdateAction<Category>> buildActions(
-      @Nonnull final D newResource,
+  public static List<CategoryUpdateAction> buildActions(
+      @Nonnull final CategoryDraft newResource,
       @Nonnull final Asset oldAsset,
       @Nonnull final AssetDraft newAsset,
       @Nonnull final CategorySyncOptions syncOptions) {
 
-    final List<UpdateAction<Category>> updateActions =
+    final List<CategoryUpdateAction> updateActions =
         filterEmptyOptionals(
             buildChangeAssetNameUpdateAction(oldAsset, newAsset),
             buildSetAssetDescriptionUpdateAction(oldAsset, newAsset),
@@ -54,10 +55,11 @@ public final class CategoryAssetUpdateActionUtils {
   }
 
   /**
-   * Compares the {@link LocalizedString} names of an {@link Asset} and an {@link AssetDraft} and
-   * returns an {@link UpdateAction}&lt;{@link Category}&gt; as a result in an {@link Optional}. If
-   * both the {@link Asset} and the {@link AssetDraft} have the same name, then no update action is
-   * needed and hence an empty {@link Optional} is returned.
+   * Compares the {@link com.commercetools.api.models.common.LocalizedString} names of an {@link
+   * Asset} and an {@link AssetDraft} and returns an {@link CategoryUpdateAction} as a result in an
+   * {@link java.util.Optional}. If both the {@link Asset} and the {@link AssetDraft} have the same
+   * name, then no update action is needed and hence an empty {@link java.util.Optional} is
+   * returned.
    *
    * @param oldAsset the asset which should be updated.
    * @param newAsset the asset draft where we get the new name.
@@ -65,19 +67,24 @@ public final class CategoryAssetUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<Category>> buildChangeAssetNameUpdateAction(
+  public static Optional<CategoryUpdateAction> buildChangeAssetNameUpdateAction(
       @Nonnull final Asset oldAsset, @Nonnull final AssetDraft newAsset) {
     return buildUpdateAction(
         oldAsset.getName(),
         newAsset.getName(),
-        () -> ChangeAssetName.ofKey(oldAsset.getKey(), newAsset.getName()));
+        () ->
+            CategoryChangeAssetNameActionBuilder.of()
+                .assetKey(oldAsset.getKey())
+                .name(newAsset.getName())
+                .build());
   }
 
   /**
-   * Compares the {@link LocalizedString} descriptions of an {@link Asset} and an {@link AssetDraft}
-   * and returns an {@link UpdateAction}&lt;{@link Category}&gt; as a result in an {@link Optional}.
-   * If both the {@link Asset} and the {@link AssetDraft} have the same description, then no update
-   * action is needed and hence an empty {@link Optional} is returned.
+   * Compares the {@link com.commercetools.api.models.common.LocalizedString} descriptions of an
+   * {@link Asset} and an {@link AssetDraft} and returns an {@link CategoryUpdateAction} as a result
+   * in an {@link java.util.Optional}. If both the {@link Asset} and the {@link AssetDraft} have the
+   * same description, then no update action is needed and hence an empty {@link java.util.Optional}
+   * is returned.
    *
    * @param oldAsset the asset which should be updated.
    * @param newAsset the asset draft where we get the new description.
@@ -85,19 +92,23 @@ public final class CategoryAssetUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<Category>> buildSetAssetDescriptionUpdateAction(
+  public static Optional<CategoryUpdateAction> buildSetAssetDescriptionUpdateAction(
       @Nonnull final Asset oldAsset, @Nonnull final AssetDraft newAsset) {
     return buildUpdateAction(
         oldAsset.getDescription(),
         newAsset.getDescription(),
-        () -> SetAssetDescription.ofKey(oldAsset.getKey(), newAsset.getDescription()));
+        () ->
+            CategorySetAssetDescriptionActionBuilder.of()
+                .assetKey(oldAsset.getKey())
+                .description(newAsset.getDescription())
+                .build());
   }
 
   /**
    * Compares the tags of an {@link Asset} and an {@link AssetDraft} and returns an {@link
-   * UpdateAction}&lt;{@link Category}&gt; as a result in an {@link Optional}. If both the {@link
-   * Asset} and the {@link AssetDraft} have the same tags, then no update action is needed and hence
-   * an empty {@link Optional} is returned.
+   * CategoryUpdateAction} as a result in an {@link java.util.Optional}. If both the {@link Asset}
+   * and the {@link AssetDraft} have the same tags, then no update action is needed and hence an
+   * empty {@link java.util.Optional} is returned.
    *
    * @param oldAsset the asset which should be updated.
    * @param newAsset the asset draft where we get the new tags.
@@ -105,19 +116,23 @@ public final class CategoryAssetUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<Category>> buildSetAssetTagsUpdateAction(
+  public static Optional<CategoryUpdateAction> buildSetAssetTagsUpdateAction(
       @Nonnull final Asset oldAsset, @Nonnull final AssetDraft newAsset) {
     return buildUpdateAction(
         oldAsset.getTags(),
         newAsset.getTags(),
-        () -> SetAssetTags.ofKey(oldAsset.getKey(), newAsset.getTags()));
+        () ->
+            CategorySetAssetTagsActionBuilder.of()
+                .assetKey(oldAsset.getKey())
+                .tags(newAsset.getTags())
+                .build());
   }
 
   /**
    * Compares the sources of an {@link Asset} and an {@link AssetDraft} and returns an {@link
-   * UpdateAction}&lt;{@link Category}&gt; as a result in an {@link Optional}. If both the {@link
-   * Asset} and the {@link AssetDraft} have the same sources, then no update action is needed and
-   * hence an empty {@link Optional} is returned.
+   * CategoryUpdateAction} as a result in an {@link java.util.Optional}. If both the {@link Asset}
+   * and the {@link AssetDraft} have the same sources, then no update action is needed and hence an
+   * empty {@link java.util.Optional} is returned.
    *
    * @param oldAsset the asset which should be updated.
    * @param newAsset the asset draft where we get the new sources.
@@ -125,21 +140,24 @@ public final class CategoryAssetUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<Category>> buildSetAssetSourcesUpdateAction(
+  public static Optional<CategoryUpdateAction> buildSetAssetSourcesUpdateAction(
       @Nonnull final Asset oldAsset, @Nonnull final AssetDraft newAsset) {
     return buildUpdateAction(
         oldAsset.getSources(),
         newAsset.getSources(),
-        () -> SetAssetSources.ofKey(oldAsset.getKey(), newAsset.getSources()));
+        () ->
+            CategorySetAssetSourcesActionBuilder.of()
+                .assetKey(oldAsset.getKey())
+                .sources(newAsset.getSources())
+                .build());
   }
 
   /**
    * Compares the custom fields and custom types of an {@link Asset} and an {@link AssetDraft} and
-   * returns a list of {@link UpdateAction}&lt;{@link Category}&gt; as a result. If both the {@link
-   * Asset} and the {@link AssetDraft} have identical custom fields and types, then no update action
-   * is needed and hence an empty {@link List} is returned.
+   * returns a list of {@link CategoryUpdateAction} as a result. If both the {@link Asset} and the
+   * {@link AssetDraft} have identical custom fields and types, then no update action is needed and
+   * hence an empty {@link java.util.List} is returned.
    *
-   * @param <D> Type of the mainresource draft
    * @param newCategory category in a source project, which contains the updated asset.
    * @param oldAsset the asset which should be updated.
    * @param newAsset the asset draft where we get the new custom fields and types.
@@ -149,21 +167,21 @@ public final class CategoryAssetUpdateActionUtils {
    *     fields/types are identical.
    */
   @Nonnull
-  public static <D> List<UpdateAction<Category>> buildCustomUpdateActions(
-      @Nonnull final D newCategory,
+  public static List<CategoryUpdateAction> buildCustomUpdateActions(
+      @Nonnull final CategoryDraft newCategory,
       @Nonnull final Asset oldAsset,
       @Nonnull final AssetDraft newAsset,
       @Nonnull final CategorySyncOptions syncOptions) {
 
     return CustomUpdateActionUtils.buildCustomUpdateActions(
         newCategory,
-        oldAsset,
-        newAsset,
+        AssetCustomTypeAdapter.of(oldAsset),
+        AssetDraftCustomTypeAdapter.of(newAsset),
         new AssetCustomActionBuilder(),
-        -1,
-        Asset::getId,
-        asset -> Asset.resourceTypeId(),
-        Asset::getKey,
+        -1L,
+        AssetCustomTypeAdapter::getId,
+        asset -> ResourceTypeId.ASSET.getJsonName(),
+        AssetCustomTypeAdapter::getKey,
         syncOptions);
   }
 

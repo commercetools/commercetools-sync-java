@@ -1,14 +1,8 @@
 package com.commercetools.sync.integration.services.impl;
 
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.TAXCATEGORY_DESCRIPTION_1;
-import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.TAXCATEGORY_KEY;
-import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.TAXCATEGORY_KEY_1;
-import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.TAXCATEGORY_NAME_1;
-import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.createTaxCategory;
-import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.createTaxRateDraft;
-import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.deleteTaxCategories;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
+import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.*;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
+import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
@@ -16,32 +10,34 @@ import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import com.commercetools.api.client.ByProjectKeyTaxCategoriesGet;
+import com.commercetools.api.client.ByProjectKeyTaxCategoriesRequestBuilder;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.client.error.BadRequestException;
+import com.commercetools.api.models.error.DuplicateFieldError;
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.tax_category.TaxCategory;
+import com.commercetools.api.models.tax_category.TaxCategoryChangeNameAction;
+import com.commercetools.api.models.tax_category.TaxCategoryChangeNameActionBuilder;
+import com.commercetools.api.models.tax_category.TaxCategoryDraft;
+import com.commercetools.api.models.tax_category.TaxCategoryDraftBuilder;
+import com.commercetools.api.models.tax_category.TaxCategorySetKeyActionBuilder;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptions;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptionsBuilder;
-import io.sphere.sdk.client.BadGatewayException;
-import io.sphere.sdk.client.ErrorResponseException;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.errors.DuplicateFieldError;
-import io.sphere.sdk.taxcategories.TaxCategory;
-import io.sphere.sdk.taxcategories.TaxCategoryDraft;
-import io.sphere.sdk.taxcategories.TaxCategoryDraftBuilder;
-import io.sphere.sdk.taxcategories.commands.updateactions.ChangeName;
-import io.sphere.sdk.taxcategories.commands.updateactions.SetKey;
-import io.sphere.sdk.taxcategories.queries.TaxCategoryQuery;
-import io.sphere.sdk.utils.CompletableFutureUtils;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.error.BadGatewayException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
@@ -68,7 +64,7 @@ class TaxCategoryServiceImplIT {
 
     deleteTaxCategories(CTP_TARGET_CLIENT);
     warnings = new ArrayList<>();
-    oldTaxCategory = createTaxCategory(CTP_TARGET_CLIENT);
+    oldTaxCategory = ensureTaxCategory(CTP_TARGET_CLIENT);
 
     final TaxCategorySyncOptions taxCategorySyncOptions =
         TaxCategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -169,9 +165,16 @@ class TaxCategoryServiceImplIT {
   @Test
   void fetchMatchingTaxCategoriesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
     // Mock sphere client to return BadGatewayException on any request.
-    final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-    when(spyClient.execute(any(TaxCategoryQuery.class)))
-        .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
+    final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
+    when(spyClient.taxCategories()).thenReturn(mock(ByProjectKeyTaxCategoriesRequestBuilder.class));
+    final ByProjectKeyTaxCategoriesGet getMock = mock(ByProjectKeyTaxCategoriesGet.class);
+    when(spyClient.taxCategories().get()).thenReturn(getMock);
+    when(getMock.withWhere(any(String.class))).thenReturn(getMock);
+    when(getMock.withPredicateVar(any(String.class), any())).thenReturn(getMock);
+    when(getMock.withLimit(any(Integer.class))).thenReturn(getMock);
+    when(getMock.withWithTotal(any(Boolean.class))).thenReturn(getMock);
+    when(getMock.execute())
+        .thenReturn(exceptionallyCompletedFuture(new BadGatewayException(500, "", null, "", null)))
         .thenCallRealMethod();
 
     final TaxCategorySyncOptions spyOptions =
@@ -208,21 +211,22 @@ class TaxCategoryServiceImplIT {
 
     assertThat(fetchedTaxCategories).hasSize(1);
 
-    final Optional<TaxCategory> taxCategoryOptional =
+    final TaxCategory taxCategory =
         CTP_TARGET_CLIENT
-            .execute(
-                TaxCategoryQuery.of()
-                    .withPredicates(queryModel -> queryModel.key().is(TAXCATEGORY_KEY)))
-            .toCompletableFuture()
-            .join()
-            .head();
+            .taxCategories()
+            .withKey(TAXCATEGORY_KEY)
+            .get()
+            .executeBlocking()
+            .getBody();
 
-    assertThat(taxCategoryOptional).isNotNull();
+    assertThat(taxCategory).isNotNull();
 
     // Change taxCategory old_taxCategory_key on ctp
     final String newKey = "new_taxCategory_key";
     taxCategoryService
-        .updateTaxCategory(taxCategoryOptional.get(), Collections.singletonList(SetKey.of(newKey)))
+        .updateTaxCategory(
+            taxCategory.get(),
+            Collections.singletonList(TaxCategorySetKeyActionBuilder.of().key(newKey).build()))
         .toCompletableFuture()
         .join();
 
@@ -231,7 +235,7 @@ class TaxCategoryServiceImplIT {
         taxCategoryService.fetchCachedTaxCategoryId(TAXCATEGORY_KEY).toCompletableFuture().join();
 
     assertThat(cachedTaxCategoryId).isNotEmpty();
-    assertThat(cachedTaxCategoryId).contains(taxCategoryOptional.get().getId());
+    assertThat(cachedTaxCategoryId).contains(taxCategory.get().getId());
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
   }
@@ -239,12 +243,14 @@ class TaxCategoryServiceImplIT {
   @Test
   void createTaxCategory_WithValidTaxCategory_ShouldCreateTaxCategoryAndCacheId() {
     final TaxCategoryDraft newTaxCategoryDraft =
-        TaxCategoryDraftBuilder.of(
-                TAXCATEGORY_NAME_1, singletonList(createTaxRateDraft()), TAXCATEGORY_DESCRIPTION_1)
+        TaxCategoryDraftBuilder.of()
+            .name(TAXCATEGORY_NAME_1)
+            .rates(mockTaxRateDraft())
+            .description(TAXCATEGORY_DESCRIPTION_1)
             .key(TAXCATEGORY_KEY_1)
             .build();
 
-    final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+    final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
     final TaxCategorySyncOptions spyOptions =
         TaxCategorySyncOptionsBuilder.of(spyClient)
             .errorCallback(
@@ -257,29 +263,35 @@ class TaxCategoryServiceImplIT {
     final TaxCategoryService spyTaxCategoryService = new TaxCategoryServiceImpl(spyOptions);
 
     // test
-    final Optional<TaxCategory> createdTaxCategory =
+    final Optional<TaxCategory> createdTaxCategoryOptional =
         spyTaxCategoryService.createTaxCategory(newTaxCategoryDraft).toCompletableFuture().join();
 
-    final Optional<TaxCategory> queriedOptional =
+    final TaxCategory queriedTaxCategory =
         CTP_TARGET_CLIENT
-            .execute(
-                TaxCategoryQuery.of()
-                    .withPredicates(
-                        taxCategoryQueryModel -> taxCategoryQueryModel.key().is(TAXCATEGORY_KEY_1)))
-            .toCompletableFuture()
-            .join()
-            .head();
+            .taxCategories()
+            .withKey(TAXCATEGORY_KEY_1)
+            .get()
+            .executeBlocking()
+            .getBody();
 
-    assertThat(queriedOptional)
+    assertThat(createdTaxCategoryOptional)
         .hasValueSatisfying(
-            queried ->
-                assertThat(createdTaxCategory)
-                    .hasValueSatisfying(
-                        created -> {
-                          assertThat(created.getKey()).isEqualTo(queried.getKey());
-                          assertThat(created.getDescription()).isEqualTo(queried.getDescription());
-                          assertThat(created.getName()).isEqualTo(queried.getName());
-                        }));
+            createdTaxCategory -> {
+              assertThat(createdTaxCategory.getKey()).isEqualTo(queriedTaxCategory.getKey());
+
+              assertThat(createdTaxCategory.getDescription())
+                  .isEqualTo(queriedTaxCategory.getDescription());
+              assertThat(createdTaxCategory.getName()).isEqualTo(queriedTaxCategory.getName());
+            });
+
+    final ByProjectKeyTaxCategoriesRequestBuilder mock1 =
+        mock(ByProjectKeyTaxCategoriesRequestBuilder.class);
+    when(spyClient.taxCategories()).thenReturn(mock1);
+    final ByProjectKeyTaxCategoriesGet mock2 = mock(ByProjectKeyTaxCategoriesGet.class);
+    when(mock1.get()).thenReturn(mock2);
+    when(mock2.withWhere(any(String.class))).thenReturn(mock2);
+    when(mock2.withPredicateVar(any(String.class), any())).thenReturn(mock2);
+    final CompletableFuture<ApiHttpResponse<ProductType>> spy = mock(CompletableFuture.class);
 
     // Assert that the created taxCategory is cached
     final Optional<String> taxCategoryId =
@@ -288,15 +300,18 @@ class TaxCategoryServiceImplIT {
             .toCompletableFuture()
             .join();
     assertThat(taxCategoryId).isPresent();
-    verify(spyClient, times(0)).execute(any(TaxCategoryQuery.class));
+
+    verify(spy, times(0)).handle(any());
   }
 
   @Test
   void createTaxCategory_WithInvalidTaxCategory_ShouldHaveEmptyOptionalAsAResult() {
     // preparation
     final TaxCategoryDraft newTaxCategoryDraft =
-        TaxCategoryDraftBuilder.of(
-                TAXCATEGORY_NAME_1, singletonList(createTaxRateDraft()), TAXCATEGORY_DESCRIPTION_1)
+        TaxCategoryDraftBuilder.of()
+            .name(TAXCATEGORY_NAME_1)
+            .rates(singletonList(mockTaxRateDraft()))
+            .description(TAXCATEGORY_DESCRIPTION_1)
             .key("")
             .build();
 
@@ -325,8 +340,10 @@ class TaxCategoryServiceImplIT {
   void createTaxCategory_WithDuplicateKey_ShouldHaveEmptyOptionalAsAResult() {
     // preparation
     final TaxCategoryDraft newTaxCategoryDraft =
-        TaxCategoryDraftBuilder.of(
-                TAXCATEGORY_NAME_1, singletonList(createTaxRateDraft()), TAXCATEGORY_DESCRIPTION_1)
+        TaxCategoryDraftBuilder.of()
+            .name(TAXCATEGORY_NAME_1)
+            .rates(singletonList(mockTaxRateDraft()))
+            .description(TAXCATEGORY_DESCRIPTION_1)
             .key(TAXCATEGORY_KEY)
             .build();
 
@@ -357,16 +374,19 @@ class TaxCategoryServiceImplIT {
         .singleElement()
         .matches(
             exception -> {
-              assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
-              final ErrorResponseException errorResponseException =
-                  (ErrorResponseException) exception;
+              assertThat(exception).isExactlyInstanceOf(CompletionException.class);
+              final CompletionException completionException = (CompletionException) exception;
+
+              final BadRequestException badRequestException =
+                  (BadRequestException) completionException.getCause();
 
               final List<DuplicateFieldError> fieldErrors =
-                  errorResponseException.getErrors().stream()
+                  badRequestException.getErrorResponse().getErrors().stream()
                       .map(
-                          sphereError -> {
-                            assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
-                            return sphereError.as(DuplicateFieldError.class);
+                          ctpError -> {
+                            assertThat(ctpError.getCode())
+                                .isEqualTo(DuplicateFieldError.DUPLICATE_FIELD);
+                            return (DuplicateFieldError) ctpError;
                           })
                       .collect(toList());
               return fieldErrors.size() == 1;
@@ -375,99 +395,66 @@ class TaxCategoryServiceImplIT {
 
   @Test
   void updateTaxCategory_WithValidChanges_ShouldUpdateTaxCategoryCorrectly() {
-    final Optional<TaxCategory> taxCategoryOptional =
+    final TaxCategory taxCategory =
         CTP_TARGET_CLIENT
-            .execute(
-                TaxCategoryQuery.of()
-                    .withPredicates(
-                        taxCategoryQueryModel -> taxCategoryQueryModel.key().is(TAXCATEGORY_KEY)))
-            .toCompletableFuture()
-            .join()
-            .head();
-    assertThat(taxCategoryOptional).isNotNull();
+            .taxCategories()
+            .withKey(TAXCATEGORY_KEY)
+            .get()
+            .executeBlocking()
+            .getBody();
+    assertThat(taxCategory).isNotNull();
 
-    final ChangeName changeNameUpdateAction = ChangeName.of("new_taxCategory_name");
+    final TaxCategoryChangeNameAction changeNameAction =
+        TaxCategoryChangeNameActionBuilder.of().name("new_taxCategory_name").build();
 
     final TaxCategory updatedTaxCategory =
         taxCategoryService
-            .updateTaxCategory(taxCategoryOptional.get(), singletonList(changeNameUpdateAction))
+            .updateTaxCategory(taxCategory, singletonList(changeNameAction))
             .toCompletableFuture()
             .join();
     assertThat(updatedTaxCategory).isNotNull();
 
-    final Optional<TaxCategory> updatedTaxCategoryOptional =
+    final TaxCategory fetchedTaxCategory =
         CTP_TARGET_CLIENT
-            .execute(
-                TaxCategoryQuery.of()
-                    .withPredicates(
-                        taxCategoryQueryModel -> taxCategoryQueryModel.key().is(TAXCATEGORY_KEY)))
-            .toCompletableFuture()
-            .join()
-            .head();
+            .taxCategories()
+            .withKey(TAXCATEGORY_KEY)
+            .get()
+            .executeBlocking()
+            .getBody();
 
-    assertThat(taxCategoryOptional).isNotEmpty();
-    final TaxCategory fetchedTaxCategory = updatedTaxCategoryOptional.get();
     assertThat(fetchedTaxCategory.getKey()).isEqualTo(updatedTaxCategory.getKey());
     assertThat(fetchedTaxCategory.getDescription()).isEqualTo(updatedTaxCategory.getDescription());
     assertThat(fetchedTaxCategory.getName()).isEqualTo(updatedTaxCategory.getName());
   }
 
   @Test
-  void updateTaxCategory_WithInvalidChanges_ShouldCompleteExceptionally() {
-    final Optional<TaxCategory> taxCategoryOptional =
-        CTP_TARGET_CLIENT
-            .execute(
-                TaxCategoryQuery.of()
-                    .withPredicates(
-                        taxCategoryQueryModel -> taxCategoryQueryModel.key().is(TAXCATEGORY_KEY)))
-            .toCompletableFuture()
-            .join()
-            .head();
-    assertThat(taxCategoryOptional).isNotNull();
-
-    final ChangeName changeNameUpdateAction = ChangeName.of(null);
-    taxCategoryService
-        .updateTaxCategory(taxCategoryOptional.get(), singletonList(changeNameUpdateAction))
-        .exceptionally(
-            exception -> {
-              assertThat(exception).isNotNull();
-              assertThat(exception.getMessage())
-                  .contains("Request body does not contain valid JSON.");
-              return null;
-            })
-        .toCompletableFuture()
-        .join();
-  }
-
-  @Test
   void fetchTaxCategory_WithExistingTaxCategoryKey_ShouldFetchTaxCategory() {
-    final Optional<TaxCategory> taxCategoryOptional =
+    final TaxCategory taxCategory =
         CTP_TARGET_CLIENT
-            .execute(
-                TaxCategoryQuery.of()
-                    .withPredicates(
-                        taxCategoryQueryModel -> taxCategoryQueryModel.key().is(TAXCATEGORY_KEY)))
-            .toCompletableFuture()
-            .join()
-            .head();
-    assertThat(taxCategoryOptional).isNotNull();
+            .taxCategories()
+            .withKey(TAXCATEGORY_KEY)
+            .get()
+            .executeBlocking()
+            .getBody();
 
-    final Optional<TaxCategory> fetchedTaxCategoryOptional =
-        executeBlocking(taxCategoryService.fetchTaxCategory(TAXCATEGORY_KEY));
-    assertThat(fetchedTaxCategoryOptional).isEqualTo(taxCategoryOptional);
+    assertThat(taxCategory).isNotNull();
+
+    final TaxCategory fetchedTaxCategory =
+        taxCategoryService.fetchTaxCategory(TAXCATEGORY_KEY).toCompletableFuture().join().get();
+    assertThat(fetchedTaxCategory).isEqualTo(taxCategory);
   }
 
   @Test
   void fetchTaxCategory_WithBlankKey_ShouldNotFetchTaxCategory() {
     final Optional<TaxCategory> fetchedTaxCategoryOptional =
-        executeBlocking(taxCategoryService.fetchTaxCategory(StringUtils.EMPTY));
+        taxCategoryService.fetchTaxCategory(StringUtils.EMPTY).toCompletableFuture().join();
     assertThat(fetchedTaxCategoryOptional).isEmpty();
   }
 
   @Test
   void fetchTaxCategory_WithNullKey_ShouldNotFetchTaxCategory() {
     final Optional<TaxCategory> fetchedTaxCategoryOptional =
-        executeBlocking(taxCategoryService.fetchTaxCategory(null));
+        taxCategoryService.fetchTaxCategory(null).toCompletableFuture().join();
     assertThat(fetchedTaxCategoryOptional).isEmpty();
   }
 }

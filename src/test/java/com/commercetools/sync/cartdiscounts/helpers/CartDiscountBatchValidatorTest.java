@@ -1,18 +1,15 @@
 package com.commercetools.sync.cartdiscounts.helpers;
 
-import static com.commercetools.sync.cartdiscounts.helpers.CartDiscountBatchValidator.CART_DISCOUNT_DRAFT_IS_NULL;
-import static com.commercetools.sync.cartdiscounts.helpers.CartDiscountBatchValidator.CART_DISCOUNT_DRAFT_KEY_NOT_SET;
-import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.cart_discount.CartDiscountDraft;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
-import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.types.CustomFieldsDraft;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,7 +29,7 @@ class CartDiscountBatchValidatorTest {
   @BeforeEach
   void setup() {
     errorCallBackMessages = new ArrayList<>();
-    final SphereClient ctpClient = mock(SphereClient.class);
+    final ProjectApiRoot ctpClient = mock(ProjectApiRoot.class);
 
     syncOptions =
         CartDiscountSyncOptionsBuilder.of(ctpClient)
@@ -57,7 +54,8 @@ class CartDiscountBatchValidatorTest {
     final Set<CartDiscountDraft> validDrafts = getValidDrafts(Collections.singletonList(null));
 
     assertThat(errorCallBackMessages).hasSize(1);
-    assertThat(errorCallBackMessages.get(0)).isEqualTo(CART_DISCOUNT_DRAFT_IS_NULL);
+    assertThat(errorCallBackMessages.get(0))
+        .isEqualTo(CartDiscountBatchValidator.CART_DISCOUNT_DRAFT_IS_NULL);
     assertThat(validDrafts).isEmpty();
   }
 
@@ -70,7 +68,10 @@ class CartDiscountBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(CART_DISCOUNT_DRAFT_KEY_NOT_SET, cartDiscountDraft.getName()));
+        .isEqualTo(
+            String.format(
+                CartDiscountBatchValidator.CART_DISCOUNT_DRAFT_KEY_NOT_SET,
+                cartDiscountDraft.getName()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -84,7 +85,10 @@ class CartDiscountBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(CART_DISCOUNT_DRAFT_KEY_NOT_SET, cartDiscountDraft.getName()));
+        .isEqualTo(
+            String.format(
+                CartDiscountBatchValidator.CART_DISCOUNT_DRAFT_KEY_NOT_SET,
+                cartDiscountDraft.getName()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -93,7 +97,12 @@ class CartDiscountBatchValidatorTest {
     final CartDiscountDraft validCartDiscountDraft = mock(CartDiscountDraft.class);
     when(validCartDiscountDraft.getKey()).thenReturn("validDraftKey");
     when(validCartDiscountDraft.getCustom())
-        .thenReturn(CustomFieldsDraft.ofTypeKeyAndJson("typeKey", Collections.emptyMap()));
+        .thenReturn(
+            CustomFieldsDraftBuilder.of()
+                .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.key("typeKey"))
+                .fields(
+                    fieldContainerBuilder -> fieldContainerBuilder.values(Collections.emptyMap()))
+                .build());
 
     final CartDiscountDraft validMainCartDiscountDraft = mock(CartDiscountDraft.class);
     when(validMainCartDiscountDraft.getKey()).thenReturn("validDraftKey1");
@@ -109,7 +118,10 @@ class CartDiscountBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(CART_DISCOUNT_DRAFT_KEY_NOT_SET, invalidCartDiscountDraft.getName()));
+        .isEqualTo(
+            String.format(
+                CartDiscountBatchValidator.CART_DISCOUNT_DRAFT_KEY_NOT_SET,
+                invalidCartDiscountDraft.getName()));
     assertThat(pair.getLeft())
         .containsExactlyInAnyOrder(validCartDiscountDraft, validMainCartDiscountDraft);
     assertThat(pair.getRight()).containsExactlyInAnyOrder("typeKey");

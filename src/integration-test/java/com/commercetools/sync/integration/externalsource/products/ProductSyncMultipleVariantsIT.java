@@ -1,30 +1,28 @@
 package com.commercetools.sync.integration.externalsource.products;
 
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.*;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.products.ProductSyncMockUtils.*;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
-import static java.util.Collections.singletonList;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ensureProductType;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_MULTIPLE_VARIANTS_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_2_MULTIPLE_VARIANTS_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
+import com.commercetools.api.models.product.Product;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductVariant;
+import com.commercetools.api.models.product_type.ProductType;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.ProductProjectionType;
-import io.sphere.sdk.products.ProductVariant;
-import io.sphere.sdk.products.commands.ProductCreateCommand;
-import io.sphere.sdk.products.queries.ProductProjectionByIdGet;
-import io.sphere.sdk.producttypes.ProductType;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -56,7 +54,7 @@ public class ProductSyncMultipleVariantsIT {
   static void setup() {
     deleteProductSyncTestData(CTP_TARGET_CLIENT);
 
-    productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
+    productType = ensureProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
   }
 
   /**
@@ -71,10 +69,16 @@ public class ProductSyncMultipleVariantsIT {
 
     final ProductDraft productDraft =
         createProductDraftBuilder(
-                PRODUCT_KEY_1_MULTIPLE_VARIANTS_RESOURCE_PATH, productType.toReference())
+                PRODUCT_KEY_1_MULTIPLE_VARIANTS_RESOURCE_PATH, productType.toResourceIdentifier())
             .build();
 
-    product = executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft)));
+    product =
+        CTP_TARGET_CLIENT
+            .products()
+            .create(productDraft)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .join();
   }
 
   @AfterAll
@@ -87,21 +91,26 @@ public class ProductSyncMultipleVariantsIT {
     // preparation
     final ProductDraft productDraft =
         createProductDraftBuilder(
-                PRODUCT_KEY_2_MULTIPLE_VARIANTS_RESOURCE_PATH, productType.toReference())
+                PRODUCT_KEY_2_MULTIPLE_VARIANTS_RESOURCE_PATH, productType.toResourceIdentifier())
             .build();
 
     final ProductSync productSync = new ProductSync(syncOptions);
     final ProductSyncStatistics syncStatistics =
-        executeBlocking(productSync.sync(singletonList(productDraft)));
+        productSync.sync(List.of(productDraft)).toCompletableFuture().join();
 
-    AssertionsForStatistics.assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
+    assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
 
     final ProductVariant fetchedMasterVariant =
         CTP_TARGET_CLIENT
-            .execute(ProductProjectionByIdGet.of(product.getId(), ProductProjectionType.STAGED))
+            .productProjections()
+            .withId(product.getId())
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .thenApply(ProductProjection::getMasterVariant)
             .toCompletableFuture()
             .join();

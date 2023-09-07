@@ -1,37 +1,17 @@
 package com.commercetools.sync.integration.services.impl;
 
-import static com.commercetools.sync.integration.commons.utils.ChannelITUtils.deleteChannelsFromTargetAndSource;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.EXPECTED_DELIVERY_1;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.EXPECTED_DELIVERY_2;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.QUANTITY_ON_STOCK_1;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.QUANTITY_ON_STOCK_2;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.RESTOCKABLE_IN_DAYS_1;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.RESTOCKABLE_IN_DAYS_2;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SKU_1;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SKU_2;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.deleteInventoryEntriesFromTargetAndSource;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.getInventoryEntryBySkuAndSupplyChannel;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.populateTargetProject;
+import static com.commercetools.sync.integration.commons.utils.ChannelITUtils.ensureChannelsInTargetProject;
+import static com.commercetools.sync.integration.commons.utils.InventoryITUtils.*;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.commercetools.api.models.channel.*;
+import com.commercetools.api.models.inventory.*;
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
 import com.commercetools.sync.inventories.helpers.InventoryEntryIdentifier;
 import com.commercetools.sync.services.InventoryService;
 import com.commercetools.sync.services.impl.InventoryServiceImpl;
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.channels.ChannelDraft;
-import io.sphere.sdk.channels.commands.ChannelCreateCommand;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.inventory.InventoryEntry;
-import io.sphere.sdk.inventory.InventoryEntryDraft;
-import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
-import io.sphere.sdk.inventory.commands.updateactions.ChangeQuantity;
-import io.sphere.sdk.inventory.commands.updateactions.SetExpectedDelivery;
-import io.sphere.sdk.inventory.commands.updateactions.SetRestockableInDays;
-import io.sphere.sdk.models.ResourceIdentifier;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -52,10 +32,15 @@ class InventoryServiceImplIT {
    */
   @BeforeEach
   void setup() {
-    deleteInventoryEntriesFromTargetAndSource();
-    deleteTypesFromTargetAndSource();
-    deleteChannelsFromTargetAndSource();
-    populateTargetProject();
+    deleteInventoryEntries(CTP_TARGET_CLIENT);
+
+    final Channel channel = ensureChannelsInTargetProject();
+    final ChannelResourceIdentifier supplyChannelReference =
+        ChannelResourceIdentifierBuilder.of().id(channel.getId()).build();
+
+    ensureInventoriesCustomType(CTP_TARGET_CLIENT);
+
+    populateInventoriesInTargetProject(supplyChannelReference);
     inventoryService =
         new InventoryServiceImpl(InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build());
   }
@@ -63,29 +48,34 @@ class InventoryServiceImplIT {
   /** Cleans up the target and source test data that were built in this test class. */
   @AfterAll
   static void tearDown() {
-    deleteInventoryEntriesFromTargetAndSource();
-    deleteTypesFromTargetAndSource();
-    deleteChannelsFromTargetAndSource();
+    deleteInventoryEntries(CTP_TARGET_CLIENT);
   }
 
   @Test
   void fetchInventoryEntriesBySku_ShouldReturnCorrectInventoryEntriesWithoutReferenceExpansion() {
     // prepare draft and create
-    final ChannelDraft channelDraft1 = ChannelDraft.of("CHANNEL_KEY");
+    final ChannelDraft channelDraft1 = ChannelDraftBuilder.of().key("CHANNEL_KEY").build();
     final Channel channel =
         CTP_TARGET_CLIENT
-            .execute(ChannelCreateCommand.of(channelDraft1))
+            .channels()
+            .post(channelDraft1)
+            .execute()
             .toCompletableFuture()
-            .join();
+            .join()
+            .getBody();
 
     final InventoryEntryDraft inventoryEntryDraft1 =
-        InventoryEntryDraftBuilder.of("SKU_WITH_CHANNEL", 1L)
-            .supplyChannel(ResourceIdentifier.ofId(channel.getId()))
+        InventoryEntryDraftBuilder.of()
+            .sku("SKU_WITH_CHANNEL")
+            .quantityOnStock(1L)
+            .supplyChannel(ChannelResourceIdentifierBuilder.of().id(channel.getId()).build())
             .build();
 
     final InventoryEntryDraft inventoryEntryDraft2 =
-        InventoryEntryDraftBuilder.of("SKU_WITHOUT_CHANNEL", 1L)
-            .supplyChannel(ResourceIdentifier.ofId(channel.getId()))
+        InventoryEntryDraftBuilder.of()
+            .sku("SKU_WITHOUT_CHANNEL")
+            .quantityOnStock(1L)
+            .supplyChannel(ChannelResourceIdentifierBuilder.of().id(channel.getId()).build())
             .build();
 
     CompletableFuture.allOf(
@@ -118,8 +108,11 @@ class InventoryServiceImplIT {
   void createInventoryEntry_ShouldCreateCorrectInventoryEntry() {
     // prepare draft and create
     final InventoryEntryDraft inventoryEntryDraft =
-        InventoryEntryDraftBuilder.of(
-                SKU_2, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, null)
+        InventoryEntryDraftBuilder.of()
+            .sku(SKU_2)
+            .quantityOnStock(QUANTITY_ON_STOCK_2)
+            .expectedDelivery(EXPECTED_DELIVERY_2)
+            .restockableInDays(RESTOCKABLE_IN_DAYS_2)
             .build();
 
     final Optional<InventoryEntry> result =
@@ -136,15 +129,15 @@ class InventoryServiceImplIT {
 
     // assert CTP state
     final Optional<InventoryEntry> updatedInventoryEntry =
-        getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_2, null);
-    assertThat(updatedInventoryEntry).isEqualTo(result);
+        getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_2, null, null);
+    assertThat(updatedInventoryEntry).hasValue(result.get());
   }
 
   @Test
   void updateInventoryEntry_ShouldUpdateInventoryEntry() {
     // fetch existing inventory entry and assert its state
     final Optional<InventoryEntry> existingEntryOptional =
-        getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null);
+        getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null, null);
     assertThat(existingEntryOptional).isNotEmpty();
 
     final InventoryEntry existingEntry = existingEntryOptional.get();
@@ -153,11 +146,17 @@ class InventoryServiceImplIT {
     assertThat(existingEntry.getExpectedDelivery()).isEqualTo(EXPECTED_DELIVERY_1);
 
     // build update actions and do update
-    final List<UpdateAction<InventoryEntry>> updateActions =
+    final List<InventoryEntryUpdateAction> updateActions =
         Stream.of(
-                ChangeQuantity.of(QUANTITY_ON_STOCK_2),
-                SetExpectedDelivery.of(EXPECTED_DELIVERY_2),
-                SetRestockableInDays.of(RESTOCKABLE_IN_DAYS_2))
+                InventoryEntryChangeQuantityActionBuilder.of()
+                    .quantity(QUANTITY_ON_STOCK_2)
+                    .build(),
+                InventoryEntrySetExpectedDeliveryActionBuilder.of()
+                    .expectedDelivery(EXPECTED_DELIVERY_2)
+                    .build(),
+                InventoryEntrySetRestockableInDaysActionBuilder.of()
+                    .restockableInDays(RESTOCKABLE_IN_DAYS_2)
+                    .build())
             .collect(toList());
 
     final InventoryEntry result =
@@ -172,7 +171,7 @@ class InventoryServiceImplIT {
 
     // assert CTP state
     final Optional<InventoryEntry> updatedInventoryEntry =
-        getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null);
+        getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null, null);
     assertThat(updatedInventoryEntry).isNotEmpty();
     assertThat(updatedInventoryEntry.get()).isEqualTo(result);
   }

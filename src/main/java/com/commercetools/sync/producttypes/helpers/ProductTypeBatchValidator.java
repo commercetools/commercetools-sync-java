@@ -5,15 +5,15 @@ import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
+import com.commercetools.api.models.product_type.AttributeNestedType;
+import com.commercetools.api.models.product_type.AttributeSetType;
+import com.commercetools.api.models.product_type.AttributeType;
+import com.commercetools.api.models.product_type.ProductTypeDraft;
 import com.commercetools.sync.commons.exceptions.InvalidReferenceException;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.helpers.BaseBatchValidator;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
-import io.sphere.sdk.products.attributes.AttributeType;
-import io.sphere.sdk.products.attributes.NestedAttributeType;
-import io.sphere.sdk.products.attributes.SetAttributeType;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -43,11 +43,11 @@ public class ProductTypeBatchValidator
   }
 
   /**
-   * Given the {@link List}&lt;{@link ProductTypeDraft}&gt; of drafts this method attempts to
-   * validate drafts and collect referenced keys from the draft and return an {@link
-   * ImmutablePair}&lt;{@link Set}&lt;{@link ProductTypeDraft}&gt; ,{@link Set}&lt;{@link
-   * String}&gt;&gt; which contains the {@link Set} of valid drafts and referenced product type
-   * keys.
+   * Given the {@link java.util.List}&lt;{@link ProductTypeDraft}&gt; of drafts this method attempts
+   * to validate drafts and collect referenced keys from the draft and return an {@link
+   * org.apache.commons.lang3.tuple.ImmutablePair}&lt;{@link java.util.Set}&lt;{@link
+   * ProductTypeDraft}&gt; ,{@link java.util.Set}&lt;{@link String}&gt;&gt; which contains the
+   * {@link java.util.Set} of valid drafts and referenced product type keys.
    *
    * <p>A valid productType draft is one which satisfies the following conditions:
    *
@@ -61,9 +61,9 @@ public class ProductTypeBatchValidator
    *
    * @param productTypeDrafts the product type drafts to validate and collect referenced product
    *     type keys.
-   * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@link ProductTypeDraft}&gt;, {@link
-   *     Set}&lt;{@link String}&gt;&gt; which contains the {@link Set} of valid drafts and
-   *     referenced product type keys.
+   * @return {@link org.apache.commons.lang3.tuple.ImmutablePair}&lt;{@link java.util.Set}&lt;{@link
+   *     ProductTypeDraft}&gt;, {@link java.util.Set}&lt;{@link String}&gt;&gt; which contains the
+   *     {@link java.util.Set} of valid drafts and referenced product type keys.
    */
   @Override
   public ImmutablePair<Set<ProductTypeDraft>, Set<String>> validateAndCollectReferencedKeys(
@@ -116,7 +116,7 @@ public class ProductTypeBatchValidator
 
     for (AttributeDefinitionDraft attributeDefinitionDraft : attributeDefinitionDrafts) {
       if (attributeDefinitionDraft != null) {
-        final AttributeType attributeType = attributeDefinitionDraft.getAttributeType();
+        final AttributeType attributeType = attributeDefinitionDraft.getType();
         try {
           getProductTypeKey(attributeType).ifPresent(referencedProductTypeKeys::add);
         } catch (InvalidReferenceException invalidReferenceException) {
@@ -152,18 +152,18 @@ public class ProductTypeBatchValidator
   public static Optional<String> getProductTypeKey(@Nonnull final AttributeType attributeType)
       throws InvalidReferenceException {
 
-    if (attributeType instanceof NestedAttributeType) {
-      final NestedAttributeType nestedElementType = (NestedAttributeType) attributeType;
+    if (attributeType instanceof AttributeNestedType) {
+      final AttributeNestedType nestedElementType = (AttributeNestedType) attributeType;
       return Optional.of(getProductTypeKey(nestedElementType));
-    } else if (attributeType instanceof SetAttributeType) {
-      final SetAttributeType setAttributeType = (SetAttributeType) attributeType;
+    } else if (attributeType instanceof AttributeSetType) {
+      final AttributeSetType setAttributeType = (AttributeSetType) attributeType;
       return getProductTypeKey(setAttributeType.getElementType());
     }
     return Optional.empty();
   }
 
   @Nonnull
-  private static String getProductTypeKey(@Nonnull final NestedAttributeType nestedAttributeType)
+  private static String getProductTypeKey(@Nonnull final AttributeNestedType nestedAttributeType)
       throws InvalidReferenceException {
 
     final String key = nestedAttributeType.getTypeReference().getId();

@@ -1,23 +1,15 @@
 package com.commercetools.sync.benchmark;
 
-import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATES;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.SUBMIT_BENCHMARK_RESULT;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.TYPE_SYNC;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.FIELD_DEFINITION_1;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.FIELD_DEFINITION_NAME_1;
-import static com.commercetools.sync.integration.commons.utils.TypeITUtils.deleteTypes;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.lang.String.format;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.type.*;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
@@ -25,16 +17,7 @@ import com.commercetools.sync.types.TypeSync;
 import com.commercetools.sync.types.TypeSyncOptions;
 import com.commercetools.sync.types.TypeSyncOptionsBuilder;
 import com.commercetools.sync.types.helpers.TypeSyncStatistics;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.queries.PagedQueryResult;
-import io.sphere.sdk.types.FieldDefinition;
-import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
-import io.sphere.sdk.types.Type;
-import io.sphere.sdk.types.TypeDraft;
-import io.sphere.sdk.types.TypeDraftBuilder;
-import io.sphere.sdk.types.commands.TypeCreateCommand;
-import io.sphere.sdk.types.queries.TypeQuery;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,14 +53,22 @@ class TypeSyncBenchmark {
 
   @BeforeEach
   void setupTest() {
-    clearSyncTestCollections();
     deleteTypes(CTP_TARGET_CLIENT);
+    try {
+      // The removal of a FieldDefinition deletes asynchronously all Custom Fields using the
+      // FieldDefinition as well.
+      // Here with one second break we are slowing down the ITs a little bit so CTP could remove the
+      // custom fields.
+      Thread.sleep(5000);
+    } catch (InterruptedException expected) {
+    }
+    clearSyncTestCollections();
     typeSyncOptions = buildSyncOptions();
   }
 
   @Nonnull
   private TypeSyncOptions buildSyncOptions() {
-    final QuadConsumer<SyncException, Optional<TypeDraft>, Optional<Type>, List<UpdateAction<Type>>>
+    final QuadConsumer<SyncException, Optional<TypeDraft>, Optional<Type>, List<TypeUpdateAction>>
         errorCallBack =
             (exception, newResource, oldResource, updateActions) -> {
               errorCallBackMessages.add(exception.getMessage());
@@ -101,51 +92,64 @@ class TypeSyncBenchmark {
   @Test
   void sync_NewTypes_ShouldCreateTypes() throws IOException {
     // preparation
-    final List<TypeDraft> typeDrafts = buildTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
+    final List<TypeDraft> typeDrafts =
+        buildTypeDrafts(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
     final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
     // benchmark
     final long beforeSyncTime = System.currentTimeMillis();
-    final TypeSyncStatistics syncStatistics = executeBlocking(typeSync.sync(typeDrafts));
+    final TypeSyncStatistics syncStatistics =
+        typeSync.sync(typeDrafts).toCompletableFuture().join();
     final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
     assertThat(totalTime)
         .withFailMessage(
-            format(THRESHOLD_EXCEEDED_ERROR, totalTime, TYPE_BENCHMARKS_CREATE_ACTION_THRESHOLD))
+            String.format(
+                BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR,
+                totalTime,
+                TYPE_BENCHMARKS_CREATE_ACTION_THRESHOLD))
         .isLessThan(TYPE_BENCHMARKS_CREATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (total number of existing types)
-    final CompletableFuture<Integer> totalNumberOfTypes =
+    final Long totalNumberOfTypes =
         CTP_TARGET_CLIENT
-            .execute(TypeQuery.of())
-            .thenApply(PagedQueryResult::getTotal)
-            .thenApply(Long::intValue)
-            .toCompletableFuture();
+            .types()
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(TypePagedQueryResponse::getTotal)
+            .toCompletableFuture()
+            .join();
 
-    executeBlocking(totalNumberOfTypes);
-    assertThat(totalNumberOfTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
+    assertThat(totalNumberOfTypes).isEqualTo(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
 
     assertThat(syncStatistics)
-        .hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
+        .hasValues(
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            0,
+            0);
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
-    if (SUBMIT_BENCHMARK_RESULT) {
-      saveNewResult(TYPE_SYNC, CREATES_ONLY, totalTime);
+    if (BenchmarkUtils.SUBMIT_BENCHMARK_RESULT) {
+      BenchmarkUtils.saveNewResult(
+          BenchmarkUtils.TYPE_SYNC, BenchmarkUtils.CREATES_ONLY, totalTime);
     }
   }
 
   @Test
   void sync_ExistingTypes_ShouldUpdateTypes() throws IOException {
     // preparation
-    final List<TypeDraft> typeDrafts = buildTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
+    final List<TypeDraft> typeDrafts =
+        buildTypeDrafts(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
     // Create drafts to target project with different field type name
     CompletableFuture.allOf(
             typeDrafts.stream()
                 .map(TypeDraftBuilder::of)
                 .map(TypeSyncBenchmark::applyFieldDefinitionNameChange)
                 .map(TypeDraftBuilder::build)
-                .map(draft -> CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(draft)))
+                .map(draft -> CTP_TARGET_CLIENT.types().post(draft).execute())
                 .map(CompletionStage::toCompletableFuture)
                 .toArray(CompletableFuture[]::new))
         .join();
@@ -154,53 +158,67 @@ class TypeSyncBenchmark {
 
     // benchmark
     final long beforeSyncTime = System.currentTimeMillis();
-    final TypeSyncStatistics syncStatistics = executeBlocking(typeSync.sync(typeDrafts));
+    final TypeSyncStatistics syncStatistics =
+        typeSync.sync(typeDrafts).toCompletableFuture().join();
     final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
     assertThat(totalTime)
         .withFailMessage(
-            format(THRESHOLD_EXCEEDED_ERROR, totalTime, TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD))
+            String.format(
+                BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR,
+                totalTime,
+                TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD))
         .isLessThan(TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (number of updated types)
-    final CompletableFuture<Integer> totalNumberOfUpdatedTypes =
+    final Long totalNumberOfUpdatedTypes =
         CTP_TARGET_CLIENT
-            .execute(
-                TypeQuery.of()
-                    .withPredicates(p -> p.fieldDefinitions().name().is(FIELD_DEFINITION_NAME_1)))
-            .thenApply(PagedQueryResult::getTotal)
-            .thenApply(Long::intValue)
-            .toCompletableFuture();
+            .types()
+            .get()
+            .withWhere("fieldDefinitions(name=:definitionName)")
+            .withPredicateVar("definitionName", FIELD_DEFINITION_NAME_1)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(TypePagedQueryResponse::getTotal)
+            .toCompletableFuture()
+            .join();
 
-    executeBlocking(totalNumberOfUpdatedTypes);
-    assertThat(totalNumberOfUpdatedTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
+    assertThat(totalNumberOfUpdatedTypes).isEqualTo(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
 
     // Assert actual state of CTP project (total number of existing types)
-    final CompletableFuture<Integer> totalNumberOfTypes =
+    final Long totalNumberOfTypes =
         CTP_TARGET_CLIENT
-            .execute(TypeQuery.of())
-            .thenApply(PagedQueryResult::getTotal)
-            .thenApply(Long::intValue)
-            .toCompletableFuture();
-    executeBlocking(totalNumberOfTypes);
-    assertThat(totalNumberOfTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
+            .types()
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(TypePagedQueryResponse::getTotal)
+            .toCompletableFuture()
+            .join();
+    assertThat(totalNumberOfTypes).isEqualTo(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
 
     // Assert statistics
     assertThat(syncStatistics)
-        .hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, 0, NUMBER_OF_RESOURCE_UNDER_TEST, 0);
+        .hasValues(
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            0,
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            0);
 
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
-    if (SUBMIT_BENCHMARK_RESULT) {
-      saveNewResult(TYPE_SYNC, UPDATES_ONLY, totalTime);
+    if (BenchmarkUtils.SUBMIT_BENCHMARK_RESULT) {
+      BenchmarkUtils.saveNewResult(
+          BenchmarkUtils.TYPE_SYNC, BenchmarkUtils.UPDATES_ONLY, totalTime);
     }
   }
 
   @Test
   void sync_WithSomeExistingTypes_ShouldSyncTypes() throws IOException {
     // preparation
-    final List<TypeDraft> typeDrafts = buildTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
+    final List<TypeDraft> typeDrafts =
+        buildTypeDrafts(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
     final int halfNumberOfDrafts = typeDrafts.size() / 2;
     final List<TypeDraft> firstHalf = typeDrafts.subList(0, halfNumberOfDrafts);
 
@@ -210,7 +228,7 @@ class TypeSyncBenchmark {
                 .map(TypeDraftBuilder::of)
                 .map(TypeSyncBenchmark::applyFieldDefinitionNameChange)
                 .map(TypeDraftBuilder::build)
-                .map(draft -> CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(draft)))
+                .map(draft -> CTP_TARGET_CLIENT.types().post(draft).execute())
                 .map(CompletionStage::toCompletableFuture)
                 .toArray(CompletableFuture[]::new))
         .join();
@@ -219,50 +237,60 @@ class TypeSyncBenchmark {
 
     // benchmark
     final long beforeSyncTime = System.currentTimeMillis();
-    final TypeSyncStatistics syncStatistics = executeBlocking(typeSync.sync(typeDrafts));
+    final TypeSyncStatistics syncStatistics =
+        typeSync.sync(typeDrafts).toCompletableFuture().join();
     final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
     assertThat(totalTime)
         .withFailMessage(
-            format(
-                THRESHOLD_EXCEEDED_ERROR,
+            String.format(
+                BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR,
                 totalTime,
                 TYPE_BENCHMARKS_CREATE_AND_UPDATE_ACTION_THRESHOLD))
         .isLessThan(TYPE_BENCHMARKS_CREATE_AND_UPDATE_ACTION_THRESHOLD);
 
     // Assert actual state of CTP project (number of updated types)
-    final CompletableFuture<Integer> totalNumberOfUpdatedTypesWithOldFieldDefinitionName =
+    final Long totalNumberOfUpdatedTypesWithOldFieldDefinitionName =
         CTP_TARGET_CLIENT
-            .execute(
-                TypeQuery.of()
-                    .withPredicates(
-                        p -> p.fieldDefinitions().name().is(FIELD_DEFINITION_NAME_1 + "_old")))
-            .thenApply(PagedQueryResult::getTotal)
-            .thenApply(Long::intValue)
-            .toCompletableFuture();
+            .types()
+            .get()
+            .withWhere("fieldDefinitions(name=:definitionName)")
+            .withPredicateVar("definitionName", FIELD_DEFINITION_NAME_1 + "_old")
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(TypePagedQueryResponse::getTotal)
+            .toCompletableFuture()
+            .join();
 
-    executeBlocking(totalNumberOfUpdatedTypesWithOldFieldDefinitionName);
-    assertThat(totalNumberOfUpdatedTypesWithOldFieldDefinitionName).isCompletedWithValue(0);
+    assertThat(totalNumberOfUpdatedTypesWithOldFieldDefinitionName).isEqualTo(0);
 
     // Assert actual state of CTP project (total number of existing types)
-    final CompletableFuture<Integer> totalNumberOfTypes =
+    final Long totalNumberOfTypes =
         CTP_TARGET_CLIENT
-            .execute(TypeQuery.of())
-            .thenApply(PagedQueryResult::getTotal)
-            .thenApply(Long::intValue)
-            .toCompletableFuture();
-    executeBlocking(totalNumberOfTypes);
-    assertThat(totalNumberOfTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
+            .types()
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(TypePagedQueryResponse::getTotal)
+            .toCompletableFuture()
+            .join();
+
+    assertThat(totalNumberOfTypes).isEqualTo(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
 
     // Assert statistics
     assertThat(syncStatistics)
-        .hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, halfNumberOfDrafts, halfNumberOfDrafts, 0);
+        .hasValues(
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            halfNumberOfDrafts,
+            halfNumberOfDrafts,
+            0);
 
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
-    if (SUBMIT_BENCHMARK_RESULT) {
-      saveNewResult(TYPE_SYNC, CREATES_AND_UPDATES, totalTime);
+    if (BenchmarkUtils.SUBMIT_BENCHMARK_RESULT) {
+      BenchmarkUtils.saveNewResult(
+          BenchmarkUtils.TYPE_SYNC, BenchmarkUtils.CREATES_AND_UPDATES, totalTime);
     }
   }
 
@@ -271,12 +299,12 @@ class TypeSyncBenchmark {
     return IntStream.range(0, numberOfTypes)
         .mapToObj(
             i ->
-                TypeDraftBuilder.of(
-                        format("key__%d", i),
-                        LocalizedString.ofEnglish(format("name__%d", i)),
-                        ResourceTypeIdsSetBuilder.of().addCategories().build())
+                TypeDraftBuilder.of()
+                    .key(format("key__%d", i))
+                    .name(LocalizedString.ofEnglish(format("name__%d", i)))
+                    .resourceTypeIds(ResourceTypeId.CATEGORY)
                     .description(LocalizedString.ofEnglish(format("description__%d", i)))
-                    .fieldDefinitions(singletonList(FIELD_DEFINITION_1))
+                    .fieldDefinitions(FIELD_DEFINITION_1)
                     .build())
         .collect(Collectors.toList());
   }
@@ -288,12 +316,13 @@ class TypeSyncBenchmark {
         builder.getFieldDefinitions().stream()
             .map(
                 fieldDefinition ->
-                    FieldDefinition.of(
-                        fieldDefinition.getType(),
-                        fieldDefinition.getName() + "_old",
-                        fieldDefinition.getLabel(),
-                        fieldDefinition.isRequired(),
-                        fieldDefinition.getInputHint()))
+                    FieldDefinitionBuilder.of()
+                        .type(fieldDefinition.getType())
+                        .name(fieldDefinition.getName() + "_old")
+                        .label(fieldDefinition.getLabel())
+                        .required(fieldDefinition.getRequired())
+                        .inputHint(fieldDefinition.getInputHint())
+                        .build())
             .collect(Collectors.toList());
 
     return builder.fieldDefinitions(list);

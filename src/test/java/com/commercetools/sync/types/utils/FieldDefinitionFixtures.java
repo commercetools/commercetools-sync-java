@@ -1,10 +1,11 @@
 package com.commercetools.sync.types.utils;
 
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.TextInputHint;
-import io.sphere.sdk.types.FieldDefinition;
-import io.sphere.sdk.types.LocalizedStringFieldType;
-import io.sphere.sdk.types.StringFieldType;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+
+import com.commercetools.api.models.type.FieldDefinition;
+import com.commercetools.api.models.type.FieldDefinitionBuilder;
+import com.commercetools.api.models.type.FieldTypeBuilder;
+import com.commercetools.api.models.type.TypeTextInputHint;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -32,36 +33,42 @@ public final class FieldDefinitionFixtures {
   static final String LABEL_EN = "label_en";
 
   static final FieldDefinition FIELD_DEFINITION_A =
-      stringFieldDefinition(FIELD_A, LABEL_EN, false, TextInputHint.SINGLE_LINE);
+      stringFieldDefinition(FIELD_A, LABEL_EN, false, TypeTextInputHint.SINGLE_LINE);
   static final FieldDefinition FIELD_DEFINITION_A_LOCALIZED_TYPE =
-      localizedStringFieldDefinition(FIELD_A, LABEL_EN, false, TextInputHint.SINGLE_LINE);
+      localizedStringFieldDefinition(FIELD_A, LABEL_EN, false, TypeTextInputHint.SINGLE_LINE);
   static final FieldDefinition FIELD_DEFINITION_B =
-      stringFieldDefinition(FIELD_B, LABEL_EN, false, TextInputHint.SINGLE_LINE);
+      stringFieldDefinition(FIELD_B, LABEL_EN, false, TypeTextInputHint.SINGLE_LINE);
   static final FieldDefinition FIELD_DEFINITION_C =
-      stringFieldDefinition(FIELD_C, LABEL_EN, false, TextInputHint.SINGLE_LINE);
+      stringFieldDefinition(FIELD_C, LABEL_EN, false, TypeTextInputHint.SINGLE_LINE);
   static final FieldDefinition FIELD_DEFINITION_D =
-      stringFieldDefinition(FIELD_D, LABEL_EN, false, TextInputHint.SINGLE_LINE);
+      stringFieldDefinition(FIELD_D, LABEL_EN, false, TypeTextInputHint.SINGLE_LINE);
 
   static FieldDefinition stringFieldDefinition(
       @Nonnull final String fieldName,
       @Nonnull final String labelEng,
       boolean required,
-      @Nullable final TextInputHint hint) {
-    return FieldDefinition.of(
-        StringFieldType.of(), fieldName, LocalizedString.ofEnglish(labelEng), required, hint);
+      @Nullable final TypeTextInputHint hint) {
+    return FieldDefinitionBuilder.of()
+        .type(FieldTypeBuilder::stringBuilder)
+        .name(fieldName)
+        .label(ofEnglish(labelEng))
+        .required(required)
+        .inputHint(hint)
+        .build();
   }
 
   private static FieldDefinition localizedStringFieldDefinition(
       @Nonnull final String fieldName,
       @Nonnull final String labelEng,
       boolean required,
-      @Nullable final TextInputHint hint) {
-    return FieldDefinition.of(
-        LocalizedStringFieldType.of(),
-        fieldName,
-        LocalizedString.ofEnglish(labelEng),
-        required,
-        hint);
+      @Nullable final TypeTextInputHint hint) {
+    return FieldDefinitionBuilder.of()
+        .type(FieldTypeBuilder::localizedStringBuilder)
+        .name(fieldName)
+        .label(ofEnglish(labelEng))
+        .required(required)
+        .inputHint(hint)
+        .build();
   }
 
   private FieldDefinitionFixtures() {}

@@ -1,61 +1,46 @@
 package com.commercetools.sync.integration.externalsource.producttypes;
 
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_1;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_2;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_3;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_1;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_3;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_5;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_1;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_3;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_5;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_1;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_3;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_5;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.assertAttributesAreEqual;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.getProductTypeByKey;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateProjectWithNestedAttributes;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.removeAttributeReferencesAndDeleteProductTypes;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createBadGatewayException;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.*;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.defaultconfig.ApiRootBuilder;
+import com.commercetools.api.models.product_type.AttributeDefinition;
+import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
+import com.commercetools.api.models.product_type.AttributeDefinitionDraftBuilder;
+import com.commercetools.api.models.product_type.AttributeNestedType;
+import com.commercetools.api.models.product_type.AttributeSetType;
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.product_type.ProductTypeAddAttributeDefinitionActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeDraft;
+import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
+import com.commercetools.api.models.product_type.ProductTypeReferenceBuilder;
+import com.commercetools.api.models.product_type.ProductTypeRemoveAttributeDefinitionActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.producttypes.ProductTypeSync;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
 import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
-import io.sphere.sdk.client.BadGatewayException;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Resource;
-import io.sphere.sdk.products.attributes.AttributeDefinition;
-import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
-import io.sphere.sdk.products.attributes.NestedAttributeType;
-import io.sphere.sdk.products.attributes.SetAttributeType;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
-import io.sphere.sdk.producttypes.commands.updateactions.AddAttributeDefinition;
-import io.sphere.sdk.producttypes.commands.updateactions.RemoveAttributeDefinition;
-import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
+import io.vrap.rmf.base.client.ApiHttpMethod;
+import io.vrap.rmf.base.client.error.BadGatewayException;
+import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nonnull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,7 +48,7 @@ import org.junit.jupiter.api.Test;
 class ProductTypeWithNestedAttributeSyncIT {
 
   private ProductTypeSyncOptions productTypeSyncOptions;
-  private List<UpdateAction<ProductType>> builtUpdateActions;
+  private List<ProductTypeUpdateAction> builtUpdateActions;
   private List<String> errorMessages;
   private List<Throwable> exceptions;
 
@@ -107,8 +92,12 @@ class ProductTypeWithNestedAttributeSyncIT {
   void sync_WithUpdatedProductType_ShouldUpdateProductType() {
     // preparation
     final ProductTypeDraft newProductTypeDraft =
-        ProductTypeDraft.ofAttributeDefinitionDrafts(
-            PRODUCT_TYPE_KEY_3, PRODUCT_TYPE_NAME_3, PRODUCT_TYPE_DESCRIPTION_3, emptyList());
+        ProductTypeDraftBuilder.of()
+            .key(PRODUCT_TYPE_KEY_3)
+            .name(PRODUCT_TYPE_NAME_3)
+            .description(PRODUCT_TYPE_DESCRIPTION_3)
+            .attributes(emptyList())
+            .build();
 
     final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
 
@@ -121,8 +110,8 @@ class ProductTypeWithNestedAttributeSyncIT {
     assertThat(exceptions).isEmpty();
     assertThat(builtUpdateActions)
         .containsExactly(
-            RemoveAttributeDefinition.of("nestedattr"),
-            RemoveAttributeDefinition.of("nestedattr2"));
+            ProductTypeRemoveAttributeDefinitionActionBuilder.of().name("nestedattr1").build(),
+            ProductTypeRemoveAttributeDefinitionActionBuilder.of().name("nestedattr2").build());
     assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0, 0);
     assertThat(productTypeSyncStatistics.getReportMessage())
         .isEqualTo(
@@ -146,22 +135,31 @@ class ProductTypeWithNestedAttributeSyncIT {
   void sync_WithNewProductTypeWithAnExistingReference_ShouldCreateProductType() {
     // preparation
     final AttributeDefinitionDraft nestedTypeAttr3 =
-        AttributeDefinitionDraftBuilder.of(
-                AttributeDefinitionBuilder.of(
-                        "nestedattr3",
-                        ofEnglish("nestedattr3"),
-                        SetAttributeType.of(
-                            NestedAttributeType.of(ProductType.referenceOfId(PRODUCT_TYPE_KEY_3))))
-                    .build())
-            .searchable(false)
+        AttributeDefinitionDraftBuilder.of()
+            .name("nestedattr3")
+            .label(ofEnglish("nestedattr3"))
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            attributeTypeBuilder1 ->
+                                attributeTypeBuilder1
+                                    .nestedBuilder()
+                                    .typeReference(
+                                        productTypeReferenceBuilder ->
+                                            productTypeReferenceBuilder.id(PRODUCT_TYPE_KEY_3))))
+            .isSearchable(false)
+            .isRequired(false)
             .build();
 
     final ProductTypeDraft newProductTypeDraft =
-        ProductTypeDraft.ofAttributeDefinitionDrafts(
-            PRODUCT_TYPE_KEY_5,
-            PRODUCT_TYPE_NAME_5,
-            PRODUCT_TYPE_DESCRIPTION_5,
-            singletonList(nestedTypeAttr3));
+        ProductTypeDraftBuilder.of()
+            .key(PRODUCT_TYPE_KEY_5)
+            .name(PRODUCT_TYPE_NAME_5)
+            .description(PRODUCT_TYPE_DESCRIPTION_5)
+            .attributes(nestedTypeAttr3)
+            .build();
 
     final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
 
@@ -190,18 +188,18 @@ class ProductTypeWithNestedAttributeSyncIT {
               assertThat(productType.getDescription()).isEqualTo(PRODUCT_TYPE_DESCRIPTION_5);
               assertThat(productType.getAttributes())
                   .hasSize(1)
-                  .extracting(AttributeDefinition::getAttributeType)
+                  .extracting(AttributeDefinition::getType)
                   .first()
                   .satisfies(
                       attributeType -> {
-                        assertThat(attributeType).isInstanceOf(SetAttributeType.class);
-                        final SetAttributeType setAttributeType = (SetAttributeType) attributeType;
-                        final NestedAttributeType nestedType =
-                            (NestedAttributeType) setAttributeType.getElementType();
+                        assertThat(attributeType).isInstanceOf(AttributeSetType.class);
+                        final AttributeSetType setAttributeType = (AttributeSetType) attributeType;
+                        final AttributeNestedType nestedType =
+                            (AttributeNestedType) setAttributeType.getElementType();
                         assertThat(nestedType.getTypeReference().getId())
                             .isEqualTo(
                                 getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_3)
-                                    .map(Resource::getId)
+                                    .map(ProductType::getId)
                                     .orElse(null));
                       });
             });
@@ -211,25 +209,34 @@ class ProductTypeWithNestedAttributeSyncIT {
   void sync_WithNewProductTypeWithANonExistingReference_ShouldCreateProductType() {
     // preparation
     final AttributeDefinitionDraft nestedTypeAttr =
-        AttributeDefinitionDraftBuilder.of(
-                AttributeDefinitionBuilder.of(
-                        "nestedattr",
-                        ofEnglish("nestedattr"),
-                        SetAttributeType.of(
-                            NestedAttributeType.of(ProductType.referenceOfId("non-existing-ref"))))
-                    .build())
+        AttributeDefinitionDraftBuilder.of()
+            .name("nestedattr")
+            .label(ofEnglish("nestedattr"))
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            attributeTypeBuilder1 ->
+                                attributeTypeBuilder1
+                                    .nestedBuilder()
+                                    .typeReference(
+                                        productTypeReferenceBuilder ->
+                                            productTypeReferenceBuilder.id("non-existing-ref"))))
             // isSearchable=true is not supported for attribute type 'nested' and
             // AttributeDefinitionBuilder sets it to
             // true by default
-            .searchable(false)
+            .isSearchable(false)
+            .isRequired(false)
             .build();
 
     final ProductTypeDraft newProductTypeDraft =
-        ProductTypeDraft.ofAttributeDefinitionDrafts(
-            PRODUCT_TYPE_KEY_5,
-            PRODUCT_TYPE_NAME_5,
-            PRODUCT_TYPE_DESCRIPTION_5,
-            singletonList(nestedTypeAttr));
+        ProductTypeDraftBuilder.of()
+            .key(PRODUCT_TYPE_KEY_5)
+            .name(PRODUCT_TYPE_NAME_5)
+            .description(PRODUCT_TYPE_DESCRIPTION_5)
+            .attributes(nestedTypeAttr)
+            .build();
 
     final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
 
@@ -276,42 +283,39 @@ class ProductTypeWithNestedAttributeSyncIT {
   void sync_WithNewProductTypeWithFailedFetchOnReferenceResolution_ShouldFail() {
     // preparation
     final AttributeDefinitionDraft nestedTypeAttr =
-        AttributeDefinitionDraftBuilder.of(
-                AttributeDefinitionBuilder.of(
-                        "nestedattr",
-                        ofEnglish("nestedattr"),
-                        NestedAttributeType.of(ProductType.referenceOfId(PRODUCT_TYPE_KEY_5)))
-                    .build())
-            // isSearchable=true is not supported for attribute type 'nested' and
-            // AttributeDefinitionBuilder sets it to
-            // true by default
-            .searchable(false)
+        AttributeDefinitionDraftBuilder.of()
+            .name("nestedattr")
+            .label(ofEnglish("nestedattr"))
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .nestedBuilder()
+                        .typeReference(
+                            productTypeReferenceBuilder ->
+                                productTypeReferenceBuilder.id(PRODUCT_TYPE_KEY_5)))
+            // isSearchable=true is not supported for attribute type 'nested'
+            .isSearchable(false)
+            .isRequired(false)
             .build();
 
     final ProductTypeDraft withMissingNestedTypeRef =
-        ProductTypeDraft.ofAttributeDefinitionDrafts(
-            PRODUCT_TYPE_KEY_1,
-            PRODUCT_TYPE_NAME_1,
-            PRODUCT_TYPE_DESCRIPTION_1,
-            asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, nestedTypeAttr));
+        ProductTypeDraftBuilder.of()
+            .key(PRODUCT_TYPE_KEY_1)
+            .name(PRODUCT_TYPE_NAME_1)
+            .description(PRODUCT_TYPE_DESCRIPTION_1)
+            .attributes(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, nestedTypeAttr)
+            .build();
 
     final ProductTypeDraft productTypeDraft5 =
-        ProductTypeDraft.ofAttributeDefinitionDrafts(
-            PRODUCT_TYPE_KEY_5,
-            PRODUCT_TYPE_NAME_5,
-            PRODUCT_TYPE_DESCRIPTION_5,
-            singletonList(ATTRIBUTE_DEFINITION_DRAFT_3));
+        ProductTypeDraftBuilder.of()
+            .key(PRODUCT_TYPE_KEY_5)
+            .name(PRODUCT_TYPE_NAME_5)
+            .description(PRODUCT_TYPE_DESCRIPTION_5)
+            .attributes(ATTRIBUTE_DEFINITION_DRAFT_3)
+            .build();
 
-    final SphereClient ctpClient = spy(CTP_TARGET_CLIENT);
-    final BadGatewayException badGatewayException = new BadGatewayException();
-    when(ctpClient.execute(any(ResourceKeyIdGraphQlRequest.class)))
-        .thenCallRealMethod(); // should work on caching
-    when(ctpClient.execute(any(ProductTypeQuery.class)))
-        .thenCallRealMethod() // should work when fetching matching product types
-        .thenCallRealMethod() // should work when second fetching matching product types
-        .thenReturn(
-            exceptionallyCompletedFuture(badGatewayException)) // fail on fetching during resolution
-        .thenCallRealMethod(); // call the real method for the rest of the calls
+    final ProjectApiRoot ctpClient =
+        buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
     productTypeSyncOptions =
         ProductTypeSyncOptionsBuilder.of(ctpClient)
@@ -386,36 +390,55 @@ class ProductTypeWithNestedAttributeSyncIT {
       sync_WithUpdatedProductType_WithNewNestedAttributeInSameBatch_ShouldUpdateProductTypeAddingAttribute() {
     // preparation
     final AttributeDefinitionDraft nestedTypeAttr =
-        AttributeDefinitionDraftBuilder.of(
-                AttributeDefinitionBuilder.of(
-                        "nestedattr",
-                        ofEnglish("nestedattr"),
-                        SetAttributeType.of(
-                            SetAttributeType.of(
-                                SetAttributeType.of(
-                                    SetAttributeType.of(
-                                        NestedAttributeType.of(
-                                            ProductType.referenceOfId(PRODUCT_TYPE_KEY_1)))))))
-                    .build())
-            // isSearchable=true is not supported for attribute type 'nested' and
-            // AttributeDefinitionBuilder sets it to
-            // true by default
-            .searchable(false)
+        AttributeDefinitionDraftBuilder.of()
+            .name("nestedattr")
+            .label(ofEnglish("nestedattr"))
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            attributeTypeBuilder1 ->
+                                attributeTypeBuilder1
+                                    .setBuilder()
+                                    .elementType(
+                                        attributeTypeBuilder2 ->
+                                            attributeTypeBuilder2
+                                                .setBuilder()
+                                                .elementType(
+                                                    attributeTypeBuilder3 ->
+                                                        attributeTypeBuilder3
+                                                            .setBuilder()
+                                                            .elementType(
+                                                                attributeTypeBuilder4 ->
+                                                                    attributeTypeBuilder4
+                                                                        .nestedBuilder()
+                                                                        .typeReference(
+                                                                            ProductTypeReferenceBuilder
+                                                                                .of()
+                                                                                .id(
+                                                                                    PRODUCT_TYPE_KEY_1)
+                                                                                .build()))))))
+            // isSearchable=true is not supported for attribute type 'nested'
+            .isSearchable(false)
+            .isRequired(false)
             .build();
 
     final ProductTypeDraft newProductTypeDraft =
-        ProductTypeDraft.ofAttributeDefinitionDrafts(
-            PRODUCT_TYPE_KEY_1,
-            PRODUCT_TYPE_NAME_1,
-            PRODUCT_TYPE_DESCRIPTION_1,
-            asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, nestedTypeAttr));
+        ProductTypeDraftBuilder.of()
+            .key(PRODUCT_TYPE_KEY_1)
+            .name(PRODUCT_TYPE_NAME_1)
+            .description(PRODUCT_TYPE_DESCRIPTION_1)
+            .attributes(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, nestedTypeAttr)
+            .build();
 
     final ProductTypeDraft productTypeDraft5 =
-        ProductTypeDraft.ofAttributeDefinitionDrafts(
-            PRODUCT_TYPE_KEY_5,
-            PRODUCT_TYPE_NAME_5,
-            PRODUCT_TYPE_DESCRIPTION_5,
-            singletonList(ATTRIBUTE_DEFINITION_DRAFT_3));
+        ProductTypeDraftBuilder.of()
+            .key(PRODUCT_TYPE_KEY_5)
+            .name(PRODUCT_TYPE_NAME_5)
+            .description(PRODUCT_TYPE_DESCRIPTION_5)
+            .attributes(ATTRIBUTE_DEFINITION_DRAFT_3)
+            .build();
 
     final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
 
@@ -434,22 +457,43 @@ class ProductTypeWithNestedAttributeSyncIT {
     assertThat(exceptions).isEmpty();
     assertThat(builtUpdateActions)
         .containsExactly(
-            AddAttributeDefinition.of(
-                AttributeDefinitionDraftBuilder.of(
-                        AttributeDefinitionBuilder.of(
-                                "nestedattr",
-                                ofEnglish("nestedattr"),
-                                SetAttributeType.of(
-                                    SetAttributeType.of(
-                                        SetAttributeType.of(
-                                            SetAttributeType.of(
-                                                NestedAttributeType.of(productType1.get()))))))
-                            .build())
-                    // isSearchable=true is not supported for attribute type 'nested' and
-                    // AttributeDefinitionBuilder sets
-                    // it to true by default
-                    .searchable(false)
-                    .build()));
+            ProductTypeAddAttributeDefinitionActionBuilder.of()
+                .attribute(
+                    AttributeDefinitionDraftBuilder.of()
+                        .name("nestedattr")
+                        .label(ofEnglish("nestedattr"))
+                        .type(
+                            attributeTypeBuilder ->
+                                attributeTypeBuilder
+                                    .setBuilder()
+                                    .elementType(
+                                        attributeTypeBuilder1 ->
+                                            attributeTypeBuilder1
+                                                .setBuilder()
+                                                .elementType(
+                                                    attributeTypeBuilder2 ->
+                                                        attributeTypeBuilder2
+                                                            .setBuilder()
+                                                            .elementType(
+                                                                attributeTypeBuilder3 ->
+                                                                    attributeTypeBuilder3
+                                                                        .setBuilder()
+                                                                        .elementType(
+                                                                            attributeTypeBuilder4 ->
+                                                                                attributeTypeBuilder4
+                                                                                    .nestedBuilder()
+                                                                                    .typeReference(
+                                                                                        productTypeReferenceBuilder ->
+                                                                                            productTypeReferenceBuilder
+                                                                                                .id(
+                                                                                                    productType1
+                                                                                                        .get()
+                                                                                                        .getId())))))))
+                        // isSearchable=true is not supported for attribute type 'nested'
+                        .isSearchable(false)
+                        .isRequired(false)
+                        .build())
+                .build());
     assertThat(productTypeSyncStatistics).hasValues(2, 1, 1, 0, 0);
     assertThat(productTypeSyncStatistics.getReportMessage())
         .isEqualTo(
@@ -477,36 +521,54 @@ class ProductTypeWithNestedAttributeSyncIT {
       sync_WithUpdatedProductType_WithNewNestedAttributeInSeparateBatch_ShouldUpdateProductTypeAddingAttribute() {
     // preparation
     final AttributeDefinitionDraft nestedTypeAttr =
-        AttributeDefinitionDraftBuilder.of(
-                AttributeDefinitionBuilder.of(
-                        "nestedattr",
-                        ofEnglish("nestedattr"),
-                        SetAttributeType.of(
-                            SetAttributeType.of(
-                                SetAttributeType.of(
-                                    SetAttributeType.of(
-                                        NestedAttributeType.of(
-                                            ProductType.referenceOfId(PRODUCT_TYPE_KEY_1)))))))
-                    .build())
-            // isSearchable=true is not supported for attribute type 'nested' and
-            // AttributeDefinitionBuilder sets it to
-            // true by default
-            .searchable(false)
+        AttributeDefinitionDraftBuilder.of()
+            .name("nestedattr")
+            .label(ofEnglish("nestedattr"))
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            attributeTypeBuilder1 ->
+                                attributeTypeBuilder1
+                                    .setBuilder()
+                                    .elementType(
+                                        attributeTypeBuilder2 ->
+                                            attributeTypeBuilder2
+                                                .setBuilder()
+                                                .elementType(
+                                                    attributeTypeBuilder3 ->
+                                                        attributeTypeBuilder3
+                                                            .setBuilder()
+                                                            .elementType(
+                                                                attributeTypeBuilder4 ->
+                                                                    attributeTypeBuilder4
+                                                                        .nestedBuilder()
+                                                                        .typeReference(
+                                                                            productTypeReferenceBuilder ->
+                                                                                productTypeReferenceBuilder
+                                                                                    .id(
+                                                                                        PRODUCT_TYPE_KEY_1)))))))
+            // isSearchable=true is not supported for attribute type 'nested'
+            .isSearchable(false)
+            .isRequired(false)
             .build();
 
     final ProductTypeDraft newProductTypeDraft =
-        ProductTypeDraft.ofAttributeDefinitionDrafts(
-            PRODUCT_TYPE_KEY_1,
-            PRODUCT_TYPE_NAME_1,
-            PRODUCT_TYPE_DESCRIPTION_1,
-            asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, nestedTypeAttr));
+        ProductTypeDraftBuilder.of()
+            .key(PRODUCT_TYPE_KEY_1)
+            .name(PRODUCT_TYPE_NAME_1)
+            .description(PRODUCT_TYPE_DESCRIPTION_1)
+            .attributes(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, nestedTypeAttr)
+            .build();
 
     final ProductTypeDraft productTypeDraft5 =
-        ProductTypeDraft.ofAttributeDefinitionDrafts(
-            PRODUCT_TYPE_KEY_5,
-            PRODUCT_TYPE_NAME_5,
-            PRODUCT_TYPE_DESCRIPTION_5,
-            singletonList(ATTRIBUTE_DEFINITION_DRAFT_3));
+        ProductTypeDraftBuilder.of()
+            .key(PRODUCT_TYPE_KEY_5)
+            .name(PRODUCT_TYPE_NAME_5)
+            .description(PRODUCT_TYPE_DESCRIPTION_5)
+            .attributes(ATTRIBUTE_DEFINITION_DRAFT_3)
+            .build();
 
     productTypeSyncOptions =
         ProductTypeSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -540,22 +602,43 @@ class ProductTypeWithNestedAttributeSyncIT {
     assertThat(exceptions).isEmpty();
     assertThat(builtUpdateActions)
         .containsExactly(
-            AddAttributeDefinition.of(
-                AttributeDefinitionDraftBuilder.of(
-                        AttributeDefinitionBuilder.of(
-                                "nestedattr",
-                                ofEnglish("nestedattr"),
-                                SetAttributeType.of(
-                                    SetAttributeType.of(
-                                        SetAttributeType.of(
-                                            SetAttributeType.of(
-                                                NestedAttributeType.of(productType1.get()))))))
-                            .build())
-                    // isSearchable=true is not supported for attribute type 'nested' and
-                    // AttributeDefinitionBuilder sets
-                    // it to true by default
-                    .searchable(false)
-                    .build()));
+            ProductTypeAddAttributeDefinitionActionBuilder.of()
+                .attribute(
+                    AttributeDefinitionDraftBuilder.of()
+                        .name("nestedattr")
+                        .label(ofEnglish("nestedattr"))
+                        .type(
+                            attributeTypeBuilder ->
+                                attributeTypeBuilder
+                                    .setBuilder()
+                                    .elementType(
+                                        attributeTypeBuilder1 ->
+                                            attributeTypeBuilder1
+                                                .setBuilder()
+                                                .elementType(
+                                                    attributeTypeBuilder2 ->
+                                                        attributeTypeBuilder2
+                                                            .setBuilder()
+                                                            .elementType(
+                                                                attributeTypeBuilder3 ->
+                                                                    attributeTypeBuilder3
+                                                                        .setBuilder()
+                                                                        .elementType(
+                                                                            attributeTypeBuilder4 ->
+                                                                                attributeTypeBuilder4
+                                                                                    .nestedBuilder()
+                                                                                    .typeReference(
+                                                                                        productTypeReferenceBuilder ->
+                                                                                            productTypeReferenceBuilder
+                                                                                                .id(
+                                                                                                    productType1
+                                                                                                        .get()
+                                                                                                        .getId())))))))
+                        // isSearchable=true is not supported for attribute type 'nested'
+                        .isSearchable(false)
+                        .isRequired(false)
+                        .build())
+                .build());
     assertThat(productTypeSyncStatistics).hasValues(2, 1, 1, 0, 0);
     assertThat(productTypeSyncStatistics.getReportMessage())
         .isEqualTo(
@@ -583,25 +666,28 @@ class ProductTypeWithNestedAttributeSyncIT {
       sync_WithUpdatedProductType_WithRemovedNestedAttributeInLaterBatch_ShouldReturnProperStatistics() {
     // preparation
     final AttributeDefinitionDraft nestedTypeAttr =
-        AttributeDefinitionDraftBuilder.of(
-                AttributeDefinitionBuilder.of(
-                        "newNested",
-                        ofEnglish("nestedattr"),
-                        NestedAttributeType.of(
-                            ProductType.referenceOfId("non-existing-product-type")))
-                    .build())
-            // isSearchable=true is not supported for attribute type 'nested' and
-            // AttributeDefinitionBuilder sets it to
-            // true by default
-            .searchable(false)
+        AttributeDefinitionDraftBuilder.of()
+            .name("newNested")
+            .label(ofEnglish("nestedattr"))
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .nestedBuilder()
+                        .typeReference(
+                            productTypeReferenceBuilder ->
+                                productTypeReferenceBuilder.id("non-existing-product-type")))
+            // isSearchable=true is not supported for attribute type 'nested'
+            .isSearchable(false)
+            .isRequired(false)
             .build();
 
     final ProductTypeDraft newProductTypeDraft =
-        ProductTypeDraft.ofAttributeDefinitionDrafts(
-            PRODUCT_TYPE_KEY_1,
-            PRODUCT_TYPE_NAME_1,
-            PRODUCT_TYPE_DESCRIPTION_1,
-            asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, nestedTypeAttr));
+        ProductTypeDraftBuilder.of()
+            .key(PRODUCT_TYPE_KEY_1)
+            .name(PRODUCT_TYPE_NAME_1)
+            .description(PRODUCT_TYPE_DESCRIPTION_1)
+            .attributes(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, nestedTypeAttr)
+            .build();
 
     final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
 
@@ -609,11 +695,12 @@ class ProductTypeWithNestedAttributeSyncIT {
     productTypeSync.sync(singletonList(newProductTypeDraft)).toCompletableFuture().join();
 
     final ProductTypeDraft newProductTypeDraftWithoutNested =
-        ProductTypeDraft.ofAttributeDefinitionDrafts(
-            PRODUCT_TYPE_KEY_1,
-            PRODUCT_TYPE_NAME_1,
-            PRODUCT_TYPE_DESCRIPTION_1,
-            asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2));
+        ProductTypeDraftBuilder.of()
+            .key(PRODUCT_TYPE_KEY_1)
+            .name(PRODUCT_TYPE_NAME_1)
+            .description(PRODUCT_TYPE_DESCRIPTION_1)
+            .attributes(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2)
+            .build();
 
     final ProductTypeSyncStatistics productTypeSyncStatistics =
         productTypeSync
@@ -638,5 +725,29 @@ class ProductTypeWithNestedAttributeSyncIT {
     assertThat(productTypeSyncStatistics.getProductTypeKeysWithMissingParents()).isEmpty();
     assertThat(productType1)
         .hasValueSatisfying(productType -> assertThat(productType.getAttributes()).hasSize(2));
+  }
+
+  @Nonnull
+  private ProjectApiRoot buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
+    final AtomicInteger counter = new AtomicInteger(0);
+
+    final ProjectApiRoot testClient =
+        ApiRootBuilder.of(
+                request -> {
+                  final String uri = request.getUri() != null ? request.getUri().toString() : "";
+                  final ApiHttpMethod method = request.getMethod();
+                  if (uri.contains("product-types") && counter.getAndIncrement() > 2) {
+                    // Why counter is comparing with 2?
+                    // 1. should work when fetching matching product types
+                    // 2. should work when second fetching matching product types
+                    // 3. fail on fetching during resolution
+                    return CompletableFutureUtils.exceptionallyCompletedFuture(
+                        createBadGatewayException());
+                  }
+                  return CTP_TARGET_CLIENT.getApiHttpClient().execute(request);
+                })
+            .withApiBaseUrl(CTP_TARGET_CLIENT.getApiHttpClient().getBaseUri())
+            .build(CTP_TARGET_CLIENT.getProjectKey());
+    return testClient;
   }
 }

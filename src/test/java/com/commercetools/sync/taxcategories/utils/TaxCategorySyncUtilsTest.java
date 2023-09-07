@@ -1,18 +1,12 @@
 package com.commercetools.sync.taxcategories.utils;
 
-import static com.commercetools.sync.taxcategories.utils.TaxCategorySyncUtils.buildActions;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.taxcategories.TaxCategory;
-import io.sphere.sdk.taxcategories.TaxCategoryDraft;
-import io.sphere.sdk.taxcategories.TaxCategoryDraftBuilder;
-import io.sphere.sdk.taxcategories.commands.updateactions.ChangeName;
-import io.sphere.sdk.taxcategories.commands.updateactions.SetDescription;
-import java.util.Collections;
+import com.commercetools.api.models.tax_category.*;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -29,11 +23,15 @@ class TaxCategorySyncUtilsTest {
     when(taxCategory.getDescription()).thenReturn(description);
 
     final TaxCategoryDraft taxCategoryDraft =
-        TaxCategoryDraftBuilder.of(name, Collections.emptyList(), description)
+        TaxCategoryDraftBuilder.of()
+            .name(name)
+            .rates(emptyList())
+            .description(description)
             .key("tax-cat-key")
             .build();
 
-    final List<UpdateAction<TaxCategory>> result = buildActions(taxCategory, taxCategoryDraft);
+    final List<TaxCategoryUpdateAction> result =
+        TaxCategorySyncUtils.buildActions(taxCategory, taxCategoryDraft);
 
     assertThat(result).isEmpty();
   }
@@ -46,14 +44,27 @@ class TaxCategorySyncUtilsTest {
     when(taxCategory.getDescription()).thenReturn("description");
 
     final TaxCategoryDraft taxCategoryDraft =
-        TaxCategoryDraftBuilder.of("different name", null, "different description")
+        TaxCategoryDraftBuilder.of()
+            .name("different name")
+            .description("different description")
             .key("tax-cat-key")
             .build();
 
-    final List<UpdateAction<TaxCategory>> result = buildActions(taxCategory, taxCategoryDraft);
+    final List<TaxCategoryUpdateAction> result =
+        TaxCategorySyncUtils.buildActions(taxCategory, taxCategoryDraft);
 
     assertAll(
-        () -> assertThat(result).contains(ChangeName.of(taxCategoryDraft.getName())),
-        () -> assertThat(result).contains(SetDescription.of(taxCategoryDraft.getDescription())));
+        () ->
+            assertThat(result)
+                .contains(
+                    TaxCategoryChangeNameActionBuilder.of()
+                        .name(taxCategoryDraft.getName())
+                        .build()),
+        () ->
+            assertThat(result)
+                .contains(
+                    TaxCategorySetDescriptionActionBuilder.of()
+                        .description(taxCategoryDraft.getDescription())
+                        .build()));
   }
 }

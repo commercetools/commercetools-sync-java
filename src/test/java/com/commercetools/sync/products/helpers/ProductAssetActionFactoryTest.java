@@ -1,25 +1,27 @@
 package com.commercetools.sync.products.helpers;
 
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.common.Asset;
+import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.api.models.common.AssetDraftBuilder;
+import com.commercetools.api.models.product.ProductAddAssetAction;
+import com.commercetools.api.models.product.ProductAddAssetActionImpl;
+import com.commercetools.api.models.product.ProductChangeAssetOrderAction;
+import com.commercetools.api.models.product.ProductChangeAssetOrderActionImpl;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductRemoveAssetAction;
+import com.commercetools.api.models.product.ProductRemoveAssetActionImpl;
+import com.commercetools.api.models.product.ProductSetAssetTagsActionBuilder;
+import com.commercetools.api.models.product.ProductUpdateAction;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Asset;
-import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.models.AssetDraftBuilder;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.commands.updateactions.AddAsset;
-import io.sphere.sdk.products.commands.updateactions.ChangeAssetOrder;
-import io.sphere.sdk.products.commands.updateactions.RemoveAsset;
-import io.sphere.sdk.products.commands.updateactions.SetAssetTags;
-import java.util.HashSet;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,48 +32,48 @@ class ProductAssetActionFactoryTest {
   @BeforeEach
   void setup() {
     final ProductSyncOptions syncOptions =
-        ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
 
-    productAssetActionFactory = new ProductAssetActionFactory(1, syncOptions);
+    productAssetActionFactory = new ProductAssetActionFactory(1L, syncOptions);
   }
 
   @Test
   void buildRemoveAssetAction_always_ShouldBuildCorrectAction() {
-    final UpdateAction<Product> action = productAssetActionFactory.buildRemoveAssetAction("foo");
+    final ProductUpdateAction action = productAssetActionFactory.buildRemoveAssetAction("foo");
     assertThat(action).isNotNull();
-    assertThat(action).isInstanceOf(RemoveAsset.class);
-    final RemoveAsset removeAsset = (RemoveAsset) action;
-    assertThat(removeAsset.getVariantId()).isEqualTo(1);
+    assertThat(action).isInstanceOf(ProductRemoveAssetActionImpl.class);
+    final ProductRemoveAssetAction removeAsset = (ProductRemoveAssetAction) action;
+    assertThat(removeAsset.getVariantId()).isEqualTo(1L);
     assertThat(removeAsset.getAssetKey()).isEqualTo("foo");
-    assertThat(removeAsset.isStaged()).isTrue();
+    assertThat(removeAsset.getStaged()).isTrue();
   }
 
   @Test
   void buildChangeAssetOrderAction_always_ShouldBuildCorrectAction() {
-    final UpdateAction<Product> action =
+    final ProductUpdateAction action =
         productAssetActionFactory.buildChangeAssetOrderAction(emptyList());
     assertThat(action).isNotNull();
-    assertThat(action).isInstanceOf(ChangeAssetOrder.class);
-    final ChangeAssetOrder changeAssetOrder = (ChangeAssetOrder) action;
-    assertThat(changeAssetOrder.getVariantId()).isEqualTo(1);
+    assertThat(action).isInstanceOf(ProductChangeAssetOrderActionImpl.class);
+    final ProductChangeAssetOrderAction changeAssetOrder = (ProductChangeAssetOrderAction) action;
+    assertThat(changeAssetOrder.getVariantId()).isEqualTo(1L);
     assertThat(changeAssetOrder.getAssetOrder()).isEqualTo(emptyList());
-    assertThat(changeAssetOrder.isStaged()).isTrue();
+    assertThat(changeAssetOrder.getStaged()).isTrue();
   }
 
   @Test
   void buildAddAssetAction_always_ShouldBuildCorrectAction() {
-    final AssetDraft assetDraft = AssetDraftBuilder.of(emptyList(), ofEnglish("assetName")).build();
+    final AssetDraft assetDraft =
+        AssetDraftBuilder.of().sources(emptyList()).name(ofEnglish("assetName")).build();
 
-    final UpdateAction<Product> action =
-        productAssetActionFactory.buildAddAssetAction(assetDraft, 0);
+    final ProductUpdateAction action = productAssetActionFactory.buildAddAssetAction(assetDraft, 0);
     assertThat(action).isNotNull();
-    assertThat(action).isInstanceOf(AddAsset.class);
-    final AddAsset addAsset = (AddAsset) action;
-    assertThat(addAsset.getVariantId()).isEqualTo(1);
+    assertThat(action).isInstanceOf(ProductAddAssetActionImpl.class);
+    final ProductAddAssetAction addAsset = (ProductAddAssetAction) action;
+    assertThat(addAsset.getVariantId()).isEqualTo(1L);
     assertThat(addAsset.getAsset().getName()).isEqualTo(ofEnglish("assetName"));
     assertThat(addAsset.getAsset().getSources()).isEqualTo(emptyList());
     assertThat(addAsset.getPosition()).isEqualTo(0);
-    assertThat(addAsset.isStaged()).isTrue();
+    assertThat(addAsset.getStaged()).isTrue();
   }
 
   @Test
@@ -81,16 +83,27 @@ class ProductAssetActionFactoryTest {
     when(asset.getKey()).thenReturn("assetKey");
     when(asset.getName()).thenReturn(ofEnglish("assetName"));
 
-    final HashSet<String> newTags = new HashSet<>();
-    newTags.add("newTag");
+    final List<String> newTags = singletonList("newTag");
 
-    final AssetDraft assetDraft = AssetDraftBuilder.of(asset).tags(newTags).build();
+    final AssetDraft assetDraft =
+        AssetDraftBuilder.of()
+            .key(asset.getKey())
+            .name(asset.getName())
+            .sources(emptyList())
+            .tags(newTags)
+            .build();
 
-    final List<UpdateAction<Product>> updateActions =
+    final List<ProductUpdateAction> updateActions =
         productAssetActionFactory.buildAssetActions(mainProductDraft, asset, assetDraft);
 
     assertThat(updateActions).isNotNull();
     assertThat(updateActions)
-        .containsExactly(SetAssetTags.ofVariantIdAndAssetKey(1, asset.getKey(), newTags, true));
+        .containsExactly(
+            ProductSetAssetTagsActionBuilder.of()
+                .variantId(1L)
+                .assetKey(asset.getKey())
+                .tags(newTags)
+                .staged(true)
+                .build());
   }
 }

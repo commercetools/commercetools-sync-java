@@ -1,21 +1,20 @@
 package com.commercetools.sync.commons.helpers;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.ResourceView;
+import com.commercetools.api.models.ResourceUpdateAction;
+import com.commercetools.api.models.customer.Customer;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * A generic custom update action builder that creates update actions that are of the same type as
- * the Generic type T provided by the subclass of this abstract class. For example, if T is a {@link
- * io.sphere.sdk.categories.Category} then all the methods would build custom update actions of the
- * type {@link io.sphere.sdk.categories.Category}
+ * A generic custom update action builder that creates update actions for example for the type
+ * {@link Customer}
  *
- * @param <T> the type of the resource to create update actions for.
+ * @param <ResourceUpdateActionT> extends ResourceUpdateAction (e.g {@link
+ *     com.commercetools.api.models.customer.CustomerChangeEmailAction}
  */
-public interface GenericCustomActionBuilder<T extends ResourceView> {
+public interface GenericCustomActionBuilder<
+    ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>> {
   /**
    * Creates a CTP "setCustomType" update action on the given resource {@code T} that removes the
    * custom type set on the given resource {@code T}. If the resource that has the custom fields is
@@ -31,8 +30,8 @@ public interface GenericCustomActionBuilder<T extends ResourceView> {
    *     requested on.
    */
   @Nonnull
-  UpdateAction<T> buildRemoveCustomTypeAction(
-      @Nullable Integer variantId, @Nullable String objectId);
+  ResourceUpdateActionT buildRemoveCustomTypeAction(
+      @Nullable Long variantId, @Nullable String objectId);
 
   /**
    * Creates a CTP "setCustomType" update action on the given resource {@code T}. If the resource
@@ -49,11 +48,11 @@ public interface GenericCustomActionBuilder<T extends ResourceView> {
    * @return a setCustomType update action of the type of the resource it's requested on.
    */
   @Nonnull
-  UpdateAction<T> buildSetCustomTypeAction(
-      @Nullable Integer variantId,
+  ResourceUpdateActionT buildSetCustomTypeAction(
+      @Nullable Long variantId,
       @Nullable String objectId,
       @Nonnull String customTypeId,
-      @Nullable Map<String, JsonNode> customFieldsJsonMap);
+      @Nullable Map<String, Object> customFieldsJsonMap);
 
   /**
    * Creates a CTP "setCustomField" update action on the given resource {@code T} that updates a
@@ -73,9 +72,9 @@ public interface GenericCustomActionBuilder<T extends ResourceView> {
    *     the resource it's requested on.
    */
   @Nonnull
-  UpdateAction<T> buildSetCustomFieldAction(
-      @Nullable Integer variantId,
+  ResourceUpdateActionT buildSetCustomFieldAction(
+      @Nullable Long variantId,
       @Nullable String objectId,
       @Nullable String customFieldName,
-      @Nullable JsonNode customFieldValue);
+      @Nullable Object customFieldValue);
 }

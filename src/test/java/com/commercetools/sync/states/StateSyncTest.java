@@ -1,11 +1,9 @@
 package com.commercetools.sync.states;
 
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
+import static java.util.Collections.*;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.as;
@@ -14,39 +12,40 @@ import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import com.commercetools.api.client.ByProjectKeyStatesGet;
+import com.commercetools.api.client.ByProjectKeyStatesRequestBuilder;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.state.State;
+import com.commercetools.api.models.state.StateDraft;
+import com.commercetools.api.models.state.StateDraftBuilder;
+import com.commercetools.api.models.state.StateResourceIdentifier;
+import com.commercetools.api.models.state.StateTypeEnum;
+import com.commercetools.sync.commons.ExceptionUtils;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.impl.StateServiceImpl;
 import com.commercetools.sync.states.helpers.StateSyncStatistics;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.SphereException;
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.states.StateDraft;
-import io.sphere.sdk.states.StateDraftBuilder;
-import io.sphere.sdk.states.StateType;
-import io.sphere.sdk.states.queries.StateQuery;
+import io.vrap.rmf.base.client.error.BadGatewayException;
+import io.vrap.rmf.base.client.error.BaseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class StateSyncTest {
 
   @Test
   void sync_WithInvalidDrafts_ShouldCompleteWithoutAnyProcessing() {
     // preparation
-    final SphereClient ctpClient = mock(SphereClient.class);
+    final ProjectApiRoot ctpClient = mock(ProjectApiRoot.class);
     final List<String> errors = new ArrayList<>();
     final StateSyncOptions stateSyncOptions =
         StateSyncOptionsBuilder.of(ctpClient)
@@ -60,8 +59,10 @@ class StateSyncTest {
     final StateSync stateSync = new StateSync(stateSyncOptions, stateService);
 
     final StateDraft stateDraftWithoutKey =
-        StateDraftBuilder.of(null, StateType.LINE_ITEM_STATE)
-            .name(LocalizedString.ofEnglish("state-name"))
+        StateDraftBuilder.of()
+            .key("")
+            .type(StateTypeEnum.LINE_ITEM_STATE)
+            .name(ofEnglish("state-name"))
             .build();
 
     // test
@@ -85,13 +86,13 @@ class StateSyncTest {
   void sync_WithErrorCachingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
     // preparation
     final StateDraft stateDraft =
-        StateDraftBuilder.of("state-1", StateType.LINE_ITEM_STATE).build();
+        StateDraftBuilder.of().key("state-1").type(StateTypeEnum.LINE_ITEM_STATE).build();
 
     final List<String> errorMessages = new ArrayList<>();
     final List<Throwable> exceptions = new ArrayList<>();
 
     final StateSyncOptions syncOptions =
-        StateSyncOptionsBuilder.of(mock(SphereClient.class))
+        StateSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) -> {
                   errorMessages.add(exception.getMessage());
@@ -99,12 +100,12 @@ class StateSyncTest {
                 })
             .build();
 
-    final StateService stateService = spy(new StateServiceImpl(syncOptions));
+    final StateService stateService = Mockito.spy(new StateServiceImpl(syncOptions));
     when(stateService.cacheKeysToIds(anySet()))
         .thenReturn(
             supplyAsync(
                 () -> {
-                  throw new SphereException();
+                  throw new BaseException();
                 }));
 
     final StateSync stateSync = new StateSync(syncOptions, stateService);
@@ -123,7 +124,7 @@ class StateSyncTest {
         .hasSize(1)
         .singleElement(as(THROWABLE))
         .isExactlyInstanceOf(CompletionException.class)
-        .hasCauseExactlyInstanceOf(SphereException.class);
+        .hasCauseExactlyInstanceOf(BaseException.class);
 
     assertThat(stateSyncStatistics).hasValues(1, 0, 0, 1);
   }
@@ -132,18 +133,24 @@ class StateSyncTest {
   void sync_WithErrorFetchingExistingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
     // preparation
     final StateDraft stateDraft =
-        StateDraftBuilder.of("state-1", StateType.LINE_ITEM_STATE).build();
+        StateDraftBuilder.of().key("state-1").type(StateTypeEnum.LINE_ITEM_STATE).build();
 
     final List<String> errorMessages = new ArrayList<>();
     final List<Throwable> exceptions = new ArrayList<>();
 
-    final SphereClient mockClient = mock(SphereClient.class);
-    when(mockClient.execute(any(StateQuery.class)))
-        .thenReturn(
-            supplyAsync(
-                () -> {
-                  throw new SphereException();
-                }));
+    final ProjectApiRoot mockClient = mock(ProjectApiRoot.class);
+    final ByProjectKeyStatesRequestBuilder byProjectKeyStatesRequestBuilder = mock();
+    when(mockClient.states()).thenReturn(byProjectKeyStatesRequestBuilder);
+    final ByProjectKeyStatesGet byProjectKeyStatesGet = mock();
+    when(byProjectKeyStatesRequestBuilder.get()).thenReturn(byProjectKeyStatesGet);
+    when(byProjectKeyStatesGet.withWhere(anyString())).thenReturn(byProjectKeyStatesGet);
+    when(byProjectKeyStatesGet.withPredicateVar(anyString(), any(Collection.class)))
+        .thenReturn(byProjectKeyStatesGet);
+    when(byProjectKeyStatesGet.withExpand(anyString())).thenReturn(byProjectKeyStatesGet);
+    when(byProjectKeyStatesGet.withLimit(anyInt())).thenReturn(byProjectKeyStatesGet);
+    when(byProjectKeyStatesGet.withWithTotal(anyBoolean())).thenReturn(byProjectKeyStatesGet);
+    when(byProjectKeyStatesGet.execute())
+        .thenReturn(CompletableFuture.failedFuture(ExceptionUtils.createBadGatewayException()));
 
     final StateSyncOptions syncOptions =
         StateSyncOptionsBuilder.of(mockClient)
@@ -175,7 +182,7 @@ class StateSyncTest {
         .hasSize(1)
         .singleElement(as(THROWABLE))
         .isExactlyInstanceOf(CompletionException.class)
-        .hasCauseExactlyInstanceOf(SphereException.class);
+        .hasCauseExactlyInstanceOf(BadGatewayException.class);
 
     assertThat(stateSyncStatistics).hasValues(1, 0, 0, 1);
   }
@@ -184,10 +191,10 @@ class StateSyncTest {
   void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
     // preparation
     final StateDraft stateDraft =
-        StateDraftBuilder.of("state-1", StateType.LINE_ITEM_STATE).build();
+        StateDraftBuilder.of().key("state-1").type(StateTypeEnum.LINE_ITEM_STATE).build();
 
     final StateSyncOptions stateSyncOptions =
-        StateSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        StateSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
 
     final StateService stateService = mock(StateService.class);
     when(stateService.cacheKeysToIds(anySet())).thenReturn(completedFuture(emptyMap()));
@@ -211,18 +218,20 @@ class StateSyncTest {
   void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
     // preparation
     final StateDraft stateDraft =
-        StateDraftBuilder.of("state-1", StateType.LINE_ITEM_STATE)
-            .name(LocalizedString.ofEnglish("foo"))
-            .transitions(null)
+        StateDraftBuilder.of()
+            .key("state-1")
+            .type(StateTypeEnum.LINE_ITEM_STATE)
+            .name(ofEnglish("foo"))
+            .transitions((List<StateResourceIdentifier>) null)
             .build();
 
     final State mockedExistingState = mock(State.class);
     when(mockedExistingState.getKey()).thenReturn(stateDraft.getKey());
-    when(mockedExistingState.getName()).thenReturn(LocalizedString.ofEnglish("bar"));
+    when(mockedExistingState.getName()).thenReturn(ofEnglish("bar"));
     when(mockedExistingState.getTransitions()).thenReturn(null);
 
     final StateSyncOptions stateSyncOptions =
-        StateSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        StateSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
 
     final StateService stateService = mock(StateService.class);
     final Map<String, String> keyToIds = new HashMap<>();

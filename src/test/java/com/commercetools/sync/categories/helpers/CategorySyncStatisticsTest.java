@@ -2,6 +2,7 @@ package com.commercetools.sync.categories.helpers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,46 +17,46 @@ class CategorySyncStatisticsTest {
 
   @Test
   void getUpdated_WithNoUpdated_ShouldReturnZero() {
-    assertThat(categorySyncStatistics.getUpdated()).hasValue(0);
+    Assertions.assertThat(categorySyncStatistics.getUpdated()).hasValue(0);
   }
 
   @Test
   void incrementUpdated_ShouldIncrementUpdatedValue() {
     categorySyncStatistics.incrementUpdated();
-    assertThat(categorySyncStatistics.getUpdated()).hasValue(1);
+    Assertions.assertThat(categorySyncStatistics.getUpdated()).hasValue(1);
   }
 
   @Test
   void getCreated_WithNoCreated_ShouldReturnZero() {
-    assertThat(categorySyncStatistics.getCreated()).hasValue(0);
+    Assertions.assertThat(categorySyncStatistics.getCreated()).hasValue(0);
   }
 
   @Test
   void incrementCreated_ShouldIncrementCreatedValue() {
     categorySyncStatistics.incrementCreated();
-    assertThat(categorySyncStatistics.getCreated()).hasValue(1);
+    Assertions.assertThat(categorySyncStatistics.getCreated()).hasValue(1);
   }
 
   @Test
   void getProcessed_WithNoProcessed_ShouldReturnZero() {
-    assertThat(categorySyncStatistics.getProcessed()).hasValue(0);
+    Assertions.assertThat(categorySyncStatistics.getProcessed()).hasValue(0);
   }
 
   @Test
   void incrementProcessed_ShouldIncrementProcessedValue() {
     categorySyncStatistics.incrementProcessed();
-    assertThat(categorySyncStatistics.getProcessed()).hasValue(1);
+    Assertions.assertThat(categorySyncStatistics.getProcessed()).hasValue(1);
   }
 
   @Test
   void getFailed_WithNoFailed_ShouldReturnZero() {
-    assertThat(categorySyncStatistics.getFailed()).hasValue(0);
+    Assertions.assertThat(categorySyncStatistics.getFailed()).hasValue(0);
   }
 
   @Test
   void incrementFailed_ShouldIncrementFailedValue() {
     categorySyncStatistics.incrementFailed();
-    assertThat(categorySyncStatistics.getFailed()).hasValue(1);
+    Assertions.assertThat(categorySyncStatistics.getFailed()).hasValue(1);
   }
 
   @Test

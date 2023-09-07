@@ -2,31 +2,25 @@ package com.commercetools.sync.categories.helpers;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
-import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
+import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 
+import com.commercetools.api.models.category.*;
+import com.commercetools.api.models.common.AssetDraft;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.AssetReferenceResolver;
 import com.commercetools.sync.commons.helpers.CustomReferenceResolver;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.categories.CategoryDraftBuilder;
-import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.models.ResourceIdentifier;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringUtils;
 
 public final class CategoryReferenceResolver
     extends CustomReferenceResolver<CategoryDraft, CategoryDraftBuilder, CategorySyncOptions> {
@@ -111,14 +105,12 @@ public final class CategoryReferenceResolver
   @Nonnull
   CompletionStage<CategoryDraftBuilder> resolveParentReference(
       @Nonnull final CategoryDraftBuilder draftBuilder) {
-    final ResourceIdentifier<Category> parent = draftBuilder.getParent();
+    final CategoryResourceIdentifier parent = draftBuilder.getParent();
     if (parent != null && parent.getId() == null) {
       try {
-        return getParentCategoryKey(parent, draftBuilder.getKey())
-            .map(
-                parentCategoryKey ->
-                    fetchAndResolveParentReference(draftBuilder, parentCategoryKey))
-            .orElseGet(() -> completedFuture(draftBuilder));
+        final String parentCategoryKey = getParentCategoryKey(parent, draftBuilder.getKey());
+        return fetchAndResolveParentReference(draftBuilder, parentCategoryKey);
+
       } catch (ReferenceResolutionException referenceResolutionException) {
         return exceptionallyCompletedFuture(referenceResolutionException);
       }
@@ -127,14 +119,13 @@ public final class CategoryReferenceResolver
   }
 
   @Nonnull
-  private static Optional<String> getParentCategoryKey(
-      @Nonnull final ResourceIdentifier<Category> parentCategoryResourceIdentifier,
+  private static String getParentCategoryKey(
+      @Nonnull final CategoryResourceIdentifier parentCategoryResourceIdentifier,
       @Nullable final String categoryKey)
       throws ReferenceResolutionException {
 
     try {
-      final String parentKey = getKeyFromResourceIdentifier(parentCategoryResourceIdentifier);
-      return Optional.of(parentKey);
+      return getKeyFromResourceIdentifier(parentCategoryResourceIdentifier);
     } catch (ReferenceResolutionException referenceResolutionException) {
       throw new ReferenceResolutionException(
           format(FAILED_TO_RESOLVE_PARENT, categoryKey, referenceResolutionException.getMessage()),
@@ -144,8 +135,11 @@ public final class CategoryReferenceResolver
 
   @Nonnull
   private CompletionStage<CategoryDraftBuilder> fetchAndResolveParentReference(
-      @Nonnull final CategoryDraftBuilder draftBuilder, @Nonnull final String parentCategoryKey) {
+      @Nonnull final CategoryDraftBuilder draftBuilder, @Nullable final String parentCategoryKey) {
 
+    if (StringUtils.isBlank(parentCategoryKey)) {
+      return completedFuture(draftBuilder);
+    }
     return categoryService
         .fetchCachedCategoryId(parentCategoryKey)
         .thenCompose(
@@ -155,8 +149,9 @@ public final class CategoryReferenceResolver
                         resolvedParentId ->
                             completedFuture(
                                 draftBuilder.parent(
-                                    Category.referenceOfId(resolvedParentId)
-                                        .toResourceIdentifier())))
+                                    CategoryResourceIdentifierBuilder.of()
+                                        .id(resolvedParentId)
+                                        .build())))
                     .orElseGet(
                         () -> {
                           final String errorMessage =

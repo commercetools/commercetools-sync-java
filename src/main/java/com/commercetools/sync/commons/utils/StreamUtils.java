@@ -9,7 +9,7 @@ public final class StreamUtils {
 
   /**
    * Applies the supplied {@code mapper} function on every non-null element in the supplied {@link
-   * Stream} of {@code elements}.
+   * java.util.stream.Stream} of {@code elements}.
    *
    * @param elements the stream of elements.
    * @param mapper the mapper function to apply on every element.

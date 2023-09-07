@@ -1,56 +1,49 @@
 package com.commercetools.sync.customobjects;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.custom_object.CustomObject;
+import com.commercetools.api.models.custom_object.CustomObjectDraft;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
-import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.customobjects.CustomObjectDraft;
+import com.commercetools.sync.customobjects.models.NoopResourceUpdateAction;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public final class CustomObjectSyncOptions
-    extends BaseSyncOptions<
-        CustomObject<JsonNode>, CustomObjectDraft<JsonNode>, CustomObject<JsonNode>> {
+    extends BaseSyncOptions<CustomObject, CustomObjectDraft, NoopResourceUpdateAction> {
 
   CustomObjectSyncOptions(
-      @Nonnull final SphereClient ctpClient,
+      @NotNull final ProjectApiRoot ctpClient,
       @Nullable
           final QuadConsumer<
                   SyncException,
-                  Optional<CustomObjectDraft<JsonNode>>,
-                  Optional<CustomObject<JsonNode>>,
-                  List<UpdateAction<CustomObject<JsonNode>>>>
-              errorCallBack,
+                  Optional<CustomObjectDraft>,
+                  Optional<CustomObject>,
+                  List<NoopResourceUpdateAction>>
+              errorCallback,
       @Nullable
-          final TriConsumer<
-                  SyncException,
-                  Optional<CustomObjectDraft<JsonNode>>,
-                  Optional<CustomObject<JsonNode>>>
-              warningCallBack,
+          final TriConsumer<SyncException, Optional<CustomObjectDraft>, Optional<CustomObject>>
+              warningCallback,
       final int batchSize,
       @Nullable
           final TriFunction<
-                  List<UpdateAction<CustomObject<JsonNode>>>,
-                  CustomObjectDraft<JsonNode>,
-                  CustomObject<JsonNode>,
-                  List<UpdateAction<CustomObject<JsonNode>>>>
+                  List<NoopResourceUpdateAction>,
+                  CustomObjectDraft,
+                  CustomObject,
+                  List<NoopResourceUpdateAction>>
               beforeUpdateCallback,
-      @Nullable
-          final Function<CustomObjectDraft<JsonNode>, CustomObjectDraft<JsonNode>>
-              beforeCreateCallback,
+      @Nullable final Function<CustomObjectDraft, CustomObjectDraft> beforeCreateCallback,
       final long cacheSize) {
     super(
         ctpClient,
-        errorCallBack,
-        warningCallBack,
+        errorCallback,
+        warningCallback,
         batchSize,
         beforeUpdateCallback,
         beforeCreateCallback,

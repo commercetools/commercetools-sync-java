@@ -1,38 +1,31 @@
 package com.commercetools.sync.inventories;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
-import static com.commercetools.sync.inventories.utils.InventorySyncUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.*;
 
+import com.commercetools.api.models.channel.ChannelResourceIdentifier;
+import com.commercetools.api.models.channel.ChannelRoleEnum;
+import com.commercetools.api.models.inventory.InventoryEntry;
+import com.commercetools.api.models.inventory.InventoryEntryDraft;
+import com.commercetools.api.models.inventory.InventoryEntryUpdateAction;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.utils.CompletableFutureUtils;
 import com.commercetools.sync.inventories.helpers.InventoryBatchValidator;
 import com.commercetools.sync.inventories.helpers.InventoryEntryIdentifier;
 import com.commercetools.sync.inventories.helpers.InventoryReferenceResolver;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
+import com.commercetools.sync.inventories.utils.InventorySyncUtils;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.InventoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.ChannelServiceImpl;
 import com.commercetools.sync.services.impl.InventoryServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.channels.ChannelRole;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.inventory.InventoryEntry;
-import io.sphere.sdk.inventory.InventoryEntryDraft;
-import io.sphere.sdk.models.ResourceIdentifier;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
@@ -42,7 +35,11 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 /** Default implementation of inventories sync process. */
 public final class InventorySync
     extends BaseSync<
-        InventoryEntryDraft, InventoryEntry, InventorySyncStatistics, InventorySyncOptions> {
+        InventoryEntry,
+        InventoryEntryDraft,
+        InventoryEntryUpdateAction,
+        InventorySyncStatistics,
+        InventorySyncOptions> {
 
   private static final String CTP_INVENTORY_FETCH_FAILED =
       "Failed to fetch existing inventory entries of SKUs %s.";
@@ -56,9 +53,10 @@ public final class InventorySync
   private final InventoryBatchValidator batchValidator;
 
   /**
-   * Takes a {@link InventorySyncOptions} instance to instantiate a new {@link InventorySync}
-   * instance that could be used to sync inventory drafts with the given inventory entries in the
-   * CTP project specified in the injected {@link InventorySyncOptions} instance.
+   * Takes a {@link com.commercetools.sync.inventories.InventorySyncOptions} instance to instantiate
+   * a new {@link InventorySync} instance that could be used to sync inventory drafts with the given
+   * inventory entries in the CTP project specified in the injected {@link
+   * com.commercetools.sync.inventories.InventorySyncOptions} instance.
    *
    * @param syncOptions the container of all the options of the sync process including the CTP
    *     project client and/or configuration and other sync-specific options.
@@ -67,7 +65,8 @@ public final class InventorySync
     this(
         syncOptions,
         new InventoryServiceImpl(syncOptions),
-        new ChannelServiceImpl(syncOptions, Collections.singleton(ChannelRole.INVENTORY_SUPPLY)),
+        new ChannelServiceImpl(
+            syncOptions, Collections.singleton(ChannelRoleEnum.INVENTORY_SUPPLY)),
         new TypeServiceImpl(syncOptions));
   }
 
@@ -267,10 +266,10 @@ public final class InventorySync
   private CompletionStage<Optional<InventoryEntry>> buildActionsAndUpdate(
       @Nonnull final InventoryEntry entry, @Nonnull final InventoryEntryDraft draft) {
 
-    final List<UpdateAction<InventoryEntry>> updateActions =
-        buildActions(entry, draft, syncOptions);
+    final List<InventoryEntryUpdateAction> updateActions =
+        InventorySyncUtils.buildActions(entry, draft, syncOptions);
 
-    final List<UpdateAction<InventoryEntry>> beforeUpdateCallBackApplied =
+    final List<InventoryEntryUpdateAction> beforeUpdateCallBackApplied =
         syncOptions.applyBeforeUpdateCallback(updateActions, draft, entry);
 
     if (!beforeUpdateCallBackApplied.isEmpty()) {
@@ -280,15 +279,15 @@ public final class InventorySync
           .thenCompose(
               updateResponse -> {
                 final InventoryEntry updatedInventoryEntry = updateResponse.getKey();
-                final Throwable sphereException = updateResponse.getValue();
-                if (sphereException != null) {
-                  final ResourceIdentifier<Channel> supplyChannel = draft.getSupplyChannel();
+                final Throwable ctpException = updateResponse.getValue();
+                if (ctpException != null) {
+                  final ChannelResourceIdentifier supplyChannel = draft.getSupplyChannel();
                   final String errorMessage =
                       format(
                           CTP_INVENTORY_ENTRY_UPDATE_FAILED,
                           draft.getSku(),
                           supplyChannel != null ? supplyChannel.getId() : null);
-                  handleError(errorMessage, sphereException, entry, draft, updateActions, 1);
+                  handleError(errorMessage, ctpException, entry, draft, updateActions, 1);
                   return CompletableFuture.completedFuture(Optional.empty());
                 } else {
                   statistics.incrementUpdated();

@@ -1,35 +1,42 @@
 package com.commercetools.sync.products.utils;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
+import static com.commercetools.sync.products.utils.AssetUtils.createAssetDraft;
+import static com.commercetools.sync.products.utils.PriceUtils.createPriceDraft;
 import static java.util.stream.Collectors.toList;
 
-import com.commercetools.sync.commons.helpers.CategoryReferencePair;
+import com.commercetools.api.models.category.CategoryReference;
+import com.commercetools.api.models.category.CategoryResourceIdentifier;
+import com.commercetools.api.models.category.CategoryResourceIdentifierBuilder;
+import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.api.models.common.PriceDraft;
+import com.commercetools.api.models.product.Attribute;
+import com.commercetools.api.models.product.AttributeBuilder;
+import com.commercetools.api.models.product.CategoryOrderHints;
+import com.commercetools.api.models.product.CategoryOrderHintsBuilder;
+import com.commercetools.api.models.product.Product;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductDraftBuilder;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductVariant;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.product_type.ProductTypeReference;
+import com.commercetools.api.models.product_type.ProductTypeResourceIdentifier;
+import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
+import com.commercetools.api.models.state.StateResourceIdentifier;
+import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
+import com.commercetools.api.models.tax_category.TaxCategoryReference;
+import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifier;
+import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifierBuilder;
+import com.commercetools.sync.commons.helpers.CategoryResourceIdentifierPair;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.customergroups.CustomerGroup;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.CategoryOrderHints;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.ProductVariant;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.ProductVariantDraftBuilder;
-import io.sphere.sdk.products.attributes.Attribute;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.taxcategories.TaxCategory;
-import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
@@ -56,48 +63,48 @@ public final class ProductReferenceResolutionUtils {
    *   <tbody>
    *     <tr>
    *       <td>productType</td>
-   *       <td>{@link Reference}&lt;{@link ProductType}&gt;</td>
-   *       <td>{@link ResourceIdentifier}&lt;{@link ProductType}&gt;</td>
+   *       <td>{@link ProductTypeReference}</td>
+   *       <td>{@link ProductTypeResourceIdentifier}</td>
    *     </tr>
    *     <tr>
    *        <td>categories</td>
-   *        <td>{@link Set}&lt;{@link Reference}&lt;{@link Category}&gt;&gt;</td>
-   *        <td>{@link Set}&lt;{@link ResourceIdentifier}&lt;{@link Category}&gt;&gt;</td>
+   *        <td>{@link List}&lt;{@link CategoryReference}&gt;</td>
+   *        <td>{@link List}&lt;{@link CategoryResourceIdentifier}&gt;</td>
    *     </tr>
    *     <tr>
    *        <td>variants.prices.channel</td>
-   *        <td>{@link Reference}&lt;{@link Channel}&gt;</td>
-   *        <td>{@link ResourceIdentifier}&lt;{@link Channel}&gt;</td>
+   *        <td>{@link com.commercetools.api.models.channel.ChannelReference}</td>
+   *        <td>{@link com.commercetools.api.models.channel.ChannelResourceIdentifier}</td>
    *     </tr>
    *     <tr>
    *        <td>variants.prices.customerGroup *</td>
-   *        <td>{@link Reference}&lt;{@link CustomerGroup}&gt;</td>
-   *        <td>{@link ResourceIdentifier}&lt;{@link CustomerGroup}&gt;</td>
+   *        <td>{@link com.commercetools.api.models.customer_group.CustomerGroupReference}</td>
+   *        <td>{@link com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifier}</td>
    *     </tr>
    *     <tr>
    *        <td>variants.prices.custom.type</td>
-   *        <td>{@link Reference}&lt;{@link Type}&gt;</td>
-   *        <td>{@link ResourceIdentifier}&lt;{@link Type}&gt;</td>
+   *        <td>{@link com.commercetools.api.models.type.TypeReference}</td>
+   *        <td>{@link com.commercetools.api.models.type.TypeResourceIdentifier}</td>
    *     </tr>
    *     <tr>
    *        <td>variants.assets.custom.type</td>
-   *        <td>{@link Reference}&lt;{@link Type}&gt;</td>
-   *        <td>{@link ResourceIdentifier}&lt;{@link Type}&gt;</td>
+   *        <td>{@link com.commercetools.api.models.type.TypeReference}</td>
+   *        <td>{@link com.commercetools.api.models.type.TypeResourceIdentifier}</td>
    *     </tr>
    *     <tr>
    *        <td>variants.attributes on {@link List}&lt;{@link Attribute} *</td>
-   *        <td>{@link Reference}&lt;{@link ProductType}&gt; (example for ProductType)</td>
-   *        <td>{@link Reference}&lt;{@link ProductType}&gt; (with key replaced with id field)</td>
+   *        <td>{@link ProductTypeReference} (example for ProductType)</td>
+   *        <td>{@link ProductTypeReference} (with key replaced with id field)</td>
    *     </tr>
    *     <tr>
    *        <td>taxCategory</td>
-   *        <td>{@link Reference}&lt;{@link TaxCategory}&gt;</td>
-   *        <td>{@link ResourceIdentifier}&lt;{@link TaxCategory}&gt;</td>
+   *        <td>{@link com.commercetools.api.models.tax_category.TaxCategoryReference}</td>
+   *        <td>{@link com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifier}</td>
    *     </tr>
    *     <tr>
    *        <td>state *</td>
-   *        <td>{@link Reference}&lt;{@link State}&gt;</td>
-   *        <td>{@link ResourceIdentifier}&lt;{@link State}&gt;</td>
+   *        <td>{@link com.commercetools.api.models.state.StateReference}</td>
+   *        <td>{@link com.commercetools.api.models.state.StateResourceIdentifier}</td>
    *     </tr>
    *   </tbody>
    * </table>
@@ -121,14 +128,15 @@ public final class ProductReferenceResolutionUtils {
         .filter(Objects::nonNull)
         .map(
             product -> {
-              final ProductDraft productDraft = getDraftBuilderFromStagedProduct(product).build();
+              final ProductDraftBuilder productDraftBuilder =
+                  getDraftBuilderFromStagedProduct(product);
 
-              final CategoryReferencePair categoryReferencePair =
+              final CategoryResourceIdentifierPair categoryResourceIdentifierPair =
                   mapToCategoryReferencePair(product, referenceIdToKeyCache);
-              final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers =
-                  categoryReferencePair.getCategoryResourceIdentifiers();
+              final List<CategoryResourceIdentifier> categoryResourceIdentifiers =
+                  categoryResourceIdentifierPair.getCategoryResourceIdentifiers();
               final CategoryOrderHints categoryOrderHintsWithKeys =
-                  categoryReferencePair.getCategoryOrderHints();
+                  categoryResourceIdentifierPair.getCategoryOrderHints();
 
               final List<ProductVariant> allVariants = product.getAllVariants();
               final List<ProductVariantDraft> variantDraftsWithKeys =
@@ -137,16 +145,53 @@ public final class ProductReferenceResolutionUtils {
               final ProductVariantDraft masterVariantDraftWithKeys =
                   variantDraftsWithKeys.remove(0);
 
-              return ProductDraftBuilder.of(productDraft)
+              final ProductTypeResourceIdentifier productTypeResourceIdentifier =
+                  getResourceIdentifierWithKey(
+                      product.getProductType(),
+                      referenceIdToKeyCache,
+                      (id, key) -> {
+                        final ProductTypeResourceIdentifierBuilder builder =
+                            ProductTypeResourceIdentifierBuilder.of();
+                        if (id == null) {
+                          return builder.key(key).build();
+                        } else {
+                          return builder.id(id).build();
+                        }
+                      });
+              final TaxCategoryResourceIdentifier taxCategoryResourceIdentifier =
+                  getResourceIdentifierWithKey(
+                      product.getTaxCategory(),
+                      referenceIdToKeyCache,
+                      (id, key) -> {
+                        final TaxCategoryResourceIdentifierBuilder builder =
+                            TaxCategoryResourceIdentifierBuilder.of();
+                        if (id == null) {
+                          return builder.key(key).build();
+                        } else {
+                          return builder.id(id).build();
+                        }
+                      });
+              final StateResourceIdentifier stateResourceIdentifier =
+                  getResourceIdentifierWithKey(
+                      product.getState(),
+                      referenceIdToKeyCache,
+                      (id, key) -> {
+                        final StateResourceIdentifierBuilder builder =
+                            StateResourceIdentifierBuilder.of();
+                        if (id == null) {
+                          return builder.key(key).build();
+                        } else {
+                          return builder.id(id).build();
+                        }
+                      });
+              return productDraftBuilder
                   .masterVariant(masterVariantDraftWithKeys)
                   .variants(variantDraftsWithKeys)
-                  .productType(
-                      getResourceIdentifierWithKey(product.getProductType(), referenceIdToKeyCache))
+                  .productType(productTypeResourceIdentifier)
                   .categories(categoryResourceIdentifiers)
                   .categoryOrderHints(categoryOrderHintsWithKeys)
-                  .taxCategory(
-                      getResourceIdentifierWithKey(product.getTaxCategory(), referenceIdToKeyCache))
-                  .state(getResourceIdentifierWithKey(product.getState(), referenceIdToKeyCache))
+                  .taxCategory(taxCategoryResourceIdentifier)
+                  .state(stateResourceIdentifier)
                   .build();
             })
         .collect(Collectors.toList());
@@ -164,34 +209,70 @@ public final class ProductReferenceResolutionUtils {
   public static ProductDraftBuilder getDraftBuilderFromStagedProduct(
       @Nonnull final ProductProjection product) {
     final List<ProductVariantDraft> allVariants =
-        product.getAllVariants().stream()
-            .map(productVariant -> ProductVariantDraftBuilder.of(productVariant).build())
+        product.getVariants().stream()
+            .map(productVariant -> createProductVariantDraft(productVariant))
             .collect(toList());
-    final ProductVariantDraft masterVariant =
-        ProductVariantDraftBuilder.of(product.getMasterVariant()).build();
+    final ProductVariantDraft masterVariant = createProductVariantDraft(product.getMasterVariant());
 
-    return ProductDraftBuilder.of(
-            product.getProductType(), product.getName(), product.getSlug(), allVariants)
+    return ProductDraftBuilder.of()
+        .productType(
+            ProductTypeResourceIdentifierBuilder.of().id(product.getProductType().getId()).build())
+        .name(product.getName())
+        .slug(product.getSlug())
         .masterVariant(masterVariant)
+        .variants(allVariants)
         .metaDescription(product.getMetaDescription())
         .metaKeywords(product.getMetaKeywords())
         .metaTitle(product.getMetaTitle())
         .description(product.getDescription())
         .searchKeywords(product.getSearchKeywords())
-        .taxCategory(product.getTaxCategory())
-        .state(product.getState())
+        .taxCategory(
+            TaxCategoryResourceIdentifierBuilder.of()
+                .id(
+                    Optional.ofNullable(product.getTaxCategory())
+                        .map(TaxCategoryReference::getId)
+                        .orElse(null))
+                .build())
         .key(product.getKey())
-        .publish(product.isPublished())
-        .categories(new ArrayList<>(product.getCategories()))
-        .categoryOrderHints(product.getCategoryOrderHints());
+        .categories(
+            product.getCategories().stream()
+                .map(
+                    categoryReference ->
+                        CategoryResourceIdentifierBuilder.of()
+                            .id(categoryReference.getId())
+                            .build())
+                .collect(toList()))
+        .categoryOrderHints(product.getCategoryOrderHints())
+        .publish(product.getPublished());
+  }
+
+  public static ProductVariantDraft createProductVariantDraft(
+      @Nonnull final ProductVariant productVariant) {
+    final List<AssetDraft> assetDrafts = createAssetDraft(productVariant.getAssets());
+    final List<PriceDraft> priceDrafts = createPriceDraft(productVariant.getPrices());
+    final List<Attribute> attributes = createAttributes(productVariant.getAttributes());
+    return ProductVariantDraftBuilder.of()
+        .assets(assetDrafts)
+        .attributes(attributes)
+        .images(productVariant.getImages())
+        .prices(priceDrafts)
+        .sku(productVariant.getSku())
+        .key(productVariant.getKey())
+        .build();
+  }
+
+  public static List<Attribute> createAttributes(final List<Attribute> attributes) {
+    return attributes.stream()
+        .map(attribute -> AttributeBuilder.of(attribute).build())
+        .collect(Collectors.toList());
   }
 
   @Nonnull
-  static CategoryReferencePair mapToCategoryReferencePair(
+  static CategoryResourceIdentifierPair mapToCategoryReferencePair(
       @Nonnull final ProductProjection product,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
-    final Set<Reference<Category>> categoryReferences = product.getCategories();
-    final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = new HashSet<>();
+    final List<CategoryReference> categoryReferences = product.getCategories();
+    final List<CategoryResourceIdentifier> categoryResourceIdentifiers = new ArrayList<>();
 
     final CategoryOrderHints categoryOrderHints = product.getCategoryOrderHints();
     final Map<String, String> categoryOrderHintsMapWithKeys = new HashMap<>();
@@ -204,14 +285,16 @@ public final class ProductReferenceResolutionUtils {
               final String categoryKey = referenceIdToKeyCache.get(categoryId);
 
               if (categoryOrderHints != null) {
-                final String categoryOrderHintValue = categoryOrderHints.get(categoryId);
+                final String categoryOrderHintValue = categoryOrderHints.values().get(categoryId);
                 if (categoryOrderHintValue != null) {
                   categoryOrderHintsMapWithKeys.put(categoryKey, categoryOrderHintValue);
                 }
               }
-              categoryResourceIdentifiers.add(ResourceIdentifier.ofKey(categoryKey));
+              categoryResourceIdentifiers.add(
+                  CategoryResourceIdentifierBuilder.of().key(categoryKey).build());
             } else {
-              categoryResourceIdentifiers.add(ResourceIdentifier.ofId(categoryReference.getId()));
+              categoryResourceIdentifiers.add(
+                  CategoryResourceIdentifierBuilder.of().id(categoryReference.getId()).build());
             }
           }
         });
@@ -219,8 +302,9 @@ public final class ProductReferenceResolutionUtils {
     final CategoryOrderHints categoryOrderHintsWithKeys =
         categoryOrderHintsMapWithKeys.isEmpty()
             ? categoryOrderHints
-            : CategoryOrderHints.of(categoryOrderHintsMapWithKeys);
-    return CategoryReferencePair.of(categoryResourceIdentifiers, categoryOrderHintsWithKeys);
+            : CategoryOrderHintsBuilder.of().values(categoryOrderHintsMapWithKeys).build();
+    return CategoryResourceIdentifierPair.of(
+        categoryResourceIdentifiers, categoryOrderHintsWithKeys);
   }
 
   private ProductReferenceResolutionUtils() {}

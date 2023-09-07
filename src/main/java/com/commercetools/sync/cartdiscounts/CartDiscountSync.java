@@ -1,6 +1,5 @@
 package com.commercetools.sync.cartdiscounts;
 
-import static com.commercetools.sync.cartdiscounts.utils.CartDiscountSyncUtils.buildActions;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
@@ -9,17 +8,18 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
+import com.commercetools.api.models.cart_discount.CartDiscount;
+import com.commercetools.api.models.cart_discount.CartDiscountDraft;
+import com.commercetools.api.models.cart_discount.CartDiscountUpdateAction;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountBatchValidator;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountReferenceResolver;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
+import com.commercetools.sync.cartdiscounts.utils.CartDiscountSyncUtils;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.services.CartDiscountService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CartDiscountServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
-import io.sphere.sdk.cartdiscounts.CartDiscount;
-import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
-import io.sphere.sdk.commands.UpdateAction;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,7 +34,11 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
  */
 public class CartDiscountSync
     extends BaseSync<
-        CartDiscountDraft, CartDiscount, CartDiscountSyncStatistics, CartDiscountSyncOptions> {
+        CartDiscount,
+        CartDiscountDraft,
+        CartDiscountUpdateAction,
+        CartDiscountSyncStatistics,
+        CartDiscountSyncOptions> {
 
   private static final String CTP_CART_DISCOUNT_FETCH_FAILED =
       "Failed to fetch existing cart discounts with keys: '%s'.";
@@ -91,14 +95,15 @@ public class CartDiscountSync
 
   /**
    * Iterates through the whole {@code cartDiscountDrafts} list and accumulates its valid drafts to
-   * batches. Every batch is then processed by {@link CartDiscountSync#processBatch(List)}.
+   * batches. Every batch is then processed by {@link
+   * CartDiscountSync#processBatch(java.util.List)}.
    *
    * <p><strong>Inherited doc:</strong> {@inheritDoc}
    *
-   * @param cartDiscountDrafts {@link List} of {@link CartDiscountDraft}'s that would be synced into
-   *     CTP project.
-   * @return {@link CompletionStage} with {@link CartDiscountSyncStatistics} holding statistics of
-   *     all sync processes performed by this sync instance.
+   * @param cartDiscountDrafts {@link java.util.List} of {@link
+   *     io.sphere.sdk.cartdiscounts.CartDiscountDraft}'s that would be synced into CTP project.
+   * @return {@link java.util.concurrent.CompletionStage} with {@link CartDiscountSyncStatistics}
+   *     holding statistics of all sync processes performed by this sync instance.
    */
   @Override
   protected CompletionStage<CartDiscountSyncStatistics> process(
@@ -173,7 +178,8 @@ public class CartDiscountSync
    *
    * @param oldCartDiscounts old cart discounts.
    * @param newCartDiscounts drafts that need to be synced.
-   * @return a {@link CompletionStage} which contains an empty result after execution of the update
+   * @return a {@link java.util.concurrent.CompletionStage} which contains an empty result after
+   *     execution of the update
    */
   @Nonnull
   private CompletionStage<Void> syncBatch(
@@ -227,10 +233,10 @@ public class CartDiscountSync
       @Nonnull final CartDiscount oldCartDiscount,
       @Nonnull final CartDiscountDraft newCartDiscount) {
 
-    final List<UpdateAction<CartDiscount>> updateActions =
-        buildActions(oldCartDiscount, newCartDiscount, syncOptions);
+    final List<CartDiscountUpdateAction> updateActions =
+        CartDiscountSyncUtils.buildActions(oldCartDiscount, newCartDiscount, syncOptions);
 
-    final List<UpdateAction<CartDiscount>> updateActionsAfterCallback =
+    final List<CartDiscountUpdateAction> updateActionsAfterCallback =
         syncOptions.applyBeforeUpdateCallback(updateActions, newCartDiscount, oldCartDiscount);
 
     if (!updateActionsAfterCallback.isEmpty()) {
@@ -245,7 +251,8 @@ public class CartDiscountSync
    * create request to the CTP project to create the corresponding CartDiscount.
    *
    * @param cartDiscountDraft the cart discount draft to create the cart discount from.
-   * @return a {@link CompletionStage} which contains an empty result after execution of the create.
+   * @return a {@link java.util.concurrent.CompletionStage} which contains an empty result after
+   *     execution of the create.
    */
   @Nonnull
   private CompletionStage<Void> applyCallbackAndCreate(
@@ -282,13 +289,14 @@ public class CartDiscountSync
    * @param newCartDiscount draft containing data that could differ from data in {@code
    *     oldCartDiscount}.
    * @param updateActions the update actions to update the {@link CartDiscount} with.
-   * @return a {@link CompletionStage} which contains an empty result after execution of the update.
+   * @return a {@link java.util.concurrent.CompletionStage} which contains an empty result after
+   *     execution of the update.
    */
   @Nonnull
   private CompletionStage<Void> updateCartDiscount(
       @Nonnull final CartDiscount oldCartDiscount,
       @Nonnull final CartDiscountDraft newCartDiscount,
-      @Nonnull final List<UpdateAction<CartDiscount>> updateActions) {
+      @Nonnull final List<CartDiscountUpdateAction> updateActions) {
 
     return cartDiscountService
         .updateCartDiscount(oldCartDiscount, updateActions)

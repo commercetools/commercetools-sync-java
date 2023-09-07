@@ -1,6 +1,6 @@
 package com.commercetools.sync.services;
 
-import io.sphere.sdk.channels.Channel;
+import com.commercetools.api.models.channel.Channel;
 import io.sphere.sdk.client.SphereClient;
 import java.util.Map;
 import java.util.Optional;

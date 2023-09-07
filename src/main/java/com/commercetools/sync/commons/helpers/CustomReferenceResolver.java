@@ -1,20 +1,20 @@
 package com.commercetools.sync.commons.helpers;
 
-import static io.sphere.sdk.types.CustomFieldsDraft.ofTypeIdAndJson;
-import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
+import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import com.commercetools.api.models.category.CategoryDraft;
+import com.commercetools.api.models.common.ResourceIdentifier;
+import com.commercetools.api.models.type.CustomFieldsDraft;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.FieldContainer;
+import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.services.TypeService;
-import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.models.Builder;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.Type;
-import java.util.Map;
+import io.vrap.rmf.base.client.Builder;
+import io.vrap.rmf.base.client.Draft;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -26,21 +26,24 @@ import javax.annotation.Nullable;
  * Custom CTP resources for example (Categories, inventories and resource with a custom field). For
  * concrete reference resolution implementation of the CTP resources, this class should be extended.
  *
- * @param <D> the resource draft type for which reference resolution has to be done on.
- * @param <B> the resource draft builder where resolved values should be set. The builder type
- *     should correspond the {@code D} type.
- * @param <S> a subclass implementation of {@link BaseSyncOptions} that is used to allow/deny some
- *     specific options, specified by the user, on reference resolution.
+ * @param <ResourceDraftT> the resource draft type for which reference resolution has to be done on.
+ * @param <BuilderT> the resource draft builder where resolved values should be set. The builder
+ *     type should correspond the {@code ResourceDraftT} type.
+ * @param <SyncOptionsT> a subclass implementation of {@link
+ *     com.commercetools.sync.commons.BaseSyncOptions} that is used to allow/deny some specific
+ *     options, specified by the user, on reference resolution.
  */
 public abstract class CustomReferenceResolver<
-        D, B extends Builder<? extends D>, S extends BaseSyncOptions>
-    extends BaseReferenceResolver<D, S> {
+        ResourceDraftT extends Draft<ResourceDraftT>,
+        BuilderT extends Builder<ResourceDraftT>,
+        SyncOptionsT extends BaseSyncOptions>
+    extends BaseReferenceResolver<ResourceDraftT, SyncOptionsT> {
 
   public static final String TYPE_DOES_NOT_EXIST = "Type with key '%s' doesn't exist.";
   private final TypeService typeService;
 
   protected CustomReferenceResolver(
-      @Nonnull final S options, @Nonnull final TypeService typeService) {
+      @Nonnull final SyncOptionsT options, @Nonnull final TypeService typeService) {
     super(options);
     this.typeService = typeService;
   }
@@ -59,7 +62,8 @@ public abstract class CustomReferenceResolver<
    *     custom type references or, in case an error occurs during reference resolution, a {@link
    *     ReferenceResolutionException}.
    */
-  protected abstract CompletionStage<B> resolveCustomTypeReference(@Nonnull B draftBuilder);
+  protected abstract CompletionStage<BuilderT> resolveCustomTypeReference(
+      @Nonnull BuilderT draftBuilder);
 
   /**
    * Given a draft of {@code D} (e.g. {@link CategoryDraft}) this method attempts to resolve it's
@@ -84,16 +88,16 @@ public abstract class CustomReferenceResolver<
    *     ReferenceResolutionException}.
    */
   @Nonnull
-  protected CompletionStage<B> resolveCustomTypeReference(
-      @Nonnull final B draftBuilder,
-      @Nonnull final Function<B, CustomFieldsDraft> customGetter,
-      @Nonnull final BiFunction<B, CustomFieldsDraft, B> customSetter,
+  protected CompletionStage<BuilderT> resolveCustomTypeReference(
+      @Nonnull final BuilderT draftBuilder,
+      @Nonnull final Function<BuilderT, CustomFieldsDraft> customGetter,
+      @Nonnull final BiFunction<BuilderT, CustomFieldsDraft, BuilderT> customSetter,
       @Nonnull final String errorMessage) {
 
     final CustomFieldsDraft custom = customGetter.apply(draftBuilder);
 
     if (custom != null) {
-      final ResourceIdentifier<Type> customType = custom.getType();
+      final ResourceIdentifier customType = custom.getType();
 
       if (customType.getId() == null) {
         String customTypeKey;
@@ -121,7 +125,7 @@ public abstract class CustomReferenceResolver<
    *     the custom type id if it exists or empty if it doesn't.
    */
   private String getCustomTypeKey(
-      @Nonnull final ResourceIdentifier<Type> customType,
+      @Nonnull final ResourceIdentifier customType,
       @Nonnull final String referenceResolutionErrorMessage)
       throws ReferenceResolutionException {
 
@@ -135,10 +139,10 @@ public abstract class CustomReferenceResolver<
   }
 
   @Nonnull
-  private CompletionStage<B> fetchAndResolveTypeReference(
-      @Nonnull final B draftBuilder,
-      @Nonnull final BiFunction<B, CustomFieldsDraft, B> customSetter,
-      @Nullable final Map<String, JsonNode> customFields,
+  private CompletionStage<BuilderT> fetchAndResolveTypeReference(
+      @Nonnull final BuilderT draftBuilder,
+      @Nonnull final BiFunction<BuilderT, CustomFieldsDraft, BuilderT> customSetter,
+      @Nullable final FieldContainer customFields,
       @Nonnull final String typeKey,
       @Nonnull final String referenceResolutionErrorMessage) {
 
@@ -151,7 +155,17 @@ public abstract class CustomReferenceResolver<
                         resolvedTypeId ->
                             completedFuture(
                                 customSetter.apply(
-                                    draftBuilder, ofTypeIdAndJson(resolvedTypeId, customFields))))
+                                    draftBuilder,
+                                    // todo: I did not understand this part without debugging, check
+                                    // with running code.
+                                    // where to add resolvedTypeId
+                                    CustomFieldsDraftBuilder.of()
+                                        .fields(customFields)
+                                        .type(
+                                            TypeResourceIdentifierBuilder.of()
+                                                .id(resolvedTypeId)
+                                                .build())
+                                        .build())))
                     .orElseGet(
                         () -> {
                           final String errorMessage =

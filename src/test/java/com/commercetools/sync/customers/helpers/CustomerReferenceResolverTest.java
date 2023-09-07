@@ -1,43 +1,40 @@
 package com.commercetools.sync.customers.helpers;
 
-import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
-import static com.commercetools.sync.commons.helpers.CustomReferenceResolver.TYPE_DOES_NOT_EXIST;
-import static com.commercetools.sync.customers.helpers.CustomerReferenceResolver.CUSTOMER_GROUP_DOES_NOT_EXIST;
-import static com.commercetools.sync.customers.helpers.CustomerReferenceResolver.FAILED_TO_RESOLVE_CUSTOMER_GROUP_REFERENCE;
-import static com.commercetools.sync.customers.helpers.CustomerReferenceResolver.FAILED_TO_RESOLVE_CUSTOM_TYPE;
-import static com.commercetools.sync.customers.helpers.CustomerReferenceResolver.FAILED_TO_RESOLVE_STORE_REFERENCE;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroup;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroupService;
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.customer.CustomerDraft;
+import com.commercetools.api.models.customer.CustomerDraftBuilder;
+import com.commercetools.api.models.customer_group.CustomerGroup;
+import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
+import com.commercetools.api.models.store.StoreResourceIdentifierBuilder;
+import com.commercetools.api.models.type.CustomFieldsDraft;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.TypeResourceIdentifier;
+import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
+import com.commercetools.sync.commons.helpers.CustomReferenceResolver;
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.TypeService;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.customers.CustomerDraft;
-import io.sphere.sdk.customers.CustomerDraftBuilder;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.models.SphereException;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -53,7 +50,7 @@ class CustomerReferenceResolverTest {
   @BeforeEach
   void setup() {
     final CustomerSyncOptions syncOptions =
-        CustomerSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        CustomerSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
 
     typeService = getMockTypeService();
 
@@ -64,10 +61,36 @@ class CustomerReferenceResolverTest {
         new CustomerReferenceResolver(syncOptions, typeService, customerGroupService);
   }
 
+  private static TypeService getMockTypeService() {
+    final TypeService typeService = mock(TypeService.class);
+    when(typeService.fetchCachedTypeId(anyString()))
+        .thenReturn(completedFuture(Optional.of("typeId")));
+    when(typeService.cacheKeysToIds(anySet()))
+        .thenReturn(completedFuture(Collections.singletonMap("typeKey", "typeId")));
+    return typeService;
+  }
+
+  private static CustomerGroup getMockCustomerGroup(final String id, final String key) {
+    final CustomerGroup customerGroup = mock(CustomerGroup.class);
+    when(customerGroup.getId()).thenReturn(id);
+    when(customerGroup.getKey()).thenReturn(key);
+    return customerGroup;
+  }
+
+  private static CustomerGroupService getMockCustomerGroupService(
+      @Nonnull final CustomerGroup customerGroup) {
+    final String customerGroupId = customerGroup.getId();
+
+    final CustomerGroupService customerGroupService = mock(CustomerGroupService.class);
+    when(customerGroupService.fetchCachedCustomerGroupId(anyString()))
+        .thenReturn(completedFuture(Optional.of(customerGroupId)));
+    return customerGroupService;
+  }
+
   @Test
   void resolveReferences_WithoutReferences_ShouldNotResolveReferences() {
     final CustomerDraft customerDraft =
-        CustomerDraftBuilder.of("email@example.com", "secret123").build();
+        CustomerDraftBuilder.of().email("email@example.com").password("secret123").build();
 
     final CustomerDraft resolvedDraft =
         referenceResolver.resolveReferences(customerDraft).toCompletableFuture().join();
@@ -79,10 +102,12 @@ class CustomerReferenceResolverTest {
   void
       resolveCustomTypeReference_WithNullKeyOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
     final CustomFieldsDraft newCustomFieldsDraft = mock(CustomFieldsDraft.class);
-    when(newCustomFieldsDraft.getType()).thenReturn(ResourceIdentifier.ofId(null));
+    when(newCustomFieldsDraft.getType()).thenReturn(TypeResourceIdentifier.of());
 
     final CustomerDraftBuilder customerDraftBuilder =
-        CustomerDraftBuilder.of("email@example.com", "secret123")
+        CustomerDraftBuilder.of()
+            .email("email@example.com")
+            .password("secret123")
             .key("customer-key")
             .custom(newCustomFieldsDraft);
 
@@ -94,19 +119,24 @@ class CustomerReferenceResolverTest {
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
         .withMessageContaining(
-            format(
+            String.format(
                 "Failed to resolve custom type reference on CustomerDraft with "
                     + "key:'customer-key'. Reason: %s",
-                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
   }
 
   @Test
   void
       resolveCustomTypeReference_WithEmptyKeyOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
     final CustomerDraftBuilder customerDraftBuilder =
-        CustomerDraftBuilder.of("email@example.com", "secret123")
+        CustomerDraftBuilder.of()
+            .email("email@example.com")
+            .password("secret123")
             .key("customer-key")
-            .custom(CustomFieldsDraft.ofTypeKeyAndJson("", emptyMap()));
+            .custom(
+                CustomFieldsDraftBuilder.of()
+                    .type(TypeResourceIdentifierBuilder.of().key("").build())
+                    .build());
 
     assertThat(
             referenceResolver
@@ -116,27 +146,35 @@ class CustomerReferenceResolverTest {
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
         .withMessageContaining(
-            format(
+            String.format(
                 "Failed to resolve custom type reference on CustomerDraft with "
                     + "key:'customer-key'. Reason: %s",
-                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
   }
 
   @Test
   void resolveCustomTypeReference_WithNonExistentCustomType_ShouldCompleteExceptionally() {
     final String customTypeKey = "nonExistingKey";
     final CustomerDraftBuilder customerDraftBuilder =
-        CustomerDraftBuilder.of("email@example.com", "secret123")
+        CustomerDraftBuilder.of()
+            .email("email@example.com")
+            .password("secret123")
             .key("customer-key")
-            .custom(CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, emptyMap()));
+            .custom(
+                CustomFieldsDraftBuilder.of()
+                    .type(TypeResourceIdentifierBuilder.of().key(customTypeKey).build())
+                    .build());
 
     when(typeService.fetchCachedTypeId(anyString())).thenReturn(completedFuture(Optional.empty()));
 
     final String expectedExceptionMessage =
-        format(FAILED_TO_RESOLVE_CUSTOM_TYPE, customerDraftBuilder.getKey());
+        String.format(
+            CustomerReferenceResolver.FAILED_TO_RESOLVE_CUSTOM_TYPE, customerDraftBuilder.getKey());
     final String expectedMessageWithCause =
         format(
-            "%s Reason: %s", expectedExceptionMessage, format(TYPE_DOES_NOT_EXIST, customTypeKey));
+            "%s Reason: %s",
+            expectedExceptionMessage,
+            String.format(CustomReferenceResolver.TYPE_DOES_NOT_EXIST, customTypeKey));
     assertThat(referenceResolver.resolveCustomTypeReference(customerDraftBuilder))
         .failsWithin(1, TimeUnit.SECONDS)
         .withThrowableOfType(ExecutionException.class)
@@ -147,9 +185,14 @@ class CustomerReferenceResolverTest {
   @Test
   void resolveReferences_WithAllValidReferences_ShouldResolveReferences() {
     final CustomerDraft customerDraft =
-        CustomerDraftBuilder.of("email@example.com", "secret123")
+        CustomerDraftBuilder.of()
+            .email("email@example.com")
+            .password("secret123")
             .key("customer-key")
-            .custom(CustomFieldsDraft.ofTypeKeyAndJson("typeKey", emptyMap()))
+            .custom(
+                CustomFieldsDraftBuilder.of()
+                    .type(TypeResourceIdentifierBuilder.of().key("typeKey").build())
+                    .build())
             .build();
 
     final CustomerDraft resolvedDraft =
@@ -157,7 +200,10 @@ class CustomerReferenceResolverTest {
 
     final CustomerDraft expectedDraft =
         CustomerDraftBuilder.of(customerDraft)
-            .custom(CustomFieldsDraft.ofTypeIdAndJson("typeId", new HashMap<>()))
+            .custom(
+                CustomFieldsDraftBuilder.of()
+                    .type(TypeResourceIdentifierBuilder.of().id("typeId").build())
+                    .build())
             .build();
 
     assertThat(resolvedDraft).isEqualTo(expectedDraft);
@@ -166,8 +212,11 @@ class CustomerReferenceResolverTest {
   @Test
   void resolveCustomerGroupReference_WithKeys_ShouldResolveReference() {
     final CustomerDraftBuilder customerDraftBuilder =
-        CustomerDraftBuilder.of("email@example.com", "secret123")
-            .customerGroup(ResourceIdentifier.ofKey("customer-group-key"));
+        CustomerDraftBuilder.of()
+            .email("email@example.com")
+            .password("secret123")
+            .customerGroup(
+                CustomerGroupResourceIdentifierBuilder.of().key("customer-group-key").build());
 
     final CustomerDraftBuilder resolvedDraft =
         referenceResolver
@@ -182,18 +231,20 @@ class CustomerReferenceResolverTest {
   @Test
   void resolveCustomerGroupReference_WithNonExistentCustomerGroup_ShouldNotResolveReference() {
     final CustomerDraftBuilder customerDraftBuilder =
-        CustomerDraftBuilder.of("email@example.com", "secret123")
-            .customerGroup(ResourceIdentifier.ofKey("anyKey"))
+        CustomerDraftBuilder.of()
+            .email("email@example.com")
+            .password("secret123")
+            .customerGroup(CustomerGroupResourceIdentifierBuilder.of().key("anyKey").build())
             .key("dummyKey");
 
     when(customerGroupService.fetchCachedCustomerGroupId(anyString()))
         .thenReturn(completedFuture(Optional.empty()));
 
     final String expectedMessageWithCause =
-        format(
-            FAILED_TO_RESOLVE_CUSTOMER_GROUP_REFERENCE,
+        String.format(
+            CustomerReferenceResolver.FAILED_TO_RESOLVE_CUSTOMER_GROUP_REFERENCE,
             "dummyKey",
-            format(CUSTOMER_GROUP_DOES_NOT_EXIST, "anyKey"));
+            String.format(CustomerReferenceResolver.CUSTOMER_GROUP_DOES_NOT_EXIST, "anyKey"));
 
     assertThat(referenceResolver.resolveCustomerGroupReference(customerDraftBuilder))
         .failsWithin(1, TimeUnit.SECONDS)
@@ -206,8 +257,10 @@ class CustomerReferenceResolverTest {
   void
       resolveCustomerGroupReference_WithNullKeyOnCustomerGroupReference_ShouldNotResolveReference() {
     final CustomerDraftBuilder customerDraftBuilder =
-        CustomerDraftBuilder.of("email@example.com", "secret123")
-            .customerGroup(ResourceIdentifier.ofKey(null))
+        CustomerDraftBuilder.of()
+            .email("email@example.com")
+            .password("secret123")
+            .customerGroup(CustomerGroupResourceIdentifierBuilder.of().key(null).build())
             .key("dummyKey");
 
     assertThat(
@@ -218,18 +271,20 @@ class CustomerReferenceResolverTest {
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
         .withMessageContaining(
-            format(
-                FAILED_TO_RESOLVE_CUSTOMER_GROUP_REFERENCE,
+            String.format(
+                CustomerReferenceResolver.FAILED_TO_RESOLVE_CUSTOMER_GROUP_REFERENCE,
                 "dummyKey",
-                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
   }
 
   @Test
   void
       resolveCustomerGroupReference_WithEmptyKeyOnCustomerGroupReference_ShouldNotResolveReference() {
     final CustomerDraftBuilder customerDraftBuilder =
-        CustomerDraftBuilder.of("email@example.com", "secret123")
-            .customerGroup(ResourceIdentifier.ofKey(""))
+        CustomerDraftBuilder.of()
+            .email("email@example.com")
+            .password("secret123")
+            .customerGroup(CustomerGroupResourceIdentifierBuilder.of().key("").build())
             .key("dummyKey");
 
     assertThat(
@@ -240,37 +295,41 @@ class CustomerReferenceResolverTest {
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
         .withMessageContaining(
-            format(
-                FAILED_TO_RESOLVE_CUSTOMER_GROUP_REFERENCE,
+            String.format(
+                CustomerReferenceResolver.FAILED_TO_RESOLVE_CUSTOMER_GROUP_REFERENCE,
                 "dummyKey",
-                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
   }
 
   @Test
   void resolveCustomerGroupReference_WithExceptionOnCustomerGroupFetch_ShouldNotResolveReference() {
     final CustomerDraftBuilder customerDraftBuilder =
-        CustomerDraftBuilder.of("email@example.com", "secret123")
-            .customerGroup(ResourceIdentifier.ofKey("anyKey"))
+        CustomerDraftBuilder.of()
+            .email("email@example.com")
+            .password("secret123")
+            .customerGroup(CustomerGroupResourceIdentifierBuilder.of().key("anyKey").build())
             .key("dummyKey");
 
     final CompletableFuture<Optional<String>> futureThrowingSphereException =
         new CompletableFuture<>();
-    futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
+    futureThrowingSphereException.completeExceptionally(new RuntimeException("CTP error on fetch"));
     when(customerGroupService.fetchCachedCustomerGroupId(anyString()))
         .thenReturn(futureThrowingSphereException);
 
     assertThat(referenceResolver.resolveCustomerGroupReference(customerDraftBuilder))
         .failsWithin(1, TimeUnit.SECONDS)
         .withThrowableOfType(ExecutionException.class)
-        .withCauseExactlyInstanceOf(SphereException.class)
+        .withCauseExactlyInstanceOf(RuntimeException.class)
         .withMessageContaining("CTP error on fetch");
   }
 
   @Test
   void resolveCustomerGroupReference_WithIdOnCustomerGroupReference_ShouldNotResolveReference() {
     final CustomerDraftBuilder customerDraftBuilder =
-        CustomerDraftBuilder.of("email@example.com", "secret123")
-            .customerGroup(ResourceIdentifier.ofId("existingId"))
+        CustomerDraftBuilder.of()
+            .email("email@example.com")
+            .password("secret123")
+            .customerGroup(CustomerGroupResourceIdentifierBuilder.of().id("existingId").build())
             .key("dummyKey");
 
     assertThat(
@@ -286,7 +345,7 @@ class CustomerReferenceResolverTest {
   @Test
   void resolveStoreReferences_WithNullStoreReferences_ShouldNotResolveReferences() {
     final CustomerDraftBuilder customerDraftBuilder =
-        CustomerDraftBuilder.of("email@example.com", "secret123").stores(null).key("dummyKey");
+        CustomerDraftBuilder.of().email("email@example.com").password("secret123").key("dummyKey");
 
     final CustomerDraftBuilder resolvedDraft =
         referenceResolver.resolveStoreReferences(customerDraftBuilder).toCompletableFuture().join();
@@ -297,7 +356,9 @@ class CustomerReferenceResolverTest {
   @Test
   void resolveStoreReferences_WithEmptyStoreReferences_ShouldNotResolveReferences() {
     final CustomerDraftBuilder customerDraftBuilder =
-        CustomerDraftBuilder.of("email@example.com", "secret123")
+        CustomerDraftBuilder.of()
+            .email("email@example.com")
+            .password("secret123")
             .stores(emptyList())
             .key("dummyKey");
 
@@ -310,12 +371,13 @@ class CustomerReferenceResolverTest {
   @Test
   void resolveStoreReferences_WithValidStores_ShouldResolveReferences() {
     final CustomerDraftBuilder customerDraftBuilder =
-        CustomerDraftBuilder.of("email@example.com", "secret123")
+        CustomerDraftBuilder.of()
+            .email("email@example.com")
+            .password("secret123")
             .stores(
-                asList(
-                    ResourceIdentifier.ofKey("store-key1"),
-                    ResourceIdentifier.ofKey("store-key2"),
-                    ResourceIdentifier.ofId("store-id-3")))
+                StoreResourceIdentifierBuilder.of().key("store-key1").build(),
+                StoreResourceIdentifierBuilder.of().key("store-key2").build(),
+                StoreResourceIdentifierBuilder.of().id("store-id3").build())
             .key("dummyKey");
 
     final CustomerDraftBuilder resolvedDraft =
@@ -323,15 +385,17 @@ class CustomerReferenceResolverTest {
 
     assertThat(resolvedDraft.getStores())
         .containsExactly(
-            ResourceIdentifier.ofKey("store-key1"),
-            ResourceIdentifier.ofKey("store-key2"),
-            ResourceIdentifier.ofId("store-id-3"));
+            StoreResourceIdentifierBuilder.of().key("store-key1").build(),
+            StoreResourceIdentifierBuilder.of().key("store-key2").build(),
+            StoreResourceIdentifierBuilder.of().id("store-id3").build());
   }
 
   @Test
   void resolveStoreReferences_WithNullStore_ShouldResolveReferences() {
     final CustomerDraftBuilder customerDraftBuilder =
-        CustomerDraftBuilder.of("email@example.com", "secret123")
+        CustomerDraftBuilder.of()
+            .email("email@example.com")
+            .password("secret123")
             .stores(singletonList(null))
             .key("dummyKey");
 
@@ -344,8 +408,10 @@ class CustomerReferenceResolverTest {
   @Test
   void resolveStoreReferences_WithNullKeyOnStoreReference_ShouldNotResolveReference() {
     final CustomerDraftBuilder customerDraftBuilder =
-        CustomerDraftBuilder.of("email@example.com", "secret123")
-            .stores(singletonList(ResourceIdentifier.ofKey(null)))
+        CustomerDraftBuilder.of()
+            .email("email@example.com")
+            .password("secret123")
+            .stores(singletonList(StoreResourceIdentifierBuilder.of().key(null).build()))
             .key("dummyKey");
 
     assertThat(referenceResolver.resolveStoreReferences(customerDraftBuilder))
@@ -353,17 +419,19 @@ class CustomerReferenceResolverTest {
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
         .withMessageContaining(
-            format(
-                FAILED_TO_RESOLVE_STORE_REFERENCE,
+            String.format(
+                CustomerReferenceResolver.FAILED_TO_RESOLVE_STORE_REFERENCE,
                 "dummyKey",
-                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
   }
 
   @Test
   void resolveStoreReferences_WithBlankKeyOnStoreReference_ShouldNotResolveReference() {
     final CustomerDraftBuilder customerDraftBuilder =
-        CustomerDraftBuilder.of("email@example.com", "secret123")
-            .stores(singletonList(ResourceIdentifier.ofKey(" ")))
+        CustomerDraftBuilder.of()
+            .email("email@example.com")
+            .password("secret123")
+            .stores(singletonList(StoreResourceIdentifierBuilder.of().key(" ").build()))
             .key("dummyKey");
 
     assertThat(referenceResolver.resolveStoreReferences(customerDraftBuilder))
@@ -371,9 +439,9 @@ class CustomerReferenceResolverTest {
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
         .withMessageContaining(
-            format(
-                FAILED_TO_RESOLVE_STORE_REFERENCE,
+            String.format(
+                CustomerReferenceResolver.FAILED_TO_RESOLVE_STORE_REFERENCE,
                 "dummyKey",
-                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
   }
 }

@@ -1,11 +1,7 @@
 package com.commercetools.sync.products.utils;
 
-import static com.commercetools.sync.products.utils.ProductVariantPriceUpdateActionUtils.buildActions;
-import static com.commercetools.sync.products.utils.ProductVariantPriceUpdateActionUtils.buildChangePriceUpdateAction;
-import static com.commercetools.sync.products.utils.ProductVariantPriceUpdateActionUtils.buildCustomUpdateActions;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.DRAFT_DE_100_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDX;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceFixtures.DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDY;
-import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -15,37 +11,39 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.common.CentPrecisionMoneyBuilder;
+import com.commercetools.api.models.common.Price;
+import com.commercetools.api.models.common.PriceBuilder;
+import com.commercetools.api.models.common.PriceDraft;
+import com.commercetools.api.models.common.PriceDraftBuilder;
+import com.commercetools.api.models.common.PriceTier;
+import com.commercetools.api.models.common.PriceTierBuilder;
+import com.commercetools.api.models.common.PriceTierDraft;
+import com.commercetools.api.models.common.PriceTierDraftBuilder;
+import com.commercetools.api.models.common.TypedMoney;
+import com.commercetools.api.models.product.Product;
+import com.commercetools.api.models.product.ProductChangePriceAction;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductSetProductPriceCustomFieldAction;
+import com.commercetools.api.models.product.ProductSetProductPriceCustomTypeAction;
+import com.commercetools.api.models.product.ProductUpdateAction;
+import com.commercetools.api.models.type.CustomFields;
+import com.commercetools.api.models.type.CustomFieldsDraft;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.FieldContainer;
+import com.commercetools.api.models.type.FieldContainerBuilder;
+import com.commercetools.api.models.type.TypeReference;
+import com.commercetools.api.models.type.TypeReferenceBuilder;
+import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.products.Price;
-import io.sphere.sdk.products.PriceBuilder;
-import io.sphere.sdk.products.PriceDraft;
-import io.sphere.sdk.products.PriceDraftBuilder;
-import io.sphere.sdk.products.PriceTier;
-import io.sphere.sdk.products.PriceTierBuilder;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.commands.updateactions.ChangePrice;
-import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomField;
-import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomType;
-import io.sphere.sdk.types.CustomFields;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.Type;
-import io.sphere.sdk.utils.MoneyImpl;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.money.MonetaryAmount;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -53,51 +51,77 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class ProductVariantPriceUpdateActionUtilsTest {
   private static final ProductSyncOptions SYNC_OPTIONS =
-      ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+      ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
   final Product mainProduct = mock(Product.class);
   final ProductDraft mainProductDraft = mock(ProductDraft.class);
 
-  private static final MonetaryAmount EUR_10 = MoneyImpl.of(BigDecimal.TEN, EUR);
-  private static final MonetaryAmount EUR_20 = MoneyImpl.of(BigDecimal.valueOf(20), EUR);
-  private static final PriceTier TIER_1_EUR_10 = PriceTierBuilder.of(1, EUR_10).build();
-  private static final PriceTier TIER_2_EUR_10 = PriceTierBuilder.of(2, EUR_10).build();
-  private static final PriceTier TIER_1_EUR_20 = PriceTierBuilder.of(1, EUR_20).build();
+  private static final TypedMoney EUR_10 =
+      CentPrecisionMoneyBuilder.of()
+          .centAmount(BigDecimal.valueOf(1000).longValue())
+          .currencyCode("EUR")
+          .fractionDigits(2)
+          .build();
+  private static final TypedMoney EUR_20 =
+      CentPrecisionMoneyBuilder.of()
+          .centAmount(BigDecimal.valueOf(2000).longValue())
+          .currencyCode("EUR")
+          .fractionDigits(2)
+          .build();
+  private static final PriceTier TIER_1_EUR_10 =
+      PriceTierBuilder.of().value(EUR_10).minimumQuantity(1L).build();
+  private static final PriceTierDraft TIER_1_EUR_10_DRAFT =
+      PriceTierDraftBuilder.of().value(EUR_10).minimumQuantity(1L).build();
+  private static final PriceTier TIER_2_EUR_10 =
+      PriceTierBuilder.of().value(EUR_10).minimumQuantity(2L).build();
+  private static final PriceTierDraft TIER_2_EUR_10_DRAFT =
+      PriceTierDraftBuilder.of().value(EUR_10).minimumQuantity(2L).build();
+  private static final PriceTier TIER_1_EUR_20 =
+      PriceTierBuilder.of().value(EUR_20).minimumQuantity(1L).build();
+  private static final PriceTierDraft TIER_1_EUR_20_DRAFT =
+      PriceTierDraftBuilder.of().value(EUR_20).minimumQuantity(1L).build();
 
   private static final Price PRICE_EUR_10_TIER_1_EUR_10 =
-      PriceBuilder.of(EUR_10)
+      PriceBuilder.of()
+          .value(EUR_10)
           .id(UUID.randomUUID().toString())
           .tiers(singletonList(TIER_1_EUR_10))
           .build();
 
   private static final PriceDraft DRAFT_EUR_10_TIER_1_EUR_10 =
-      PriceDraftBuilder.of(EUR_10).tiers(singletonList(TIER_1_EUR_10)).build();
+      PriceDraftBuilder.of().value(EUR_10).tiers(singletonList(TIER_1_EUR_10_DRAFT)).build();
 
   private static final PriceDraft DRAFT_EUR_20_TIER_1_EUR_10 =
-      PriceDraftBuilder.of(EUR_20).tiers(singletonList(TIER_1_EUR_10)).build();
+      PriceDraftBuilder.of().value(EUR_20).tiers(singletonList(TIER_1_EUR_10_DRAFT)).build();
 
   private static final PriceDraft DRAFT_EUR_10_TIER_1_EUR_20 =
-      PriceDraftBuilder.of(EUR_10).tiers(singletonList(TIER_1_EUR_20)).build();
+      PriceDraftBuilder.of().value(EUR_10).tiers(singletonList(TIER_1_EUR_20_DRAFT)).build();
 
   private static final PriceDraft DRAFT_EUR_10_TIER_2_EUR_10 =
-      PriceDraftBuilder.of(EUR_10).tiers(singletonList(TIER_2_EUR_10)).build();
+      PriceDraftBuilder.of().value(EUR_10).tiers(singletonList(TIER_2_EUR_10_DRAFT)).build();
 
   private static final PriceDraft DRAFT_EUR_10_MULTIPLE_TIERS =
-      PriceDraftBuilder.of(EUR_10).tiers(asList(TIER_2_EUR_10, TIER_1_EUR_10)).build();
+      PriceDraftBuilder.of()
+          .value(EUR_10)
+          .tiers(asList(TIER_2_EUR_10_DRAFT, TIER_1_EUR_10_DRAFT))
+          .build();
 
-  private static final PriceDraft DRAFT_NULL_VALUE =
-      PriceDraftBuilder.of((MonetaryAmount) null).build();
+  private static final PriceDraft DRAFT_NULL_VALUE = PriceDraft.of();
 
   private static final Price PRICE_EUR_10_NULL_TIERS =
-      PriceBuilder.of(EUR_10).id(UUID.randomUUID().toString()).tiers(null).build();
+      PriceBuilder.of()
+          .value(EUR_10)
+          .id(UUID.randomUUID().toString())
+          .tiers((PriceTier) null)
+          .build();
 
   private static final PriceDraft DRAFT_EUR_10_NULL_TIERS =
-      PriceDraftBuilder.of(EUR_10).tiers(null).build();
+      PriceDraftBuilder.of().value(EUR_10).tiers((PriceTierDraft) null).build();
 
   private static final Price PRICE_EUR_10_EMPTY_TIERS =
-      PriceBuilder.of(EUR_10).id(UUID.randomUUID().toString()).tiers(emptyList()).build();
+      PriceBuilder.of().value(EUR_10).id(UUID.randomUUID().toString()).tiers(emptyList()).build();
 
   private static final PriceDraft DRAFT_EUR_10_EMPTY_TIERS =
-      PriceDraftBuilder.of(EUR_10).tiers(emptyList()).build();
+      PriceDraftBuilder.of().value(EUR_10).tiers(emptyList()).build();
 
   @ParameterizedTest(name = "[#buildActions]: {0}")
   @MethodSource("buildActionsTestCases")
@@ -105,19 +129,20 @@ class ProductVariantPriceUpdateActionUtilsTest {
       @Nonnull final String testCaseName,
       @Nonnull final Price oldPrice,
       @Nonnull final PriceDraft newPrice,
-      @Nonnull final List<UpdateAction<Product>> expectedResult,
+      @Nonnull final List<ProductUpdateAction> expectedResult,
       @Nonnull final List<String> expectedWarnings) {
     // preparation
     final List<String> warnings = new ArrayList<>();
     final ProductSyncOptions syncOptions =
-        ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .warningCallback(
                 (exception, oldResource, newResource) -> warnings.add(exception.getMessage()))
             .build();
 
     // test
-    final List<UpdateAction<Product>> result =
-        buildActions(mainProductDraft, 0, oldPrice, newPrice, syncOptions);
+    final List<ProductUpdateAction> result =
+        ProductVariantPriceUpdateActionUtils.buildActions(
+            mainProductDraft, 0L, oldPrice, newPrice, syncOptions);
 
     // assertion
     assertEquals(expectedResult, result);
@@ -151,46 +176,61 @@ class ProductVariantPriceUpdateActionUtilsTest {
             PRICE_EUR_10_TIER_1_EUR_10,
             DRAFT_EUR_20_TIER_1_EUR_10,
             singletonList(
-                ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_20_TIER_1_EUR_10, true)),
+                ProductChangePriceAction.builder()
+                    .priceId(PRICE_EUR_10_TIER_1_EUR_10.getId())
+                    .price(DRAFT_EUR_20_TIER_1_EUR_10)
+                    .staged(true)
+                    .build()),
             emptyList()),
         Arguments.of(
             case5,
             PRICE_EUR_10_TIER_1_EUR_10,
             DRAFT_EUR_10_TIER_1_EUR_20,
             singletonList(
-                ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_20, true)),
+                ProductChangePriceAction.builder()
+                    .price(DRAFT_EUR_10_TIER_1_EUR_20)
+                    .priceId(PRICE_EUR_10_TIER_1_EUR_10.getId())
+                    .staged(true)
+                    .build()),
             emptyList()),
         Arguments.of(
             case6,
             PRICE_EUR_10_TIER_1_EUR_10,
             DRAFT_EUR_10_TIER_2_EUR_10,
             singletonList(
-                ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_2_EUR_10, true)),
+                ProductChangePriceAction.builder()
+                    .price(DRAFT_EUR_10_TIER_2_EUR_10)
+                    .priceId(PRICE_EUR_10_TIER_1_EUR_10.getId())
+                    .staged(true)
+                    .build()),
             emptyList()),
         Arguments.of(
             case7,
             PRICE_EUR_10_TIER_1_EUR_10,
             DRAFT_EUR_10_MULTIPLE_TIERS,
             singletonList(
-                ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_MULTIPLE_TIERS, true)),
+                ProductChangePriceAction.builder()
+                    .price(DRAFT_EUR_10_MULTIPLE_TIERS)
+                    .priceId(PRICE_EUR_10_TIER_1_EUR_10.getId())
+                    .staged(true)
+                    .build()),
             emptyList()),
         Arguments.of(
             case8,
             DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDY,
             DRAFT_DE_100_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDX,
             asList(
-                ChangePrice.of(
-                    DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDY,
-                    DRAFT_DE_100_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDX,
-                    true),
-                SetProductPriceCustomField.ofJson(
-                    "foo",
-                    DRAFT_DE_100_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDX
-                        .getCustom()
-                        .getFields()
-                        .get("foo"),
-                    DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDY.getId(),
-                    true)),
+                ProductChangePriceAction.builder()
+                    .price(DRAFT_DE_100_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDX)
+                    .priceId(DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDY.getId())
+                    .staged(true)
+                    .build(),
+                ProductSetProductPriceCustomFieldAction.builder()
+                    .name("foo")
+                    .priceId(DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDY.getId())
+                    .value(JsonNodeFactory.instance.textNode("X"))
+                    .staged(true)
+                    .build()),
             emptyList()),
         Arguments.of(
             case9,
@@ -209,19 +249,21 @@ class ProductVariantPriceUpdateActionUtilsTest {
       @Nonnull final String testCaseName,
       @Nonnull final Price oldPrice,
       @Nonnull final PriceDraft newPrice,
-      @Nullable final UpdateAction<Product> expectedResult,
+      @Nullable final ProductUpdateAction expectedResult,
       @Nonnull final List<String> expectedWarnings) {
     // preparation
     final List<String> warnings = new ArrayList<>();
     final ProductSyncOptions syncOptions =
-        ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .warningCallback(
                 (exception, oldResource, newResource) -> warnings.add(exception.getMessage()))
             .build();
 
     // test
-    final ChangePrice result =
-        buildChangePriceUpdateAction(oldPrice, newPrice, syncOptions).orElse(null);
+    final ProductUpdateAction result =
+        ProductVariantPriceUpdateActionUtils.buildChangePriceUpdateAction(
+                oldPrice, newPrice, syncOptions)
+            .orElse(null);
 
     // assertion
     assertEquals(expectedResult, result);
@@ -247,25 +289,41 @@ class ProductVariantPriceUpdateActionUtilsTest {
             case4,
             PRICE_EUR_10_TIER_1_EUR_10,
             DRAFT_EUR_20_TIER_1_EUR_10,
-            ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_20_TIER_1_EUR_10, true),
+            ProductChangePriceAction.builder()
+                .priceId(PRICE_EUR_10_TIER_1_EUR_10.getId())
+                .price(DRAFT_EUR_20_TIER_1_EUR_10)
+                .staged(true)
+                .build(),
             emptyList()),
         Arguments.of(
             case5,
             PRICE_EUR_10_TIER_1_EUR_10,
             DRAFT_EUR_10_TIER_1_EUR_20,
-            ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_1_EUR_20, true),
+            ProductChangePriceAction.builder()
+                .priceId(PRICE_EUR_10_TIER_1_EUR_10.getId())
+                .price(DRAFT_EUR_10_TIER_1_EUR_20)
+                .staged(true)
+                .build(),
             emptyList()),
         Arguments.of(
             case6,
             PRICE_EUR_10_TIER_1_EUR_10,
             DRAFT_EUR_10_TIER_2_EUR_10,
-            ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_TIER_2_EUR_10, true),
+            ProductChangePriceAction.builder()
+                .priceId(PRICE_EUR_10_TIER_1_EUR_10.getId())
+                .price(DRAFT_EUR_10_TIER_2_EUR_10)
+                .staged(true)
+                .build(),
             emptyList()),
         Arguments.of(
             case7,
             PRICE_EUR_10_TIER_1_EUR_10,
             DRAFT_EUR_10_MULTIPLE_TIERS,
-            ChangePrice.of(PRICE_EUR_10_TIER_1_EUR_10, DRAFT_EUR_10_MULTIPLE_TIERS, true),
+            ProductChangePriceAction.builder()
+                .priceId(PRICE_EUR_10_TIER_1_EUR_10.getId())
+                .price(DRAFT_EUR_10_MULTIPLE_TIERS)
+                .staged(true)
+                .build(),
             emptyList()),
         Arguments.of(
             case8,
@@ -280,151 +338,193 @@ class ProductVariantPriceUpdateActionUtilsTest {
 
   @Test
   void buildCustomUpdateActions_WithSameStagedValues_ShouldNotBuildUpdateAction() {
-    final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
+    final Map<String, Object> oldCustomFieldsMap = new HashMap<>();
     oldCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
     oldCustomFieldsMap.put(
         "backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
-
+    final FieldContainer oldCustomFieldContainer =
+        FieldContainerBuilder.of().values(oldCustomFieldsMap).build();
     final CustomFields oldCustomFields = mock(CustomFields.class);
-    when(oldCustomFields.getType()).thenReturn(Type.referenceOfId("1"));
-    when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+    when(oldCustomFields.getType()).thenReturn(TypeReference.builder().id("1").build());
+    when(oldCustomFields.getFields()).thenReturn(oldCustomFieldContainer);
 
     final CustomFieldsDraft newCustomFieldsDraft =
-        CustomFieldsDraft.ofTypeIdAndJson("1", oldCustomFieldsMap);
+        CustomFieldsDraftBuilder.of()
+            .type(TypeResourceIdentifierBuilder.of().id("1").build())
+            .fields(oldCustomFieldContainer)
+            .build();
 
     final Price oldPrice =
-        PriceBuilder.of(EUR_10)
+        PriceBuilder.of()
+            .value(EUR_10)
             .id(UUID.randomUUID().toString())
             .tiers(singletonList(TIER_1_EUR_10))
             .custom(oldCustomFields)
             .build();
 
     final PriceDraft newPrice =
-        PriceDraftBuilder.of(EUR_10)
-            .tiers(singletonList(TIER_1_EUR_10))
+        PriceDraftBuilder.of()
+            .value(EUR_10)
+            .tiers(singletonList(TIER_1_EUR_10_DRAFT))
             .custom(newCustomFieldsDraft)
             .build();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildCustomUpdateActions(mainProductDraft, 1, oldPrice, newPrice, SYNC_OPTIONS);
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantPriceUpdateActionUtils.buildCustomUpdateActions(
+            mainProductDraft, 1L, oldPrice, newPrice, SYNC_OPTIONS);
 
     assertThat(updateActions).isEmpty();
   }
 
   @Test
   void buildCustomUpdateActions_WithDifferentStagedValues_ShouldBuildUpdateAction() {
-    final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
+    final Map<String, Object> oldCustomFieldsMap = new HashMap<>();
     oldCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
     oldCustomFieldsMap.put(
         "backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
 
-    final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
+    final Map<String, Object> newCustomFieldsMap = new HashMap<>();
     newCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
     newCustomFieldsMap.put(
         "backgroundColor", JsonNodeFactory.instance.objectNode().put("es", "rojo"));
 
+    final FieldContainer oldCustomFieldContainer =
+        FieldContainerBuilder.of().values(oldCustomFieldsMap).build();
+    final FieldContainer newCustomFieldContainer =
+        FieldContainerBuilder.of().values(newCustomFieldsMap).build();
+
     final CustomFields oldCustomFields = mock(CustomFields.class);
-    when(oldCustomFields.getType()).thenReturn(Type.referenceOfId("1"));
-    when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+    when(oldCustomFields.getType()).thenReturn(TypeReference.builder().id("1").build());
+    when(oldCustomFields.getFields()).thenReturn(oldCustomFieldContainer);
 
     final CustomFieldsDraft newCustomFieldsDraft =
-        CustomFieldsDraft.ofTypeIdAndJson("1", newCustomFieldsMap);
+        CustomFieldsDraft.builder()
+            .type(TypeResourceIdentifierBuilder.of().id("1").build())
+            .fields(newCustomFieldContainer)
+            .build();
 
     final Price oldPrice =
-        PriceBuilder.of(EUR_10)
+        PriceBuilder.of()
+            .value(EUR_10)
             .id(UUID.randomUUID().toString())
             .tiers(singletonList(TIER_1_EUR_10))
             .custom(oldCustomFields)
             .build();
 
     final PriceDraft newPrice =
-        PriceDraftBuilder.of(EUR_10)
-            .tiers(singletonList(TIER_1_EUR_10))
+        PriceDraftBuilder.of()
+            .value(EUR_10)
+            .tiers(singletonList(TIER_1_EUR_10_DRAFT))
             .custom(newCustomFieldsDraft)
             .build();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildCustomUpdateActions(mainProductDraft, 1, oldPrice, newPrice, SYNC_OPTIONS);
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantPriceUpdateActionUtils.buildCustomUpdateActions(
+            mainProductDraft, 1L, oldPrice, newPrice, SYNC_OPTIONS);
 
     assertThat(updateActions).hasSize(2);
   }
 
   @Test
   void buildCustomUpdateActions_WithNullOldStagedValues_ShouldBuildUpdateAction() {
-    final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
+    final Map<String, Object> newCustomFieldsMap = new HashMap<>();
     newCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
     newCustomFieldsMap.put(
         "backgroundColor", JsonNodeFactory.instance.objectNode().put("es", "rojo"));
 
+    final FieldContainer newCustomFieldContainer =
+        FieldContainerBuilder.of().values(newCustomFieldsMap).build();
+
     final CustomFieldsDraft newCustomFieldsDraft =
-        CustomFieldsDraft.ofTypeIdAndJson("1", newCustomFieldsMap);
+        CustomFieldsDraftBuilder.of()
+            .type(TypeResourceIdentifierBuilder.of().id("1").build())
+            .fields(newCustomFieldContainer)
+            .build();
 
     final Price oldPrice =
-        PriceBuilder.of(EUR_10)
+        PriceBuilder.of()
+            .value(EUR_10)
             .id(UUID.randomUUID().toString())
             .tiers(singletonList(TIER_1_EUR_10))
-            .custom(null)
+            .custom((CustomFields) null)
             .build();
 
     final PriceDraft newPrice =
-        PriceDraftBuilder.of(EUR_10)
-            .tiers(singletonList(TIER_1_EUR_10))
+        PriceDraftBuilder.of()
+            .value(EUR_10)
+            .tiers(singletonList(TIER_1_EUR_10_DRAFT))
             .custom(newCustomFieldsDraft)
             .build();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildCustomUpdateActions(mainProductDraft, 1, oldPrice, newPrice, SYNC_OPTIONS);
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantPriceUpdateActionUtils.buildCustomUpdateActions(
+            mainProductDraft, 1L, oldPrice, newPrice, SYNC_OPTIONS);
 
     assertThat(updateActions)
         .containsExactly(
-            SetProductPriceCustomType.ofTypeIdAndJson(
-                "1", newCustomFieldsMap, oldPrice.getId(), true));
+            ProductSetProductPriceCustomTypeAction.builder()
+                .type(TypeResourceIdentifierBuilder.of().id("1").build())
+                .fields(newCustomFieldContainer)
+                .priceId(oldPrice.getId())
+                .staged(true)
+                .build());
   }
 
   @Test
   void
       buildCustomUpdateActions_WithBadCustomFieldData_ShouldNotBuildUpdateActionAndTriggerErrorCallback() {
-    final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
+    final Map<String, Object> oldCustomFieldsMap = new HashMap<>();
     oldCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
     oldCustomFieldsMap.put(
         "backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
 
-    final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
+    final Map<String, Object> newCustomFieldsMap = new HashMap<>();
     newCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
     newCustomFieldsMap.put(
         "backgroundColor", JsonNodeFactory.instance.objectNode().put("es", "rojo"));
 
+    final FieldContainer oldCustomFieldContainer =
+        FieldContainerBuilder.of().values(oldCustomFieldsMap).build();
+    final FieldContainer newCustomFieldContainer =
+        FieldContainerBuilder.of().values(newCustomFieldsMap).build();
+
     final CustomFields oldCustomFields = mock(CustomFields.class);
-    when(oldCustomFields.getType()).thenReturn(Type.referenceOfId(""));
-    when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+    when(oldCustomFields.getType()).thenReturn(TypeReferenceBuilder.of().id("").build());
+    when(oldCustomFields.getFields()).thenReturn(oldCustomFieldContainer);
 
     final CustomFieldsDraft newCustomFieldsDraft =
-        CustomFieldsDraft.ofTypeIdAndJson("", newCustomFieldsMap);
+        CustomFieldsDraftBuilder.of()
+            .type(TypeResourceIdentifierBuilder.of().id("").build())
+            .fields(newCustomFieldContainer)
+            .build();
 
     final Price oldPrice =
-        PriceBuilder.of(EUR_10)
+        PriceBuilder.of()
+            .value(EUR_10)
             .id(UUID.randomUUID().toString())
             .tiers(singletonList(TIER_1_EUR_10))
             .custom(oldCustomFields)
             .build();
 
     final PriceDraft newPrice =
-        PriceDraftBuilder.of(EUR_10)
-            .tiers(singletonList(TIER_1_EUR_10))
+        PriceDraftBuilder.of()
+            .value(EUR_10)
+            .tiers(singletonList(TIER_1_EUR_10_DRAFT))
             .custom(newCustomFieldsDraft)
             .build();
 
     final List<String> errors = new ArrayList<>();
 
     final ProductSyncOptions syncOptions =
-        ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) ->
                     errors.add(exception.getMessage()))
             .build();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildCustomUpdateActions(mainProductDraft, 1, oldPrice, newPrice, syncOptions);
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantPriceUpdateActionUtils.buildCustomUpdateActions(
+            mainProductDraft, 1L, oldPrice, newPrice, syncOptions);
 
     assertThat(updateActions).isEmpty();
     assertThat(errors).hasSize(1);

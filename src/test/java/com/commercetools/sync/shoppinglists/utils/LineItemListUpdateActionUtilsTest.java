@@ -1,13 +1,8 @@
 package com.commercetools.sync.shoppinglists.utils;
 
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
-import static com.commercetools.sync.shoppinglists.utils.LineItemUpdateActionUtils.buildLineItemsUpdateActions;
-import static com.commercetools.sync.shoppinglists.utils.ShoppingListSyncUtils.buildActions;
-import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
+import static java.util.Collections.*;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,36 +10,36 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.customer.CustomerResourceIdentifierBuilder;
+import com.commercetools.api.models.product.ProductVariant;
+import com.commercetools.api.models.shopping_list.ShoppingList;
+import com.commercetools.api.models.shopping_list.ShoppingListAddLineItemActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListChangeLineItemQuantityActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListChangeNameActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListDraftBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItem;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraftBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListRemoveLineItemActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListSetAnonymousIdActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListSetCustomFieldActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListSetCustomerActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListSetDeleteDaysAfterLastModificationActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListSetDescriptionActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListSetLineItemCustomFieldActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListSetSlugActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.CompletableFutureUtils;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
+import com.commercetools.sync.commons.utils.TestUtils;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
 import com.commercetools.sync.shoppinglists.helpers.LineItemReferenceResolver;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.ProductVariant;
-import io.sphere.sdk.shoppinglists.LineItem;
-import io.sphere.sdk.shoppinglists.LineItemDraft;
-import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
-import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
-import io.sphere.sdk.shoppinglists.commands.updateactions.AddLineItem;
-import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeLineItemQuantity;
-import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
-import io.sphere.sdk.shoppinglists.commands.updateactions.RemoveLineItem;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetAnonymousId;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetCustomField;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetCustomer;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetDeleteDaysAfterLastModification;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetDescription;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetLineItemCustomField;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetSlug;
-import io.sphere.sdk.types.CustomFieldsDraft;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,7 +78,7 @@ class LineItemListUpdateActionUtilsTest {
       RES_ROOT + "shoppinglist-with-lineitems-not-expanded.json";
 
   private static final ShoppingListSyncOptions SYNC_OPTIONS =
-      ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+      ShoppingListSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
 
   private static final LineItemReferenceResolver lineItemReferenceResolver =
       new LineItemReferenceResolver(SYNC_OPTIONS, getMockTypeService());
@@ -97,10 +92,11 @@ class LineItemListUpdateActionUtilsTest {
     when(oldShoppingList.getLineItems()).thenReturn(emptyList());
 
     final ShoppingListDraft newShoppingList =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("name")).build();
+        ShoppingListDraftBuilder.of().name(ofEnglish("name")).build();
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, SYNC_OPTIONS);
 
     assertThat(updateActions).isEmpty();
   }
@@ -111,10 +107,11 @@ class LineItemListUpdateActionUtilsTest {
     when(oldShoppingList.getLineItems()).thenReturn(null);
 
     final ShoppingListDraft newShoppingList =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("name")).build();
+        ShoppingListDraftBuilder.of().name(ofEnglish("name")).build();
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, SYNC_OPTIONS);
 
     assertThat(updateActions).isEmpty();
   }
@@ -125,12 +122,11 @@ class LineItemListUpdateActionUtilsTest {
     when(oldShoppingList.getLineItems()).thenReturn(null);
 
     final ShoppingListDraft newShoppingList =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("name"))
-            .lineItems(emptyList())
-            .build();
+        ShoppingListDraftBuilder.of().name(ofEnglish("name")).lineItems(emptyList()).build();
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, SYNC_OPTIONS);
 
     assertThat(updateActions).isEmpty();
   }
@@ -142,12 +138,14 @@ class LineItemListUpdateActionUtilsTest {
     when(oldShoppingList.getLineItems()).thenReturn(null);
 
     final ShoppingListDraft newShoppingList =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("name"))
+        ShoppingListDraftBuilder.of()
+            .name(ofEnglish("name"))
             .lineItems(singletonList(null))
             .build();
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, SYNC_OPTIONS);
 
     assertThat(updateActions).isEmpty();
   }
@@ -156,19 +154,20 @@ class LineItemListUpdateActionUtilsTest {
   void
       buildLineItemsUpdateActions_WithNullNewLineItemsAndExistingLineItems_ShouldBuild3RemoveActions() {
     final ShoppingList oldShoppingList =
-        readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
+        TestUtils.readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
 
     final ShoppingListDraft newShoppingList =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("name")).build();
+        ShoppingListDraftBuilder.of().name(ofEnglish("name")).build();
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, SYNC_OPTIONS);
 
     assertThat(updateActions)
         .containsExactly(
-            RemoveLineItem.of("line_item_id_1"),
-            RemoveLineItem.of("line_item_id_2"),
-            RemoveLineItem.of("line_item_id_3"));
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_1").build(),
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_2").build(),
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_3").build());
   }
 
   @Test
@@ -179,8 +178,9 @@ class LineItemListUpdateActionUtilsTest {
     final ShoppingListDraft newShoppingList =
         mapToShoppingListDraftWithResolvedLineItemReferences(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123);
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, SYNC_OPTIONS);
 
     assertThat(newShoppingList.getLineItems()).isNotNull();
 
@@ -189,12 +189,32 @@ class LineItemListUpdateActionUtilsTest {
         .extracting("sku")
         .asString()
         .isEqualTo("[SKU-1, SKU-2, SKU-3]");
-
+    final ShoppingListLineItemDraft shoppingListLineItemDraft1 =
+        newShoppingList.getLineItems().get(0);
+    final ShoppingListLineItemDraft shoppingListLineItemDraft2 =
+        newShoppingList.getLineItems().get(1);
+    final ShoppingListLineItemDraft shoppingListLineItemDraft3 =
+        newShoppingList.getLineItems().get(2);
     assertThat(updateActions)
         .containsExactly(
-            AddLineItem.of(newShoppingList.getLineItems().get(0)),
-            AddLineItem.of(newShoppingList.getLineItems().get(1)),
-            AddLineItem.of(newShoppingList.getLineItems().get(2)));
+            ShoppingListAddLineItemActionBuilder.of()
+                .addedAt(shoppingListLineItemDraft1.getAddedAt())
+                .custom(shoppingListLineItemDraft1.getCustom())
+                .sku(shoppingListLineItemDraft1.getSku())
+                .quantity(shoppingListLineItemDraft1.getQuantity())
+                .build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .addedAt(shoppingListLineItemDraft2.getAddedAt())
+                .custom(shoppingListLineItemDraft2.getCustom())
+                .sku(shoppingListLineItemDraft2.getSku())
+                .quantity(shoppingListLineItemDraft2.getQuantity())
+                .build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .addedAt(shoppingListLineItemDraft3.getAddedAt())
+                .custom(shoppingListLineItemDraft3.getCustom())
+                .sku(shoppingListLineItemDraft3.getSku())
+                .quantity(shoppingListLineItemDraft3.getQuantity())
+                .build());
   }
 
   @Test
@@ -204,16 +224,18 @@ class LineItemListUpdateActionUtilsTest {
     when(oldShoppingList.getLineItems()).thenReturn(null);
 
     final ShoppingListDraft newShoppingList =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("name"))
+        ShoppingListDraftBuilder.of()
+            .name(ofEnglish("name"))
             .lineItems(
                 asList(
-                    LineItemDraftBuilder.ofSku("sku1", null).build(),
-                    LineItemDraftBuilder.ofSku("sku2", 0L).build(),
-                    LineItemDraftBuilder.ofSku("sku3", -1L).build()))
+                    ShoppingListLineItemDraftBuilder.of().sku("sku1").quantity(null).build(),
+                    ShoppingListLineItemDraftBuilder.of().sku("sku2").quantity(0L).build(),
+                    ShoppingListLineItemDraftBuilder.of().sku("sku3").quantity(-1L).build()))
             .build();
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, SYNC_OPTIONS);
 
     assertThat(updateActions).isEmpty();
   }
@@ -221,13 +243,14 @@ class LineItemListUpdateActionUtilsTest {
   @Test
   void buildLineItemsUpdateActions_WithIdenticalLineItems_ShouldNotBuildUpdateActions() {
     final ShoppingList oldShoppingList =
-        readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
+        TestUtils.readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
 
     final ShoppingListDraft newShoppingList =
         mapToShoppingListDraftWithResolvedLineItemReferences(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123);
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, SYNC_OPTIONS);
 
     assertThat(updateActions).isEmpty();
   }
@@ -236,243 +259,419 @@ class LineItemListUpdateActionUtilsTest {
   void
       buildLineItemsUpdateActions_WithSameLineItemPositionButChangesWithin_ShouldBuildUpdateActions() {
     final ShoppingList oldShoppingList =
-        readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
+        TestUtils.readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
 
     final ShoppingListDraft newShoppingList =
         mapToShoppingListDraftWithResolvedLineItemReferences(
             SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123_WITH_CHANGES);
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, SYNC_OPTIONS);
 
     assertThat(updateActions)
         .containsExactly(
-            ChangeLineItemQuantity.of("line_item_id_1", 2L),
-            SetLineItemCustomField.ofJson(
-                "textField", JsonNodeFactory.instance.textNode("newText1"), "line_item_id_1"),
-            ChangeLineItemQuantity.of("line_item_id_2", 4L),
-            SetLineItemCustomField.ofJson(
-                "textField", JsonNodeFactory.instance.textNode("newText2"), "line_item_id_2"),
-            ChangeLineItemQuantity.of("line_item_id_3", 6L),
-            SetLineItemCustomField.ofJson(
-                "textField", JsonNodeFactory.instance.textNode("newText3"), "line_item_id_3"));
+            ShoppingListChangeLineItemQuantityActionBuilder.of()
+                .lineItemId("line_item_id_1")
+                .quantity(2L)
+                .build(),
+            ShoppingListSetLineItemCustomFieldActionBuilder.of()
+                .name("textField")
+                .value("newText1")
+                .lineItemId("line_item_id_1")
+                .build(),
+            ShoppingListChangeLineItemQuantityActionBuilder.of()
+                .lineItemId("line_item_id_2")
+                .quantity(4L)
+                .build(),
+            ShoppingListSetLineItemCustomFieldActionBuilder.of()
+                .name("textField")
+                .value("newText2")
+                .lineItemId("line_item_id_2")
+                .build(),
+            ShoppingListChangeLineItemQuantityActionBuilder.of()
+                .lineItemId("line_item_id_3")
+                .quantity(6L)
+                .build(),
+            ShoppingListSetLineItemCustomFieldActionBuilder.of()
+                .name("textField")
+                .value("newText3")
+                .lineItemId("line_item_id_3")
+                .build());
   }
 
   @Test
   void buildLineItemsUpdateActions_WithOneMissingLineItem_ShouldBuildOneRemoveLineItemAction() {
     final ShoppingList oldShoppingList =
-        readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
+        TestUtils.readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
 
     final ShoppingListDraft newShoppingList =
         mapToShoppingListDraftWithResolvedLineItemReferences(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_12);
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, SYNC_OPTIONS);
 
-    assertThat(updateActions).containsExactly(RemoveLineItem.of("line_item_id_3"));
+    assertThat(updateActions)
+        .containsExactly(
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_3").build());
   }
 
   @Test
   void buildLineItemsUpdateActions_WithOneExtraLineItem_ShouldBuildAddLineItemAction() {
     final ShoppingList oldShoppingList =
-        readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
+        TestUtils.readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
 
     final ShoppingListDraft newShoppingList =
         mapToShoppingListDraftWithResolvedLineItemReferences(
             SHOPPING_LIST_WITH_LINE_ITEMS_SKU_1234);
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, SYNC_OPTIONS);
 
-    final LineItemDraft expectedLineItemDraft =
-        LineItemDraftBuilder.ofSku("SKU-4", 4L)
+    final ShoppingListLineItemDraft expectedLineItemDraft =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("SKU-4")
+            .quantity(4L)
             .custom(
-                CustomFieldsDraft.ofTypeIdAndJson(
-                    "custom_type_id",
-                    singletonMap("textField", JsonNodeFactory.instance.textNode("text4"))))
+                CustomFieldsDraftBuilder.of()
+                    .type(
+                        typeResourceIdentifierBuilder ->
+                            typeResourceIdentifierBuilder.id("custom_type_id"))
+                    .fields(
+                        fieldContainerBuilder ->
+                            fieldContainerBuilder.addValue("textField", "text4"))
+                    .build())
             .addedAt(ZonedDateTime.parse("2020-11-05T10:00:00.000Z"))
             .build();
 
-    assertThat(updateActions).containsExactly(AddLineItem.of(expectedLineItemDraft));
+    assertThat(updateActions)
+        .containsExactly(
+            ShoppingListAddLineItemActionBuilder.of()
+                .sku(expectedLineItemDraft.getSku())
+                .addedAt(expectedLineItemDraft.getAddedAt())
+                .custom(expectedLineItemDraft.getCustom())
+                .quantity(expectedLineItemDraft.getQuantity())
+                .build());
   }
 
   @Test
   void buildLineItemsUpdateAction_WithOneLineItemSwitch_ShouldBuildRemoveAndAddLineItemActions() {
     final ShoppingList oldShoppingList =
-        readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
+        TestUtils.readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
 
     final ShoppingListDraft newShoppingList =
         mapToShoppingListDraftWithResolvedLineItemReferences(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_124);
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, SYNC_OPTIONS);
 
-    final LineItemDraft expectedLineItemDraft =
-        LineItemDraftBuilder.ofSku("SKU-4", 4L)
+    final ShoppingListLineItemDraft expectedLineItemDraft =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("SKU-4")
+            .quantity(4L)
             .custom(
-                CustomFieldsDraft.ofTypeIdAndJson(
-                    "custom_type_id",
-                    singletonMap("textField", JsonNodeFactory.instance.textNode("text4"))))
+                CustomFieldsDraftBuilder.of()
+                    .type(
+                        typeResourceIdentifierBuilder ->
+                            typeResourceIdentifierBuilder.id("custom_type_id"))
+                    .fields(
+                        fieldContainerBuilder ->
+                            fieldContainerBuilder.addValue("textField", "text4"))
+                    .build())
             .addedAt(ZonedDateTime.parse("2020-11-05T10:00:00.000Z"))
             .build();
 
     assertThat(updateActions)
         .containsExactly(
-            RemoveLineItem.of("line_item_id_3"), AddLineItem.of(expectedLineItemDraft));
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_3").build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .sku(expectedLineItemDraft.getSku())
+                .addedAt(expectedLineItemDraft.getAddedAt())
+                .custom(expectedLineItemDraft.getCustom())
+                .quantity(expectedLineItemDraft.getQuantity())
+                .build());
   }
 
   @Test
   void buildLineItemsUpdateAction_WithDifferentOrder_ShouldBuildRemoveAndAddLineItemActions() {
     final ShoppingList oldShoppingList =
-        readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
+        TestUtils.readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
 
     final ShoppingListDraft newShoppingList =
         mapToShoppingListDraftWithResolvedLineItemReferences(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_312);
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, SYNC_OPTIONS);
+
+    final ShoppingListLineItemDraft shoppingListLineItemDraft1 =
+        newShoppingList.getLineItems().get(0);
+    final ShoppingListLineItemDraft shoppingListLineItemDraft2 =
+        newShoppingList.getLineItems().get(1);
+    final ShoppingListLineItemDraft shoppingListLineItemDraft3 =
+        newShoppingList.getLineItems().get(2);
 
     assertThat(updateActions)
         .containsExactly(
-            RemoveLineItem.of("line_item_id_1"),
-            RemoveLineItem.of("line_item_id_2"),
-            RemoveLineItem.of("line_item_id_3"),
-            AddLineItem.of(newShoppingList.getLineItems().get(0)), // SKU-3
-            AddLineItem.of(newShoppingList.getLineItems().get(1)), // SKU-1
-            AddLineItem.of(newShoppingList.getLineItems().get(2)) // SKU-2
-            );
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_1").build(),
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_2").build(),
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_3").build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .addedAt(shoppingListLineItemDraft1.getAddedAt())
+                .custom(shoppingListLineItemDraft1.getCustom())
+                .sku(shoppingListLineItemDraft1.getSku())
+                .quantity(shoppingListLineItemDraft1.getQuantity())
+                .build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .addedAt(shoppingListLineItemDraft2.getAddedAt())
+                .custom(shoppingListLineItemDraft2.getCustom())
+                .sku(shoppingListLineItemDraft2.getSku())
+                .quantity(shoppingListLineItemDraft2.getQuantity())
+                .build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .addedAt(shoppingListLineItemDraft3.getAddedAt())
+                .custom(shoppingListLineItemDraft3.getCustom())
+                .sku(shoppingListLineItemDraft3.getSku())
+                .quantity(shoppingListLineItemDraft3.getQuantity())
+                .build());
   }
 
   @Test
   void
       buildLineItemsUpdateAction_WithRemovedAndDifferentOrder_ShouldBuildRemoveAndAddLineItemActions() {
     final ShoppingList oldShoppingList =
-        readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
+        TestUtils.readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
 
     final ShoppingListDraft newShoppingList =
         mapToShoppingListDraftWithResolvedLineItemReferences(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_32);
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, SYNC_OPTIONS);
+
+    final ShoppingListLineItemDraft shoppingListLineItemDraft1 =
+        newShoppingList.getLineItems().get(0);
+    final ShoppingListLineItemDraft shoppingListLineItemDraft2 =
+        newShoppingList.getLineItems().get(1);
 
     assertThat(updateActions)
         .containsExactly(
-            RemoveLineItem.of("line_item_id_1"),
-            RemoveLineItem.of("line_item_id_2"),
-            RemoveLineItem.of("line_item_id_3"),
-            AddLineItem.of(newShoppingList.getLineItems().get(0)), // SKU-3
-            AddLineItem.of(newShoppingList.getLineItems().get(1)) // SKU-2
-            );
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_1").build(),
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_2").build(),
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_3").build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .addedAt(shoppingListLineItemDraft1.getAddedAt())
+                .custom(shoppingListLineItemDraft1.getCustom())
+                .sku(shoppingListLineItemDraft1.getSku())
+                .quantity(shoppingListLineItemDraft1.getQuantity())
+                .build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .addedAt(shoppingListLineItemDraft2.getAddedAt())
+                .custom(shoppingListLineItemDraft2.getCustom())
+                .sku(shoppingListLineItemDraft2.getSku())
+                .quantity(shoppingListLineItemDraft2.getQuantity())
+                .build());
   }
 
   @Test
   void
       buildLineItemsUpdateAction_WithAddedAndDifferentOrder_ShouldBuildRemoveAndAddLineItemActions() {
     final ShoppingList oldShoppingList =
-        readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
+        TestUtils.readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
 
     final ShoppingListDraft newShoppingList =
         mapToShoppingListDraftWithResolvedLineItemReferences(
             SHOPPING_LIST_WITH_LINE_ITEMS_SKU_1324);
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, SYNC_OPTIONS);
+
+    final ShoppingListLineItemDraft shoppingListLineItemDraft1 =
+        newShoppingList.getLineItems().get(1);
+    final ShoppingListLineItemDraft shoppingListLineItemDraft2 =
+        newShoppingList.getLineItems().get(2);
+    final ShoppingListLineItemDraft shoppingListLineItemDraft3 =
+        newShoppingList.getLineItems().get(3);
 
     assertThat(updateActions)
         .containsExactly(
-            RemoveLineItem.of("line_item_id_2"),
-            RemoveLineItem.of("line_item_id_3"),
-            AddLineItem.of(newShoppingList.getLineItems().get(1)), // SKU-3
-            AddLineItem.of(newShoppingList.getLineItems().get(2)), // SKU-2
-            AddLineItem.of(newShoppingList.getLineItems().get(3)) // SKU-4
-            );
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_2").build(),
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_3").build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .addedAt(shoppingListLineItemDraft1.getAddedAt())
+                .custom(shoppingListLineItemDraft1.getCustom())
+                .sku(shoppingListLineItemDraft1.getSku())
+                .quantity(shoppingListLineItemDraft1.getQuantity())
+                .build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .addedAt(shoppingListLineItemDraft2.getAddedAt())
+                .custom(shoppingListLineItemDraft2.getCustom())
+                .sku(shoppingListLineItemDraft2.getSku())
+                .quantity(shoppingListLineItemDraft2.getQuantity())
+                .build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .addedAt(shoppingListLineItemDraft3.getAddedAt())
+                .custom(shoppingListLineItemDraft3.getCustom())
+                .sku(shoppingListLineItemDraft3.getSku())
+                .quantity(shoppingListLineItemDraft3.getQuantity())
+                .build());
   }
 
   @Test
   void
       buildLineItemsUpdateAction_WithAddedLineItemInBetween_ShouldBuildRemoveAndAddLineItemActions() {
     final ShoppingList oldShoppingList =
-        readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
+        TestUtils.readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
 
     final ShoppingListDraft newShoppingList =
         mapToShoppingListDraftWithResolvedLineItemReferences(
             SHOPPING_LIST_WITH_LINE_ITEMS_SKU_1423);
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, SYNC_OPTIONS);
+
+    final ShoppingListLineItemDraft shoppingListLineItemDraft1 =
+        newShoppingList.getLineItems().get(1);
+    final ShoppingListLineItemDraft shoppingListLineItemDraft2 =
+        newShoppingList.getLineItems().get(2);
+    final ShoppingListLineItemDraft shoppingListLineItemDraft3 =
+        newShoppingList.getLineItems().get(3);
 
     assertThat(updateActions)
         .containsExactly(
-            RemoveLineItem.of("line_item_id_2"),
-            RemoveLineItem.of("line_item_id_3"),
-            AddLineItem.of(newShoppingList.getLineItems().get(1)), // SKU-4
-            AddLineItem.of(newShoppingList.getLineItems().get(2)), // SKU-2
-            AddLineItem.of(newShoppingList.getLineItems().get(3)) // SKU-3
-            );
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_2").build(),
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_3").build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .addedAt(shoppingListLineItemDraft1.getAddedAt())
+                .custom(shoppingListLineItemDraft1.getCustom())
+                .sku(shoppingListLineItemDraft1.getSku())
+                .quantity(shoppingListLineItemDraft1.getQuantity())
+                .build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .addedAt(shoppingListLineItemDraft2.getAddedAt())
+                .custom(shoppingListLineItemDraft2.getCustom())
+                .sku(shoppingListLineItemDraft2.getSku())
+                .quantity(shoppingListLineItemDraft2.getQuantity())
+                .build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .addedAt(shoppingListLineItemDraft3.getAddedAt())
+                .custom(shoppingListLineItemDraft3.getCustom())
+                .sku(shoppingListLineItemDraft3.getSku())
+                .quantity(shoppingListLineItemDraft3.getQuantity())
+                .build());
   }
 
   @Test
   void
       buildLineItemsUpdateAction_WithAddedRemovedAndDifOrder_ShouldBuildRemoveAndAddLineItemActions() {
     final ShoppingList oldShoppingList =
-        readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
+        TestUtils.readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
 
     final ShoppingListDraft newShoppingList =
         mapToShoppingListDraftWithResolvedLineItemReferences(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_324);
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, SYNC_OPTIONS);
+
+    final ShoppingListLineItemDraft shoppingListLineItemDraft1 =
+        newShoppingList.getLineItems().get(0);
+    final ShoppingListLineItemDraft shoppingListLineItemDraft2 =
+        newShoppingList.getLineItems().get(1);
+    final ShoppingListLineItemDraft shoppingListLineItemDraft3 =
+        newShoppingList.getLineItems().get(2);
 
     assertThat(updateActions)
         .containsExactly(
-            RemoveLineItem.of("line_item_id_1"),
-            RemoveLineItem.of("line_item_id_2"),
-            RemoveLineItem.of("line_item_id_3"),
-            AddLineItem.of(newShoppingList.getLineItems().get(0)), // SKU-3
-            AddLineItem.of(newShoppingList.getLineItems().get(1)), // SKU-2
-            AddLineItem.of(newShoppingList.getLineItems().get(2)) // SKU-4
-            );
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_1").build(),
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_2").build(),
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_3").build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .addedAt(shoppingListLineItemDraft1.getAddedAt())
+                .custom(shoppingListLineItemDraft1.getCustom())
+                .sku(shoppingListLineItemDraft1.getSku())
+                .quantity(shoppingListLineItemDraft1.getQuantity())
+                .build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .addedAt(shoppingListLineItemDraft2.getAddedAt())
+                .custom(shoppingListLineItemDraft2.getCustom())
+                .sku(shoppingListLineItemDraft2.getSku())
+                .quantity(shoppingListLineItemDraft2.getQuantity())
+                .build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .addedAt(shoppingListLineItemDraft3.getAddedAt())
+                .custom(shoppingListLineItemDraft3.getCustom())
+                .sku(shoppingListLineItemDraft3.getSku())
+                .quantity(shoppingListLineItemDraft3.getQuantity())
+                .build());
   }
 
   @Test
   void
       buildLineItemsUpdateAction_WithAddedRemovedAndDifOrderAndChangedLineItem_ShouldBuildAllDiffLineItemActions() {
     final ShoppingList oldShoppingList =
-        readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
+        TestUtils.readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
 
     final ShoppingListDraft newShoppingList =
         mapToShoppingListDraftWithResolvedLineItemReferences(
             SHOPPING_LIST_WITH_LINE_ITEMS_SKU_132_WITH_CHANGES);
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, SYNC_OPTIONS);
+
+    final ShoppingListLineItemDraft shoppingListLineItemDraft2 =
+        newShoppingList.getLineItems().get(1);
+    final ShoppingListLineItemDraft shoppingListLineItemDraft3 =
+        newShoppingList.getLineItems().get(2);
 
     assertThat(updateActions)
         .containsExactly(
-            ChangeLineItemQuantity.of("line_item_id_1", 2L),
-            SetLineItemCustomField.ofJson(
-                "textField", JsonNodeFactory.instance.textNode("newText1"), "line_item_id_1"),
-            RemoveLineItem.of("line_item_id_2"),
-            RemoveLineItem.of("line_item_id_3"),
-            AddLineItem.of(newShoppingList.getLineItems().get(1)), // SKU-3
-            AddLineItem.of(newShoppingList.getLineItems().get(2)) // SKU-2
-            );
+            ShoppingListChangeLineItemQuantityActionBuilder.of()
+                .lineItemId("line_item_id_1")
+                .quantity(2L)
+                .build(),
+            ShoppingListSetLineItemCustomFieldActionBuilder.of()
+                .name("textField")
+                .value("newText1")
+                .lineItemId("line_item_id_1")
+                .build(),
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_2").build(),
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_3").build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .addedAt(shoppingListLineItemDraft2.getAddedAt())
+                .custom(shoppingListLineItemDraft2.getCustom())
+                .sku(shoppingListLineItemDraft2.getSku())
+                .quantity(shoppingListLineItemDraft2.getQuantity())
+                .build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .addedAt(shoppingListLineItemDraft3.getAddedAt())
+                .custom(shoppingListLineItemDraft3.getCustom())
+                .sku(shoppingListLineItemDraft3.getSku())
+                .quantity(shoppingListLineItemDraft3.getQuantity())
+                .build());
   }
 
   @Test
   void buildLineItemsUpdateAction_WithNotExpandedLineItem_ShouldTriggerErrorCallback() {
     final ShoppingList oldShoppingList =
-        readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_NOT_EXPANDED, ShoppingList.class);
+        TestUtils.readObjectFromResource(
+            SHOPPING_LIST_WITH_LINE_ITEMS_NOT_EXPANDED, ShoppingList.class);
 
     final ShoppingListDraft newShoppingList =
         mapToShoppingListDraftWithResolvedLineItemReferences(
             SHOPPING_LIST_WITH_LINE_ITEMS_SKU_132_WITH_CHANGES);
 
     final List<String> errors = new ArrayList<>();
-    final List<UpdateAction<ShoppingList>> updateActionsBeforeCallback = new ArrayList<>();
+    final List<ShoppingListUpdateAction> updateActionsBeforeCallback = new ArrayList<>();
 
     final ShoppingListSyncOptions syncOptions =
-        ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class))
+        ShoppingListSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) -> {
                   errors.add(exception.getMessage());
@@ -480,15 +679,22 @@ class LineItemListUpdateActionUtilsTest {
                 })
             .build();
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, syncOptions);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, syncOptions);
 
     assertThat(updateActions).isEmpty();
     assertThat(updateActionsBeforeCallback)
         .containsExactly(
-            ChangeLineItemQuantity.of("line_item_id_1", 2L),
-            SetLineItemCustomField.ofJson(
-                "textField", JsonNodeFactory.instance.textNode("newText1"), "line_item_id_1"));
+            ShoppingListChangeLineItemQuantityActionBuilder.of()
+                .lineItemId("line_item_id_1")
+                .quantity(2L)
+                .build(),
+            ShoppingListSetLineItemCustomFieldActionBuilder.of()
+                .name("textField")
+                .value("newText1")
+                .lineItemId("line_item_id_1")
+                .build());
 
     assertThat(errors).hasSize(1);
     assertThat(errors.get(0))
@@ -506,7 +712,7 @@ class LineItemListUpdateActionUtilsTest {
     final ProductVariant mockProductVariant = mock(ProductVariant.class);
     when(mockProductVariant.getSku()).thenReturn(null);
 
-    final LineItem oldLineItem = mock(LineItem.class);
+    final ShoppingListLineItem oldLineItem = mock(ShoppingListLineItem.class);
     when(oldLineItem.getVariant()).thenReturn(mockProductVariant);
 
     when(oldShoppingList.getLineItems()).thenReturn(singletonList(oldLineItem));
@@ -515,10 +721,10 @@ class LineItemListUpdateActionUtilsTest {
         mapToShoppingListDraftWithResolvedLineItemReferences(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123);
 
     final List<String> errors = new ArrayList<>();
-    final List<UpdateAction<ShoppingList>> updateActionsBeforeCallback = new ArrayList<>();
+    final List<ShoppingListUpdateAction> updateActionsBeforeCallback = new ArrayList<>();
 
     final ShoppingListSyncOptions syncOptions =
-        ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class))
+        ShoppingListSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) -> {
                   errors.add(exception.getMessage());
@@ -526,8 +732,9 @@ class LineItemListUpdateActionUtilsTest {
                 })
             .build();
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, syncOptions);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, syncOptions);
 
     assertThat(updateActions).isEmpty();
     assertThat(updateActionsBeforeCallback).isEmpty();
@@ -543,7 +750,7 @@ class LineItemListUpdateActionUtilsTest {
   @Test
   void buildLineItemsUpdateAction_WithNewLineItemWithoutSku_ShouldTriggerErrorCallback() {
     final ShoppingList oldShoppingList =
-        readObjectFromResource(
+        TestUtils.readObjectFromResource(
             SHOPPING_LIST_WITH_LINE_ITEMS_SKU_132_WITH_CHANGES, ShoppingList.class);
 
     final ShoppingListDraft newShoppingList =
@@ -551,10 +758,10 @@ class LineItemListUpdateActionUtilsTest {
             SHOPPING_LIST_WITH_LINE_ITEMS_NOT_EXPANDED);
 
     final List<String> errors = new ArrayList<>();
-    final List<UpdateAction<ShoppingList>> updateActionsBeforeCallback = new ArrayList<>();
+    final List<ShoppingListUpdateAction> updateActionsBeforeCallback = new ArrayList<>();
 
     final ShoppingListSyncOptions syncOptions =
-        ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class))
+        ShoppingListSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) -> {
                   errors.add(exception.getMessage());
@@ -562,15 +769,22 @@ class LineItemListUpdateActionUtilsTest {
                 })
             .build();
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, syncOptions);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, syncOptions);
 
     assertThat(updateActions).isEmpty();
     assertThat(updateActionsBeforeCallback)
         .containsExactly(
-            ChangeLineItemQuantity.of("line_item_id_1", 1L),
-            SetLineItemCustomField.ofJson(
-                "textField", JsonNodeFactory.instance.textNode("text1"), "line_item_id_1"));
+            ShoppingListChangeLineItemQuantityActionBuilder.of()
+                .lineItemId("line_item_id_1")
+                .quantity(1L)
+                .build(),
+            ShoppingListSetLineItemCustomFieldActionBuilder.of()
+                .name("textField")
+                .value("text1")
+                .lineItemId("line_item_id_1")
+                .build());
 
     assertThat(errors).hasSize(1);
     assertThat(errors.get(0))
@@ -583,7 +797,7 @@ class LineItemListUpdateActionUtilsTest {
   @Test
   void buildLineItemsUpdateActions_WithNewLineItemsWithoutValidQuantity_ShouldNotBuildAddActions() {
     final ShoppingList oldShoppingList =
-        readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
+        TestUtils.readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
 
     final ShoppingListDraft newShoppingList =
         mapToShoppingListDraftWithResolvedLineItemReferences(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123);
@@ -591,12 +805,13 @@ class LineItemListUpdateActionUtilsTest {
     Objects.requireNonNull(newShoppingList.getLineItems())
         .addAll(
             Arrays.asList(
-                LineItemDraftBuilder.ofSku("sku1", null).build(),
-                LineItemDraftBuilder.ofSku("sku2", 0L).build(),
-                LineItemDraftBuilder.ofSku("sku3", -1L).build()));
+                ShoppingListLineItemDraftBuilder.of().sku("sku1").quantity(null).build(),
+                ShoppingListLineItemDraftBuilder.of().sku("sku2").quantity(0L).build(),
+                ShoppingListLineItemDraftBuilder.of().sku("sku3").quantity(-1L).build()));
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemsUpdateActions(
+            oldShoppingList, newShoppingList, SYNC_OPTIONS);
 
     assertThat(updateActions).isEmpty();
   }
@@ -604,47 +819,73 @@ class LineItemListUpdateActionUtilsTest {
   @Test
   void buildActions_WithDifferentValuesWithLineItems_ShouldReturnActions() {
     final ShoppingList oldShoppingList =
-        readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
+        TestUtils.readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
 
     final ShoppingListDraft newShoppingList =
         mapToShoppingListDraftWithResolvedLineItemReferences(
             SHOPPING_LIST_WITH_LINE_ITEMS_SKU_132_WITH_CHANGES);
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildActions(oldShoppingList, newShoppingList, mock(ShoppingListSyncOptions.class));
+    final List<ShoppingListUpdateAction> updateActions =
+        ShoppingListSyncUtils.buildActions(
+            oldShoppingList, newShoppingList, mock(ShoppingListSyncOptions.class));
 
     assertThat(updateActions)
         .containsExactly(
-            SetSlug.of(LocalizedString.ofEnglish("newSlug")),
-            ChangeName.of(LocalizedString.ofEnglish("newName")),
-            SetDescription.of(LocalizedString.ofEnglish("newDescription")),
-            SetAnonymousId.of("newAnonymousId"),
-            SetCustomer.of(ResourceIdentifier.ofId("customer_id_2")),
-            SetDeleteDaysAfterLastModification.of(45),
-            SetCustomField.ofJson("textField", JsonNodeFactory.instance.textNode("newTextValue")),
-            ChangeLineItemQuantity.of("line_item_id_1", 2L),
-            SetLineItemCustomField.ofJson(
-                "textField", JsonNodeFactory.instance.textNode("newText1"), "line_item_id_1"),
-            RemoveLineItem.of("line_item_id_2"),
-            RemoveLineItem.of("line_item_id_3"),
-            AddLineItem.of(
-                LineItemDraftBuilder.ofSku("SKU-3", 6L)
-                    .custom(
-                        CustomFieldsDraft.ofTypeIdAndJson(
-                            "custom_type_id",
-                            singletonMap(
-                                "textField", JsonNodeFactory.instance.textNode("newText3"))))
-                    .addedAt(ZonedDateTime.parse("2020-11-04T10:00:00.000Z"))
-                    .build()),
-            AddLineItem.of(
-                LineItemDraftBuilder.ofSku("SKU-2", 4L)
-                    .custom(
-                        CustomFieldsDraft.ofTypeIdAndJson(
-                            "custom_type_id",
-                            singletonMap(
-                                "textField", JsonNodeFactory.instance.textNode("newText2"))))
-                    .addedAt(ZonedDateTime.parse("2020-11-03T10:00:00.000Z"))
-                    .build()));
+            ShoppingListSetSlugActionBuilder.of().slug(ofEnglish("newSlug")).build(),
+            ShoppingListChangeNameActionBuilder.of().name(ofEnglish("newName")).build(),
+            ShoppingListSetDescriptionActionBuilder.of()
+                .description(ofEnglish("newDescription"))
+                .build(),
+            ShoppingListSetAnonymousIdActionBuilder.of().anonymousId("newAnonymousId").build(),
+            ShoppingListSetCustomerActionBuilder.of()
+                .customer(CustomerResourceIdentifierBuilder.of().id("customer_id_2").build())
+                .build(),
+            ShoppingListSetDeleteDaysAfterLastModificationActionBuilder.of()
+                .deleteDaysAfterLastModification(45L)
+                .build(),
+            ShoppingListSetCustomFieldActionBuilder.of()
+                .name("textField")
+                .value("newTextValue")
+                .build(),
+            ShoppingListChangeLineItemQuantityActionBuilder.of()
+                .lineItemId("line_item_id_1")
+                .quantity(2L)
+                .build(),
+            ShoppingListSetLineItemCustomFieldActionBuilder.of()
+                .name("textField")
+                .value("newText1")
+                .lineItemId("line_item_id_1")
+                .build(),
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_2").build(),
+            ShoppingListRemoveLineItemActionBuilder.of().lineItemId("line_item_id_3").build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .sku("SKU-3")
+                .quantity(6L)
+                .custom(
+                    CustomFieldsDraftBuilder.of()
+                        .type(
+                            typeResourceIdentifierBuilder ->
+                                typeResourceIdentifierBuilder.id("custom_type_id"))
+                        .fields(
+                            fieldContainerBuilder ->
+                                fieldContainerBuilder.addValue("textField", "newText3"))
+                        .build())
+                .addedAt(ZonedDateTime.parse("2020-11-04T10:00:00.000Z"))
+                .build(),
+            ShoppingListAddLineItemActionBuilder.of()
+                .sku("SKU-2")
+                .quantity(4L)
+                .custom(
+                    CustomFieldsDraftBuilder.of()
+                        .type(
+                            typeResourceIdentifierBuilder ->
+                                typeResourceIdentifierBuilder.id("custom_type_id"))
+                        .fields(
+                            fieldContainerBuilder ->
+                                fieldContainerBuilder.addValue("textField", "newText2"))
+                        .build())
+                .addedAt(ZonedDateTime.parse("2020-11-03T10:00:00.000Z"))
+                .build());
   }
 
   @Nonnull
@@ -653,11 +894,12 @@ class LineItemListUpdateActionUtilsTest {
 
     final ShoppingListDraft template =
         ShoppingListReferenceResolutionUtils.mapToShoppingListDraft(
-            readObjectFromResource(resourcePath, ShoppingList.class), referenceIdToKeyCache);
+            TestUtils.readObjectFromResource(resourcePath, ShoppingList.class),
+            referenceIdToKeyCache);
 
     final ShoppingListDraftBuilder builder = ShoppingListDraftBuilder.of(template);
 
-    mapValuesToFutureOfCompletedValues(
+    CompletableFutureUtils.mapValuesToFutureOfCompletedValues(
             Objects.requireNonNull(builder.getLineItems()),
             lineItemReferenceResolver::resolveReferences,
             toList())

@@ -1,14 +1,11 @@
 package com.commercetools.sync.producttypes.utils;
 
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
-import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildAttributesUpdateActions;
-import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildChangeDescriptionAction;
-import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildChangeNameAction;
 
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.product_type.ProductTypeDraft;
+import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
 import java.util.List;
 import javax.annotation.Nonnull;
 
@@ -17,10 +14,10 @@ public final class ProductTypeSyncUtils {
   /**
    * Compares all the fields (including the attributes see {@link
    * ProductTypeUpdateActionUtils#buildAttributesUpdateActions}) of a {@link ProductType} and a
-   * {@link ProductTypeDraft}. It returns a {@link List} of {@link UpdateAction}&lt;{@link
-   * ProductType}&gt; as a result. If no update action is needed, for example in case where both the
-   * {@link ProductType} and the {@link ProductTypeDraft} have the same fields, an empty {@link
-   * List} is returned.
+   * {@link ProductTypeDraft}. It returns a {@link java.util.List} of {@link
+   * ProductTypeUpdateAction} as a result. If no update action is needed, for example in case where
+   * both the {@link ProductType} and the {@link ProductTypeDraft} have the same fields, an empty
+   * {@link java.util.List} is returned.
    *
    * @param oldProductType the {@link ProductType} which should be updated.
    * @param newProductType the {@link ProductTypeDraft} where we get the new data.
@@ -31,17 +28,20 @@ public final class ProductTypeSyncUtils {
    * @return A list of productType-specific update actions.
    */
   @Nonnull
-  public static List<UpdateAction<ProductType>> buildActions(
+  public static List<ProductTypeUpdateAction> buildActions(
       @Nonnull final ProductType oldProductType,
       @Nonnull final ProductTypeDraft newProductType,
       @Nonnull final ProductTypeSyncOptions syncOptions) {
 
-    final List<UpdateAction<ProductType>> updateActions =
+    final List<ProductTypeUpdateAction> updateActions =
         filterEmptyOptionals(
-            buildChangeNameAction(oldProductType, newProductType),
-            buildChangeDescriptionAction(oldProductType, newProductType));
+            ProductTypeUpdateActionUtils.buildChangeNameAction(oldProductType, newProductType),
+            ProductTypeUpdateActionUtils.buildChangeDescriptionAction(
+                oldProductType, newProductType));
 
-    updateActions.addAll(buildAttributesUpdateActions(oldProductType, newProductType, syncOptions));
+    updateActions.addAll(
+        ProductTypeUpdateActionUtils.buildAttributesUpdateActions(
+            oldProductType, newProductType, syncOptions));
 
     return updateActions;
   }

@@ -2,16 +2,12 @@ package com.commercetools.sync.producttypes.helpers;
 
 import static java.lang.String.format;
 
+import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
-import com.commercetools.sync.producttypes.ProductTypeSync;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,9 +16,10 @@ import javax.annotation.Nonnull;
 public class ProductTypeSyncStatistics extends BaseSyncStatistics {
 
   /**
-   * The following {@link ConcurrentHashMap} ({@code missingNestedProductTypes}) keeps track of the
-   * keys of missing product types, the keys of the product types which are referencing those
-   * missing product types and a list of attribute definitions which contains those references.
+   * The following {@link java.util.concurrent.ConcurrentHashMap} ({@code
+   * missingNestedProductTypes}) keeps track of the keys of missing product types, the keys of the
+   * product types which are referencing those missing product types and a list of attribute
+   * definitions which contains those references.
    *
    * <ul>
    *   <li>key: key of the missing product type.
@@ -34,12 +31,14 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
    *       </ul>
    * </ul>
    *
-   * <p>The map is thread-safe (by instantiating it with {@link ConcurrentHashMap}) because it is
-   * accessed/modified in a concurrent context, specifically when syncing product types in parallel
-   * in {@link
-   * ProductTypeSync#removeMissingReferenceAttributeAndUpdateMissingParentMap(ProductTypeDraft,
-   * Map)}, {@link ProductTypeSync#updateProductType(ProductType, List)} and {@link
-   * ProductTypeSync#buildToBeUpdatedMap()}
+   * <p>The map is thread-safe (by instantiating it with {@link
+   * java.util.concurrent.ConcurrentHashMap}) because it is accessed/modified in a concurrent
+   * context, specifically when syncing product types in parallel in {@link
+   * com.commercetools.sync.producttypes.ProductTypeSync#removeMissingReferenceAttributeAndUpdateMissingParentMap(com.commercetools.api.models.product_type.ProductTypeDraft,
+   * java.util.Map)}, {@link
+   * com.commercetools.sync.producttypes.ProductTypeSync#updateProductType(com.commercetools.api.models.product_type.ProductType,
+   * java.util.List)} and {@link
+   * com.commercetools.sync.producttypes.ProductTypeSync#buildToBeUpdatedMap()}
    */
   private ConcurrentHashMap<
           String,
@@ -102,10 +101,10 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
   }
 
   /**
-   * @return an unmodifiable {@link ConcurrentHashMap} ({@code missingNestedProductTypes}) which
-   *     keeps track of the keys of missing product types, the keys of the product types which are
-   *     referencing those missing product types and a list of attribute definitions which contains
-   *     those references.
+   * @return an unmodifiable {@link java.util.concurrent.ConcurrentHashMap} ({@code
+   *     missingNestedProductTypes}) which keeps track of the keys of missing product types, the
+   *     keys of the product types which are referencing those missing product types and a list of
+   *     attribute definitions which contains those references.
    *     <ul>
    *       <li>key: key of the missing product type
    *       <li>value: a map of which consists of:

@@ -1,20 +1,24 @@
 package com.commercetools.sync.products.helpers;
 
-import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
+import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import com.commercetools.api.models.channel.Channel;
+import com.commercetools.api.models.channel.ChannelReference;
+import com.commercetools.api.models.channel.ChannelResourceIdentifier;
+import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
+import com.commercetools.api.models.common.PriceDraft;
+import com.commercetools.api.models.common.PriceDraftBuilder;
+import com.commercetools.api.models.customer_group.CustomerGroup;
+import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifier;
+import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.CustomReferenceResolver;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.TypeService;
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.customergroups.CustomerGroup;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.PriceDraft;
-import io.sphere.sdk.products.PriceDraftBuilder;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
@@ -35,10 +39,13 @@ public final class PriceReferenceResolver
       "Customer Group with key '%s' does not exist.";
 
   /**
-   * Takes a {@link ProductSyncOptions} instance, {@link TypeService}, a {@link ChannelService} and
-   * a {@link CustomerGroupService} to instantiate a {@link PriceReferenceResolver} instance that
-   * could be used to resolve the prices of variant drafts in the CTP project specified in the
-   * injected {@link ProductSyncOptions} instance.
+   * Takes a {@link com.commercetools.sync.products.ProductSyncOptions} instance, {@link
+   * com.commercetools.sync.services.TypeService}, a {@link
+   * com.commercetools.sync.services.ChannelService} and a {@link
+   * com.commercetools.sync.services.CustomerGroupService} to instantiate a {@link
+   * PriceReferenceResolver} instance that could be used to resolve the prices of variant drafts in
+   * the CTP project specified in the injected {@link
+   * com.commercetools.sync.products.ProductSyncOptions} instance.
    *
    * @param options the container of all the options of the sync process including the CTP project
    *     client and/or configuration and other sync-specific options.
@@ -58,17 +65,17 @@ public final class PriceReferenceResolver
 
   /**
    * Given a {@link PriceDraft} this method attempts to resolve the custom type and channel
-   * references to return a {@link CompletionStage} which contains a new instance of the draft with
-   * the resolved references.
+   * references to return a {@link java.util.concurrent.CompletionStage} which contains a new
+   * instance of the draft with the resolved references.
    *
    * <p>The method then tries to fetch the key of the customer group, optimistically from a cache.
    * If the id is not found in cache nor the CTP project the {@link ReferenceResolutionException}
    * will be thrown.
    *
    * @param priceDraft the priceDraft to resolve it's references.
-   * @return a {@link CompletionStage} that contains as a result a new inventoryEntryDraft instance
-   *     with resolved references or, in case an error occurs during reference resolution a {@link
-   *     ReferenceResolutionException}.
+   * @return a {@link java.util.concurrent.CompletionStage} that contains as a result a new
+   *     inventoryEntryDraft instance with resolved references or, in case an error occurs during
+   *     reference resolution a {@link ReferenceResolutionException}.
    */
   @Override
   public CompletionStage<PriceDraft> resolveReferences(@Nonnull final PriceDraft priceDraft) {
@@ -87,13 +94,16 @@ public final class PriceReferenceResolver
         draftBuilder,
         PriceDraftBuilder::getCustom,
         PriceDraftBuilder::custom,
-        format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getCountry(), draftBuilder.getValue()));
+        format(
+            FAILED_TO_RESOLVE_CUSTOM_TYPE,
+            draftBuilder.getCountry(),
+            draftBuilder.getValue().toMonetaryAmount()));
   }
 
   /**
    * Given a {@link PriceDraftBuilder} this method attempts to resolve the supply channel reference
-   * to return a {@link CompletionStage} which contains the same instance of draft builder with the
-   * resolved supply channel reference.
+   * to return a {@link java.util.concurrent.CompletionStage} which contains the same instance of
+   * draft builder with the resolved supply channel reference.
    *
    * <p>The method then tries to fetch the key of the supply channel, optimistically from a cache.
    * If the id is not found in cache nor the CTP project and {@code ensureChannel} option is set to
@@ -102,14 +112,14 @@ public final class PriceReferenceResolver
    * with a {@link ReferenceResolutionException}.
    *
    * @param draftBuilder the PriceDraftBuilder to resolve its channel reference.
-   * @return a {@link CompletionStage} that contains as a result a new price draft builder instance
-   *     with resolved supply channel or, in case an error occurs during reference resolution, a
-   *     {@link ReferenceResolutionException}.
+   * @return a {@link java.util.concurrent.CompletionStage} that contains as a result a new price
+   *     draft builder instance with resolved supply channel or, in case an error occurs during
+   *     reference resolution, a {@link ReferenceResolutionException}.
    */
   @Nonnull
   CompletionStage<PriceDraftBuilder> resolveChannelReference(
       @Nonnull final PriceDraftBuilder draftBuilder) {
-    final ResourceIdentifier<Channel> channelResourceIdentifier = draftBuilder.getChannel();
+    final ChannelResourceIdentifier channelResourceIdentifier = draftBuilder.getChannel();
     if (channelResourceIdentifier != null && channelResourceIdentifier.getId() == null) {
       String channelKey;
       try {
@@ -119,7 +129,7 @@ public final class PriceReferenceResolver
             new ReferenceResolutionException(
                 format(
                     FAILED_TO_RESOLVE_REFERENCE,
-                    Channel.resourceTypeId(),
+                    ChannelResourceIdentifier.CHANNEL,
                     draftBuilder.getCountry(),
                     draftBuilder.getValue(),
                     referenceResolutionException.getMessage())));
@@ -143,8 +153,9 @@ public final class PriceReferenceResolver
                         resolvedChannelId ->
                             completedFuture(
                                 draftBuilder.channel(
-                                    Channel.referenceOfId(resolvedChannelId)
-                                        .toResourceIdentifier())))
+                                    ChannelResourceIdentifierBuilder.of()
+                                        .id(resolvedChannelId)
+                                        .build())))
                     .orElseGet(
                         () -> {
                           final CompletableFuture<PriceDraftBuilder> result =
@@ -157,7 +168,7 @@ public final class PriceReferenceResolver
                                           new ReferenceResolutionException(
                                               format(
                                                   FAILED_TO_RESOLVE_REFERENCE,
-                                                  Channel.resourceTypeId(),
+                                                  ChannelReference.CHANNEL,
                                                   draftBuilder.getCountry(),
                                                   draftBuilder.getValue(),
                                                   exception.getMessage()),
@@ -171,11 +182,12 @@ public final class PriceReferenceResolver
   }
 
   /**
-   * Helper method that creates a new {@link Channel} on the CTP project with the specified {@code
-   * channelKey} and of the role {@code "InventorySupply"}. Only if the {@code ensureChannels}
-   * options is set to {@code true} on the {@code options} instance of {@code this} class. Then it
-   * resolves the supply channel reference on the supplied {@code inventoryEntryDraft} by setting
-   * the id of it's supply channel reference with the newly created Channel.
+   * Helper method that creates a new {@link com.commercetools.api.models.channel.Channel} on the
+   * CTP project with the specified {@code channelKey} and of the role {@code "InventorySupply"}.
+   * Only if the {@code ensureChannels} options is set to {@code true} on the {@code options}
+   * instance of {@code this} class. Then it resolves the supply channel reference on the supplied
+   * {@code inventoryEntryDraft} by setting the id of it's supply channel reference with the newly
+   * created Channel.
    *
    * <p>If the {@code ensureChannels} options is set to {@code false} on the {@code options}
    * instance of {@code this} class, the future is completed exceptionally with a {@link
@@ -200,7 +212,10 @@ public final class PriceReferenceResolver
           .thenCompose(
               createdChannelOptional -> {
                 if (createdChannelOptional.isPresent()) {
-                  return completedFuture(draftBuilder.channel(createdChannelOptional.get()));
+                  final Channel channel = createdChannelOptional.get();
+                  return completedFuture(
+                      draftBuilder.channel(
+                          ChannelResourceIdentifierBuilder.of().id(channel.getId()).build()));
                 } else {
                   final ReferenceResolutionException referenceResolutionException =
                       new ReferenceResolutionException(format(CHANNEL_DOES_NOT_EXIST, channelKey));
@@ -216,19 +231,19 @@ public final class PriceReferenceResolver
 
   /**
    * Given a {@link PriceDraftBuilder} this method attempts to resolve the customer group resource
-   * identifier to return a {@link CompletionStage} which contains the same instance of draft
-   * builder with the resolved customer group resource identifier.
+   * identifier to return a {@link java.util.concurrent.CompletionStage} which contains the same
+   * instance of draft builder with the resolved customer group resource identifier.
    *
    * @param draftBuilder the priceDraftBuilder to resolve its customer group reference.
-   * @return a {@link CompletionStage} that contains as a result a new price draft builder instance
-   *     with resolved customer group resource identifier or no customer group resource identifier
-   *     if the customer group doesn't exist or in case an error occurs during reference resolution
-   *     a {@link ReferenceResolutionException}.
+   * @return a {@link java.util.concurrent.CompletionStage} that contains as a result a new price
+   *     draft builder instance with resolved customer group resource identifier or no customer
+   *     group resource identifier if the customer group doesn't exist or in case an error occurs
+   *     during reference resolution a {@link ReferenceResolutionException}.
    */
   @Nonnull
   CompletionStage<PriceDraftBuilder> resolveCustomerGroupReference(
       @Nonnull final PriceDraftBuilder draftBuilder) {
-    final ResourceIdentifier<CustomerGroup> customerGroupResourceIdentifier =
+    final CustomerGroupResourceIdentifier customerGroupResourceIdentifier =
         draftBuilder.getCustomerGroup();
     if (customerGroupResourceIdentifier != null
         && customerGroupResourceIdentifier.getId() == null) {
@@ -263,8 +278,9 @@ public final class PriceReferenceResolver
                         resolvedCustomerGroupId ->
                             completedFuture(
                                 draftBuilder.customerGroup(
-                                    CustomerGroup.referenceOfId(resolvedCustomerGroupId)
-                                        .toResourceIdentifier())))
+                                    CustomerGroupResourceIdentifierBuilder.of()
+                                        .id(resolvedCustomerGroupId)
+                                        .build())))
                     .orElseGet(
                         () -> {
                           final String errorMessage =

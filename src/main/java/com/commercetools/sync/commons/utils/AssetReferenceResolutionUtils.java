@@ -1,12 +1,12 @@
 package com.commercetools.sync.commons.utils;
 
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
-import static java.util.stream.Collectors.toList;
 
-import io.sphere.sdk.models.Asset;
-import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.models.AssetDraftBuilder;
+import com.commercetools.api.models.common.Asset;
+import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.api.models.common.AssetDraftBuilder;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
 /**
@@ -34,10 +34,15 @@ public final class AssetReferenceResolutionUtils {
     return assets.stream()
         .map(
             asset ->
-                AssetDraftBuilder.of(asset)
+                AssetDraftBuilder.of()
                     .custom(mapToCustomFieldsDraft(asset, referenceIdToKeyCache))
+                    .description(asset.getDescription())
+                    .name(asset.getName())
+                    .key(asset.getKey())
+                    .sources(asset.getSources())
+                    .tags(asset.getTags())
                     .build())
-        .collect(toList());
+        .collect(Collectors.toList());
   }
 
   private AssetReferenceResolutionUtils() {}

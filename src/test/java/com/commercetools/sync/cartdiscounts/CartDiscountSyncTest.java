@@ -1,12 +1,8 @@
 package com.commercetools.sync.cartdiscounts;
 
-import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static java.lang.String.format;
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
+import static java.util.Collections.*;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.as;
@@ -14,30 +10,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.cart_discount.CartDiscount;
+import com.commercetools.api.models.cart_discount.CartDiscountDraft;
+import com.commercetools.api.models.cart_discount.CartDiscountDraftBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountShippingCostTargetBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountUpdateAction;
+import com.commercetools.api.models.cart_discount.CartDiscountValueRelativeDraftBuilder;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
+import com.commercetools.sync.commons.MockUtils;
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.CartDiscountService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CartDiscountServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
-import io.sphere.sdk.cartdiscounts.CartDiscount;
-import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
-import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
-import io.sphere.sdk.cartdiscounts.CartDiscountValue;
-import io.sphere.sdk.cartdiscounts.CartPredicate;
-import io.sphere.sdk.cartdiscounts.ShippingCostTarget;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.SphereException;
-import io.sphere.sdk.types.CustomFieldsDraft;
+import io.vrap.rmf.base.client.ApiHttpException;
+import io.vrap.rmf.base.client.ApiHttpHeaders;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,6 +40,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class CartDiscountSyncTest {
 
@@ -58,12 +51,12 @@ class CartDiscountSyncTest {
   private CartDiscountSyncOptions syncOptions;
   private CartDiscount errorCallbackOldResource;
   private CartDiscountDraft errorCallbackNewResource;
-  private List<UpdateAction<CartDiscount>> errorCallbackUpdateActions;
+  private List<CartDiscountUpdateAction> errorCallbackUpdateActions;
 
   @BeforeEach
   void setup() {
     syncOptions =
-        CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class))
+        CartDiscountSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback(
                 (exception, newResource, oldResource, updateActions) -> {
                   this.errorCallbackOldResource = oldResource.orElse(null);
@@ -75,17 +68,24 @@ class CartDiscountSyncTest {
             .build();
 
     newCartDiscount =
-        CartDiscountDraftBuilder.of(
-                LocalizedString.of(Locale.GERMAN, "Neu Name", Locale.ENGLISH, "new name"),
-                CartPredicate.of("totalPrice >= \"50 EUR\""),
-                CartDiscountValue.ofRelative(1000),
-                ShippingCostTarget.of(),
-                "0.25",
-                false)
+        CartDiscountDraftBuilder.of()
+            .name(
+                localizedStringBuilder ->
+                    localizedStringBuilder
+                        .addValue(Locale.GERMAN.toLanguageTag(), "Neu Name")
+                        .addValue(Locale.ENGLISH.toString(), "new name"))
+            .cartPredicate("totalPrice >= \"50 EUR\"")
+            .value(CartDiscountValueRelativeDraftBuilder.of().permyriad(1000L).build())
+            .target(CartDiscountShippingCostTargetBuilder.of().build())
+            .sortOrder("0.25")
+            .requiresDiscountCode(false)
             .key(KEY)
-            .active(false)
+            .isActive(false)
             .description(
-                LocalizedString.of(Locale.GERMAN, "Beschreibung", Locale.ENGLISH, "description"))
+                localizedStringBuilder ->
+                    localizedStringBuilder
+                        .addValue(Locale.GERMAN.toLanguageTag(), "Beschreibung")
+                        .addValue(Locale.ENGLISH.toString(), "description"))
             .validFrom(ZonedDateTime.parse("2019-05-05T00:00:00.000Z"))
             .validUntil(ZonedDateTime.parse("2019-05-15T00:00:00.000Z"))
             .build();
@@ -99,11 +99,11 @@ class CartDiscountSyncTest {
         .thenReturn(
             supplyAsync(
                 () -> {
-                  throw new SphereException();
+                  throw new ApiHttpException(500, "", new ApiHttpHeaders());
                 }));
 
     final CartDiscountSync cartDiscountSync =
-        new CartDiscountSync(syncOptions, getMockTypeService(), mockCartDiscountService);
+        new CartDiscountSync(syncOptions, MockUtils.getMockTypeService(), mockCartDiscountService);
 
     // test
     final CartDiscountSyncStatistics cartDiscountSyncStatistics =
@@ -122,7 +122,7 @@ class CartDiscountSyncTest {
             throwable -> {
               assertThat(throwable).isExactlyInstanceOf(SyncException.class);
               assertThat(throwable).hasCauseExactlyInstanceOf(CompletionException.class);
-              assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(SphereException.class);
+              assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(ApiHttpException.class);
               return true;
             });
 
@@ -141,7 +141,8 @@ class CartDiscountSyncTest {
     final CartDiscountSyncOptions spyCartDiscountSyncOptions = spy(syncOptions);
 
     // test
-    new CartDiscountSync(spyCartDiscountSyncOptions, getMockTypeService(), cartDiscountService)
+    new CartDiscountSync(
+            spyCartDiscountSyncOptions, MockUtils.getMockTypeService(), cartDiscountService)
         .sync(singletonList(newCartDiscount))
         .toCompletableFuture()
         .join();
@@ -167,7 +168,8 @@ class CartDiscountSyncTest {
     final CartDiscountSyncOptions spyCartDiscountSyncOptions = spy(syncOptions);
 
     // test
-    new CartDiscountSync(spyCartDiscountSyncOptions, getMockTypeService(), cartDiscountService)
+    new CartDiscountSync(
+            spyCartDiscountSyncOptions, MockUtils.getMockTypeService(), cartDiscountService)
         .sync(singletonList(newCartDiscount))
         .toCompletableFuture()
         .join();
@@ -183,7 +185,8 @@ class CartDiscountSyncTest {
     final CartDiscountDraft newCartDiscountDraft = null;
 
     final CartDiscountSync cartDiscountSync =
-        new CartDiscountSync(syncOptions, getMockTypeService(), mock(CartDiscountService.class));
+        new CartDiscountSync(
+            syncOptions, MockUtils.getMockTypeService(), mock(CartDiscountService.class));
 
     // test
     final CartDiscountSyncStatistics cartDiscountSyncStatistics =
@@ -214,7 +217,8 @@ class CartDiscountSyncTest {
     when(newCartDiscountDraftWithoutKey.getKey()).thenReturn(null);
 
     final CartDiscountSync cartDiscountSync =
-        new CartDiscountSync(syncOptions, getMockTypeService(), mock(CartDiscountService.class));
+        new CartDiscountSync(
+            syncOptions, MockUtils.getMockTypeService(), mock(CartDiscountService.class));
 
     // test
     final CartDiscountSyncStatistics cartDiscountSyncStatistics =
@@ -246,12 +250,12 @@ class CartDiscountSyncTest {
   @Test
   void sync_WithFailOnCachingKeysToIds_ShouldTriggerErrorCallbackAndReturnProperStats() {
     // preparation
-    final TypeService typeService = spy(new TypeServiceImpl(syncOptions));
+    final TypeService typeService = Mockito.spy(new TypeServiceImpl(syncOptions));
     when(typeService.cacheKeysToIds(anySet()))
         .thenReturn(
             supplyAsync(
                 () -> {
-                  throw new SphereException();
+                  throw new ApiHttpException(500, "", new ApiHttpHeaders());
                 }));
 
     final CartDiscountSync cartDiscountSync =
@@ -260,7 +264,11 @@ class CartDiscountSyncTest {
     final CartDiscountDraft newCartDiscountDraftWithCustomType = mock(CartDiscountDraft.class);
     when(newCartDiscountDraftWithCustomType.getKey()).thenReturn("cart-discount-key");
     when(newCartDiscountDraftWithCustomType.getCustom())
-        .thenReturn(CustomFieldsDraft.ofTypeKeyAndJson("typeKey", emptyMap()));
+        .thenReturn(
+            CustomFieldsDraftBuilder.of()
+                .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.key("typeKey"))
+                .fields(fieldContainerBuilder -> fieldContainerBuilder.values(emptyMap()))
+                .build());
 
     // test
     final CartDiscountSyncStatistics cartDiscountSyncStatistics =
@@ -283,7 +291,7 @@ class CartDiscountSyncTest {
         .matches(
             throwable -> {
               assertThat(throwable.getCause()).isExactlyInstanceOf(CompletionException.class);
-              assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(SphereException.class);
+              assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(ApiHttpException.class);
               return true;
             });
   }
@@ -292,7 +300,7 @@ class CartDiscountSyncTest {
   void
       sync_WithErrorUpdatingCartDiscountAndCustomErrorCallback_ShouldCallErrorCallbackAndContainResourceName() {
     // preparation
-    final CartDiscountService mockCartDiscountService = mock(CartDiscountServiceImpl.class);
+    final CartDiscountService mockCartDiscountService = Mockito.mock(CartDiscountServiceImpl.class);
     final TypeService mockTypeService = mock(TypeServiceImpl.class);
     final CartDiscount existingCartDiscount = mock(CartDiscount.class);
     when(existingCartDiscount.getKey()).thenReturn(newCartDiscount.getKey());
@@ -304,7 +312,7 @@ class CartDiscountSyncTest {
         .thenReturn(
             supplyAsync(
                 () -> {
-                  throw new SphereException();
+                  throw new ApiHttpException(500, "", new ApiHttpHeaders());
                 }));
     when(mockTypeService.cacheKeysToIds(anySet()))
         .thenReturn(CompletableFuture.completedFuture(emptyMap()));
@@ -326,6 +334,6 @@ class CartDiscountSyncTest {
 
     assertThat(errorMessages.get(0))
         .contains(
-            "Failed to update cart discount with key: 'cart-discount-key'. Reason: io.sphere.sdk.models.SphereException:");
+            "Failed to update cart discount with key: 'cart-discount-key'. Reason: io.vrap.rmf.base.client.ApiHttpException:");
   }
 }

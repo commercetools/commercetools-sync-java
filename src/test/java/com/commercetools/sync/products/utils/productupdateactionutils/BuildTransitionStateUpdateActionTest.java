@@ -1,15 +1,15 @@
 package com.commercetools.sync.products.utils.productupdateactionutils;
 
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildTransitionStateUpdateAction;
-import static io.sphere.sdk.json.SphereJsonUtils.readObject;
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.vrap.rmf.base.client.utils.json.JsonUtils.fromJsonString;
 import static org.mockito.Mockito.when;
 
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.commands.updateactions.TransitionState;
-import io.sphere.sdk.states.State;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductTransitionStateAction;
+import com.commercetools.api.models.state.StateReference;
+import com.commercetools.api.models.state.StateResourceIdentifier;
+import com.commercetools.sync.products.utils.ProductUpdateActionUtils;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -23,56 +23,80 @@ class BuildTransitionStateUpdateActionTest {
   @Mock private ProductDraft newProduct;
 
   @SuppressWarnings("unchecked")
-  private static final Reference<State> oldState =
-      readObject(
+  private static final StateReference oldState =
+      fromJsonString(
           "{\"typeId\": \"state\",\"id\": \"11111111-1111-1111-1111-111111111111\"}",
-          Reference.class);
+          StateReference.class);
 
   @SuppressWarnings("unchecked")
-  private static final Reference<State> newState =
-      readObject(
+  private static final StateReference newState =
+      fromJsonString(
           "{\"typeId\": \"state\",\"id\": \"11111111-1111-1111-1111-111111111111\"}",
-          Reference.class);
+          StateReference.class);
 
   @SuppressWarnings("unchecked")
-  private static final Reference<State> newChangedState =
-      readObject(
+  private static final StateReference newChangedState =
+      fromJsonString(
           "{\"typeId\": \"state\",\"id\": \"22222222-2222-2222-2222-222222222222\"}",
-          Reference.class);
+          StateReference.class);
 
   @Test
   void buildTransitionStateUpdateAction_withEmptyOld() {
-    assertThat(buildTransitionStateUpdateAction(oldProduct, newProduct)).isEmpty();
+    Assertions.assertThat(
+            ProductUpdateActionUtils.buildTransitionStateUpdateAction(oldProduct, newProduct))
+        .isEmpty();
 
-    when(newProduct.getState()).thenReturn(newState);
-    assertThat(buildTransitionStateUpdateAction(oldProduct, newProduct))
-        .contains(TransitionState.of(newState, true));
+    StateResourceIdentifier stateResourceIdentifier =
+        StateResourceIdentifier.builder().id(newState.getId()).build();
+
+    when(newProduct.getState()).thenReturn(stateResourceIdentifier);
+    Assertions.assertThat(
+            ProductUpdateActionUtils.buildTransitionStateUpdateAction(oldProduct, newProduct))
+        .contains(ProductTransitionStateAction.builder().state(stateResourceIdentifier).build());
   }
 
   @Test
   void buildTransitionStateUpdateAction_withEmptyNewShouldReturnEmpty() {
-    assertThat(buildTransitionStateUpdateAction(oldProduct, newProduct)).isEmpty();
+    Assertions.assertThat(
+            ProductUpdateActionUtils.buildTransitionStateUpdateAction(oldProduct, newProduct))
+        .isEmpty();
   }
 
   @Test
   void buildTransitionStateUpdateAction_withEqual() {
     when(oldProduct.getState()).thenReturn(oldState);
-    when(newProduct.getState()).thenReturn(newState);
-    assertThat(buildTransitionStateUpdateAction(oldProduct, newProduct)).isEmpty();
+
+    StateResourceIdentifier stateResourceIdentifier =
+        StateResourceIdentifier.builder().id(newState.getId()).build();
+    when(newProduct.getState()).thenReturn(stateResourceIdentifier);
+
+    Assertions.assertThat(
+            ProductUpdateActionUtils.buildTransitionStateUpdateAction(oldProduct, newProduct))
+        .isEmpty();
   }
 
   @Test
   void buildTransitionStateUpdateAction_withEmptyOldShouldReturnNew() {
-    when(newProduct.getState()).thenReturn(newChangedState);
-    assertThat(buildTransitionStateUpdateAction(oldProduct, newProduct))
-        .contains(TransitionState.of(newChangedState, true));
+
+    StateResourceIdentifier changedStateResourceIdentifier =
+        StateResourceIdentifier.builder().id(newChangedState.getId()).build();
+    when(newProduct.getState()).thenReturn(changedStateResourceIdentifier);
+    Assertions.assertThat(
+            ProductUpdateActionUtils.buildTransitionStateUpdateAction(oldProduct, newProduct))
+        .contains(
+            ProductTransitionStateAction.builder().state(changedStateResourceIdentifier).build());
   }
 
   @Test
   void buildTransitionStateUpdateAction_withDifferent() {
     when(oldProduct.getState()).thenReturn(oldState);
-    when(newProduct.getState()).thenReturn(newChangedState);
-    assertThat(buildTransitionStateUpdateAction(oldProduct, newProduct))
-        .contains(TransitionState.of(newChangedState, true));
+
+    StateResourceIdentifier changedStateResourceIdentifier =
+        StateResourceIdentifier.builder().id(newChangedState.getId()).build();
+    when(newProduct.getState()).thenReturn(changedStateResourceIdentifier);
+    Assertions.assertThat(
+            ProductUpdateActionUtils.buildTransitionStateUpdateAction(oldProduct, newProduct))
+        .contains(
+            ProductTransitionStateAction.builder().state(changedStateResourceIdentifier).build());
   }
 }

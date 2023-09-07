@@ -1,22 +1,18 @@
 package com.commercetools.sync.commons.utils;
 
-import static com.commercetools.sync.commons.asserts.actions.AssertionsForUpdateActions.assertThat;
-import static io.sphere.sdk.models.ResourceIdentifier.ofId;
-import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.category.CategorySetAssetCustomFieldAction;
+import com.commercetools.api.models.category.CategorySetAssetCustomTypeAction;
+import com.commercetools.api.models.category.CategoryUpdateAction;
+import com.commercetools.api.models.common.Asset;
+import com.commercetools.api.models.type.ResourceTypeId;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.categories.helpers.AssetCustomActionBuilder;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.commands.updateactions.SetAssetCustomField;
-import io.sphere.sdk.categories.commands.updateactions.SetAssetCustomType;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Asset;
+import com.commercetools.sync.commons.models.AssetCustomTypeAdapter;
 import java.util.HashMap;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -29,50 +25,59 @@ class CategoryAssetCustomUpdateActionUtilsTest {
     when(asset.getKey()).thenReturn("assetKey");
     final String newCustomTypeId = UUID.randomUUID().toString();
 
-    final UpdateAction<Category> updateAction =
+    final CategoryUpdateAction updateAction =
         GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction(
                 newCustomTypeId,
                 new HashMap<>(),
-                asset,
+                AssetCustomTypeAdapter.of(asset),
                 new AssetCustomActionBuilder(),
-                1,
-                Asset::getId,
-                assetResource -> Asset.resourceTypeId(),
-                Asset::getKey,
-                CategorySyncOptionsBuilder.of(mock(SphereClient.class)).build())
+                1L,
+                AssetCustomTypeAdapter::getId,
+                ignore -> ResourceTypeId.ASSET.getJsonName(),
+                AssetCustomTypeAdapter::getKey,
+                CategorySyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build())
             .orElse(null);
 
-    assertThat(updateAction).isInstanceOf(SetAssetCustomType.class);
-    assertThat((SetAssetCustomType) updateAction)
-        .hasValues(
-            "setAssetCustomType", asset.getId(), asset.getKey(), emptyMap(), ofId(newCustomTypeId));
+    assertThat(updateAction).isInstanceOf(CategorySetAssetCustomTypeAction.class);
+    CategorySetAssetCustomTypeAction categorySetAssetCustomTypeAction =
+        (CategorySetAssetCustomTypeAction) updateAction;
+    assertThat(categorySetAssetCustomTypeAction.getAssetId()).isEqualTo(asset.getId());
+    assertThat(categorySetAssetCustomTypeAction.getAssetKey()).isEqualTo(asset.getKey());
+    assertThat(categorySetAssetCustomTypeAction.getType().getId()).isEqualTo(newCustomTypeId);
   }
 
   @Test
   void buildRemoveCustomTypeAction_WithCategoryAsset_ShouldBuildChannelUpdateAction() {
     final String assetKey = "assetKey";
 
-    final UpdateAction<Category> updateAction =
-        new AssetCustomActionBuilder().buildRemoveCustomTypeAction(1, assetKey);
+    final CategoryUpdateAction updateAction =
+        new AssetCustomActionBuilder().buildRemoveCustomTypeAction(1L, assetKey);
 
-    assertThat(updateAction).isInstanceOf(SetAssetCustomType.class);
-    assertThat((SetAssetCustomType) updateAction)
-        .hasValues("setAssetCustomType", null, assetKey, null, ofId(null));
+    assertThat(updateAction).isInstanceOf(CategorySetAssetCustomTypeAction.class);
+    CategorySetAssetCustomTypeAction categorySetAssetCustomTypeAction =
+        (CategorySetAssetCustomTypeAction) updateAction;
+    assertThat(categorySetAssetCustomTypeAction.getAssetId()).isEqualTo(null);
+    assertThat(categorySetAssetCustomTypeAction.getAssetKey()).isEqualTo(null);
+    assertThat(categorySetAssetCustomTypeAction.getType()).isEqualTo(null);
   }
 
   @Test
   void buildSetCustomFieldAction_WithCategoryAsset_ShouldBuildCategoryUpdateAction() {
-    final JsonNode customFieldValue = JsonNodeFactory.instance.textNode("foo");
+    final String customFieldValue = "foo";
     final String customFieldName = "name";
     final String assetKey = "assetKey";
-    final int variantId = 1;
+    final long variantId = 1;
 
-    final UpdateAction<Category> updateAction =
+    final CategoryUpdateAction updateAction =
         new AssetCustomActionBuilder()
             .buildSetCustomFieldAction(variantId, assetKey, customFieldName, customFieldValue);
 
-    assertThat(updateAction).isInstanceOf(SetAssetCustomField.class);
-    assertThat((SetAssetCustomField) updateAction)
-        .hasValues("setAssetCustomField", null, assetKey, customFieldName, customFieldValue);
+    assertThat(updateAction).isInstanceOf(CategorySetAssetCustomFieldAction.class);
+    CategorySetAssetCustomFieldAction categorySetAssetCustomFieldAction =
+        (CategorySetAssetCustomFieldAction) updateAction;
+    assertThat(categorySetAssetCustomFieldAction.getAssetId()).isEqualTo(null);
+    assertThat(categorySetAssetCustomFieldAction.getAssetKey()).isEqualTo(assetKey);
+    assertThat(categorySetAssetCustomFieldAction.getName()).isEqualTo(customFieldName);
+    assertThat(categorySetAssetCustomFieldAction.getValue()).isEqualTo(customFieldValue);
   }
 }

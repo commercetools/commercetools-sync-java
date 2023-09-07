@@ -1,7 +1,6 @@
 package com.commercetools.sync.taxcategories;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
-import static com.commercetools.sync.taxcategories.utils.TaxCategorySyncUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
@@ -9,14 +8,15 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
+import com.commercetools.api.models.tax_category.TaxCategory;
+import com.commercetools.api.models.tax_category.TaxCategoryDraft;
+import com.commercetools.api.models.tax_category.TaxCategoryUpdateAction;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.taxcategories.helpers.TaxCategoryBatchValidator;
 import com.commercetools.sync.taxcategories.helpers.TaxCategorySyncStatistics;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.taxcategories.TaxCategory;
-import io.sphere.sdk.taxcategories.TaxCategoryDraft;
+import com.commercetools.sync.taxcategories.utils.TaxCategorySyncUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,7 +28,11 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public class TaxCategorySync
     extends BaseSync<
-        TaxCategoryDraft, TaxCategory, TaxCategorySyncStatistics, TaxCategorySyncOptions> {
+        TaxCategory,
+        TaxCategoryDraft,
+        TaxCategoryUpdateAction,
+        TaxCategorySyncStatistics,
+        TaxCategorySyncOptions> {
 
   private static final String TAX_CATEGORY_FETCH_FAILED =
       "Failed to fetch existing tax categories with keys: '%s'.";
@@ -66,7 +70,7 @@ public class TaxCategorySync
   @Override
   protected CompletionStage<TaxCategorySyncStatistics> process(
       @Nonnull final List<TaxCategoryDraft> resourceDrafts) {
-    List<List<TaxCategoryDraft>> batches =
+    final List<List<TaxCategoryDraft>> batches =
         batchElements(resourceDrafts, syncOptions.getBatchSize());
     return syncBatches(batches, completedFuture(statistics));
   }
@@ -106,7 +110,7 @@ public class TaxCategorySync
         .handle(ImmutablePair::new)
         .thenCompose(
             fetchResponse -> {
-              Set<TaxCategory> fetchedTaxCategories = fetchResponse.getKey();
+              final Set<TaxCategory> fetchedTaxCategories = fetchResponse.getKey();
               final Throwable exception = fetchResponse.getValue();
 
               if (exception != null) {
@@ -188,10 +192,10 @@ public class TaxCategorySync
   private CompletionStage<Optional<TaxCategory>> buildActionsAndUpdate(
       @Nonnull final TaxCategory oldTaxCategory, @Nonnull final TaxCategoryDraft newTaxCategory) {
 
-    final List<UpdateAction<TaxCategory>> updateActions =
-        buildActions(oldTaxCategory, newTaxCategory);
+    final List<TaxCategoryUpdateAction> updateActions =
+        TaxCategorySyncUtils.buildActions(oldTaxCategory, newTaxCategory);
 
-    List<UpdateAction<TaxCategory>> updateActionsAfterCallback =
+    final List<TaxCategoryUpdateAction> updateActionsAfterCallback =
         syncOptions.applyBeforeUpdateCallback(updateActions, newTaxCategory, oldTaxCategory);
 
     if (!updateActionsAfterCallback.isEmpty()) {
@@ -220,7 +224,7 @@ public class TaxCategorySync
   private CompletionStage<Optional<TaxCategory>> updateTaxCategory(
       @Nonnull final TaxCategory oldTaxCategory,
       @Nonnull final TaxCategoryDraft newTaxCategory,
-      @Nonnull final List<UpdateAction<TaxCategory>> updateActions) {
+      @Nonnull final List<TaxCategoryUpdateAction> updateActions) {
 
     return taxCategoryService
         .updateTaxCategory(oldTaxCategory, updateActions)
@@ -228,21 +232,21 @@ public class TaxCategorySync
         .thenCompose(
             updateResponse -> {
               final TaxCategory updatedTaxCategory = updateResponse.getKey();
-              final Throwable sphereException = updateResponse.getValue();
+              final Throwable ctpException = updateResponse.getValue();
 
-              if (sphereException != null) {
+              if (ctpException != null) {
                 return executeSupplierIfConcurrentModificationException(
-                    sphereException,
+                    ctpException,
                     () -> fetchAndUpdate(oldTaxCategory, newTaxCategory),
                     () -> {
                       final String errorMessage =
                           format(
                               TAX_CATEGORY_UPDATE_FAILED,
                               newTaxCategory.getKey(),
-                              sphereException.getMessage());
+                              ctpException.getMessage());
                       handleError(
                           errorMessage,
-                          sphereException,
+                          ctpException,
                           oldTaxCategory,
                           newTaxCategory,
                           updateActions,

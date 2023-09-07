@@ -2,30 +2,25 @@ package com.commercetools.sync.commons;
 
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anySet;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.common.Asset;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.customer.Customer;
+import com.commercetools.api.models.type.CustomFields;
+import com.commercetools.api.models.type.CustomFieldsDraft;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.FieldContainerBuilder;
+import com.commercetools.api.models.type.Type;
+import com.commercetools.api.models.type.TypeReference;
+import com.commercetools.api.models.type.TypeReferenceBuilder;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.CustomerService;
 import com.commercetools.sync.services.TypeService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.customergroups.CustomerGroup;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.models.Asset;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.types.CustomFields;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.Type;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -43,19 +38,26 @@ public class MockUtils {
    * @return a mock instance of {@link CustomFieldsDraft} with some hardcoded custom fields and key.
    */
   public static CustomFieldsDraft getMockCustomFieldsDraft() {
-    final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
-    customFieldsJsons.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
-    customFieldsJsons.put(
-        "backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
-    return CustomFieldsDraft.ofTypeIdAndJson("StepCategoryTypeId", customFieldsJsons);
+    return CustomFieldsDraftBuilder.of()
+        .type(
+            typeResourceIdentifierBuilder ->
+                typeResourceIdentifierBuilder.key("StepCategoryTypeId"))
+        .fields(
+            fieldContainerBuilder ->
+                fieldContainerBuilder
+                    .addValue("invisibleInShop", false)
+                    .addValue("backgroundColor", Map.of("de", "rot", "en", "red")))
+        .build();
   }
 
   /**
    * Returns mock {@link CustomFields} instance. Executing {@link CustomFields#getType()} on
-   * returned instance will return {@link Reference} of given {@code typeId} with mock {@link Type}
-   * instance of {@code typeId} and {@code typeKey} (getters of key and id would return given
-   * values). Executing {@link CustomFields#getFieldsJsonMap()} on returned instance will return
-   * {@link Map} populated with given {@code fieldName} and {@code fieldValue}
+   * returned instance will return {@link com.commercetools.api.models.common.Reference} of given
+   * {@code typeId} with mock {@link Type} instance of {@code typeId} and {@code typeKey} (getters
+   * of key and id would return given
+   *
+   * <p>values). Executing {@link CustomFields#getFields()} on returned instance will return {@link
+   * Map} populated with given {@code fieldName} and {@code fieldValue}
    *
    * @param typeId custom type id
    * @param fieldName custom field name
@@ -63,17 +65,19 @@ public class MockUtils {
    * @return mock instance of {@link CustomFields}
    */
   public static CustomFields getMockCustomFields(
-      final String typeId, final String fieldName, final JsonNode fieldValue) {
+      final String typeId, final String fieldName, final Object fieldValue) {
     final CustomFields customFields = mock(CustomFields.class);
     final Type type = mock(Type.class);
     when(type.getId()).thenReturn(typeId);
-    when(customFields.getFieldsJsonMap()).thenReturn(mockFields(fieldName, fieldValue));
-    when(customFields.getType()).thenReturn(Type.referenceOfId(typeId).filled(type));
+    when(customFields.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(mockFields(fieldName, fieldValue)).build());
+    when(customFields.getType()).thenReturn(TypeReferenceBuilder.of().id(typeId).build());
     return customFields;
   }
 
-  private static Map<String, JsonNode> mockFields(final String name, final JsonNode value) {
-    final HashMap<String, JsonNode> fields = new HashMap<>();
+  private static Map<String, Object> mockFields(final String name, final Object value) {
+    final HashMap<String, Object> fields = new HashMap<>();
+
     fields.put(name, value);
     return fields;
   }
@@ -104,14 +108,14 @@ public class MockUtils {
   }
 
   /**
-   * Creates a mock {@link TypeService} that returns a dummy type id of value "typeId" instance
-   * whenever the following method is called on the service:
+   * Creates a mock {@link com.commercetools.sync.services.TypeService} that returns a dummy type id
+   * of value "typeId" instance whenever the following method is called on the service:
    *
    * <ul>
-   *   <li>{@link TypeService#fetchCachedTypeId(String)}
+   *   <li>{@link com.commercetools.sync.services.TypeService#fetchCachedTypeId(String)}
    * </ul>
    *
-   * @return the created mock of the {@link TypeService}.
+   * @return the created mock of the {@link com.commercetools.sync.services.TypeService}.
    */
   public static TypeService getMockTypeService() {
     final TypeService typeService = mock(TypeService.class);
@@ -144,26 +148,31 @@ public class MockUtils {
    * @return a mock asset with the supplied type reference on it's custom field.
    */
   @Nonnull
-  public static Asset getAssetMockWithCustomFields(@Nullable final Reference<Type> typeReference) {
+  public static Asset getAssetMockWithCustomFields(@Nullable final TypeReference typeReference) {
+
     // Mock Custom with expanded type reference
     final CustomFields mockCustomFields = mock(CustomFields.class);
     when(mockCustomFields.getType()).thenReturn(typeReference);
 
     // Mock asset with custom fields
     final Asset asset = mock(Asset.class);
+
     when(asset.getCustom()).thenReturn(mockCustomFields);
+    when(asset.getName()).thenReturn(LocalizedString.ofEnglish("asset-name"));
+
     return asset;
   }
 
   /**
-   * Creates a mock {@link CustomerService} that returns a dummy customer id of value "customerId"
-   * instance whenever the following method is called on the service:
+   * Creates a mock {@link com.commercetools.sync.services.CustomerService} that returns a dummy
+   * customer id of value "customerId" instance whenever the following method is called on the
+   * service:
    *
    * <ul>
-   *   <li>{@link CustomerService#fetchCachedCustomerId(String)}
+   *   <li>{@link com.commercetools.sync.services.CustomerService#fetchCachedCustomerId(String)}
    * </ul>
    *
-   * @return the created mock of the {@link CustomerService}.
+   * @return the created mock of the {@link com.commercetools.sync.services.CustomerService}.
    */
   public static CustomerService getMockCustomerService() {
     final CustomerService customerService = mock(CustomerService.class);
@@ -178,7 +187,8 @@ public class MockUtils {
    * Creates a mock {@link Customer} with the supplied {@code id} and {@code key}.
    *
    * @param id the id of the created mock {@link Customer}.
-   * @param key the key of the created mock {@link CustomerGroup}.
+   * @param key the key of the created mock {@link
+   *     com.commercetools.api.models.customer_group.CustomerGroup}.
    * @return a mock customerGroup with the supplied id and key.
    */
   public static Customer getMockCustomer(final String id, final String key) {

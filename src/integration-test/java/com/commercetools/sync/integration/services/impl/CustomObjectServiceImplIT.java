@@ -1,40 +1,40 @@
 package com.commercetools.sync.integration.services.impl;
 
-import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.createCustomObject;
-import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteCustomObject;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
+import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import com.commercetools.api.client.ByProjectKeyCustomObjectsGet;
+import com.commercetools.api.client.ByProjectKeyCustomObjectsRequestBuilder;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.custom_object.CustomObject;
+import com.commercetools.api.models.custom_object.CustomObjectDraft;
+import com.commercetools.api.models.custom_object.CustomObjectDraftBuilder;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
+import com.commercetools.sync.integration.commons.utils.CustomObjectITUtils;
+import com.commercetools.sync.integration.commons.utils.TestClientUtils;
 import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.impl.CustomObjectServiceImpl;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.sphere.sdk.client.BadGatewayException;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.customobjects.CustomObjectDraft;
-import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
-import io.sphere.sdk.utils.CompletableFutureUtils;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.error.BadGatewayException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 @SuppressWarnings("unchecked")
 class CustomObjectServiceImplIT {
@@ -65,16 +65,18 @@ class CustomObjectServiceImplIT {
     errorCallBackMessages = new ArrayList<>();
     errorCallBackExceptions = new ArrayList<>();
 
-    deleteCustomObject(CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER);
-    deleteCustomObject(CTP_TARGET_CLIENT, NEW_CUSTOM_OBJECT_KEY, NEW_CUSTOM_OBJECT_CONTAINER);
-    createCustomObject(
-        CTP_TARGET_CLIENT,
+    CustomObjectITUtils.deleteCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER);
+    CustomObjectITUtils.deleteCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT, NEW_CUSTOM_OBJECT_KEY, NEW_CUSTOM_OBJECT_CONTAINER);
+    CustomObjectITUtils.createCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT,
         OLD_CUSTOM_OBJECT_KEY,
         OLD_CUSTOM_OBJECT_CONTAINER,
         OLD_CUSTOM_OBJECT_VALUE);
 
     final CustomObjectSyncOptions customObjectSyncOptions =
-        CustomObjectSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+        CustomObjectSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT)
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) -> {
                   errorCallBackMessages.add(exception.getMessage());
@@ -87,8 +89,10 @@ class CustomObjectServiceImplIT {
   /** Cleans up the target test data that were built in this test class. */
   @AfterAll
   static void tearDown() {
-    deleteCustomObject(CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER);
-    deleteCustomObject(CTP_TARGET_CLIENT, NEW_CUSTOM_OBJECT_KEY, NEW_CUSTOM_OBJECT_CONTAINER);
+    CustomObjectITUtils.deleteCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER);
+    CustomObjectITUtils.deleteCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT, NEW_CUSTOM_OBJECT_KEY, NEW_CUSTOM_OBJECT_CONTAINER);
   }
 
   @Test
@@ -115,7 +119,7 @@ class CustomObjectServiceImplIT {
         CustomObjectCompositeIdentifier.of(
             OLD_CUSTOM_OBJECT_KEY + "_2", OLD_CUSTOM_OBJECT_CONTAINER + "_2"));
 
-    final Set<CustomObject<JsonNode>> matchingCustomObjects =
+    final Set<CustomObject> matchingCustomObjects =
         customObjectService
             .fetchMatchingCustomObjects(customObjectCompositeIdentifiers)
             .toCompletableFuture()
@@ -130,32 +134,40 @@ class CustomObjectServiceImplIT {
   void
       fetchMatchingCustomObjects_WithDifferentExistingCombinationOfKeysAndContainers_ShouldReturnEmptySet() {
 
-    deleteCustomObject(
-        CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY + "_1", OLD_CUSTOM_OBJECT_CONTAINER + "_1");
-    deleteCustomObject(
-        CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY + "_1", OLD_CUSTOM_OBJECT_CONTAINER + "_2");
-    deleteCustomObject(
-        CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY + "_2", OLD_CUSTOM_OBJECT_CONTAINER + "_1");
-    deleteCustomObject(
-        CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY + "_2", OLD_CUSTOM_OBJECT_CONTAINER + "_2");
+    CustomObjectITUtils.deleteCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT,
+        OLD_CUSTOM_OBJECT_KEY + "_1",
+        OLD_CUSTOM_OBJECT_CONTAINER + "_1");
+    CustomObjectITUtils.deleteCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT,
+        OLD_CUSTOM_OBJECT_KEY + "_1",
+        OLD_CUSTOM_OBJECT_CONTAINER + "_2");
+    CustomObjectITUtils.deleteCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT,
+        OLD_CUSTOM_OBJECT_KEY + "_2",
+        OLD_CUSTOM_OBJECT_CONTAINER + "_1");
+    CustomObjectITUtils.deleteCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT,
+        OLD_CUSTOM_OBJECT_KEY + "_2",
+        OLD_CUSTOM_OBJECT_CONTAINER + "_2");
 
-    createCustomObject(
-        CTP_TARGET_CLIENT,
+    CustomObjectITUtils.createCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT,
         OLD_CUSTOM_OBJECT_KEY + "_1",
         OLD_CUSTOM_OBJECT_CONTAINER + "_1",
         OLD_CUSTOM_OBJECT_VALUE);
-    createCustomObject(
-        CTP_TARGET_CLIENT,
+    CustomObjectITUtils.createCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT,
         OLD_CUSTOM_OBJECT_KEY + "_1",
         OLD_CUSTOM_OBJECT_CONTAINER + "_2",
         OLD_CUSTOM_OBJECT_VALUE);
-    createCustomObject(
-        CTP_TARGET_CLIENT,
+    CustomObjectITUtils.createCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT,
         OLD_CUSTOM_OBJECT_KEY + "_2",
         OLD_CUSTOM_OBJECT_CONTAINER + "_1",
         OLD_CUSTOM_OBJECT_VALUE);
-    createCustomObject(
-        CTP_TARGET_CLIENT,
+    CustomObjectITUtils.createCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT,
         OLD_CUSTOM_OBJECT_KEY + "_2",
         OLD_CUSTOM_OBJECT_CONTAINER + "_2",
         OLD_CUSTOM_OBJECT_VALUE);
@@ -171,7 +183,7 @@ class CustomObjectServiceImplIT {
         CustomObjectCompositeIdentifier.of(
             OLD_CUSTOM_OBJECT_KEY + "_2", OLD_CUSTOM_OBJECT_CONTAINER + "_1"));
 
-    final Set<CustomObject<JsonNode>> matchingCustomObjects =
+    final Set<CustomObject> matchingCustomObjects =
         customObjectService
             .fetchMatchingCustomObjects(customObjectCompositeIdentifiers)
             .toCompletableFuture()
@@ -181,22 +193,37 @@ class CustomObjectServiceImplIT {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
 
-    deleteCustomObject(
-        CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY + "_1", OLD_CUSTOM_OBJECT_CONTAINER + "_1");
-    deleteCustomObject(
-        CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY + "_1", OLD_CUSTOM_OBJECT_CONTAINER + "_2");
-    deleteCustomObject(
-        CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY + "_2", OLD_CUSTOM_OBJECT_CONTAINER + "_1");
-    deleteCustomObject(
-        CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY + "_2", OLD_CUSTOM_OBJECT_CONTAINER + "_2");
+    CustomObjectITUtils.deleteCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT,
+        OLD_CUSTOM_OBJECT_KEY + "_1",
+        OLD_CUSTOM_OBJECT_CONTAINER + "_1");
+    CustomObjectITUtils.deleteCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT,
+        OLD_CUSTOM_OBJECT_KEY + "_1",
+        OLD_CUSTOM_OBJECT_CONTAINER + "_2");
+    CustomObjectITUtils.deleteCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT,
+        OLD_CUSTOM_OBJECT_KEY + "_2",
+        OLD_CUSTOM_OBJECT_CONTAINER + "_1");
+    CustomObjectITUtils.deleteCustomObject(
+        TestClientUtils.CTP_TARGET_CLIENT,
+        OLD_CUSTOM_OBJECT_KEY + "_2",
+        OLD_CUSTOM_OBJECT_CONTAINER + "_2");
   }
 
   @Test
   void fetchMatchingCustomObjectsByCompositeIdentifiers_WithBadGateWayExceptionAlways_ShouldFail() {
     // Mock sphere client to return BadGatewayException on any request.
-    final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-    when(spyClient.execute(any(CustomObjectQuery.class)))
-        .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
+    final ProjectApiRoot spyClient = Mockito.spy(TestClientUtils.CTP_TARGET_CLIENT);
+    when(spyClient.customObjects()).thenReturn(mock(ByProjectKeyCustomObjectsRequestBuilder.class));
+    final ByProjectKeyCustomObjectsGet getMock = mock(ByProjectKeyCustomObjectsGet.class);
+    when(spyClient.customObjects().get()).thenReturn(getMock);
+    when(getMock.withWhere(any(String.class))).thenReturn(getMock);
+    when(getMock.withPredicateVar(any(String.class), any())).thenReturn(getMock);
+    when(getMock.withLimit(any(Integer.class))).thenReturn(getMock);
+    when(getMock.withWithTotal(any(Boolean.class))).thenReturn(getMock);
+    when(getMock.execute())
+        .thenReturn(exceptionallyCompletedFuture(new BadGatewayException(500, "", null, "", null)))
         .thenCallRealMethod();
 
     final CustomObjectSyncOptions spyOptions =
@@ -226,28 +253,22 @@ class CustomObjectServiceImplIT {
   @Test
   void
       fetchCustomObject_WithNonExistingCustomObjectKeyAndContainer_ShouldReturnEmptyCustomObject() {
-    final Optional<CustomObject<JsonNode>> customObjectOptional =
-        CTP_TARGET_CLIENT
-            .execute(
-                CustomObjectQuery.ofJsonNode()
-                    .withPredicates(
-                        customObjectQueryModel ->
-                            customObjectQueryModel
-                                .key()
-                                .is(OLD_CUSTOM_OBJECT_KEY)
-                                .and(
-                                    customObjectQueryModel
-                                        .container()
-                                        .is(OLD_CUSTOM_OBJECT_CONTAINER))))
-            .toCompletableFuture()
-            .join()
-            .head();
+    final CustomObject customObjectOptional =
+        TestClientUtils.CTP_TARGET_CLIENT
+            .customObjects()
+            .withContainerAndKey(OLD_CUSTOM_OBJECT_CONTAINER, OLD_CUSTOM_OBJECT_KEY)
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .join();
     assertThat(customObjectOptional).isNotNull();
 
-    final Optional<CustomObject<JsonNode>> fetchedCustomObjectOptional =
-        executeBlocking(
-            customObjectService.fetchCustomObject(
-                CustomObjectCompositeIdentifier.of("non-existing-key", "non-existing-container")));
+    final Optional<CustomObject> fetchedCustomObjectOptional =
+        customObjectService
+            .fetchCustomObject(
+                CustomObjectCompositeIdentifier.of("non-existing-key", "non-existing-container"))
+            .toCompletableFuture()
+            .join();
     assertThat(fetchedCustomObjectOptional).isEmpty();
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
@@ -255,11 +276,14 @@ class CustomObjectServiceImplIT {
 
   @Test
   void upsertCustomObject_WithValidCustomObject_ShouldCreateCustomObjectAndCacheId() {
-    final CustomObjectDraft<JsonNode> newCustomObjectDraft =
-        CustomObjectDraft.ofUnversionedUpsert(
-            NEW_CUSTOM_OBJECT_CONTAINER, NEW_CUSTOM_OBJECT_KEY, NEW_CUSTOM_OBJECT_VALUE);
+    final CustomObjectDraft newCustomObjectDraft =
+        CustomObjectDraftBuilder.of()
+            .container(NEW_CUSTOM_OBJECT_CONTAINER)
+            .key(NEW_CUSTOM_OBJECT_KEY)
+            .value(NEW_CUSTOM_OBJECT_VALUE)
+            .build();
 
-    final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+    final ProjectApiRoot spyClient = Mockito.spy(TestClientUtils.CTP_TARGET_CLIENT);
     final CustomObjectSyncOptions spyOptions =
         CustomObjectSyncOptionsBuilder.of(spyClient)
             .errorCallback(
@@ -271,37 +295,39 @@ class CustomObjectServiceImplIT {
 
     final CustomObjectService spyCustomObjectService = new CustomObjectServiceImpl(spyOptions);
 
-    final Optional<CustomObject<JsonNode>> createdCustomObject =
+    final Optional<CustomObject> createdCustomObject =
         spyCustomObjectService
             .upsertCustomObject(newCustomObjectDraft)
             .toCompletableFuture()
             .join();
 
-    final Optional<CustomObject<JsonNode>> queriedOptional =
-        CTP_TARGET_CLIENT
-            .execute(
-                CustomObjectQuery.ofJsonNode()
-                    .withPredicates(
-                        customObjectQueryModel ->
-                            customObjectQueryModel
-                                .container()
-                                .is(NEW_CUSTOM_OBJECT_CONTAINER)
-                                .and(customObjectQueryModel.key().is(NEW_CUSTOM_OBJECT_KEY))))
+    final CustomObject fetchedOptional =
+        TestClientUtils.CTP_TARGET_CLIENT
+            .customObjects()
+            .withContainerAndKey(NEW_CUSTOM_OBJECT_CONTAINER, NEW_CUSTOM_OBJECT_KEY)
+            .get()
+            .execute()
+            .thenApply(customObjectApiHttpResponse -> customObjectApiHttpResponse.getBody())
             .toCompletableFuture()
-            .join()
-            .head();
+            .join();
 
-    assertThat(queriedOptional)
+    assertThat(createdCustomObject)
         .hasValueSatisfying(
-            queried ->
-                assertThat(createdCustomObject)
-                    .hasValueSatisfying(
-                        created -> {
-                          assertThat(created.getKey()).isEqualTo(queried.getKey());
-                          assertThat(created.getContainer()).isEqualTo(queried.getContainer());
-                          assertThat(created.getId()).isEqualTo(queried.getId());
-                          assertThat(created.getValue()).isEqualTo(queried.getValue());
-                        }));
+            created -> {
+              assertThat(created.getKey()).isEqualTo(fetchedOptional.getKey());
+              assertThat(created.getContainer()).isEqualTo(fetchedOptional.getContainer());
+              assertThat(created.getId()).isEqualTo(fetchedOptional.getId());
+              assertThat(created.getValue()).isEqualTo(fetchedOptional.getValue());
+            });
+
+    final ByProjectKeyCustomObjectsRequestBuilder mock1 =
+        mock(ByProjectKeyCustomObjectsRequestBuilder.class);
+    when(spyClient.customObjects()).thenReturn(mock1);
+    final ByProjectKeyCustomObjectsGet mock2 = mock(ByProjectKeyCustomObjectsGet.class);
+    when(mock1.get()).thenReturn(mock2);
+    when(mock2.withWhere(any(String.class))).thenReturn(mock2);
+    when(mock2.withPredicateVar(any(String.class), any(String.class))).thenReturn(mock2, mock2);
+    final CompletableFuture<ApiHttpResponse<CustomObject>> spy = mock(CompletableFuture.class);
 
     // Assert that the created customObject is cached
     final Optional<String> customObjectId =
@@ -312,24 +338,31 @@ class CustomObjectServiceImplIT {
             .toCompletableFuture()
             .join();
     assertThat(customObjectId).isPresent();
-    verify(spyClient, times(0)).execute(any(CustomObjectQuery.class));
+    verify(spy, times(0)).handle(any());
   }
 
   @Test
   void upsertCustomObject_WithDuplicateKeyAndContainerInCompositeIdentifier_ShouldUpdateValue() {
     // preparation
-    final CustomObjectDraft<JsonNode> newCustomObjectDraft =
-        CustomObjectDraft.ofUnversionedUpsert(
-            OLD_CUSTOM_OBJECT_CONTAINER, OLD_CUSTOM_OBJECT_KEY, NEW_CUSTOM_OBJECT_VALUE);
+    final CustomObjectDraft newCustomObjectDraft =
+        CustomObjectDraftBuilder.of()
+            .container(OLD_CUSTOM_OBJECT_CONTAINER)
+            .key(OLD_CUSTOM_OBJECT_KEY)
+            .value(NEW_CUSTOM_OBJECT_VALUE)
+            .build();
 
-    final Optional<CustomObject<JsonNode>> result =
+    final Optional<CustomObject> result =
         customObjectService.upsertCustomObject(newCustomObjectDraft).toCompletableFuture().join();
 
     // assertion
     assertThat(result).isNotEmpty();
     assertThat(errorCallBackMessages).hasSize(0);
     assertThat(errorCallBackExceptions).hasSize(0);
-    assertThat(result.get().getValue()).isEqualTo(NEW_CUSTOM_OBJECT_VALUE);
+    final LinkedHashMap<String, String> value =
+        (LinkedHashMap<String, String>) result.get().getValue();
+    final String firstJsonField = NEW_CUSTOM_OBJECT_VALUE.fieldNames().next();
+    assertThat(value.get(firstJsonField))
+        .isEqualTo(NEW_CUSTOM_OBJECT_VALUE.get(firstJsonField).asText());
     assertThat(result.get().getContainer()).isEqualTo(OLD_CUSTOM_OBJECT_CONTAINER);
     assertThat(result.get().getKey()).isEqualTo(OLD_CUSTOM_OBJECT_KEY);
   }

@@ -1,62 +1,54 @@
 package com.commercetools.sync.integration.services.impl;
 
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getReferencesWithIds;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.*;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_2_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
-import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
-import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.products.ProductSyncMockUtils.*;
+import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
+import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import com.commercetools.api.client.ByProjectKeyProductProjectionsGet;
+import com.commercetools.api.client.ByProjectKeyProductProjectionsKeyByKeyGet;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.client.error.BadRequestException;
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryReference;
+import com.commercetools.api.models.common.Image;
+import com.commercetools.api.models.common.ImageBuilder;
+import com.commercetools.api.models.common.ImageDimensionsBuilder;
+import com.commercetools.api.models.common.LocalizedStringBuilder;
+import com.commercetools.api.models.error.DuplicateFieldError;
+import com.commercetools.api.models.product.CategoryOrderHints;
+import com.commercetools.api.models.product.Product;
+import com.commercetools.api.models.product.ProductAddExternalImageActionBuilder;
+import com.commercetools.api.models.product.ProductChangeNameAction;
+import com.commercetools.api.models.product.ProductChangeNameActionBuilder;
+import com.commercetools.api.models.product.ProductChangeSlugAction;
+import com.commercetools.api.models.product.ProductChangeSlugActionBuilder;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductMixin;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductProjectionPagedQueryResponse;
+import com.commercetools.api.models.product.ProductProjectionType;
+import com.commercetools.api.models.product.ProductSetKeyActionBuilder;
+import com.commercetools.api.models.product.ProductUpdateAction;
+import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.state.StateResourceIdentifier;
+import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifier;
+import com.commercetools.sync.integration.commons.utils.ProductTypeITUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.impl.ProductServiceImpl;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.client.BadGatewayException;
-import io.sphere.sdk.client.ErrorResponseException;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.errors.DuplicateFieldError;
-import io.sphere.sdk.products.Image;
-import io.sphere.sdk.products.ImageDimensions;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.ProductProjectionType;
-import io.sphere.sdk.products.ProductVariantDraftBuilder;
-import io.sphere.sdk.products.commands.ProductCreateCommand;
-import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
-import io.sphere.sdk.products.commands.updateactions.ChangeName;
-import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
-import io.sphere.sdk.products.commands.updateactions.SetKey;
-import io.sphere.sdk.products.queries.ProductProjectionQuery;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
-import io.sphere.sdk.queries.QueryPredicate;
-import io.sphere.sdk.utils.CompletableFutureUtils;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.error.BadGatewayException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -80,7 +72,7 @@ import org.junit.jupiter.api.Test;
 class ProductServiceImplIT {
   private ProductService productService;
   private static ProductType productType;
-  private static List<Reference<Category>> categoryReferencesWithIds;
+  private static List<CategoryReference> categoryReferencesWithIds;
   private ProductProjection product;
 
   private List<String> errorCallBackMessages;
@@ -94,15 +86,16 @@ class ProductServiceImplIT {
   @BeforeAll
   static void setup() {
     deleteProductSyncTestData(CTP_TARGET_CLIENT);
-    createCategoriesCustomType(
+    ensureCategoriesCustomType(
         OLD_CATEGORY_CUSTOM_TYPE_KEY,
         Locale.ENGLISH,
         OLD_CATEGORY_CUSTOM_TYPE_NAME,
         CTP_TARGET_CLIENT);
     final List<Category> categories =
-        createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
+        ensureCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
     categoryReferencesWithIds = getReferencesWithIds(categories);
-    productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
+    productType =
+        ProductTypeITUtils.ensureProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
   }
 
   /**
@@ -139,8 +132,11 @@ class ProductServiceImplIT {
             createRandomCategoryOrderHints(categoryReferencesWithIds));
     product =
         CTP_TARGET_CLIENT
-            .execute(ProductCreateCommand.of(productDraft))
-            .thenApply(p -> p.toProjection(ProductProjectionType.STAGED))
+            .products()
+            .create(productDraft)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(p -> ProductMixin.toProjection(p, ProductProjectionType.STAGED))
             .toCompletableFuture()
             .join();
 
@@ -180,7 +176,8 @@ class ProductServiceImplIT {
     // Change product key on ctp
     final String newKey = "newKey";
     productService
-        .updateProduct(product, Collections.singletonList(SetKey.of(newKey)))
+        .updateProduct(
+            product, Collections.singletonList(ProductSetKeyActionBuilder.of().key(newKey).build()))
         .toCompletableFuture()
         .join();
 
@@ -221,7 +218,8 @@ class ProductServiceImplIT {
 
   @Test
   void cacheKeysToIds_WithAlreadyCachedKeys_ShouldNotMakeRequestsAndReturnCurrentCache() {
-    final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+    final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
+
     final ProductSyncOptions productSyncOptions =
         ProductSyncOptionsBuilder.of(spyClient)
             .errorCallback(
@@ -236,17 +234,20 @@ class ProductServiceImplIT {
     final ProductService spyProductService = new ProductServiceImpl(productSyncOptions);
 
     final ProductDraft productDraft1 =
-        createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference())
+        createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType.toResourceIdentifier())
             .categories(emptyList())
-            .taxCategory(null)
-            .state(null)
-            .categoryOrderHints(null)
+            .taxCategory((TaxCategoryResourceIdentifier) null)
+            .state((StateResourceIdentifier) null)
+            .categoryOrderHints((CategoryOrderHints) null)
             .build();
-    Product product2 =
+    final Product product2 =
         CTP_TARGET_CLIENT
-            .execute(ProductCreateCommand.of(productDraft1))
+            .products()
+            .create(productDraft1)
+            .execute()
             .toCompletableFuture()
-            .join();
+            .join()
+            .getBody();
 
     Set<String> keys =
         Arrays.asList(product.getKey(), product2.getKey()).stream().collect(Collectors.toSet());
@@ -261,7 +262,7 @@ class ProductServiceImplIT {
 
     // verify only 1 request was made to fetch id the first time, but not second time since it's
     // already in cache.
-    verify(spyClient, times(1)).execute(any());
+    verify(spyClient, times(1)).graphql();
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
   }
@@ -306,11 +307,19 @@ class ProductServiceImplIT {
   @Test
   void fetchMatchingProductsByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
     // preparation
-    // Mock sphere client to return BadGatewayException on any request.
-    final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-    when(spyClient.execute(any(ProductProjectionQuery.class)))
-        .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
+    final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
+    when(spyClient.productProjections()).thenReturn(mock());
+    final ByProjectKeyProductProjectionsGet getMock = mock(ByProjectKeyProductProjectionsGet.class);
+    when(spyClient.productProjections().get()).thenReturn(getMock);
+    when(getMock.withWhere(any(String.class))).thenReturn(getMock);
+    when(getMock.withPredicateVar(any(String.class), any())).thenReturn(getMock);
+    when(getMock.withStaged(anyBoolean())).thenReturn(getMock);
+    when(getMock.withLimit(any(Integer.class))).thenReturn(getMock);
+    when(getMock.withWithTotal(any(Boolean.class))).thenReturn(getMock);
+    when(getMock.execute())
+        .thenReturn(exceptionallyCompletedFuture(new BadGatewayException(500, "", null, "", null)))
         .thenCallRealMethod();
+
     final ProductSyncOptions spyOptions =
         ProductSyncOptionsBuilder.of(spyClient)
             .errorCallback(
@@ -355,7 +364,8 @@ class ProductServiceImplIT {
     // Change product oldKey on ctp
     final String newKey = "newKey";
     productService
-        .updateProduct(product, Collections.singletonList(SetKey.of(newKey)))
+        .updateProduct(
+            product, Collections.singletonList(ProductSetKeyActionBuilder.of().key(newKey).build()))
         .toCompletableFuture()
         .join();
 
@@ -373,14 +383,14 @@ class ProductServiceImplIT {
   void createProduct_WithValidProduct_ShouldCreateProductAndCacheId() {
     // preparation
     final ProductDraft productDraft1 =
-        createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference())
-            .taxCategory(null)
-            .state(null)
+        createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType.toResourceIdentifier())
+            .taxCategory((TaxCategoryResourceIdentifier) null)
+            .state((StateResourceIdentifier) null)
             .categories(emptyList())
-            .categoryOrderHints(null)
+            .categoryOrderHints((CategoryOrderHints) null)
             .build();
 
-    final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+    final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
     final ProductSyncOptions spyOptions =
         ProductSyncOptionsBuilder.of(spyClient)
             .errorCallback(
@@ -393,34 +403,28 @@ class ProductServiceImplIT {
     final ProductService spyProductService = new ProductServiceImpl(spyOptions);
 
     // test
-    final Optional<ProductProjection> createdProductOptional =
-        spyProductService.createProduct(productDraft1).toCompletableFuture().join();
+    final ProductProjection created =
+        spyProductService.createProduct(productDraft1).toCompletableFuture().join().get();
 
     // assertion
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
 
     // assert CTP state
-    final Optional<ProductProjection> queriedOptional =
+    final ProductProjection queried =
         CTP_TARGET_CLIENT
-            .execute(
-                ProductProjectionQuery.ofCurrent()
-                    .withPredicates(
-                        QueryPredicate.of(format("key = \"%s\"", productDraft1.getKey()))))
+            .productProjections()
+            .withKey(productDraft1.getKey())
+            .get()
+            .withStaged(true)
+            .execute()
             .toCompletableFuture()
             .join()
-            .head();
+            .getBody();
 
-    assertThat(queriedOptional)
-        .hasValueSatisfying(
-            queried ->
-                assertThat(createdProductOptional)
-                    .hasValueSatisfying(
-                        created -> {
-                          assertThat(queried.getKey()).isEqualTo(created.getKey());
-                          assertThat(queried.getName()).isEqualTo(created.getName());
-                          assertThat(queried.getSlug()).isEqualTo(created.getSlug());
-                        }));
+    assertThat(queried.getKey()).isEqualTo(created.getKey());
+    assertThat(queried.getName()).isEqualTo(created.getName());
+    assertThat(queried.getSlug()).isEqualTo(created.getSlug());
 
     // Assert that the created product is cached
     final Optional<String> productId =
@@ -429,20 +433,20 @@ class ProductServiceImplIT {
             .toCompletableFuture()
             .join();
     assertThat(productId).isPresent();
-    verify(spyClient, times(0)).execute(any(ProductTypeQuery.class));
+    verify(spyClient, times(0)).productTypes();
   }
-
+  //
   @Test
   void createProduct_WithBlankKey_ShouldNotCreateProduct() {
     // preparation
     final String newKey = "";
     final ProductDraft productDraft1 =
-        createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference())
+        createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType.toResourceIdentifier())
             .key(newKey)
-            .taxCategory(null)
-            .state(null)
+            .taxCategory((TaxCategoryResourceIdentifier) null)
+            .state((StateResourceIdentifier) null)
             .categories(emptyList())
-            .categoryOrderHints(null)
+            .categoryOrderHints((CategoryOrderHints) null)
             .masterVariant(ProductVariantDraftBuilder.of().build())
             .build();
 
@@ -461,12 +465,12 @@ class ProductServiceImplIT {
     // Create product with same slug as existing product
     final String newKey = "newKey";
     final ProductDraft productDraft1 =
-        createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH, productType.toReference())
+        createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH, productType.toResourceIdentifier())
             .key(newKey)
-            .taxCategory(null)
-            .state(null)
+            .taxCategory((TaxCategoryResourceIdentifier) null)
+            .state((StateResourceIdentifier) null)
             .categories(emptyList())
-            .categoryOrderHints(null)
+            .categoryOrderHints((CategoryOrderHints) null)
             .masterVariant(ProductVariantDraftBuilder.of().build())
             .build();
 
@@ -479,15 +483,19 @@ class ProductServiceImplIT {
         .hasSize(1)
         .allSatisfy(
             exception -> {
-              assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
-              final ErrorResponseException errorResponse = ((ErrorResponseException) exception);
+              assertThat(exception).isExactlyInstanceOf(CompletionException.class);
+              final CompletionException errorResponse = ((CompletionException) exception);
+
+              final BadRequestException badRequestException =
+                  (BadRequestException) errorResponse.getCause();
 
               final List<DuplicateFieldError> fieldErrors =
-                  errorResponse.getErrors().stream()
+                  badRequestException.getErrorResponse().getErrors().stream()
                       .map(
-                          sphereError -> {
-                            assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
-                            return sphereError.as(DuplicateFieldError.class);
+                          error -> {
+                            assertThat(error.getCode())
+                                .isEqualTo(DuplicateFieldError.DUPLICATE_FIELD);
+                            return (DuplicateFieldError) error;
                           })
                       .collect(toList());
               assertThat(fieldErrors).hasSize(1);
@@ -509,44 +517,51 @@ class ProductServiceImplIT {
             });
 
     // assert CTP state
-    final Optional<ProductProjection> productOptional =
+    final ApiHttpResponse<ProductProjectionPagedQueryResponse> response =
         CTP_TARGET_CLIENT
-            .execute(
-                ProductProjectionQuery.ofStaged()
-                    .withPredicates(QueryPredicate.of(format("key = \"%s\"", newKey))))
-            .toCompletableFuture()
-            .join()
-            .head();
-    assertThat(productOptional).isEmpty();
+            .productProjections()
+            .get()
+            .withWhere("key=:key")
+            .withPredicateVar("key", newKey)
+            .execute()
+            .join();
+    assertThat(response.getBody().getTotal()).isEqualTo(0);
   }
 
   @Test
-  @SuppressWarnings("ConstantConditions")
   void updateProduct_WithValidChanges_ShouldUpdateProductCorrectly() {
     final String newProductName = "This is my new name!";
-    final ChangeName changeNameUpdateAction =
-        ChangeName.of(LocalizedString.of(Locale.GERMAN, newProductName));
+
+    final ProductChangeNameAction productChangeNameAction =
+        ProductChangeNameActionBuilder.of()
+            .name(
+                LocalizedStringBuilder.of()
+                    .addValue(Locale.GERMAN.toLanguageTag(), newProductName)
+                    .build())
+            .build();
 
     final ProductProjection updatedProduct =
         productService
-            .updateProduct(product, Collections.singletonList(changeNameUpdateAction))
+            .updateProduct(product, Collections.singletonList(productChangeNameAction))
             .toCompletableFuture()
             .join();
     assertThat(updatedProduct).isNotNull();
 
-    // assert CTP state
-    final Optional<ProductProjection> fetchedProductOptional =
+    // assert CTP product
+    final ProductProjection fetchedProductOptional =
         CTP_TARGET_CLIENT
-            .execute(
-                ProductProjectionQuery.ofStaged()
-                    .withPredicates(QueryPredicate.of(format("key = \"%s\"", product.getKey()))))
+            .productProjections()
+            .withKey(product.getKey())
+            .get()
+            .withStaged(true)
+            .execute()
             .toCompletableFuture()
             .join()
-            .head();
+            .getBody();
 
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
-    assertThat(fetchedProductOptional).isNotEmpty();
+    assertThat(fetchedProductOptional).isNotNull();
     final ProductProjection fetchedProduct = fetchedProductOptional.get();
     assertThat(fetchedProduct.getName()).isEqualTo(updatedProduct.getName());
     assertThat(fetchedProduct.getSlug()).isEqualTo(updatedProduct.getSlug());
@@ -554,36 +569,37 @@ class ProductServiceImplIT {
   }
 
   @Test
-  @SuppressWarnings("ConstantConditions")
   void updateProduct_WithInvalidChanges_ShouldNotUpdateProduct() {
     final ProductDraft productDraft1 =
-        createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType.toReference())
+        createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, productType.toResourceIdentifier())
             .categories(emptyList())
-            .taxCategory(null)
-            .state(null)
-            .categoryOrderHints(null)
+            .taxCategory((TaxCategoryResourceIdentifier) null)
+            .state((StateResourceIdentifier) null)
+            .categoryOrderHints((CategoryOrderHints) null)
             .build();
-    CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft1)).toCompletableFuture().join();
 
-    final ChangeSlug changeSlugUpdateAction = ChangeSlug.of(productDraft1.getSlug());
+    CTP_TARGET_CLIENT.products().create(productDraft1).execute().join();
+
+    final ProductChangeSlugAction changeSlugUpdateAction =
+        ProductChangeSlugActionBuilder.of().slug(productDraft1.getSlug()).build();
 
     productService
         .updateProduct(product, Collections.singletonList(changeSlugUpdateAction))
         .exceptionally(
             exception -> {
-              assertThat(exception).isNotNull();
-
               assertThat(exception).isExactlyInstanceOf(CompletionException.class);
-              assertThat(exception.getCause()).isExactlyInstanceOf(ErrorResponseException.class);
-              final ErrorResponseException errorResponse =
-                  ((ErrorResponseException) exception.getCause());
+              final CompletionException errorResponse = ((CompletionException) exception);
+
+              final BadRequestException badRequestException =
+                  (BadRequestException) errorResponse.getCause();
 
               final List<DuplicateFieldError> fieldErrors =
-                  errorResponse.getErrors().stream()
+                  badRequestException.getErrorResponse().getErrors().stream()
                       .map(
-                          sphereError -> {
-                            assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
-                            return sphereError.as(DuplicateFieldError.class);
+                          error -> {
+                            assertThat(error.getCode())
+                                .isEqualTo(DuplicateFieldError.DUPLICATE_FIELD);
+                            return (DuplicateFieldError) error;
                           })
                       .collect(toList());
               assertThat(fieldErrors).hasSize(1);
@@ -592,7 +608,7 @@ class ProductServiceImplIT {
                       error -> {
                         assertThat(error.getField()).isEqualTo("slug.en");
                         assertThat(error.getDuplicateValue())
-                            .isEqualTo(productDraft1.getSlug().get(Locale.ENGLISH));
+                            .isEqualTo(productDraft1.getSlug().get("en"));
                       });
               return null;
             })
@@ -600,17 +616,16 @@ class ProductServiceImplIT {
         .join();
 
     // assert CTP state
-    final Optional<ProductProjection> fetchedProductOptional =
+    final ProductProjection fetchedProduct =
         CTP_TARGET_CLIENT
-            .execute(
-                ProductProjectionQuery.ofCurrent()
-                    .withPredicates(QueryPredicate.of(format("key = \"%s\"", product.getKey()))))
-            .toCompletableFuture()
+            .productProjections()
+            .withKey(product.getKey())
+            .get()
+            .execute()
             .join()
-            .head();
+            .getBody();
 
-    assertThat(fetchedProductOptional).isNotEmpty();
-    final ProductProjection fetchedProduct = fetchedProductOptional.get();
+    assertThat(fetchedProduct).isNotNull();
     assertThat(fetchedProduct.getSlug()).isNotEqualTo(productDraft1.getSlug());
   }
 
@@ -619,9 +634,16 @@ class ProductServiceImplIT {
   void updateProduct_WithMoreThan500Actions_ShouldNotFail() {
     // Update the product 501 times with a different name every time.
     final int numberOfUpdateActions = 501;
-    final List<UpdateAction<Product>> updateActions =
+    final List<ProductUpdateAction> updateActions =
         IntStream.range(1, numberOfUpdateActions + 1)
-            .mapToObj(i -> ChangeName.of(LocalizedString.of(Locale.GERMAN, format("name:%s", i))))
+            .mapToObj(
+                i ->
+                    ProductChangeNameActionBuilder.of()
+                        .name(
+                            LocalizedStringBuilder.of()
+                                .addValue(Locale.GERMAN.toLanguageTag(), format("name:%s", i))
+                                .build())
+                        .build())
             .collect(Collectors.toList());
 
     final ProductProjection updatedProduct =
@@ -629,41 +651,49 @@ class ProductServiceImplIT {
     assertThat(updatedProduct).isNotNull();
 
     // assert CTP state
-    final Optional<ProductProjection> fetchedProductOptional =
+    final ProductProjection fetchedProduct =
         CTP_TARGET_CLIENT
-            .execute(
-                ProductProjectionQuery.ofStaged()
-                    .withPredicates(QueryPredicate.of(format("key = \"%s\"", product.getKey()))))
+            .productProjections()
+            .withKey(product.getKey())
+            .get()
+            .withStaged(true)
+            .execute()
             .toCompletableFuture()
             .join()
-            .head();
+            .getBody();
 
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
-    assertThat(fetchedProductOptional).isNotEmpty();
-    final ProductProjection fetchedProduct = fetchedProductOptional.get();
-
+    assertThat(fetchedProduct).isNotNull();
     // Test that the fetched product has the name of the last update action that was applied.
     assertThat(fetchedProduct.getName())
-        .isEqualTo(LocalizedString.of(Locale.GERMAN, format("name:%s", numberOfUpdateActions)));
+        .isEqualTo(
+            LocalizedStringBuilder.of()
+                .addValue(Locale.GERMAN.toLanguageTag(), format("name:%s", numberOfUpdateActions))
+                .build());
   }
 
   @Test
-  @SuppressWarnings("ConstantConditions")
   void updateProduct_WithMoreThan500ImageAdditions_ShouldHaveAllNewImages() {
-    final Integer productMasterVariantId = product.getMasterVariant().getId();
+    final Long productMasterVariantId = product.getMasterVariant().getId();
 
     // Update the product by adding 600 images in separate update actions
     final int numberOfImages = 600;
     final List<Image> addedImages = new ArrayList<>();
-    final List<UpdateAction<Product>> updateActions =
+    final List<ProductUpdateAction> updateActions =
         IntStream.range(1, numberOfImages + 1)
             .mapToObj(
                 i -> {
                   final Image newExternalImage =
-                      Image.of(format("image#%s", i), ImageDimensions.of(10, 10));
+                      ImageBuilder.of()
+                          .url(format("image#%s", i))
+                          .dimensions(ImageDimensionsBuilder.of().w(10).h(10).build())
+                          .build();
                   addedImages.add(newExternalImage); // keep track of added images.
-                  return AddExternalImage.of(newExternalImage, productMasterVariantId);
+                  return ProductAddExternalImageActionBuilder.of()
+                      .image(newExternalImage)
+                      .variantId(productMasterVariantId)
+                      .build();
                 })
             .collect(Collectors.toList());
 
@@ -672,20 +702,21 @@ class ProductServiceImplIT {
     assertThat(updatedProduct).isNotNull();
 
     // assert CTP state
-    final Optional<ProductProjection> fetchedProductOptional =
+    final ProductProjection fetchedProduct =
         CTP_TARGET_CLIENT
-            .execute(
-                ProductProjectionQuery.ofStaged()
-                    .withPredicates(QueryPredicate.of(format("key = \"%s\"", product.getKey()))))
+            .productProjections()
+            .withKey(product.getKey())
+            .get()
+            .withStaged(true)
+            .execute()
             .toCompletableFuture()
             .join()
-            .head();
+            .getBody();
 
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
-    assertThat(fetchedProductOptional).isNotEmpty();
+    assertThat(fetchedProduct).isNotNull();
 
-    final ProductProjection fetchedProduct = fetchedProductOptional.get();
     // Test that the fetched product has exactly the 600 images added before.
     final List<Image> currentMasterVariantImages = fetchedProduct.getMasterVariant().getImages();
     assertThat(currentMasterVariantImages).containsAll(addedImages);
@@ -731,11 +762,16 @@ class ProductServiceImplIT {
   @Test
   void fetchProduct_WithBadGatewayException_ShouldFail() {
     // preparation
-    // Mock sphere client to return BadGatewayException on any request.
-    final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-    when(spyClient.execute(any(ProductProjectionQuery.class)))
-        .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
+    final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
+    when(spyClient.productProjections()).thenReturn(mock());
+    when(spyClient.productProjections().withKey(anyString())).thenReturn(mock());
+    final ByProjectKeyProductProjectionsKeyByKeyGet getMock =
+        mock(ByProjectKeyProductProjectionsKeyByKeyGet.class);
+    when(spyClient.productProjections().withKey(anyString()).get()).thenReturn(getMock);
+    when(getMock.execute())
+        .thenReturn(exceptionallyCompletedFuture(new BadGatewayException(500, "", null, "", null)))
         .thenCallRealMethod();
+
     final ProductSyncOptions spyOptions =
         ProductSyncOptionsBuilder.of(spyClient)
             .errorCallback(

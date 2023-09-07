@@ -1,24 +1,23 @@
 package com.commercetools.sync.states.utils;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
 import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.states.StateDraft;
-import io.sphere.sdk.states.StateRole;
-import io.sphere.sdk.states.commands.updateactions.AddRoles;
-import io.sphere.sdk.states.commands.updateactions.ChangeInitial;
-import io.sphere.sdk.states.commands.updateactions.ChangeType;
-import io.sphere.sdk.states.commands.updateactions.RemoveRoles;
-import io.sphere.sdk.states.commands.updateactions.SetDescription;
-import io.sphere.sdk.states.commands.updateactions.SetName;
-import io.sphere.sdk.states.commands.updateactions.SetTransitions;
+import com.commercetools.api.models.state.State;
+import com.commercetools.api.models.state.StateAddRolesActionBuilder;
+import com.commercetools.api.models.state.StateChangeInitialActionBuilder;
+import com.commercetools.api.models.state.StateChangeTypeActionBuilder;
+import com.commercetools.api.models.state.StateDraft;
+import com.commercetools.api.models.state.StateReference;
+import com.commercetools.api.models.state.StateRemoveRolesActionBuilder;
+import com.commercetools.api.models.state.StateResourceIdentifier;
+import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
+import com.commercetools.api.models.state.StateRoleEnum;
+import com.commercetools.api.models.state.StateSetDescriptionActionBuilder;
+import com.commercetools.api.models.state.StateSetNameActionBuilder;
+import com.commercetools.api.models.state.StateSetTransitionsActionBuilder;
+import com.commercetools.api.models.state.StateUpdateAction;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -32,117 +31,124 @@ public final class StateUpdateActionUtils {
 
   /**
    * Compares the {@code type} values of a {@link State} and a {@link StateDraft} and returns an
-   * {@link Optional} of update action, which would contain the {@code "changeType"} {@link
-   * UpdateAction}. If both {@link State} and {@link StateDraft} have the same {@code type} values,
-   * then no update action is needed and empty optional will be returned.
+   * {@link java.util.Optional} of update action, which would contain the {@code "changeType"}
+   * {@link StateUpdateAction}. If both {@link State} and {@link StateDraft} have the same {@code
+   * type} values, then no update action is needed and empty optional will be returned.
    *
    * @param oldState the state that should be updated.
    * @param newState the state draft which contains the new type.
    * @return optional containing update action or empty optional if types are identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<State>> buildChangeTypeAction(
+  public static Optional<StateUpdateAction> buildChangeTypeAction(
       @Nonnull final State oldState, @Nonnull final StateDraft newState) {
 
     return buildUpdateAction(
-        oldState.getType(), newState.getType(), () -> ChangeType.of(newState.getType()));
+        oldState.getType(),
+        newState.getType(),
+        () -> StateChangeTypeActionBuilder.of().type(newState.getType()).build());
   }
 
   /**
    * Compares the {@code name} values of a {@link State} and a {@link StateDraft} and returns an
-   * {@link Optional} of update action, which would contain the {@code "setName"} {@link
-   * UpdateAction}. If both {@link State} and {@link StateDraft} have the same {@code name} values,
-   * then no update action is needed and empty optional will be returned.
+   * {@link java.util.Optional} of update action, which would contain the {@code "setName"} {@link
+   * StateUpdateAction}. If both {@link State} and {@link StateDraft} have the same {@code name}
+   * values, then no update action is needed and empty optional will be returned.
    *
    * @param oldState the state that should be updated.
    * @param newState the state draft which contains the new name.
    * @return optional containing update action or empty optional if names are identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<State>> buildSetNameAction(
+  public static Optional<StateUpdateAction> buildSetNameAction(
       @Nonnull final State oldState, @Nonnull final StateDraft newState) {
 
     return buildUpdateAction(
-        oldState.getName(), newState.getName(), () -> SetName.of(newState.getName()));
+        oldState.getName(),
+        newState.getName(),
+        () -> StateSetNameActionBuilder.of().name(newState.getName()).build());
   }
 
   /**
    * Compares the {@code description} values of a {@link State} and a {@link StateDraft} and returns
-   * an {@link Optional} of update action, which would contain the {@code "setDescription"} {@link
-   * UpdateAction}. If both {@link State} and {@link StateDraft} have the same {@code description}
-   * values, then no update action is needed and empty optional will be returned.
+   * an {@link java.util.Optional} of update action, which would contain the {@code
+   * "setDescription"} {@link StateUpdateAction}. If both {@link State} and {@link StateDraft} have
+   * the same {@code description} values, then no update action is needed and empty optional will be
+   * returned.
    *
    * @param oldState the state that should be updated.
    * @param newState the state draft which contains the new description.
    * @return optional containing update action or empty optional if descriptions are identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<State>> buildSetDescriptionAction(
+  public static Optional<StateUpdateAction> buildSetDescriptionAction(
       @Nonnull final State oldState, @Nonnull final StateDraft newState) {
 
     return buildUpdateAction(
         oldState.getDescription(),
         newState.getDescription(),
-        () -> SetDescription.of(newState.getDescription()));
+        () -> StateSetDescriptionActionBuilder.of().description(newState.getDescription()).build());
   }
 
   /**
    * Compares the {@code initial} values of a {@link State} and a {@link StateDraft} and returns an
-   * {@link Optional} of update action, which would contain the {@code "changeInitial"} {@link
-   * UpdateAction}. If both {@link State} and {@link StateDraft} have the same {@code initial}
-   * values, then no update action is needed and empty optional will be returned.
+   * {@link java.util.Optional} of update action, which would contain the {@code "changeInitial"}
+   * {@link StateUpdateAction}. If both {@link State} and {@link StateDraft} have the same {@code
+   * initial} values, then no update action is needed and empty optional will be returned.
    *
    * @param oldState the state that should be updated.
    * @param newState the state draft which contains the new initial.
    * @return optional containing update action or empty optional if initial are identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<State>> buildChangeInitialAction(
+  public static Optional<StateUpdateAction> buildChangeInitialAction(
       @Nonnull final State oldState, @Nonnull final StateDraft newState) {
 
-    final boolean isNewStateInitial = toBoolean(newState.isInitial());
-    final boolean isOldStateInitial = toBoolean(oldState.isInitial());
+    final boolean isNewStateInitial = toBoolean(newState.getInitial());
+    final boolean isOldStateInitial = toBoolean(oldState.getInitial());
 
     return buildUpdateAction(
-        isOldStateInitial, isNewStateInitial, () -> ChangeInitial.of(isNewStateInitial));
+        isOldStateInitial,
+        isNewStateInitial,
+        () -> StateChangeInitialActionBuilder.of().initial(isNewStateInitial).build());
   }
 
   /**
    * Compares the roles of a {@link State} and a {@link StateDraft} and returns a list of {@link
-   * UpdateAction}&lt;{@link State}&gt; as a result. If both the {@link State} and the {@link
-   * StateDraft} have identical roles, then no update action is needed and hence an empty {@link
-   * List} is returned.
+   * StateUpdateAction} as a result. If both the {@link State} and the {@link StateDraft} have
+   * identical roles, then no update action is needed and hence an empty {@link java.util.List} is
+   * returned.
    *
    * @param oldState the state which should be updated.
    * @param newState the state draft where we get the key.
    * @return A list with the update actions or an empty list if the roles are identical.
    */
   @Nonnull
-  public static List<UpdateAction<State>> buildRolesUpdateActions(
+  public static List<StateUpdateAction> buildRolesUpdateActions(
       @Nonnull final State oldState, @Nonnull final StateDraft newState) {
 
     boolean emptyNew = newState.getRoles() == null || newState.getRoles().isEmpty();
     boolean emptyOld = oldState.getRoles() == null || oldState.getRoles().isEmpty();
 
     if (emptyNew && emptyOld) {
-      return emptyList();
+      return List.of();
     }
 
-    Set<StateRole> newRoles = emptyNew ? new HashSet<>() : newState.getRoles();
-    Set<StateRole> oldRoles = emptyOld ? new HashSet<>() : oldState.getRoles();
+    final List<StateRoleEnum> newRoles = emptyNew ? new ArrayList<>() : newState.getRoles();
+    final List<StateRoleEnum> oldRoles = emptyOld ? new ArrayList<>() : oldState.getRoles();
 
-    List<UpdateAction<State>> actions = new ArrayList<>();
+    final List<StateUpdateAction> actions = new ArrayList<>();
 
-    Set<StateRole> remove = diffRoles(oldRoles, newRoles);
+    final List<StateRoleEnum> remove = diffRoles(oldRoles, newRoles);
 
     if (!remove.isEmpty()) {
-      actions.add(RemoveRoles.of(remove));
+      actions.add(StateRemoveRolesActionBuilder.of().roles(remove).build());
     }
 
-    Set<StateRole> add = diffRoles(newRoles, oldRoles);
+    final List<StateRoleEnum> add = diffRoles(newRoles, oldRoles);
 
     if (!add.isEmpty()) {
-      actions.add(AddRoles.of(add));
+      actions.add(StateAddRolesActionBuilder.of().roles(add).build());
     }
 
     return actions;
@@ -150,10 +156,11 @@ public final class StateUpdateActionUtils {
 
   /**
    * Compares the {@code transitions} values of a {@link State} and a {@link StateDraft} and returns
-   * an {@link Optional} of update action, which would contain the {@code "setTransitions"} {@link
-   * UpdateAction}. If both {@link State} and {@link StateDraft} have the same {@code transitions}
-   * values, then no update action is needed and empty optional will be returned. if not, the
-   * transition of the old State gets overwritten with the transitions of the statedraft
+   * an {@link java.util.Optional} of update action, which would contain the {@code
+   * "setTransitions"} {@link StateUpdateAction}. If both {@link State} and {@link StateDraft} have
+   * the same {@code transitions} values, then no update action is needed and empty optional will be
+   * returned. if not, the transition of the old State gets overwritten with the transitions of the
+   * statedraft
    *
    * @param oldState the {@link State} which should be updated.
    * @param newState the {@link StateDraft} where we get the new data.
@@ -161,44 +168,64 @@ public final class StateUpdateActionUtils {
    *     there was an error.
    */
   @Nonnull
-  public static Optional<UpdateAction<State>> buildSetTransitionsAction(
+  public static Optional<StateUpdateAction> buildSetTransitionsAction(
       @Nonnull final State oldState, @Nonnull final StateDraft newState) {
 
-    boolean emptyNew =
+    final boolean emptyNew =
         newState.getTransitions() == null
             || newState.getTransitions().isEmpty()
             || newState.getTransitions().stream().noneMatch(Objects::nonNull);
 
-    boolean emptyOld =
+    final boolean emptyOld =
         oldState.getTransitions() == null
             || oldState.getTransitions().isEmpty()
             || oldState.getTransitions().stream().noneMatch(Objects::nonNull);
 
     if (emptyNew && emptyOld) {
       return Optional.empty();
+    } else if (newState.getTransitions() == null) {
+      return Optional.of(
+          StateSetTransitionsActionBuilder.of()
+              .transitions((List<StateResourceIdentifier>) null)
+              .build());
     } else if (emptyNew) {
-      return Optional.of(SetTransitions.of(emptySet()));
+      return Optional.of(StateSetTransitionsActionBuilder.of().transitions(List.of()).build());
     }
 
-    final Set<Reference<State>> newTransitions =
+    final Set<StateResourceIdentifier> newTransitions =
         newState.getTransitions().stream().filter(Objects::nonNull).collect(Collectors.toSet());
 
-    final Set<Reference<State>> oldTransitions =
+    final Set<StateReference> oldTransitions =
         oldState.getTransitions().stream().filter(Objects::nonNull).collect(Collectors.toSet());
 
-    return buildUpdateAction(
-        oldTransitions,
-        newTransitions,
-        () -> {
-          Set<Reference<State>> transitions =
-              newTransitions.stream()
-                  .map(transition -> State.referenceOfId(transition.getId()))
-                  .collect(Collectors.toSet());
-          return SetTransitions.of(transitions);
-        });
+    if (hasDifferentTransitions(newTransitions, oldTransitions)) {
+      final List<StateResourceIdentifier> transitions =
+          newTransitions.stream()
+              .map(
+                  transition ->
+                      StateResourceIdentifierBuilder.of()
+                          .id(transition.getId())
+                          .key(transition.getKey())
+                          .build())
+              .collect(Collectors.toList());
+      return Optional.of(StateSetTransitionsActionBuilder.of().transitions(transitions).build());
+    }
+
+    return Optional.empty();
   }
 
-  private static Set<StateRole> diffRoles(final Set<StateRole> src, final Set<StateRole> dst) {
+  private static boolean hasDifferentTransitions(
+      final Set<StateResourceIdentifier> newTransitions, final Set<StateReference> oldTransitions) {
+    final List<String> newTransitionIds =
+        newTransitions.stream().map(StateResourceIdentifier::getId).collect(Collectors.toList());
+    final List<String> oldTransitionIds =
+        oldTransitions.stream().map(StateReference::getId).collect(Collectors.toList());
+
+    return !Objects.equals(newTransitionIds, oldTransitionIds);
+  }
+
+  private static List<StateRoleEnum> diffRoles(
+      final List<StateRoleEnum> src, final List<StateRoleEnum> dst) {
     return src.stream()
         .map(
             role -> {
@@ -208,6 +235,6 @@ public final class StateUpdateActionUtils {
               return null;
             })
         .filter(Objects::nonNull)
-        .collect(Collectors.toSet());
+        .collect(Collectors.toList());
   }
 }

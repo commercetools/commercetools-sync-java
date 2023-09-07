@@ -1,121 +1,134 @@
 package com.commercetools.sync.cartdiscounts.utils;
 
-import static com.commercetools.sync.cartdiscounts.utils.CartDiscountSyncUtils.buildActions;
-import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
+import static com.commercetools.api.models.common.DefaultCurrencyUnits.EUR;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.cart_discount.CartDiscount;
+import com.commercetools.api.models.cart_discount.CartDiscountChangeCartPredicateActionBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountChangeIsActiveActionBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountChangeNameActionBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountChangeRequiresDiscountCodeActionBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountChangeSortOrderActionBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountChangeStackingModeActionBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountChangeTargetActionBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountChangeValueActionBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountDraft;
+import com.commercetools.api.models.cart_discount.CartDiscountDraftBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountLineItemsTargetBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountSetCustomFieldActionBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountSetCustomTypeActionBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountSetDescriptionActionBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountSetValidFromAndUntilActionBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountTarget;
+import com.commercetools.api.models.cart_discount.CartDiscountUpdateAction;
+import com.commercetools.api.models.cart_discount.CartDiscountValue;
+import com.commercetools.api.models.cart_discount.CartDiscountValueAbsoluteDraftBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountValueDraft;
+import com.commercetools.api.models.cart_discount.CartDiscountValueRelativeBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountValueRelativeDraftBuilder;
+import com.commercetools.api.models.cart_discount.StackingMode;
+import com.commercetools.api.models.common.CentPrecisionMoneyBuilder;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.type.CustomFields;
+import com.commercetools.api.models.type.CustomFieldsDraft;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.FieldContainer;
+import com.commercetools.api.models.type.TypeReferenceBuilder;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import io.sphere.sdk.cartdiscounts.CartDiscount;
-import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
-import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
-import io.sphere.sdk.cartdiscounts.CartDiscountTarget;
-import io.sphere.sdk.cartdiscounts.CartDiscountValue;
-import io.sphere.sdk.cartdiscounts.CartPredicate;
-import io.sphere.sdk.cartdiscounts.LineItemsTarget;
-import io.sphere.sdk.cartdiscounts.StackingMode;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeCartPredicate;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeIsActive;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeName;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeRequiresDiscountCode;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeSortOrder;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeStackingMode;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeTarget;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeValue;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.SetCustomField;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.SetCustomType;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.SetDescription;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.SetValidFromAndUntil;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.types.CustomFields;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.CustomFieldsDraftBuilder;
-import io.sphere.sdk.types.Type;
-import io.sphere.sdk.utils.MoneyImpl;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class CartDiscountSyncUtilsTest {
 
-  private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
-
-  private static final String KEY = "key";
-  private static final LocalizedString NAME = LocalizedString.of(Locale.ENGLISH, "name");
-  private static final LocalizedString DESC =
-      LocalizedString.of(Locale.ENGLISH, "discount- get 10 percent");
-  private static final String PREDICATE =
-      "lineItemExists(sku = \"0123456789\" or sku = \"0246891213\") = true";
-  private static final CartDiscountValue VALUE = CartDiscountValue.ofRelative(1000);
-  private static final CartDiscountTarget TARGET = LineItemsTarget.ofAll();
-  private static final ZonedDateTime JANUARY_FROM = ZonedDateTime.parse("2019-01-01T00:00:00.000Z");
-  private static final ZonedDateTime JANUARY_UNTIL =
-      ZonedDateTime.parse("2019-01-31T00:00:00.000Z");
-  private static final String SORT_ORDER = "0.1";
-  private static final Boolean IS_ACTIVE = false;
-  private static final Boolean IS_REQUIRE_DISC_CODE = false;
-  private static final StackingMode STACKING_MODE = StackingMode.STACKING;
+  private static final ProjectApiRoot CTP_CLIENT = mock(ProjectApiRoot.class);
 
   private static final String CUSTOM_TYPE_ID = "id";
   private static final String CUSTOM_FIELD_NAME = "field";
   private static final String CUSTOM_FIELD_VALUE = "value";
 
-  private CartDiscount cartDiscount;
-  private CartDiscountDraft cartDiscountDraft;
+  private static CartDiscount cartDiscount;
+  private static CartDiscountDraft cartDiscountDraft;
 
   /** Creates a {@code cartDiscount} and a {@code cartDiscountDraft} with identical values. */
-  @BeforeEach
-  void setup() {
+  @BeforeAll
+  static void setup() {
+    final String key = "key";
+    final LocalizedString name = LocalizedString.ofEnglish("name");
+    final LocalizedString desc = LocalizedString.ofEnglish("discount- get 10 percent");
+    final String predicate = "lineItemExists(sku = \"0123456789\" or sku = \"0246891213\") = true";
+    final CartDiscountValue value = CartDiscountValueRelativeBuilder.of().permyriad(1000L).build();
+
+    final CartDiscountValueDraft valueDraft =
+        CartDiscountValueRelativeDraftBuilder.of().permyriad(1000L).build();
+    final CartDiscountTarget target =
+        CartDiscountLineItemsTargetBuilder.of().predicate("1=1").build();
+    final ZonedDateTime januaryFrom = ZonedDateTime.parse("2019-01-01T00:00:00.000Z");
+    final ZonedDateTime januaryUntil = ZonedDateTime.parse("2019-01-31T00:00:00.000Z");
+    final String sortOrder = "0.1";
+    final Boolean isActive = false;
+    final Boolean isRequireDiscCode = false;
+    final StackingMode stackingMode = StackingMode.STACKING;
+
     cartDiscount = mock(CartDiscount.class);
-    when(cartDiscount.getKey()).thenReturn(KEY);
-    when(cartDiscount.getName()).thenReturn(NAME);
-    when(cartDiscount.getDescription()).thenReturn(DESC);
-    when(cartDiscount.getCartPredicate()).thenReturn(PREDICATE);
-    when(cartDiscount.getValue()).thenReturn(VALUE);
-    when(cartDiscount.getTarget()).thenReturn(TARGET);
-    when(cartDiscount.getValidFrom()).thenReturn(JANUARY_FROM);
-    when(cartDiscount.getValidUntil()).thenReturn(JANUARY_UNTIL);
-    when(cartDiscount.getSortOrder()).thenReturn(SORT_ORDER);
-    when(cartDiscount.isActive()).thenReturn(IS_ACTIVE);
-    when(cartDiscount.isRequiringDiscountCode()).thenReturn(IS_REQUIRE_DISC_CODE);
-    when(cartDiscount.getStackingMode()).thenReturn(STACKING_MODE);
+    when(cartDiscount.getKey()).thenReturn(key);
+    when(cartDiscount.getName()).thenReturn(name);
+    when(cartDiscount.getDescription()).thenReturn(desc);
+    when(cartDiscount.getCartPredicate()).thenReturn(predicate);
+    when(cartDiscount.getValue()).thenReturn(value);
+    when(cartDiscount.getTarget()).thenReturn(target);
+    when(cartDiscount.getValidFrom()).thenReturn(januaryFrom);
+    when(cartDiscount.getValidUntil()).thenReturn(januaryUntil);
+    when(cartDiscount.getSortOrder()).thenReturn(sortOrder);
+    when(cartDiscount.getIsActive()).thenReturn(isActive);
+    when(cartDiscount.getRequiresDiscountCode()).thenReturn(isRequireDiscCode);
+    when(cartDiscount.getStackingMode()).thenReturn(stackingMode);
 
     final CustomFields customFields = mock(CustomFields.class);
-    when(customFields.getType()).thenReturn(Type.referenceOfId(CUSTOM_TYPE_ID));
+    when(customFields.getType()).thenReturn(TypeReferenceBuilder.of().id(CUSTOM_TYPE_ID).build());
 
-    final Map<String, JsonNode> customFieldsJsonMapMock = new HashMap<>();
+    final FieldContainer fieldContainerMock = mock();
+    final Map<String, Object> customFieldsJsonMapMock = new HashMap<>();
     customFieldsJsonMapMock.put(
         CUSTOM_FIELD_NAME, JsonNodeFactory.instance.textNode(CUSTOM_FIELD_VALUE));
-    when(customFields.getFieldsJsonMap()).thenReturn(customFieldsJsonMapMock);
+    when(customFields.getFields()).thenReturn(fieldContainerMock);
+    when(fieldContainerMock.values()).thenReturn(customFieldsJsonMapMock);
 
     when(cartDiscount.getCustom()).thenReturn(customFields);
 
     final CustomFieldsDraft customFieldsDraft =
-        CustomFieldsDraftBuilder.ofTypeId(CUSTOM_TYPE_ID)
-            .addObject(CUSTOM_FIELD_NAME, CUSTOM_FIELD_VALUE)
+        CustomFieldsDraftBuilder.of()
+            .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.id(CUSTOM_TYPE_ID))
+            .fields(
+                fieldContainerBuilder ->
+                    fieldContainerBuilder.addValue(CUSTOM_FIELD_NAME, CUSTOM_FIELD_VALUE))
             .build();
 
     cartDiscountDraft =
-        CartDiscountDraftBuilder.of(
-                NAME, PREDICATE, VALUE, TARGET, SORT_ORDER, IS_REQUIRE_DISC_CODE)
-            .key(KEY)
-            .description(DESC)
-            .sortOrder(SORT_ORDER)
-            .active(IS_ACTIVE)
-            .validFrom(JANUARY_FROM)
-            .validUntil(JANUARY_UNTIL)
+        CartDiscountDraftBuilder.of()
+            .name(name)
+            .cartPredicate(predicate)
+            .value(valueDraft)
+            .target(target)
+            .sortOrder(sortOrder)
+            .requiresDiscountCode(isRequireDiscCode)
+            .key(key)
+            .description(desc)
+            .sortOrder(sortOrder)
+            .isActive(isActive)
+            .validFrom(januaryFrom)
+            .validUntil(januaryUntil)
             .custom(customFieldsDraft)
             .build();
   }
@@ -124,8 +137,9 @@ class CartDiscountSyncUtilsTest {
   void buildActions_WithSameValues_ShouldNotBuildUpdateActions() {
     final CartDiscountSyncOptions cartDiscountSyncOptions =
         CartDiscountSyncOptionsBuilder.of(CTP_CLIENT).build();
-    final List<UpdateAction<CartDiscount>> updateActions =
-        buildActions(cartDiscount, cartDiscountDraft, cartDiscountSyncOptions);
+    final List<CartDiscountUpdateAction> updateActions =
+        CartDiscountSyncUtils.buildActions(
+            cartDiscount, cartDiscountDraft, cartDiscountSyncOptions);
 
     assertThat(updateActions).isEmpty();
   }
@@ -140,21 +154,30 @@ class CartDiscountSyncUtilsTest {
 
     final CartDiscountSyncOptions cartDiscountSyncOptions =
         CartDiscountSyncOptionsBuilder.of(CTP_CLIENT).build();
-    final List<UpdateAction<CartDiscount>> updateActions =
-        buildActions(cartDiscount, newCartDiscount, cartDiscountSyncOptions);
+    final List<CartDiscountUpdateAction> updateActions =
+        CartDiscountSyncUtils.buildActions(cartDiscount, newCartDiscount, cartDiscountSyncOptions);
 
     assertThat(updateActions).isNotEmpty();
-    assertThat(updateActions).containsExactly(ChangeName.of(newName));
+    assertThat(updateActions)
+        .containsExactly(CartDiscountChangeNameActionBuilder.of().name(newName).build());
   }
 
   @Test
   void buildActions_FromDraftsWithAllDifferentValues_ShouldBuildAllUpdateActions() {
     final LocalizedString newName =
         LocalizedString.of(Locale.GERMAN, "Neu Name", Locale.ENGLISH, "new name");
-    final CartPredicate newCartDiscountPredicate = CartPredicate.of("1 = 1");
-    final CartDiscountValue newCartDiscountValue =
-        CartDiscountValue.ofAbsolute(MoneyImpl.of(10, EUR));
-    final CartDiscountTarget newCartDiscountTarget = LineItemsTarget.of("quantity > 1");
+    final String cartPredicate = "1 = 1";
+    final CartDiscountValueDraft newCartDiscountValue =
+        CartDiscountValueAbsoluteDraftBuilder.of()
+            .money(
+                CentPrecisionMoneyBuilder.of()
+                    .fractionDigits(0)
+                    .centAmount(10L)
+                    .currencyCode(EUR.getCurrencyCode())
+                    .build())
+            .build();
+    final CartDiscountTarget newCartDiscountTarget =
+        CartDiscountLineItemsTargetBuilder.of().predicate("quantity > 1").build();
     final String newSortOrder = "0.3";
     final LocalizedString newDesc =
         LocalizedString.of(Locale.GERMAN, "Neu Beschreibung", Locale.ENGLISH, "new description");
@@ -164,17 +187,21 @@ class CartDiscountSyncUtilsTest {
     final boolean newRequireDiscountCode = true;
     final StackingMode newStackingMode = StackingMode.STOP_AFTER_THIS_DISCOUNT;
     final CustomFieldsDraft newCustomFieldsDraft =
-        CustomFieldsDraftBuilder.ofTypeId(UUID.randomUUID().toString()).build();
+        CustomFieldsDraftBuilder.of()
+            .type(
+                typeResourceIdentifierBuilder ->
+                    typeResourceIdentifierBuilder.id(UUID.randomUUID().toString()))
+            .build();
 
     final CartDiscountDraft newCartDiscount =
-        CartDiscountDraftBuilder.of(
-                newName,
-                newCartDiscountPredicate,
-                newCartDiscountValue,
-                newCartDiscountTarget,
-                newSortOrder,
-                newRequireDiscountCode)
-            .active(newIsActive)
+        CartDiscountDraftBuilder.of()
+            .name(newName)
+            .cartPredicate(cartPredicate)
+            .value(newCartDiscountValue)
+            .target(newCartDiscountTarget)
+            .sortOrder(newSortOrder)
+            .requiresDiscountCode(newRequireDiscountCode)
+            .isActive(newIsActive)
             .description(newDesc)
             .validFrom(newValidFrom)
             .validUntil(newValidUntil)
@@ -184,50 +211,71 @@ class CartDiscountSyncUtilsTest {
 
     final CartDiscountSyncOptions cartDiscountSyncOptions =
         CartDiscountSyncOptionsBuilder.of(CTP_CLIENT).build();
-    final List<UpdateAction<CartDiscount>> updateActions =
-        buildActions(cartDiscount, newCartDiscount, cartDiscountSyncOptions);
+    final List<CartDiscountUpdateAction> updateActions =
+        CartDiscountSyncUtils.buildActions(cartDiscount, newCartDiscount, cartDiscountSyncOptions);
 
     assertThat(updateActions)
         .containsExactly(
-            ChangeValue.of(newCartDiscountValue),
-            ChangeCartPredicate.of(newCartDiscountPredicate),
-            ChangeTarget.of(newCartDiscountTarget),
-            ChangeIsActive.of(newIsActive),
-            ChangeName.of(newName),
-            SetDescription.of(newDesc),
-            ChangeSortOrder.of(newSortOrder),
-            ChangeRequiresDiscountCode.of(newRequireDiscountCode),
-            SetValidFromAndUntil.of(newValidFrom, newValidUntil),
-            ChangeStackingMode.of(newStackingMode),
-            SetCustomType.ofTypeIdAndJson(newCustomFieldsDraft.getType().getId(), emptyMap()));
+            CartDiscountChangeValueActionBuilder.of().value(newCartDiscountValue).build(),
+            CartDiscountChangeCartPredicateActionBuilder.of().cartPredicate(cartPredicate).build(),
+            CartDiscountChangeTargetActionBuilder.of().target(newCartDiscountTarget).build(),
+            CartDiscountChangeIsActiveActionBuilder.of().isActive(newIsActive).build(),
+            CartDiscountChangeNameActionBuilder.of().name(newName).build(),
+            CartDiscountSetDescriptionActionBuilder.of().description(newDesc).build(),
+            CartDiscountChangeSortOrderActionBuilder.of().sortOrder(newSortOrder).build(),
+            CartDiscountChangeRequiresDiscountCodeActionBuilder.of()
+                .requiresDiscountCode(newRequireDiscountCode)
+                .build(),
+            CartDiscountSetValidFromAndUntilActionBuilder.of()
+                .validFrom(newValidFrom)
+                .validUntil(newValidUntil)
+                .build(),
+            CartDiscountChangeStackingModeActionBuilder.of().stackingMode(newStackingMode).build(),
+            CartDiscountSetCustomTypeActionBuilder.of()
+                .type(
+                    typeResourceIdentifierBuilder ->
+                        typeResourceIdentifierBuilder.id(newCustomFieldsDraft.getType().getId()))
+                .fields(fieldContainerBuilder -> fieldContainerBuilder.values(emptyMap()))
+                .build());
   }
 
   @Test
   void buildActions_WithDifferentCustomType_ShouldBuildUpdateAction() {
     final CustomFieldsDraft customFieldsDraft =
-        CustomFieldsDraftBuilder.ofTypeId("newId").addObject("newField", "newValue").build();
+        CustomFieldsDraftBuilder.of()
+            .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.id("newId"))
+            .fields(fieldContainerBuilder -> fieldContainerBuilder.addValue("newField", "newValue"))
+            .build();
 
     final CartDiscountDraft cartDiscountDraftWithCustomField =
         CartDiscountDraftBuilder.of(cartDiscountDraft).custom(customFieldsDraft).build();
 
-    final List<UpdateAction<CartDiscount>> actions =
-        buildActions(
+    final List<CartDiscountUpdateAction> actions =
+        CartDiscountSyncUtils.buildActions(
             cartDiscount,
             cartDiscountDraftWithCustomField,
-            CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class)).build());
+            CartDiscountSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build());
 
     assertThat(actions)
         .containsExactly(
-            SetCustomType.ofTypeIdAndJson(
-                customFieldsDraft.getType().getId(), customFieldsDraft.getFields()));
+            CartDiscountSetCustomTypeActionBuilder.of()
+                .type(
+                    typeResourceIdentifierBuilder ->
+                        typeResourceIdentifierBuilder.id(customFieldsDraft.getType().getId()))
+                .fields(customFieldsDraft.getFields())
+                .build());
   }
 
   @Test
   void buildActions_WithSameCustomTypeWithNewCustomFields_ShouldBuildUpdateAction() {
     final CustomFieldsDraft sameCustomFieldDraftWithNewCustomField =
-        CustomFieldsDraftBuilder.ofTypeId(CUSTOM_TYPE_ID)
-            .addObject(CUSTOM_FIELD_NAME, CUSTOM_FIELD_VALUE)
-            .addObject("name_2", "value_2")
+        CustomFieldsDraftBuilder.of()
+            .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.id(CUSTOM_TYPE_ID))
+            .fields(
+                fieldContainerBuilder ->
+                    fieldContainerBuilder
+                        .addValue(CUSTOM_FIELD_NAME, CUSTOM_FIELD_VALUE)
+                        .addValue("name_2", "value_2"))
             .build();
 
     final CartDiscountDraft cartDiscountDraftWithCustomField =
@@ -235,22 +283,25 @@ class CartDiscountSyncUtilsTest {
             .custom(sameCustomFieldDraftWithNewCustomField)
             .build();
 
-    final List<UpdateAction<CartDiscount>> actions =
-        buildActions(
+    final List<CartDiscountUpdateAction> actions =
+        CartDiscountSyncUtils.buildActions(
             cartDiscount,
             cartDiscountDraftWithCustomField,
-            CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class)).build());
+            CartDiscountSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build());
 
     assertThat(actions)
         .containsExactly(
-            SetCustomField.ofJson("name_2", JsonNodeFactory.instance.textNode("value_2")));
+            CartDiscountSetCustomFieldActionBuilder.of().name("name_2").value("value_2").build());
   }
 
   @Test
   void buildActions_WithSameCustomTypeWithDifferentCustomFieldValues_ShouldBuildUpdateAction() {
     final CustomFieldsDraft sameCustomFieldDraftWithNewValue =
-        CustomFieldsDraftBuilder.ofTypeId(CUSTOM_TYPE_ID)
-            .addObject(CUSTOM_FIELD_NAME, "newValue")
+        CustomFieldsDraftBuilder.of()
+            .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.id(CUSTOM_TYPE_ID))
+            .fields(
+                fieldContainerBuilder ->
+                    fieldContainerBuilder.addValue(CUSTOM_FIELD_NAME, "newValue"))
             .build();
 
     final CartDiscountDraft cartDiscountDraftWithCustomField =
@@ -258,29 +309,31 @@ class CartDiscountSyncUtilsTest {
             .custom(sameCustomFieldDraftWithNewValue)
             .build();
 
-    final List<UpdateAction<CartDiscount>> actions =
-        buildActions(
+    final List<CartDiscountUpdateAction> actions =
+        CartDiscountSyncUtils.buildActions(
             cartDiscount,
             cartDiscountDraftWithCustomField,
-            CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class)).build());
+            CartDiscountSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build());
 
     assertThat(actions)
         .containsExactly(
-            SetCustomField.ofJson(
-                CUSTOM_FIELD_NAME, JsonNodeFactory.instance.textNode("newValue")));
+            CartDiscountSetCustomFieldActionBuilder.of()
+                .name(CUSTOM_FIELD_NAME)
+                .value("newValue")
+                .build());
   }
 
   @Test
   void buildActions_WithJustNewCartDiscountHasNullCustomType_ShouldBuildUpdateAction() {
     final CartDiscountDraft cartDiscountDraftWithNullCustomField =
-        CartDiscountDraftBuilder.of(cartDiscountDraft).custom(null).build();
+        CartDiscountDraftBuilder.of(cartDiscountDraft).custom((CustomFieldsDraft) null).build();
 
-    final List<UpdateAction<CartDiscount>> actions =
-        buildActions(
+    final List<CartDiscountUpdateAction> actions =
+        CartDiscountSyncUtils.buildActions(
             cartDiscount,
             cartDiscountDraftWithNullCustomField,
-            CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class)).build());
+            CartDiscountSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build());
 
-    assertThat(actions).containsExactly(SetCustomType.ofRemoveType());
+    assertThat(actions).containsExactly(CartDiscountSetCustomTypeActionBuilder.of().build());
   }
 }

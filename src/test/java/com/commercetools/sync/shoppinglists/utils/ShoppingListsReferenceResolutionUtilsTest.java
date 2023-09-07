@@ -1,31 +1,27 @@
 package com.commercetools.sync.shoppinglists.utils;
 
-import static com.commercetools.sync.shoppinglists.utils.ShoppingListReferenceResolutionUtils.buildShoppingListQuery;
-import static com.commercetools.sync.shoppinglists.utils.ShoppingListReferenceResolutionUtils.mapToShoppingListDrafts;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.singletonList;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.models.customer.CustomerReference;
+import com.commercetools.api.models.customer.CustomerReferenceBuilder;
+import com.commercetools.api.models.product.ProductVariant;
+import com.commercetools.api.models.shopping_list.ShoppingList;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListDraftBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItem;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraftBuilder;
+import com.commercetools.api.models.shopping_list.TextLineItem;
+import com.commercetools.api.models.shopping_list.TextLineItemDraftBuilder;
+import com.commercetools.api.models.type.CustomFields;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.TypeReference;
+import com.commercetools.api.models.type.TypeReferenceBuilder;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.expansion.ExpansionPath;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.products.ProductVariant;
-import io.sphere.sdk.shoppinglists.LineItem;
-import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
-import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
-import io.sphere.sdk.shoppinglists.TextLineItem;
-import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
-import io.sphere.sdk.types.CustomFields;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -68,26 +64,26 @@ class ShoppingListsReferenceResolutionUtilsTest {
     final String textLineItemName = "textLineItemName";
     for (int i = 0; i < 3; i++) {
       final ShoppingList mockShoppingList = mock(ShoppingList.class);
+      when(mockShoppingList.getName()).thenReturn(ofEnglish("testShoppingList"));
 
-      final Reference<Customer> customerReference =
-          Reference.ofResourceTypeIdAndId(Customer.referenceTypeId(), customerId);
+      final CustomerReference customerReference =
+          CustomerReferenceBuilder.of().id(customerId).build();
       when(mockShoppingList.getCustomer()).thenReturn(customerReference);
 
       final CustomFields mockCustomFields = mock(CustomFields.class);
-      final Reference<Type> typeReference =
-          Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), customTypeId);
+      final TypeReference typeReference = TypeReferenceBuilder.of().id(customTypeId).build();
 
       when(mockCustomFields.getType()).thenReturn(typeReference);
       when(mockShoppingList.getCustom()).thenReturn(mockCustomFields);
 
-      final LineItem mockLineItem = mock(LineItem.class);
+      final ShoppingListLineItem mockLineItem = mock(ShoppingListLineItem.class);
       when(mockLineItem.getVariant()).thenReturn(mockProductVariant);
       when(mockLineItem.getCustom()).thenReturn(mockCustomFields);
 
       when(mockShoppingList.getLineItems()).thenReturn(singletonList(mockLineItem));
 
       final TextLineItem mockTextLineItem = mock(TextLineItem.class);
-      when(mockTextLineItem.getName()).thenReturn(LocalizedString.ofEnglish(textLineItemName));
+      when(mockTextLineItem.getName()).thenReturn(ofEnglish(textLineItemName));
       when(mockTextLineItem.getCustom()).thenReturn(mockCustomFields);
 
       when(mockShoppingList.getTextLineItems()).thenReturn(singletonList(mockTextLineItem));
@@ -96,7 +92,8 @@ class ShoppingListsReferenceResolutionUtilsTest {
     }
 
     final List<ShoppingListDraft> shoppingListDrafts =
-        mapToShoppingListDrafts(mockShoppingLists, referenceIdToKeyCache);
+        ShoppingListReferenceResolutionUtils.mapToShoppingListDrafts(
+            mockShoppingLists, referenceIdToKeyCache);
 
     assertThat(shoppingListDrafts).hasSize(3);
     shoppingListDrafts.forEach(
@@ -106,14 +103,28 @@ class ShoppingListsReferenceResolutionUtilsTest {
 
           assertThat(draft.getLineItems())
               .containsExactly(
-                  LineItemDraftBuilder.ofSku("variant-sku", 0L)
-                      .custom(CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, emptyMap()))
+                  ShoppingListLineItemDraftBuilder.of()
+                      .sku("variant-sku")
+                      .quantity(0L)
+                      .custom(
+                          CustomFieldsDraftBuilder.of()
+                              .type(
+                                  typeResourceIdentifierBuilder ->
+                                      typeResourceIdentifierBuilder.key(customTypeKey))
+                              .build())
                       .build());
 
           assertThat(draft.getTextLineItems())
               .containsExactly(
-                  TextLineItemDraftBuilder.of(LocalizedString.ofEnglish(textLineItemName), 0L)
-                      .custom(CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, emptyMap()))
+                  TextLineItemDraftBuilder.of()
+                      .name(ofEnglish(textLineItemName))
+                      .quantity(0L)
+                      .custom(
+                          CustomFieldsDraftBuilder.of()
+                              .type(
+                                  typeResourceIdentifierBuilder ->
+                                      typeResourceIdentifierBuilder.key(customTypeKey))
+                              .build())
                       .build());
         });
   }
@@ -129,24 +140,24 @@ class ShoppingListsReferenceResolutionUtilsTest {
 
     for (int i = 0; i < 3; i++) {
       final ShoppingList mockShoppingList = mock(ShoppingList.class);
+      when(mockShoppingList.getName()).thenReturn(ofEnglish("testShoppingList"));
 
-      final Reference<Customer> customerReference =
-          Reference.ofResourceTypeIdAndId(Customer.referenceTypeId(), customerId);
+      final CustomerReference customerReference =
+          CustomerReferenceBuilder.of().id(customerId).build();
       when(mockShoppingList.getCustomer()).thenReturn(customerReference);
 
       final CustomFields mockCustomFields = mock(CustomFields.class);
-      final Reference<Type> typeReference =
-          Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), customTypeId);
+      final TypeReference typeReference = TypeReferenceBuilder.of().id(customTypeId).build();
       when(mockCustomFields.getType()).thenReturn(typeReference);
       when(mockShoppingList.getCustom()).thenReturn(mockCustomFields);
 
-      final LineItem mockLineItemWithNullVariant = mock(LineItem.class);
+      final ShoppingListLineItem mockLineItemWithNullVariant = mock(ShoppingListLineItem.class);
       when(mockLineItemWithNullVariant.getVariant()).thenReturn(null);
 
       when(mockShoppingList.getLineItems()).thenReturn(singletonList(mockLineItemWithNullVariant));
 
       final TextLineItem mockTextLineItem = mock(TextLineItem.class);
-      when(mockTextLineItem.getName()).thenReturn(LocalizedString.ofEnglish("textLineItemName"));
+      when(mockTextLineItem.getName()).thenReturn(ofEnglish("textLineItemName"));
       when(mockTextLineItem.getCustom()).thenReturn(mockCustomFields);
 
       when(mockShoppingList.getTextLineItems()).thenReturn(singletonList(mockTextLineItem));
@@ -155,7 +166,8 @@ class ShoppingListsReferenceResolutionUtilsTest {
     }
 
     final List<ShoppingListDraft> shoppingListDrafts =
-        mapToShoppingListDrafts(mockShoppingLists, referenceIdToKeyCache);
+        ShoppingListReferenceResolutionUtils.mapToShoppingListDrafts(
+            mockShoppingLists, referenceIdToKeyCache);
 
     assertThat(shoppingListDrafts).hasSize(3);
     shoppingListDrafts.forEach(
@@ -167,8 +179,15 @@ class ShoppingListsReferenceResolutionUtilsTest {
 
           assertThat(draft.getTextLineItems())
               .containsExactly(
-                  TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("textLineItemName"), 0L)
-                      .custom(CustomFieldsDraft.ofTypeIdAndJson(customTypeId, emptyMap()))
+                  TextLineItemDraftBuilder.of()
+                      .name(ofEnglish("textLineItemName"))
+                      .quantity(0L)
+                      .custom(
+                          CustomFieldsDraftBuilder.of()
+                              .type(
+                                  typeResourceIdentifierBuilder ->
+                                      typeResourceIdentifierBuilder.id(customTypeId))
+                              .build())
                       .build());
         });
   }
@@ -177,11 +196,11 @@ class ShoppingListsReferenceResolutionUtilsTest {
   void mapToShoppingListDrafts_WithOtherFields_ShouldReturnDraftsCorrectly() {
 
     final ShoppingList mockShoppingList = mock(ShoppingList.class);
-    when(mockShoppingList.getName()).thenReturn(LocalizedString.ofEnglish("name"));
-    when(mockShoppingList.getDescription()).thenReturn(LocalizedString.ofEnglish("desc"));
+    when(mockShoppingList.getName()).thenReturn(ofEnglish("name"));
+    when(mockShoppingList.getDescription()).thenReturn(ofEnglish("desc"));
     when(mockShoppingList.getKey()).thenReturn("key");
-    when(mockShoppingList.getSlug()).thenReturn(LocalizedString.ofEnglish("slug"));
-    when(mockShoppingList.getDeleteDaysAfterLastModification()).thenReturn(2);
+    when(mockShoppingList.getSlug()).thenReturn(ofEnglish("slug"));
+    when(mockShoppingList.getDeleteDaysAfterLastModification()).thenReturn(2L);
     when(mockShoppingList.getAnonymousId()).thenReturn("anonymousId");
 
     when(mockShoppingList.getCustomer()).thenReturn(null);
@@ -190,22 +209,20 @@ class ShoppingListsReferenceResolutionUtilsTest {
     when(mockShoppingList.getTextLineItems()).thenReturn(null);
 
     final List<ShoppingListDraft> shoppingListDrafts =
-        mapToShoppingListDrafts(singletonList(mockShoppingList), referenceIdToKeyCache);
+        ShoppingListReferenceResolutionUtils.mapToShoppingListDrafts(
+            singletonList(mockShoppingList), referenceIdToKeyCache);
 
     assertThat(shoppingListDrafts)
         .containsExactly(
-            ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("name"))
-                .description(LocalizedString.ofEnglish("desc"))
+            ShoppingListDraftBuilder.of()
+                .name(ofEnglish("name"))
+                .description(ofEnglish("desc"))
+                .lineItems(List.of())
+                .textLineItems(List.of())
                 .key("key")
-                .slug(LocalizedString.ofEnglish("slug"))
-                .deleteDaysAfterLastModification(2)
+                .slug(ofEnglish("slug"))
+                .deleteDaysAfterLastModification(2L)
                 .anonymousId("anonymousId")
                 .build());
-  }
-
-  @Test
-  void buildShoppingListQuery_Always_ShouldReturnQueryWithoutReferencesExpandedExceptVariant() {
-    assertThat(buildShoppingListQuery().expansionPaths())
-        .containsExactly(ExpansionPath.of("lineItems[*].variant"));
   }
 }

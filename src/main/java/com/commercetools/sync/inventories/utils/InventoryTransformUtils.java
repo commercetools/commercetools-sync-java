@@ -1,12 +1,20 @@
 package com.commercetools.sync.inventories.utils;
 
+import static java.util.stream.Collectors.toSet;
+
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.channel.ChannelReference;
+import com.commercetools.api.models.inventory.InventoryEntry;
+import com.commercetools.api.models.inventory.InventoryEntryDraft;
+import com.commercetools.api.models.type.CustomFields;
+import com.commercetools.api.models.type.TypeReference;
+import com.commercetools.sync.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import com.commercetools.sync.inventories.service.InventoryEntryTransformService;
-import com.commercetools.sync.inventories.service.impl.InventoryEntryTransformServiceImpl;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.inventory.InventoryEntry;
-import io.sphere.sdk.inventory.InventoryEntryDraft;
+import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
@@ -30,16 +38,69 @@ public final class InventoryTransformUtils {
    * @param inventoryEntries the inventoryEntries to resolve the references.
    * @return a new list which contains InventoryEntryDrafts which have all their references
    *     resolved.
-   *     <p>TODO: Move the implementation from service class to this util class.
    */
   @Nonnull
   public static CompletableFuture<List<InventoryEntryDraft>> toInventoryEntryDrafts(
-      @Nonnull final SphereClient client,
+      @Nonnull final ProjectApiRoot client,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache,
       @Nonnull final List<InventoryEntry> inventoryEntries) {
 
-    final InventoryEntryTransformService inventoryEntryTransformService =
+    final InventoryEntryTransformServiceImpl inventoryEntryTransformService =
         new InventoryEntryTransformServiceImpl(client, referenceIdToKeyCache);
     return inventoryEntryTransformService.toInventoryEntryDrafts(inventoryEntries);
+  }
+
+  private static class InventoryEntryTransformServiceImpl extends BaseTransformServiceImpl {
+
+    public InventoryEntryTransformServiceImpl(
+        @Nonnull final ProjectApiRoot ctpClient,
+        @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
+      super(ctpClient, referenceIdToKeyCache);
+    }
+
+    @Nonnull
+    public CompletableFuture<List<InventoryEntryDraft>> toInventoryEntryDrafts(
+        @Nonnull final List<InventoryEntry> inventoryEntries) {
+
+      final List<CompletableFuture<Void>> transformReferencesToRunParallel = new ArrayList<>();
+      transformReferencesToRunParallel.add(this.transformCustomTypeReference(inventoryEntries));
+      transformReferencesToRunParallel.add(this.transformChannelReference(inventoryEntries));
+
+      return CompletableFuture.allOf(
+              transformReferencesToRunParallel.toArray(CompletableFuture[]::new))
+          .thenApply(
+              ignore ->
+                  InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts(
+                      inventoryEntries, referenceIdToKeyCache));
+    }
+
+    @Nonnull
+    private CompletableFuture<Void> transformCustomTypeReference(
+        @Nonnull final List<InventoryEntry> inventoryEntries) {
+
+      final Set<String> setOfTypeIds =
+          inventoryEntries.stream()
+              .map(InventoryEntry::getCustom)
+              .filter(Objects::nonNull)
+              .map(CustomFields::getType)
+              .map(TypeReference::getId)
+              .collect(toSet());
+
+      return fetchAndFillReferenceIdToKeyCache(setOfTypeIds, GraphQlQueryResource.TYPES);
+    }
+
+    @Nonnull
+    private CompletableFuture<Void> transformChannelReference(
+        @Nonnull final List<InventoryEntry> inventoryEntries) {
+
+      final Set<String> setOfChannelIds =
+          inventoryEntries.stream()
+              .map(InventoryEntry::getSupplyChannel)
+              .filter(Objects::nonNull)
+              .map(ChannelReference::getId)
+              .collect(toSet());
+
+      return fetchAndFillReferenceIdToKeyCache(setOfChannelIds, GraphQlQueryResource.CHANNELS);
+    }
   }
 }

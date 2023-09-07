@@ -1,14 +1,14 @@
 package com.commercetools.sync.shoppinglists;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.shopping_list.ShoppingList;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -16,16 +16,16 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public final class ShoppingListSyncOptions
-    extends BaseSyncOptions<ShoppingList, ShoppingListDraft, ShoppingList> {
+    extends BaseSyncOptions<ShoppingList, ShoppingListDraft, ShoppingListUpdateAction> {
 
   ShoppingListSyncOptions(
-      @Nonnull final SphereClient ctpClient,
+      @Nonnull final ProjectApiRoot ctpClient,
       @Nullable
           final QuadConsumer<
                   SyncException,
                   Optional<ShoppingListDraft>,
                   Optional<ShoppingList>,
-                  List<UpdateAction<ShoppingList>>>
+                  List<ShoppingListUpdateAction>>
               errorCallback,
       @Nullable
           final TriConsumer<SyncException, Optional<ShoppingListDraft>, Optional<ShoppingList>>
@@ -33,10 +33,10 @@ public final class ShoppingListSyncOptions
       final int batchSize,
       @Nullable
           final TriFunction<
-                  List<UpdateAction<ShoppingList>>,
+                  List<ShoppingListUpdateAction>,
                   ShoppingListDraft,
                   ShoppingList,
-                  List<UpdateAction<ShoppingList>>>
+                  List<ShoppingListUpdateAction>>
               beforeUpdateCallback,
       @Nullable final Function<ShoppingListDraft, ShoppingListDraft> beforeCreateCallback,
       final long cacheSize) {

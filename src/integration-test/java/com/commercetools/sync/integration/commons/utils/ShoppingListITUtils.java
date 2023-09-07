@@ -1,51 +1,41 @@
 package com.commercetools.sync.integration.commons.utils;
 
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.deleteCustomers;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.ProductVariantDraftBuilder;
-import io.sphere.sdk.products.commands.ProductCreateCommand;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
-import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
-import io.sphere.sdk.shoppinglists.LineItem;
-import io.sphere.sdk.shoppinglists.LineItemDraft;
-import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
-import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
-import io.sphere.sdk.shoppinglists.TextLineItem;
-import io.sphere.sdk.shoppinglists.TextLineItemDraft;
-import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
-import io.sphere.sdk.shoppinglists.TextLineItemDraftDsl;
-import io.sphere.sdk.shoppinglists.commands.ShoppingListCreateCommand;
-import io.sphere.sdk.shoppinglists.commands.ShoppingListDeleteCommand;
-import io.sphere.sdk.shoppinglists.queries.ShoppingListQuery;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.FieldDefinition;
-import io.sphere.sdk.types.NumberFieldType;
-import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
-import io.sphere.sdk.types.StringFieldType;
-import io.sphere.sdk.types.TypeDraft;
-import io.sphere.sdk.types.TypeDraftBuilder;
-import io.sphere.sdk.types.commands.TypeCreateCommand;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.client.QueryUtils;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductDraftBuilder;
+import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingList;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListDraftBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraftBuilder;
+import com.commercetools.api.models.shopping_list.TextLineItemDraft;
+import com.commercetools.api.models.shopping_list.TextLineItemDraftBuilder;
+import com.commercetools.api.models.type.CustomFieldsDraft;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.FieldDefinitionBuilder;
+import com.commercetools.api.models.type.FieldTypeBuilder;
+import com.commercetools.api.models.type.ResourceTypeId;
+import com.commercetools.api.models.type.TypeDraft;
+import com.commercetools.api.models.type.TypeDraftBuilder;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.error.NotFoundException;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -58,7 +48,7 @@ public final class ShoppingListITUtils {
    *
    * @param ctpClient defines the CTP project to delete test data from.
    */
-  public static void deleteShoppingListTestData(@Nonnull final SphereClient ctpClient) {
+  public static void deleteShoppingListTestData(@Nonnull final ProjectApiRoot ctpClient) {
     deleteShoppingLists(ctpClient);
     deleteCustomers(ctpClient);
     deleteTypes(ctpClient);
@@ -71,8 +61,35 @@ public final class ShoppingListITUtils {
    *
    * @param ctpClient defines the CTP project to delete the ShoppingLists from.
    */
-  public static void deleteShoppingLists(@Nonnull final SphereClient ctpClient) {
-    queryAndExecute(ctpClient, ShoppingListQuery.of(), ShoppingListDeleteCommand::of);
+  public static void deleteShoppingLists(@Nonnull final ProjectApiRoot ctpClient) {
+    Consumer<List<ShoppingList>> shoppingListsConsumer =
+        shoppingLists -> {
+          CompletableFuture.allOf(
+                  shoppingLists.stream()
+                      .map(shoppingList -> deleteShoppingList(ctpClient, shoppingList))
+                      .map(CompletionStage::toCompletableFuture)
+                      .toArray(CompletableFuture[]::new))
+              .join();
+        };
+    QueryUtils.queryAll(ctpClient.shoppingLists().get(), shoppingListsConsumer)
+        .handle(
+            (result, throwable) -> {
+              if (throwable != null && !(throwable instanceof NotFoundException)) {
+                return throwable;
+              }
+              return result;
+            })
+        .toCompletableFuture()
+        .join();
+  }
+
+  private static CompletionStage<ShoppingList> deleteShoppingList(
+      final ProjectApiRoot ctpClient, final ShoppingList shoppingList) {
+    return ctpClient
+        .shoppingLists()
+        .delete(shoppingList)
+        .execute()
+        .thenApply(ApiHttpResponse::getBody);
   }
 
   /**
@@ -85,7 +102,7 @@ public final class ShoppingListITUtils {
    * @return the created ShoppingList.
    */
   public static ShoppingList createShoppingList(
-      @Nonnull final SphereClient ctpClient,
+      @Nonnull final ProjectApiRoot ctpClient,
       @Nonnull final String name,
       @Nonnull final String key) {
 
@@ -107,24 +124,30 @@ public final class ShoppingListITUtils {
    * @return the created ShoppingList.
    */
   public static ShoppingList createShoppingList(
-      @Nonnull final SphereClient ctpClient,
+      @Nonnull final ProjectApiRoot ctpClient,
       @Nonnull final String name,
       @Nonnull final String key,
       @Nullable final String desc,
       @Nullable final String anonymousId,
       @Nullable final String slug,
-      @Nullable final Integer deleteDaysAfterLastModification) {
+      @Nullable final Long deleteDaysAfterLastModification) {
 
     final ShoppingListDraft shoppingListDraft =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish(name))
+        ShoppingListDraftBuilder.of()
+            .name(ofEnglish(name))
             .key(key)
-            .description(desc == null ? null : LocalizedString.ofEnglish(desc))
+            .description(desc == null ? null : ofEnglish(desc))
             .anonymousId(anonymousId)
-            .slug(slug == null ? null : LocalizedString.ofEnglish(slug))
+            .slug(slug == null ? null : ofEnglish(slug))
             .deleteDaysAfterLastModification(deleteDaysAfterLastModification)
             .build();
 
-    return executeBlocking(ctpClient.execute(ShoppingListCreateCommand.of(shoppingListDraft)));
+    return ctpClient
+        .shoppingLists()
+        .create(shoppingListDraft)
+        .execute()
+        .thenApply(ApiHttpResponse::getBody)
+        .join();
   }
 
   /**
@@ -136,175 +159,208 @@ public final class ShoppingListITUtils {
    */
   @Nonnull
   public static ImmutablePair<ShoppingList, ShoppingListDraft> createSampleShoppingListCarrotCake(
-      @Nonnull final SphereClient ctpClient) {
+      @Nonnull final ProjectApiRoot ctpClient) {
 
     createIngredientProducts(ctpClient);
 
     final ShoppingListDraft shoppingListDraft =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("Carrot Cake"))
+        ShoppingListDraftBuilder.of()
+            .name(ofEnglish("Carrot Cake"))
             .key("shopping-list-key")
-            .slug(LocalizedString.ofEnglish("carrot-cake"))
-            .description(LocalizedString.ofEnglish("Carrot cake recipe - ingredients"))
+            .slug(ofEnglish("carrot-cake"))
+            .description(ofEnglish("Carrot cake recipe - ingredients"))
             .anonymousId("public-carrot-cake-shopping-list")
-            .deleteDaysAfterLastModification(30)
+            .deleteDaysAfterLastModification(30L)
             .custom(createSampleTypes(ctpClient))
             .lineItems(buildIngredientsLineItemDrafts())
             .textLineItems(buildRecipeTextLineItemDrafts())
             .build();
 
     final ShoppingList shoppingList =
-        executeBlocking(ctpClient.execute(ShoppingListCreateCommand.of(shoppingListDraft)));
+        ctpClient
+            .shoppingLists()
+            .create(shoppingListDraft)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .join();
     return ImmutablePair.of(shoppingList, shoppingListDraft);
   }
 
   @Nonnull
-  private static CustomFieldsDraft createSampleTypes(@Nonnull final SphereClient ctpClient) {
+  private static CustomFieldsDraft createSampleTypes(@Nonnull final ProjectApiRoot ctpClient) {
     final TypeDraft shoppingListTypeDraft =
-        TypeDraftBuilder.of(
-                "custom-type-shopping-list",
-                LocalizedString.ofEnglish("name"),
-                ResourceTypeIdsSetBuilder.of().add(ShoppingList.resourceTypeId()))
+        TypeDraftBuilder.of()
+            .name(ofEnglish("custom-type-shopping-list"))
+            .key("custom-type-shopping-list")
+            .name(ofEnglish("name"))
+            .resourceTypeIds(ResourceTypeId.SHOPPING_LIST)
             .fieldDefinitions(
-                asList(
-                    FieldDefinition.of(
-                        StringFieldType.of(),
-                        "nutrition",
-                        LocalizedString.ofEnglish("nutrition per serving"),
-                        false),
-                    FieldDefinition.of(
-                        NumberFieldType.of(),
-                        "servings",
-                        LocalizedString.ofEnglish("servings"),
-                        false)))
+                List.of(
+                    FieldDefinitionBuilder.of()
+                        .type(FieldTypeBuilder::stringBuilder)
+                        .name("nutrition")
+                        .label(ofEnglish("nutrition per serving"))
+                        .required(false)
+                        .build(),
+                    FieldDefinitionBuilder.of()
+                        .type(FieldTypeBuilder::numberBuilder)
+                        .name("servings")
+                        .label(ofEnglish("servings"))
+                        .required(false)
+                        .build()))
             .build();
 
     final TypeDraft lineItemTypeDraft =
-        TypeDraftBuilder.of(
-                "custom-type-line-items",
-                LocalizedString.ofEnglish("name"),
-                ResourceTypeIdsSetBuilder.of().add(LineItem.resourceTypeId()))
+        TypeDraftBuilder.of()
+            .key("custom-type-line-items")
+            .name(ofEnglish("name"))
+            .resourceTypeIds(ResourceTypeId.LINE_ITEM)
             .fieldDefinitions(
-                asList(
-                    FieldDefinition.of(
-                        StringFieldType.of(),
-                        "ingredient",
-                        LocalizedString.ofEnglish("ingredient"),
-                        false),
-                    FieldDefinition.of(
-                        StringFieldType.of(),
-                        "amount",
-                        LocalizedString.ofEnglish("amount"),
-                        false)))
+                List.of(
+                    FieldDefinitionBuilder.of()
+                        .type(FieldTypeBuilder::stringBuilder)
+                        .name("ingredient")
+                        .label(ofEnglish("ingredient"))
+                        .required(false)
+                        .build(),
+                    FieldDefinitionBuilder.of()
+                        .type(FieldTypeBuilder::stringBuilder)
+                        .name("amount")
+                        .label(ofEnglish("amount"))
+                        .required(false)
+                        .build()))
             .build();
 
     final TypeDraft textLineItemTypeDraft =
-        TypeDraftBuilder.of(
-                "custom-type-text-line-items",
-                LocalizedString.ofEnglish("name"),
-                ResourceTypeIdsSetBuilder.of().add(TextLineItem.resourceTypeId()))
+        TypeDraftBuilder.of()
+            .name(ofEnglish("custom-type-text-line-items"))
+            .key("custom-type-text-line-items")
+            .description(ofEnglish("description"))
+            .resourceTypeIds(ResourceTypeId.SHOPPING_LIST_TEXT_LINE_ITEM)
             .fieldDefinitions(
-                singletonList(
-                    FieldDefinition.of(
-                        StringFieldType.of(),
-                        "utensils",
-                        LocalizedString.ofEnglish("utensils"),
-                        false)))
+                FieldDefinitionBuilder.of()
+                    .type(FieldTypeBuilder::stringBuilder)
+                    .name("utensils")
+                    .label(ofEnglish("utensils"))
+                    .required(false)
+                    .build())
             .build();
 
     CompletableFuture.allOf(
-            ctpClient.execute(TypeCreateCommand.of(shoppingListTypeDraft)).toCompletableFuture(),
-            ctpClient.execute(TypeCreateCommand.of(lineItemTypeDraft)).toCompletableFuture(),
-            ctpClient.execute(TypeCreateCommand.of(textLineItemTypeDraft)).toCompletableFuture())
+            ctpClient.types().create(shoppingListTypeDraft).execute(),
+            ctpClient.types().create(lineItemTypeDraft).execute(),
+            ctpClient.types().create(textLineItemTypeDraft).execute())
         .join();
 
-    final Map<String, JsonNode> servingsFields = new HashMap<>();
-    servingsFields.put(
-        "nutrition",
-        JsonNodeFactory.instance.textNode(
-            "Per servings: 475 cal, 11g protein, 28g, fat, 44g carb"));
-    servingsFields.put("servings", JsonNodeFactory.instance.numberNode(12));
+    final Map<String, Object> servingsFields = new HashMap<>();
+    servingsFields.put("nutrition", "Per servings: 475 cal, 11g protein, 28g, fat, 44g carb");
 
-    return CustomFieldsDraft.ofTypeKeyAndJson(shoppingListTypeDraft.getKey(), servingsFields);
+    servingsFields.put("servings", 12L);
+
+    return CustomFieldsDraftBuilder.of()
+        .type(
+            typeResourceIdentifierBuilder ->
+                typeResourceIdentifierBuilder.key(shoppingListTypeDraft.getKey()))
+        .fields(fieldContainerBuilder -> fieldContainerBuilder.values(servingsFields))
+        .build();
   }
 
-  private static void createIngredientProducts(@Nonnull final SphereClient ctpClient) {
+  private static void createIngredientProducts(@Nonnull final ProjectApiRoot ctpClient) {
     final ProductType productType =
         ctpClient
-            .execute(
-                ProductTypeCreateCommand.of(
-                    ProductTypeDraft.ofAttributeDefinitionDrafts(
-                        "productTypeKey", "productTypeName", "desc", null)))
-            .toCompletableFuture()
+            .productTypes()
+            .create(
+                ProductTypeDraftBuilder.of()
+                    .key("productTypeKey")
+                    .name("productTypeName")
+                    .description("desc")
+                    .build())
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .join();
 
     final ProductDraft productDraft =
-        ProductDraftBuilder.of(
-                productType,
-                LocalizedString.ofEnglish("product1"),
-                LocalizedString.ofEnglish("product1"),
-                ProductVariantDraftBuilder.of().sku("SKU-1").key("variant1").build())
+        ProductDraftBuilder.of()
+            .slug(ofEnglish("product1"))
+            .productType(productType.toResourceIdentifier())
+            .name(ofEnglish("product1"))
+            .description(ofEnglish("product1"))
+            .masterVariant(ProductVariantDraftBuilder.of().sku("SKU-1").key("variant1").build())
             .key("product-1-sample-carrot-cake")
             .variants(
-                asList(
+                List.of(
                     ProductVariantDraftBuilder.of().sku("SKU-2").key("variant2").build(),
                     ProductVariantDraftBuilder.of().sku("SKU-3").key("variant3").build()))
             .publish(true)
             .build();
 
     final ProductDraft productDraft2 =
-        ProductDraftBuilder.of(
-                productType,
-                LocalizedString.ofEnglish("product2"),
-                LocalizedString.ofEnglish("product2"),
-                ProductVariantDraftBuilder.of().sku("SKU-4").key("variant4").build())
+        ProductDraftBuilder.of()
+            .slug(ofEnglish("product2"))
+            .productType(productType.toResourceIdentifier())
+            .name(ofEnglish("product2"))
+            .description(ofEnglish("product2"))
+            .masterVariant(ProductVariantDraftBuilder.of().sku("SKU-4").key("variant4").build())
             .key("product-2-sample-carrot-cake")
             .variants(
-                asList(
+                List.of(
                     ProductVariantDraftBuilder.of().sku("SKU-5").key("variant5").build(),
                     ProductVariantDraftBuilder.of().sku("SKU-6").key("variant6").build()))
             .publish(true)
             .build();
 
     CompletableFuture.allOf(
-            ctpClient.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture(),
-            ctpClient.execute(ProductCreateCommand.of(productDraft2)).toCompletableFuture())
+            ctpClient.products().create(productDraft).execute(),
+            ctpClient.products().create(productDraft2).execute())
         .join();
   }
 
   @Nonnull
-  private static List<LineItemDraft> buildIngredientsLineItemDrafts() {
+  private static List<ShoppingListLineItemDraft> buildIngredientsLineItemDrafts() {
 
-    final LineItemDraft item1 =
-        LineItemDraftBuilder.ofSku("SKU-1", 1L)
+    final ShoppingListLineItemDraft item1 =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("SKU-1")
+            .quantity(1L)
             .custom(buildIngredientCustomType("carrots", "280g"))
             .build();
 
-    final LineItemDraft item2 =
-        LineItemDraftBuilder.ofSku("SKU-2", 7L)
+    final ShoppingListLineItemDraft item2 =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("SKU-2")
+            .quantity(7L)
             .custom(buildIngredientCustomType("eggs", "7"))
             .build();
 
-    final LineItemDraft item3 =
-        LineItemDraftBuilder.ofSku("SKU-3", 1L)
+    final ShoppingListLineItemDraft item3 =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("SKU-3")
+            .quantity(1L)
             .custom(buildIngredientCustomType("sugar", "100g"))
             .build();
 
-    final LineItemDraft item4 =
-        LineItemDraftBuilder.ofSku("SKU-4", 1L)
+    final ShoppingListLineItemDraft item4 =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("SKU-4")
+            .quantity(1L)
             .custom(buildIngredientCustomType("flour", "70g"))
             .build();
 
-    final LineItemDraft item5 =
-        LineItemDraftBuilder.ofSku("SKU-5", 1L)
+    final ShoppingListLineItemDraft item5 =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("SKU-5")
+            .quantity(1L)
             .custom(buildIngredientCustomType("baking powder", "1 tsp"))
             .build();
 
-    final LineItemDraft item6 =
-        LineItemDraftBuilder.ofSku("SKU-6", 1L)
+    final ShoppingListLineItemDraft item6 =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("SKU-6")
+            .quantity(1L)
             .custom(buildIngredientCustomType("cinnamon", "2 tsp"))
             .build();
 
-    return asList(item1, item2, item3, item4, item5, item6);
+    return List.of(item1, item2, item3, item4, item5, item6);
   }
 
   /**
@@ -320,64 +376,78 @@ public final class ShoppingListITUtils {
   public static CustomFieldsDraft buildIngredientCustomType(
       @Nonnull final String ingredient, @Nonnull final String amount) {
 
-    final Map<String, JsonNode> map = new HashMap<>();
-    map.put("ingredient", JsonNodeFactory.instance.textNode(ingredient));
-    map.put("amount", JsonNodeFactory.instance.textNode(amount));
+    final Map<String, Object> map = new HashMap<>();
+    map.put("ingredient", ingredient);
+    map.put("amount", amount);
 
-    return CustomFieldsDraft.ofTypeKeyAndJson("custom-type-line-items", map);
+    return CustomFieldsDraftBuilder.of()
+        .type(
+            typeResourceIdentifierBuilder ->
+                typeResourceIdentifierBuilder.key("custom-type-line-items"))
+        .fields(fieldContainerBuilder -> fieldContainerBuilder.values(map))
+        .build();
   }
 
   @Nonnull
   private static List<TextLineItemDraft> buildRecipeTextLineItemDrafts() {
 
-    final TextLineItemDraftDsl item1 =
-        TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("step 1"), 1L)
-            .description(
-                LocalizedString.ofEnglish(
-                    "Peel carrots and set aside, separate eggs into small balls."))
+    final TextLineItemDraft item1 =
+        TextLineItemDraftBuilder.of()
+            .name(ofEnglish("step 1"))
+            .quantity(1L)
+            .description(ofEnglish("Peel carrots and set aside, separate eggs into small balls."))
             .custom(buildUtensilsCustomType("Peeler, 2 small bowls"))
             .build();
 
-    final TextLineItemDraftDsl item2 =
-        TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("step 2"), 1L)
+    final TextLineItemDraft item2 =
+        TextLineItemDraftBuilder.of()
+            .name(ofEnglish("step 2"))
+            .quantity(1L)
             .description(
-                LocalizedString.ofEnglish(
+                ofEnglish(
                     "Mix powder and baking powder in a large bowl set aside, "
                         + "Blend slowly egg yolks and cinnamon until smooth."))
             .custom(buildUtensilsCustomType("2 large bowls, hand mixer"))
             .build();
 
-    final TextLineItemDraftDsl item3 =
-        TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("step 3"), 1L)
-            .description(LocalizedString.ofEnglish("Mix egg whites and sugar until stiff."))
+    final TextLineItemDraft item3 =
+        TextLineItemDraftBuilder.of()
+            .name(ofEnglish("step 3"))
+            .quantity(1L)
+            .description(ofEnglish("Mix egg whites and sugar until stiff."))
             .custom(buildUtensilsCustomType("1 large bowl"))
             .build();
 
-    final TextLineItemDraftDsl item4 =
-        TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("step 4"), 1L)
+    final TextLineItemDraft item4 =
+        TextLineItemDraftBuilder.of()
+            .name(ofEnglish("step 4"))
+            .quantity(1L)
             .description(
-                LocalizedString.ofEnglish(
+                ofEnglish(
                     "Transfer egg whites into other egg mixture, combine with powder, "
                         + "add peeled carrots, stir with spatula."))
             .custom(buildUtensilsCustomType("Rubber spatula"))
             .build();
 
-    final TextLineItemDraftDsl item5 =
-        TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("step 5"), 1L)
+    final TextLineItemDraft item5 =
+        TextLineItemDraftBuilder.of()
+            .name(ofEnglish("step 5"))
+            .quantity(1L)
             .description(
-                LocalizedString.ofEnglish(
-                    "Put cake mixture into cake pan, bake appr 40 min with 180 C degree"))
+                ofEnglish("Put cake mixture into cake pan, bake appr 40 min with 180 C degree"))
             .custom(buildUtensilsCustomType("Cake pan, oven"))
             .build();
 
-    final TextLineItemDraftDsl item6 =
-        TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("step 6"), 1L)
-            .description(LocalizedString.ofEnglish("Decorate as you wish and serve, enjoy!"))
+    final TextLineItemDraft item6 =
+        TextLineItemDraftBuilder.of()
+            .name(ofEnglish("step 6"))
+            .quantity(1L)
+            .description(ofEnglish("Decorate as you wish and serve, enjoy!"))
             .custom(buildUtensilsCustomType("Knife, cake plate."))
             .addedAt(ZonedDateTime.parse("2020-11-06T10:00:00.000Z"))
             .build();
 
-    return asList(item1, item2, item3, item4, item5, item6);
+    return List.of(item1, item2, item3, item4, item5, item6);
   }
 
   /**
@@ -391,10 +461,15 @@ public final class ShoppingListITUtils {
   @Nonnull
   public static CustomFieldsDraft buildUtensilsCustomType(@Nonnull final String utensils) {
 
-    final Map<String, JsonNode> map = new HashMap<>();
-    map.put("utensils", JsonNodeFactory.instance.textNode(utensils));
+    final Map<String, Object> map = new HashMap<>();
+    map.put("utensils", utensils);
 
-    return CustomFieldsDraft.ofTypeKeyAndJson("custom-type-text-line-items", map);
+    return CustomFieldsDraftBuilder.of()
+        .type(
+            typeResourceIdentifierBuilder ->
+                typeResourceIdentifierBuilder.key("custom-type-text-line-items"))
+        .fields(fieldContainerBuilder -> fieldContainerBuilder.values(map))
+        .build();
   }
 
   private ShoppingListITUtils() {}

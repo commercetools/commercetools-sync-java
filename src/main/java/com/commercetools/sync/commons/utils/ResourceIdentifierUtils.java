@@ -1,42 +1,38 @@
 package com.commercetools.sync.commons.utils;
 
-import static java.util.Optional.ofNullable;
-
+import com.commercetools.api.models.common.Reference;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.models.Referenceable;
-import io.sphere.sdk.models.ResourceIdentifier;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringUtils;
 
 public final class ResourceIdentifierUtils {
+
   public static final String REFERENCE_TYPE_ID_FIELD = "typeId";
   public static final String REFERENCE_ID_FIELD = "id";
 
   /**
-   * Given a {@link Referenceable} {@code resource} of the type {@code T}, if it is not null, this
-   * method applies the {@link Referenceable#toResourceIdentifier()} method to return it as a {@link
-   * ResourceIdentifier} of the type {@code T}. If it is {@code null}, this method returns {@code
-   * null}.
+   * Given a {@link Reference} {@code referenceValue} which is the representation of CTP Reference
+   * object, this method checks if it has a {@code typeId} with the value equal to {@code
+   * referenceTypeId}.
    *
-   * @param resource represents the resource to return as a {@link ResourceIdentifier} if not {@code
-   *     null}.
-   * @param <T> type of the resource supplied.
-   * @param <S> represents the type of the {@link ResourceIdentifier} returned.
-   * @return the supplied resource in the as a {@link ResourceIdentifier} if not {@code null}. If it
-   *     is {@code null}, this method returns {@code null}.
+   * @param referenceValue Reference object
+   * @param referenceTypeId the typeId to check of the reference is of the same type or not.
+   * @return true if the typeId field of the reference has the same value as {@code
+   *     referenceTypeId}, otherwise, false.
    */
-  @Nullable
-  public static <T extends Referenceable<S>, S> ResourceIdentifier<S> toResourceIdentifierIfNotNull(
-      @Nullable final T resource) {
-    return ofNullable(resource).map(Referenceable::toResourceIdentifier).orElse(null);
+  public static boolean isReferenceOfType(
+      @Nonnull final Reference referenceValue, final String referenceTypeId) {
+    return referenceValue.getTypeId() != null
+        && StringUtils.isNotBlank(referenceValue.getTypeId().getJsonName())
+        && referenceValue.getTypeId().getJsonName().equals(referenceTypeId);
   }
 
   /**
    * Given a {@link JsonNode} {@code referenceValue} which is the JSON representation of CTP
-   * Reference object, this method checks if it is has a {@code typeId} with the value equal to
-   * {@code referenceTypeId}.
+   * Reference object, this method checks if it has a {@code typeId} with the value equal to {@code
+   * referenceTypeId}.
    *
    * @param referenceValue JSON representation of CTP reference object
    * @param referenceTypeId the typeId to check of the reference is of the same type or not.

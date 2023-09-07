@@ -1,29 +1,36 @@
 package com.commercetools.sync.services.impl;
 
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+
+import com.commercetools.api.client.ByProjectKeyTypesGet;
+import com.commercetools.api.client.ByProjectKeyTypesKeyByKeyGet;
+import com.commercetools.api.client.ByProjectKeyTypesPost;
+import com.commercetools.api.models.type.Type;
+import com.commercetools.api.models.type.TypeDraft;
+import com.commercetools.api.models.type.TypePagedQueryResponse;
+import com.commercetools.api.models.type.TypeUpdateAction;
+import com.commercetools.api.models.type.TypeUpdateBuilder;
 import com.commercetools.sync.commons.BaseSyncOptions;
-import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
-import com.commercetools.sync.commons.models.GraphQlQueryResources;
+import com.commercetools.sync.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.services.TypeService;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.types.Type;
-import io.sphere.sdk.types.TypeDraft;
-import io.sphere.sdk.types.commands.TypeCreateCommand;
-import io.sphere.sdk.types.commands.TypeUpdateCommand;
-import io.sphere.sdk.types.expansion.TypeExpansionModel;
-import io.sphere.sdk.types.queries.TypeQuery;
-import io.sphere.sdk.types.queries.TypeQueryBuilder;
-import io.sphere.sdk.types.queries.TypeQueryModel;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+// todo: reuse duplicated code between TypeService and CustomerService
 public final class TypeServiceImpl
-    extends BaseServiceWithKey<
-        TypeDraft, Type, Type, BaseSyncOptions, TypeQuery, TypeQueryModel, TypeExpansionModel<Type>>
+    extends BaseService<
+        BaseSyncOptions,
+        Type,
+        TypeDraft,
+        ByProjectKeyTypesGet,
+        TypePagedQueryResponse,
+        ByProjectKeyTypesKeyByKeyGet,
+        Type,
+        ByProjectKeyTypesPost>
     implements TypeService {
 
   public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
@@ -33,53 +40,84 @@ public final class TypeServiceImpl
   @Nonnull
   @Override
   public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> typeKeys) {
-
-    return cacheKeysToIds(
-        typeKeys,
-        keysNotCached ->
-            new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.TYPES));
+    return super.cacheKeysToIdsUsingGraphQl(typeKeys, GraphQlQueryResource.TYPES);
   }
 
   @Nonnull
   @Override
-  public CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull final String key) {
+  public CompletionStage<Optional<Type>> fetchTypeByKey(@Nullable final String key) {
+    return super.fetchResource(key, syncOptions.getCtpClient().types().withKey(key).get());
+  }
 
-    return fetchCachedResourceId(
-        key,
-        () -> TypeQueryBuilder.of().plusPredicates(queryModel -> queryModel.key().is(key)).build());
+  @Nonnull
+  @Override
+  public CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull String key) {
+    ByProjectKeyTypesGet query =
+        syncOptions
+            .getCtpClient()
+            .types()
+            .get()
+            .withWhere("key in :keys")
+            .withPredicateVar("keys", Collections.singletonList(key));
+
+    return super.fetchCachedResourceId(key, (resource) -> resource.getKey(), query);
   }
 
   @Nonnull
   @Override
   public CompletionStage<Set<Type>> fetchMatchingTypesByKeys(@Nonnull final Set<String> keys) {
-
-    return fetchMatchingResources(
+    return super.fetchMatchingResources(
         keys,
+        type -> type.getKey(),
         (keysNotCached) ->
-            TypeQueryBuilder.of()
-                .plusPredicates(queryModel -> queryModel.key().isIn(keysNotCached))
-                .build());
+            syncOptions
+                .getCtpClient()
+                .types()
+                .get()
+                .withWhere("key in :keys")
+                .withPredicateVar("keys", keysNotCached));
   }
 
   @Nonnull
   @Override
-  public CompletionStage<Optional<Type>> fetchType(@Nullable final String key) {
-
-    return fetchResource(
-        key,
-        () -> TypeQueryBuilder.of().plusPredicates(queryModel -> queryModel.key().is(key)).build());
-  }
-
-  @Nonnull
-  @Override
-  public CompletionStage<Optional<Type>> createType(@Nonnull final TypeDraft typeDraft) {
-    return createResource(typeDraft, TypeCreateCommand::of);
+  public CompletionStage<Optional<Type>> createType(@Nonnull TypeDraft typeDraft) {
+    return super.createResource(
+        typeDraft,
+        TypeDraft::getKey,
+        typeResult -> typeResult.getId(),
+        type -> type,
+        () -> syncOptions.getCtpClient().types().post(typeDraft));
   }
 
   @Nonnull
   @Override
   public CompletionStage<Type> updateType(
-      @Nonnull final Type type, @Nonnull final List<UpdateAction<Type>> updateActions) {
-    return updateResource(type, TypeUpdateCommand::of, updateActions);
+      @Nonnull final Type type, @Nonnull final List<TypeUpdateAction> updateActions) {
+
+    final List<List<TypeUpdateAction>> actionBatches =
+        batchElements(updateActions, MAXIMUM_ALLOWED_UPDATE_ACTIONS);
+
+    CompletionStage<ApiHttpResponse<Type>> resultStage =
+        CompletableFuture.completedFuture(new ApiHttpResponse<>(200, null, type));
+
+    for (final List<TypeUpdateAction> batch : actionBatches) {
+      resultStage =
+          resultStage
+              .thenApply(ApiHttpResponse::getBody)
+              .thenCompose(
+                  updatedType ->
+                      syncOptions
+                          .getCtpClient()
+                          .types()
+                          .withId(updatedType.getId())
+                          .post(
+                              TypeUpdateBuilder.of()
+                                  .actions(batch)
+                                  .version(updatedType.getVersion())
+                                  .build())
+                          .execute());
+    }
+
+    return resultStage.thenApply(ApiHttpResponse::getBody);
   }
 }

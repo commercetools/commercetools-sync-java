@@ -1,7 +1,7 @@
 package com.commercetools.sync.services;
 
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.customergroups.CustomerGroup;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.customer_group.CustomerGroup;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -13,8 +13,8 @@ public interface CustomerGroupService {
 
   /**
    * Filters out the keys which are already cached and fetches only the not-cached customer group
-   * keys from the CTP project defined in an injected {@link SphereClient} and stores a mapping for
-   * every customer group to id in the cached map of keys -&gt; ids and returns this cached map.
+   * keys from the CTP project defined in an injected {@link ProjectApiRoot} and stores a mapping
+   * for every customer group to id in the cached map of keys -&gt; ids and returns this cached map.
    *
    * @param customerGroupKeys - a set customer group keys to fetch and cache the ids for
    * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion

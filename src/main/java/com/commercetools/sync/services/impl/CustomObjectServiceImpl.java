@@ -1,19 +1,15 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.api.client.ByProjectKeyCustomObjectsByContainerByKeyGet;
+import com.commercetools.api.client.ByProjectKeyCustomObjectsGet;
+import com.commercetools.api.client.ByProjectKeyCustomObjectsPost;
+import com.commercetools.api.models.custom_object.CustomObject;
+import com.commercetools.api.models.custom_object.CustomObjectDraft;
+import com.commercetools.api.models.custom_object.CustomObjectPagedQueryResponse;
 import com.commercetools.sync.customobjects.CustomObjectSync;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.services.CustomObjectService;
-import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.commands.DraftBasedCreateCommand;
-import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.customobjects.CustomObjectDraft;
-import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
-import io.sphere.sdk.customobjects.expansion.CustomObjectExpansionModel;
-import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
-import io.sphere.sdk.customobjects.queries.CustomObjectQueryBuilder;
-import io.sphere.sdk.customobjects.queries.CustomObjectQueryModel;
-import io.sphere.sdk.queries.QueryPredicate;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -21,28 +17,29 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 /** Implementation of CustomObjectService interface. */
 public class CustomObjectServiceImpl
     extends BaseService<
-        CustomObjectDraft<JsonNode>,
-        CustomObject<JsonNode>,
-        CustomObject<JsonNode>,
         CustomObjectSyncOptions,
-        CustomObjectQuery<JsonNode>,
-        CustomObjectQueryModel<CustomObject<JsonNode>>,
-        CustomObjectExpansionModel<CustomObject<JsonNode>>>
+        CustomObject,
+        CustomObjectDraft,
+        ByProjectKeyCustomObjectsGet,
+        CustomObjectPagedQueryResponse,
+        ByProjectKeyCustomObjectsByContainerByKeyGet,
+        CustomObject,
+        ByProjectKeyCustomObjectsPost>
     implements CustomObjectService {
 
   public CustomObjectServiceImpl(@Nonnull final CustomObjectSyncOptions syncOptions) {
     super(syncOptions);
   }
 
-  @Nonnull
+  @NotNull
   @Override
   public CompletionStage<Map<String, String>> cacheKeysToIds(
-      @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
-
+      @NotNull final Set<CustomObjectCompositeIdentifier> identifiers) {
     /*
      * one example representation of the cache:
      *
@@ -52,65 +49,54 @@ public class CustomObjectServiceImpl
      *  "container_1|key_1" : "33213df2-c09a-426d-8c28-ccc52fdf9744"
      * ]
      */
-    return cacheKeysToIds(
-        getKeys(identifiers),
-        this::keyMapper,
-        keysNotCached -> queryIdentifiers(getIdentifiers(keysNotCached)));
+    return fetchMatchingCustomObjects(identifiers)
+        .thenApply(
+            chunk -> {
+              chunk.forEach(resource -> keyToIdCache.put(keyMapper(resource), resource.getId()));
+              return keyToIdCache.asMap();
+            });
   }
 
-  @Nonnull
+  @NotNull
   @Override
   public CompletionStage<Optional<String>> fetchCachedCustomObjectId(
-      @Nonnull final CustomObjectCompositeIdentifier identifier) {
-
-    return fetchCachedResourceId(
-        identifier.toString(), this::keyMapper, () -> queryOneIdentifier(identifier));
+      @NotNull final CustomObjectCompositeIdentifier identifier) {
+    return super.fetchCachedResourceId(
+        identifier.toString(), this::keyMapper, queryOneIdentifier(identifier));
   }
 
-  @Nonnull
+  @NotNull
   @Override
-  public CompletionStage<Set<CustomObject<JsonNode>>> fetchMatchingCustomObjects(
-      @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
-
-    return fetchMatchingResources(
-        getKeys(identifiers), this::keyMapper, (keysNotCached) -> queryIdentifiers(identifiers));
+  public CompletionStage<Set<CustomObject>> fetchMatchingCustomObjects(
+      @NotNull final Set<CustomObjectCompositeIdentifier> identifiers) {
+    return super.fetchMatchingResources(
+        getKeys(identifiers), this::keyMapper, (keysNotCached) -> createQuery(identifiers));
   }
 
-  @Nonnull
-  private QueryPredicate<CustomObject<JsonNode>> createQuery(
-      @Nonnull final CustomObjectQueryModel<CustomObject<JsonNode>> queryModel,
-      @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
-
-    QueryPredicate<CustomObject<JsonNode>> queryPredicate = QueryPredicate.of(null);
-    boolean firstAttempt = true;
-    for (CustomObjectCompositeIdentifier identifier : identifiers) {
-      String key = identifier.getKey();
-      String container = identifier.getContainer();
-      if (firstAttempt) {
-        queryPredicate = queryModel.container().is(container).and(queryModel.key().is(key));
-        firstAttempt = false;
-      } else {
-        queryPredicate =
-            queryPredicate.or(queryModel.container().is(container).and(queryModel.key().is(key)));
-      }
-    }
-    return queryPredicate;
-  }
-
-  @Nonnull
+  @NotNull
   @Override
-  public CompletionStage<Optional<CustomObject<JsonNode>>> fetchCustomObject(
-      @Nonnull final CustomObjectCompositeIdentifier identifier) {
+  public CompletionStage<Optional<CustomObject>> fetchCustomObject(
+      @NotNull final CustomObjectCompositeIdentifier identifier) {
+    final ByProjectKeyCustomObjectsByContainerByKeyGet query =
+        this.syncOptions
+            .getCtpClient()
+            .customObjects()
+            .withContainerAndKey(identifier.getContainer(), identifier.getKey())
+            .get();
 
-    return fetchResource(identifier.toString(), () -> queryOneIdentifier(identifier));
+    return super.fetchResource(identifier.toString(), query);
   }
 
-  @Nonnull
+  @NotNull
   @Override
-  public CompletionStage<Optional<CustomObject<JsonNode>>> upsertCustomObject(
-      @Nonnull final CustomObjectDraft<JsonNode> customObjectDraft) {
-
-    return createResource(customObjectDraft, this::keyMapper, CustomObjectUpsertCommand::of);
+  public CompletionStage<Optional<CustomObject>> upsertCustomObject(
+      @NotNull final CustomObjectDraft customObjectDraft) {
+    return super.createResource(
+        customObjectDraft,
+        this::keyMapper,
+        CustomObject::getId,
+        customObject -> customObject,
+        () -> this.syncOptions.getCtpClient().customObjects().post(customObjectDraft));
   }
 
   /**
@@ -124,7 +110,9 @@ public class CustomObjectServiceImpl
    * behaviour.
    *
    * @param draft the custom object draft to create a custom object in target CTP project.
-   * @param keyMapper a function to get the key from the supplied custom object draft.
+   * @param key a function to get the key from the supplied custom object draft.
+   * @param idMapper
+   * @param resourceMapper
    * @param createCommand a function to get the create command using the supplied custom object
    *     draft.
    * @return a {@link CompletionStage} containing an optional with the created resource if
@@ -132,25 +120,41 @@ public class CustomObjectServiceImpl
    */
   @Nonnull
   @Override
-  CompletionStage<Optional<CustomObject<JsonNode>>> executeCreateCommand(
-      @Nonnull final CustomObjectDraft<JsonNode> draft,
-      @Nonnull final Function<CustomObjectDraft<JsonNode>, String> keyMapper,
-      @Nonnull
-          final Function<
-                  CustomObjectDraft<JsonNode>,
-                  DraftBasedCreateCommand<CustomObject<JsonNode>, CustomObjectDraft<JsonNode>>>
-              createCommand) {
-
-    final String draftKey = keyMapper.apply(draft);
-
-    return syncOptions
-        .getCtpClient()
-        .execute(createCommand.apply(draft))
+  CompletionStage<Optional<CustomObject>> executeCreateCommand(
+      @NotNull CustomObjectDraft draft,
+      @NotNull String key,
+      @NotNull Function<CustomObject, String> idMapper,
+      @NotNull Function<CustomObject, CustomObject> resourceMapper,
+      @NotNull ByProjectKeyCustomObjectsPost createCommand) {
+    return createCommand
+        .execute()
         .thenApply(
             resource -> {
-              keyToIdCache.put(draftKey, resource.getId());
-              return Optional.of(resource);
+              if (resource != null) {
+                final CustomObject customObject = resource.getBody();
+                keyToIdCache.put(key, idMapper.apply(customObject));
+                return Optional.of(resourceMapper.apply(customObject));
+              } else {
+                return Optional.empty();
+              }
             });
+  }
+
+  @Nonnull
+  private ByProjectKeyCustomObjectsGet createQuery(
+      @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
+    final String whereQuery =
+        identifiers.stream()
+            .map(
+                identifier ->
+                    "(container=\""
+                        + identifier.getContainer()
+                        + "\" AND key=\""
+                        + identifier.getKey()
+                        + "\")")
+            .collect(Collectors.joining(" OR "));
+
+    return this.syncOptions.getCtpClient().customObjects().get().withWhere(whereQuery);
   }
 
   @Nonnull
@@ -161,36 +165,24 @@ public class CustomObjectServiceImpl
   }
 
   @Nonnull
-  private String keyMapper(@Nonnull final CustomObjectDraft<JsonNode> customObjectDraft) {
+  private String keyMapper(@Nonnull final CustomObjectDraft customObjectDraft) {
     return CustomObjectCompositeIdentifier.of(customObjectDraft).toString();
   }
 
   @Nonnull
-  private String keyMapper(@Nonnull final CustomObject<JsonNode> customObject) {
+  private String keyMapper(@Nonnull final CustomObject customObject) {
     return CustomObjectCompositeIdentifier.of(customObject).toString();
   }
 
   @Nonnull
-  private Set<CustomObjectCompositeIdentifier> getIdentifiers(@Nonnull final Set<String> keys) {
-    return keys.stream().map(CustomObjectCompositeIdentifier::of).collect(Collectors.toSet());
-  }
-
-  @Nonnull
-  private CustomObjectQuery<JsonNode> queryIdentifiers(
-      @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
-
-    return CustomObjectQueryBuilder.ofJsonNode()
-        .plusPredicates(q -> createQuery(q, identifiers))
-        .build();
-  }
-
-  @Nonnull
-  private CustomObjectQuery<JsonNode> queryOneIdentifier(
+  private ByProjectKeyCustomObjectsGet queryOneIdentifier(
       @Nonnull final CustomObjectCompositeIdentifier identifier) {
-
-    return CustomObjectQueryBuilder.ofJsonNode()
-        .plusPredicates(
-            q -> q.container().is(identifier.getContainer()).and(q.key().is(identifier.getKey())))
-        .build();
+    return syncOptions
+        .getCtpClient()
+        .customObjects()
+        .get()
+        .withWhere("container=:container AND key=:key")
+        .withPredicateVar("container", identifier.getContainer())
+        .withPredicateVar("key", identifier.getKey());
   }
 }

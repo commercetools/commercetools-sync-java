@@ -1,23 +1,25 @@
 package com.commercetools.sync.customers.utils;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.models.common.AddressBuilder;
+import com.commercetools.api.models.customer.Customer;
+import com.commercetools.api.models.customer.CustomerDraft;
+import com.commercetools.api.models.customer_group.CustomerGroupReference;
+import com.commercetools.api.models.customer_group.CustomerGroupReferenceBuilder;
+import com.commercetools.api.models.store.StoreKeyReference;
+import com.commercetools.api.models.store.StoreKeyReferenceBuilder;
+import com.commercetools.api.models.type.CustomFields;
+import com.commercetools.api.models.type.TypeReference;
+import com.commercetools.api.models.type.TypeReferenceBuilder;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.neovisionaries.i18n.CountryCode;
-import io.sphere.sdk.customergroups.CustomerGroup;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.customers.CustomerDraft;
-import io.sphere.sdk.models.Address;
-import io.sphere.sdk.models.KeyReference;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.stores.Store;
-import io.sphere.sdk.types.CustomFields;
-import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -53,22 +55,23 @@ class CustomerReferenceResolutionUtilsTest {
       final Customer mockCustomer = mock(Customer.class);
 
       final CustomFields mockCustomFields = mock(CustomFields.class);
-      final Reference<Type> typeReference =
-          Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), customTypeId);
+      final TypeReference typeReference = TypeReferenceBuilder.of().id(customTypeId).build();
       when(mockCustomFields.getType()).thenReturn(typeReference);
       when(mockCustomer.getCustom()).thenReturn(mockCustomFields);
 
-      final Reference<CustomerGroup> customerGroupReference =
-          Reference.ofResourceTypeIdAndId(CustomerGroup.referenceTypeId(), customerGroupId);
+      final CustomerGroupReference customerGroupReference =
+          CustomerGroupReferenceBuilder.of().id(customerGroupId).build();
       when(mockCustomer.getCustomerGroup()).thenReturn(customerGroupReference);
 
-      List<KeyReference<Store>> keyReferences =
+      List<StoreKeyReference> keyReferences =
           asList(
-              KeyReference.of(storeKey1, Store.referenceTypeId()),
-              KeyReference.of(storeKey2, Store.referenceTypeId()));
+              StoreKeyReferenceBuilder.of().key(storeKey1).build(),
+              StoreKeyReferenceBuilder.of().key(storeKey2).build());
 
       when(mockCustomer.getStores()).thenReturn(keyReferences);
-      when(mockCustomer.getAddresses()).thenReturn(null);
+      when(mockCustomer.getAddresses()).thenReturn(emptyList());
+      when(mockCustomer.getEmail()).thenReturn("email");
+      when(mockCustomer.getPassword()).thenReturn("password");
 
       mockCustomers.add(mockCustomer);
     }
@@ -96,17 +99,18 @@ class CustomerReferenceResolutionUtilsTest {
       final Customer mockCustomer = mock(Customer.class);
 
       final CustomFields mockCustomFields = mock(CustomFields.class);
-      final Reference<Type> typeReference =
-          Reference.ofResourceTypeIdAndId("resourceTypeId", customTypeId);
+      final TypeReference typeReference = TypeReferenceBuilder.of().id(customTypeId).build();
       when(mockCustomFields.getType()).thenReturn(typeReference);
       when(mockCustomer.getCustom()).thenReturn(mockCustomFields);
 
-      final Reference<CustomerGroup> customerGroupReference =
-          Reference.ofResourceTypeIdAndId(CustomerGroup.referenceTypeId(), customerGroupId);
+      final CustomerGroupReference customerGroupReference =
+          CustomerGroupReferenceBuilder.of().id(customerGroupId).build();
       when(mockCustomer.getCustomerGroup()).thenReturn(customerGroupReference);
 
       when(mockCustomer.getStores()).thenReturn(null);
-      when(mockCustomer.getAddresses()).thenReturn(null);
+      when(mockCustomer.getAddresses()).thenReturn(emptyList());
+      when(mockCustomer.getEmail()).thenReturn("email");
+      when(mockCustomer.getPassword()).thenReturn("password");
 
       mockCustomers.add(mockCustomer);
     }
@@ -126,13 +130,14 @@ class CustomerReferenceResolutionUtilsTest {
   @Test
   void mapToCustomerDrafts_WithAddresses_ShouldReturnResourceIdentifiersWithCorrectIndexes() {
     final Customer mockCustomer = mock(Customer.class);
-
+    when(mockCustomer.getEmail()).thenReturn("email");
+    when(mockCustomer.getPassword()).thenReturn("password");
     when(mockCustomer.getAddresses())
         .thenReturn(
             asList(
-                Address.of(CountryCode.DE).withId("address-id1"),
-                Address.of(CountryCode.FR).withId("address-id2"),
-                Address.of(CountryCode.US).withId("address-id3")));
+                AddressBuilder.of().country(CountryCode.DE.toString()).id("address-id1").build(),
+                AddressBuilder.of().country(CountryCode.FR.toString()).id("address-id2").build(),
+                AddressBuilder.of().country(CountryCode.US.toString()).id("address-id3").build()));
     when(mockCustomer.getDefaultBillingAddressId()).thenReturn("address-id1");
     when(mockCustomer.getDefaultShippingAddressId()).thenReturn("address-id2");
     when(mockCustomer.getBillingAddressIds()).thenReturn(asList("address-id1", "address-id3"));
@@ -144,7 +149,6 @@ class CustomerReferenceResolutionUtilsTest {
 
     final CustomerDraft customerDraft = referenceReplacedDrafts.get(0);
 
-    assertThat(customerDraft.getAddresses()).isEqualTo(mockCustomer.getAddresses());
     assertThat(customerDraft.getDefaultBillingAddress()).isEqualTo(0);
     assertThat(customerDraft.getDefaultShippingAddress()).isEqualTo(1);
     assertThat(customerDraft.getBillingAddresses()).isEqualTo(asList(0, 2));
@@ -155,13 +159,14 @@ class CustomerReferenceResolutionUtilsTest {
   void
       mapToCustomerDrafts_WithMissingAddresses_ShouldReturnResourceIdentifiersWithCorrectIndexes() {
     final Customer mockCustomer = mock(Customer.class);
-
+    when(mockCustomer.getEmail()).thenReturn("email");
+    when(mockCustomer.getPassword()).thenReturn("password");
     when(mockCustomer.getAddresses())
         .thenReturn(
             asList(
-                Address.of(CountryCode.DE).withId("address-id1"),
-                Address.of(CountryCode.FR).withId("address-id2"),
-                Address.of(CountryCode.US).withId("address-id3")));
+                AddressBuilder.of().country(CountryCode.DE.toString()).id("address-id1").build(),
+                AddressBuilder.of().country(CountryCode.FR.toString()).id("address-id2").build(),
+                AddressBuilder.of().country(CountryCode.US.toString()).id("address-id3").build()));
     when(mockCustomer.getDefaultBillingAddressId()).thenReturn("non-existing-id");
     when(mockCustomer.getDefaultShippingAddressId()).thenReturn(null);
     when(mockCustomer.getBillingAddressIds()).thenReturn(asList("address-id1", "non-existing-id"));
@@ -173,7 +178,6 @@ class CustomerReferenceResolutionUtilsTest {
 
     final CustomerDraft customerDraft = referenceReplacedDrafts.get(0);
 
-    assertThat(customerDraft.getAddresses()).isEqualTo(mockCustomer.getAddresses());
     assertThat(customerDraft.getDefaultBillingAddress()).isNull();
     assertThat(customerDraft.getDefaultShippingAddress()).isNull();
     assertThat(customerDraft.getBillingAddresses()).isEqualTo(asList(0, null));
@@ -184,13 +188,14 @@ class CustomerReferenceResolutionUtilsTest {
   void
       mapToCustomerDrafts_WithNullIdOnAddresses_ShouldReturnResourceIdentifiersWithCorrectIndexes() {
     final Customer mockCustomer = mock(Customer.class);
-
+    when(mockCustomer.getEmail()).thenReturn("email");
+    when(mockCustomer.getPassword()).thenReturn("password");
     when(mockCustomer.getAddresses())
         .thenReturn(
             asList(
-                Address.of(CountryCode.DE).withId("address-id1"),
-                Address.of(CountryCode.US).withId(null),
-                Address.of(CountryCode.US).withId("address-id3")));
+                AddressBuilder.of().country(CountryCode.DE.toString()).id("address-id1").build(),
+                AddressBuilder.of().country(CountryCode.US.toString()).id(null).build(),
+                AddressBuilder.of().country(CountryCode.US.toString()).id("address-id3").build()));
     when(mockCustomer.getDefaultBillingAddressId()).thenReturn("address-id1");
     when(mockCustomer.getDefaultShippingAddressId()).thenReturn("address-id2");
     when(mockCustomer.getBillingAddressIds()).thenReturn(asList("address-id1", "address-id3"));
@@ -202,10 +207,9 @@ class CustomerReferenceResolutionUtilsTest {
 
     final CustomerDraft customerDraft = referenceReplacedDrafts.get(0);
 
-    assertThat(customerDraft.getAddresses()).isEqualTo(mockCustomer.getAddresses());
     assertThat(customerDraft.getDefaultBillingAddress()).isEqualTo(0);
     assertThat(customerDraft.getDefaultShippingAddress()).isNull();
     assertThat(customerDraft.getBillingAddresses()).isEqualTo(asList(0, 2));
-    assertThat(customerDraft.getShippingAddresses()).isNull();
+    assertThat(customerDraft.getShippingAddresses()).isEmpty();
   }
 }

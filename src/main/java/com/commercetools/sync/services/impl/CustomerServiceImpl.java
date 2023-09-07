@@ -1,22 +1,21 @@
 package com.commercetools.sync.services.impl;
 
-import static java.lang.String.format;
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
-import com.commercetools.sync.commons.models.GraphQlQueryResources;
+import com.commercetools.api.client.ByProjectKeyCustomersGet;
+import com.commercetools.api.client.ByProjectKeyCustomersKeyByKeyGet;
+import com.commercetools.api.client.ByProjectKeyCustomersPost;
+import com.commercetools.api.models.customer.Customer;
+import com.commercetools.api.models.customer.CustomerDraft;
+import com.commercetools.api.models.customer.CustomerPagedQueryResponse;
+import com.commercetools.api.models.customer.CustomerSignInResult;
+import com.commercetools.api.models.customer.CustomerUpdateAction;
+import com.commercetools.api.models.customer.CustomerUpdateBuilder;
+import com.commercetools.sync.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import com.commercetools.sync.services.CustomerService;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.customers.CustomerDraft;
-import io.sphere.sdk.customers.commands.CustomerCreateCommand;
-import io.sphere.sdk.customers.commands.CustomerUpdateCommand;
-import io.sphere.sdk.customers.expansion.CustomerExpansionModel;
-import io.sphere.sdk.customers.queries.CustomerQuery;
-import io.sphere.sdk.customers.queries.CustomerQueryBuilder;
-import io.sphere.sdk.customers.queries.CustomerQueryModel;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,14 +26,15 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public final class CustomerServiceImpl
-    extends BaseServiceWithKey<
-        CustomerDraft,
-        Customer,
-        Customer,
+    extends BaseService<
         CustomerSyncOptions,
-        CustomerQuery,
-        CustomerQueryModel,
-        CustomerExpansionModel<Customer>>
+        Customer,
+        CustomerDraft,
+        ByProjectKeyCustomersGet,
+        CustomerPagedQueryResponse,
+        ByProjectKeyCustomersKeyByKeyGet,
+        CustomerSignInResult,
+        ByProjectKeyCustomersPost>
     implements CustomerService {
 
   public CustomerServiceImpl(@Nonnull final CustomerSyncOptions syncOptions) {
@@ -44,94 +44,88 @@ public final class CustomerServiceImpl
   @Nonnull
   @Override
   public CompletionStage<Map<String, String>> cacheKeysToIds(
-      @Nonnull final Set<String> keysToCache) {
-    return cacheKeysToIds(
-        keysToCache,
-        keysNotCached ->
-            new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.CUSTOMERS));
+      @Nonnull final Set<String> customerKeys) {
+    return super.cacheKeysToIdsUsingGraphQl(customerKeys, GraphQlQueryResource.CUSTOMERS);
   }
 
   @Nonnull
   @Override
   public CompletionStage<Set<Customer>> fetchMatchingCustomersByKeys(
-      @Nonnull final Set<String> customerKeys) {
+      @Nonnull final Set<String> keys) {
     return fetchMatchingResources(
-        customerKeys,
+        keys,
+        customer -> customer.getKey(),
         (keysNotCached) ->
-            CustomerQueryBuilder.of()
-                .plusPredicates(customerQueryModel -> customerQueryModel.key().isIn(keysNotCached))
-                .build());
+            syncOptions
+                .getCtpClient()
+                .customers()
+                .get()
+                .withWhere("key in :keys")
+                .withPredicateVar("keys", keysNotCached));
   }
 
   @Nonnull
   @Override
   public CompletionStage<Optional<Customer>> fetchCustomerByKey(@Nullable final String key) {
-    return fetchResource(
-        key,
-        () ->
-            CustomerQueryBuilder.of()
-                .plusPredicates(customerQueryModel -> customerQueryModel.key().is(key))
-                .build());
+    return super.fetchResource(key, syncOptions.getCtpClient().customers().withKey(key).get());
   }
 
   @Nonnull
   @Override
-  public CompletionStage<Optional<String>> fetchCachedCustomerId(@Nonnull final String key) {
-    return fetchCachedResourceId(
-        key,
-        () ->
-            CustomerQueryBuilder.of()
-                .plusPredicates(customerQueryModel -> customerQueryModel.key().is(key))
-                .build());
+  public CompletionStage<Optional<String>> fetchCachedCustomerId(@Nonnull String key) {
+    if (isBlank(key)) {
+      return CompletableFuture.completedFuture(Optional.empty());
+    }
+
+    final String id = keyToIdCache.getIfPresent(key);
+    if (id != null) {
+      return CompletableFuture.completedFuture(Optional.of(id));
+    }
+
+    return fetchCustomerByKey(key).thenApply(customer -> customer.map(Customer::getId));
   }
 
   @Nonnull
   @Override
   public CompletionStage<Optional<Customer>> createCustomer(
       @Nonnull final CustomerDraft customerDraft) {
-
-    // Uses a different implementation than in the base service because CustomerCreateCommand uses a
-    // different library as CTP responds with a CustomerSignInResult which is not extending resource
-    // but a
-    // different model, containing the customer resource.
-    final String draftKey = customerDraft.getKey();
-    final CustomerCreateCommand createCommand = CustomerCreateCommand.of(customerDraft);
-
-    if (isBlank(draftKey)) {
-      syncOptions.applyErrorCallback(
-          new SyncException(format(CREATE_FAILED, draftKey, "Draft key is blank!")),
-          null,
-          customerDraft,
-          null);
-      return CompletableFuture.completedFuture(Optional.empty());
-    } else {
-      return syncOptions
-          .getCtpClient()
-          .execute(createCommand)
-          .handle(
-              ((resource, exception) -> {
-                if (exception == null && resource.getCustomer() != null) {
-                  keyToIdCache.put(draftKey, resource.getCustomer().getId());
-                  return Optional.of(resource.getCustomer());
-                } else if (exception != null) {
-                  syncOptions.applyErrorCallback(
-                      new SyncException(
-                          format(CREATE_FAILED, draftKey, exception.getMessage()), exception),
-                      null,
-                      customerDraft,
-                      null);
-                  return Optional.empty();
-                } else {
-                  return Optional.empty();
-                }
-              }));
-    }
+    return super.createResource(
+        customerDraft,
+        CustomerDraft::getKey,
+        customerSignInResult -> customerSignInResult.getCustomer().getId(),
+        CustomerSignInResult::getCustomer,
+        () -> syncOptions.getCtpClient().customers().post(customerDraft));
   }
 
   @Nonnull
   @Override
   public CompletionStage<Customer> updateCustomer(
-      @Nonnull final Customer customer, @Nonnull final List<UpdateAction<Customer>> updateActions) {
-    return updateResource(customer, CustomerUpdateCommand::of, updateActions);
+      @Nonnull final Customer customer, @Nonnull final List<CustomerUpdateAction> updateActions) {
+
+    final List<List<CustomerUpdateAction>> actionBatches =
+        batchElements(updateActions, MAXIMUM_ALLOWED_UPDATE_ACTIONS);
+
+    CompletionStage<ApiHttpResponse<Customer>> resultStage =
+        CompletableFuture.completedFuture(new ApiHttpResponse<>(200, null, customer));
+
+    for (final List<CustomerUpdateAction> batch : actionBatches) {
+      resultStage =
+          resultStage
+              .thenApply(ApiHttpResponse::getBody)
+              .thenCompose(
+                  updatedCustomer ->
+                      syncOptions
+                          .getCtpClient()
+                          .customers()
+                          .withId(updatedCustomer.getId())
+                          .post(
+                              CustomerUpdateBuilder.of()
+                                  .actions(batch)
+                                  .version(updatedCustomer.getVersion())
+                                  .build())
+                          .execute());
+    }
+
+    return resultStage.thenApply(ApiHttpResponse::getBody);
   }
 }

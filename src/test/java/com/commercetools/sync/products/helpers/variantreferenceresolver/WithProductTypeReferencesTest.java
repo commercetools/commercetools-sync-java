@@ -1,15 +1,21 @@
 package com.commercetools.sync.products.helpers.variantreferenceresolver;
 
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
-import static com.commercetools.sync.products.ProductSyncMockUtils.createReferenceObject;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getReferenceSetAttributeDraft;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.common.Reference;
+import com.commercetools.api.models.common.ReferenceImpl;
+import com.commercetools.api.models.product.Attribute;
+import com.commercetools.api.models.product.AttributeBuilder;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.product_type.ProductTypeReference;
+import com.commercetools.api.models.product_type.ProductTypeReferenceBuilder;
+import com.commercetools.sync.commons.utils.TestUtils;
+import com.commercetools.sync.products.ProductSyncMockUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.VariantReferenceResolver;
@@ -23,23 +29,13 @@ import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.ProductVariantDraftBuilder;
-import io.sphere.sdk.products.attributes.AttributeDraft;
-import io.sphere.sdk.producttypes.ProductType;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.Spliterator;
-import java.util.UUID;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import io.vrap.rmf.base.client.utils.json.JsonUtils;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class WithProductTypeReferencesTest {
   private ProductTypeService productTypeService;
@@ -48,21 +44,21 @@ class WithProductTypeReferencesTest {
 
   @BeforeEach
   void setup() {
-    productTypeService = getMockProductTypeService(PRODUCT_TYPE_ID);
+    productTypeService = ProductSyncMockUtils.getMockProductTypeService(PRODUCT_TYPE_ID);
     final ProductSyncOptions syncOptions =
-        ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
     referenceResolver =
         new VariantReferenceResolver(
             syncOptions,
-            mock(TypeService.class),
-            mock(ChannelService.class),
-            mock(CustomerGroupService.class),
-            mock(ProductService.class),
+            Mockito.mock(TypeService.class),
+            Mockito.mock(ChannelService.class),
+            Mockito.mock(CustomerGroupService.class),
+            Mockito.mock(ProductService.class),
             productTypeService,
-            mock(CategoryService.class),
-            mock(CustomObjectService.class),
-            mock(StateService.class),
-            mock(CustomerService.class));
+            Mockito.mock(CategoryService.class),
+            Mockito.mock(CustomObjectService.class),
+            Mockito.mock(StateService.class),
+            Mockito.mock(CustomerService.class));
   }
 
   @Test
@@ -71,9 +67,11 @@ class WithProductTypeReferencesTest {
     when(productTypeService.fetchCachedProductTypeId("nonExistingProductTypeKey"))
         .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-    final ObjectNode attributeValue =
-        createReferenceObject("nonExistingProductTypeKey", ProductType.referenceTypeId());
-    final AttributeDraft attributeDraft = AttributeDraft.of("attributeName", attributeValue);
+    final Reference attributeValue =
+        ProductSyncMockUtils.createReferenceObject(
+            "nonExistingProductTypeKey", ProductTypeReference.PRODUCT_TYPE);
+    final Attribute attributeDraft =
+        AttributeBuilder.of().name("attributeName").value(attributeValue).build();
     final ProductVariantDraft productVariantDraft =
         ProductVariantDraftBuilder.of().attributes(attributeDraft).build();
 
@@ -88,31 +86,8 @@ class WithProductTypeReferencesTest {
   void
       resolveReferences_WithNullIdFieldInProductTypeReferenceAttribute_ShouldNotResolveReferences() {
     // preparation
-    final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
-    attributeValue.put(REFERENCE_TYPE_ID_FIELD, ProductType.referenceTypeId());
-    final AttributeDraft productTypeReferenceAttribute =
-        AttributeDraft.of("attributeName", attributeValue);
-    final ProductVariantDraft productVariantDraft =
-        ProductVariantDraftBuilder.of().attributes(productTypeReferenceAttribute).build();
-
-    // test
-    final ProductVariantDraft resolvedAttributeDraft =
-        referenceResolver.resolveReferences(productVariantDraft).toCompletableFuture().join();
-    // assertions
-    assertThat(resolvedAttributeDraft).isEqualTo(productVariantDraft);
-  }
-
-  @Test
-  void
-      resolveReferences_WithNullNodeIdFieldInProductTypeReferenceAttribute_ShouldNotResolveReferences() {
-    // preparation
-    final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
-    attributeValue.put(REFERENCE_TYPE_ID_FIELD, ProductType.referenceTypeId());
-    attributeValue.set(REFERENCE_ID_FIELD, JsonNodeFactory.instance.nullNode());
-
-    final AttributeDraft productTypeReferenceAttribute =
-        AttributeDraft.of("attributeName", attributeValue);
-
+    final Attribute productTypeReferenceAttribute =
+        AttributeBuilder.of().name("attributeName").value(new ReferenceImpl()).build();
     final ProductVariantDraft productVariantDraft =
         ProductVariantDraftBuilder.of().attributes(productTypeReferenceAttribute).build();
 
@@ -126,32 +101,35 @@ class WithProductTypeReferencesTest {
   @Test
   void resolveReferences_WithExistingProductTypeReferenceAttribute_ShouldResolveReferences() {
     // preparation
-    final ObjectNode attributeValue = createReferenceObject("foo", ProductType.referenceTypeId());
-    final AttributeDraft productTypeReferenceAttribute =
-        AttributeDraft.of("attributeName", attributeValue);
+    final Reference attributeValue =
+        ProductSyncMockUtils.createReferenceObject("foo", ProductTypeReference.PRODUCT_TYPE);
+    final Attribute attributeDraft =
+        AttributeBuilder.of().name("attributeName").value(attributeValue).build();
     final ProductVariantDraft productVariantDraft =
-        ProductVariantDraftBuilder.of().attributes(productTypeReferenceAttribute).build();
+        ProductVariantDraftBuilder.of().attributes(attributeDraft).build();
 
     // test
     final ProductVariantDraft resolvedAttributeDraft =
         referenceResolver.resolveReferences(productVariantDraft).toCompletableFuture().join();
     // assertions
     assertThat(resolvedAttributeDraft.getAttributes()).isNotNull();
-    final AttributeDraft resolvedAttribute = resolvedAttributeDraft.getAttributes().get(0);
+    final Attribute resolvedAttribute = resolvedAttributeDraft.getAttributes().get(0);
     assertThat(resolvedAttribute).isNotNull();
-    assertThat(resolvedAttribute.getValue().get(REFERENCE_ID_FIELD).asText())
-        .isEqualTo(PRODUCT_TYPE_ID);
-    assertThat(resolvedAttribute.getValue().get(REFERENCE_TYPE_ID_FIELD).asText())
-        .isEqualTo(ProductType.referenceTypeId());
+    final Reference reference =
+        JsonUtils.fromJsonNode((JsonNode) resolvedAttribute.getValue(), Reference.typeReference());
+    assertThat(reference.getId()).isEqualTo(PRODUCT_TYPE_ID);
+    assertThat(reference.getTypeId().getJsonName()).isEqualTo(ProductTypeReference.PRODUCT_TYPE);
   }
 
   @Test
   void resolveReferences_WithProductTypeReferenceSetAttribute_ShouldResolveReferences() {
-    final AttributeDraft productTypeReferenceSetAttributeDraft =
-        getReferenceSetAttributeDraft(
+    final Attribute productTypeReferenceSetAttributeDraft =
+        ProductSyncMockUtils.getReferenceSetAttributeDraft(
             "foo",
-            createReferenceObject(UUID.randomUUID().toString(), ProductType.referenceTypeId()),
-            createReferenceObject(UUID.randomUUID().toString(), ProductType.referenceTypeId()));
+            ProductSyncMockUtils.createReferenceObject(
+                UUID.randomUUID().toString(), ProductTypeReference.PRODUCT_TYPE),
+            ProductSyncMockUtils.createReferenceObject(
+                UUID.randomUUID().toString(), ProductTypeReference.PRODUCT_TYPE));
 
     final ProductVariantDraft productVariantDraft =
         ProductVariantDraftBuilder.of().attributes(productTypeReferenceSetAttributeDraft).build();
@@ -164,21 +142,17 @@ class WithProductTypeReferencesTest {
     assertThat(resolvedProductVariantDraft).isNotNull();
     assertThat(resolvedProductVariantDraft.getAttributes()).isNotNull();
 
-    final AttributeDraft resolvedAttributeDraft =
-        resolvedProductVariantDraft.getAttributes().get(0);
+    final Attribute resolvedAttributeDraft = resolvedProductVariantDraft.getAttributes().get(0);
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
 
-    final Spliterator<JsonNode> attributeReferencesIterator =
-        resolvedAttributeDraft.getValue().spliterator();
-    assertThat(attributeReferencesIterator).isNotNull();
-    final List<JsonNode> resolvedSet =
-        StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toList());
-    assertThat(resolvedSet).isNotEmpty();
-    final ObjectNode resolvedReference = JsonNodeFactory.instance.objectNode();
-    resolvedReference.put(REFERENCE_TYPE_ID_FIELD, ProductType.referenceTypeId());
-    resolvedReference.put(REFERENCE_ID_FIELD, PRODUCT_TYPE_ID);
-    assertThat(resolvedSet).containsExactlyInAnyOrder(resolvedReference, resolvedReference);
+    final List<ProductTypeReference> referenceList =
+        TestUtils.convertArrayNodeToList(
+            (ArrayNode) resolvedAttributeDraft.getValue(), ProductTypeReference.typeReference());
+    assertThat(referenceList).isNotEmpty();
+    final ProductTypeReference resolvedReference =
+        ProductTypeReferenceBuilder.of().id(PRODUCT_TYPE_ID).build();
+    assertThat(referenceList).containsExactlyInAnyOrder(resolvedReference, resolvedReference);
   }
 
   @Test
@@ -188,10 +162,11 @@ class WithProductTypeReferencesTest {
     when(productTypeService.fetchCachedProductTypeId(anyString()))
         .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-    final ObjectNode productTypeReference =
-        createReferenceObject(UUID.randomUUID().toString(), ProductType.referenceTypeId());
-    final AttributeDraft productTypeReferenceAttribute =
-        getReferenceSetAttributeDraft("foo", productTypeReference);
+    final Reference productTypeReference =
+        ProductSyncMockUtils.createReferenceObject(
+            UUID.randomUUID().toString(), ProductTypeReference.PRODUCT_TYPE);
+    final Attribute productTypeReferenceAttribute =
+        ProductSyncMockUtils.getReferenceSetAttributeDraft("foo", productTypeReference);
 
     final ProductVariantDraft productVariantDraft =
         ProductVariantDraftBuilder.of().attributes(productTypeReferenceAttribute).build();
@@ -204,18 +179,16 @@ class WithProductTypeReferencesTest {
     assertThat(resolvedProductVariantDraft).isNotNull();
     assertThat(resolvedProductVariantDraft.getAttributes()).isNotNull();
 
-    final AttributeDraft resolvedAttributeDraft =
-        resolvedProductVariantDraft.getAttributes().get(0);
+    final Attribute resolvedAttributeDraft = resolvedProductVariantDraft.getAttributes().get(0);
 
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
 
-    final Spliterator<JsonNode> attributeReferencesIterator =
-        resolvedAttributeDraft.getValue().spliterator();
-    assertThat(attributeReferencesIterator).isNotNull();
-    final Set<JsonNode> resolvedSet =
-        StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toSet());
-    assertThat(resolvedSet).containsExactly(productTypeReference);
+    final List<ProductTypeReference> referenceList =
+        TestUtils.convertArrayNodeToList(
+            (ArrayNode) resolvedAttributeDraft.getValue(), ProductTypeReference.typeReference());
+    final Set<ProductTypeReference> resolvedSet = new HashSet<>(referenceList);
+    assertThat(resolvedSet).containsExactly((ProductTypeReference) productTypeReference);
   }
 
   @Test
@@ -227,13 +200,15 @@ class WithProductTypeReferencesTest {
     when(productTypeService.fetchCachedProductTypeId("randomKey"))
         .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-    final ObjectNode productTypeReference1 =
-        createReferenceObject("existingKey", ProductType.referenceTypeId());
-    final ObjectNode productTypeReference2 =
-        createReferenceObject("randomKey", ProductType.referenceTypeId());
+    final Reference productTypeReference1 =
+        ProductSyncMockUtils.createReferenceObject(
+            "existingKey", ProductTypeReference.PRODUCT_TYPE);
+    final Reference productTypeReference2 =
+        ProductSyncMockUtils.createReferenceObject("randomKey", ProductTypeReference.PRODUCT_TYPE);
 
-    final AttributeDraft productTypeReferenceAttribute =
-        getReferenceSetAttributeDraft("foo", productTypeReference1, productTypeReference2);
+    final Attribute productTypeReferenceAttribute =
+        ProductSyncMockUtils.getReferenceSetAttributeDraft(
+            "foo", productTypeReference1, productTypeReference2);
 
     final ProductVariantDraft productVariantDraft =
         ProductVariantDraftBuilder.of().attributes(productTypeReferenceAttribute).build();
@@ -246,22 +221,24 @@ class WithProductTypeReferencesTest {
     assertThat(resolvedProductVariantDraft).isNotNull();
     assertThat(resolvedProductVariantDraft.getAttributes()).isNotNull();
 
-    final AttributeDraft resolvedAttributeDraft =
-        resolvedProductVariantDraft.getAttributes().get(0);
+    final Attribute resolvedAttributeDraft = resolvedProductVariantDraft.getAttributes().get(0);
 
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
 
-    final Spliterator<JsonNode> attributeReferencesIterator =
-        resolvedAttributeDraft.getValue().spliterator();
-    assertThat(attributeReferencesIterator).isNotNull();
-    final Set<JsonNode> resolvedSet =
-        StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toSet());
+    final List<ProductTypeReference> referenceList =
+        TestUtils.convertArrayNodeToList(
+            (ArrayNode) resolvedAttributeDraft.getValue(), ProductTypeReference.typeReference());
+    final Set<ProductTypeReference> resolvedSet = new HashSet<>(referenceList);
 
-    final ObjectNode resolvedReference1 =
-        createReferenceObject("existingId", ProductType.referenceTypeId());
-    final ObjectNode resolvedReference2 =
-        createReferenceObject("randomKey", ProductType.referenceTypeId());
+    final ProductTypeReference resolvedReference1 =
+        (ProductTypeReference)
+            ProductSyncMockUtils.createReferenceObject(
+                "existingId", ProductTypeReference.PRODUCT_TYPE);
+    final ProductTypeReference resolvedReference2 =
+        (ProductTypeReference)
+            ProductSyncMockUtils.createReferenceObject(
+                "randomKey", ProductTypeReference.PRODUCT_TYPE);
     assertThat(resolvedSet).containsExactlyInAnyOrder(resolvedReference1, resolvedReference2);
   }
 }

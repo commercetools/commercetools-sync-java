@@ -1,36 +1,38 @@
 package com.commercetools.sync.inventories;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.inventory.InventoryEntry;
+import com.commercetools.api.models.inventory.InventoryEntryDraft;
+import com.commercetools.api.models.inventory.InventoryEntryUpdateAction;
 import com.commercetools.sync.commons.BaseSyncOptionsBuilder;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.inventory.InventoryEntry;
-import io.sphere.sdk.inventory.InventoryEntryDraft;
 import javax.annotation.Nonnull;
 
-/** Builder for creation of {@link InventorySyncOptions}. */
+/** Builder for creation of {@link com.commercetools.sync.inventories.InventorySyncOptions}. */
 public final class InventorySyncOptionsBuilder
     extends BaseSyncOptionsBuilder<
         InventorySyncOptionsBuilder,
         InventorySyncOptions,
         InventoryEntry,
         InventoryEntryDraft,
-        InventoryEntry> {
+        InventoryEntryUpdateAction> {
   static final int BATCH_SIZE_DEFAULT = 150;
   static final boolean ENSURE_CHANNELS_DEFAULT = false;
   private boolean ensureChannels = ENSURE_CHANNELS_DEFAULT;
 
-  private InventorySyncOptionsBuilder(@Nonnull final SphereClient ctpClient) {
+  private InventorySyncOptionsBuilder(@Nonnull final ProjectApiRoot ctpClient) {
     this.ctpClient = ctpClient;
   }
 
   /**
-   * Creates a new instance of {@link InventorySyncOptionsBuilder} given a {@link SphereClient}
-   * responsible for interaction with the target CTP project, with the default batch size ({@code
-   * BATCH_SIZE_DEFAULT} = 150).
+   * Creates a new instance of {@link InventorySyncOptionsBuilder} given a {@link
+   * com.commercetools.api.client.ProjectApiRoot} responsible for interaction with the target CTP
+   * project, with the default batch size ({@code BATCH_SIZE_DEFAULT} = 150).
    *
-   * @param ctpClient {@link SphereClient} responsible for interaction with the target CTP project.
+   * @param ctpClient {@link ProjectApiRoot} responsible for interaction with the target CTP
+   *     project.
    * @return new instance of {@link InventorySyncOptionsBuilder}
    */
-  public static InventorySyncOptionsBuilder of(@Nonnull final SphereClient ctpClient) {
+  public static InventorySyncOptionsBuilder of(@Nonnull final ProjectApiRoot ctpClient) {
     return new InventorySyncOptionsBuilder(ctpClient).batchSize(BATCH_SIZE_DEFAULT);
   }
 
@@ -52,10 +54,10 @@ public final class InventorySyncOptionsBuilder
   }
 
   /**
-   * Returns new instance of {@link InventorySyncOptions}, enriched with all attributes provided to
-   * {@code this} builder.
+   * Returns new instance of {@link com.commercetools.sync.inventories.InventorySyncOptions},
+   * enriched with all attributes provided to {@code this} builder.
    *
-   * @return new instance of {@link InventorySyncOptions}
+   * @return new instance of {@link com.commercetools.sync.inventories.InventorySyncOptions}
    */
   @Override
   public InventorySyncOptions build() {

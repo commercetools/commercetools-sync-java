@@ -1,35 +1,33 @@
 package com.commercetools.sync.shoppinglists;
 
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.shopping_list.ShoppingList;
+import com.commercetools.api.models.shopping_list.ShoppingListChangeNameActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListDraftBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
-import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
-import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class ShoppingListSyncOptionsBuilderTest {
 
-  private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
-  private ShoppingListSyncOptionsBuilder shoppingListSyncOptionsBuilder =
+  private static final ProjectApiRoot CTP_CLIENT = mock(ProjectApiRoot.class);
+  private final ShoppingListSyncOptionsBuilder shoppingListSyncOptionsBuilder =
       ShoppingListSyncOptionsBuilder.of(CTP_CLIENT);
 
   @Test
@@ -41,28 +39,28 @@ class ShoppingListSyncOptionsBuilderTest {
   void build_WithClient_ShouldBuildSyncOptions() {
     final ShoppingListSyncOptions shoppingListSyncOptions = shoppingListSyncOptionsBuilder.build();
     assertThat(shoppingListSyncOptions).isNotNull();
-    assertThat(shoppingListSyncOptions.getBeforeUpdateCallback()).isNull();
-    assertThat(shoppingListSyncOptions.getBeforeCreateCallback()).isNull();
-    assertThat(shoppingListSyncOptions.getErrorCallback()).isNull();
-    assertThat(shoppingListSyncOptions.getWarningCallback()).isNull();
-    assertThat(shoppingListSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
-    assertThat(shoppingListSyncOptions.getBatchSize())
+    Assertions.assertThat(shoppingListSyncOptions.getBeforeUpdateCallback()).isNull();
+    Assertions.assertThat(shoppingListSyncOptions.getBeforeCreateCallback()).isNull();
+    Assertions.assertThat(shoppingListSyncOptions.getErrorCallback()).isNull();
+    Assertions.assertThat(shoppingListSyncOptions.getWarningCallback()).isNull();
+    Assertions.assertThat(shoppingListSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
+    Assertions.assertThat(shoppingListSyncOptions.getBatchSize())
         .isEqualTo(ShoppingListSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
   }
 
   @Test
   void beforeUpdateCallback_WithFilterAsCallback_ShouldSetCallback() {
     final TriFunction<
-            List<UpdateAction<ShoppingList>>,
+            List<ShoppingListUpdateAction>,
             ShoppingListDraft,
             ShoppingList,
-            List<UpdateAction<ShoppingList>>>
+            List<ShoppingListUpdateAction>>
         beforeUpdateCallback = (updateActions, newShoppingList, oldShoppingList) -> emptyList();
 
     shoppingListSyncOptionsBuilder.beforeUpdateCallback(beforeUpdateCallback);
 
     final ShoppingListSyncOptions shoppingListSyncOptions = shoppingListSyncOptionsBuilder.build();
-    assertThat(shoppingListSyncOptions.getBeforeUpdateCallback()).isNotNull();
+    Assertions.assertThat(shoppingListSyncOptions.getBeforeUpdateCallback()).isNotNull();
   }
 
   @Test
@@ -70,7 +68,7 @@ class ShoppingListSyncOptionsBuilderTest {
     shoppingListSyncOptionsBuilder.beforeCreateCallback((newShoppingList) -> null);
 
     final ShoppingListSyncOptions shoppingListSyncOptions = shoppingListSyncOptionsBuilder.build();
-    assertThat(shoppingListSyncOptions.getBeforeCreateCallback()).isNotNull();
+    Assertions.assertThat(shoppingListSyncOptions.getBeforeCreateCallback()).isNotNull();
   }
 
   @Test
@@ -79,12 +77,12 @@ class ShoppingListSyncOptionsBuilderTest {
             SyncException,
             Optional<ShoppingListDraft>,
             Optional<ShoppingList>,
-            List<UpdateAction<ShoppingList>>>
+            List<ShoppingListUpdateAction>>
         mockErrorCallBack = (syncException, draft, shoppingList, updateActions) -> {};
     shoppingListSyncOptionsBuilder.errorCallback(mockErrorCallBack);
 
     final ShoppingListSyncOptions shoppingListSyncOptions = shoppingListSyncOptionsBuilder.build();
-    assertThat(shoppingListSyncOptions.getErrorCallback()).isNotNull();
+    Assertions.assertThat(shoppingListSyncOptions.getErrorCallback()).isNotNull();
   }
 
   @Test
@@ -94,7 +92,7 @@ class ShoppingListSyncOptionsBuilderTest {
     shoppingListSyncOptionsBuilder.warningCallback(mockWarningCallBack);
 
     final ShoppingListSyncOptions shoppingListSyncOptions = shoppingListSyncOptionsBuilder.build();
-    assertThat(shoppingListSyncOptions.getWarningCallback()).isNotNull();
+    Assertions.assertThat(shoppingListSyncOptions.getWarningCallback()).isNotNull();
   }
 
   @Test
@@ -122,7 +120,7 @@ class ShoppingListSyncOptionsBuilderTest {
     final ShoppingListSyncOptions shoppingListSyncOptions =
         ShoppingListSyncOptionsBuilder.of(CTP_CLIENT).batchSize(10).build();
 
-    assertThat(shoppingListSyncOptions.getBatchSize()).isEqualTo(10);
+    Assertions.assertThat(shoppingListSyncOptions.getBatchSize()).isEqualTo(10);
   }
 
   @Test
@@ -130,13 +128,13 @@ class ShoppingListSyncOptionsBuilderTest {
     final ShoppingListSyncOptions shoppingListSyncOptionsWithZeroBatchSize =
         ShoppingListSyncOptionsBuilder.of(CTP_CLIENT).batchSize(0).build();
 
-    assertThat(shoppingListSyncOptionsWithZeroBatchSize.getBatchSize())
+    Assertions.assertThat(shoppingListSyncOptionsWithZeroBatchSize.getBatchSize())
         .isEqualTo(ShoppingListSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
 
     final ShoppingListSyncOptions shoppingListSyncOptionsWithNegativeBatchSize =
         ShoppingListSyncOptionsBuilder.of(CTP_CLIENT).batchSize(-100).build();
 
-    assertThat(shoppingListSyncOptionsWithNegativeBatchSize.getBatchSize())
+    Assertions.assertThat(shoppingListSyncOptionsWithNegativeBatchSize.getBatchSize())
         .isEqualTo(ShoppingListSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
   }
 
@@ -145,12 +143,12 @@ class ShoppingListSyncOptionsBuilderTest {
     final ShoppingListSyncOptions shoppingListSyncOptions =
         ShoppingListSyncOptionsBuilder.of(CTP_CLIENT).build();
 
-    assertThat(shoppingListSyncOptions.getBeforeUpdateCallback()).isNull();
+    Assertions.assertThat(shoppingListSyncOptions.getBeforeUpdateCallback()).isNull();
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        singletonList(ChangeName.of(ofEnglish("name")));
+    final List<ShoppingListUpdateAction> updateActions =
+        singletonList(ShoppingListChangeNameActionBuilder.of().name(ofEnglish("name")).build());
 
-    final List<UpdateAction<ShoppingList>> filteredList =
+    final List<ShoppingListUpdateAction> filteredList =
         shoppingListSyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(ShoppingListDraft.class), mock(ShoppingList.class));
 
@@ -160,10 +158,10 @@ class ShoppingListSyncOptionsBuilderTest {
   @Test
   void applyBeforeUpdateCallBack_WithNullReturnCallback_ShouldReturnEmptyList() {
     final TriFunction<
-            List<UpdateAction<ShoppingList>>,
+            List<ShoppingListUpdateAction>,
             ShoppingListDraft,
             ShoppingList,
-            List<UpdateAction<ShoppingList>>>
+            List<ShoppingListUpdateAction>>
         beforeUpdateCallback = (updateActions, newShoppingList, oldShoppingList) -> null;
 
     final ShoppingListSyncOptions shoppingListSyncOptions =
@@ -171,11 +169,11 @@ class ShoppingListSyncOptionsBuilderTest {
             .beforeUpdateCallback(beforeUpdateCallback)
             .build();
 
-    assertThat(shoppingListSyncOptions.getBeforeUpdateCallback()).isNotNull();
+    Assertions.assertThat(shoppingListSyncOptions.getBeforeUpdateCallback()).isNotNull();
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        singletonList(ChangeName.of(ofEnglish("name")));
-    final List<UpdateAction<ShoppingList>> filteredList =
+    final List<ShoppingListUpdateAction> updateActions =
+        singletonList(ShoppingListChangeNameActionBuilder.of().name(ofEnglish("name")).build());
+    final List<ShoppingListUpdateAction> filteredList =
         shoppingListSyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(ShoppingListDraft.class), mock(ShoppingList.class));
     assertThat(filteredList).isNotEqualTo(updateActions);
@@ -184,10 +182,10 @@ class ShoppingListSyncOptionsBuilderTest {
 
   private interface MockTriFunction
       extends TriFunction<
-          List<UpdateAction<ShoppingList>>,
+          List<ShoppingListUpdateAction>,
           ShoppingListDraft,
           ShoppingList,
-          List<UpdateAction<ShoppingList>>> {}
+          List<ShoppingListUpdateAction>> {}
 
   @Test
   void applyBeforeUpdateCallBack_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
@@ -198,10 +196,10 @@ class ShoppingListSyncOptionsBuilderTest {
             .beforeUpdateCallback(beforeUpdateCallback)
             .build();
 
-    assertThat(shoppingListSyncOptions.getBeforeUpdateCallback()).isNotNull();
+    Assertions.assertThat(shoppingListSyncOptions.getBeforeUpdateCallback()).isNotNull();
 
-    final List<UpdateAction<ShoppingList>> updateActions = emptyList();
-    final List<UpdateAction<ShoppingList>> filteredList =
+    final List<ShoppingListUpdateAction> updateActions = emptyList();
+    final List<ShoppingListUpdateAction> filteredList =
         shoppingListSyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(ShoppingListDraft.class), mock(ShoppingList.class));
 
@@ -212,10 +210,10 @@ class ShoppingListSyncOptionsBuilderTest {
   @Test
   void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
     final TriFunction<
-            List<UpdateAction<ShoppingList>>,
+            List<ShoppingListUpdateAction>,
             ShoppingListDraft,
             ShoppingList,
-            List<UpdateAction<ShoppingList>>>
+            List<ShoppingListUpdateAction>>
         beforeUpdateCallback = (updateActions, newShoppingList, oldShoppingList) -> emptyList();
 
     final ShoppingListSyncOptions shoppingListSyncOptions =
@@ -223,11 +221,11 @@ class ShoppingListSyncOptionsBuilderTest {
             .beforeUpdateCallback(beforeUpdateCallback)
             .build();
 
-    assertThat(shoppingListSyncOptions.getBeforeUpdateCallback()).isNotNull();
+    Assertions.assertThat(shoppingListSyncOptions.getBeforeUpdateCallback()).isNotNull();
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        singletonList(ChangeName.of(ofEnglish("name")));
-    final List<UpdateAction<ShoppingList>> filteredList =
+    final List<ShoppingListUpdateAction> updateActions =
+        singletonList(ShoppingListChangeNameActionBuilder.of().name(ofEnglish("name")).build());
+    final List<ShoppingListUpdateAction> filteredList =
         shoppingListSyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(ShoppingListDraft.class), mock(ShoppingList.class));
     assertThat(filteredList).isNotEqualTo(updateActions);
@@ -239,13 +237,14 @@ class ShoppingListSyncOptionsBuilderTest {
     final Function<ShoppingListDraft, ShoppingListDraft> draftFunction =
         shoppingListDraft ->
             ShoppingListDraftBuilder.of(shoppingListDraft)
+                .name(ofEnglish("test shopping list"))
                 .key(format("%s_filteredKey", shoppingListDraft.getKey()))
                 .build();
 
     final ShoppingListSyncOptions shoppingListSyncOptions =
         ShoppingListSyncOptionsBuilder.of(CTP_CLIENT).beforeCreateCallback(draftFunction).build();
 
-    assertThat(shoppingListSyncOptions.getBeforeCreateCallback()).isNotNull();
+    Assertions.assertThat(shoppingListSyncOptions.getBeforeCreateCallback()).isNotNull();
 
     final ShoppingListDraft resourceDraft = mock(ShoppingListDraft.class);
     when(resourceDraft.getKey()).thenReturn("myKey");
@@ -263,7 +262,7 @@ class ShoppingListSyncOptionsBuilderTest {
   void applyBeforeCreateCallBack_WithNullCallback_ShouldReturnIdenticalDraftInOptional() {
     final ShoppingListSyncOptions shoppingListSyncOptions =
         ShoppingListSyncOptionsBuilder.of(CTP_CLIENT).build();
-    assertThat(shoppingListSyncOptions.getBeforeCreateCallback()).isNull();
+    Assertions.assertThat(shoppingListSyncOptions.getBeforeCreateCallback()).isNull();
 
     final ShoppingListDraft resourceDraft = mock(ShoppingListDraft.class);
     final Optional<ShoppingListDraft> filteredDraft =
@@ -278,7 +277,7 @@ class ShoppingListSyncOptionsBuilderTest {
     final ShoppingListSyncOptions shoppingListSyncOptions =
         ShoppingListSyncOptionsBuilder.of(CTP_CLIENT).beforeCreateCallback(draftFunction).build();
 
-    assertThat(shoppingListSyncOptions.getBeforeCreateCallback()).isNotNull();
+    Assertions.assertThat(shoppingListSyncOptions.getBeforeCreateCallback()).isNotNull();
 
     final ShoppingListDraft resourceDraft = mock(ShoppingListDraft.class);
     final Optional<ShoppingListDraft> filteredDraft =
@@ -292,7 +291,7 @@ class ShoppingListSyncOptionsBuilderTest {
     final ShoppingListSyncOptions shoppingListSyncOptions =
         ShoppingListSyncOptionsBuilder.of(CTP_CLIENT).cacheSize(10).build();
 
-    assertThat(shoppingListSyncOptions.getCacheSize()).isEqualTo(10);
+    Assertions.assertThat(shoppingListSyncOptions.getCacheSize()).isEqualTo(10);
   }
 
   @Test
@@ -300,11 +299,13 @@ class ShoppingListSyncOptionsBuilderTest {
     final ShoppingListSyncOptions shoppingListSyncOptionsWithZeroCacheSize =
         ShoppingListSyncOptionsBuilder.of(CTP_CLIENT).cacheSize(0).build();
 
-    assertThat(shoppingListSyncOptionsWithZeroCacheSize.getCacheSize()).isEqualTo(10_000);
+    Assertions.assertThat(shoppingListSyncOptionsWithZeroCacheSize.getCacheSize())
+        .isEqualTo(10_000);
 
     final ShoppingListSyncOptions shoppingListSyncOptionsWithNegativeCacheSize =
         ShoppingListSyncOptionsBuilder.of(CTP_CLIENT).cacheSize(-100).build();
 
-    assertThat(shoppingListSyncOptionsWithNegativeCacheSize.getCacheSize()).isEqualTo(10_000);
+    Assertions.assertThat(shoppingListSyncOptionsWithNegativeCacheSize.getCacheSize())
+        .isEqualTo(10_000);
   }
 }

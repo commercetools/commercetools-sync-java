@@ -18,10 +18,12 @@ import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.b
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetVatIdUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildStoreUpdateActions;
 
+import com.commercetools.api.models.customer.Customer;
+import com.commercetools.api.models.customer.CustomerDraft;
+import com.commercetools.api.models.customer.CustomerUpdateAction;
 import com.commercetools.sync.customers.CustomerSyncOptions;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.customers.CustomerDraft;
+import com.commercetools.sync.customers.models.CustomerCustomTypeAdapter;
+import com.commercetools.sync.customers.models.CustomerDraftCustomTypeAdapter;
 import java.util.List;
 import javax.annotation.Nonnull;
 
@@ -32,25 +34,25 @@ public final class CustomerSyncUtils {
 
   /**
    * Compares all the fields of a {@link Customer} and a {@link CustomerDraft}. It returns a {@link
-   * List} of {@link UpdateAction}&lt;{@link Customer}&gt; as a result. If no update action is
-   * needed, for example in case where both the {@link CustomerDraft} and the {@link CustomerDraft}
-   * have the same fields, an empty {@link List} is returned.
+   * List} of {@link CustomerUpdateAction} as a result. If no update action is needed, for example
+   * in case where both the {@link CustomerDraft} and the {@link CustomerDraft} have the same
+   * fields, an empty {@link List} is returned.
    *
    * @param oldCustomer the customer which should be updated.
    * @param newCustomer the customer draft where we get the new data.
    * @param syncOptions the sync options wrapper which contains options related to the sync process
    *     supplied by the user. For example, custom callbacks to call in case of warnings or errors
    *     occurring on the build update action process. And other options (See {@link
-   *     CustomerSyncOptions} for more info.
+   *     com.commercetools.sync.customers.CustomerSyncOptions} for more info.
    * @return A list of customer specific update actions.
    */
   @Nonnull
-  public static List<UpdateAction<Customer>> buildActions(
+  public static List<CustomerUpdateAction> buildActions(
       @Nonnull final Customer oldCustomer,
       @Nonnull final CustomerDraft newCustomer,
       @Nonnull final CustomerSyncOptions syncOptions) {
 
-    final List<UpdateAction<Customer>> updateActions =
+    final List<CustomerUpdateAction> updateActions =
         filterEmptyOptionals(
             buildChangeEmailUpdateAction(oldCustomer, newCustomer),
             buildSetFirstNameUpdateAction(oldCustomer, newCustomer),
@@ -66,18 +68,21 @@ public final class CustomerSyncUtils {
             buildSetVatIdUpdateAction(oldCustomer, newCustomer),
             buildSetLocaleUpdateAction(oldCustomer, newCustomer));
 
-    final List<UpdateAction<Customer>> addressUpdateActions =
+    final List<CustomerUpdateAction> addressUpdateActions =
         buildAllAddressUpdateActions(oldCustomer, newCustomer);
 
     updateActions.addAll(addressUpdateActions);
 
-    final List<UpdateAction<Customer>> customerCustomUpdateActions =
+    final List<CustomerUpdateAction> customerCustomUpdateActions =
         buildPrimaryResourceCustomUpdateActions(
-            oldCustomer, newCustomer, customerCustomActionBuilder, syncOptions);
+            CustomerCustomTypeAdapter.of(oldCustomer),
+            CustomerDraftCustomTypeAdapter.of(newCustomer),
+            customerCustomActionBuilder,
+            syncOptions);
 
     updateActions.addAll(customerCustomUpdateActions);
 
-    final List<UpdateAction<Customer>> buildStoreUpdateActions =
+    final List<CustomerUpdateAction> buildStoreUpdateActions =
         buildStoreUpdateActions(oldCustomer, newCustomer);
 
     updateActions.addAll(buildStoreUpdateActions);

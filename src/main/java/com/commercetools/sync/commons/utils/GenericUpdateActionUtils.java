@@ -3,12 +3,10 @@ package com.commercetools.sync.commons.utils;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import com.commercetools.api.models.ResourceUpdateAction;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.helpers.GenericCustomActionBuilder;
-import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.ResourceView;
-import io.sphere.sdk.types.Custom;
+import com.commercetools.sync.commons.models.Custom;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -19,12 +17,14 @@ final class GenericUpdateActionUtils {
 
   /**
    * Creates a CTP "setCustomType" update action on the given resource {@code T} according to the
-   * type of the {@link GenericCustomActionBuilder} passed. If the {@code customTypeId} passed is
-   * blank (null/empty), the error callback is triggered with an error message that the
-   * setCustomType update action cannot be built with a blank id, and an empty optional is returned.
+   * type of the {@link com.commercetools.sync.commons.helpers.GenericCustomActionBuilder} passed.
+   * If the {@code customTypeId} passed is blank (null/empty), the error callback is triggered with
+   * an error message that the setCustomType update action cannot be built with a blank id, and an
+   * empty optional is returned.
    *
-   * @param <T> the type of the resource which has the custom fields.
-   * @param <U> the type of the resource to do the update action on.
+   * @param <CustomT> the type of the resource which has the custom fields.
+   * @param <ResourceUpdateActionT> extends ResourceUpdateAction (e.g {@link
+   *     com.commercetools.api.models.customer.CustomerChangeEmailAction}
    * @param customTypeId the id of the new custom type.
    * @param customFieldsJsonMap the custom fields map of JSON values.
    * @param resource the resource which has the custom fields.
@@ -41,16 +41,18 @@ final class GenericUpdateActionUtils {
    *     empty optional if the {@code customTypeId} is blank.
    */
   @Nonnull
-  static <T extends Custom, U extends ResourceView>
-      Optional<UpdateAction<U>> buildTypedSetCustomTypeUpdateAction(
+  static <
+          CustomT extends Custom,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      Optional<ResourceUpdateActionT> buildTypedSetCustomTypeUpdateAction(
           @Nullable final String customTypeId,
-          @Nullable final Map<String, JsonNode> customFieldsJsonMap,
-          @Nonnull final T resource,
-          @Nonnull final GenericCustomActionBuilder<U> customActionBuilder,
-          @Nullable final Integer variantId,
-          @Nonnull final Function<T, String> resourceIdGetter,
-          @Nonnull final Function<T, String> resourceTypeIdGetter,
-          @Nonnull final Function<T, String> updateIdGetter,
+          @Nullable final Map<String, Object> customFieldsJsonMap,
+          @Nonnull final CustomT resource,
+          @Nonnull final GenericCustomActionBuilder<ResourceUpdateActionT> customActionBuilder,
+          @Nullable final Long variantId,
+          @Nonnull final Function<CustomT, String> resourceIdGetter,
+          @Nonnull final Function<CustomT, String> resourceTypeIdGetter,
+          @Nonnull final Function<CustomT, String> updateIdGetter,
           @Nonnull final BaseSyncOptions syncOptions) {
 
     if (!isBlank(customTypeId)) {

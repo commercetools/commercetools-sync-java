@@ -1,30 +1,31 @@
 package com.commercetools.sync.customers;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.customer.Customer;
+import com.commercetools.api.models.customer.CustomerDraft;
+import com.commercetools.api.models.customer.CustomerUpdateAction;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.customers.CustomerDraft;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class CustomerSyncOptions extends BaseSyncOptions<Customer, CustomerDraft, Customer> {
+public final class CustomerSyncOptions
+    extends BaseSyncOptions<Customer, CustomerDraft, CustomerUpdateAction> {
 
   CustomerSyncOptions(
-      @Nonnull final SphereClient ctpClient,
+      @Nonnull final ProjectApiRoot ctpClient,
       @Nullable
           final QuadConsumer<
                   SyncException,
                   Optional<CustomerDraft>,
                   Optional<Customer>,
-                  List<UpdateAction<Customer>>>
+                  List<CustomerUpdateAction>>
               errorCallback,
       @Nullable
           final TriConsumer<SyncException, Optional<CustomerDraft>, Optional<Customer>>
@@ -32,10 +33,7 @@ public final class CustomerSyncOptions extends BaseSyncOptions<Customer, Custome
       final int batchSize,
       @Nullable
           final TriFunction<
-                  List<UpdateAction<Customer>>,
-                  CustomerDraft,
-                  Customer,
-                  List<UpdateAction<Customer>>>
+                  List<CustomerUpdateAction>, CustomerDraft, Customer, List<CustomerUpdateAction>>
               beforeUpdateCallback,
       @Nullable final Function<CustomerDraft, CustomerDraft> beforeCreateCallback,
       final long cacheSize) {

@@ -1,9 +1,11 @@
 package com.commercetools.sync.products.helpers.variantreferenceresolver.withsetofnestedattributes;
 
-import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.sync.commons.utils.TestUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.VariantReferenceResolver;
@@ -16,10 +18,9 @@ import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TypeService;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.products.ProductVariantDraft;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class WithNoReferencesTest {
   private VariantReferenceResolver referenceResolver;
@@ -35,26 +36,26 @@ class WithNoReferencesTest {
   @BeforeEach
   void setup() {
     final ProductSyncOptions syncOptions =
-        ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
     referenceResolver =
         new VariantReferenceResolver(
             syncOptions,
-            mock(TypeService.class),
-            mock(ChannelService.class),
-            mock(CustomerGroupService.class),
-            mock(ProductService.class),
-            mock(ProductTypeService.class),
-            mock(CategoryService.class),
-            mock(CustomObjectService.class),
-            mock(StateService.class),
-            mock(CustomerService.class));
+            Mockito.mock(TypeService.class),
+            Mockito.mock(ChannelService.class),
+            Mockito.mock(CustomerGroupService.class),
+            Mockito.mock(ProductService.class),
+            Mockito.mock(ProductTypeService.class),
+            Mockito.mock(CategoryService.class),
+            Mockito.mock(CustomObjectService.class),
+            Mockito.mock(StateService.class),
+            Mockito.mock(CustomerService.class));
   }
 
   @Test
   void resolveReferences_WithSetOfNestedTextAttributes_ShouldReturnEqualDraft() {
     // preparation
     final ProductVariantDraft withSetOfNestedTextAttributes =
-        readObjectFromResource(
+        TestUtils.readObjectFromResource(
             SET_OF_NESTED_ATTRIBUTE_WITH_TEXT_ATTRIBUTES, ProductVariantDraft.class);
 
     // test
@@ -71,7 +72,7 @@ class WithNoReferencesTest {
   void resolveReferences_WithSetOfNestedSetOfTextAttributes_ShouldReturnEqualDraft() {
     // preparation
     final ProductVariantDraft withSetOfNestedSetOfTextAttributes =
-        readObjectFromResource(
+        TestUtils.readObjectFromResource(
             SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_TEXT_ATTRIBUTES, ProductVariantDraft.class);
 
     // test

@@ -1,21 +1,21 @@
 package com.commercetools.sync.types;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
-import static com.commercetools.sync.types.utils.TypeSyncUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
+import com.commercetools.api.models.type.Type;
+import com.commercetools.api.models.type.TypeDraft;
+import com.commercetools.api.models.type.TypeUpdateAction;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.types.helpers.TypeBatchValidator;
 import com.commercetools.sync.types.helpers.TypeSyncStatistics;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.types.Type;
-import io.sphere.sdk.types.TypeDraft;
+import com.commercetools.sync.types.utils.TypeSyncUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,7 +26,8 @@ import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 /** This class syncs type drafts with the corresponding types in the CTP project. */
-public class TypeSync extends BaseSync<TypeDraft, Type, TypeSyncStatistics, TypeSyncOptions> {
+public class TypeSync
+    extends BaseSync<Type, TypeDraft, TypeUpdateAction, TypeSyncStatistics, TypeSyncOptions> {
 
   private static final String CTP_TYPE_FETCH_FAILED =
       "Failed to fetch existing types with keys: '%s'.";
@@ -187,9 +188,10 @@ public class TypeSync extends BaseSync<TypeDraft, Type, TypeSyncStatistics, Type
   private CompletionStage<Optional<Type>> buildActionsAndUpdate(
       @Nonnull final Type oldType, @Nonnull final TypeDraft newType) {
 
-    final List<UpdateAction<Type>> updateActions = buildActions(oldType, newType, syncOptions);
+    final List<TypeUpdateAction> updateActions =
+        TypeSyncUtils.buildActions(oldType, newType, syncOptions);
 
-    final List<UpdateAction<Type>> updateActionsAfterCallback =
+    final List<TypeUpdateAction> updateActionsAfterCallback =
         syncOptions.applyBeforeUpdateCallback(updateActions, newType, oldType);
 
     if (!updateActionsAfterCallback.isEmpty()) {
@@ -218,7 +220,7 @@ public class TypeSync extends BaseSync<TypeDraft, Type, TypeSyncStatistics, Type
   private CompletionStage<Optional<Type>> updateType(
       @Nonnull final Type oldType,
       @Nonnull final TypeDraft newType,
-      @Nonnull final List<UpdateAction<Type>> updateActions) {
+      @Nonnull final List<TypeUpdateAction> updateActions) {
 
     return typeService
         .updateType(oldType, updateActions)
@@ -226,19 +228,16 @@ public class TypeSync extends BaseSync<TypeDraft, Type, TypeSyncStatistics, Type
         .thenCompose(
             updateResponse -> {
               final Type updatedType = updateResponse.getKey();
-              final Throwable sphereException = updateResponse.getValue();
-              if (sphereException != null) {
+              final Throwable ctpException = updateResponse.getValue();
+              if (ctpException != null) {
                 return executeSupplierIfConcurrentModificationException(
-                    sphereException,
+                    ctpException,
                     () -> fetchAndUpdate(oldType, newType),
                     () -> {
                       final String errorMessage =
                           format(
-                              CTP_TYPE_UPDATE_FAILED,
-                              newType.getKey(),
-                              sphereException.getMessage());
-                      handleError(
-                          errorMessage, sphereException, oldType, newType, updateActions, 1);
+                              CTP_TYPE_UPDATE_FAILED, newType.getKey(), ctpException.getMessage());
+                      handleError(errorMessage, ctpException, oldType, newType, updateActions, 1);
                       return CompletableFuture.completedFuture(Optional.empty());
                     });
               } else {
@@ -254,7 +253,7 @@ public class TypeSync extends BaseSync<TypeDraft, Type, TypeSyncStatistics, Type
 
     final String key = oldType.getKey();
     return typeService
-        .fetchType(key)
+        .fetchTypeByKey(key)
         .handle(ImmutablePair::new)
         .thenCompose(
             fetchResponse -> {

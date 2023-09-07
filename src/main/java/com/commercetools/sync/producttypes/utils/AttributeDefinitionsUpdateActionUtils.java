@@ -1,28 +1,25 @@
 package com.commercetools.sync.producttypes.utils;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
-import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
-import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
+import com.commercetools.api.models.product_type.AttributeDefinition;
+import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
+import com.commercetools.api.models.product_type.AttributeEnumType;
+import com.commercetools.api.models.product_type.AttributeLocalizedEnumType;
+import com.commercetools.api.models.product_type.AttributeReferenceType;
+import com.commercetools.api.models.product_type.AttributeSetType;
+import com.commercetools.api.models.product_type.AttributeType;
+import com.commercetools.api.models.product_type.ProductTypeAddAttributeDefinitionActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeChangeAttributeOrderByNameActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeRemoveAttributeDefinitionActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.commons.exceptions.DuplicateNameException;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.products.attributes.AttributeDefinition;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
-import io.sphere.sdk.products.attributes.AttributeType;
-import io.sphere.sdk.products.attributes.EnumAttributeType;
-import io.sphere.sdk.products.attributes.LocalizedEnumAttributeType;
-import io.sphere.sdk.products.attributes.ReferenceAttributeType;
-import io.sphere.sdk.products.attributes.SetAttributeType;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.commands.updateactions.AddAttributeDefinition;
-import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeOrderByName;
-import io.sphere.sdk.producttypes.commands.updateactions.RemoveAttributeDefinition;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -39,9 +36,9 @@ final class AttributeDefinitionsUpdateActionUtils {
 
   /**
    * Compares a list of {@link AttributeDefinition}s with a list of {@link
-   * AttributeDefinitionDraft}s to returns a {@link List} of {@link UpdateAction}&lt;{@link
-   * ProductType}&gt;. If both lists have identical AttributeDefinitions, then no update actions are
-   * needed and hence an empty {@link List} is returned.
+   * AttributeDefinitionDraft}s to returns a {@link java.util.List} of {@link
+   * ProductTypeUpdateAction}. If both lists have identical AttributeDefinitions, then no update
+   * actions are needed and hence an empty {@link java.util.List} is returned.
    *
    * <p>If the list of new {@link AttributeDefinitionDraft}s is {@code null}, then remove actions
    * are built for every existing attribute definition in the {@code oldAttributeDefinitions} list.
@@ -58,7 +55,7 @@ final class AttributeDefinitionsUpdateActionUtils {
    *     duplicate names or enums duplicate keys.
    */
   @Nonnull
-  static List<UpdateAction<ProductType>> buildAttributeDefinitionsUpdateActions(
+  static List<ProductTypeUpdateAction> buildAttributeDefinitionsUpdateActions(
       @Nonnull final List<AttributeDefinition> oldAttributeDefinitions,
       @Nullable final List<AttributeDefinitionDraft> newAttributeDefinitionsDrafts)
       throws BuildUpdateActionException {
@@ -70,7 +67,7 @@ final class AttributeDefinitionsUpdateActionUtils {
     } else {
       return oldAttributeDefinitions.stream()
           .map(AttributeDefinition::getName)
-          .map(RemoveAttributeDefinition::of)
+          .map(name -> ProductTypeRemoveAttributeDefinitionActionBuilder.of().name(name).build())
           .collect(Collectors.toList());
     }
   }
@@ -91,13 +88,13 @@ final class AttributeDefinitionsUpdateActionUtils {
    *     duplicate names, enums duplicate keys or unsupported attribute definition type change.
    */
   @Nonnull
-  private static List<UpdateAction<ProductType>> buildUpdateActions(
+  private static List<ProductTypeUpdateAction> buildUpdateActions(
       @Nonnull final List<AttributeDefinition> oldAttributeDefinitions,
       @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionsDrafts)
       throws BuildUpdateActionException {
 
     try {
-      final List<UpdateAction<ProductType>> updateActions =
+      final List<ProductTypeUpdateAction> updateActions =
           buildRemoveAttributeDefinitionOrAttributeDefinitionUpdateActions(
               oldAttributeDefinitions, newAttributeDefinitionsDrafts);
 
@@ -138,7 +135,7 @@ final class AttributeDefinitionsUpdateActionUtils {
    * @throws UnsupportedOperationException in case the attribute type field changes.
    */
   @Nonnull
-  private static List<UpdateAction<ProductType>>
+  private static List<ProductTypeUpdateAction>
       buildRemoveAttributeDefinitionOrAttributeDefinitionUpdateActions(
           @Nonnull final List<AttributeDefinition> oldAttributeDefinitions,
           @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionsDrafts) {
@@ -164,34 +161,35 @@ final class AttributeDefinitionsUpdateActionUtils {
               final String oldAttributeDefinitionName = oldAttributeDefinition.getName();
               final AttributeDefinitionDraft matchingNewAttributeDefinitionDraft =
                   newAttributesDefinitionsDraftsNameMap.get(oldAttributeDefinitionName);
-              return ofNullable(matchingNewAttributeDefinitionDraft)
-                  .map(
-                      attributeDefinitionDraft -> {
-                        // attribute type is required so if null we let commercetools to throw
-                        // exception
-                        if (attributeDefinitionDraft.getAttributeType() != null) {
-                          if (haveSameAttributeType(
-                              oldAttributeDefinition.getAttributeType(),
-                              matchingNewAttributeDefinitionDraft.getAttributeType())) {
-                            return buildActions(oldAttributeDefinition, attributeDefinitionDraft);
-                          } else {
-                            throw new UnsupportedOperationException(
-                                format(
-                                    "Due to eventual consistency of 'removeAttributeDefinition' action, "
-                                        + "changing the attribute definition type (attribute name='%s') is not "
-                                        + "supported programmatically. "
-                                        + "Please apply the attribute definition type changes "
-                                        + "manually through commercetools API or merchant center. "
-                                        + "For more information please check: https://github.com/commercetools/commercetools-sync-java/blob/master/docs/adr/0003-syncing-attribute-type-changes.md",
-                                    oldAttributeDefinitionName));
-                          }
-                        } else {
-                          return new ArrayList<UpdateAction<ProductType>>();
-                        }
-                      })
-                  .orElseGet(
-                      () ->
-                          singletonList(RemoveAttributeDefinition.of(oldAttributeDefinitionName)));
+              if (matchingNewAttributeDefinitionDraft == null) {
+                return singletonList(
+                    ProductTypeRemoveAttributeDefinitionActionBuilder.of()
+                        .name(oldAttributeDefinitionName)
+                        .build());
+              } else {
+                // attribute type is required so if null we let commercetools to throw
+                // exception
+                if (matchingNewAttributeDefinitionDraft.getType() != null) {
+                  if (haveSameAttributeType(
+                      oldAttributeDefinition.getType(),
+                      matchingNewAttributeDefinitionDraft.getType())) {
+                    return AttributeDefinitionUpdateActionUtils.buildActions(
+                        oldAttributeDefinition, matchingNewAttributeDefinitionDraft);
+                  } else {
+                    throw new UnsupportedOperationException(
+                        format(
+                            "Due to eventual consistency of 'removeAttributeDefinition' action, "
+                                + "changing the attribute definition type (attribute name='%s') is not "
+                                + "supported programmatically. "
+                                + "Please apply the attribute definition type changes "
+                                + "manually through commercetools API or merchant center. "
+                                + "For more information please check: https://github.com/commercetools/commercetools-sync-java/blob/master/docs/adr/0003-syncing-attribute-type-changes.md",
+                            oldAttributeDefinitionName));
+                  }
+                } else {
+                  return new ArrayList<ProductTypeUpdateAction>();
+                }
+              }
             })
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
@@ -205,9 +203,9 @@ final class AttributeDefinitionsUpdateActionUtils {
    * <p>Note:
    *
    * <ul>
-   *   <li>It returns true if both attribute types are of {@link EnumAttributeType} type, regardless
+   *   <li>It returns true if both attribute types are of {@link AttributeEnumType} type, regardless
    *       of the enum values.
-   *   <li>It returns true if both attribute types are of {@link LocalizedEnumAttributeType} type,
+   *   <li>It returns true if both attribute types are of {@link AttributeLocalizedEnumType} type,
    *       regardless of the localized enum values.
    * </ul>
    *
@@ -217,26 +215,24 @@ final class AttributeDefinitionsUpdateActionUtils {
    */
   private static boolean haveSameAttributeType(
       @Nonnull final AttributeType attributeTypeA, @Nonnull final AttributeType attributeTypeB) {
-
-    if (attributeTypeA instanceof SetAttributeType && attributeTypeB instanceof SetAttributeType) {
+    if (attributeTypeA instanceof AttributeSetType && attributeTypeB instanceof AttributeSetType) {
       return haveSameAttributeType(
-          ((SetAttributeType) attributeTypeA).getElementType(),
-          ((SetAttributeType) attributeTypeB).getElementType());
+          ((AttributeSetType) attributeTypeA).getElementType(),
+          ((AttributeSetType) attributeTypeB).getElementType());
     }
 
-    if (attributeTypeA instanceof ReferenceAttributeType
-        && attributeTypeB instanceof ReferenceAttributeType) {
-      return ((ReferenceAttributeType) attributeTypeA)
-          .equalsIgnoreTypeRef((ReferenceAttributeType) attributeTypeB);
+    if (attributeTypeA instanceof AttributeReferenceType
+        && attributeTypeB instanceof AttributeReferenceType) {
+      return attributeTypeA.equals(attributeTypeB);
     }
 
-    if (attributeTypeA instanceof EnumAttributeType
-        && attributeTypeB instanceof EnumAttributeType) {
+    if (attributeTypeA instanceof AttributeEnumType
+        && attributeTypeB instanceof AttributeEnumType) {
       return true;
     }
 
-    if (attributeTypeA instanceof LocalizedEnumAttributeType
-        && attributeTypeB instanceof LocalizedEnumAttributeType) {
+    if (attributeTypeA instanceof AttributeLocalizedEnumType
+        && attributeTypeB instanceof AttributeLocalizedEnumType) {
       return true;
     }
 
@@ -256,10 +252,9 @@ final class AttributeDefinitionsUpdateActionUtils {
    *     optional is returned.
    */
   @Nonnull
-  private static Optional<UpdateAction<ProductType>>
-      buildChangeAttributeDefinitionOrderUpdateAction(
-          @Nonnull final List<AttributeDefinition> oldAttributeDefinitions,
-          @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionDrafts) {
+  private static Optional<ProductTypeUpdateAction> buildChangeAttributeDefinitionOrderUpdateAction(
+      @Nonnull final List<AttributeDefinition> oldAttributeDefinitions,
+      @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionDrafts) {
 
     final List<String> newNames =
         newAttributeDefinitionDrafts.stream()
@@ -284,7 +279,12 @@ final class AttributeDefinitionsUpdateActionUtils {
         Stream.concat(existingNames.stream(), notExistingNames.stream()).collect(toList());
 
     return buildUpdateAction(
-        allNames, newNames, () -> ChangeAttributeOrderByName.of(newAttributeDefinitionsOrder));
+        allNames,
+        newNames,
+        () ->
+            ProductTypeChangeAttributeOrderByNameActionBuilder.of()
+                .attributeNames(newAttributeDefinitionsOrder)
+                .build());
   }
 
   /**
@@ -299,7 +299,7 @@ final class AttributeDefinitionsUpdateActionUtils {
    *     optional is returned.
    */
   @Nonnull
-  private static List<UpdateAction<ProductType>> buildAddAttributeDefinitionUpdateActions(
+  private static List<ProductTypeUpdateAction> buildAddAttributeDefinitionUpdateActions(
       @Nonnull final List<AttributeDefinition> oldAttributeDefinitions,
       @Nonnull final List<AttributeDefinitionDraft> newAttributeDefinitionDrafts) {
 
@@ -312,7 +312,11 @@ final class AttributeDefinitionsUpdateActionUtils {
         .filter(
             attributeDefinitionDraft ->
                 !oldAttributeDefinitionNameMap.containsKey(attributeDefinitionDraft.getName()))
-        .map(AddAttributeDefinition::of)
+        .map(
+            attributeDefinitionDraft ->
+                ProductTypeAddAttributeDefinitionActionBuilder.of()
+                    .attribute(attributeDefinitionDraft)
+                    .build())
         .collect(Collectors.toList());
   }
 

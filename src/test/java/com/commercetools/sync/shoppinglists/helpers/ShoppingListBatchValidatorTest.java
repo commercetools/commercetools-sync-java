@@ -1,33 +1,25 @@
 package com.commercetools.sync.shoppinglists.helpers;
 
-import static com.commercetools.sync.shoppinglists.helpers.ShoppingListBatchValidator.LINE_ITEM_DRAFT_IS_NULL;
-import static com.commercetools.sync.shoppinglists.helpers.ShoppingListBatchValidator.LINE_ITEM_DRAFT_SKU_NOT_SET;
-import static com.commercetools.sync.shoppinglists.helpers.ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_IS_NULL;
-import static com.commercetools.sync.shoppinglists.helpers.ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_KEY_NOT_SET;
-import static com.commercetools.sync.shoppinglists.helpers.ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_NAME_NOT_SET;
-import static com.commercetools.sync.shoppinglists.helpers.ShoppingListBatchValidator.TEXT_LINE_ITEM_DRAFT_IS_NULL;
-import static com.commercetools.sync.shoppinglists.helpers.ShoppingListBatchValidator.TEXT_LINE_ITEM_DRAFT_NAME_NOT_SET;
 import static java.lang.String.format;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.singletonList;
+import static java.util.Collections.*;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.customer.Customer;
+import com.commercetools.api.models.customer.CustomerResourceIdentifier;
+import com.commercetools.api.models.customer.CustomerResourceIdentifierBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraftBuilder;
+import com.commercetools.api.models.shopping_list.TextLineItemDraft;
+import com.commercetools.api.models.shopping_list.TextLineItemDraftBuilder;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.shoppinglists.LineItemDraft;
-import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
-import io.sphere.sdk.shoppinglists.TextLineItemDraft;
-import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
-import io.sphere.sdk.types.CustomFieldsDraft;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -46,7 +38,7 @@ class ShoppingListBatchValidatorTest {
   @BeforeEach
   void setup() {
     errorCallBackMessages = new ArrayList<>();
-    final SphereClient ctpClient = mock(SphereClient.class);
+    final ProjectApiRoot ctpClient = mock(ProjectApiRoot.class);
 
     syncOptions =
         ShoppingListSyncOptionsBuilder.of(ctpClient)
@@ -71,7 +63,8 @@ class ShoppingListBatchValidatorTest {
     final Set<ShoppingListDraft> validDrafts = getValidDrafts(singletonList(null));
 
     assertThat(errorCallBackMessages).hasSize(1);
-    assertThat(errorCallBackMessages.get(0)).isEqualTo(SHOPPING_LIST_DRAFT_IS_NULL);
+    assertThat(errorCallBackMessages.get(0))
+        .isEqualTo(ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_IS_NULL);
     assertThat(validDrafts).isEmpty();
   }
 
@@ -83,7 +76,10 @@ class ShoppingListBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(SHOPPING_LIST_DRAFT_KEY_NOT_SET, shoppingListDraft.getName()));
+        .isEqualTo(
+            String.format(
+                ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_KEY_NOT_SET,
+                shoppingListDraft.getName()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -97,7 +93,10 @@ class ShoppingListBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(SHOPPING_LIST_DRAFT_KEY_NOT_SET, shoppingListDraft.getName()));
+        .isEqualTo(
+            String.format(
+                ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_KEY_NOT_SET,
+                shoppingListDraft.getName()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -110,7 +109,10 @@ class ShoppingListBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(SHOPPING_LIST_DRAFT_NAME_NOT_SET, shoppingListDraft.getKey()));
+        .isEqualTo(
+            String.format(
+                ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_NAME_NOT_SET,
+                shoppingListDraft.getKey()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -124,7 +126,10 @@ class ShoppingListBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(SHOPPING_LIST_DRAFT_NAME_NOT_SET, shoppingListDraft.getKey()));
+        .isEqualTo(
+            String.format(
+                ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_NAME_NOT_SET,
+                shoppingListDraft.getKey()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -140,7 +145,9 @@ class ShoppingListBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(LINE_ITEM_DRAFT_IS_NULL, 0, shoppingListDraft.getKey()));
+        .isEqualTo(
+            String.format(
+                ShoppingListBatchValidator.LINE_ITEM_DRAFT_IS_NULL, 0, shoppingListDraft.getKey()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -151,13 +158,18 @@ class ShoppingListBatchValidatorTest {
     when(shoppingListDraft.getKey()).thenReturn("validDraftKey");
     when(shoppingListDraft.getName()).thenReturn(LocalizedString.ofEnglish("validDraftName"));
     when(shoppingListDraft.getLineItems())
-        .thenReturn(singletonList(LineItemDraftBuilder.ofSku("", 1L).build()));
+        .thenReturn(
+            singletonList(ShoppingListLineItemDraftBuilder.of().sku("").quantity(1L).build()));
 
     final Set<ShoppingListDraft> validDrafts = getValidDrafts(singletonList(shoppingListDraft));
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(LINE_ITEM_DRAFT_SKU_NOT_SET, 0, shoppingListDraft.getKey()));
+        .isEqualTo(
+            String.format(
+                ShoppingListBatchValidator.LINE_ITEM_DRAFT_SKU_NOT_SET,
+                0,
+                shoppingListDraft.getKey()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -168,13 +180,18 @@ class ShoppingListBatchValidatorTest {
     when(shoppingListDraft.getKey()).thenReturn("validDraftKey");
     when(shoppingListDraft.getName()).thenReturn(LocalizedString.ofEnglish("validDraftName"));
     when(shoppingListDraft.getLineItems())
-        .thenReturn(singletonList(LineItemDraftBuilder.ofSku("123", 1L).build()));
+        .thenReturn(
+            singletonList(ShoppingListLineItemDraftBuilder.of().sku("123").quantity(1L).build()));
     when(shoppingListDraft.getTextLineItems()).thenReturn(singletonList(null));
     final Set<ShoppingListDraft> validDrafts = getValidDrafts(singletonList(shoppingListDraft));
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(TEXT_LINE_ITEM_DRAFT_IS_NULL, 0, shoppingListDraft.getKey()));
+        .isEqualTo(
+            String.format(
+                ShoppingListBatchValidator.TEXT_LINE_ITEM_DRAFT_IS_NULL,
+                0,
+                shoppingListDraft.getKey()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -184,7 +201,8 @@ class ShoppingListBatchValidatorTest {
     when(shoppingListDraft.getKey()).thenReturn("validDraftKey");
     when(shoppingListDraft.getName()).thenReturn(LocalizedString.ofEnglish("validDraftName"));
     when(shoppingListDraft.getLineItems())
-        .thenReturn(singletonList(LineItemDraftBuilder.ofSku("", 1L).build()));
+        .thenReturn(
+            singletonList(ShoppingListLineItemDraftBuilder.of().sku("").quantity(1L).build()));
     when(shoppingListDraft.getTextLineItems()).thenReturn(singletonList(null));
 
     final Set<ShoppingListDraft> validDrafts = getValidDrafts(singletonList(shoppingListDraft));
@@ -194,8 +212,14 @@ class ShoppingListBatchValidatorTest {
         .isEqualTo(
             format(
                 "%s,%s",
-                format(LINE_ITEM_DRAFT_SKU_NOT_SET, 0, shoppingListDraft.getKey()),
-                format(TEXT_LINE_ITEM_DRAFT_IS_NULL, 0, shoppingListDraft.getKey())));
+                String.format(
+                    ShoppingListBatchValidator.LINE_ITEM_DRAFT_SKU_NOT_SET,
+                    0,
+                    shoppingListDraft.getKey()),
+                String.format(
+                    ShoppingListBatchValidator.TEXT_LINE_ITEM_DRAFT_IS_NULL,
+                    0,
+                    shoppingListDraft.getKey())));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -206,33 +230,21 @@ class ShoppingListBatchValidatorTest {
     when(shoppingListDraft.getKey()).thenReturn("validDraftKey");
     when(shoppingListDraft.getName()).thenReturn(LocalizedString.ofEnglish("validDraftName"));
     when(shoppingListDraft.getLineItems())
-        .thenReturn(singletonList(LineItemDraftBuilder.ofSku("123", 1L).build()));
+        .thenReturn(
+            singletonList(ShoppingListLineItemDraftBuilder.of().sku("123").quantity(1L).build()));
     when(shoppingListDraft.getTextLineItems())
         .thenReturn(
-            singletonList(TextLineItemDraftBuilder.of(LocalizedString.empty(), 1L).build()));
+            singletonList(
+                TextLineItemDraftBuilder.of().name(LocalizedString.empty()).quantity(1L).build()));
     final Set<ShoppingListDraft> validDrafts = getValidDrafts(singletonList(shoppingListDraft));
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(TEXT_LINE_ITEM_DRAFT_NAME_NOT_SET, 0, shoppingListDraft.getKey()));
-    assertThat(validDrafts).isEmpty();
-  }
-
-  @Test
-  void
-      validateAndCollectReferencedKeys_WithTextLineItemDraftWithNullName_ShouldHaveValidationErrorAndEmptyResult() {
-    final ShoppingListDraft shoppingListDraft = mock(ShoppingListDraft.class);
-    when(shoppingListDraft.getKey()).thenReturn("validDraftKey");
-    when(shoppingListDraft.getName()).thenReturn(LocalizedString.ofEnglish("validDraftName"));
-    when(shoppingListDraft.getLineItems())
-        .thenReturn(singletonList(LineItemDraftBuilder.ofSku("123", 1L).build()));
-    when(shoppingListDraft.getTextLineItems())
-        .thenReturn(singletonList(TextLineItemDraftBuilder.of(null, 1L).build()));
-    final Set<ShoppingListDraft> validDrafts = getValidDrafts(singletonList(shoppingListDraft));
-
-    assertThat(errorCallBackMessages).hasSize(1);
-    assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(TEXT_LINE_ITEM_DRAFT_NAME_NOT_SET, 0, shoppingListDraft.getKey()));
+        .isEqualTo(
+            String.format(
+                ShoppingListBatchValidator.TEXT_LINE_ITEM_DRAFT_NAME_NOT_SET,
+                0,
+                shoppingListDraft.getKey()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -242,21 +254,37 @@ class ShoppingListBatchValidatorTest {
     when(validShoppingListDraft.getKey()).thenReturn("validDraftKey");
     when(validShoppingListDraft.getName()).thenReturn(LocalizedString.ofEnglish("name"));
     when(validShoppingListDraft.getCustom())
-        .thenReturn(CustomFieldsDraft.ofTypeKeyAndJson("typeKey", emptyMap()));
-    LineItemDraft lineItem = mock(LineItemDraft.class);
+        .thenReturn(
+            CustomFieldsDraftBuilder.of()
+                .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.key("typeKey"))
+                .fields(fieldContainerBuilder -> fieldContainerBuilder.values(emptyMap()))
+                .build());
+    final ShoppingListLineItemDraft lineItem = mock(ShoppingListLineItemDraft.class);
     when(lineItem.getCustom())
-        .thenReturn(CustomFieldsDraft.ofTypeKeyAndJson("lineItemTypeKey", emptyMap()));
+        .thenReturn(
+            CustomFieldsDraftBuilder.of()
+                .type(
+                    typeResourceIdentifierBuilder ->
+                        typeResourceIdentifierBuilder.key("lineItemTypeKey"))
+                .fields(fieldContainerBuilder -> fieldContainerBuilder.values(emptyMap()))
+                .build());
     when(lineItem.getSku()).thenReturn("validSku");
-    when(validShoppingListDraft.getLineItems()).thenReturn(singletonList(lineItem));
-    TextLineItemDraft textLineItem = mock(TextLineItemDraft.class);
+    when(validShoppingListDraft.getLineItems()).thenReturn(List.of(lineItem));
+    final TextLineItemDraft textLineItem = mock(TextLineItemDraft.class);
     when(textLineItem.getCustom())
-        .thenReturn(CustomFieldsDraft.ofTypeKeyAndJson("textLineItemTypeKey", emptyMap()));
+        .thenReturn(
+            CustomFieldsDraftBuilder.of()
+                .type(
+                    typeResourceIdentifierBuilder ->
+                        typeResourceIdentifierBuilder.key("textLineItemTypeKey"))
+                .fields(fieldContainerBuilder -> fieldContainerBuilder.values(emptyMap()))
+                .build());
     when(textLineItem.getName()).thenReturn(LocalizedString.ofEnglish("validName"));
     when(validShoppingListDraft.getTextLineItems()).thenReturn(singletonList(textLineItem));
-    Customer customer = mock(Customer.class);
+    final Customer customer = mock(Customer.class);
     when(customer.getKey()).thenReturn("customerKey");
-    final ResourceIdentifier<Customer> customerResourceIdentifier =
-        ResourceIdentifier.ofKey(customer.getKey());
+    final CustomerResourceIdentifier customerResourceIdentifier =
+        CustomerResourceIdentifierBuilder.of().key(customer.getKey()).build();
     when(validShoppingListDraft.getCustomer()).thenReturn(customerResourceIdentifier);
 
     final ShoppingListDraft validShoppingListDraftWithoutReferences = mock(ShoppingListDraft.class);
@@ -279,7 +307,10 @@ class ShoppingListBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(SHOPPING_LIST_DRAFT_KEY_NOT_SET, invalidShoppingListDraft.getName()));
+        .isEqualTo(
+            String.format(
+                ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_KEY_NOT_SET,
+                invalidShoppingListDraft.getName()));
     assertThat(pair.getLeft())
         .containsExactlyInAnyOrder(validShoppingListDraft, validShoppingListDraftWithoutReferences);
     assertThat(pair.getRight().getTypeKeys())
@@ -293,17 +324,31 @@ class ShoppingListBatchValidatorTest {
     when(validShoppingListDraft.getKey()).thenReturn("validDraftKey");
     when(validShoppingListDraft.getName()).thenReturn(LocalizedString.ofEnglish("name"));
     when(validShoppingListDraft.getCustom())
-        .thenReturn(CustomFieldsDraft.ofTypeKeyAndJson(EMPTY, emptyMap()));
-    LineItemDraft lineItem = mock(LineItemDraft.class);
-    when(lineItem.getCustom()).thenReturn(CustomFieldsDraft.ofTypeKeyAndJson(EMPTY, emptyMap()));
+        .thenReturn(
+            CustomFieldsDraftBuilder.of()
+                .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.key(EMPTY))
+                .fields(fieldContainerBuilder -> fieldContainerBuilder.values(emptyMap()))
+                .build());
+    final ShoppingListLineItemDraft lineItem = mock(ShoppingListLineItemDraft.class);
+    when(lineItem.getCustom())
+        .thenReturn(
+            CustomFieldsDraftBuilder.of()
+                .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.key(EMPTY))
+                .fields(fieldContainerBuilder -> fieldContainerBuilder.values(emptyMap()))
+                .build());
     when(lineItem.getSku()).thenReturn("validSku");
     when(validShoppingListDraft.getLineItems()).thenReturn(singletonList(lineItem));
-    TextLineItemDraft textLineItem = mock(TextLineItemDraft.class);
+    final TextLineItemDraft textLineItem = mock(TextLineItemDraft.class);
     when(textLineItem.getCustom())
-        .thenReturn(CustomFieldsDraft.ofTypeKeyAndJson(EMPTY, emptyMap()));
+        .thenReturn(
+            CustomFieldsDraftBuilder.of()
+                .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.key(EMPTY))
+                .fields(fieldContainerBuilder -> fieldContainerBuilder.values(emptyMap()))
+                .build());
     when(textLineItem.getName()).thenReturn(LocalizedString.ofEnglish("validName"));
     when(validShoppingListDraft.getTextLineItems()).thenReturn(singletonList(textLineItem));
-    final ResourceIdentifier<Customer> customerResourceIdentifier = ResourceIdentifier.ofKey(EMPTY);
+    final CustomerResourceIdentifier customerResourceIdentifier =
+        CustomerResourceIdentifierBuilder.of().key(EMPTY).build();
     when(validShoppingListDraft.getCustomer()).thenReturn(customerResourceIdentifier);
 
     final ShoppingListBatchValidator shoppingListBatchValidator =

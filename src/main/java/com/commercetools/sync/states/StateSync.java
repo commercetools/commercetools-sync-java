@@ -1,8 +1,6 @@
 package com.commercetools.sync.states;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
-import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY;
-import static com.commercetools.sync.states.utils.StateSyncUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
@@ -10,6 +8,10 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
+import com.commercetools.api.models.state.State;
+import com.commercetools.api.models.state.StateDraft;
+import com.commercetools.api.models.state.StateResourceIdentifier;
+import com.commercetools.api.models.state.StateUpdateAction;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
 import com.commercetools.sync.services.StateService;
@@ -19,10 +21,7 @@ import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import com.commercetools.sync.states.helpers.StateBatchValidator;
 import com.commercetools.sync.states.helpers.StateReferenceResolver;
 import com.commercetools.sync.states.helpers.StateSyncStatistics;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.states.StateDraft;
+import com.commercetools.sync.states.utils.StateSyncUtils;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -37,7 +36,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
-public class StateSync extends BaseSync<StateDraft, State, StateSyncStatistics, StateSyncOptions> {
+public class StateSync
+    extends BaseSync<State, StateDraft, StateUpdateAction, StateSyncStatistics, StateSyncOptions> {
 
   private static final String CTP_STATE_FETCH_FAILED =
       "Failed to fetch existing states with keys: '%s'.";
@@ -170,7 +170,8 @@ public class StateSync extends BaseSync<StateDraft, State, StateSyncStatistics, 
    * @param newStates drafts that need to be synced.
    * @param oldStates old states.
    * @param keyToIdCache the cache containing the mapping of all existing state keys to ids.
-   * @return a {@link CompletionStage} which contains an empty result after execution of the update
+   * @return a {@link java.util.concurrent.CompletionStage} which contains an empty result after
+   *     execution of the update
    */
   @Nonnull
   private CompletionStage<Void> syncOrKeepTrack(
@@ -203,7 +204,7 @@ public class StateSync extends BaseSync<StateDraft, State, StateSyncStatistics, 
     }
 
     return newState.getTransitions().stream()
-        .map(Reference::getId)
+        .map(StateResourceIdentifier::getKey)
         .filter(key -> !keyToIdCache.containsKey(key))
         .collect(Collectors.toSet());
   }
@@ -218,7 +219,7 @@ public class StateSync extends BaseSync<StateDraft, State, StateSyncStatistics, 
 
     return unresolvedReferencesService.save(
         new WaitingToBeResolvedTransitions(newState, missingTransitionParentStateKeys),
-        CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY,
+        UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY,
         WaitingToBeResolvedTransitions.class);
   }
 
@@ -254,7 +255,8 @@ public class StateSync extends BaseSync<StateDraft, State, StateSyncStatistics, 
    * request to the CTP project to create the corresponding State.
    *
    * @param stateDraft the state draft to create the state from.
-   * @return a {@link CompletionStage} which contains an empty result after execution of the create.
+   * @return a {@link java.util.concurrent.CompletionStage} which contains an empty result after
+   *     execution of the create.
    */
   @Nonnull
   private CompletionStage<Void> applyCallbackAndCreate(@Nonnull final StateDraft stateDraft) {
@@ -276,22 +278,6 @@ public class StateSync extends BaseSync<StateDraft, State, StateSyncStatistics, 
         .orElse(completedFuture(null));
   }
 
-  @Nonnull
-  private CompletionStage<Void> buildActionsAndUpdate(
-      @Nonnull final State oldState, @Nonnull final StateDraft newState) {
-
-    final List<UpdateAction<State>> updateActions = buildActions(oldState, newState);
-
-    List<UpdateAction<State>> updateActionsAfterCallback =
-        syncOptions.applyBeforeUpdateCallback(updateActions, newState, oldState);
-
-    if (!updateActionsAfterCallback.isEmpty()) {
-      return updateState(oldState, newState, updateActionsAfterCallback);
-    }
-
-    return completedFuture(null);
-  }
-
   /**
    * Given an existing {@link State} and a new {@link StateDraft}, the method calculates all the
    * update actions required to synchronize the existing state to be the same as the new one. If
@@ -304,33 +290,49 @@ public class StateSync extends BaseSync<StateDraft, State, StateSyncStatistics, 
    *
    * @param oldState existing state that could be updated.
    * @param newState draft containing data that could differ from data in {@code oldState}.
-   * @return a {@link CompletionStage} which contains an empty result after execution of the update.
+   * @return a {@link java.util.concurrent.CompletionStage} which contains an empty result after
+   *     execution of the update.
    */
+  @Nonnull
+  private CompletionStage<Void> buildActionsAndUpdate(
+      @Nonnull final State oldState, @Nonnull final StateDraft newState) {
+
+    final List<StateUpdateAction> updateActions = StateSyncUtils.buildActions(oldState, newState);
+
+    List<StateUpdateAction> updateActionsAfterCallback =
+        syncOptions.applyBeforeUpdateCallback(updateActions, newState, oldState);
+
+    if (!updateActionsAfterCallback.isEmpty()) {
+      return updateState(oldState, newState, updateActionsAfterCallback);
+    }
+
+    return completedFuture(null);
+  }
+
   @Nonnull
   private CompletionStage<Void> updateState(
       @Nonnull final State oldState,
       @Nonnull final StateDraft newState,
-      @Nonnull final List<UpdateAction<State>> updateActions) {
+      @Nonnull final List<StateUpdateAction> updateActions) {
 
     return stateService
         .updateState(oldState, updateActions)
         .handle(ImmutablePair::new)
         .thenCompose(
             updateResponse -> {
-              final Throwable sphereException = updateResponse.getValue();
+              final Throwable ctpException = updateResponse.getValue();
 
-              if (sphereException != null) {
+              if (ctpException != null) {
                 return executeSupplierIfConcurrentModificationException(
-                    sphereException,
+                    ctpException,
                     () -> fetchAndUpdate(oldState, newState),
                     () -> {
                       final String errorMessage =
                           format(
                               CTP_STATE_UPDATE_FAILED,
                               newState.getKey(),
-                              sphereException.getMessage());
-                      handleError(
-                          errorMessage, sphereException, oldState, newState, updateActions, 1);
+                              ctpException.getMessage());
+                      handleError(errorMessage, ctpException, oldState, newState, updateActions, 1);
                       return completedFuture(null);
                     });
               } else {
@@ -403,7 +405,7 @@ public class StateSync extends BaseSync<StateDraft, State, StateSyncStatistics, 
     return unresolvedReferencesService
         .fetch(
             referencingDraftKeys,
-            CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY,
+            UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY,
             WaitingToBeResolvedTransitions.class)
         .handle(ImmutablePair::new)
         .thenCompose(
@@ -448,7 +450,7 @@ public class StateSync extends BaseSync<StateDraft, State, StateSyncStatistics, 
                 draft ->
                     unresolvedReferencesService.save(
                         draft,
-                        CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY,
+                        UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY,
                         WaitingToBeResolvedTransitions.class))
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
@@ -463,7 +465,7 @@ public class StateSync extends BaseSync<StateDraft, State, StateSyncStatistics, 
                 key ->
                     unresolvedReferencesService.delete(
                         key,
-                        CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY,
+                        UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY,
                         WaitingToBeResolvedTransitions.class))
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));

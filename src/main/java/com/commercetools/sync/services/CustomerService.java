@@ -1,9 +1,9 @@
 package com.commercetools.sync.services;
 
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.customers.CustomerDraft;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.customer.Customer;
+import com.commercetools.api.models.customer.CustomerDraft;
+import com.commercetools.api.models.customer.CustomerUpdateAction;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,7 +26,7 @@ public interface CustomerService {
 
   /**
    * Given a {@link Set} of customer keys, this method fetches a set of all the customers, matching
-   * the given set of keys in the CTP project, defined in an injected {@link SphereClient}. A
+   * the given set of keys in the CTP project, defined in an injected {@link ProjectApiRoot}. A
    * mapping of the key to the id of the fetched customers is persisted in an in-memory map.
    *
    * @param customerKeys set of customer keys to fetch matching resources by.
@@ -38,7 +38,7 @@ public interface CustomerService {
 
   /**
    * Given a customer key, this method fetches a customer that matches this given key in the CTP
-   * project defined in a potentially injected {@link SphereClient}. If there is no matching
+   * project defined in a potentially injected {@link ProjectApiRoot}. If there is no matching
    * resource an empty {@link Optional} will be returned in the returned future. A mapping of the
    * key to the id of the fetched customer is persisted in an in -memory map.
    *
@@ -91,9 +91,9 @@ public interface CustomerService {
   CompletionStage<Optional<Customer>> createCustomer(@Nonnull CustomerDraft customerDraft);
 
   /**
-   * Given a {@link Customer} and a {@link List}&lt;{@link UpdateAction}&lt;{@link
+   * Given a {@link Customer} and a {@link List}&lt;{@link CustomerUpdateAction}&lt;{@link
    * Customer}&gt;&gt;, this method issues an update request with these update actions on this
-   * {@link Customer} in the CTP project defined in a potentially injected {@link SphereClient}.
+   * {@link Customer} in the CTP project defined in a potentially injected {@link ProjectApiRoot}.
    * This method returns {@link CompletionStage}&lt;{@link Customer}&gt; in which the result of it's
    * completion contains an instance of the {@link Customer} which was updated in the CTP project.
    *
@@ -105,5 +105,5 @@ public interface CustomerService {
    */
   @Nonnull
   CompletionStage<Customer> updateCustomer(
-      @Nonnull Customer customer, @Nonnull List<UpdateAction<Customer>> updateActions);
+      @Nonnull Customer customer, @Nonnull List<CustomerUpdateAction> updateActions);
 }

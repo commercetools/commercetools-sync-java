@@ -1,37 +1,40 @@
 package com.commercetools.sync.services.impl;
 
-import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
-import com.commercetools.sync.commons.models.GraphQlQueryResources;
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+
+import com.commercetools.api.client.ByProjectKeyShoppingListsGet;
+import com.commercetools.api.client.ByProjectKeyShoppingListsKeyByKeyGet;
+import com.commercetools.api.client.ByProjectKeyShoppingListsPost;
+import com.commercetools.api.models.shopping_list.ShoppingList;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListPagedQueryResponse;
+import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
+import com.commercetools.api.models.shopping_list.ShoppingListUpdateBuilder;
+import com.commercetools.sync.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.services.ShoppingListService;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.expansion.ExpansionPath;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
-import io.sphere.sdk.shoppinglists.commands.ShoppingListCreateCommand;
-import io.sphere.sdk.shoppinglists.commands.ShoppingListUpdateCommand;
-import io.sphere.sdk.shoppinglists.expansion.ShoppingListExpansionModel;
-import io.sphere.sdk.shoppinglists.queries.ShoppingListQuery;
-import io.sphere.sdk.shoppinglists.queries.ShoppingListQueryModel;
-import java.util.Collections;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Implementation of ShoppingListService interface. */
 public final class ShoppingListServiceImpl
     extends BaseService<
-        ShoppingListDraft,
-        ShoppingList,
-        ShoppingList,
         ShoppingListSyncOptions,
-        ShoppingListQuery,
-        ShoppingListQueryModel,
-        ShoppingListExpansionModel<ShoppingList>>
+        ShoppingList,
+        ShoppingListDraft,
+        ByProjectKeyShoppingListsGet,
+        ShoppingListPagedQueryResponse,
+        ByProjectKeyShoppingListsKeyByKeyGet,
+        ShoppingList,
+        ByProjectKeyShoppingListsPost>
     implements ShoppingListService {
 
   public ShoppingListServiceImpl(@Nonnull final ShoppingListSyncOptions syncOptions) {
@@ -42,55 +45,89 @@ public final class ShoppingListServiceImpl
   @Override
   public CompletionStage<Map<String, String>> cacheKeysToIds(
       @Nonnull final Set<String> shoppingListKeys) {
-
-    return cacheKeysToIdsUsingGraphQl(
-        shoppingListKeys,
-        resource -> Collections.singletonMap(resource.getKey(), resource.getId()),
-        keysNotCached ->
-            new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.SHOPPING_LISTS));
+    return super.cacheKeysToIdsUsingGraphQl(shoppingListKeys, GraphQlQueryResource.SHOPPING_LISTS);
   }
 
   @Nonnull
   @Override
   public CompletionStage<Set<ShoppingList>> fetchMatchingShoppingListsByKeys(
       @Nonnull final Set<String> keys) {
-
-    return fetchMatchingResources(
-        keys,
-        ShoppingList::getKey,
-        (keysNotCached) ->
-            ShoppingListQuery.of()
-                .plusPredicates(queryModel -> queryModel.key().isIn(keysNotCached))
-                .plusExpansionPaths(ExpansionPath.of("lineItems[*].variant")));
+    return fetchMatchingShoppingLists(keys);
   }
 
   @Nonnull
   @Override
   public CompletionStage<Optional<ShoppingList>> fetchShoppingList(@Nullable final String key) {
-
-    return fetchResource(
+    return super.fetchResource(
         key,
-        () ->
-            ShoppingListQuery.of()
-                .plusPredicates(queryModel -> queryModel.key().is(key))
-                .plusExpansionPaths(ExpansionPath.of("lineItems[*].variant")));
+        syncOptions
+            .getCtpClient()
+            .shoppingLists()
+            .withKey(key)
+            .get()
+            .addExpand("lineItems[*].variant"));
   }
 
   @Nonnull
   @Override
   public CompletionStage<Optional<ShoppingList>> createShoppingList(
       @Nonnull final ShoppingListDraft shoppingListDraft) {
-
-    return createResource(
-        shoppingListDraft, ShoppingListDraft::getKey, ShoppingListCreateCommand::of);
+    return super.createResource(
+        shoppingListDraft,
+        ShoppingListDraft::getKey,
+        ShoppingList::getId,
+        Function.identity(),
+        () -> syncOptions.getCtpClient().shoppingLists().post(shoppingListDraft));
   }
 
   @Nonnull
   @Override
   public CompletionStage<ShoppingList> updateShoppingList(
       @Nonnull final ShoppingList shoppingList,
-      @Nonnull final List<UpdateAction<ShoppingList>> updateActions) {
+      @Nonnull final List<ShoppingListUpdateAction> updateActions) {
 
-    return updateResource(shoppingList, ShoppingListUpdateCommand::of, updateActions);
+    final List<List<ShoppingListUpdateAction>> actionBatches =
+        batchElements(updateActions, MAXIMUM_ALLOWED_UPDATE_ACTIONS);
+
+    CompletionStage<ApiHttpResponse<ShoppingList>> resultStage =
+        CompletableFuture.completedFuture(new ApiHttpResponse<>(200, null, shoppingList));
+
+    for (final List<ShoppingListUpdateAction> batch : actionBatches) {
+      resultStage =
+          resultStage
+              .thenApply(ApiHttpResponse::getBody)
+              .thenCompose(
+                  updatedShoppingList ->
+                      syncOptions
+                          .getCtpClient()
+                          .shoppingLists()
+                          .withId(updatedShoppingList.getId())
+                          .post(
+                              ShoppingListUpdateBuilder.of()
+                                  .actions(batch)
+                                  .version(updatedShoppingList.getVersion())
+                                  .build())
+                          .execute());
+    }
+
+    return resultStage.thenApply(ApiHttpResponse::getBody);
+  }
+
+  private CompletionStage<Set<ShoppingList>> fetchMatchingShoppingLists(
+      @Nonnull final Set<String> shoppingListKeys) {
+    return super.fetchMatchingResources(
+        shoppingListKeys,
+        ShoppingList::getKey,
+        (keysNotCached) -> {
+          final ByProjectKeyShoppingListsGet query =
+              syncOptions
+                  .getCtpClient()
+                  .shoppingLists()
+                  .get()
+                  .withWhere("key in :keys")
+                  .withPredicateVar("keys", keysNotCached)
+                  .addExpand("lineItems[*].variant");
+          return query;
+        });
   }
 }

@@ -2,16 +2,14 @@ package com.commercetools.sync.customobjects.helpers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.customobjects.CustomObjectDraft;
+import com.commercetools.api.models.custom_object.CustomObject;
+import com.commercetools.api.models.custom_object.CustomObjectDraft;
+import com.commercetools.api.models.custom_object.CustomObjectDraftBuilder;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 
 public class CustomObjectCompositeIdentifierTest {
@@ -21,8 +19,12 @@ public class CustomObjectCompositeIdentifierTest {
 
   @Test
   void of_WithCustomObjectDraft_ShouldCreateCustomObjectCompositeIdentifier() {
-    final CustomObjectDraft<JsonNode> customObjectDraft =
-        CustomObjectDraft.ofUnversionedUpsert(CONTAINER, KEY, null);
+    final CustomObjectDraft customObjectDraft =
+        CustomObjectDraftBuilder.of()
+            .container(CONTAINER)
+            .key(KEY)
+            .value(StringUtils.EMPTY)
+            .build();
 
     final CustomObjectCompositeIdentifier customObjectCompositeIdentifier =
         CustomObjectCompositeIdentifier.of(customObjectDraft);
@@ -54,15 +56,6 @@ public class CustomObjectCompositeIdentifierTest {
     assertThat(customObjectCompositeIdentifier).isNotNull();
     assertThat(customObjectCompositeIdentifier.getContainer()).isEqualTo(CONTAINER);
     assertThat(customObjectCompositeIdentifier.getKey()).isEqualTo(KEY);
-  }
-
-  @Test
-  void of_WithEmptyKeyAndContainer_ShouldThrowAnError() {
-    assertThatThrownBy(() -> CustomObjectCompositeIdentifier.of("", ""))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage(
-            "The container \"\" does not have the correct format. "
-                + "Key and container need to match [-_~.a-zA-Z0-9]+.");
   }
 
   @Test

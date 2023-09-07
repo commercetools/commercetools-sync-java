@@ -1,17 +1,12 @@
 package com.commercetools.sync.commons.utils;
 
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
-import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.commands.updateactions.ChangeName;
-import io.sphere.sdk.products.commands.updateactions.SetSku;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.product.*;
+import com.commercetools.sync.products.ProductSyncMockUtils;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -24,19 +19,24 @@ class TriFunctionTest {
 
   @Test
   void apply_WithUpdateActionLocaleFilter_ShouldReturnCorrectResult() {
-    final TriFunction<
-            List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
+    final TriFunction<List<ProductUpdateAction>, ProductDraft, Product, List<ProductUpdateAction>>
         updateActionFilter = TriFunctionTest::filterEnglishNameChangesOnly;
 
-    final Product oldProduct = readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
+    final Product oldProduct =
+        TestUtils.readObjectFromResource(
+            ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
     final LocalizedString oldName = oldProduct.getMasterData().getStaged().getName();
 
     final ProductDraft newDraftWithNoEnglishNameChange = mock(ProductDraft.class);
     final LocalizedString newNameWithSameEnglishLocale = oldName.plus(Locale.GERMAN, "bar");
     when(newDraftWithNoEnglishNameChange.getName()).thenReturn(newNameWithSameEnglishLocale);
 
-    List<UpdateAction<Product>> updateActions =
-        Arrays.asList(ChangeName.of(newNameWithSameEnglishLocale), SetSku.of(1, "sku"));
+    final ProductChangeNameAction changeNameAction =
+        ProductChangeNameActionBuilder.of().name(newNameWithSameEnglishLocale).build();
+    final ProductSetSkuAction setSkuAction =
+        ProductSetSkuActionBuilder.of().variantId(1L).sku("sku").build();
+
+    List<ProductUpdateAction> updateActions = Arrays.asList(changeNameAction, setSkuAction);
 
     assertThat(updateActionFilter.apply(updateActions, newDraftWithNoEnglishNameChange, oldProduct))
         .isEmpty();
@@ -45,16 +45,19 @@ class TriFunctionTest {
     final LocalizedString newNameWithDiffEnglishLocale = LocalizedString.ofEnglish("foo");
     when(newDraftWithEnglishNameChange.getName()).thenReturn(newNameWithDiffEnglishLocale);
 
-    updateActions = Arrays.asList(ChangeName.of(newNameWithDiffEnglishLocale), SetSku.of(1, "sku"));
+    final ProductChangeNameAction changeNameDiffAction =
+        ProductChangeNameActionBuilder.of().name(newNameWithSameEnglishLocale).build();
 
-    final List<UpdateAction<Product>> filteredActions =
+    updateActions = Arrays.asList(changeNameDiffAction, setSkuAction);
+
+    final List<ProductUpdateAction> filteredActions =
         updateActionFilter.apply(updateActions, newDraftWithEnglishNameChange, oldProduct);
     assertThat(filteredActions).isNotEmpty();
     assertThat(filteredActions).isEqualTo(updateActions);
   }
 
-  private static List<UpdateAction<Product>> filterEnglishNameChangesOnly(
-      @Nonnull final List<UpdateAction<Product>> updateActions,
+  private static List<ProductUpdateAction> filterEnglishNameChangesOnly(
+      @Nonnull final List<ProductUpdateAction> updateActions,
       @Nonnull final ProductDraft newDraft,
       @Nonnull final Product oldProduct) {
     return updateActions.stream()

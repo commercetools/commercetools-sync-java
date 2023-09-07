@@ -1,27 +1,24 @@
 package com.commercetools.sync.producttypes.utils;
 
-import static com.commercetools.sync.producttypes.utils.ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
+import com.commercetools.api.models.product_type.AttributeDefinition;
+import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
+import com.commercetools.api.models.product_type.AttributeNestedType;
+import com.commercetools.api.models.product_type.AttributeSetType;
+import com.commercetools.api.models.product_type.AttributeTypeBuilder;
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.product_type.ProductTypeDraft;
+import com.commercetools.api.models.product_type.ProductTypeReference;
+import com.commercetools.api.models.product_type.ProductTypeReferenceBuilder;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.products.attributes.AttributeDefinition;
-import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
-import io.sphere.sdk.products.attributes.NestedAttributeType;
-import io.sphere.sdk.products.attributes.NumberAttributeType;
-import io.sphere.sdk.products.attributes.SetAttributeType;
-import io.sphere.sdk.products.attributes.StringAttributeType;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
-import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
+import com.commercetools.sync.producttypes.MockBuilderUtils;
+import com.commercetools.sync.producttypes.helpers.ResourceToDraftConverters;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -43,7 +40,8 @@ class ProductTypeReferenceResolutionUtilsTest {
 
     // test
     final List<ProductTypeDraft> productTypeDrafts =
-        mapToProductTypeDrafts(productTypes, referenceIdToKeyCache);
+        ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts(
+            productTypes, referenceIdToKeyCache);
 
     // assertion
     assertThat(productTypeDrafts).isEmpty();
@@ -56,7 +54,8 @@ class ProductTypeReferenceResolutionUtilsTest {
 
     // test
     final List<ProductTypeDraft> productTypeDrafts =
-        mapToProductTypeDrafts(productTypes, referenceIdToKeyCache);
+        ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts(
+            productTypes, referenceIdToKeyCache);
 
     // assertion
     assertThat(productTypeDrafts).isEmpty();
@@ -65,48 +64,58 @@ class ProductTypeReferenceResolutionUtilsTest {
   @Test
   void mapToProductDrafts_WithProductTypeWithNoAttributeDefs_ShouldReturnProductType() {
     // preparation
-    final ProductType productTypeFoo = mock(ProductType.class);
-    when(productTypeFoo.getKey()).thenReturn("foo");
-    when(productTypeFoo.getAttributes()).thenReturn(emptyList());
+    final ProductType productTypeFoo =
+        MockBuilderUtils.createMockProductTypeBuilder().key("foo").attributes(emptyList()).build();
 
     final List<ProductType> productTypes = singletonList(productTypeFoo);
 
     // test
     final List<ProductTypeDraft> productTypeDrafts =
-        mapToProductTypeDrafts(productTypes, referenceIdToKeyCache);
+        ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts(
+            productTypes, referenceIdToKeyCache);
 
     // assertion
-    assertThat(productTypeDrafts)
-        .containsExactly(ProductTypeDraftBuilder.of(productTypeFoo).build());
+    assertThat(productTypeDrafts).hasSize(1);
+    assertThat(productTypeDrafts.get(0).getKey()).isEqualTo("foo");
+    assertThat(productTypeDrafts.get(0).getAttributes()).isEmpty();
   }
 
   @Test
   void mapToProductDrafts_WithNoReferences_ShouldReturnCorrectProductTypeDrafts() {
     final AttributeDefinition stringAttr =
-        AttributeDefinitionBuilder.of("a", ofEnglish("a"), StringAttributeType.of()).build();
+        MockBuilderUtils.createMockAttributeDefinitionBuilder().build();
 
     final AttributeDefinition numberAttr =
-        AttributeDefinitionBuilder.of("b", ofEnglish("b"), NumberAttributeType.of()).build();
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .name("b")
+            .label(ofEnglish("b"))
+            .type(AttributeTypeBuilder::numberBuilder)
+            .build();
 
-    final ProductType productTypeFoo = mock(ProductType.class);
-    when(productTypeFoo.getKey()).thenReturn("ProductTypeFoo");
-    when(productTypeFoo.getAttributes()).thenReturn(singletonList(stringAttr));
+    final ProductType productTypeFoo =
+        MockBuilderUtils.createMockProductTypeBuilder()
+            .key("ProductTypeFoo")
+            .attributes(singletonList(stringAttr))
+            .build();
 
-    final ProductType productTypeBar = mock(ProductType.class);
-    when(productTypeBar.getKey()).thenReturn("ProductTypeBar");
-    when(productTypeBar.getAttributes()).thenReturn(singletonList(numberAttr));
+    final ProductType productTypeBar =
+        MockBuilderUtils.createMockProductTypeBuilder()
+            .key("ProductTypeBar")
+            .attributes(singletonList(numberAttr))
+            .build();
 
     final List<ProductType> productTypes = asList(productTypeFoo, productTypeBar);
 
     // test
     final List<ProductTypeDraft> productTypeDrafts =
-        mapToProductTypeDrafts(productTypes, referenceIdToKeyCache);
+        ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts(
+            productTypes, referenceIdToKeyCache);
 
     // assertion
     assertThat(productTypeDrafts)
         .containsExactly(
-            ProductTypeDraftBuilder.of(productTypeFoo).build(),
-            ProductTypeDraftBuilder.of(productTypeBar).build());
+            ResourceToDraftConverters.toProductTypeDraft(productTypeFoo),
+            ResourceToDraftConverters.toProductTypeDraft(productTypeBar));
   }
 
   @Test
@@ -115,37 +124,45 @@ class ProductTypeReferenceResolutionUtilsTest {
     final String referencedProductTypeId = UUID.randomUUID().toString();
     final String referencedProductTypeKey = "referencedProductTypeKey";
 
-    final ProductType referencedProductType = mock(ProductType.class);
-    when(referencedProductType.getKey()).thenReturn(referencedProductTypeKey);
+    final ProductType referencedProductType =
+        MockBuilderUtils.createMockProductTypeBuilder().key(referencedProductTypeKey).build();
 
-    final Reference<ProductType> productTypeReference =
-        spy(ProductType.reference(referencedProductType));
-    when(productTypeReference.getId()).thenReturn(referencedProductTypeId);
+    final ProductTypeReference productTypeReference =
+        ProductTypeReferenceBuilder.of().id(referencedProductTypeId).build();
 
     final AttributeDefinition nestedTypeAttr =
-        AttributeDefinitionBuilder.of(
-                "nestedattr", ofEnglish("nestedattr"), NestedAttributeType.of(productTypeReference))
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder.nestedBuilder().typeReference(productTypeReference))
+            .name("nestedattr")
+            .label(ofEnglish("nestedattr"))
             .build();
 
-    final ProductType productType = mock(ProductType.class);
-    when(productType.getKey()).thenReturn("withNestedTypeAttr");
-    when(productType.getAttributes()).thenReturn(singletonList(nestedTypeAttr));
+    final ProductType productType =
+        MockBuilderUtils.createMockProductTypeBuilder()
+            .key("withNestedTypeAttr")
+            .attributes(singletonList(nestedTypeAttr))
+            .build();
 
     final List<ProductType> productTypes = singletonList(productType);
 
     referenceIdToKeyCache.add(referencedProductTypeId, referencedProductTypeKey);
     // test
     final List<ProductTypeDraft> productTypeDrafts =
-        mapToProductTypeDrafts(productTypes, referenceIdToKeyCache);
+        ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts(
+            productTypes, referenceIdToKeyCache);
 
     // assertion
     assertThat(productTypeDrafts)
         .satisfies(
             productTypeDraft -> {
-              final NestedAttributeType nestedAttributeType =
-                  (NestedAttributeType)
-                      productTypeDraft.get(0).getAttributes().get(0).getAttributeType();
-              assertThat(nestedAttributeType.getTypeReference().getId())
+              final AttributeDefinitionDraft attributeDefinitionDraft =
+                  productTypeDraft.get(0).getAttributes().get(0);
+              assertThat(
+                      ((AttributeNestedType) attributeDefinitionDraft.getType())
+                          .getTypeReference()
+                          .getId())
                   .isEqualTo(referencedProductType.getKey());
             });
   }
@@ -153,39 +170,47 @@ class ProductTypeReferenceResolutionUtilsTest {
   @Test
   void mapToProductDrafts_WithProductTypeWithNonCachedRefNestedType_ShouldNotReplaceRef() {
     // preparation
-    final ProductType referencedProductType = mock(ProductType.class);
     final String referencedProductTypeId = UUID.randomUUID().toString();
 
-    final Reference<ProductType> productTypeReference =
-        spy(ProductType.reference(referencedProductType));
-    when(productTypeReference.getId()).thenReturn(referencedProductTypeId);
+    final ProductTypeReference productTypeReference =
+        ProductTypeReferenceBuilder.of().id(referencedProductTypeId).build();
 
     final AttributeDefinition nestedTypeAttr =
-        AttributeDefinitionBuilder.of(
-                "nestedattr",
-                ofEnglish("nestedattr"),
-                SetAttributeType.of(NestedAttributeType.of(productTypeReference)))
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .name("nestedattr")
+            .label(ofEnglish("nestedattr"))
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            attributeTypeBuilder1 ->
+                                attributeTypeBuilder1
+                                    .nestedBuilder()
+                                    .typeReference(productTypeReference)))
             .build();
 
-    final ProductType productType = mock(ProductType.class);
-    when(productType.getKey()).thenReturn("withNestedTypeAttr");
-    when(productType.getAttributes()).thenReturn(singletonList(nestedTypeAttr));
+    final ProductType productType =
+        MockBuilderUtils.createMockProductTypeBuilder()
+            .key("withNestedTypeAttr")
+            .attributes(singletonList(nestedTypeAttr))
+            .build();
 
     final List<ProductType> productTypes = singletonList(productType);
 
     // test
     final List<ProductTypeDraft> productTypeDrafts =
-        mapToProductTypeDrafts(productTypes, referenceIdToKeyCache);
+        ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts(
+            productTypes, referenceIdToKeyCache);
 
     // assertion
     assertThat(productTypeDrafts)
         .satisfies(
             productTypeDraft -> {
-              final SetAttributeType setAttributeType =
-                  (SetAttributeType)
-                      productTypeDraft.get(0).getAttributes().get(0).getAttributeType();
-              final NestedAttributeType nestedAttributeType =
-                  (NestedAttributeType) setAttributeType.getElementType();
+              final AttributeSetType setAttributeType =
+                  (AttributeSetType) productTypeDraft.get(0).getAttributes().get(0).getType();
+              final AttributeNestedType nestedAttributeType =
+                  (AttributeNestedType) setAttributeType.getElementType();
               assertThat(nestedAttributeType.getTypeReference().getId())
                   .isEqualTo(referencedProductTypeId);
             });
@@ -197,40 +222,49 @@ class ProductTypeReferenceResolutionUtilsTest {
     final String referencedProductTypeId = UUID.randomUUID().toString();
     final String referencedProductTypeKey = "referencedProductTypeKey";
 
-    final ProductType referencedProductType = mock(ProductType.class);
-    when(referencedProductType.getKey()).thenReturn(referencedProductTypeKey);
+    final ProductType referencedProductType =
+        MockBuilderUtils.createMockProductTypeBuilder().key(referencedProductTypeKey).build();
 
-    final Reference<ProductType> productTypeReference =
-        spy(ProductType.reference(referencedProductType));
-    when(productTypeReference.getId()).thenReturn(referencedProductTypeId);
+    final ProductTypeReference productTypeReference =
+        ProductTypeReferenceBuilder.of().id(referencedProductTypeId).build();
 
     final AttributeDefinition nestedTypeAttr =
-        AttributeDefinitionBuilder.of(
-                "nestedattr",
-                ofEnglish("nestedattr"),
-                SetAttributeType.of(NestedAttributeType.of(productTypeReference)))
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            attributeTypeBuilder1 ->
+                                attributeTypeBuilder1
+                                    .nestedBuilder()
+                                    .typeReference(productTypeReference)))
+            .name("nestedattr")
+            .label(ofEnglish("nestedattr"))
             .build();
 
-    final ProductType productType = mock(ProductType.class);
-    when(productType.getKey()).thenReturn("withNestedTypeAttr");
-    when(productType.getAttributes()).thenReturn(singletonList(nestedTypeAttr));
+    final ProductType productType =
+        MockBuilderUtils.createMockProductTypeBuilder()
+            .key("withNestedTypeAttr")
+            .attributes(singletonList(nestedTypeAttr))
+            .build();
 
     final List<ProductType> productTypes = singletonList(productType);
 
     referenceIdToKeyCache.add(referencedProductTypeId, referencedProductTypeKey);
     // test
     final List<ProductTypeDraft> productTypeDrafts =
-        mapToProductTypeDrafts(productTypes, referenceIdToKeyCache);
+        ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts(
+            productTypes, referenceIdToKeyCache);
 
     // assertion
     assertThat(productTypeDrafts)
         .satisfies(
             productTypeDraft -> {
-              final SetAttributeType setAttributeType =
-                  (SetAttributeType)
-                      productTypeDraft.get(0).getAttributes().get(0).getAttributeType();
-              final NestedAttributeType nestedAttributeType =
-                  (NestedAttributeType) setAttributeType.getElementType();
+              final AttributeSetType setAttributeType =
+                  (AttributeSetType) productTypeDraft.get(0).getAttributes().get(0).getType();
+              final AttributeNestedType nestedAttributeType =
+                  (AttributeNestedType) setAttributeType.getElementType();
               assertThat(nestedAttributeType.getTypeReference().getId())
                   .isEqualTo(referencedProductType.getKey());
             });
@@ -242,43 +276,55 @@ class ProductTypeReferenceResolutionUtilsTest {
     final String referencedProductTypeId = UUID.randomUUID().toString();
     final String referencedProductTypeKey = "referencedProductTypeKey";
 
-    final ProductType referencedProductType = mock(ProductType.class);
-    when(referencedProductType.getKey()).thenReturn(referencedProductTypeKey);
+    final ProductType referencedProductType =
+        MockBuilderUtils.createMockProductTypeBuilder().key(referencedProductTypeKey).build();
 
-    final Reference<ProductType> productTypeReference =
-        spy(ProductType.reference(referencedProductType));
-    when(productTypeReference.getId()).thenReturn(referencedProductTypeId);
+    final ProductTypeReference productTypeReference =
+        ProductTypeReferenceBuilder.of().id(referencedProductTypeId).build();
 
     final AttributeDefinition nestedTypeAttr =
-        AttributeDefinitionBuilder.of(
-                "nestedattr",
-                ofEnglish("nestedattr"),
-                SetAttributeType.of(
-                    SetAttributeType.of(NestedAttributeType.of(productTypeReference))))
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            attributeTypeBuilder1 ->
+                                attributeTypeBuilder1
+                                    .setBuilder()
+                                    .elementType(
+                                        attributeTypeBuilder2 ->
+                                            attributeTypeBuilder2
+                                                .nestedBuilder()
+                                                .typeReference(productTypeReference))))
+            .name("nestedattr")
+            .label(ofEnglish("nestedattr"))
             .build();
 
-    final ProductType productType = mock(ProductType.class);
-    when(productType.getKey()).thenReturn("withNestedTypeAttr");
-    when(productType.getAttributes()).thenReturn(singletonList(nestedTypeAttr));
+    final ProductType productType =
+        MockBuilderUtils.createMockProductTypeBuilder()
+            .key("withNestedTypeAttr")
+            .attributes(singletonList(nestedTypeAttr))
+            .build();
 
     final List<ProductType> productTypes = singletonList(productType);
 
     referenceIdToKeyCache.add(referencedProductTypeId, referencedProductTypeKey);
     // test
     final List<ProductTypeDraft> productTypeDrafts =
-        mapToProductTypeDrafts(productTypes, referenceIdToKeyCache);
+        ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts(
+            productTypes, referenceIdToKeyCache);
 
     // assertion
     assertThat(productTypeDrafts)
         .satisfies(
             productTypeDraft -> {
-              final SetAttributeType setAttributeType =
-                  (SetAttributeType)
-                      productTypeDraft.get(0).getAttributes().get(0).getAttributeType();
-              final SetAttributeType setOfSet =
-                  (SetAttributeType) setAttributeType.getElementType();
-              final NestedAttributeType nestedAttributeType =
-                  (NestedAttributeType) setOfSet.getElementType();
+              final AttributeSetType setAttributeType =
+                  (AttributeSetType) productTypeDraft.get(0).getAttributes().get(0).getType();
+              final AttributeSetType setOfSet =
+                  (AttributeSetType) setAttributeType.getElementType();
+              final AttributeNestedType nestedAttributeType =
+                  (AttributeNestedType) setOfSet.getElementType();
               assertThat(nestedAttributeType.getTypeReference().getId())
                   .isEqualTo(referencedProductType.getKey());
             });
@@ -290,45 +336,60 @@ class ProductTypeReferenceResolutionUtilsTest {
     final String referencedProductTypeId = UUID.randomUUID().toString();
     final String referencedProductTypeKey = "referencedProductTypeKey";
 
-    final ProductType referencedProductType = mock(ProductType.class);
-    when(referencedProductType.getKey()).thenReturn(referencedProductTypeKey);
+    final ProductType referencedProductType =
+        MockBuilderUtils.createMockProductTypeBuilder().key(referencedProductTypeKey).build();
 
-    final Reference<ProductType> productTypeReference =
-        spy(ProductType.reference(referencedProductType));
-    when(productTypeReference.getId()).thenReturn(referencedProductTypeId);
+    final ProductTypeReference productTypeReference =
+        ProductTypeReferenceBuilder.of().id(referencedProductTypeId).build();
 
     final AttributeDefinition nestedTypeAttr =
-        AttributeDefinitionBuilder.of(
-                "nestedattr",
-                ofEnglish("nestedattr"),
-                SetAttributeType.of(
-                    SetAttributeType.of(
-                        SetAttributeType.of(NestedAttributeType.of(productTypeReference)))))
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            attributeTypeBuilder1 ->
+                                attributeTypeBuilder1
+                                    .setBuilder()
+                                    .elementType(
+                                        attributeTypeBuilder2 ->
+                                            attributeTypeBuilder2
+                                                .setBuilder()
+                                                .elementType(
+                                                    attributeTypeBuilder3 ->
+                                                        attributeTypeBuilder3
+                                                            .nestedBuilder()
+                                                            .typeReference(productTypeReference)))))
+            .name("nestedattr")
+            .label(ofEnglish("nestedattr"))
             .build();
 
-    final ProductType productType = mock(ProductType.class);
-    when(productType.getKey()).thenReturn("withNestedTypeAttr");
-    when(productType.getAttributes()).thenReturn(singletonList(nestedTypeAttr));
+    final ProductType productType =
+        MockBuilderUtils.createMockProductTypeBuilder()
+            .key("withNestedTypeAttr")
+            .attributes(singletonList(nestedTypeAttr))
+            .build();
 
     final List<ProductType> productTypes = singletonList(productType);
 
     referenceIdToKeyCache.add(referencedProductTypeId, referencedProductTypeKey);
     // test
     final List<ProductTypeDraft> productTypeDrafts =
-        mapToProductTypeDrafts(productTypes, referenceIdToKeyCache);
+        ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts(
+            productTypes, referenceIdToKeyCache);
 
     // assertion
     assertThat(productTypeDrafts)
         .satisfies(
             productTypeDraft -> {
-              final SetAttributeType setAttributeType =
-                  (SetAttributeType)
-                      productTypeDraft.get(0).getAttributes().get(0).getAttributeType();
-              final SetAttributeType setOfSet =
-                  (SetAttributeType) setAttributeType.getElementType();
-              final SetAttributeType setOfSetOfSet = (SetAttributeType) setOfSet.getElementType();
-              final NestedAttributeType nestedAttributeType =
-                  (NestedAttributeType) setOfSetOfSet.getElementType();
+              final AttributeSetType setAttributeType =
+                  (AttributeSetType) productTypeDraft.get(0).getAttributes().get(0).getType();
+              final AttributeSetType setOfSet =
+                  (AttributeSetType) setAttributeType.getElementType();
+              final AttributeSetType setOfSetOfSet = (AttributeSetType) setOfSet.getElementType();
+              final AttributeNestedType nestedAttributeType =
+                  (AttributeNestedType) setOfSetOfSet.getElementType();
               assertThat(nestedAttributeType.getTypeReference().getId())
                   .isEqualTo(referencedProductType.getKey());
             });

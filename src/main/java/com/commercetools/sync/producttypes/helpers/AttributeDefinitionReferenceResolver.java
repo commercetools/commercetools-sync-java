@@ -1,20 +1,14 @@
 package com.commercetools.sync.producttypes.helpers;
 
-import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
+import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import com.commercetools.api.models.product_type.*;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.services.ProductTypeService;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
-import io.sphere.sdk.products.attributes.AttributeType;
-import io.sphere.sdk.products.attributes.NestedAttributeType;
-import io.sphere.sdk.products.attributes.SetAttributeType;
-import io.sphere.sdk.producttypes.ProductType;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -75,26 +69,26 @@ public class AttributeDefinitionReferenceResolver
   private CompletionStage<AttributeDefinitionDraftBuilder> resolveNestedAttributeTypeReferences(
       @Nonnull final AttributeDefinitionDraftBuilder attributeDefinitionDraftBuilder) {
 
-    final AttributeType attributeType = attributeDefinitionDraftBuilder.getAttributeType();
+    final AttributeType attributeType = attributeDefinitionDraftBuilder.getType();
 
-    if (attributeType instanceof NestedAttributeType) {
-      return resolveNestedTypeReference((NestedAttributeType) attributeType)
-          .thenApply(attributeDefinitionDraftBuilder::attributeType);
+    if (attributeType instanceof AttributeNestedType) {
+      return resolveNestedTypeReference((AttributeNestedType) attributeType)
+          .thenApply(attributeDefinitionDraftBuilder::type);
 
-    } else if (attributeType instanceof SetAttributeType) {
-      final SetAttributeType setAttributeType = (SetAttributeType) attributeType;
+    } else if (attributeType instanceof AttributeSetType) {
+      final AttributeSetType setAttributeType = (AttributeSetType) attributeType;
       final AttributeType elementType = setAttributeType.getElementType();
 
       final AtomicInteger maxDepth = new AtomicInteger();
       AttributeType nestedAttributeType = elementType;
 
-      if (elementType instanceof SetAttributeType) {
+      if (elementType instanceof AttributeSetType) {
         maxDepth.incrementAndGet();
-        nestedAttributeType = getNestedAttributeType((SetAttributeType) elementType, maxDepth);
+        nestedAttributeType = getNestedAttributeType((AttributeSetType) elementType, maxDepth);
       }
-      if (nestedAttributeType instanceof NestedAttributeType) {
+      if (nestedAttributeType instanceof AttributeNestedType) {
         return resolveNestedAttributeTypeReferences(
-            attributeDefinitionDraftBuilder, maxDepth, (NestedAttributeType) nestedAttributeType);
+            attributeDefinitionDraftBuilder, maxDepth, (AttributeNestedType) nestedAttributeType);
       }
     }
     return completedFuture(attributeDefinitionDraftBuilder);
@@ -102,9 +96,9 @@ public class AttributeDefinitionReferenceResolver
 
   @Nonnull
   private CompletionStage<AttributeDefinitionDraftBuilder> resolveNestedAttributeTypeReferences(
-      @Nonnull AttributeDefinitionDraftBuilder attributeDefinitionDraftBuilder,
-      final AtomicInteger maxDepth,
-      @Nonnull NestedAttributeType nestedAttributeType) {
+      @Nonnull final AttributeDefinitionDraftBuilder attributeDefinitionDraftBuilder,
+      @Nonnull final AtomicInteger maxDepth,
+      @Nonnull final AttributeNestedType nestedAttributeType) {
 
     /*
      As SDK types (e.g AttributeDefinitionDraftBuilder) are immutable,
@@ -134,44 +128,51 @@ public class AttributeDefinitionReferenceResolver
     return resolveNestedTypeReference(nestedAttributeType)
         .thenApply(
             resolvedNestedAttributeType -> {
-              SetAttributeType setAttributeTypeChain =
-                  SetAttributeType.of(resolvedNestedAttributeType);
+              AttributeSetType setAttributeTypeChain =
+                  AttributeSetTypeBuilder.of().elementType(resolvedNestedAttributeType).build();
               for (int i = 0; i < maxDepth.get(); i++) {
-                setAttributeTypeChain = SetAttributeType.of(setAttributeTypeChain);
+                setAttributeTypeChain =
+                    AttributeSetTypeBuilder.of().elementType(setAttributeTypeChain).build();
               }
               return setAttributeTypeChain;
             })
-        .thenApply(attributeDefinitionDraftBuilder::attributeType);
+        .thenApply(attributeDefinitionDraftBuilder::type);
   }
 
   @Nullable
   private AttributeType getNestedAttributeType(
-      @Nonnull final SetAttributeType setAttributeType, @Nonnull final AtomicInteger maxDepth) {
+      @Nonnull final AttributeSetType setAttributeType, @Nonnull final AtomicInteger maxDepth) {
     final AttributeType elementType = setAttributeType.getElementType();
 
-    if (elementType instanceof SetAttributeType) {
+    if (elementType instanceof AttributeSetType) {
       maxDepth.incrementAndGet();
-      return getNestedAttributeType((SetAttributeType) elementType, maxDepth);
+      return getNestedAttributeType((AttributeSetType) elementType, maxDepth);
     }
 
     return elementType;
   }
 
   @Nonnull
-  private CompletionStage<NestedAttributeType> resolveNestedTypeReference(
-      @Nonnull final NestedAttributeType nestedAttributeType) {
+  private CompletionStage<AttributeNestedType> resolveNestedTypeReference(
+      @Nonnull final AttributeNestedType nestedAttributeType) {
 
-    final Reference<ProductType> typeReference = nestedAttributeType.getTypeReference();
+    final ProductTypeReference typeReference = nestedAttributeType.getTypeReference();
 
     return resolveProductTypeReference(typeReference)
         .thenApply(
             optionalResolvedReference ->
-                optionalResolvedReference.map(NestedAttributeType::of).orElse(nestedAttributeType));
+                optionalResolvedReference
+                    .map(
+                        resolvedReference ->
+                            AttributeNestedTypeBuilder.of()
+                                .typeReference(resolvedReference)
+                                .build())
+                    .orElse(nestedAttributeType));
   }
 
   @Nonnull
-  private CompletionStage<Optional<Reference<ProductType>>> resolveProductTypeReference(
-      @Nonnull final Reference<ProductType> typeReference) {
+  private CompletionStage<Optional<ProductTypeReference>> resolveProductTypeReference(
+      @Nonnull final ProductTypeReference typeReference) {
 
     final String resourceKey;
     try {
@@ -183,6 +184,7 @@ public class AttributeDefinitionReferenceResolver
     }
     return productTypeService
         .fetchCachedProductTypeId(resourceKey)
-        .thenApply(optionalId -> optionalId.map(ProductType::referenceOfId));
+        .thenApply(
+            optionalId -> optionalId.map(id -> ProductTypeReferenceBuilder.of().id(id).build()));
   }
 }

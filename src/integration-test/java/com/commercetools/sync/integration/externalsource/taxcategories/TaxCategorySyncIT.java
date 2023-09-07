@@ -1,41 +1,31 @@
 package com.commercetools.sync.integration.externalsource.taxcategories;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.deleteTaxCategories;
-import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.getTaxCategoryByKey;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.*;
+import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.*;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.defaultconfig.ApiRootBuilder;
+import com.commercetools.api.models.tax_category.*;
 import com.commercetools.sync.taxcategories.TaxCategorySync;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptions;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptionsBuilder;
 import com.commercetools.sync.taxcategories.helpers.TaxCategorySyncStatistics;
 import com.neovisionaries.i18n.CountryCode;
-import io.sphere.sdk.client.BadGatewayException;
-import io.sphere.sdk.client.ConcurrentModificationException;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.queries.PagedQueryResult;
-import io.sphere.sdk.taxcategories.SubRate;
-import io.sphere.sdk.taxcategories.TaxCategory;
-import io.sphere.sdk.taxcategories.TaxCategoryDraft;
-import io.sphere.sdk.taxcategories.TaxCategoryDraftBuilder;
-import io.sphere.sdk.taxcategories.TaxRate;
-import io.sphere.sdk.taxcategories.TaxRateDraft;
-import io.sphere.sdk.taxcategories.TaxRateDraftBuilder;
-import io.sphere.sdk.taxcategories.commands.TaxCategoryCreateCommand;
-import io.sphere.sdk.taxcategories.commands.TaxCategoryUpdateCommand;
-import io.sphere.sdk.taxcategories.queries.TaxCategoryQuery;
-import io.sphere.sdk.utils.CompletableFutureUtils;
+import io.vrap.rmf.base.client.ApiHttpMethod;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.error.BadGatewayException;
+import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
 import javax.annotation.Nonnull;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
@@ -47,22 +37,27 @@ class TaxCategorySyncIT {
   @BeforeEach
   void setup() {
     deleteTaxCategories(CTP_TARGET_CLIENT);
-
-    final SubRate subRate1 = SubRate.of("subRate-1", 0.08);
-    final SubRate subRate2 = SubRate.of("subRate-2", 0.11);
+    final SubRate subRate1 = SubRateBuilder.of().name("subRate-1").amount(0.08).build();
+    final SubRate subRate2 = SubRateBuilder.of().name("subRate-2").amount(0.11).build();
 
     final TaxRateDraft taxRateDraft =
-        TaxRateDraftBuilder.of("%19 VAT DE", 0.19, false, CountryCode.DE)
+        TaxRateDraftBuilder.of()
+            .name("%19 VAT DE")
+            .amount(0.19)
+            .includedInPrice(false)
+            .country(CountryCode.DE.getAlpha2())
             .subRates(asList(subRate1, subRate2))
             .build();
 
     final TaxCategoryDraft taxCategoryDraft =
-        TaxCategoryDraftBuilder.of(
-                "tax-category-name", singletonList(taxRateDraft), "tax-category-description")
+        TaxCategoryDraftBuilder.of()
+            .name("tax-category-name")
+            .rates(taxRateDraft)
+            .description("tax-category-description")
             .key("tax-category-key")
             .build();
 
-    executeBlocking(CTP_TARGET_CLIENT.execute(TaxCategoryCreateCommand.of(taxCategoryDraft)));
+    createTaxCategoryByDraft(taxCategoryDraft, CTP_TARGET_CLIENT);
   }
 
   @AfterAll
@@ -72,19 +67,23 @@ class TaxCategorySyncIT {
 
   @Test
   void sync_withNewTaxCategory_shouldCreateTaxCategory() {
-    final SubRate subRate1 = SubRate.of("subRate-1", 0.05);
-    final SubRate subRate2 = SubRate.of("subRate-2", 0.06);
+    final SubRate subRate1 = SubRateBuilder.of().name("subRate-1").amount(0.05).build();
+    final SubRate subRate2 = SubRateBuilder.of().name("subRate-2").amount(0.06).build();
 
     final TaxRateDraft taxRateDraft =
-        TaxRateDraftBuilder.of("%11 US", 0.11, false, CountryCode.US)
+        TaxRateDraftBuilder.of()
+            .name("11% US")
+            .amount(0.11)
+            .includedInPrice(false)
+            .country(CountryCode.US.getAlpha2())
             .subRates(asList(subRate1, subRate2))
             .build();
 
     final TaxCategoryDraft taxCategoryDraft =
-        TaxCategoryDraftBuilder.of(
-                "tax-category-name-new",
-                singletonList(taxRateDraft),
-                "tax-category-description-new")
+        TaxCategoryDraftBuilder.of()
+            .name("tax-category-name-new")
+            .rates(taxRateDraft)
+            .description("tax-category-description-new")
             .key("tax-category-key-new")
             .build();
 
@@ -103,19 +102,23 @@ class TaxCategorySyncIT {
   @Test
   void sync_WithUpdatedTaxCategory_ShouldUpdateTaxCategory() {
     // preparation
-    final SubRate subRate1 = SubRate.of("subRate-1", 0.07);
-    final SubRate subRate2 = SubRate.of("subRate-2", 0.09);
+    final SubRate subRate1 = SubRateBuilder.of().name("subRate-1").amount(0.07).build();
+    final SubRate subRate2 = SubRateBuilder.of().name("subRate-2").amount(0.09).build();
 
     final TaxRateDraft taxRateDraft =
-        TaxRateDraftBuilder.of("%16 VAT", 0.16, true, CountryCode.DE)
+        TaxRateDraftBuilder.of()
+            .name("%16 VAT")
+            .amount(0.16)
+            .includedInPrice(true)
+            .country(CountryCode.DE.getAlpha2())
             .subRates(asList(subRate1, subRate2))
             .build();
 
     final TaxCategoryDraft taxCategoryDraft =
-        TaxCategoryDraftBuilder.of(
-                "tax-category-name-updated",
-                singletonList(taxRateDraft),
-                "tax-category-description-updated")
+        TaxCategoryDraftBuilder.of()
+            .name("name-updated")
+            .rates(taxRateDraft)
+            .description("description-updated")
             .key("tax-category-key")
             .build();
 
@@ -137,31 +140,36 @@ class TaxCategorySyncIT {
     Assertions.assertThat(oldTaxCategoryAfter)
         .hasValueSatisfying(
             taxCategory -> {
-              Assertions.assertThat(taxCategory.getName()).isEqualTo("tax-category-name-updated");
-              Assertions.assertThat(taxCategory.getDescription())
-                  .isEqualTo("tax-category-description-updated");
-              final TaxRate taxRate = taxCategory.getTaxRates().get(0);
+              Assertions.assertThat(taxCategory.getName()).isEqualTo("name-updated");
+              Assertions.assertThat(taxCategory.getDescription()).isEqualTo("description-updated");
+              final TaxRate taxRate = taxCategory.getRates().get(0);
               Assertions.assertThat(taxRate.getName()).isEqualTo("%16 VAT");
               Assertions.assertThat(taxRate.getAmount()).isEqualTo(0.16);
-              Assertions.assertThat(taxRate.getCountry()).isEqualTo(CountryCode.DE);
-              Assertions.assertThat(taxRate.isIncludedInPrice()).isEqualTo(true);
+              Assertions.assertThat(taxRate.getCountry()).isEqualTo(CountryCode.DE.getAlpha2());
+              Assertions.assertThat(taxRate.getIncludedInPrice()).isEqualTo(true);
               Assertions.assertThat(taxRate.getSubRates()).isEqualTo(asList(subRate1, subRate2));
             });
   }
 
   @Test
   void sync_withEqualTaxCategory_shouldNotUpdateTaxCategory() {
-    final SubRate subRate1 = SubRate.of("subRate-1", 0.08);
-    final SubRate subRate2 = SubRate.of("subRate-2", 0.11);
+    final SubRate subRate1 = SubRateBuilder.of().name("subRate-1").amount(0.08).build();
+    final SubRate subRate2 = SubRateBuilder.of().name("subRate-2").amount(0.11).build();
 
     final TaxRateDraft taxRateDraft =
-        TaxRateDraftBuilder.of("%19 VAT DE", 0.19, false, CountryCode.DE)
+        TaxRateDraftBuilder.of()
+            .name("%19 VAT DE")
+            .amount(0.19)
+            .includedInPrice(false)
+            .country(CountryCode.DE.getAlpha2())
             .subRates(asList(subRate1, subRate2))
             .build();
 
     final TaxCategoryDraft taxCategoryDraft =
-        TaxCategoryDraftBuilder.of(
-                "tax-category-name", singletonList(taxRateDraft), "tax-category-description")
+        TaxCategoryDraftBuilder.of()
+            .name("tax-category-name")
+            .rates(taxRateDraft)
+            .description("tax-category-description")
             .key("tax-category-key")
             .build();
 
@@ -181,11 +189,11 @@ class TaxCategorySyncIT {
   void
       sync_withChangedTaxCategoryButConcurrentModificationException_shouldRetryAndUpdateTaxCategory() {
     // preparation
-    final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
+    final ProjectApiRoot spyClient = buildClientWithConcurrentModificationUpdate();
 
-    List<String> errorCallBackMessages = new ArrayList<>();
-    List<String> warningCallBackMessages = new ArrayList<>();
-    List<Throwable> errorCallBackExceptions = new ArrayList<>();
+    final List<String> errorCallBackMessages = new ArrayList<>();
+    final List<String> warningCallBackMessages = new ArrayList<>();
+    final List<Throwable> errorCallBackExceptions = new ArrayList<>();
     final TaxCategorySyncOptions spyOptions =
         TaxCategorySyncOptionsBuilder.of(spyClient)
             .errorCallback(
@@ -198,8 +206,9 @@ class TaxCategorySyncIT {
     final TaxCategorySync taxCategorySync = new TaxCategorySync(spyOptions);
 
     final TaxCategoryDraft taxCategoryDraft =
-        TaxCategoryDraftBuilder.of(
-                "tax-category-name-updated", null, "tax-category-description-updated")
+        TaxCategoryDraftBuilder.of()
+            .name("name")
+            .description("desc")
             .key("tax-category-key")
             .build();
 
@@ -214,27 +223,29 @@ class TaxCategorySyncIT {
   }
 
   @Nonnull
-  private SphereClient buildClientWithConcurrentModificationUpdate() {
-    final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-
-    final TaxCategoryUpdateCommand updateCommand = any(TaxCategoryUpdateCommand.class);
-    when(spyClient.execute(updateCommand))
-        .thenReturn(
-            CompletableFutureUtils.exceptionallyCompletedFuture(
-                new ConcurrentModificationException()))
-        .thenCallRealMethod();
-
-    return spyClient;
+  private ProjectApiRoot buildClientWithConcurrentModificationUpdate() {
+    // Helps to count invocation of a request and used to decide execution or mocking response
+    final AtomicInteger postRequestInvocationCounter = new AtomicInteger(0);
+    return withTestClient(
+        (uri, method) -> {
+          if (uri.contains("tax-categories/")
+              && ApiHttpMethod.POST.equals(method)
+              && postRequestInvocationCounter.getAndIncrement() == 0) {
+            return CompletableFutureUtils.exceptionallyCompletedFuture(
+                createConcurrentModificationException());
+          }
+          return null;
+        });
   }
 
   @Test
   void sync_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
     // preparation
-    final SphereClient spyClient =
+    final ProjectApiRoot spyClient =
         buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
-    List<String> errorCallBackMessages = new ArrayList<>();
-    List<Throwable> errorCallBackExceptions = new ArrayList<>();
+    final List<String> errorCallBackMessages = new ArrayList<>();
+    final List<Throwable> errorCallBackExceptions = new ArrayList<>();
     final TaxCategorySyncOptions spyOptions =
         TaxCategorySyncOptionsBuilder.of(spyClient)
             .errorCallback(
@@ -242,14 +253,14 @@ class TaxCategorySyncIT {
                   errorCallBackMessages.add(exception.getMessage());
                   errorCallBackExceptions.add(exception.getCause());
                 })
-            // .warningCallback(warningCallBackMessages::add)
             .build();
 
     final TaxCategorySync taxCategorySync = new TaxCategorySync(spyOptions);
 
     final TaxCategoryDraft taxCategoryDraft =
-        TaxCategoryDraftBuilder.of(
-                "tax-category-name-updated", null, "tax-category-description-updated")
+        TaxCategoryDraftBuilder.of()
+            .name("name")
+            .description("desc")
             .key("tax-category-key")
             .build();
 
@@ -273,32 +284,27 @@ class TaxCategorySyncIT {
   }
 
   @Nonnull
-  private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
-    final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-
-    final TaxCategoryUpdateCommand updateCommand = any(TaxCategoryUpdateCommand.class);
-    when(spyClient.execute(updateCommand))
-        .thenReturn(
-            CompletableFutureUtils.exceptionallyCompletedFuture(
-                new ConcurrentModificationException()))
-        .thenCallRealMethod();
-
-    final TaxCategoryQuery taxCategoryQuery = any(TaxCategoryQuery.class);
-    when(spyClient.execute(taxCategoryQuery))
-        .thenCallRealMethod() // Call real fetch on fetching matching tax categories
-        .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
-
-    return spyClient;
+  private ProjectApiRoot buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
+    return withTestClient(
+        (uri, method) -> {
+          if (uri.contains("tax-categories/key=") && ApiHttpMethod.GET.equals(method)) {
+            return CompletableFutureUtils.exceptionallyCompletedFuture(createBadGatewayException());
+          } else if (uri.contains("tax-categories/") && ApiHttpMethod.POST.equals(method)) {
+            return CompletableFutureUtils.exceptionallyCompletedFuture(
+                createConcurrentModificationException());
+          }
+          return null;
+        });
   }
 
   @Test
   void sync_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
     // preparation
-    final SphereClient spyClient =
+    final ProjectApiRoot spyClient =
         buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
-    List<String> errorCallBackMessages = new ArrayList<>();
-    List<Throwable> errorCallBackExceptions = new ArrayList<>();
+    final List<String> errorCallBackMessages = new ArrayList<>();
+    final List<Throwable> errorCallBackExceptions = new ArrayList<>();
     final TaxCategorySyncOptions spyOptions =
         TaxCategorySyncOptionsBuilder.of(spyClient)
             .errorCallback(
@@ -311,8 +317,9 @@ class TaxCategorySyncIT {
     final TaxCategorySync taxCategorySync = new TaxCategorySync(spyOptions);
 
     final TaxCategoryDraft taxCategoryDraft =
-        TaxCategoryDraftBuilder.of(
-                "tax-category-name-updated", null, "tax-category-description-updated")
+        TaxCategoryDraftBuilder.of()
+            .name("name")
+            .description("desc")
             .key("tax-category-key")
             .build();
 
@@ -333,22 +340,34 @@ class TaxCategorySyncIT {
   }
 
   @Nonnull
-  private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
-    final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+  private ProjectApiRoot buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
+    return withTestClient(
+        (uri, method) -> {
+          if (uri.contains("tax-categories/key=") && ApiHttpMethod.GET.equals(method)) {
+            return CompletableFutureUtils.exceptionallyCompletedFuture(createNotFoundException());
+          }
+          if (uri.contains("tax-categories/") && ApiHttpMethod.POST.equals(method)) {
+            return CompletableFutureUtils.exceptionallyCompletedFuture(
+                createConcurrentModificationException());
+          }
+          return null;
+        });
+  }
 
-    final TaxCategoryUpdateCommand taxCategoryUpdateCommand = any(TaxCategoryUpdateCommand.class);
-    when(spyClient.execute(taxCategoryUpdateCommand))
-        .thenReturn(
-            CompletableFutureUtils.exceptionallyCompletedFuture(
-                new ConcurrentModificationException()))
-        .thenCallRealMethod();
-
-    final TaxCategoryQuery taxCategoryQuery = any(TaxCategoryQuery.class);
-
-    when(spyClient.execute(taxCategoryQuery))
-        .thenCallRealMethod() // Call real fetch on fetching matching tax categories
-        .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
-
-    return spyClient;
+  private ProjectApiRoot withTestClient(
+      BiFunction<String, ApiHttpMethod, CompletableFuture<ApiHttpResponse<byte[]>>> fn) {
+    return ApiRootBuilder.of(
+            request -> {
+              final String uri = request.getUri() != null ? request.getUri().toString() : "";
+              final ApiHttpMethod method = request.getMethod();
+              final CompletableFuture<ApiHttpResponse<byte[]>> exceptionResponse =
+                  fn.apply(uri, method);
+              if (exceptionResponse != null) {
+                return exceptionResponse;
+              }
+              return CTP_TARGET_CLIENT.getApiHttpClient().execute(request);
+            })
+        .withApiBaseUrl(CTP_TARGET_CLIENT.getApiHttpClient().getBaseUri())
+        .build(CTP_TARGET_CLIENT.getProjectKey());
   }
 }

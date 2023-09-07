@@ -1,26 +1,38 @@
 package com.commercetools.sync.integration.externalsource.products;
 
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.BOOLEAN_CUSTOM_FIELD_NAME;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.LOCALISED_STRING_CUSTOM_FIELD_NAME;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.assertAssetsAreEqual;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.createAssetDraft;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.createAssetDraftWithKey;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.createAssetsCustomType;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.createVariantDraft;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.*;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ensureProductType;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.commercetools.api.client.error.BadRequestException;
+import com.commercetools.api.models.common.Asset;
+import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.api.models.product.Product;
+import com.commercetools.api.models.product.ProductAddAssetActionBuilder;
+import com.commercetools.api.models.product.ProductAddVariantActionBuilder;
+import com.commercetools.api.models.product.ProductChangeAssetNameActionBuilder;
+import com.commercetools.api.models.product.ProductChangeAssetOrderActionBuilder;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductDraftBuilder;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductProjectionPagedQueryResponse;
+import com.commercetools.api.models.product.ProductRemoveAssetActionBuilder;
+import com.commercetools.api.models.product.ProductSetAssetCustomFieldActionBuilder;
+import com.commercetools.api.models.product.ProductSetAssetCustomTypeActionBuilder;
+import com.commercetools.api.models.product.ProductUpdateAction;
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
+import com.commercetools.api.models.type.FieldContainerBuilder;
+import com.commercetools.api.models.type.Type;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.commons.exceptions.SyncException;
@@ -31,31 +43,8 @@ import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import io.sphere.sdk.client.ErrorResponseException;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Asset;
-import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.ProductProjectionType;
-import io.sphere.sdk.products.commands.ProductCreateCommand;
-import io.sphere.sdk.products.commands.updateactions.AddAsset;
-import io.sphere.sdk.products.commands.updateactions.AddVariant;
-import io.sphere.sdk.products.commands.updateactions.ChangeAssetName;
-import io.sphere.sdk.products.commands.updateactions.ChangeAssetOrder;
-import io.sphere.sdk.products.commands.updateactions.RemoveAsset;
-import io.sphere.sdk.products.commands.updateactions.SetAssetCustomField;
-import io.sphere.sdk.products.commands.updateactions.SetAssetCustomType;
-import io.sphere.sdk.products.queries.ProductProjectionByKeyGet;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.types.Type;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -77,7 +66,7 @@ class ProductSyncWithAssetsIT {
   private List<String> errorCallBackMessages;
   private List<String> warningCallBackMessages;
   private List<Throwable> errorCallBackExceptions;
-  private List<UpdateAction<Product>> updateActionsFromSync;
+  private List<ProductUpdateAction> updateActionsFromSync;
 
   /**
    * Delete all product related test data from the target project. Then creates for the target CTP
@@ -87,10 +76,10 @@ class ProductSyncWithAssetsIT {
   static void setup() {
     deleteProductSyncTestData(CTP_TARGET_CLIENT);
     assetsCustomType =
-        createAssetsCustomType(
+        ensureAssetsCustomType(
             ASSETS_CUSTOM_TYPE_KEY, Locale.ENGLISH, "assetsCustomTypeName", CTP_TARGET_CLIENT);
 
-    productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
+    productType = ensureProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
   }
 
   /**
@@ -110,15 +99,21 @@ class ProductSyncWithAssetsIT {
             createAssetDraft("3", ofEnglish("3"), assetsCustomType.getId()));
 
     final ProductDraft productDraft =
-        ProductDraftBuilder.of(
-                productType.toReference(),
-                ofEnglish("draftName"),
-                ofEnglish("existingSlug"),
-                createVariantDraft("v1", assetDraftsToCreateOnExistingProduct, null))
+        ProductDraftBuilder.of()
+            .productType(productType.toResourceIdentifier())
+            .name(ofEnglish("draftName"))
+            .slug(ofEnglish("existingSlug"))
+            .masterVariant(createVariantDraft("v1", assetDraftsToCreateOnExistingProduct, null))
             .key("existingProduct")
             .build();
 
-    product = executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft)));
+    product =
+        CTP_TARGET_CLIENT
+            .products()
+            .create(productDraft)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .join();
   }
 
   private void clearSyncTestCollections() {
@@ -133,7 +128,7 @@ class ProductSyncWithAssetsIT {
             SyncException,
             Optional<ProductDraft>,
             Optional<ProductProjection>,
-            List<UpdateAction<Product>>>
+            List<ProductUpdateAction>>
         errorCallBack =
             (exception, newResource, oldResource, updateActions) -> {
               errorCallBackMessages.add(exception.getMessage());
@@ -144,10 +139,7 @@ class ProductSyncWithAssetsIT {
             (exception, newResource, oldResource) ->
                 warningCallBackMessages.add(exception.getMessage());
     final TriFunction<
-            List<UpdateAction<Product>>,
-            ProductDraft,
-            ProductProjection,
-            List<UpdateAction<Product>>>
+            List<ProductUpdateAction>, ProductDraft, ProductProjection, List<ProductUpdateAction>>
         actionsCallBack =
             (updateActions, newDraft, oldProduct) -> {
               updateActionsFromSync.addAll(updateActions);
@@ -172,16 +164,17 @@ class ProductSyncWithAssetsIT {
         singletonList(createAssetDraftWithKey("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY));
 
     final ProductDraft productDraft =
-        ProductDraftBuilder.of(
-                ResourceIdentifier.ofKey(productType.getKey()),
-                ofEnglish("draftName"),
-                ofEnglish("slug"),
-                createVariantDraft("masterVariant", assetDrafts, null))
+        ProductDraftBuilder.of()
+            .productType(
+                ProductTypeResourceIdentifierBuilder.of().key(productType.getKey()).build())
+            .name(ofEnglish("draftName"))
+            .slug(ofEnglish("slug"))
+            .masterVariant(createVariantDraft("masterVariant", assetDrafts, null))
             .key("draftKey")
             .build();
 
     final ProductSyncStatistics syncStatistics =
-        executeBlocking(productSync.sync(singletonList(productDraft)));
+        productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
 
     assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
     assertThat(errorCallBackExceptions).isEmpty();
@@ -191,8 +184,12 @@ class ProductSyncWithAssetsIT {
 
     final ProductProjection productProjection =
         CTP_TARGET_CLIENT
-            .execute(
-                ProductProjectionByKeyGet.of(productDraft.getKey(), ProductProjectionType.STAGED))
+            .productProjections()
+            .withKey(productDraft.getKey())
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join();
 
@@ -210,16 +207,17 @@ class ProductSyncWithAssetsIT {
             createAssetDraftWithKey("4", ofEnglish("duplicate asset"), ASSETS_CUSTOM_TYPE_KEY));
 
     final ProductDraft productDraft =
-        ProductDraftBuilder.of(
-                ResourceIdentifier.ofKey(productType.getKey()),
-                ofEnglish("draftName"),
-                ofEnglish("slug"),
-                createVariantDraft("masterVariant", assetDrafts, null))
+        ProductDraftBuilder.of()
+            .productType(
+                ProductTypeResourceIdentifierBuilder.of().key(productType.getKey()).build())
+            .name(ofEnglish("draftName"))
+            .slug(ofEnglish("slug"))
+            .masterVariant(createVariantDraft("masterVariant", assetDrafts, null))
             .key("draftKey")
             .build();
 
     final ProductSyncStatistics syncStatistics =
-        executeBlocking(productSync.sync(singletonList(productDraft)));
+        productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
 
     // Assert results of sync
     assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
@@ -230,49 +228,58 @@ class ProductSyncWithAssetsIT {
         .contains(
             "The key '4' was used by multiple assets in product variant" + " 'masterVariant'.");
     assertThat(errorCallBackExceptions).hasSize(1);
-    assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ErrorResponseException.class);
+
+    assertThat(errorCallBackExceptions.get(0)).hasCauseExactlyInstanceOf(BadRequestException.class);
     assertThat(errorCallBackExceptions.get(0).getMessage())
-        .contains(
-            "The key '4' was used by multiple assets in" + " product variant 'masterVariant'.");
+        .contains("The key '4' was used by multiple assets in product variant 'masterVariant'.");
 
     // Assert that the product wasn't created.
-    final ProductProjection productProjection =
+    final List<ProductProjection> productProjections =
         CTP_TARGET_CLIENT
-            .execute(
-                ProductProjectionByKeyGet.of(productDraft.getKey(), ProductProjectionType.STAGED))
+            .productProjections()
+            .get()
+            .withWhere("key=:key")
+            .withPredicateVar("key", productDraft.getKey())
+            .withStaged(true)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductProjectionPagedQueryResponse::getResults)
             .toCompletableFuture()
             .join();
 
-    assertThat(productProjection).isNull();
+    assertThat(productProjections).hasSize(0);
   }
 
   @Test
   void sync_withMatchingProductWithAssetChanges_shouldUpdateProduct() {
 
-    final Map<String, JsonNode> customFieldsJsonMap = new HashMap<>();
-    customFieldsJsonMap.put(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(true));
+    final Map<String, Object> customFieldsJsonMap = new HashMap<>();
+    customFieldsJsonMap.put(BOOLEAN_CUSTOM_FIELD_NAME, true);
 
     // new asset drafts with different kind of asset actions (change order, add asset, remove asset,
-    // change asset
-    // name, set asset custom fields, change
+    // change asset name, set asset custom fields, change
     final List<AssetDraft> assetDrafts =
         asList(
             createAssetDraftWithKey("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY),
             createAssetDraftWithKey(
-                "3", ofEnglish("3"), ASSETS_CUSTOM_TYPE_KEY, customFieldsJsonMap),
+                "3",
+                ofEnglish("3"),
+                ASSETS_CUSTOM_TYPE_KEY,
+                FieldContainerBuilder.of().values(customFieldsJsonMap).build()),
             createAssetDraft("2", ofEnglish("new name")));
 
     final ProductDraft productDraft =
-        ProductDraftBuilder.of(
-                referenceOfId(productType.getKey()),
-                ofEnglish("draftName"),
-                ofEnglish("existingSlug"),
-                createVariantDraft("v1", assetDrafts, null))
+        ProductDraftBuilder.of()
+            .productType(
+                ProductTypeResourceIdentifierBuilder.of().key(productType.getKey()).build())
+            .name(ofEnglish("draftName"))
+            .slug(ofEnglish("existingSlug"))
+            .masterVariant(createVariantDraft("v1", assetDrafts, null))
             .key(product.getKey())
             .build();
 
     final ProductSyncStatistics syncStatistics =
-        executeBlocking(productSync.sync(singletonList(productDraft)));
+        productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
 
     // Assert results of sync
     assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
@@ -287,28 +294,52 @@ class ProductSyncWithAssetsIT {
 
     assertThat(updateActionsFromSync)
         .containsExactly(
-            RemoveAsset.ofVariantIdWithKey(1, "1", true),
-            ChangeAssetName.ofAssetKeyAndVariantId(1, "2", ofEnglish("new name"), true),
-            SetAssetCustomType.ofVariantIdAndAssetKey(1, "2", null, true),
-            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(
-                1,
-                "3",
-                BOOLEAN_CUSTOM_FIELD_NAME,
-                customFieldsJsonMap.get(BOOLEAN_CUSTOM_FIELD_NAME),
-                true),
-            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(
-                1, "3", LOCALISED_STRING_CUSTOM_FIELD_NAME, null, true),
-            ChangeAssetOrder.ofVariantId(
-                1, asList(assetsKeyToIdMap.get("3"), assetsKeyToIdMap.get("2")), true),
-            AddAsset.ofVariantId(1, createAssetDraft("4", ofEnglish("4"), assetsCustomType.getId()))
-                .withStaged(true)
-                .withPosition(0));
+            ProductRemoveAssetActionBuilder.of().variantId(1L).assetKey("1").staged(true).build(),
+            ProductChangeAssetNameActionBuilder.of()
+                .variantId(1L)
+                .assetKey("2")
+                .name(ofEnglish("new name"))
+                .staged(true)
+                .build(),
+            ProductSetAssetCustomTypeActionBuilder.of()
+                .variantId(1L)
+                .assetKey("2")
+                .staged(true)
+                .build(),
+            ProductSetAssetCustomFieldActionBuilder.of()
+                .variantId(1L)
+                .assetKey("3")
+                .name(BOOLEAN_CUSTOM_FIELD_NAME)
+                .value(customFieldsJsonMap.get(BOOLEAN_CUSTOM_FIELD_NAME))
+                .staged(true)
+                .build(),
+            ProductSetAssetCustomFieldActionBuilder.of()
+                .variantId(1L)
+                .assetKey("3")
+                .name(LOCALISED_STRING_CUSTOM_FIELD_NAME)
+                .staged(true)
+                .build(),
+            ProductChangeAssetOrderActionBuilder.of()
+                .variantId(1L)
+                .assetOrder(List.of(assetsKeyToIdMap.get("3"), assetsKeyToIdMap.get("2")))
+                .staged(true)
+                .build(),
+            ProductAddAssetActionBuilder.of()
+                .variantId(1L)
+                .asset(createAssetDraft("4", ofEnglish("4"), assetsCustomType.getId()))
+                .staged(true)
+                .position(0)
+                .build());
 
     // Assert that assets got updated correctly
     final ProductProjection productProjection =
         CTP_TARGET_CLIENT
-            .execute(
-                ProductProjectionByKeyGet.of(productDraft.getKey(), ProductProjectionType.STAGED))
+            .productProjections()
+            .withKey(productDraft.getKey())
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join();
 
@@ -319,31 +350,34 @@ class ProductSyncWithAssetsIT {
   @Test
   void sync_withMatchingProductWithNewVariantWithAssets_shouldUpdateAddAssetsToNewVariant() {
 
-    final Map<String, JsonNode> customFieldsJsonMap = new HashMap<>();
-    customFieldsJsonMap.put(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(true));
+    final Map<String, Object> customFieldsJsonMap = new HashMap<>();
+    customFieldsJsonMap.put(BOOLEAN_CUSTOM_FIELD_NAME, true);
 
     // new asset drafts with different kind of asset actions (change order, add asset, remove asset,
-    // change asset
-    // name, set asset custom fields, change
+    // change asset name, set asset custom fields, change
     final List<AssetDraft> assetDrafts =
         asList(
             createAssetDraftWithKey("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY),
             createAssetDraftWithKey(
-                "3", ofEnglish("3"), ASSETS_CUSTOM_TYPE_KEY, customFieldsJsonMap),
+                "3",
+                ofEnglish("3"),
+                ASSETS_CUSTOM_TYPE_KEY,
+                FieldContainerBuilder.of().values(customFieldsJsonMap).build()),
             createAssetDraft("2", ofEnglish("new name")));
 
     final ProductDraft productDraft =
-        ProductDraftBuilder.of(
-                referenceOfId(productType.getKey()),
-                ofEnglish("draftName"),
-                ofEnglish("existingSlug"),
-                createVariantDraft("v1", assetDrafts, null))
-            .plusVariants(createVariantDraft("v2", assetDrafts, null))
+        ProductDraftBuilder.of()
+            .productType(
+                ProductTypeResourceIdentifierBuilder.of().key(productType.getKey()).build())
+            .name(ofEnglish("draftName"))
+            .slug(ofEnglish("existingSlug"))
+            .masterVariant(createVariantDraft("v1", assetDrafts, null))
+            .variants(createVariantDraft("v2", assetDrafts, null))
             .key(product.getKey())
             .build();
 
     final ProductSyncStatistics syncStatistics =
-        executeBlocking(productSync.sync(singletonList(productDraft)));
+        productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
 
     // Assert results of sync
     assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
@@ -358,36 +392,66 @@ class ProductSyncWithAssetsIT {
 
     assertThat(updateActionsFromSync)
         .containsExactly(
-            AddVariant.of(null, null, "v2", true)
-                .withKey("v2")
-                .withAssetDrafts(
-                    Arrays.asList(
+            ProductAddVariantActionBuilder.of()
+                .sku("v2")
+                .staged(true)
+                .key("v2")
+                .assets(
+                    List.of(
                         createAssetDraft("4", ofEnglish("4"), assetsCustomType.getId()),
                         createAssetDraft(
-                            "3", ofEnglish("3"), assetsCustomType.getId(), customFieldsJsonMap),
-                        createAssetDraft("2", ofEnglish("new name")))),
-            RemoveAsset.ofVariantIdWithKey(1, "1", true),
-            ChangeAssetName.ofAssetKeyAndVariantId(1, "2", ofEnglish("new name"), true),
-            SetAssetCustomType.ofVariantIdAndAssetKey(1, "2", null, true),
-            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(
-                1,
-                "3",
-                BOOLEAN_CUSTOM_FIELD_NAME,
-                customFieldsJsonMap.get(BOOLEAN_CUSTOM_FIELD_NAME),
-                true),
-            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(
-                1, "3", LOCALISED_STRING_CUSTOM_FIELD_NAME, null, true),
-            ChangeAssetOrder.ofVariantId(
-                1, asList(assetsKeyToIdMap.get("3"), assetsKeyToIdMap.get("2")), true),
-            AddAsset.ofVariantId(1, createAssetDraft("4", ofEnglish("4"), assetsCustomType.getId()))
-                .withStaged(true)
-                .withPosition(0));
+                            "3",
+                            ofEnglish("3"),
+                            assetsCustomType.getId(),
+                            FieldContainerBuilder.of().values(customFieldsJsonMap).build()),
+                        createAssetDraft("2", ofEnglish("new name"))))
+                .build(),
+            ProductRemoveAssetActionBuilder.of().variantId(1L).assetKey("1").staged(true).build(),
+            ProductChangeAssetNameActionBuilder.of()
+                .variantId(1L)
+                .assetKey("2")
+                .name(ofEnglish("new name"))
+                .staged(true)
+                .build(),
+            ProductSetAssetCustomTypeActionBuilder.of()
+                .variantId(1L)
+                .assetKey("2")
+                .staged(true)
+                .build(),
+            ProductSetAssetCustomFieldActionBuilder.of()
+                .variantId(1L)
+                .assetKey("3")
+                .name(BOOLEAN_CUSTOM_FIELD_NAME)
+                .value(customFieldsJsonMap.get(BOOLEAN_CUSTOM_FIELD_NAME))
+                .staged(true)
+                .build(),
+            ProductSetAssetCustomFieldActionBuilder.of()
+                .variantId(1L)
+                .assetKey("3")
+                .name(LOCALISED_STRING_CUSTOM_FIELD_NAME)
+                .staged(true)
+                .build(),
+            ProductChangeAssetOrderActionBuilder.of()
+                .variantId(1L)
+                .assetOrder(List.of(assetsKeyToIdMap.get("3"), assetsKeyToIdMap.get("2")))
+                .staged(true)
+                .build(),
+            ProductAddAssetActionBuilder.of()
+                .variantId(1L)
+                .asset(createAssetDraft("4", ofEnglish("4"), assetsCustomType.getId()))
+                .staged(true)
+                .position(0)
+                .build());
 
     // Assert that assets got updated correctly
     final ProductProjection productProjection =
         CTP_TARGET_CLIENT
-            .execute(
-                ProductProjectionByKeyGet.of(productDraft.getKey(), ProductProjectionType.STAGED))
+            .productProjections()
+            .withKey(productDraft.getKey())
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join();
 
@@ -405,16 +469,17 @@ class ProductSyncWithAssetsIT {
             createAssetDraftWithKey("2", ofEnglish("2"), ASSETS_CUSTOM_TYPE_KEY));
 
     final ProductDraft productDraft =
-        ProductDraftBuilder.of(
-                referenceOfId(productType.getKey()),
-                ofEnglish("draftName"),
-                ofEnglish("existingSlug"),
-                createVariantDraft("v1", assetDrafts, null))
+        ProductDraftBuilder.of()
+            .productType(
+                ProductTypeResourceIdentifierBuilder.of().key(productType.getKey()).build())
+            .name(ofEnglish("draftName"))
+            .slug(ofEnglish("existingSlug"))
+            .masterVariant(createVariantDraft("v1", assetDrafts, null))
             .key(product.getKey())
             .build();
 
     final ProductSyncStatistics syncStatistics =
-        executeBlocking(productSync.sync(singletonList(productDraft)));
+        productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
 
     // Assert results of sync
     assertThat(syncStatistics).hasValues(1, 0, 0, 0, 0);
@@ -440,8 +505,13 @@ class ProductSyncWithAssetsIT {
     // Assert that existing assets haven't changed.
     final ProductProjection productProjection =
         CTP_TARGET_CLIENT
-            .execute(
-                ProductProjectionByKeyGet.of(productDraft.getKey(), ProductProjectionType.STAGED))
+            .productProjections()
+            .withKey(productDraft.getKey())
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(
+                productProjectionApiHttpResponse -> productProjectionApiHttpResponse.getBody())
             .toCompletableFuture()
             .join();
 

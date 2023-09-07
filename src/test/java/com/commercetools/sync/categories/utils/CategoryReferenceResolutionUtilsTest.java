@@ -1,21 +1,24 @@
 package com.commercetools.sync.categories.utils;
 
-import static com.commercetools.sync.commons.MockUtils.getAssetMockWithCustomFields;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryDraft;
+import com.commercetools.api.models.category.CategoryReference;
+import com.commercetools.api.models.category.CategoryReferenceBuilder;
+import com.commercetools.api.models.common.Asset;
+import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.type.CustomFields;
+import com.commercetools.api.models.type.TypeReference;
+import com.commercetools.api.models.type.TypeReferenceBuilder;
+import com.commercetools.sync.commons.MockUtils;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.models.Asset;
-import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.types.CustomFields;
-import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,20 +48,20 @@ class CategoryReferenceResolutionUtilsTest {
     final String assetCustomTypeId = UUID.randomUUID().toString();
     final String assetCustomTypeKey = "customTypeKey";
     final Asset asset =
-        getAssetMockWithCustomFields(
-            Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), assetCustomTypeId));
+        MockUtils.getAssetMockWithCustomFields(
+            TypeReferenceBuilder.of().id(assetCustomTypeId).build());
 
     final List<Category> mockCategories = new ArrayList<>();
     for (int i = 0; i < 2; i++) {
       final Category mockCategory = mock(Category.class);
 
-      final Reference<Category> parentReference =
-          Reference.ofResourceTypeIdAndId(UUID.randomUUID().toString(), parentId);
+      final CategoryReference parentReference = CategoryReferenceBuilder.of().id(parentId).build();
+      when(mockCategory.getName()).thenReturn(LocalizedString.ofEnglish("test"));
+      when(mockCategory.getSlug()).thenReturn(LocalizedString.ofEnglish("test"));
       when(mockCategory.getParent()).thenReturn(parentReference);
 
       final CustomFields mockCustomFields = mock(CustomFields.class);
-      final Reference<Type> typeReference =
-          Reference.ofResourceTypeIdAndId("resourceTypeId", customTypeId);
+      final TypeReference typeReference = TypeReferenceBuilder.of().id(customTypeId).build();
       when(mockCustomFields.getType()).thenReturn(typeReference);
       when(mockCategory.getCustom()).thenReturn(mockCustomFields);
 
@@ -100,6 +103,8 @@ class CategoryReferenceResolutionUtilsTest {
     final List<Category> mockCategories = new ArrayList<>();
     for (int i = 0; i < 2; i++) {
       final Category mockCategory = mock(Category.class);
+      when(mockCategory.getName()).thenReturn(LocalizedString.ofEnglish("test"));
+      when(mockCategory.getSlug()).thenReturn(LocalizedString.ofEnglish("test"));
       when(mockCategory.getParent()).thenReturn(null);
       when(mockCategory.getCustom()).thenReturn(null);
       when(mockCategory.getAssets()).thenReturn(emptyList());

@@ -1,36 +1,27 @@
 package com.commercetools.sync.products.helpers.productreferenceresolver;
 
-import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithRandomProductType;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomObjectService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockStateService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockTaxCategoryService;
-import static com.commercetools.sync.products.helpers.ProductReferenceResolver.FAILED_TO_RESOLVE_REFERENCE;
-import static com.commercetools.sync.products.helpers.ProductReferenceResolver.STATE_DOES_NOT_EXIST;
-import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.product.ProductDraftBuilder;
+import com.commercetools.api.models.state.StateResourceIdentifier;
+import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
+import com.commercetools.sync.commons.ExceptionUtils;
+import com.commercetools.sync.commons.MockUtils;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
+import com.commercetools.sync.inventories.InventorySyncMockUtils;
+import com.commercetools.sync.products.ProductSyncMockUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.StateService;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.models.SphereException;
-import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.states.State;
+import io.vrap.rmf.base.client.error.BadGatewayException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -38,6 +29,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class StateReferenceResolverTest {
   private static final String CHANNEL_KEY = "channel-key_1";
@@ -55,28 +47,30 @@ class StateReferenceResolverTest {
   /** Sets up the services and the options needed for reference resolution. */
   @BeforeEach
   void setup() {
-    stateService = getMockStateService(STATE_ID);
+    stateService = ProductSyncMockUtils.getMockStateService(STATE_ID);
     final ProductSyncOptions syncOptions =
-        ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
     referenceResolver =
         new ProductReferenceResolver(
             syncOptions,
-            getMockProductTypeService(PRODUCT_TYPE_ID),
-            mock(CategoryService.class),
-            getMockTypeService(),
-            getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
-            mock(CustomerGroupService.class),
-            getMockTaxCategoryService(TAX_CATEGORY_ID),
+            ProductSyncMockUtils.getMockProductTypeService(PRODUCT_TYPE_ID),
+            Mockito.mock(CategoryService.class),
+            MockUtils.getMockTypeService(),
+            InventorySyncMockUtils.getMockChannelService(
+                InventorySyncMockUtils.getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
+            Mockito.mock(CustomerGroupService.class),
+            ProductSyncMockUtils.getMockTaxCategoryService(TAX_CATEGORY_ID),
             stateService,
-            getMockProductService(PRODUCT_ID),
-            getMockCustomObjectService(CUSTOM_OBJECT_ID),
-            getMockCustomerService(CUSTOMER_ID));
+            ProductSyncMockUtils.getMockProductService(PRODUCT_ID),
+            ProductSyncMockUtils.getMockCustomObjectService(CUSTOM_OBJECT_ID),
+            ProductSyncMockUtils.getMockCustomerService(CUSTOMER_ID));
   }
 
   @Test
   void resolveStateReference_WithKeys_ShouldResolveReference() {
     final ProductDraftBuilder productBuilder =
-        getBuilderWithRandomProductType().state(ResourceIdentifier.ofKey("stateKey"));
+        ProductSyncMockUtils.getBuilderWithRandomProductType()
+            .state(StateResourceIdentifierBuilder.of().key("stateKey").build());
 
     final ProductDraftBuilder resolvedDraft =
         referenceResolver.resolveStateReference(productBuilder).toCompletableFuture().join();
@@ -87,7 +81,8 @@ class StateReferenceResolverTest {
 
   @Test
   void resolveStateReference_WithNullState_ShouldNotResolveReference() {
-    final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType().key("dummyKey");
+    final ProductDraftBuilder productBuilder =
+        ProductSyncMockUtils.getBuilderWithRandomProductType().key("dummyKey");
 
     assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
         .isCompletedWithValueMatching(resolvedDraft -> Objects.isNull(resolvedDraft.getState()));
@@ -96,19 +91,19 @@ class StateReferenceResolverTest {
   @Test
   void resolveStateReference_WithNonExistentState_ShouldNotResolveReference() {
     final ProductDraftBuilder productBuilder =
-        getBuilderWithRandomProductType()
-            .state(ResourceIdentifier.ofKey("nonExistentKey"))
+        ProductSyncMockUtils.getBuilderWithRandomProductType()
+            .state(StateResourceIdentifierBuilder.of().key("nonExistentKey").build())
             .key("dummyKey");
 
     when(stateService.fetchCachedStateId(anyString()))
         .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
     final String expectedMessageWithCause =
-        format(
-            FAILED_TO_RESOLVE_REFERENCE,
-            State.resourceTypeId(),
+        String.format(
+            ProductReferenceResolver.FAILED_TO_RESOLVE_REFERENCE,
+            StateResourceIdentifier.STATE,
             "dummyKey",
-            format(STATE_DOES_NOT_EXIST, "nonExistentKey"));
+            String.format(ProductReferenceResolver.STATE_DOES_NOT_EXIST, "nonExistentKey"));
 
     referenceResolver
         .resolveStateReference(productBuilder)
@@ -125,59 +120,65 @@ class StateReferenceResolverTest {
   @Test
   void resolveStateReference_WithNullKeyOnStateReference_ShouldNotResolveReference() {
     final ProductDraftBuilder productBuilder =
-        getBuilderWithRandomProductType().state(ResourceIdentifier.ofKey(null)).key("dummyKey");
+        ProductSyncMockUtils.getBuilderWithRandomProductType()
+            .state(StateResourceIdentifierBuilder.of().key(null).build())
+            .key("dummyKey");
 
     assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
         .failsWithin(1, TimeUnit.SECONDS)
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
         .withMessageContaining(
-            format(
+            String.format(
                 "Failed to resolve 'state' resource identifier on ProductDraft with "
                     + "key:'%s'. Reason: %s",
-                productBuilder.getKey(), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                productBuilder.getKey(),
+                BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
   }
 
   @Test
   void resolveStateReference_WithEmptyKeyOnStateReference_ShouldNotResolveReference() {
     final ProductDraftBuilder productBuilder =
-        getBuilderWithRandomProductType().state(ResourceIdentifier.ofKey("")).key("dummyKey");
+        ProductSyncMockUtils.getBuilderWithRandomProductType()
+            .state(StateResourceIdentifierBuilder.of().key("").build())
+            .key("dummyKey");
 
     assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
         .failsWithin(1, TimeUnit.SECONDS)
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
         .withMessageContaining(
-            format(
+            String.format(
                 "Failed to resolve 'state' resource identifier on ProductDraft with "
                     + "key:'%s'. Reason: %s",
-                productBuilder.getKey(), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                productBuilder.getKey(),
+                BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
   }
 
   @Test
   void resolveStateReference_WithExceptionOnFetch_ShouldNotResolveReference() {
     final ProductDraftBuilder productBuilder =
-        getBuilderWithRandomProductType()
-            .state(ResourceIdentifier.ofKey("stateKey"))
+        ProductSyncMockUtils.getBuilderWithRandomProductType()
+            .state(StateResourceIdentifierBuilder.of().key("stateKey").build())
             .key("dummyKey");
 
     final CompletableFuture<Optional<String>> futureThrowingSphereException =
         new CompletableFuture<>();
-    futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
+    futureThrowingSphereException.completeExceptionally(ExceptionUtils.createBadGatewayException());
     when(stateService.fetchCachedStateId(anyString())).thenReturn(futureThrowingSphereException);
 
     assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
         .failsWithin(1, TimeUnit.SECONDS)
         .withThrowableOfType(ExecutionException.class)
-        .withCauseExactlyInstanceOf(SphereException.class)
-        .withMessageContaining("CTP error on fetch");
+        .withCauseExactlyInstanceOf(BadGatewayException.class)
+        .withMessageContaining("test");
   }
 
   @Test
   void resolveStateReference_WithIdOnStateReference_ShouldNotResolveReference() {
     final ProductDraftBuilder productBuilder =
-        getBuilderWithRandomProductType()
-            .state(ResourceIdentifier.ofId("existing-id"))
+        ProductSyncMockUtils.getBuilderWithRandomProductType()
+            .state(StateResourceIdentifierBuilder.of().id("existing-id").build())
             .key("dummyKey");
 
     assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())

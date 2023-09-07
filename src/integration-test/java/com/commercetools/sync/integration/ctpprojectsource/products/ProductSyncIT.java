@@ -1,78 +1,58 @@
 package com.commercetools.sync.integration.ctpprojectsource.products;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getReferencesWithIds;
-import static com.commercetools.sync.integration.commons.utils.ProductITUtils.createPricesCustomType;
-import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
-import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
-import static com.commercetools.sync.integration.commons.utils.ProductITUtils.getDraftWithPriceReferences;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.StateITUtils.createState;
-import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.createTaxCategory;
-import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SUPPLY_CHANNEL_KEY_1;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createReferenceObjectJson;
 import static com.commercetools.sync.products.ActionGroup.ATTRIBUTES;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_ATTRIBUTES_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_2_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
-import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
-import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithId;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getReferenceSetAttributeDraft;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.singletonList;
+import static com.commercetools.sync.products.ProductSyncMockUtils.*;
+import static java.util.Collections.*;
 import static java.util.Locale.ENGLISH;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryReference;
+import com.commercetools.api.models.category.CategoryResourceIdentifier;
+import com.commercetools.api.models.channel.Channel;
+import com.commercetools.api.models.channel.ChannelDraft;
+import com.commercetools.api.models.channel.ChannelDraftBuilder;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.common.LocalizedStringBuilder;
+import com.commercetools.api.models.product.Attribute;
+import com.commercetools.api.models.product.AttributeBuilder;
+import com.commercetools.api.models.product.CategoryOrderHints;
+import com.commercetools.api.models.product.Product;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductDraftBuilder;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductPublishAction;
+import com.commercetools.api.models.product.ProductPublishActionBuilder;
+import com.commercetools.api.models.product.ProductReference;
+import com.commercetools.api.models.product.ProductSetAttributeActionBuilder;
+import com.commercetools.api.models.product.ProductSetAttributeInAllVariantsActionBuilder;
+import com.commercetools.api.models.product.ProductUpdateAction;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.state.State;
+import com.commercetools.api.models.state.StateResourceIdentifier;
+import com.commercetools.api.models.state.StateTypeEnum;
+import com.commercetools.api.models.tax_category.TaxCategory;
+import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifier;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.FieldContainerBuilder;
+import com.commercetools.api.models.type.Type;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
+import com.commercetools.sync.integration.commons.utils.*;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.SyncFilter;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.products.utils.ProductTransformUtils;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.channels.ChannelDraft;
-import io.sphere.sdk.channels.commands.ChannelCreateCommand;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.ProductVariantDraftBuilder;
-import io.sphere.sdk.products.attributes.Attribute;
-import io.sphere.sdk.products.attributes.AttributeDraft;
-import io.sphere.sdk.products.commands.ProductCreateCommand;
-import io.sphere.sdk.products.commands.updateactions.Publish;
-import io.sphere.sdk.products.commands.updateactions.SetAttribute;
-import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
-import io.sphere.sdk.products.queries.ProductByKeyGet;
-import io.sphere.sdk.products.queries.ProductProjectionQuery;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.states.StateType;
-import io.sphere.sdk.taxcategories.TaxCategory;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.Type;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -101,13 +81,17 @@ class ProductSyncIT {
   private static Type sourcePriceCustomType;
   private static Type targetPriceCustomType;
 
-  private static List<Reference<Category>> sourceCategoryReferencesWithIds;
-  private static List<Reference<Category>> targetCategoryReferencesWithIds;
+  private static List<CategoryReference> sourceCategoryReferencesWithIds;
+
+  private static List<CategoryResourceIdentifier> sourceCategoryResourceIdentifiers;
+  private static List<CategoryReference> targetCategoryReferencesWithIds;
+
+  private static List<CategoryResourceIdentifier> targetCategoryResourceIdentifiers;
   private ProductSync productSync;
   private ReferenceIdToKeyCache referenceIdToKeyCache;
   private List<String> errorCallBackMessages;
   private List<String> warningCallBackMessages;
-  private List<UpdateAction<Product>> updateActions;
+  private List<ProductUpdateAction> updateActions;
   private List<Throwable> errorCallBackExceptions;
 
   /**
@@ -117,65 +101,75 @@ class ProductSyncIT {
    */
   @BeforeAll
   static void setup() {
-    deleteProductSyncTestData(CTP_TARGET_CLIENT);
-    deleteProductSyncTestData(CTP_SOURCE_CLIENT);
-
-    final ChannelDraft channelDraft1 = ChannelDraft.of(SUPPLY_CHANNEL_KEY_1);
+    final ChannelDraft channelDraft1 =
+        ChannelDraftBuilder.of().key(ChannelITUtils.SUPPLY_CHANNEL_KEY_1).build();
     targetPriceChannel =
-        CTP_TARGET_CLIENT
-            .execute(ChannelCreateCommand.of(channelDraft1))
-            .toCompletableFuture()
-            .join();
+        ProductITUtils.ensureChannel(channelDraft1, TestClientUtils.CTP_TARGET_CLIENT);
     sourcePriceChannel =
-        CTP_SOURCE_CLIENT
-            .execute(ChannelCreateCommand.of(channelDraft1))
-            .toCompletableFuture()
-            .join();
+        ProductITUtils.ensureChannel(channelDraft1, TestClientUtils.CTP_SOURCE_CLIENT);
 
     targetPriceCustomType =
-        createPricesCustomType(
-            "pricesCustomTypeKey", ENGLISH, "pricesCustomTypeName", CTP_TARGET_CLIENT);
+        ProductITUtils.ensurePricesCustomType(
+            "pricesCustomTypeKey",
+            ENGLISH,
+            "pricesCustomTypeName",
+            TestClientUtils.CTP_TARGET_CLIENT);
     sourcePriceCustomType =
-        createPricesCustomType(
-            "pricesCustomTypeKey", ENGLISH, "pricesCustomTypeName", CTP_SOURCE_CLIENT);
+        ProductITUtils.ensurePricesCustomType(
+            "pricesCustomTypeKey",
+            ENGLISH,
+            "pricesCustomTypeName",
+            TestClientUtils.CTP_SOURCE_CLIENT);
 
-    createCategoriesCustomType(
-        OLD_CATEGORY_CUSTOM_TYPE_KEY,
+    CategoryITUtils.ensureCategoriesCustomType(
+        CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY,
         Locale.ENGLISH,
-        OLD_CATEGORY_CUSTOM_TYPE_NAME,
-        CTP_TARGET_CLIENT);
-    createCategoriesCustomType(
-        OLD_CATEGORY_CUSTOM_TYPE_KEY,
+        CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME,
+        TestClientUtils.CTP_TARGET_CLIENT);
+    CategoryITUtils.ensureCategoriesCustomType(
+        CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY,
         Locale.ENGLISH,
-        OLD_CATEGORY_CUSTOM_TYPE_NAME,
-        CTP_SOURCE_CLIENT);
+        CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME,
+        TestClientUtils.CTP_SOURCE_CLIENT);
 
     final List<Category> targetCategories =
-        createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
-    targetCategoryReferencesWithIds = getReferencesWithIds(targetCategories);
+        CategoryITUtils.ensureCategories(
+            TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2));
+    targetCategoryReferencesWithIds = CategoryITUtils.getReferencesWithIds(targetCategories);
+    targetCategoryResourceIdentifiers =
+        CategoryITUtils.getResourceIdentifiersWithIds(targetCategories);
     final List<Category> sourceCategories =
-        createCategories(CTP_SOURCE_CLIENT, getCategoryDrafts(null, 2));
-    sourceCategoryReferencesWithIds = getReferencesWithIds(sourceCategories);
+        CategoryITUtils.ensureCategories(
+            TestClientUtils.CTP_SOURCE_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2));
+    sourceCategoryReferencesWithIds = CategoryITUtils.getReferencesWithIds(sourceCategories);
+    sourceCategoryResourceIdentifiers =
+        CategoryITUtils.getResourceIdentifiersWithIds(sourceCategories);
 
-    targetProductType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
-    sourceProductType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_SOURCE_CLIENT);
+    targetProductType =
+        ProductTypeITUtils.ensureProductType(
+            PRODUCT_TYPE_RESOURCE_PATH, TestClientUtils.CTP_TARGET_CLIENT);
+    sourceProductType =
+        ProductTypeITUtils.ensureProductType(
+            PRODUCT_TYPE_RESOURCE_PATH, TestClientUtils.CTP_SOURCE_CLIENT);
 
-    targetTaxCategory = createTaxCategory(CTP_TARGET_CLIENT);
-    sourceTaxCategory = createTaxCategory(CTP_SOURCE_CLIENT);
+    targetTaxCategory = TaxCategoryITUtils.ensureTaxCategory(TestClientUtils.CTP_TARGET_CLIENT);
+    sourceTaxCategory = TaxCategoryITUtils.ensureTaxCategory(TestClientUtils.CTP_SOURCE_CLIENT);
 
-    targetProductState = createState(CTP_TARGET_CLIENT, StateType.PRODUCT_STATE);
-    sourceProductState = createState(CTP_SOURCE_CLIENT, StateType.PRODUCT_STATE);
+    targetProductState =
+        StateITUtils.ensureState(TestClientUtils.CTP_TARGET_CLIENT, StateTypeEnum.PRODUCT_STATE);
+    sourceProductState =
+        StateITUtils.ensureState(TestClientUtils.CTP_SOURCE_CLIENT, StateTypeEnum.PRODUCT_STATE);
   }
 
   /**
    * Deletes Products from the source and target CTP projects, clears the callback collections then
-   * it instantiates a new {@link ProductSync} instance.
+   * it instantiates a new {@link com.commercetools.sync.products.ProductSync} instance.
    */
   @BeforeEach
   void setupTest() {
     clearSyncTestCollections();
-    deleteAllProducts(CTP_TARGET_CLIENT);
-    deleteAllProducts(CTP_SOURCE_CLIENT);
+    ProductITUtils.deleteAllProducts(TestClientUtils.CTP_TARGET_CLIENT);
+    ProductITUtils.deleteAllProducts(TestClientUtils.CTP_SOURCE_CLIENT);
     final ProductSyncOptions syncOptions = buildSyncOptions();
     productSync = new ProductSync(syncOptions);
     referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
@@ -189,7 +183,7 @@ class ProductSyncIT {
   }
 
   private ProductSyncOptions buildSyncOptions() {
-    return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+    return ProductSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT)
         .errorCallback(
             (exception, oldResource, newResource, updateActions) ->
                 errorCallback(exception.getMessage(), exception.getCause()))
@@ -206,8 +200,8 @@ class ProductSyncIT {
     errorCallBackExceptions.add(exception);
   }
 
-  private List<UpdateAction<Product>> beforeUpdateCallback(
-      @Nonnull final List<UpdateAction<Product>> updateActions,
+  private List<ProductUpdateAction> beforeUpdateCallback(
+      @Nonnull final List<ProductUpdateAction> updateActions,
       @Nonnull final ProductDraft newProductDraft,
       @Nonnull final ProductProjection oldProduct) {
     this.updateActions.addAll(updateActions);
@@ -216,8 +210,8 @@ class ProductSyncIT {
 
   @AfterAll
   static void tearDown() {
-    deleteProductSyncTestData(CTP_TARGET_CLIENT);
-    deleteProductSyncTestData(CTP_SOURCE_CLIENT);
+    ProductITUtils.deleteProductSyncTestData(TestClientUtils.CTP_TARGET_CLIENT);
+    ProductITUtils.deleteProductSyncTestData(TestClientUtils.CTP_SOURCE_CLIENT);
   }
 
   @Test
@@ -226,29 +220,35 @@ class ProductSyncIT {
     final String sampleProductKey = "sample-\"product-type";
     final ProductDraft newProductDraft =
         createProductDraftBuilder(
-                PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, sourceProductType.toReference())
-            .taxCategory(sourceTaxCategory)
-            .state(sourceProductState)
-            .categories(sourceCategoryReferencesWithIds)
+                PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, sourceProductType.toResourceIdentifier())
+            .taxCategory(sourceTaxCategory.toResourceIdentifier())
+            .state(sourceProductState.toResourceIdentifier())
+            .categories(sourceCategoryResourceIdentifiers)
             .categoryOrderHints(createRandomCategoryOrderHints(sourceCategoryReferencesWithIds))
             .publish(true)
             .key(sampleProductKey)
             .build();
 
-    CTP_SOURCE_CLIENT
-        .execute(ProductCreateCommand.of(newProductDraft))
+    TestClientUtils.CTP_SOURCE_CLIENT
+        .products()
+        .create(newProductDraft)
+        .execute()
         .toCompletableFuture()
         .join();
 
     final List<ProductProjection> products =
-        CTP_SOURCE_CLIENT
-            .execute(ProductProjectionQuery.ofStaged())
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .productProjections()
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(response -> response.getBody().getResults())
             .toCompletableFuture()
-            .join()
-            .getResults();
+            .join();
 
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     // test
@@ -262,11 +262,14 @@ class ProductSyncIT {
     assertThat(warningCallBackMessages).isEmpty();
 
     final List<ProductProjection> targetProducts =
-        CTP_TARGET_CLIENT
-            .execute(ProductProjectionQuery.ofStaged())
+        TestClientUtils.CTP_TARGET_CLIENT
+            .productProjections()
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(response -> response.getBody().getResults())
             .toCompletableFuture()
-            .join()
-            .getResults();
+            .join();
 
     assertThat(targetProducts.get(0).getKey()).isEqualTo(sampleProductKey);
   }
@@ -280,9 +283,12 @@ class ProductSyncIT {
             targetTaxCategory.toReference(),
             targetProductState.toReference(),
             targetCategoryReferencesWithIds,
-            createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
-    CTP_TARGET_CLIENT
-        .execute(ProductCreateCommand.of(existingProductDraft))
+            createRandomCategoryOrderHintsFromResourceIdentifiers(
+                targetCategoryResourceIdentifiers));
+    TestClientUtils.CTP_TARGET_CLIENT
+        .products()
+        .create(existingProductDraft)
+        .execute()
         .toCompletableFuture()
         .join();
 
@@ -294,20 +300,27 @@ class ProductSyncIT {
             sourceProductState.toReference(),
             sourceCategoryReferencesWithIds,
             createRandomCategoryOrderHints(sourceCategoryReferencesWithIds));
-    CTP_SOURCE_CLIENT
-        .execute(ProductCreateCommand.of(newProductDraft))
+    TestClientUtils.CTP_SOURCE_CLIENT
+        .products()
+        .create(newProductDraft)
+        .execute()
         .toCompletableFuture()
         .join();
 
     final List<ProductProjection> products =
-        CTP_SOURCE_CLIENT
-            .execute(ProductProjectionQuery.ofStaged())
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .productProjections()
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join()
             .getResults();
 
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     final ProductSyncStatistics syncStatistics =
@@ -329,35 +342,44 @@ class ProductSyncIT {
             targetProductState.toReference(),
             targetCategoryReferencesWithIds,
             createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
-    CTP_TARGET_CLIENT
-        .execute(ProductCreateCommand.of(existingProductDraft))
+    TestClientUtils.CTP_TARGET_CLIENT
+        .products()
+        .create(existingProductDraft)
+        .execute()
         .toCompletableFuture()
         .join();
 
     final ProductDraft newProductDraft =
         createProductDraftBuilder(
-                PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, sourceProductType.toReference())
-            .taxCategory(sourceTaxCategory)
-            .state(sourceProductState)
-            .categories(sourceCategoryReferencesWithIds)
+                PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, sourceProductType.toResourceIdentifier())
+            .taxCategory(sourceTaxCategory.toResourceIdentifier())
+            .state(sourceProductState.toResourceIdentifier())
+            .categories(sourceCategoryResourceIdentifiers)
             .categoryOrderHints(createRandomCategoryOrderHints(sourceCategoryReferencesWithIds))
             .publish(false)
             .build();
 
-    CTP_SOURCE_CLIENT
-        .execute(ProductCreateCommand.of(newProductDraft))
+    TestClientUtils.CTP_SOURCE_CLIENT
+        .products()
+        .create(newProductDraft)
+        .execute()
         .toCompletableFuture()
         .join();
 
     final List<ProductProjection> products =
-        CTP_SOURCE_CLIENT
-            .execute(ProductProjectionQuery.ofStaged())
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .productProjections()
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join()
             .getResults();
 
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     final ProductSyncStatistics syncStatistics =
@@ -379,8 +401,10 @@ class ProductSyncIT {
             targetProductState.toReference(),
             targetCategoryReferencesWithIds,
             createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
-    CTP_TARGET_CLIENT
-        .execute(ProductCreateCommand.of(publishedProductDraft))
+    TestClientUtils.CTP_TARGET_CLIENT
+        .products()
+        .create(publishedProductDraft)
+        .execute()
         .toCompletableFuture()
         .join();
 
@@ -388,28 +412,35 @@ class ProductSyncIT {
     // already
     final ProductDraft newProductDraft =
         createProductDraftBuilder(
-                PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, sourceProductType.toReference())
-            .taxCategory(sourceTaxCategory)
-            .state(sourceProductState)
-            .categories(sourceCategoryReferencesWithIds)
+                PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, sourceProductType.toResourceIdentifier())
+            .taxCategory(sourceTaxCategory.toResourceIdentifier())
+            .state(sourceProductState.toResourceIdentifier())
+            .categories(sourceCategoryResourceIdentifiers)
             .categoryOrderHints(createRandomCategoryOrderHints(sourceCategoryReferencesWithIds))
             .publish(true)
             .build();
 
-    CTP_SOURCE_CLIENT
-        .execute(ProductCreateCommand.of(newProductDraft))
+    TestClientUtils.CTP_SOURCE_CLIENT
+        .products()
+        .create(newProductDraft)
+        .execute()
         .toCompletableFuture()
         .join();
 
     final List<ProductProjection> products =
-        CTP_SOURCE_CLIENT
-            .execute(ProductProjectionQuery.ofStaged())
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .productProjections()
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join()
             .getResults();
 
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     final ProductSyncStatistics syncStatistics =
@@ -421,7 +452,8 @@ class ProductSyncIT {
     assertThat(warningCallBackMessages).isEmpty();
 
     // last action is publish
-    assertThat(updateActions.get(updateActions.size() - 1)).isEqualTo(Publish.of());
+    assertThat(updateActions.get(updateActions.size() - 1))
+        .isInstanceOf(ProductPublishAction.class);
   }
 
   @Test
@@ -436,46 +468,62 @@ class ProductSyncIT {
             createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
 
     final ProductDraft existingDraftWithPriceReferences =
-        getDraftWithPriceReferences(
+        ProductITUtils.getDraftWithPriceReferences(
             existingProductDraft,
-            targetPriceChannel.toReference(),
-            CustomFieldsDraft.ofTypeKeyAndJson(targetPriceCustomType.getKey(), emptyMap()));
+            targetPriceChannel.toResourceIdentifier(),
+            CustomFieldsDraftBuilder.of()
+                .type(builder -> builder.key(targetPriceCustomType.getKey()))
+                .fields(FieldContainerBuilder.of().build())
+                .build());
 
-    CTP_TARGET_CLIENT
-        .execute(ProductCreateCommand.of(existingDraftWithPriceReferences))
+    TestClientUtils.CTP_TARGET_CLIENT
+        .products()
+        .create(existingDraftWithPriceReferences)
+        .execute()
         .toCompletableFuture()
         .join();
 
     final ProductDraft newProductDraft =
         createProductDraftBuilder(
-                PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH, sourceProductType.toReference())
-            .taxCategory(sourceTaxCategory)
-            .state(sourceProductState)
-            .categories(sourceCategoryReferencesWithIds)
+                PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH,
+                sourceProductType.toResourceIdentifier())
+            .taxCategory(sourceTaxCategory.toResourceIdentifier())
+            .state(sourceProductState.toResourceIdentifier())
+            .categories(sourceCategoryResourceIdentifiers)
             .categoryOrderHints(createRandomCategoryOrderHints(sourceCategoryReferencesWithIds))
             .publish(false)
             .build();
 
     final ProductDraft newDraftWithPriceReferences =
-        getDraftWithPriceReferences(
+        ProductITUtils.getDraftWithPriceReferences(
             newProductDraft,
-            sourcePriceChannel.toReference(),
-            CustomFieldsDraft.ofTypeKeyAndJson(sourcePriceCustomType.getKey(), emptyMap()));
+            sourcePriceChannel.toResourceIdentifier(),
+            CustomFieldsDraftBuilder.of()
+                .type(builder -> builder.key(sourcePriceCustomType.getKey()))
+                .fields(FieldContainerBuilder.of().build())
+                .build());
 
-    CTP_SOURCE_CLIENT
-        .execute(ProductCreateCommand.of(newDraftWithPriceReferences))
+    TestClientUtils.CTP_SOURCE_CLIENT
+        .products()
+        .create(newDraftWithPriceReferences)
+        .execute()
         .toCompletableFuture()
         .join();
 
     final List<ProductProjection> products =
-        CTP_SOURCE_CLIENT
-            .execute(ProductProjectionQuery.ofStaged())
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .productProjections()
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join()
             .getResults();
 
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
 
     final ProductSyncStatistics syncStatistics =
@@ -492,7 +540,7 @@ class ProductSyncIT {
     // Preparation
     // Create custom options with whitelisting and action filter callback..
     final ProductSyncOptions customSyncOptions =
-        ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+        ProductSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT)
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) ->
                     errorCallback(exception.getMessage(), exception.getCause()))
@@ -514,8 +562,10 @@ class ProductSyncIT {
             targetProductState.toReference(),
             targetCategoryReferencesWithIds,
             createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
-    CTP_TARGET_CLIENT
-        .execute(ProductCreateCommand.of(existingProductDraft))
+    TestClientUtils.CTP_TARGET_CLIENT
+        .products()
+        .create(existingProductDraft)
+        .execute()
         .toCompletableFuture()
         .join();
 
@@ -527,23 +577,28 @@ class ProductSyncIT {
             targetProductState.toReference(),
             targetCategoryReferencesWithIds,
             createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
-    CTP_TARGET_CLIENT
-        .execute(ProductCreateCommand.of(existingProductDraft2))
+    TestClientUtils.CTP_TARGET_CLIENT
+        .products()
+        .create(existingProductDraft2)
+        .execute()
         .toCompletableFuture()
         .join();
 
     final ProductDraft existingProductDraft3 =
-        createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, targetProductType.toReference())
-            .slug(ofEnglish("newSlug3"))
+        createProductDraftBuilder(
+                PRODUCT_KEY_2_RESOURCE_PATH, targetProductType.toResourceIdentifier())
+            .slug(LocalizedStringBuilder.of().addValue("en", "newSlug3").build())
             .key("productKey3")
             .masterVariant(ProductVariantDraftBuilder.of().key("v3").sku("s3").build())
-            .taxCategory(null)
-            .state(null)
-            .categories(Collections.emptySet())
-            .categoryOrderHints(null)
+            .taxCategory((TaxCategoryResourceIdentifier) null)
+            .state((StateResourceIdentifier) null)
+            .categories(Collections.emptyList())
+            .categoryOrderHints((CategoryOrderHints) null)
             .build();
-    CTP_TARGET_CLIENT
-        .execute(ProductCreateCommand.of(existingProductDraft3))
+    TestClientUtils.CTP_TARGET_CLIENT
+        .products()
+        .create(existingProductDraft3)
+        .execute()
         .toCompletableFuture()
         .join();
 
@@ -557,23 +612,30 @@ class ProductSyncIT {
             sourceCategoryReferencesWithIds,
             createRandomCategoryOrderHints(sourceCategoryReferencesWithIds));
     final Product product2 =
-        CTP_SOURCE_CLIENT
-            .execute(ProductCreateCommand.of(newProductDraft2))
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .products()
+            .create(newProductDraft2)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join();
     final ProductDraft newProductDraft3 =
-        createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, sourceProductType.toReference())
-            .slug(ofEnglish("newSlug3"))
+        createProductDraftBuilder(
+                PRODUCT_KEY_2_RESOURCE_PATH, sourceProductType.toResourceIdentifier())
+            .slug(LocalizedStringBuilder.of().addValue("en", "newSlug3").build())
             .key("productKey3")
             .masterVariant(ProductVariantDraftBuilder.of().key("v3").sku("s3").build())
-            .taxCategory(null)
-            .state(null)
-            .categories(Collections.emptySet())
-            .categoryOrderHints(null)
+            .taxCategory((TaxCategoryResourceIdentifier) null)
+            .state((StateResourceIdentifier) null)
+            .categories(Collections.emptyList())
+            .categoryOrderHints((CategoryOrderHints) null)
             .build();
     final Product product3 =
-        CTP_SOURCE_CLIENT
-            .execute(ProductCreateCommand.of(newProductDraft3))
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .products()
+            .create(newProductDraft3)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join();
 
@@ -581,16 +643,15 @@ class ProductSyncIT {
     // with keys
     // (productKey2 and productKey3).
 
-    final ObjectNode productReferenceValue1 = getProductReferenceWithId(product2.getId());
-    final ObjectNode productReferenceValue2 = getProductReferenceWithId(product3.getId());
+    final ProductReference productReferenceValue1 = getProductReferenceWithId(product2.getId());
+    final ProductReference productReferenceValue2 = getProductReferenceWithId(product3.getId());
 
-    final AttributeDraft productRefAttr =
-        AttributeDraft.of("product-reference", productReferenceValue1);
-    final AttributeDraft productSetRefAttr =
+    final Attribute productRefAttr =
+        AttributeBuilder.of().name("product-reference").value(productReferenceValue1).build();
+    final Attribute productSetRefAttr =
         getReferenceSetAttributeDraft(
             "product-reference-set", productReferenceValue1, productReferenceValue2);
-    final List<AttributeDraft> attributeDrafts =
-        existingProductDraft.getMasterVariant().getAttributes();
+    final List<Attribute> attributeDrafts = existingProductDraft.getMasterVariant().getAttributes();
     attributeDrafts.addAll(Arrays.asList(productRefAttr, productSetRefAttr));
 
     final ProductVariantDraft masterVariant =
@@ -598,27 +659,34 @@ class ProductSyncIT {
 
     final ProductDraft newProductDraftWithProductReference =
         createProductDraftBuilder(
-                PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, sourceProductType.toReference())
+                PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, sourceProductType.toResourceIdentifier())
             .masterVariant(masterVariant)
-            .taxCategory(sourceTaxCategory.toReference())
-            .state(sourceProductState.toReference())
-            .categories(Collections.emptySet())
-            .categoryOrderHints(null)
+            .taxCategory(sourceTaxCategory.toResourceIdentifier())
+            .state(sourceProductState.toResourceIdentifier())
+            .categories(Collections.emptyList())
+            .categoryOrderHints((CategoryOrderHints) null)
             .build();
-    CTP_SOURCE_CLIENT
-        .execute(ProductCreateCommand.of(newProductDraftWithProductReference))
+    TestClientUtils.CTP_SOURCE_CLIENT
+        .products()
+        .create(newProductDraftWithProductReference)
+        .execute()
         .toCompletableFuture()
         .join();
 
     // Test
     final List<ProductProjection> products =
-        CTP_SOURCE_CLIENT
-            .execute(ProductProjectionQuery.ofStaged())
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .productProjections()
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join()
             .getResults();
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
     final ProductSyncStatistics syncStatistics =
         customSync.sync(productDrafts).toCompletableFuture().join();
@@ -630,29 +698,51 @@ class ProductSyncIT {
     assertThat(warningCallBackMessages).isEmpty();
 
     final Product targetProduct2 =
-        CTP_TARGET_CLIENT.execute(ProductByKeyGet.of("productKey2")).toCompletableFuture().join();
+        TestClientUtils.CTP_TARGET_CLIENT
+            .products()
+            .withKey("productKey2")
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .toCompletableFuture()
+            .join();
 
     final Product targetProduct3 =
-        CTP_TARGET_CLIENT.execute(ProductByKeyGet.of("productKey3")).toCompletableFuture().join();
+        TestClientUtils.CTP_TARGET_CLIENT
+            .products()
+            .withKey("productKey3")
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .toCompletableFuture()
+            .join();
 
     final ObjectNode targetProductReferenceValue2 =
-        getProductReferenceWithId(targetProduct2.getId());
+        createReferenceObjectJson(targetProduct2.getId(), ProductReference.PRODUCT);
     final ObjectNode targetProductReferenceValue3 =
-        getProductReferenceWithId(targetProduct3.getId());
+        createReferenceObjectJson(targetProduct3.getId(), ProductReference.PRODUCT);
+    final ArrayNode referenceSet = JsonNodeFactory.instance.arrayNode();
+    referenceSet.add(targetProductReferenceValue2);
+    referenceSet.add(targetProductReferenceValue3);
 
-    final AttributeDraft targetProductRefAttr =
-        AttributeDraft.of("product-reference", targetProductReferenceValue2);
-    final AttributeDraft targetProductSetRefAttr =
-        getReferenceSetAttributeDraft(
-            "product-reference-set", targetProductReferenceValue2, targetProductReferenceValue3);
+    final Attribute targetProductRefAttr =
+        AttributeBuilder.of().name("product-reference").value(targetProductReferenceValue2).build();
+    final Attribute targetProductSetRefAttr =
+        AttributeBuilder.of().name("product-reference-set").value(referenceSet).build();
 
     assertThat(updateActions)
         .containsExactlyInAnyOrder(
-            SetAttributeInAllVariants.of(
-                targetProductRefAttr.getName(), targetProductRefAttr.getValue(), true),
-            SetAttributeInAllVariants.of(
-                targetProductSetRefAttr.getName(), targetProductSetRefAttr.getValue(), true),
-            Publish.of());
+            ProductSetAttributeInAllVariantsActionBuilder.of()
+                .name(targetProductRefAttr.getName())
+                .value(targetProductRefAttr.getValue())
+                .staged(true)
+                .build(),
+            ProductSetAttributeInAllVariantsActionBuilder.of()
+                .name(targetProductSetRefAttr.getName())
+                .value(targetProductSetRefAttr.getValue())
+                .staged(true)
+                .build(),
+            ProductPublishActionBuilder.of().build());
   }
 
   @Test
@@ -660,7 +750,7 @@ class ProductSyncIT {
     // Preparation
     // Create custom options with whitelisting and action filter callback..
     final ProductSyncOptions customSyncOptions =
-        ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+        ProductSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT)
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) ->
                     errorCallback(exception.getMessage(), exception.getCause()))
@@ -681,34 +771,44 @@ class ProductSyncIT {
             targetProductState.toReference(),
             targetCategoryReferencesWithIds,
             createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
-    CTP_TARGET_CLIENT
-        .execute(ProductCreateCommand.of(existingProductDraft))
+    TestClientUtils.CTP_TARGET_CLIENT
+        .products()
+        .create(existingProductDraft)
+        .execute()
         .toCompletableFuture()
         .join();
 
     // Create existing product with productKey1 in source project with changed attributes
     final ProductDraft newProductDraftWithProductReference =
         createProductDraftBuilder(
-                PRODUCT_KEY_1_CHANGED_ATTRIBUTES_RESOURCE_PATH, sourceProductType.toReference())
-            .taxCategory(sourceTaxCategory.toReference())
-            .state(sourceProductState.toReference())
-            .categories(Collections.emptySet())
-            .categoryOrderHints(null)
+                PRODUCT_KEY_1_CHANGED_ATTRIBUTES_RESOURCE_PATH,
+                sourceProductType.toResourceIdentifier())
+            .taxCategory(sourceTaxCategory.toResourceIdentifier())
+            .state(sourceProductState.toResourceIdentifier())
+            .categories(Collections.emptyList())
+            .categoryOrderHints((CategoryOrderHints) null)
             .build();
-    CTP_SOURCE_CLIENT
-        .execute(ProductCreateCommand.of(newProductDraftWithProductReference))
+    TestClientUtils.CTP_SOURCE_CLIENT
+        .products()
+        .create(newProductDraftWithProductReference)
+        .execute()
         .toCompletableFuture()
         .join();
 
     // Test
     final List<ProductProjection> products =
-        CTP_SOURCE_CLIENT
-            .execute(ProductProjectionQuery.ofStaged())
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .productProjections()
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join()
             .getResults();
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
     final ProductSyncStatistics syncStatistics =
         customSync.sync(productDrafts).toCompletableFuture().join();
@@ -719,27 +819,70 @@ class ProductSyncIT {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
 
-    final AttributeDraft priceInfoAttrDraft =
-        AttributeDraft.of("priceInfo", JsonNodeFactory.instance.textNode("100/kg"));
-    final AttributeDraft angebotAttrDraft =
-        AttributeDraft.of("angebot", JsonNodeFactory.instance.textNode("big discount"));
+    final Attribute priceInfoAttrDraft =
+        AttributeBuilder.of()
+            .name("priceInfo")
+            .value(JsonNodeFactory.instance.textNode("100/kg"))
+            .build();
+    final Attribute angebotAttrDraft =
+        AttributeBuilder.of()
+            .name("angebot")
+            .value(JsonNodeFactory.instance.textNode("big discount"))
+            .build();
 
     assertThat(updateActions)
         .containsExactlyInAnyOrder(
-            SetAttributeInAllVariants.of(priceInfoAttrDraft, true),
-            SetAttribute.of(1, angebotAttrDraft, true),
-            SetAttributeInAllVariants.ofUnsetAttribute("size", true),
-            SetAttributeInAllVariants.ofUnsetAttribute("rinderrasse", true),
-            SetAttributeInAllVariants.ofUnsetAttribute("herkunft", true),
-            SetAttributeInAllVariants.ofUnsetAttribute("teilstueck", true),
-            SetAttributeInAllVariants.ofUnsetAttribute("fuetterung", true),
-            SetAttributeInAllVariants.ofUnsetAttribute("reifung", true),
-            SetAttributeInAllVariants.ofUnsetAttribute("haltbarkeit", true),
-            SetAttributeInAllVariants.ofUnsetAttribute("verpackung", true),
-            SetAttributeInAllVariants.ofUnsetAttribute("anlieferung", true),
-            SetAttributeInAllVariants.ofUnsetAttribute("zubereitung", true),
-            SetAttribute.ofUnsetAttribute(1, "localisedText", true),
-            Publish.of());
+            ProductSetAttributeInAllVariantsActionBuilder.of()
+                .name(priceInfoAttrDraft.getName())
+                .value(priceInfoAttrDraft.getValue())
+                .staged(true)
+                .build(),
+            ProductSetAttributeInAllVariantsActionBuilder.of().name("size").staged(true).build(),
+            ProductSetAttributeInAllVariantsActionBuilder.of()
+                .name("rinderrasse")
+                .staged(true)
+                .build(),
+            ProductSetAttributeInAllVariantsActionBuilder.of()
+                .name("herkunft")
+                .staged(true)
+                .build(),
+            ProductSetAttributeInAllVariantsActionBuilder.of()
+                .name("teilstueck")
+                .staged(true)
+                .build(),
+            ProductSetAttributeInAllVariantsActionBuilder.of()
+                .name("fuetterung")
+                .staged(true)
+                .build(),
+            ProductSetAttributeInAllVariantsActionBuilder.of().name("reifung").staged(true).build(),
+            ProductSetAttributeInAllVariantsActionBuilder.of()
+                .name("haltbarkeit")
+                .staged(true)
+                .build(),
+            ProductSetAttributeInAllVariantsActionBuilder.of()
+                .name("verpackung")
+                .staged(true)
+                .build(),
+            ProductSetAttributeInAllVariantsActionBuilder.of()
+                .name("anlieferung")
+                .staged(true)
+                .build(),
+            ProductSetAttributeInAllVariantsActionBuilder.of()
+                .name("zubereitung")
+                .staged(true)
+                .build(),
+            ProductSetAttributeActionBuilder.of()
+                .variantId(1L)
+                .name("localisedText")
+                .staged(true)
+                .build(),
+            ProductSetAttributeActionBuilder.of()
+                .variantId(1L)
+                .name(angebotAttrDraft.getName())
+                .value(angebotAttrDraft.getValue())
+                .staged(true)
+                .build(),
+            ProductPublishActionBuilder.of().build());
   }
 
   @Test
@@ -747,7 +890,7 @@ class ProductSyncIT {
     // Preparation
     // Create custom options with whitelisting and action filter callback..
     final ProductSyncOptions customSyncOptions =
-        ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+        ProductSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT)
             .errorCallback(
                 (exception, newResource, oldResource, updateActions) -> {
                   errorCallBackMessages.add(exception.getMessage());
@@ -763,21 +906,26 @@ class ProductSyncIT {
 
     // Create a product that will be referenced by another product in the target project
     final ProductDraft productDraftToBeReferenced =
-        ProductDraftBuilder.of(
-                targetProductType.toReference(), ofEnglish("root"), ofEnglish("root"), emptyList())
+        ProductDraftBuilder.of()
+            .productType(targetProductType.toResourceIdentifier())
+            .name(LocalizedString.ofEnglish("root"))
+            .slug(LocalizedString.ofEnglish("root"))
             .build();
 
     final Product productToBeReferenced =
-        CTP_TARGET_CLIENT
-            .execute(ProductCreateCommand.of(productDraftToBeReferenced))
+        TestClientUtils.CTP_TARGET_CLIENT
+            .products()
+            .create(productDraftToBeReferenced)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join();
 
     // Create a product "bar" that references a product on the target project
-    final ObjectNode productReferenceValue1 =
+    final ProductReference productReferenceValue1 =
         getProductReferenceWithId(productToBeReferenced.getId());
 
-    final AttributeDraft productSetRefAttr =
+    final Attribute productSetRefAttr =
         getReferenceSetAttributeDraft("product-reference-set", productReferenceValue1);
 
     final ProductVariantDraft variantWithProductReferences =
@@ -788,16 +936,17 @@ class ProductSyncIT {
             .build();
 
     final ProductDraft existingProductDraft =
-        createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, targetProductType.toReference())
+        createProductDraftBuilder(
+                PRODUCT_KEY_2_RESOURCE_PATH, targetProductType.toResourceIdentifier())
             .masterVariant(variantWithProductReferences)
-            .taxCategory(targetTaxCategory.toReference())
-            .state(targetProductState.toReference())
-            .categories(Collections.emptySet())
-            .categoryOrderHints(null)
+            .taxCategory(targetTaxCategory.toResourceIdentifier())
+            .state(targetProductState.toResourceIdentifier())
             .build();
 
-    CTP_TARGET_CLIENT
-        .execute(ProductCreateCommand.of(existingProductDraft))
+    TestClientUtils.CTP_TARGET_CLIENT
+        .products()
+        .create(existingProductDraft)
+        .execute()
         .toCompletableFuture()
         .join();
 
@@ -811,15 +960,16 @@ class ProductSyncIT {
             .build();
 
     final ProductDraft newProductDraftWithProductReference =
-        createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, sourceProductType.toReference())
+        createProductDraftBuilder(
+                PRODUCT_KEY_2_RESOURCE_PATH, sourceProductType.toResourceIdentifier())
             .masterVariant(variantBarWithEmptyReferenceSet)
-            .taxCategory(sourceTaxCategory.toReference())
-            .state(sourceProductState.toReference())
-            .categories(Collections.emptySet())
-            .categoryOrderHints(null)
+            .taxCategory(sourceTaxCategory.toResourceIdentifier())
+            .state(sourceProductState.toResourceIdentifier())
             .build();
-    CTP_SOURCE_CLIENT
-        .execute(ProductCreateCommand.of(newProductDraftWithProductReference))
+    TestClientUtils.CTP_SOURCE_CLIENT
+        .products()
+        .create(newProductDraftWithProductReference)
+        .execute()
         .toCompletableFuture()
         .join();
 
@@ -834,27 +984,33 @@ class ProductSyncIT {
 
     final ProductDraft sourceProductDraft =
         createProductDraftBuilder(
-                PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, sourceProductType.toReference())
-            .taxCategory(sourceTaxCategory)
-            .state(sourceProductState)
-            .categories(sourceCategoryReferencesWithIds)
+                PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, sourceProductType.toResourceIdentifier())
+            .taxCategory(sourceTaxCategory.toResourceIdentifier())
+            .state(sourceProductState.toResourceIdentifier())
+            .categories(sourceCategoryResourceIdentifiers)
             .categoryOrderHints(createRandomCategoryOrderHints(sourceCategoryReferencesWithIds))
             .masterVariant(variantFooWithEmptyReferenceSet)
             .build();
-    CTP_SOURCE_CLIENT
-        .execute(ProductCreateCommand.of(sourceProductDraft))
+    TestClientUtils.CTP_SOURCE_CLIENT
+        .products()
+        .create(sourceProductDraft)
+        .execute()
         .toCompletableFuture()
         .join();
 
     // Test
     final List<ProductProjection> products =
-        CTP_SOURCE_CLIENT
-            .execute(ProductProjectionQuery.ofStaged())
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .productProjections()
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(response -> response.getBody().getResults())
             .toCompletableFuture()
-            .join()
-            .getResults();
+            .join();
     final List<ProductDraft> productDrafts =
-        ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
             .join();
     final ProductSyncStatistics syncStatistics =
         customSync.sync(productDrafts).toCompletableFuture().join();
@@ -866,13 +1022,20 @@ class ProductSyncIT {
     assertThat(warningCallBackMessages).isEmpty();
     assertThat(updateActions)
         .containsExactly(
-            SetAttributeInAllVariants.of(
-                productSetRefAttr.getName(), JsonNodeFactory.instance.arrayNode(), true),
-            Publish.of());
+            ProductSetAttributeInAllVariantsActionBuilder.of()
+                .name(productSetRefAttr.getName())
+                .value(JsonNodeFactory.instance.arrayNode())
+                .staged(true)
+                .build(),
+            ProductPublishActionBuilder.of().build());
 
     final Product targetProduct =
-        CTP_TARGET_CLIENT
-            .execute(ProductByKeyGet.of(sourceProductDraft.getKey()))
+        TestClientUtils.CTP_TARGET_CLIENT
+            .products()
+            .withKey(sourceProductDraft.getKey())
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join();
 
@@ -883,6 +1046,6 @@ class ProductSyncIT {
             .getMasterVariant()
             .getAttribute(productSetRefAttr.getName());
     assertThat(targetAttribute).isNotNull();
-    assertThat(targetAttribute.getValueAsJsonNode()).isEmpty();
+    assertThat(targetAttribute.getValue()).isEqualTo(Collections.emptyList());
   }
 }

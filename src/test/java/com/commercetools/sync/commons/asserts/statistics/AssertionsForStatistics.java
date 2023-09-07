@@ -18,114 +18,7 @@ public final class AssertionsForStatistics {
   private AssertionsForStatistics() {}
 
   /**
-   * Create assertion for {@link CategorySyncStatistics}.
-   *
-   * @param statistics the actual value.
-   * @return the created assertion object.
-   */
-  @Nonnull
-  public static CategorySyncStatisticsAssert assertThat(
-      @Nullable final CategorySyncStatistics statistics) {
-    return new CategorySyncStatisticsAssert(statistics);
-  }
-
-  /**
-   * Create assertion for {@link ProductSyncStatistics}.
-   *
-   * @param statistics the actual value.
-   * @return the created assertion object.
-   */
-  @Nonnull
-  public static ProductSyncStatisticsAssert assertThat(
-      @Nullable final ProductSyncStatistics statistics) {
-    return new ProductSyncStatisticsAssert(statistics);
-  }
-
-  /**
-   * Create assertion for {@link InventorySyncStatistics}.
-   *
-   * @param statistics the actual value.
-   * @return the created assertion object.
-   */
-  @Nonnull
-  public static InventorySyncStatisticsAssert assertThat(
-      @Nullable final InventorySyncStatistics statistics) {
-    return new InventorySyncStatisticsAssert(statistics);
-  }
-
-  /**
-   * Create assertion for {@link ProductTypeSyncStatistics}.
-   *
-   * @param statistics the actual value.
-   * @return the created assertion object.
-   */
-  @Nonnull
-  public static ProductTypeSyncStatisticsAssert assertThat(
-      @Nullable final ProductTypeSyncStatistics statistics) {
-    return new ProductTypeSyncStatisticsAssert(statistics);
-  }
-
-  /**
-   * Create assertion for {@link TypeSyncStatistics}.
-   *
-   * @param statistics the actual value.
-   * @return the created assertion object.
-   */
-  @Nonnull
-  public static TypeSyncStatisticsAssert assertThat(@Nullable final TypeSyncStatistics statistics) {
-    return new TypeSyncStatisticsAssert(statistics);
-  }
-
-  /**
-   * Create assertion for {@link CartDiscountSyncStatistics}.
-   *
-   * @param statistics the actual value.
-   * @return the created assertion object.
-   */
-  @Nonnull
-  public static CartDiscountSyncStatisticsAssert assertThat(
-      @Nullable final CartDiscountSyncStatistics statistics) {
-    return new CartDiscountSyncStatisticsAssert(statistics);
-  }
-
-  /**
-   * Create assertion for {@link StateSyncStatistics}.
-   *
-   * @param statistics the actual value.
-   * @return the created assertion object.
-   */
-  @Nonnull
-  public static StateSyncStatisticsAssert assertThat(
-      @Nullable final StateSyncStatistics statistics) {
-    return new StateSyncStatisticsAssert(statistics);
-  }
-
-  /**
-   * Create assertion for {@link TaxCategorySyncStatistics}.
-   *
-   * @param statistics the actual value.
-   * @return the created assertion object.
-   */
-  @Nonnull
-  public static TaxCategorySyncStatisticsAssert assertThat(
-      @Nullable final TaxCategorySyncStatistics statistics) {
-    return new TaxCategorySyncStatisticsAssert(statistics);
-  }
-
-  /**
-   * Create assertion for {@link CustomObjectSyncStatistics}.
-   *
-   * @param statistics the actual value.
-   * @return the created assertion object.
-   */
-  @Nonnull
-  public static CustomObjectSyncStatisticsAssert assertThat(
-      @Nullable final CustomObjectSyncStatistics statistics) {
-    return new CustomObjectSyncStatisticsAssert(statistics);
-  }
-
-  /**
-   * Create assertion for {@link CustomerSyncStatistics}.
+   * Create assertion for {@link com.commercetools.sync.customers.helpers.CustomerSyncStatistics}.
    *
    * @param statistics the actual value.
    * @return the created assertion object.
@@ -137,7 +30,112 @@ public final class AssertionsForStatistics {
   }
 
   /**
-   * Create assertion for {@link ShoppingListSyncStatistics}.
+   * Create assertion for {@link com.commercetools.sync.products.helpers.ProductSyncStatistics}.
+   *
+   * @param statistics the actual value.
+   * @return the created assertion object.
+   */
+  @Nonnull
+  public static ProductSyncStatisticsAssert assertThat(
+      @Nullable final ProductSyncStatistics statistics) {
+    return new ProductSyncStatisticsAssert(statistics);
+  }
+
+  /**
+   * Create assertion for {@link com.commercetools.sync.categories.helpers.CategorySyncStatistics}.
+   *
+   * @param statistics the actual value.
+   * @return the created assertion object.
+   */
+  @Nonnull
+  public static CategorySyncStatisticsAssert assertThat(
+      @Nullable final CategorySyncStatistics statistics) {
+    return new CategorySyncStatisticsAssert(statistics);
+  }
+
+  /**
+   * Create assertion for {@link
+   * com.commercetools.sync.customobjects.helpers.CustomObjectSyncStatistics}.
+   *
+   * @param statistics the actual value.
+   * @return the created assertion object.
+   */
+  @Nonnull
+  public static CustomObjectSyncStatisticsAssert assertThat(
+      @Nullable final CustomObjectSyncStatistics statistics) {
+    return new CustomObjectSyncStatisticsAssert(statistics);
+  }
+
+  /**
+   * Create assertion for {@link
+   * com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics}.
+   *
+   * @param statistics the actual value.
+   * @return the created assertion object.
+   */
+  @Nonnull
+  public static ProductTypeSyncStatisticsAssert assertThat(
+      @Nullable final ProductTypeSyncStatistics statistics) {
+    return new ProductTypeSyncStatisticsAssert(statistics);
+  }
+
+  /**
+   * Create assertion for {@link com.commercetools.sync.types.helpers.TypeSyncStatistics}.
+   *
+   * @param statistics the actual value.
+   * @return the created assertion object.
+   */
+  @Nonnull
+  public static TypeSyncStatisticsAssert assertThat(@Nullable final TypeSyncStatistics statistics) {
+    return new TypeSyncStatisticsAssert(statistics);
+  }
+
+  @Nonnull
+  public static CartDiscountSyncStatisticsAssert assertThat(
+      @Nullable final CartDiscountSyncStatistics statistics) {
+    return new CartDiscountSyncStatisticsAssert(statistics);
+  }
+
+  /**
+   * Create assertion for {@link
+   * com.commercetools.sync.taxcategories.helpers.TaxCategorySyncStatistics}.
+   *
+   * @param statistics the actual value.
+   * @return the created assertion object.
+   */
+  @Nonnull
+  public static TaxCategorySyncStatisticsAssert assertThat(
+      @Nullable final TaxCategorySyncStatistics statistics) {
+    return new TaxCategorySyncStatisticsAssert(statistics);
+  }
+  /**
+   * Create assertion for {@link com.commercetools.sync.states.helpers.StateSyncStatistics}.
+   *
+   * @param statistics the actual value.
+   * @return the created assertion object.
+   */
+  @Nonnull
+  public static StateSyncStatisticsAssert assertThat(
+      @Nullable final StateSyncStatistics statistics) {
+    return new StateSyncStatisticsAssert(statistics);
+  }
+
+  /**
+   * Create assertion for {@link
+   * com.commercetools.sync.inventories.helpers.InventorySyncStatistics}.
+   *
+   * @param statistics the actual value.
+   * @return the created assertion object.
+   */
+  @Nonnull
+  public static InventorySyncStatisticsAssert assertThat(
+      @Nullable final InventorySyncStatistics statistics) {
+    return new InventorySyncStatisticsAssert(statistics);
+  }
+
+  /**
+   * Create assertion for {@link
+   * com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics}.
    *
    * @param statistics the actual value.
    * @return the created assertion object.

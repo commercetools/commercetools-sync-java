@@ -1,24 +1,33 @@
 package com.commercetools.sync.customers.utils;
 
-import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
-import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import com.commercetools.api.models.common.Address;
+import com.commercetools.api.models.common.AddressDraftBuilder;
+import com.commercetools.api.models.common.BaseAddress;
+import com.commercetools.api.models.customer.Customer;
+import com.commercetools.api.models.customer.CustomerDraft;
+import com.commercetools.api.models.customer.CustomerDraftBuilder;
+import com.commercetools.api.models.customer_group.CustomerGroup;
+import com.commercetools.api.models.customer_group.CustomerGroupReference;
+import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifier;
+import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
+import com.commercetools.api.models.store.StoreKeyReference;
+import com.commercetools.api.models.store.StoreResourceIdentifier;
+import com.commercetools.api.models.store.StoreResourceIdentifierBuilder;
+import com.commercetools.api.models.type.CustomFields;
+import com.commercetools.api.models.type.CustomFieldsDraft;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.Type;
+import com.commercetools.api.models.type.TypeReference;
+import com.commercetools.api.models.type.TypeResourceIdentifier;
+import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import io.sphere.sdk.customergroups.CustomerGroup;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.customers.CustomerDraft;
-import io.sphere.sdk.customers.CustomerDraftBuilder;
-import io.sphere.sdk.models.Address;
-import io.sphere.sdk.models.KeyReference;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.stores.Store;
-import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -44,18 +53,18 @@ public final class CustomerReferenceResolutionUtils {
    *   <tbody>
    *     <tr>
    *        <td>customerGroup</td>
-   *        <td>{@link Reference}&lt;{@link CustomerGroup}&gt;</td>
-   *        <td>{@link ResourceIdentifier}&lt;{@link CustomerGroup}&gt;</td>
+   *        <td>{@link CustomerGroupReference}</td>
+   *        <td>{@link CustomerGroupResourceIdentifier}</td>
    *     </tr>
    *     <tr>
    *        <td>stores</td>
-   *        <td>{@link Set}&lt;{@link KeyReference}&lt;{@link Store}&gt;&gt;</td>
-   *        <td>{@link Set}&lt;{@link ResourceIdentifier}&lt;{@link Store}&gt;&gt;</td>
+   *        <td>{@link List}&lt;{@link StoreKeyReference}&gt;</td>
+   *        <td>{@link List}&lt;{@link StoreResourceIdentifier}&gt;</td>
    *     </tr>
    *     <tr>
    *        <td>custom.type</td>
-   *        <td>{@link Reference}&lt;{@link Type}&gt;</td>
-   *        <td>{@link ResourceIdentifier}&lt;{@link Type}&gt;</td>
+   *        <td>{@link TypeReference}</td>
+   *        <td>{@link TypeResourceIdentifier}</td>
    *     </tr>
    *   </tbody>
    * </table>
@@ -84,7 +93,10 @@ public final class CustomerReferenceResolutionUtils {
   private static CustomerDraft mapToCustomerDraft(
       @Nonnull final Customer customer,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
-    return CustomerDraftBuilder.of(customer.getEmail(), customer.getPassword())
+
+    return CustomerDraftBuilder.of()
+        .email(customer.getEmail())
+        .password(customer.getPassword())
         .customerNumber(customer.getCustomerNumber())
         .key(customer.getKey())
         .firstName(customer.getFirstName())
@@ -94,11 +106,12 @@ public final class CustomerReferenceResolutionUtils {
         .externalId(customer.getExternalId())
         .companyName(customer.getCompanyName())
         .customerGroup(
-            getResourceIdentifierWithKey(customer.getCustomerGroup(), referenceIdToKeyCache))
+            mapToCustomerGroupResourceIdentifier(
+                customer.getCustomerGroup(), referenceIdToKeyCache))
         .dateOfBirth(customer.getDateOfBirth())
-        .isEmailVerified(customer.isEmailVerified())
+        .isEmailVerified(customer.getIsEmailVerified())
         .vatId(customer.getVatId())
-        .addresses(customer.getAddresses())
+        .addresses(mapToAddressesDraft(customer.getAddresses()))
         .defaultBillingAddress(
             getAddressIndex(customer.getAddresses(), customer.getDefaultBillingAddressId()))
         .billingAddresses(
@@ -107,11 +120,70 @@ public final class CustomerReferenceResolutionUtils {
             getAddressIndex(customer.getAddresses(), customer.getDefaultShippingAddressId()))
         .shippingAddresses(
             getAddressIndexList(customer.getAddresses(), customer.getShippingAddressIds()))
-        .custom(mapToCustomFieldsDraft(customer, referenceIdToKeyCache))
+        .custom(mapToCustomFieldsDraft(customer.getCustom(), referenceIdToKeyCache))
         .locale(customer.getLocale())
         .salutation(customer.getSalutation())
         .stores(mapToStores(customer))
         .build();
+  }
+
+  private static CustomerGroupResourceIdentifier mapToCustomerGroupResourceIdentifier(
+      @Nullable CustomerGroupReference reference,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
+    if (reference != null) {
+      CustomerGroupResourceIdentifierBuilder builder = new CustomerGroupResourceIdentifierBuilder();
+      final String id = reference.getId();
+      if (referenceIdToKeyCache.containsKey(id)) {
+        builder.key(referenceIdToKeyCache.get(id));
+      } else {
+        builder.id(id);
+      }
+      return builder.build();
+    }
+    return null;
+  }
+
+  private static List<BaseAddress> mapToAddressesDraft(@Nonnull List<Address> addresses) {
+    if (addresses.isEmpty()) {
+      return emptyList();
+    }
+
+    return addresses.stream()
+        .map(
+            address -> {
+              final AddressDraftBuilder builder =
+                  AddressDraftBuilder.of()
+                      .id(address.getId())
+                      .key(address.getKey())
+                      .title(address.getTitle())
+                      .salutation(address.getSalutation())
+                      .firstName(address.getFirstName())
+                      .lastName(address.getLastName())
+                      .streetName(address.getStreetName())
+                      .streetNumber(address.getStreetNumber())
+                      .additionalAddressInfo(address.getAdditionalAddressInfo())
+                      .postalCode(address.getPostalCode())
+                      .city(address.getCity())
+                      .region(address.getRegion())
+                      .country(address.getCountry())
+                      .company(address.getCompany())
+                      .department(address.getDepartment())
+                      .building(address.getBuilding())
+                      .apartment(address.getApartment())
+                      .pOBox(address.getPOBox())
+                      .phone(address.getPhone())
+                      .mobile(address.getMobile())
+                      .email(address.getEmail())
+                      .fax(address.getFax())
+                      .externalId(address.getExternalId());
+
+              if (address.getCustom() != null) {
+                builder.custom(
+                    CustomFieldsDraftBuilder.of().fields(address.getCustom().getFields()).build());
+              }
+              return builder.build();
+            })
+        .collect(Collectors.toList());
   }
 
   @Nullable
@@ -133,12 +205,10 @@ public final class CustomerReferenceResolutionUtils {
     return null;
   }
 
-  @Nullable
-  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   private static List<Integer> getAddressIndexList(
       @Nullable final List<Address> allAddresses, @Nullable final List<String> addressIds) {
     if (allAddresses == null || addressIds == null) {
-      return null;
+      return emptyList();
     }
     final List<Integer> indexes = new ArrayList<>();
     for (String addressId : addressIds) {
@@ -148,15 +218,36 @@ public final class CustomerReferenceResolutionUtils {
   }
 
   @Nullable
-  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
-  private static List<ResourceIdentifier<Store>> mapToStores(@Nonnull final Customer customer) {
-    final List<KeyReference<Store>> storeReferences = customer.getStores();
-    if (storeReferences != null) {
-      return storeReferences.stream()
-          .map(storeKeyReference -> ResourceIdentifier.<Store>ofKey(storeKeyReference.getKey()))
-          .collect(toList());
+  private static CustomFieldsDraft mapToCustomFieldsDraft(
+      @Nullable final CustomFields customFields,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
+
+    if (customFields != null) {
+      final String typeId = customFields.getType().getId();
+      CustomFieldsDraftBuilder customFieldsDraftBuilder = CustomFieldsDraftBuilder.of();
+      if (referenceIdToKeyCache.containsKey(typeId)) {
+        customFieldsDraftBuilder.type(
+            TypeResourceIdentifierBuilder.of().key(referenceIdToKeyCache.get(typeId)).build());
+
+      } else {
+        customFieldsDraftBuilder.type(TypeResourceIdentifierBuilder.of().id(typeId).build());
+      }
+      customFieldsDraftBuilder.fields(customFields.getFields());
+      return customFieldsDraftBuilder.build();
     }
     return null;
+  }
+
+  private static List<StoreResourceIdentifier> mapToStores(@Nonnull final Customer customer) {
+    final List<StoreKeyReference> storeReferences = customer.getStores();
+    if (storeReferences != null) {
+      return storeReferences.stream()
+          .map(
+              storeKeyReference ->
+                  StoreResourceIdentifierBuilder.of().key(storeKeyReference.getKey()).build())
+          .collect(toList());
+    }
+    return emptyList();
   }
 
   private CustomerReferenceResolutionUtils() {}

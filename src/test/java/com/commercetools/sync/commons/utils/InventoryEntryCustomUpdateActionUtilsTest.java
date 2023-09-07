@@ -1,20 +1,17 @@
 package com.commercetools.sync.commons.utils;
 
-import static com.commercetools.sync.commons.asserts.actions.AssertionsForUpdateActions.assertThat;
-import static io.sphere.sdk.models.ResourceIdentifier.ofId;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.inventory.*;
+import com.commercetools.api.models.type.ResourceTypeId;
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
 import com.commercetools.sync.inventories.helpers.InventoryCustomActionBuilder;
+import com.commercetools.sync.inventories.models.InventoryEntryCustomTypeAdapter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.inventory.InventoryEntry;
-import io.sphere.sdk.inventory.commands.updateactions.SetCustomField;
-import io.sphere.sdk.inventory.commands.updateactions.SetCustomType;
 import java.util.HashMap;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -26,31 +23,36 @@ class InventoryEntryCustomUpdateActionUtilsTest {
       buildTypedSetCustomTypeUpdateAction_WithInventoryResource_ShouldBuildInventoryUpdateAction() {
     final String newCustomTypeId = UUID.randomUUID().toString();
 
-    final UpdateAction<InventoryEntry> updateAction =
+    final InventoryEntryUpdateAction updateAction =
         GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction(
                 newCustomTypeId,
                 new HashMap<>(),
-                mock(InventoryEntry.class),
+                InventoryEntryCustomTypeAdapter.of(mock(InventoryEntry.class)),
                 new InventoryCustomActionBuilder(),
                 null,
-                InventoryEntry::getId,
-                inventoryResource -> inventoryResource.toReference().getTypeId(),
+                InventoryEntryCustomTypeAdapter::getId,
+                inventoryResource -> ResourceTypeId.INVENTORY_ENTRY.getJsonName(),
                 inventoryResource -> null,
-                InventorySyncOptionsBuilder.of(mock(SphereClient.class)).build())
+                InventorySyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build())
             .orElse(null);
 
-    assertThat(updateAction).isInstanceOf(SetCustomType.class);
-    assertThat((SetCustomType) updateAction)
-        .hasValues("setCustomType", emptyMap(), ofId(newCustomTypeId));
+    assertThat(updateAction).isInstanceOf(InventoryEntrySetCustomTypeActionImpl.class);
+    InventoryEntrySetCustomTypeAction inventorySetCustomTypeAction =
+        (InventoryEntrySetCustomTypeAction) updateAction;
+    assertThat(inventorySetCustomTypeAction.getType().getId()).isEqualTo(newCustomTypeId);
+    assertThat(inventorySetCustomTypeAction.getFields().values()).isEqualTo(emptyMap());
   }
 
   @Test
   void buildRemoveCustomTypeAction_WithInventoryResource_ShouldBuildChannelUpdateAction() {
-    final UpdateAction<InventoryEntry> updateAction =
+    final InventoryEntryUpdateAction updateAction =
         new InventoryCustomActionBuilder().buildRemoveCustomTypeAction(null, null);
 
-    assertThat(updateAction).isInstanceOf(SetCustomType.class);
-    assertThat((SetCustomType) updateAction).hasValues("setCustomType", null, ofId(null));
+    assertThat(updateAction).isInstanceOf(InventoryEntrySetCustomTypeActionImpl.class);
+    InventoryEntrySetCustomTypeAction inventorySetCustomTypeAction =
+        (InventoryEntrySetCustomTypeAction) updateAction;
+    assertThat(inventorySetCustomTypeAction.getType()).isNull();
+    assertThat(inventorySetCustomTypeAction.getFields()).isNull();
   }
 
   @Test
@@ -58,12 +60,14 @@ class InventoryEntryCustomUpdateActionUtilsTest {
     final JsonNode customFieldValue = JsonNodeFactory.instance.textNode("foo");
     final String customFieldName = "name";
 
-    final UpdateAction<InventoryEntry> updateAction =
+    final InventoryEntryUpdateAction updateAction =
         new InventoryCustomActionBuilder()
             .buildSetCustomFieldAction(null, null, customFieldName, customFieldValue);
 
-    assertThat(updateAction).isInstanceOf(SetCustomField.class);
-    assertThat((SetCustomField) updateAction)
-        .hasValues("setCustomField", customFieldName, customFieldValue);
+    assertThat(updateAction).isInstanceOf(InventoryEntrySetCustomFieldActionImpl.class);
+    InventoryEntrySetCustomFieldAction inventorySetCustomFieldAction =
+        (InventoryEntrySetCustomFieldAction) updateAction;
+    assertThat(inventorySetCustomFieldAction.getName()).isEqualTo(customFieldName);
+    assertThat(inventorySetCustomFieldAction.getValue()).isEqualTo(customFieldValue);
   }
 }

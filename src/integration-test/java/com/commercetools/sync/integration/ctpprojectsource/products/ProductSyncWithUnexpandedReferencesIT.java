@@ -1,20 +1,61 @@
 package com.commercetools.sync.integration.ctpprojectsource.products;
 
+import static com.commercetools.api.models.common.DefaultCurrencyUnits.EUR;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.createPriceDraft;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.neovisionaries.i18n.CountryCode.DE;
-import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
+import com.commercetools.api.models.category.CategoryDraft;
+import com.commercetools.api.models.category.CategoryDraftBuilder;
+import com.commercetools.api.models.channel.ChannelDraft;
+import com.commercetools.api.models.channel.ChannelDraftBuilder;
+import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
+import com.commercetools.api.models.channel.ChannelRoleEnum;
+import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.api.models.common.AssetDraftBuilder;
+import com.commercetools.api.models.common.AssetSourceBuilder;
+import com.commercetools.api.models.common.PriceDraft;
+import com.commercetools.api.models.common.PriceDraftBuilder;
+import com.commercetools.api.models.customer_group.CustomerGroup;
+import com.commercetools.api.models.customer_group.CustomerGroupDraft;
+import com.commercetools.api.models.customer_group.CustomerGroupDraftBuilder;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductDraftBuilder;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductProjectionPagedQueryResponse;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.product_type.ProductTypeDraft;
+import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
+import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
+import com.commercetools.api.models.state.State;
+import com.commercetools.api.models.state.StateDraft;
+import com.commercetools.api.models.state.StateDraftBuilder;
+import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
+import com.commercetools.api.models.state.StateTypeEnum;
+import com.commercetools.api.models.tax_category.TaxCategory;
+import com.commercetools.api.models.tax_category.TaxCategoryDraft;
+import com.commercetools.api.models.tax_category.TaxCategoryDraftBuilder;
+import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifierBuilder;
+import com.commercetools.api.models.tax_category.TaxRateDraft;
+import com.commercetools.api.models.tax_category.TaxRateDraftBuilder;
+import com.commercetools.api.models.type.CustomFieldsDraft;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.FieldDefinition;
+import com.commercetools.api.models.type.FieldDefinitionBuilder;
+import com.commercetools.api.models.type.FieldTypeBuilder;
+import com.commercetools.api.models.type.ResourceTypeId;
+import com.commercetools.api.models.type.Type;
+import com.commercetools.api.models.type.TypeDraft;
+import com.commercetools.api.models.type.TypeDraftBuilder;
+import com.commercetools.api.models.type.TypeTextInputHint;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.products.ProductSync;
@@ -22,61 +63,13 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.products.utils.ProductTransformUtils;
-import com.neovisionaries.i18n.CountryCode;
-import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.categories.CategoryDraftBuilder;
-import io.sphere.sdk.categories.commands.CategoryCreateCommand;
-import io.sphere.sdk.channels.ChannelDraft;
-import io.sphere.sdk.channels.ChannelDraftBuilder;
-import io.sphere.sdk.channels.ChannelRole;
-import io.sphere.sdk.channels.commands.ChannelCreateCommand;
-import io.sphere.sdk.customergroups.CustomerGroup;
-import io.sphere.sdk.customergroups.CustomerGroupDraft;
-import io.sphere.sdk.customergroups.CustomerGroupDraftBuilder;
-import io.sphere.sdk.customergroups.commands.CustomerGroupCreateCommand;
-import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.models.AssetDraftBuilder;
-import io.sphere.sdk.models.AssetSourceBuilder;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.models.TextInputHint;
-import io.sphere.sdk.products.PriceDraft;
-import io.sphere.sdk.products.PriceDraftBuilder;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.ProductVariantDraftBuilder;
-import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.queries.ProductProjectionQuery;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
-import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
-import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.states.StateDraft;
-import io.sphere.sdk.states.StateDraftBuilder;
-import io.sphere.sdk.states.StateType;
-import io.sphere.sdk.states.commands.StateCreateCommand;
-import io.sphere.sdk.taxcategories.TaxCategory;
-import io.sphere.sdk.taxcategories.TaxCategoryDraft;
-import io.sphere.sdk.taxcategories.TaxCategoryDraftBuilder;
-import io.sphere.sdk.taxcategories.TaxRateDraft;
-import io.sphere.sdk.taxcategories.TaxRateDraftBuilder;
-import io.sphere.sdk.taxcategories.commands.TaxCategoryCreateCommand;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.FieldDefinition;
-import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
-import io.sphere.sdk.types.StringFieldType;
-import io.sphere.sdk.types.Type;
-import io.sphere.sdk.types.TypeDraft;
-import io.sphere.sdk.types.TypeDraftBuilder;
-import io.sphere.sdk.types.commands.TypeCreateCommand;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -99,106 +92,138 @@ class ProductSyncWithUnexpandedReferencesIT {
     deleteProductSyncTestData(CTP_TARGET_CLIENT);
     deleteProductSyncTestData(CTP_SOURCE_CLIENT);
     final ProductTypeDraft productTypeDraft =
-        ProductTypeDraftBuilder.of(
-                RESOURCE_KEY, "sample-product-type", "a productType for t-shirts", emptyList())
+        ProductTypeDraftBuilder.of()
+            .key(RESOURCE_KEY)
+            .name("sample-product-type")
+            .description("a productType for t-shirts")
+            .attributes(emptyList())
             .build();
 
     final ProductType productType =
         CTP_SOURCE_CLIENT
-            .execute(ProductTypeCreateCommand.of(productTypeDraft))
+            .productTypes()
+            .create(productTypeDraft)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join();
 
-    CTP_TARGET_CLIENT
-        .execute(ProductTypeCreateCommand.of(productTypeDraft))
-        .toCompletableFuture()
-        .join();
+    CTP_TARGET_CLIENT.productTypes().create(productTypeDraft).executeBlocking();
 
     final FieldDefinition FIELD_DEFINITION_1 =
-        FieldDefinition.of(
-            StringFieldType.of(),
-            "field_name_1",
-            LocalizedString.ofEnglish("label_1"),
-            false,
-            TextInputHint.SINGLE_LINE);
+        FieldDefinitionBuilder.of()
+            .type(FieldTypeBuilder::stringBuilder)
+            .name("field_name_1")
+            .label(ofEnglish("label_1"))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
     final TypeDraft typeDraft =
-        TypeDraftBuilder.of(
-                TYPE_KEY,
-                LocalizedString.ofEnglish("name_1"),
-                ResourceTypeIdsSetBuilder.of().addCategories().addPrices().addAssets().build())
-            .description(LocalizedString.ofEnglish("description_1"))
+        TypeDraftBuilder.of()
+            .key(TYPE_KEY)
+            .name(ofEnglish("name_1"))
+            .resourceTypeIds(
+                List.of(
+                    ResourceTypeId.PRODUCT_PRICE, ResourceTypeId.ASSET, ResourceTypeId.CATEGORY))
+            .description(ofEnglish("description_1"))
             .fieldDefinitions(Arrays.asList(FIELD_DEFINITION_1))
             .build();
 
     final Type type =
-        CTP_SOURCE_CLIENT.execute(TypeCreateCommand.of(typeDraft)).toCompletableFuture().join();
+        CTP_SOURCE_CLIENT
+            .types()
+            .create(typeDraft)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .join();
 
-    CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(typeDraft)).toCompletableFuture().join();
+    CTP_TARGET_CLIENT.types().create(typeDraft).executeBlocking();
 
     final CategoryDraft categoryDraft =
-        CategoryDraftBuilder.of(ofEnglish("t-shirts"), ofEnglish("t-shirts"))
+        CategoryDraftBuilder.of()
+            .name(ofEnglish("t-shirts"))
+            .slug(ofEnglish("t-shirts"))
             .key(RESOURCE_KEY)
             .build();
 
-    CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(categoryDraft)).toCompletableFuture().join();
+    CTP_SOURCE_CLIENT.categories().create(categoryDraft).executeBlocking();
 
-    CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(categoryDraft)).toCompletableFuture().join();
+    CTP_TARGET_CLIENT.categories().create(categoryDraft).executeBlocking();
 
     final StateDraft stateDraft =
-        StateDraftBuilder.of(RESOURCE_KEY, StateType.PRODUCT_STATE)
-            .roles(Collections.emptySet())
+        StateDraftBuilder.of()
+            .key(RESOURCE_KEY)
+            .type(StateTypeEnum.PRODUCT_STATE)
+            .roles(List.of())
             .description(ofEnglish("State 1"))
             .name(ofEnglish("State 1"))
             .initial(true)
-            .transitions(Collections.emptySet())
+            .transitions(List.of())
             .build();
     final State state =
-        CTP_SOURCE_CLIENT.execute(StateCreateCommand.of(stateDraft)).toCompletableFuture().join();
+        CTP_SOURCE_CLIENT
+            .states()
+            .create(stateDraft)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .join();
 
-    CTP_TARGET_CLIENT.execute(StateCreateCommand.of(stateDraft)).toCompletableFuture().join();
+    CTP_TARGET_CLIENT.states().create(stateDraft).executeBlocking();
 
     final TaxRateDraft taxRateDraft =
-        TaxRateDraftBuilder.of("Tax-Rate-Name-1", 0.3, false, CountryCode.DE).build();
+        TaxRateDraftBuilder.of()
+            .name("Tax-Rate-Name-1")
+            .amount(0.3)
+            .includedInPrice(false)
+            .country(DE.getAlpha2())
+            .build();
 
     final TaxCategoryDraft taxCategoryDraft =
-        TaxCategoryDraftBuilder.of(
-                "Tax-Category-Name-1", singletonList(taxRateDraft), "Tax-Category-Description-1")
+        TaxCategoryDraftBuilder.of()
+            .name("Tax-Category-Name-1")
+            .rates(List.of(taxRateDraft))
+            .description("Tax-Category-Description-1")
             .key(RESOURCE_KEY)
             .build();
 
     final TaxCategory taxCategory =
         CTP_SOURCE_CLIENT
-            .execute(TaxCategoryCreateCommand.of(taxCategoryDraft))
+            .taxCategories()
+            .create(taxCategoryDraft)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .toCompletableFuture()
             .join();
 
-    CTP_TARGET_CLIENT
-        .execute(TaxCategoryCreateCommand.of(taxCategoryDraft))
-        .toCompletableFuture()
-        .join();
+    CTP_TARGET_CLIENT.taxCategories().create(taxCategoryDraft).executeBlocking();
 
     final CustomerGroupDraft customerGroupDraft =
-        CustomerGroupDraftBuilder.of("customerGroupName").key("customerGroupKey").build();
+        CustomerGroupDraftBuilder.of()
+            .groupName("customerGroupName")
+            .key("customerGroupKey")
+            .build();
 
-    CustomerGroup customerGroup =
+    final CustomerGroup customerGroup =
         CTP_SOURCE_CLIENT
-            .execute(CustomerGroupCreateCommand.of(customerGroupDraft))
-            .toCompletableFuture()
+            .customerGroups()
+            .create(customerGroupDraft)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
             .join();
 
-    CTP_TARGET_CLIENT
-        .execute(CustomerGroupCreateCommand.of(customerGroupDraft))
-        .toCompletableFuture()
-        .join();
+    CTP_TARGET_CLIENT.customerGroups().create(customerGroupDraft).executeBlocking();
 
-    CustomFieldsDraft customFieldsDraft =
-        CustomFieldsDraft.ofTypeKeyAndJson(type.getKey(), emptyMap());
+    final CustomFieldsDraft customFieldsDraft =
+        CustomFieldsDraftBuilder.of()
+            .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.key(type.getKey()))
+            .fields(fieldContainerBuilder -> fieldContainerBuilder.values(Map.of()))
+            .build();
 
     final ChannelDraft draft =
-        ChannelDraftBuilder.of("channelKey").roles(singleton(ChannelRole.INVENTORY_SUPPLY)).build();
-    CTP_SOURCE_CLIENT.execute(ChannelCreateCommand.of(draft)).toCompletableFuture().join();
-    CTP_TARGET_CLIENT.execute(ChannelCreateCommand.of(draft)).toCompletableFuture().join();
+        ChannelDraftBuilder.of().key("channelKey").roles(ChannelRoleEnum.INVENTORY_SUPPLY).build();
+    CTP_SOURCE_CLIENT.channels().create(draft).executeBlocking();
+    CTP_TARGET_CLIENT.channels().create(draft).executeBlocking();
 
     final PriceDraft priceBuilder =
         PriceDraftBuilder.of(
@@ -213,15 +238,16 @@ class ProductSyncWithUnexpandedReferencesIT {
                     null,
                     null,
                     null))
-            .customerGroup(customerGroup)
+            .customerGroup(customerGroup.toResourceIdentifier())
             .custom(customFieldsDraft)
-            .channel(ResourceIdentifier.ofKey("channelKey"))
+            .channel(ChannelResourceIdentifierBuilder.of().key("channelKey").build())
             .build();
 
     final AssetDraft assetDraft =
-        AssetDraftBuilder.of(emptyList(), LocalizedString.ofEnglish("assetName"))
+        AssetDraftBuilder.of()
+            .name(ofEnglish("assetName"))
             .key("assetKey")
-            .sources(singletonList(AssetSourceBuilder.ofUri("sourceUri").build()))
+            .sources(AssetSourceBuilder.of().uri("sourceUri").build())
             .custom(customFieldsDraft)
             .build();
 
@@ -230,24 +256,25 @@ class ProductSyncWithUnexpandedReferencesIT {
             .key("variantKey")
             .sku("sku1")
             .prices(priceBuilder)
-            .assets(asList(assetDraft))
+            .assets(assetDraft)
             .build();
 
     final ProductDraft productDraft =
-        ProductDraftBuilder.of(
-                productType,
-                ofEnglish("V-neck Tee"),
-                ofEnglish("v-neck-tee"),
+        ProductDraftBuilder.of()
+            .productType(productType.toResourceIdentifier())
+            .name(ofEnglish("V-neck Tee"))
+            .slug(ofEnglish("v-neck-tee"))
+            .masterVariant(
                 ProductVariantDraftBuilder.of().key(RESOURCE_KEY).sku(RESOURCE_KEY).build())
-            .state(State.referenceOfId(state.getId()))
-            .taxCategory(TaxCategory.referenceOfId(taxCategory.getId()))
-            .productType(ProductType.referenceOfId(productType.getId()))
-            .variants(asList(variantDraft1))
+            .state(StateResourceIdentifierBuilder.of().id(state.getId()).build())
+            .taxCategory(TaxCategoryResourceIdentifierBuilder.of().id(taxCategory.getId()).build())
+            .productType(ProductTypeResourceIdentifierBuilder.of().id(productType.getId()).build())
+            .variants(variantDraft1)
             .key(RESOURCE_KEY)
             .publish(true)
             .build();
 
-    CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
+    CTP_SOURCE_CLIENT.products().create(productDraft).executeBlocking();
     productQuery = ProductProjectionQuery.ofStaged();
   }
 
@@ -281,7 +308,14 @@ class ProductSyncWithUnexpandedReferencesIT {
   @Test
   void run_WithSyncAsArgumentWithProductsArg_ShouldResolveReferencesAndExecuteProductSyncer() {
     final List<ProductProjection> products =
-        CTP_SOURCE_CLIENT.execute(productQuery).toCompletableFuture().join().getResults();
+        CTP_SOURCE_CLIENT
+            .productProjections()
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductProjectionPagedQueryResponse::getResults)
+            .join();
 
     final List<ProductDraft> productDrafts =
         ProductTransformUtils.toProductDrafts(CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
@@ -292,7 +326,7 @@ class ProductSyncWithUnexpandedReferencesIT {
         productSync.sync(productDrafts).toCompletableFuture().join();
 
     // assertion
-    AssertionsForStatistics.assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+    assertThat(syncStatistics).hasValues(1, 1, 0, 0);
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();

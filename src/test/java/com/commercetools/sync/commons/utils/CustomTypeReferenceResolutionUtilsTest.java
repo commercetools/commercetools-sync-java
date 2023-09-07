@@ -1,15 +1,14 @@
 package com.commercetools.sync.commons.utils;
 
-import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.types.CustomFields;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.Type;
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.type.CustomFields;
+import com.commercetools.api.models.type.CustomFieldsDraft;
+import com.commercetools.api.models.type.TypeReference;
+import com.commercetools.api.models.type.TypeReferenceBuilder;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +22,8 @@ class CustomTypeReferenceResolutionUtilsTest {
     final Category mockCategory = mock(Category.class);
 
     final CustomFieldsDraft customFieldsDraft =
-        mapToCustomFieldsDraft(mockCategory, referenceIdToKeyCache);
+        CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft(
+            mockCategory, referenceIdToKeyCache);
 
     assertThat(customFieldsDraft).isNull();
   }
@@ -36,8 +36,7 @@ class CustomTypeReferenceResolutionUtilsTest {
     final CustomFields mockCustomFields = mock(CustomFields.class);
     final String typeKey = "typeKey";
     final String typeId = UUID.randomUUID().toString();
-    final Reference<Type> mockCustomType =
-        Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), typeId);
+    final TypeReference mockCustomType = TypeReferenceBuilder.of().id(typeId).build();
     when(mockCustomFields.getType()).thenReturn(mockCustomType);
     when(mockCategory.getCustom()).thenReturn(mockCustomFields);
 
@@ -46,7 +45,8 @@ class CustomTypeReferenceResolutionUtilsTest {
 
     // test
     final CustomFieldsDraft customFieldsDraft =
-        mapToCustomFieldsDraft(mockCategory, referenceIdToKeyCache);
+        CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft(
+            mockCategory, referenceIdToKeyCache);
 
     // assertion
     assertThat(customFieldsDraft).isNotNull();
@@ -61,14 +61,14 @@ class CustomTypeReferenceResolutionUtilsTest {
     final Category mockCategory = mock(Category.class);
     final CustomFields mockCustomFields = mock(CustomFields.class);
     final String customTypeUuid = UUID.randomUUID().toString();
-    final Reference<Type> mockCustomType =
-        Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), customTypeUuid);
+    final TypeReference mockCustomType = TypeReferenceBuilder.of().id(customTypeUuid).build();
     when(mockCustomFields.getType()).thenReturn(mockCustomType);
     when(mockCategory.getCustom()).thenReturn(mockCustomFields);
 
     // test
     final CustomFieldsDraft customFieldsDraft =
-        mapToCustomFieldsDraft(mockCategory, referenceIdToKeyCache);
+        CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft(
+            mockCategory, referenceIdToKeyCache);
 
     // assertion
     assertThat(customFieldsDraft).isNotNull();

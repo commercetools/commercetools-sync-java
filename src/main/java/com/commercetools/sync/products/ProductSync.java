@@ -3,13 +3,17 @@ package com.commercetools.sync.products;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.products.utils.ProductSyncUtils.buildActions;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.getAllVariants;
-import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
+import com.commercetools.api.models.channel.ChannelRoleEnum;
+import com.commercetools.api.models.product.Product;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductUpdateAction;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.SyncException;
@@ -43,11 +47,6 @@ import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptionsBuilder;
-import io.sphere.sdk.channels.ChannelRole;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductProjection;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -65,7 +64,12 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public class ProductSync
-    extends BaseSync<ProductDraft, ProductProjection, ProductSyncStatistics, ProductSyncOptions> {
+    extends BaseSync<
+        ProductProjection,
+        ProductDraft,
+        ProductUpdateAction,
+        ProductSyncStatistics,
+        ProductSyncOptions> {
   private static final String CTP_PRODUCT_FETCH_FAILED =
       "Failed to fetch existing products with keys: '%s'.";
   private static final String UNRESOLVED_REFERENCES_STORE_FETCH_FAILED =
@@ -103,7 +107,7 @@ public class ProductSync
             CategorySyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()),
         new TypeServiceImpl(productSyncOptions),
         new ChannelServiceImpl(
-            productSyncOptions, Collections.singleton(ChannelRole.PRODUCT_DISTRIBUTION)),
+            productSyncOptions, Collections.singleton(ChannelRoleEnum.PRODUCT_DISTRIBUTION)),
         new CustomerGroupServiceImpl(productSyncOptions),
         new TaxCategoryServiceImpl(
             TaxCategorySyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()),
@@ -238,7 +242,8 @@ public class ProductSync
    *
    * @param oldProducts old ProductProjection types.
    * @param newProducts drafts that need to be synced.
-   * @return a {@link CompletionStage} which contains an empty result after execution of the update
+   * @return a {@link java.util.concurrent.CompletionStage} which contains an empty result after
+   *     execution of the update
    */
   @Nonnull
   private CompletionStage<Void> syncOrKeepTrack(
@@ -285,7 +290,7 @@ public class ProductSync
         missingParentKey -> statistics.addMissingDependency(missingParentKey, newProduct.getKey()));
     return unresolvedReferencesService.save(
         new WaitingToBeResolvedProducts(newProduct, missingReferencedProductKeys),
-        CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+        UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
         WaitingToBeResolvedProducts.class);
   }
 
@@ -313,7 +318,7 @@ public class ProductSync
     return unresolvedReferencesService
         .fetch(
             referencingDraftKeys,
-            CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+            UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
             WaitingToBeResolvedProducts.class)
         .handle(ImmutablePair::new)
         .thenCompose(
@@ -358,7 +363,7 @@ public class ProductSync
                 draft ->
                     unresolvedReferencesService.save(
                         draft,
-                        CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                        UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
                         WaitingToBeResolvedProducts.class))
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
@@ -373,7 +378,7 @@ public class ProductSync
                 key ->
                     unresolvedReferencesService.delete(
                         key,
-                        CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                        UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
                         WaitingToBeResolvedProducts.class))
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
@@ -422,11 +427,11 @@ public class ProductSync
                 optionalAttributesMetaDataMap
                     .map(
                         attributeMetaDataMap -> {
-                          final List<UpdateAction<Product>> updateActions =
+                          final List<ProductUpdateAction> updateActions =
                               buildActions(
                                   oldProduct, newProduct, syncOptions, attributeMetaDataMap);
 
-                          final List<UpdateAction<Product>> beforeUpdateCallBackApplied =
+                          final List<ProductUpdateAction> beforeUpdateCallBackApplied =
                               syncOptions.applyBeforeUpdateCallback(
                                   updateActions, newProduct, oldProduct);
 
@@ -451,7 +456,7 @@ public class ProductSync
   private CompletionStage<Void> updateProduct(
       @Nonnull final ProductProjection oldProduct,
       @Nonnull final ProductDraft newProduct,
-      @Nonnull final List<UpdateAction<Product>> updateActions) {
+      @Nonnull final List<ProductUpdateAction> updateActions) {
 
     return productService
         .updateProduct(oldProduct, updateActions)
@@ -557,9 +562,9 @@ public class ProductSync
    * method calls the optional error callback specified in the {@code syncOptions} and updates the
    * {@code statistics} instance by incrementing the total number of failed products to sync. <br>
    * <br>
-   * NOTE: This method is similar to {@link com.commercetools.sync.commons.BaseSync#handleError}. It
-   * is left here because of usage of different classes for view ({@link ProductProjection}) and
-   * updates ({@link Product}) from commercetools. This is specific only for ProductSync.
+   * NOTE: This method is similar to {@link BaseSync#handleError}. It is left here because of usage
+   * of different classes for view ({@link ProductProjection}) and updates ({@link Product}) from
+   * commercetools. This is specific only for ProductSync.
    *
    * @param errorMessage The error message describing the reason(s) of failure.
    * @param exception The exception that called caused the failure, if any.
@@ -572,7 +577,7 @@ public class ProductSync
       @Nullable final Throwable exception,
       @Nullable final ProductProjection oldProduct,
       @Nullable final ProductDraft newProduct,
-      @Nullable final List<UpdateAction<Product>> updateActions) {
+      @Nullable final List<ProductUpdateAction> updateActions) {
     SyncException syncException =
         exception != null
             ? new SyncException(errorMessage, exception)

@@ -2,34 +2,24 @@ package com.commercetools.sync.commons.utils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.sphere.sdk.client.BlockingSphereClient;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.client.SphereClientConfig;
-import java.util.concurrent.TimeUnit;
+import com.commercetools.api.client.ProjectApiRoot;
+import io.vrap.rmf.base.client.oauth2.ClientCredentials;
+import io.vrap.rmf.base.client.oauth2.ClientCredentialsBuilder;
 import org.junit.jupiter.api.Test;
 
 class ClientConfigurationUtilsTest {
-  private static final long TIMEOUT = 20000;
-  private static final TimeUnit TIMEOUT_TIME_UNIT = TimeUnit.MILLISECONDS;
 
   @Test
-  void createClient_WithConfig_ReturnsSphereClient() {
-    final SphereClientConfig clientConfig =
-        SphereClientConfig.of("project-key", "client-id", "client-secret");
-    final SphereClient sphereClient = ClientConfigurationUtils.createClient(clientConfig);
+  void createClient_WithConfig_ReturnsClient() {
+    final ClientCredentials clientConfig =
+        new ClientCredentialsBuilder()
+            .withClientId("client-id")
+            .withClientSecret("client-secret")
+            .withScopes("scopes")
+            .build();
+    final ProjectApiRoot client =
+        ClientConfigurationUtils.createClient("project-key", clientConfig, "", "");
 
-    assertThat(sphereClient.getConfig().getProjectKey()).isEqualTo("project-key");
-  }
-
-  @Test
-  void createClient_WithConfig_ReturnsBlockingSphereClient() {
-    final SphereClientConfig clientConfig =
-        SphereClientConfig.of("project-key", "client-id", "client-secret");
-    final SphereClient sphereClient =
-        ClientConfigurationUtils.createClient(clientConfig, TIMEOUT, TIMEOUT_TIME_UNIT);
-
-    assertThat(sphereClient instanceof BlockingSphereClient).isTrue();
-
-    assertThat(sphereClient.getConfig().getProjectKey()).isEqualTo("project-key");
+    assertThat(client.getProjectKey()).isEqualTo("project-key");
   }
 }

@@ -1,22 +1,11 @@
 package com.commercetools.sync.commons.utils;
 
-import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
-import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
-import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
-import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
+import com.commercetools.api.models.category.*;
+import com.commercetools.sync.categories.CategorySyncMockUtils;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
@@ -41,10 +30,10 @@ class SyncUtilsTest {
 
     for (int i = 0; i < numberOfCategoryDrafts; i++) {
       categoryDrafts.add(
-          getMockCategoryDraft(
+          CategorySyncMockUtils.getMockCategoryDraft(
               Locale.ENGLISH, "name", "key" + i, "parentKey", "customTypeId", new HashMap<>()));
     }
-    final List<List<CategoryDraft>> batches = batchElements(categoryDrafts, 10);
+    final List<List<CategoryDraft>> batches = SyncUtils.batchElements(categoryDrafts, 10);
     assertThat(batches.size()).isEqualTo(numberOfCategoryDrafts / batchSize);
   }
 
@@ -64,7 +53,7 @@ class SyncUtilsTest {
       final int numberOfElements, final int batchSize) {
     final List<String> elements = getPrefixedStrings(numberOfElements, "element");
 
-    final List<List<String>> batches = batchElements(elements, batchSize);
+    final List<List<String>> batches = SyncUtils.batchElements(elements, batchSize);
 
     final int expectedNumberOfBatches = getExpectedNumberOfBatches(numberOfElements, batchSize);
     assertThat(batches.size()).isEqualTo(expectedNumberOfBatches);
@@ -108,7 +97,7 @@ class SyncUtilsTest {
 
   @Test
   void batchElements_WithEmptyListAndAnySize_ShouldReturnNoBatches() {
-    final List<List<CategoryDraft>> batches = batchElements(new ArrayList<>(), 100);
+    final List<List<CategoryDraft>> batches = SyncUtils.batchElements(new ArrayList<>(), 100);
     assertThat(batches.size()).isEqualTo(0);
   }
 
@@ -119,40 +108,11 @@ class SyncUtilsTest {
 
     for (int i = 0; i < numberOfCategoryDrafts; i++) {
       categoryDrafts.add(
-          getMockCategoryDraft(
+          CategorySyncMockUtils.getMockCategoryDraft(
               Locale.ENGLISH, "name", "key" + i, "parentKey", "customTypeId", new HashMap<>()));
     }
-    final List<List<CategoryDraft>> batches = batchElements(categoryDrafts, -100);
+    final List<List<CategoryDraft>> batches = SyncUtils.batchElements(categoryDrafts, -100);
     assertThat(batches.size()).isEqualTo(0);
-  }
-
-  @Test
-  void getReferenceWithKeyReplaced_WithNullReference_ShouldReturnNullReference() {
-    final Reference<Object> keyReplacedReference =
-        getReferenceWithKeyReplaced(
-            null, () -> Reference.of(Category.referenceTypeId(), "id"), referenceIdToKeyCache);
-    assertThat(keyReplacedReference).isNull();
-  }
-
-  @Test
-  void
-      getReferenceWithKeyReplaced_WithCachedCategoryReference_ShouldReturnCategoryReferenceWithKey() {
-    final String categoryKey = "categoryKey";
-    final String categoryId = UUID.randomUUID().toString();
-
-    referenceIdToKeyCache.add(categoryId, categoryKey);
-
-    final Reference<Category> categoryReference =
-        Reference.ofResourceTypeIdAndId(Category.referenceTypeId(), categoryId);
-
-    final Reference<Category> keyReplacedReference =
-        getReferenceWithKeyReplaced(
-            categoryReference,
-            () -> Category.referenceOfId(referenceIdToKeyCache.get(categoryReference.getId())),
-            referenceIdToKeyCache);
-
-    assertThat(keyReplacedReference).isNotNull();
-    assertThat(keyReplacedReference.getId()).isEqualTo(categoryKey);
   }
 
   @Test
@@ -163,40 +123,30 @@ class SyncUtilsTest {
 
     referenceIdToKeyCache.add(categoryId, categoryKey);
 
-    final Reference<Category> categoryReference =
-        Reference.ofResourceTypeIdAndId(Category.referenceTypeId(), categoryId);
+    final CategoryReference categoryReference =
+        CategoryReferenceBuilder.of().id(categoryId).build();
 
-    final ResourceIdentifier<Category> resourceIdentifier =
-        getResourceIdentifierWithKey(categoryReference, referenceIdToKeyCache);
+    final CategoryResourceIdentifier resourceIdentifier =
+        SyncUtils.getResourceIdentifierWithKey(
+            categoryReference,
+            referenceIdToKeyCache,
+            (id, key) -> CategoryResourceIdentifierBuilder.of().id(id).key(key).build());
 
     assertThat(resourceIdentifier).isNotNull();
     assertThat(resourceIdentifier.getKey()).isEqualTo(categoryKey);
   }
 
   @Test
-  void getReferenceWithKey_WithNonExpandedCategoryReference_ShouldReturnReferenceWithoutKey() {
-    final String categoryUuid = UUID.randomUUID().toString();
-    final Reference<Category> categoryReference =
-        Reference.ofResourceTypeIdAndId(Category.referenceTypeId(), categoryUuid);
-
-    final Reference<Category> keyReplacedReference =
-        getReferenceWithKeyReplaced(
-            categoryReference,
-            () -> Category.referenceOfId(referenceIdToKeyCache.get(categoryReference.getId())),
-            referenceIdToKeyCache);
-
-    assertThat(keyReplacedReference).isNotNull();
-    assertThat(keyReplacedReference.getId()).isEqualTo(categoryUuid);
-  }
-
-  @Test
   void getResourceIdentifierWithKey_WithNonExpandedReference_ShouldReturnResIdentifierWithoutKey() {
     final String categoryUuid = UUID.randomUUID().toString();
-    final Reference<Category> categoryReference =
-        Reference.ofResourceTypeIdAndId(Category.referenceTypeId(), categoryUuid);
+    final CategoryReference categoryReference =
+        CategoryReferenceBuilder.of().id(categoryUuid).build();
 
-    final ResourceIdentifier<Category> resourceIdentifier =
-        getResourceIdentifierWithKey(categoryReference, referenceIdToKeyCache);
+    final CategoryResourceIdentifier resourceIdentifier =
+        SyncUtils.getResourceIdentifierWithKey(
+            categoryReference,
+            referenceIdToKeyCache,
+            (id, key) -> CategoryResourceIdentifierBuilder.of().id(id).key(key).build());
 
     assertThat(resourceIdentifier).isNotNull();
     assertThat(resourceIdentifier.getId()).isEqualTo(categoryUuid);
@@ -204,8 +154,11 @@ class SyncUtilsTest {
 
   @Test
   void getResourceIdentifierWithKey_WithNullReference_ShouldReturnNull() {
-    final ResourceIdentifier<Category> resourceIdentifier =
-        getResourceIdentifierWithKey(null, referenceIdToKeyCache);
+    final CategoryResourceIdentifier resourceIdentifier =
+        SyncUtils.getResourceIdentifierWithKey(
+            null,
+            referenceIdToKeyCache,
+            (id, key) -> CategoryResourceIdentifierBuilder.of().id(id).key(key).build());
     assertThat(resourceIdentifier).isNull();
   }
 }
