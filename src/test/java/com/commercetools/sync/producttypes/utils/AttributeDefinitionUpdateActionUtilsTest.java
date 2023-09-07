@@ -1,116 +1,88 @@
 package com.commercetools.sync.producttypes.utils;
 
-import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildActions;
-import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildChangeAttributeConstraintUpdateAction;
-import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildChangeInputHintUpdateAction;
-import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildChangeIsSearchableUpdateAction;
-import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildChangeLabelUpdateAction;
-import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildEnumUpdateActions;
-import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildSetInputTipUpdateAction;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.EnumValue;
-import io.sphere.sdk.models.LocalizedEnumValue;
-import io.sphere.sdk.models.TextInputHint;
-import io.sphere.sdk.products.attributes.AttributeConstraint;
-import io.sphere.sdk.products.attributes.AttributeDefinition;
-import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
-import io.sphere.sdk.products.attributes.EnumAttributeType;
-import io.sphere.sdk.products.attributes.LocalizedEnumAttributeType;
-import io.sphere.sdk.products.attributes.SetAttributeType;
-import io.sphere.sdk.products.attributes.StringAttributeType;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.commands.updateactions.AddEnumValue;
-import io.sphere.sdk.producttypes.commands.updateactions.AddLocalizedEnumValue;
-import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeConstraint;
-import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeDefinitionLabel;
-import io.sphere.sdk.producttypes.commands.updateactions.ChangeEnumValueOrder;
-import io.sphere.sdk.producttypes.commands.updateactions.ChangeInputHint;
-import io.sphere.sdk.producttypes.commands.updateactions.ChangeIsSearchable;
-import io.sphere.sdk.producttypes.commands.updateactions.ChangeLocalizedEnumValueLabel;
-import io.sphere.sdk.producttypes.commands.updateactions.ChangeLocalizedEnumValueOrder;
-import io.sphere.sdk.producttypes.commands.updateactions.ChangePlainEnumValueLabel;
-import io.sphere.sdk.producttypes.commands.updateactions.RemoveEnumValues;
-import io.sphere.sdk.producttypes.commands.updateactions.SetInputTip;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.product_type.AttributeConstraintEnum;
+import com.commercetools.api.models.product_type.AttributeConstraintEnumDraft;
+import com.commercetools.api.models.product_type.AttributeDefinition;
+import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
+import com.commercetools.api.models.product_type.AttributeLocalizedEnumValue;
+import com.commercetools.api.models.product_type.AttributeLocalizedEnumValueBuilder;
+import com.commercetools.api.models.product_type.AttributePlainEnumValue;
+import com.commercetools.api.models.product_type.AttributePlainEnumValueBuilder;
+import com.commercetools.api.models.product_type.ProductTypeAddLocalizedEnumValueActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeAddPlainEnumValueActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeChangeAttributeConstraintActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeChangeInputHintActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeChangeIsSearchableActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeChangeLabelActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeChangeLocalizedEnumValueLabelActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeChangeLocalizedEnumValueOrderActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeChangePlainEnumValueLabelActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeChangePlainEnumValueOrderActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeRemoveEnumValuesActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeSetInputTipActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
+import com.commercetools.api.models.product_type.TextInputHint;
+import com.commercetools.sync.producttypes.MockBuilderUtils;
+import com.commercetools.sync.producttypes.helpers.ResourceToDraftConverters;
 import java.util.List;
 import java.util.Optional;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class AttributeDefinitionUpdateActionUtilsTest {
-  private static AttributeDefinition old;
-  private static AttributeDefinitionDraft newSame;
-  private static AttributeDefinitionDraft newDifferent;
 
-  private static final EnumValue ENUM_VALUE_A = EnumValue.of("a", "label_a");
-  private static final EnumValue ENUM_VALUE_B = EnumValue.of("b", "label_b");
+  private static final AttributePlainEnumValue ENUM_VALUE_A =
+      AttributePlainEnumValueBuilder.of().key("a").label("label_a").build();
+  private static final AttributePlainEnumValue ENUM_VALUE_B =
+      AttributePlainEnumValueBuilder.of().key("b").label("label_b").build();
 
-  private static final LocalizedEnumValue LOCALIZED_ENUM_VALUE_A =
-      LocalizedEnumValue.of("a", ofEnglish("label_a"));
-  private static final LocalizedEnumValue LOCALIZED_ENUM_VALUE_B =
-      LocalizedEnumValue.of("b", ofEnglish("label_b"));
-
-  /** Initialises test data. */
-  @BeforeAll
-  static void setup() {
-    old =
-        AttributeDefinitionBuilder.of(
-                "attributeName1", ofEnglish("label1"), StringAttributeType.of())
-            .isRequired(false)
-            .attributeConstraint(AttributeConstraint.NONE)
-            .inputTip(ofEnglish("inputTip1"))
-            .inputHint(TextInputHint.SINGLE_LINE)
-            .isSearchable(false)
-            .build();
-
-    newSame = AttributeDefinitionDraftBuilder.of(old).build();
-
-    newDifferent =
-        AttributeDefinitionDraftBuilder.of(
-                StringAttributeType.of(), "attributeName1", ofEnglish("label2"), true)
-            .attributeConstraint(AttributeConstraint.SAME_FOR_ALL)
-            .inputTip(ofEnglish("inputTip2"))
-            .inputHint(TextInputHint.MULTI_LINE)
-            .isSearchable(true)
-            .build();
-  }
+  private static final AttributeLocalizedEnumValue LOCALIZED_ENUM_VALUE_A =
+      AttributeLocalizedEnumValueBuilder.of().key("a").label(ofEnglish("label_a")).build();
+  private static final AttributeLocalizedEnumValue LOCALIZED_ENUM_VALUE_B =
+      AttributeLocalizedEnumValueBuilder.of().key("b").label(ofEnglish("label_b")).build();
 
   @Test
   void buildChangeLabelAction_WithDifferentValues_ShouldReturnAction() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        AttributeDefinitionDraftBuilder.of(null, "foo", ofEnglish("x"), null).build();
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder().label(ofEnglish("x")).build();
 
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of("foo", ofEnglish("y"), null).build();
+        MockBuilderUtils.createMockAttributeDefinitionBuilder().label(ofEnglish("y")).build();
 
     // test
-    final Optional<UpdateAction<ProductType>> result =
-        buildChangeLabelUpdateAction(attributeDefinition, draft);
+    final Optional<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildChangeLabelUpdateAction(
+            attributeDefinition, draft);
 
     // assertion
     assertThat(result)
-        .contains(ChangeAttributeDefinitionLabel.of(attributeDefinition.getName(), ofEnglish("x")));
+        .contains(
+            ProductTypeChangeLabelActionBuilder.of()
+                .attributeName(attributeDefinition.getName())
+                .label(ofEnglish("x"))
+                .build());
   }
 
   @Test
   void buildChangeLabelAction_WithSameValues_ShouldReturnEmptyOptional() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        AttributeDefinitionDraftBuilder.of(null, "foo", ofEnglish("x"), null).build();
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder().build();
 
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of("foo", ofEnglish("x"), null).build();
+        MockBuilderUtils.createMockAttributeDefinitionBuilder().build();
 
     // test
-    final Optional<UpdateAction<ProductType>> result =
-        buildChangeLabelUpdateAction(attributeDefinition, draft);
+    final Optional<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildChangeLabelUpdateAction(
+            attributeDefinition, draft);
 
     // assertion
     assertThat(result).isEmpty();
@@ -120,39 +92,42 @@ class AttributeDefinitionUpdateActionUtilsTest {
   void buildSetInputTipAction_WithDifferentValues_ShouldReturnAction() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        AttributeDefinitionDraftBuilder.of(null, "foo", ofEnglish("x"), null)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
             .inputTip(ofEnglish("foo"))
             .build();
 
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of("foo", ofEnglish("x"), null)
-            .inputTip(ofEnglish("bar"))
-            .build();
+        MockBuilderUtils.createMockAttributeDefinitionBuilder().inputTip(ofEnglish("bar")).build();
 
     // test
-    final Optional<UpdateAction<ProductType>> result =
-        buildSetInputTipUpdateAction(attributeDefinition, draft);
+    final Optional<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildSetInputTipUpdateAction(
+            attributeDefinition, draft);
 
     // assertion
-    assertThat(result).contains(SetInputTip.of(attributeDefinition.getName(), ofEnglish("foo")));
+    assertThat(result)
+        .contains(
+            ProductTypeSetInputTipActionBuilder.of()
+                .attributeName(attributeDefinition.getName())
+                .inputTip(ofEnglish("foo"))
+                .build());
   }
 
   @Test
   void buildSetInputTipAction_WithSameValues_ShouldReturnEmptyOptional() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        AttributeDefinitionDraftBuilder.of(null, "foo", ofEnglish("x"), null)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
             .inputTip(ofEnglish("foo"))
             .build();
 
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of("foo", ofEnglish("x"), null)
-            .inputTip(ofEnglish("foo"))
-            .build();
+        MockBuilderUtils.createMockAttributeDefinitionBuilder().inputTip(ofEnglish("foo")).build();
 
     // test
-    final Optional<UpdateAction<ProductType>> result =
-        buildSetInputTipUpdateAction(attributeDefinition, draft);
+    final Optional<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildSetInputTipUpdateAction(
+            attributeDefinition, draft);
 
     // assertion
     assertThat(result).isEmpty();
@@ -162,74 +137,89 @@ class AttributeDefinitionUpdateActionUtilsTest {
   void buildSetInputTipAction_WithSourceNullValues_ShouldReturnAction() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        AttributeDefinitionDraftBuilder.of(null, "foo", ofEnglish("x"), null)
-            .inputTip(null)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+            .inputTip((LocalizedString) null)
             .build();
 
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of("foo", ofEnglish("x"), null)
-            .inputTip(ofEnglish("foo"))
-            .build();
+        MockBuilderUtils.createMockAttributeDefinitionBuilder().inputTip(ofEnglish("foo")).build();
 
     // test
-    final Optional<UpdateAction<ProductType>> result =
-        buildSetInputTipUpdateAction(attributeDefinition, draft);
+    final Optional<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildSetInputTipUpdateAction(
+            attributeDefinition, draft);
 
     // assertion
-    assertThat(result).contains(SetInputTip.of(attributeDefinition.getName(), null));
+    assertThat(result)
+        .contains(
+            ProductTypeSetInputTipActionBuilder.of()
+                .attributeName(attributeDefinition.getName())
+                .inputTip((LocalizedString) null)
+                .build());
   }
 
   @Test
   void buildSetInputTipAction_WithTargetNullValues_ShouldReturnAction() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        AttributeDefinitionDraftBuilder.of(null, "foo", ofEnglish("x"), null)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
             .inputTip(ofEnglish("foo"))
             .build();
 
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of("foo", ofEnglish("x"), null).inputTip(null).build();
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .inputTip((LocalizedString) null)
+            .build();
 
     // test
-    final Optional<UpdateAction<ProductType>> result =
-        buildSetInputTipUpdateAction(attributeDefinition, draft);
+    final Optional<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildSetInputTipUpdateAction(
+            attributeDefinition, draft);
 
     // assertion
-    assertThat(result).contains(SetInputTip.of(attributeDefinition.getName(), ofEnglish("foo")));
+    assertThat(result)
+        .contains(
+            ProductTypeSetInputTipActionBuilder.of()
+                .attributeName(attributeDefinition.getName())
+                .inputTip(ofEnglish("foo"))
+                .build());
   }
 
   @Test
   void buildChangeIsSearchableAction_WithDifferentValues_ShouldReturnAction() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        AttributeDefinitionDraftBuilder.of(null, "foo", ofEnglish("x"), null)
-            .isSearchable(true)
-            .build();
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder().isSearchable(true).build();
 
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of("foo", ofEnglish("x"), null).isSearchable(false).build();
+        MockBuilderUtils.createMockAttributeDefinitionBuilder().isSearchable(false).build();
 
     // test
-    final Optional<UpdateAction<ProductType>> result =
-        buildChangeIsSearchableUpdateAction(attributeDefinition, draft);
+    final Optional<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildChangeIsSearchableUpdateAction(
+            attributeDefinition, draft);
 
-    assertThat(result).contains(ChangeIsSearchable.of(attributeDefinition.getName(), true));
+    assertThat(result)
+        .contains(
+            ProductTypeChangeIsSearchableActionBuilder.of()
+                .attributeName(attributeDefinition.getName())
+                .isSearchable(true)
+                .build());
   }
 
   @Test
   void buildChangeIsSearchableAction_WithSameValues_ShouldReturnEmptyOptional() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        AttributeDefinitionDraftBuilder.of(null, "foo", ofEnglish("x"), null)
-            .isSearchable(true)
-            .build();
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder().isSearchable(true).build();
 
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of("foo", ofEnglish("x"), null).isSearchable(true).build();
+        MockBuilderUtils.createMockAttributeDefinitionBuilder().isSearchable(true).build();
 
     // test
-    final Optional<UpdateAction<ProductType>> result =
-        buildChangeIsSearchableUpdateAction(attributeDefinition, draft);
+    final Optional<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildChangeIsSearchableUpdateAction(
+            attributeDefinition, draft);
 
     assertThat(result).isEmpty();
   }
@@ -238,34 +228,37 @@ class AttributeDefinitionUpdateActionUtilsTest {
   void buildChangeIsSearchableAction_WithNullSourceAndNonDefaultTarget_ShouldBuildAction() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        AttributeDefinitionDraftBuilder.of(null, "foo", ofEnglish("x"), null)
-            .isSearchable(null)
-            .build();
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder().isSearchable(null).build();
 
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of("foo", ofEnglish("x"), null).isSearchable(false).build();
+        MockBuilderUtils.createMockAttributeDefinitionBuilder().isSearchable(false).build();
 
     // test
-    final Optional<UpdateAction<ProductType>> result =
-        buildChangeIsSearchableUpdateAction(attributeDefinition, draft);
+    final Optional<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildChangeIsSearchableUpdateAction(
+            attributeDefinition, draft);
 
-    assertThat(result).contains(ChangeIsSearchable.of("foo", true));
+    assertThat(result)
+        .contains(
+            ProductTypeChangeIsSearchableActionBuilder.of()
+                .attributeName("foo")
+                .isSearchable(true)
+                .build());
   }
 
   @Test
   void buildChangeIsSearchableAction_WithNullSourceAndDefaultTarget_ShouldNotBuildAction() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        AttributeDefinitionDraftBuilder.of(null, "foo", ofEnglish("x"), null)
-            .isSearchable(null)
-            .build();
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder().isSearchable(null).build();
 
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of("foo", ofEnglish("x"), null).isSearchable(true).build();
+        MockBuilderUtils.createMockAttributeDefinitionBuilder().isSearchable(true).build();
 
     // test
-    final Optional<UpdateAction<ProductType>> result =
-        buildChangeIsSearchableUpdateAction(attributeDefinition, draft);
+    final Optional<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildChangeIsSearchableUpdateAction(
+            attributeDefinition, draft);
 
     assertThat(result).isEmpty();
   }
@@ -274,39 +267,45 @@ class AttributeDefinitionUpdateActionUtilsTest {
   void buildChangeInputHintAction_WithDifferentValues_ShouldReturnAction() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        AttributeDefinitionDraftBuilder.of(null, "foo", ofEnglish("x"), null)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
             .inputHint(TextInputHint.MULTI_LINE)
             .build();
 
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of("foo", ofEnglish("x"), null)
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
             .inputHint(TextInputHint.SINGLE_LINE)
             .build();
 
     // test
-    final Optional<UpdateAction<ProductType>> result =
-        buildChangeInputHintUpdateAction(attributeDefinition, draft);
+    final Optional<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildChangeInputHintUpdateAction(
+            attributeDefinition, draft);
 
     assertThat(result)
-        .contains(ChangeInputHint.of(attributeDefinition.getName(), TextInputHint.MULTI_LINE));
+        .contains(
+            ProductTypeChangeInputHintActionBuilder.of()
+                .attributeName(attributeDefinition.getName())
+                .newValue(TextInputHint.MULTI_LINE)
+                .build());
   }
 
   @Test
   void buildChangeInputHintAction_WithSameValues_ShouldReturnEmptyOptional() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        AttributeDefinitionDraftBuilder.of(null, "foo", ofEnglish("x"), null)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
             .inputHint(TextInputHint.MULTI_LINE)
             .build();
 
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of("foo", ofEnglish("x"), null)
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
             .inputHint(TextInputHint.MULTI_LINE)
             .build();
 
     // test
-    final Optional<UpdateAction<ProductType>> result =
-        buildChangeInputHintUpdateAction(attributeDefinition, draft);
+    final Optional<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildChangeInputHintUpdateAction(
+            attributeDefinition, draft);
 
     assertThat(result).isEmpty();
   }
@@ -315,553 +314,570 @@ class AttributeDefinitionUpdateActionUtilsTest {
   void buildChangeInputHintAction_WithSourceNullValuesAndNonDefaultTargetValue_ShouldBuildAction() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        AttributeDefinitionDraftBuilder.of(null, "foo", ofEnglish("x"), null)
-            .inputHint(null)
-            .build();
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder().inputHint(null).build();
 
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of("foo", ofEnglish("x"), null)
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
             .inputHint(TextInputHint.MULTI_LINE)
             .build();
 
     // test
-    final Optional<UpdateAction<ProductType>> result =
-        buildChangeInputHintUpdateAction(attributeDefinition, draft);
+    final Optional<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildChangeInputHintUpdateAction(
+            attributeDefinition, draft);
 
     assertThat(result)
-        .contains(ChangeInputHint.of(attributeDefinition.getName(), TextInputHint.SINGLE_LINE));
+        .contains(
+            ProductTypeChangeInputHintActionBuilder.of()
+                .attributeName(attributeDefinition.getName())
+                .newValue(TextInputHint.SINGLE_LINE)
+                .build());
   }
 
   @Test
   void buildChangeInputHintAction_WithSourceNullValuesAndDefaultTargetValue_ShouldNotBuildAction() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        AttributeDefinitionDraftBuilder.of(null, "foo", ofEnglish("x"), null)
-            .inputHint(null)
-            .build();
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder().inputHint(null).build();
 
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of("foo", ofEnglish("x"), null)
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
             .inputHint(TextInputHint.SINGLE_LINE)
             .build();
 
     // test
-    final Optional<UpdateAction<ProductType>> result =
-        buildChangeInputHintUpdateAction(attributeDefinition, draft);
+    final Optional<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildChangeInputHintUpdateAction(
+            attributeDefinition, draft);
 
     assertThat(result).isEmpty();
   }
 
   @Test
-  void buildChangeAttributeConstraintAction_WithDifferentValues_ShouldBuildAction() {
+  void buildChangeAttributeConstraintAction_WithDifferentValues_ShouldBuildAction()
+      throws UnsupportedOperationException {
     // Preparation
     final AttributeDefinitionDraft draft =
-        AttributeDefinitionDraftBuilder.of(null, "foo", ofEnglish("x"), null)
-            .attributeConstraint(AttributeConstraint.COMBINATION_UNIQUE)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+            .attributeConstraint(AttributeConstraintEnum.NONE)
             .build();
 
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of("foo", ofEnglish("x"), null)
-            .attributeConstraint(AttributeConstraint.SAME_FOR_ALL)
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .attributeConstraint(AttributeConstraintEnum.COMBINATION_UNIQUE)
             .build();
 
     // test
-    final Optional<UpdateAction<ProductType>> result =
-        buildChangeAttributeConstraintUpdateAction(attributeDefinition, draft);
+    final Optional<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildChangeAttributeConstraintUpdateAction(
+            attributeDefinition, draft);
 
     assertThat(result)
         .contains(
-            ChangeAttributeConstraint.of(
-                attributeDefinition.getName(), AttributeConstraint.COMBINATION_UNIQUE));
+            ProductTypeChangeAttributeConstraintActionBuilder.of()
+                .attributeName(attributeDefinition.getName())
+                .newValue(AttributeConstraintEnumDraft.NONE)
+                .build());
   }
 
   @Test
-  void buildChangeAttributeConstraintAction_WithSameValues_ShouldReturnEmptyOptional() {
+  void buildChangeAttributeConstraintAction_WithSameValues_ShouldReturnEmptyOptional()
+      throws UnsupportedOperationException {
     // Preparation
     final AttributeDefinitionDraft draft =
-        AttributeDefinitionDraftBuilder.of(null, "foo", ofEnglish("x"), null)
-            .attributeConstraint(AttributeConstraint.COMBINATION_UNIQUE)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+            .attributeConstraint(AttributeConstraintEnum.COMBINATION_UNIQUE)
             .build();
 
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of("foo", ofEnglish("x"), null)
-            .attributeConstraint(AttributeConstraint.COMBINATION_UNIQUE)
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .attributeConstraint(AttributeConstraintEnum.COMBINATION_UNIQUE)
             .build();
 
     // test
-    final Optional<UpdateAction<ProductType>> result =
-        buildChangeAttributeConstraintUpdateAction(attributeDefinition, draft);
+    final Optional<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildChangeAttributeConstraintUpdateAction(
+            attributeDefinition, draft);
 
     assertThat(result).isEmpty();
   }
 
   @Test
   void
-      buildChangeAttributeConstraintAction_WithSourceNullValuesAndDefaultTarget_ShouldNotBuildAction() {
+      buildChangeAttributeConstraintAction_WithSourceNullValuesAndNonDefaultTarget_ShouldBuildAction()
+          throws UnsupportedOperationException {
     // Preparation
     final AttributeDefinitionDraft draft =
-        AttributeDefinitionDraftBuilder.of(null, "foo", ofEnglish("x"), null)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
             .attributeConstraint(null)
             .build();
 
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of("foo", ofEnglish("x"), null)
-            .attributeConstraint(AttributeConstraint.NONE)
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .attributeConstraint(AttributeConstraintEnum.SAME_FOR_ALL)
             .build();
 
     // test
-    final Optional<UpdateAction<ProductType>> result =
-        buildChangeAttributeConstraintUpdateAction(attributeDefinition, draft);
-
-    assertThat(result).isEmpty();
-  }
-
-  @Test
-  void
-      buildChangeAttributeConstraintAction_WithSourceNullValuesAndNonDefaultTarget_ShouldBuildAction() {
-    // Preparation
-    final AttributeDefinitionDraft draft =
-        AttributeDefinitionDraftBuilder.of(null, "foo", ofEnglish("x"), null)
-            .attributeConstraint(null)
-            .build();
-
-    final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of("foo", ofEnglish("x"), null)
-            .attributeConstraint(AttributeConstraint.SAME_FOR_ALL)
-            .build();
-
-    // test
-    final Optional<UpdateAction<ProductType>> result =
-        buildChangeAttributeConstraintUpdateAction(attributeDefinition, draft);
+    final Optional<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildChangeAttributeConstraintUpdateAction(
+            attributeDefinition, draft);
 
     assertThat(result)
-        .contains(ChangeAttributeConstraint.of(draft.getName(), AttributeConstraint.NONE));
+        .contains(
+            ProductTypeChangeAttributeConstraintActionBuilder.of()
+                .attributeName(draft.getName())
+                .newValue(AttributeConstraintEnumDraft.NONE)
+                .build());
   }
 
   @Test
-  void buildActions_WithNullOptionalsAndDefaultValues_ShouldBuildNoActions() {
-    final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(
-                StringAttributeType.of(), "attributeName1", ofEnglish("label2"), true)
-            .attributeConstraint(null)
-            .inputHint(null)
-            .isSearchable(null)
-            .build();
-
+  void
+      buildChangeAttributeConstraintAction_WithSourceSameForAllAndTargetCombinationUnique_ShouldThrowException() {
+    // Preparation
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of(
-                "attributeName1", ofEnglish("label2"), StringAttributeType.of())
-            .isRequired(true)
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .attributeConstraint(AttributeConstraintEnum.SAME_FOR_ALL)
             .build();
 
-    final List<UpdateAction<ProductType>> result =
-        buildActions(attributeDefinition, attributeDefinitionDraft);
-
-    assertThat(result).isEmpty();
+    final AttributeDefinitionDraft draft =
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+            .attributeConstraint(AttributeConstraintEnum.COMBINATION_UNIQUE)
+            .build();
+    // test
+    try {
+      AttributeDefinitionUpdateActionUtils.buildChangeAttributeConstraintUpdateAction(
+          attributeDefinition, draft);
+      fail("Expected an exception to be thrown");
+    } catch (UnsupportedOperationException e) {
+      assertThat(e)
+          .hasMessage(
+              "Invalid AttributeConstraint update to COMBINATION_UNIQUE. Only following updates are allowed: SameForAll to None and Unique to None.");
+    }
   }
 
   @Test
-  void buildActions_WithNonDefaultValuesForOptionalFields_ShouldBuildActions() {
-    final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(
-                StringAttributeType.of(), "attributeName1", ofEnglish("label2"), true)
-            .attributeConstraint(AttributeConstraint.SAME_FOR_ALL)
-            .inputHint(TextInputHint.MULTI_LINE)
+  void buildActions_WithNewDifferentValues_ShouldReturnActions()
+      throws UnsupportedOperationException {
+    final AttributeDefinition old =
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .label(ofEnglish("label1"))
+            .isRequired(false)
+            .attributeConstraint(AttributeConstraintEnum.SAME_FOR_ALL)
+            .inputTip(ofEnglish("inputTip1"))
+            .inputHint(TextInputHint.SINGLE_LINE)
             .isSearchable(false)
             .build();
 
-    final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of(
-                "attributeName1", ofEnglish("label2"), StringAttributeType.of())
+    final AttributeDefinitionDraft newDifferent =
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+            .label(ofEnglish("label2"))
             .isRequired(true)
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputTip(ofEnglish("inputTip2"))
+            .inputHint(TextInputHint.MULTI_LINE)
+            .isSearchable(true)
             .build();
 
-    final List<UpdateAction<ProductType>> result =
-        buildActions(attributeDefinition, attributeDefinitionDraft);
+    final List<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildActions(old, newDifferent);
 
     assertThat(result)
         .containsExactlyInAnyOrder(
-            ChangeAttributeConstraint.of("attributeName1", AttributeConstraint.SAME_FOR_ALL),
-            ChangeInputHint.of("attributeName1", TextInputHint.MULTI_LINE),
-            ChangeIsSearchable.of("attributeName1", false));
+            ProductTypeChangeLabelActionBuilder.of()
+                .attributeName(old.getName())
+                .label(newDifferent.getLabel())
+                .build(),
+            ProductTypeSetInputTipActionBuilder.of()
+                .attributeName(old.getName())
+                .inputTip(newDifferent.getInputTip())
+                .build(),
+            ProductTypeChangeAttributeConstraintActionBuilder.of()
+                .attributeName(old.getName())
+                .newValue(AttributeConstraintEnumDraft.NONE)
+                .build(),
+            ProductTypeChangeInputHintActionBuilder.of()
+                .attributeName(old.getName())
+                .newValue(newDifferent.getInputHint())
+                .build(),
+            ProductTypeChangeIsSearchableActionBuilder.of()
+                .attributeName(old.getName())
+                .isSearchable(newDifferent.getIsSearchable())
+                .build());
   }
 
   @Test
-  void buildActions_WithNewDifferentValues_ShouldReturnActions() {
-    final List<UpdateAction<ProductType>> result = buildActions(old, newDifferent);
+  void buildActions_WithSameValues_ShouldReturnEmpty() throws UnsupportedOperationException {
+    final AttributeDefinition old = MockBuilderUtils.createMockAttributeDefinitionBuilder().build();
 
-    assertThat(result)
-        .containsExactlyInAnyOrder(
-            ChangeAttributeDefinitionLabel.of(old.getName(), newDifferent.getLabel()),
-            SetInputTip.of(old.getName(), newDifferent.getInputTip()),
-            ChangeAttributeConstraint.of(old.getName(), newDifferent.getAttributeConstraint()),
-            ChangeInputHint.of(old.getName(), newDifferent.getInputHint()),
-            ChangeIsSearchable.of(old.getName(), newDifferent.isSearchable()));
-  }
+    final AttributeDefinitionDraft newSame =
+        ResourceToDraftConverters.toAttributeDefinitionDraftBuilder(old).build();
 
-  @Test
-  void buildActions_WithSameValues_ShouldReturnEmpty() {
-    final List<UpdateAction<ProductType>> result = buildActions(old, newSame);
+    final List<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildActions(old, newSame);
 
     assertThat(result).isEmpty();
   }
 
   @Test
-  void buildActions_WithStringAttributeTypesWithLabelChanges_ShouldBuildChangeLabelAction() {
+  void buildActions_WithStringAttributeTypesWithLabelChanges_ShouldBuildChangeLabelAction()
+      throws UnsupportedOperationException {
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of(
-                "attributeName1", ofEnglish("label1"), StringAttributeType.of())
-            .build();
+        MockBuilderUtils.createMockAttributeDefinitionBuilder().label(ofEnglish("label1")).build();
 
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(
-                StringAttributeType.of(), "attributeName1", ofEnglish("label2"), false)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+            .label(ofEnglish("label2"))
             .build();
 
-    final List<UpdateAction<ProductType>> result =
-        buildActions(attributeDefinition, attributeDefinitionDraft);
+    final List<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildActions(
+            attributeDefinition, attributeDefinitionDraft);
 
     assertThat(result)
         .containsExactly(
-            ChangeAttributeDefinitionLabel.of(
-                "attributeName1", attributeDefinitionDraft.getLabel()));
+            ProductTypeChangeLabelActionBuilder.of()
+                .attributeName("foo")
+                .label(ofEnglish("label2"))
+                .build());
   }
 
   @Test
-  void
-      buildActions_WithSetOfStringAttributeTypesWithDefinitionLabelChanges_ShouldBuildChangeLabelAction() {
-    final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of(
-                "attributeName1",
-                ofEnglish("label1"),
-                SetAttributeType.of(StringAttributeType.of()))
-            .build();
-
-    final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(
-                SetAttributeType.of(StringAttributeType.of()),
-                "attributeName1",
-                ofEnglish("label2"),
-                false)
-            .build();
-
-    final List<UpdateAction<ProductType>> result =
-        buildActions(attributeDefinition, attributeDefinitionDraft);
-
-    assertThat(result)
-        .containsExactly(
-            ChangeAttributeDefinitionLabel.of(
-                "attributeName1", attributeDefinitionDraft.getLabel()));
-  }
-
-  @Test
-  void
-      buildActions_WithSetOfSetOfStringAttributeTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
-    final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of(
-                "attributeName1",
-                ofEnglish("label1"),
-                SetAttributeType.of(SetAttributeType.of(StringAttributeType.of())))
-            .build();
-
-    final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(
-                SetAttributeType.of(SetAttributeType.of(StringAttributeType.of())),
-                "attributeName1",
-                ofEnglish("label2"),
-                false)
-            .build();
-
-    final List<UpdateAction<ProductType>> result =
-        buildActions(attributeDefinition, attributeDefinitionDraft);
-
-    assertThat(result)
-        .containsExactly(
-            ChangeAttributeDefinitionLabel.of(
-                "attributeName1", attributeDefinitionDraft.getLabel()));
-  }
-
-  @Test
-  void
-      buildActions_WithSameSetOfEnumsAttributeTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
-    final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of(
-                "attributeName1",
-                ofEnglish("label1"),
-                SetAttributeType.of(EnumAttributeType.of(emptyList())))
-            .build();
-
-    final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(
-                SetAttributeType.of(EnumAttributeType.of(emptyList())),
-                "attributeName1",
-                ofEnglish("label2"),
-                false)
-            .build();
-
-    final List<UpdateAction<ProductType>> result =
-        buildActions(attributeDefinition, attributeDefinitionDraft);
-
-    assertThat(result)
-        .containsExactly(
-            ChangeAttributeDefinitionLabel.of(
-                "attributeName1", attributeDefinitionDraft.getLabel()));
-  }
-
-  @Test
-  void buildActions_WithChangedSetOfEnumAttributeTypes_ShouldBuildEnumActions() {
+  void buildActions_WithChangedSetOfEnumAttributeTypes_ShouldBuildEnumActions()
+      throws UnsupportedOperationException {
     // preparation
     final AttributeDefinition oldDefinition =
-        AttributeDefinitionBuilder.of(
-                "attributeName1",
-                ofEnglish("label1"),
-                SetAttributeType.of(
-                    EnumAttributeType.of(
-                        asList(EnumValue.of("c", "c"), ENUM_VALUE_B, EnumValue.of("d", "d")))))
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            attributeTypeBuilder1 ->
+                                attributeTypeBuilder1
+                                    .enumBuilder()
+                                    .values(
+                                        AttributePlainEnumValueBuilder.of()
+                                            .key("c")
+                                            .label("c")
+                                            .build(),
+                                        AttributePlainEnumValueBuilder.of()
+                                            .key("d")
+                                            .label("d")
+                                            .build(),
+                                        ENUM_VALUE_B)))
             .build();
 
     final AttributeDefinitionDraft newDraft =
-        AttributeDefinitionDraftBuilder.of(
-                SetAttributeType.of(
-                    EnumAttributeType.of(
-                        asList(
-                            ENUM_VALUE_A,
-                            EnumValue.of(ENUM_VALUE_B.getKey(), "newLabel"),
-                            EnumValue.of("c", "c")))),
-                "attributeName1",
-                ofEnglish("label1"),
-                false)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            attributeTypeBuilder1 ->
+                                attributeTypeBuilder1
+                                    .enumBuilder()
+                                    .values(
+                                        ENUM_VALUE_A,
+                                        AttributePlainEnumValueBuilder.of()
+                                            .key(ENUM_VALUE_B.getKey())
+                                            .label("newLabel")
+                                            .build(),
+                                        AttributePlainEnumValueBuilder.of()
+                                            .key("c")
+                                            .label("c")
+                                            .build())))
             .build();
 
     // test
-    final List<UpdateAction<ProductType>> result = buildActions(oldDefinition, newDraft);
+    final List<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildActions(oldDefinition, newDraft);
 
     // assertion
     assertThat(result)
         .containsExactly(
-            RemoveEnumValues.of(oldDefinition.getName(), "d"),
-            ChangePlainEnumValueLabel.of(
-                oldDefinition.getName(), EnumValue.of(ENUM_VALUE_B.getKey(), "newLabel")),
-            AddEnumValue.of(oldDefinition.getName(), ENUM_VALUE_A),
-            ChangeEnumValueOrder.of(
-                oldDefinition.getName(),
-                asList(
-                    ENUM_VALUE_A,
-                    EnumValue.of(ENUM_VALUE_B.getKey(), "newLabel"),
-                    EnumValue.of("c", "c"))));
+            ProductTypeRemoveEnumValuesActionBuilder.of()
+                .attributeName(oldDefinition.getName())
+                .keys("d")
+                .build(),
+            ProductTypeChangePlainEnumValueLabelActionBuilder.of()
+                .attributeName(oldDefinition.getName())
+                .newValue(
+                    AttributePlainEnumValueBuilder.of()
+                        .key(ENUM_VALUE_B.getKey())
+                        .label("newLabel")
+                        .build())
+                .build(),
+            ProductTypeAddPlainEnumValueActionBuilder.of()
+                .attributeName(oldDefinition.getName())
+                .value(ENUM_VALUE_A)
+                .build(),
+            ProductTypeChangePlainEnumValueOrderActionBuilder.of()
+                .attributeName(oldDefinition.getName())
+                .values(
+                    asList(
+                        ENUM_VALUE_A,
+                        AttributePlainEnumValueBuilder.of()
+                            .key(ENUM_VALUE_B.getKey())
+                            .label("newLabel")
+                            .build(),
+                        AttributePlainEnumValueBuilder.of().key("c").label("c").build()))
+                .build());
   }
 
   @Test
-  void
-      buildActions_WithSameSetOfLEnumAttributeTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
-    final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of(
-                "attributeName1",
-                ofEnglish("label1"),
-                SetAttributeType.of(LocalizedEnumAttributeType.of(emptyList())))
-            .build();
-
-    final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(
-                SetAttributeType.of(LocalizedEnumAttributeType.of(emptyList())),
-                "attributeName1",
-                ofEnglish("label2"),
-                false)
-            .build();
-
-    final List<UpdateAction<ProductType>> result =
-        buildActions(attributeDefinition, attributeDefinitionDraft);
-
-    assertThat(result)
-        .containsExactly(
-            ChangeAttributeDefinitionLabel.of(
-                "attributeName1", attributeDefinitionDraft.getLabel()));
-  }
-
-  @Test
-  void buildActions_WithChangedSetOfLocalizedEnumAttributeTypes_ShouldBuildEnumActions() {
+  void buildActions_WithChangedSetOfLocalizedEnumAttributeTypes_ShouldBuildEnumActions()
+      throws UnsupportedOperationException {
     // preparation
     final AttributeDefinition oldDefinition =
-        AttributeDefinitionBuilder.of(
-                "attributeName1",
-                ofEnglish("label1"),
-                SetAttributeType.of(
-                    LocalizedEnumAttributeType.of(
-                        asList(
-                            LocalizedEnumValue.of("c", ofEnglish("c")),
-                            LOCALIZED_ENUM_VALUE_B,
-                            LocalizedEnumValue.of("d", ofEnglish("d"))))))
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            attributeTypeBuilder1 ->
+                                attributeTypeBuilder1
+                                    .lenumBuilder()
+                                    .values(
+                                        asList(
+                                            AttributeLocalizedEnumValueBuilder.of()
+                                                .key("c")
+                                                .label(ofEnglish("c"))
+                                                .build(),
+                                            LOCALIZED_ENUM_VALUE_B,
+                                            AttributeLocalizedEnumValueBuilder.of()
+                                                .key("d")
+                                                .label(ofEnglish("d"))
+                                                .build()))))
             .build();
 
     final AttributeDefinitionDraft newDefinition =
-        AttributeDefinitionDraftBuilder.of(
-                SetAttributeType.of(
-                    LocalizedEnumAttributeType.of(
-                        asList(
-                            LOCALIZED_ENUM_VALUE_A,
-                            LocalizedEnumValue.of(
-                                LOCALIZED_ENUM_VALUE_B.getKey(), ofEnglish("newLabel")),
-                            LocalizedEnumValue.of("c", ofEnglish("c"))))),
-                "attributeName1",
-                ofEnglish("label1"),
-                false)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            attributeTypeBuilder1 ->
+                                attributeTypeBuilder1
+                                    .lenumBuilder()
+                                    .values(
+                                        asList(
+                                            LOCALIZED_ENUM_VALUE_A,
+                                            AttributeLocalizedEnumValueBuilder.of()
+                                                .key(LOCALIZED_ENUM_VALUE_B.getKey())
+                                                .label(ofEnglish("newLabel"))
+                                                .build(),
+                                            AttributeLocalizedEnumValueBuilder.of()
+                                                .key("c")
+                                                .label(ofEnglish("c"))
+                                                .build()))))
             .build();
 
     // test
-    final List<UpdateAction<ProductType>> result = buildActions(oldDefinition, newDefinition);
+    final List<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildActions(oldDefinition, newDefinition);
 
     // assertion
     assertThat(result)
         .containsExactly(
-            RemoveEnumValues.of(oldDefinition.getName(), "d"),
-            ChangeLocalizedEnumValueLabel.of(
-                oldDefinition.getName(),
-                LocalizedEnumValue.of(LOCALIZED_ENUM_VALUE_B.getKey(), ofEnglish("newLabel"))),
-            AddLocalizedEnumValue.of("attributeName1", LOCALIZED_ENUM_VALUE_A),
-            ChangeLocalizedEnumValueOrder.of(
-                oldDefinition.getName(),
-                asList(
-                    LOCALIZED_ENUM_VALUE_A,
-                    LocalizedEnumValue.of(LOCALIZED_ENUM_VALUE_B.getKey(), ofEnglish("newLabel")),
-                    LocalizedEnumValue.of("c", ofEnglish("c")))));
+            ProductTypeRemoveEnumValuesActionBuilder.of()
+                .attributeName(oldDefinition.getName())
+                .keys("d")
+                .build(),
+            ProductTypeChangeLocalizedEnumValueLabelActionBuilder.of()
+                .attributeName(oldDefinition.getName())
+                .newValue(
+                    AttributeLocalizedEnumValueBuilder.of()
+                        .key(LOCALIZED_ENUM_VALUE_B.getKey())
+                        .label(ofEnglish("newLabel"))
+                        .build())
+                .build(),
+            ProductTypeAddLocalizedEnumValueActionBuilder.of()
+                .attributeName(oldDefinition.getName())
+                .value(LOCALIZED_ENUM_VALUE_A)
+                .build(),
+            ProductTypeChangeLocalizedEnumValueOrderActionBuilder.of()
+                .attributeName(oldDefinition.getName())
+                .values(
+                    asList(
+                        LOCALIZED_ENUM_VALUE_A,
+                        AttributeLocalizedEnumValueBuilder.of()
+                            .key(LOCALIZED_ENUM_VALUE_B.getKey())
+                            .label(ofEnglish("newLabel"))
+                            .build(),
+                        AttributeLocalizedEnumValueBuilder.of()
+                            .key("c")
+                            .label(ofEnglish("c"))
+                            .build()))
+                .build());
   }
 
   @Test
   void buildActions_WithNewPlainEnum_ShouldReturnAddEnumValueAction() {
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of(
-                "attributeName1", ofEnglish("label1"), EnumAttributeType.of(ENUM_VALUE_A))
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .type(attributeTypeBuilder -> attributeTypeBuilder.enumBuilder().values(ENUM_VALUE_A))
             .build();
 
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(
-                EnumAttributeType.of(ENUM_VALUE_A, ENUM_VALUE_B),
-                "attributeName1",
-                ofEnglish("label1"),
-                false)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder.enumBuilder().values(ENUM_VALUE_A, ENUM_VALUE_B))
             .build();
 
-    final List<UpdateAction<ProductType>> result =
-        buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
+    final List<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildEnumUpdateActions(
+            attributeDefinition, attributeDefinitionDraft);
 
-    assertThat(result).containsExactly(AddEnumValue.of("attributeName1", ENUM_VALUE_B));
+    assertThat(result)
+        .containsExactly(
+            ProductTypeAddPlainEnumValueActionBuilder.of()
+                .attributeName(attributeDefinition.getName())
+                .value(ENUM_VALUE_B)
+                .build());
   }
 
   @Test
   void buildActions_WithoutOldPlainEnum_ShouldReturnRemoveEnumValueAction() {
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of(
-                "attributeName1", ofEnglish("label1"), EnumAttributeType.of(ENUM_VALUE_A))
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .type(attributeTypeBuilder -> attributeTypeBuilder.enumBuilder().values(ENUM_VALUE_A))
             .build();
 
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(
-                EnumAttributeType.of(emptyList()), "attributeName1", ofEnglish("label1"), false)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+            .type(attributeTypeBuilder -> attributeTypeBuilder.enumBuilder().values(emptyList()))
             .build();
 
-    final List<UpdateAction<ProductType>> result =
-        buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
+    final List<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildEnumUpdateActions(
+            attributeDefinition, attributeDefinitionDraft);
 
-    assertThat(result).containsExactly(RemoveEnumValues.of("attributeName1", "a"));
+    assertThat(result)
+        .containsExactly(
+            ProductTypeRemoveEnumValuesActionBuilder.of()
+                .attributeName(attributeDefinition.getName())
+                .keys("a")
+                .build());
   }
 
   @Test
   void buildActions_WitDifferentPlainEnumValueLabel_ShouldReturnChangeEnumValueLabelAction() {
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of(
-                "attributeName1", ofEnglish("label1"), EnumAttributeType.of(ENUM_VALUE_A))
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .type(attributeTypeBuilder -> attributeTypeBuilder.enumBuilder().values(ENUM_VALUE_A))
             .build();
 
-    final EnumValue enumValueDiffLabel = EnumValue.of("a", "label_a_different");
+    final AttributePlainEnumValue enumValueDiffLabel =
+        AttributePlainEnumValueBuilder.of().key("a").label("label_a_different").build();
 
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(
-                EnumAttributeType.of(enumValueDiffLabel),
-                "attributeName1",
-                ofEnglish("label1"),
-                false)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder.enumBuilder().values(enumValueDiffLabel))
             .build();
 
-    final List<UpdateAction<ProductType>> result =
-        buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
+    final List<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildEnumUpdateActions(
+            attributeDefinition, attributeDefinitionDraft);
 
     assertThat(result)
-        .containsExactly(ChangePlainEnumValueLabel.of("attributeName1", enumValueDiffLabel));
+        .containsExactly(
+            ProductTypeChangePlainEnumValueLabelActionBuilder.of()
+                .attributeName(attributeDefinition.getName())
+                .newValue(enumValueDiffLabel)
+                .build());
   }
 
   @Test
   void buildActions_WithNewLocalizedEnum_ShouldReturnAddLocalizedEnumValueAction() {
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of(
-                "attributeName1",
-                ofEnglish("label1"),
-                LocalizedEnumAttributeType.of(LOCALIZED_ENUM_VALUE_A))
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder.lenumBuilder().values(LOCALIZED_ENUM_VALUE_A))
             .build();
 
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(
-                LocalizedEnumAttributeType.of(LOCALIZED_ENUM_VALUE_A, LOCALIZED_ENUM_VALUE_B),
-                "attributeName1",
-                ofEnglish("label1"),
-                false)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .lenumBuilder()
+                        .values(LOCALIZED_ENUM_VALUE_A, LOCALIZED_ENUM_VALUE_B))
             .build();
 
-    final List<UpdateAction<ProductType>> result =
-        buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
+    final List<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildEnumUpdateActions(
+            attributeDefinition, attributeDefinitionDraft);
 
     assertThat(result)
-        .containsExactly(AddLocalizedEnumValue.of("attributeName1", LOCALIZED_ENUM_VALUE_B));
+        .containsExactly(
+            ProductTypeAddLocalizedEnumValueActionBuilder.of()
+                .attributeName(attributeDefinition.getName())
+                .value(LOCALIZED_ENUM_VALUE_B)
+                .build());
   }
 
   @Test
   void buildActions_WithoutOldLocalizedEnum_ShouldReturnRemoveLocalizedEnumValueAction() {
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of(
-                "attributeName1",
-                ofEnglish("label1"),
-                LocalizedEnumAttributeType.of(LOCALIZED_ENUM_VALUE_A))
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder.lenumBuilder().values(LOCALIZED_ENUM_VALUE_A))
             .build();
 
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(
-                LocalizedEnumAttributeType.of(emptyList()),
-                "attributeName1",
-                ofEnglish("label1"),
-                false)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+            .type(attributeTypeBuilder -> attributeTypeBuilder.lenumBuilder().values(emptyList()))
             .build();
 
-    final List<UpdateAction<ProductType>> result =
-        buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
+    final List<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildEnumUpdateActions(
+            attributeDefinition, attributeDefinitionDraft);
 
-    assertThat(result).containsExactly(RemoveEnumValues.of("attributeName1", "a"));
+    assertThat(result)
+        .containsExactly(
+            ProductTypeRemoveEnumValuesActionBuilder.of()
+                .attributeName(attributeDefinition.getName())
+                .keys("a")
+                .build());
   }
 
   @Test
   void
       buildActions_WithDifferentLocalizedEnumValueLabel_ShouldReturnChangeLocalizedEnumValueLabelAction() {
     final AttributeDefinition attributeDefinition =
-        AttributeDefinitionBuilder.of(
-                "attributeName1",
-                ofEnglish("label1"),
-                LocalizedEnumAttributeType.of(LOCALIZED_ENUM_VALUE_A))
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder.lenumBuilder().values(LOCALIZED_ENUM_VALUE_A))
             .build();
 
-    final LocalizedEnumValue localizedEnumValueDiffLabel =
-        LocalizedEnumValue.of("a", ofEnglish("label_a_diff"));
+    final AttributeLocalizedEnumValue localizedEnumValueDiffLabel =
+        AttributeLocalizedEnumValueBuilder.of().key("a").label(ofEnglish("label_a_diff")).build();
 
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(
-                LocalizedEnumAttributeType.of(localizedEnumValueDiffLabel),
-                "attributeName1",
-                ofEnglish("label1"),
-                false)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder.lenumBuilder().values(localizedEnumValueDiffLabel))
             .build();
 
-    final List<UpdateAction<ProductType>> result =
-        buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
+    final List<ProductTypeUpdateAction> result =
+        AttributeDefinitionUpdateActionUtils.buildEnumUpdateActions(
+            attributeDefinition, attributeDefinitionDraft);
 
     assertThat(result)
         .containsExactly(
-            ChangeLocalizedEnumValueLabel.of("attributeName1", localizedEnumValueDiffLabel));
+            ProductTypeChangeLocalizedEnumValueLabelActionBuilder.of()
+                .attributeName(attributeDefinition.getName())
+                .newValue(localizedEnumValueDiffLabel)
+                .build());
   }
 }

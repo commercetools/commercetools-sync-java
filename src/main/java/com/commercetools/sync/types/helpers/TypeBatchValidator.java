@@ -4,9 +4,9 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import com.commercetools.api.models.type.TypeDraft;
 import com.commercetools.sync.commons.helpers.BaseBatchValidator;
 import com.commercetools.sync.types.TypeSyncOptions;
-import io.sphere.sdk.types.TypeDraft;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;

@@ -2,11 +2,10 @@ package com.commercetools.sync.inventories.helpers;
 
 import static java.lang.String.format;
 
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.inventory.InventoryEntry;
-import io.sphere.sdk.inventory.InventoryEntryDraft;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
+import com.commercetools.api.models.channel.ChannelReference;
+import com.commercetools.api.models.channel.ChannelResourceIdentifier;
+import com.commercetools.api.models.inventory.InventoryEntry;
+import com.commercetools.api.models.inventory.InventoryEntryDraft;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,7 +34,7 @@ public final class InventoryEntryIdentifier {
   public static InventoryEntryIdentifier of(
       @Nonnull final InventoryEntryDraft inventoryEntryDraft) {
 
-    final ResourceIdentifier<Channel> supplyChannelIdentifier =
+    final ChannelResourceIdentifier supplyChannelIdentifier =
         inventoryEntryDraft.getSupplyChannel();
     return new InventoryEntryIdentifier(
         inventoryEntryDraft.getSku(),
@@ -51,7 +50,7 @@ public final class InventoryEntryIdentifier {
    */
   public static InventoryEntryIdentifier of(@Nonnull final InventoryEntry inventoryEntry) {
 
-    final Reference<Channel> supplyChannel = inventoryEntry.getSupplyChannel();
+    final ChannelReference supplyChannel = inventoryEntry.getSupplyChannel();
     return new InventoryEntryIdentifier(
         inventoryEntry.getSku(), supplyChannel != null ? supplyChannel.getId() : null);
   }

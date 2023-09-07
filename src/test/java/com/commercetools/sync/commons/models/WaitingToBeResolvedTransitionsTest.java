@@ -1,23 +1,19 @@
 package com.commercetools.sync.commons.models;
 
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.sphere.sdk.states.StateDraft;
+import com.commercetools.api.models.state.StateDraft;
 import java.util.HashSet;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class WaitingToBeResolvedTransitionsTest {
 
   @Test
-  void setProductDraft_WithNonNullProductDraft_ShouldSetProductDraft() {
+  void setStateDraft_WithNonNullStateDraft_ShouldSetStateDraft() {
     // preparation
     final StateDraft stateDraft = mock(StateDraft.class);
     final WaitingToBeResolvedTransitions waitingToBeResolvedTransition =
@@ -31,30 +27,16 @@ class WaitingToBeResolvedTransitionsTest {
   }
 
   @Test
-  void setMissingReferencedProductKeys_WithNonNullSet_ShouldSetTheSet() {
+  void setMissingReferencedStateKeys_WithNonNullSet_ShouldSetTheSet() {
     // preparation
     final WaitingToBeResolvedTransitions waitingToBeResolvedTransition =
         new WaitingToBeResolvedTransitions();
 
     // test
-    waitingToBeResolvedTransition.setMissingTransitionStateKeys(emptySet());
+    waitingToBeResolvedTransition.setMissingTransitionStateKeys(Set.of());
 
     // assertions
-    assertThat(waitingToBeResolvedTransition.getMissingTransitionStateKeys()).isEqualTo(emptySet());
-  }
-
-  @Test
-  void equals_WithSameRef_ShouldReturnTrue() {
-    // preparation
-    final WaitingToBeResolvedTransitions waitingToBeResolvedTransition =
-        new WaitingToBeResolvedTransitions(mock(StateDraft.class), new HashSet<>());
-    final WaitingToBeResolvedTransitions other = waitingToBeResolvedTransition;
-
-    // test
-    boolean result = waitingToBeResolvedTransition.equals(other);
-
-    // assertions
-    assertTrue(result);
+    assertThat(waitingToBeResolvedTransition.getMissingTransitionStateKeys()).isEqualTo(Set.of());
   }
 
   @Test
@@ -92,7 +74,7 @@ class WaitingToBeResolvedTransitionsTest {
     final WaitingToBeResolvedTransitions waitingToBeResolvedTransition =
         new WaitingToBeResolvedTransitions(mock(StateDraft.class), new HashSet<>());
     final WaitingToBeResolvedTransitions other =
-        new WaitingToBeResolvedTransitions(mock(StateDraft.class), singleton("foo"));
+        new WaitingToBeResolvedTransitions(mock(StateDraft.class), Set.of("foo"));
 
     // test
     boolean result = waitingToBeResolvedTransition.equals(other);
@@ -102,7 +84,7 @@ class WaitingToBeResolvedTransitionsTest {
   }
 
   @Test
-  void equals_WithDifferentProductDraft_ShouldReturnFalse() {
+  void equals_WithDifferentStateDraft_ShouldReturnFalse() {
     // preparation
     final StateDraft stateDraft = mock(StateDraft.class);
     final StateDraft stateDraft1 = mock(StateDraft.class);
@@ -128,9 +110,9 @@ class WaitingToBeResolvedTransitionsTest {
     when(stateDraft1.getKey()).thenReturn("foo");
 
     final WaitingToBeResolvedTransitions waitingToBeResolvedTransition =
-        new WaitingToBeResolvedTransitions(stateDraft, singleton("foo"));
+        new WaitingToBeResolvedTransitions(stateDraft, Set.of("foo"));
     final WaitingToBeResolvedTransitions other =
-        new WaitingToBeResolvedTransitions(stateDraft1, singleton("bar"));
+        new WaitingToBeResolvedTransitions(stateDraft1, Set.of("bar"));
 
     // test
     boolean result = waitingToBeResolvedTransition.equals(other);
@@ -144,18 +126,17 @@ class WaitingToBeResolvedTransitionsTest {
     // preparation
     final WaitingToBeResolvedTransitions waitingToBeResolvedTransition =
         new WaitingToBeResolvedTransitions(mock(StateDraft.class), new HashSet<>());
-    final WaitingToBeResolvedTransitions other = waitingToBeResolvedTransition;
 
     // test
     final int hash1 = waitingToBeResolvedTransition.hashCode();
-    final int hash2 = other.hashCode();
+    final int hash2 = waitingToBeResolvedTransition.hashCode();
 
     // assertions
     assertEquals(hash1, hash2);
   }
 
   @Test
-  void hashCode_withSameProductKeyAndSameRefSet_ShouldBeEquals() {
+  void hashCode_withSameStateKeyAndSameRefSet_ShouldBeEquals() {
     // preparation
     final WaitingToBeResolvedTransitions waitingToBeResolvedTransition =
         new WaitingToBeResolvedTransitions(mock(StateDraft.class), new HashSet<>());
@@ -171,7 +152,7 @@ class WaitingToBeResolvedTransitionsTest {
   }
 
   @Test
-  void hashCode_withDifferentProductKeyAndSameRefSet_ShouldNotBeEquals() {
+  void hashCode_withDifferentStateKeyAndSameRefSet_ShouldNotBeEquals() {
     // preparation
     final StateDraft stateDraft = mock(StateDraft.class);
     final StateDraft stateDraft1 = mock(StateDraft.class);
@@ -191,12 +172,12 @@ class WaitingToBeResolvedTransitionsTest {
   }
 
   @Test
-  void hashCode_withSameProductKeyAndDiffRefSet_ShouldNotBeEquals() {
+  void hashCode_withSameStateKeyAndDiffRefSet_ShouldNotBeEquals() {
     // preparation
     final WaitingToBeResolvedTransitions waitingToBeResolvedTransition =
         new WaitingToBeResolvedTransitions(mock(StateDraft.class), new HashSet<>());
     final WaitingToBeResolvedTransitions other =
-        new WaitingToBeResolvedTransitions(mock(StateDraft.class), singleton("foo"));
+        new WaitingToBeResolvedTransitions(mock(StateDraft.class), Set.of("foo"));
 
     // test
     final int hash1 = waitingToBeResolvedTransition.hashCode();
@@ -214,9 +195,9 @@ class WaitingToBeResolvedTransitionsTest {
     when(stateDraft1.getKey()).thenReturn("foo");
 
     final WaitingToBeResolvedTransitions waitingToBeResolvedTransition =
-        new WaitingToBeResolvedTransitions(stateDraft, singleton("foo"));
+        new WaitingToBeResolvedTransitions(stateDraft, Set.of("foo"));
     final WaitingToBeResolvedTransitions other =
-        new WaitingToBeResolvedTransitions(stateDraft1, singleton("bar"));
+        new WaitingToBeResolvedTransitions(stateDraft1, Set.of("bar"));
 
     // test
     final int hash1 = waitingToBeResolvedTransition.hashCode();

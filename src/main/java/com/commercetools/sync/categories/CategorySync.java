@@ -1,18 +1,21 @@
 package com.commercetools.sync.categories;
 
-import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.areResourceIdentifiersEqual;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
-import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryDraft;
+import com.commercetools.api.models.category.CategoryUpdateAction;
+import com.commercetools.api.models.common.ResourceIdentifier;
 import com.commercetools.sync.categories.helpers.CategoryBatchValidator;
 import com.commercetools.sync.categories.helpers.CategoryReferenceResolver;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
+import com.commercetools.sync.categories.utils.CategorySyncUtils;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedCategories;
 import com.commercetools.sync.services.CategoryService;
@@ -21,17 +24,7 @@ import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.ResourceIdentifier;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,7 +34,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public class CategorySync
-    extends BaseSync<CategoryDraft, Category, CategorySyncStatistics, CategorySyncOptions> {
+    extends BaseSync<
+        Category,
+        CategoryDraft,
+        CategoryUpdateAction,
+        CategorySyncStatistics,
+        CategorySyncOptions> {
 
   private static final String FAILED_TO_FETCH =
       "Failed to fetch existing categories with keys: '%s'. Reason: %s";
@@ -228,7 +226,7 @@ public class CategorySync
     statistics.addMissingDependency(parentCategoryKey, newCategory.getKey());
     return unresolvedReferencesService.save(
         new WaitingToBeResolvedCategories(newCategory, Collections.singleton(parentCategoryKey)),
-        CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY,
+        UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY,
         WaitingToBeResolvedCategories.class);
   }
 
@@ -326,14 +324,14 @@ public class CategorySync
 
   /**
    * Compares the parent references of a {@link Category} and a {@link CategoryDraft} to check
-   * whether a {@link io.sphere.sdk.categories.commands.updateactions.ChangeParent} update action is
-   * required to sync the draft to the category or not
+   * whether a {@link com.commercetools.api.models.category.CategoryChangeParentAction} update
+   * action is required to sync the draft to the category or not
    *
    * @param category the old category to sync to.
    * @param categoryDraft the new category draft to sync.
    * @return true or false whether a {@link
-   *     io.sphere.sdk.categories.commands.updateactions.ChangeParent} is needed to sync the draft
-   *     to the category.
+   *     com.commercetools.api.models.category.CategoryChangeParentAction} is needed to sync the
+   *     draft to the category.
    */
   static boolean requiresChangeParentUpdateAction(
       @Nonnull final Category category, @Nonnull final CategoryDraft categoryDraft) {
@@ -343,29 +341,24 @@ public class CategorySync
   private CompletionStage<Void> updateCategory(
       @Nonnull final Category oldCategory,
       @Nonnull final CategoryDraft newCategory,
-      @Nonnull final List<UpdateAction<Category>> updateActions) {
+      @Nonnull final List<CategoryUpdateAction> updateActions) {
     final String categoryKey = oldCategory.getKey();
     return categoryService
         .updateCategory(oldCategory, updateActions)
         .handle(ImmutablePair::new)
         .thenCompose(
             updateResponse -> {
-              final Throwable sphereException = updateResponse.getValue();
+              final Throwable ctpException = updateResponse.getValue();
 
-              if (sphereException != null) {
+              if (ctpException != null) {
                 return executeSupplierIfConcurrentModificationException(
-                    sphereException,
+                    ctpException,
                     () -> fetchAndUpdate(oldCategory, newCategory),
                     () -> {
                       final String errorMessage =
-                          format(UPDATE_FAILED, categoryKey, sphereException.getMessage());
+                          format(UPDATE_FAILED, categoryKey, ctpException.getMessage());
                       handleError(
-                          errorMessage,
-                          sphereException,
-                          oldCategory,
-                          newCategory,
-                          updateActions,
-                          1);
+                          errorMessage, ctpException, oldCategory, newCategory, updateActions, 1);
 
                       categoryDraftsToUpdateSequentially.remove(newCategory);
                       return completedFuture(null);
@@ -398,7 +391,7 @@ public class CategorySync
     return unresolvedReferencesService
         .fetch(
             referencingDraftKeys,
-            CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY,
+            UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY,
             WaitingToBeResolvedCategories.class)
         .handle(ImmutablePair::new)
         .thenCompose(
@@ -440,7 +433,7 @@ public class CategorySync
                 key ->
                     unresolvedReferencesService.delete(
                         key,
-                        CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY,
+                        UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY,
                         WaitingToBeResolvedCategories.class))
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
@@ -449,10 +442,10 @@ public class CategorySync
   private CompletionStage<Void> buildUpdateActionsAndUpdate(
       @Nonnull final Category oldCategory, @Nonnull final CategoryDraft newCategory) {
 
-    final List<UpdateAction<Category>> updateActions =
-        buildActions(oldCategory, newCategory, syncOptions);
+    final List<CategoryUpdateAction> updateActions =
+        CategorySyncUtils.buildActions(oldCategory, newCategory, syncOptions);
 
-    final List<UpdateAction<Category>> beforeUpdateCallBackApplied =
+    final List<CategoryUpdateAction> beforeUpdateCallBackApplied =
         syncOptions.applyBeforeUpdateCallback(updateActions, newCategory, oldCategory);
 
     if (!beforeUpdateCallBackApplied.isEmpty()) {
@@ -465,7 +458,7 @@ public class CategorySync
   /**
    * Given a {@link Map} of categoryDrafts to Categories that require syncing, this method updates
    * only categories which need a {@link
-   * io.sphere.sdk.categories.commands.updateactions.ChangeParent} update action, and in turn
+   * com.commercetools.api.models.category.CategoryChangeParentAction} update action, and in turn
    * performs the sync on them in a sequential/blocking fashion as advised by the CTP documentation:
    * https://docs.commercetools.com/api/projects/categories#change-parent
    *

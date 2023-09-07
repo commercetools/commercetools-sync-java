@@ -4,17 +4,14 @@ import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.custom_object.CustomObject;
+import com.commercetools.api.models.custom_object.CustomObjectDraft;
+import com.commercetools.api.models.custom_object.CustomObjectDraftBuilder;
 import com.commercetools.sync.commons.utils.TriFunction;
-import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.customobjects.CustomObjectDraft;
+import com.commercetools.sync.customobjects.models.NoopResourceUpdateAction;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -23,23 +20,23 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings("unchecked")
 class CustomObjectSyncOptionsTest {
 
-  private static SphereClient CTP_CLIENT = mock(SphereClient.class);
+  private static final ProjectApiRoot CTP_CLIENT = mock(ProjectApiRoot.class);
 
   private interface MockTriFunction
       extends TriFunction<
-          List<UpdateAction<CustomObject<JsonNode>>>,
-          CustomObjectDraft<JsonNode>,
-          CustomObject<JsonNode>,
-          List<UpdateAction<CustomObject<JsonNode>>>> {}
+          List<NoopResourceUpdateAction>,
+          CustomObjectDraft,
+          CustomObject,
+          List<NoopResourceUpdateAction>> {}
 
   @Test
   void applyBeforeUpdateCallback_WithNullCallbackAndEmptyUpdateActions_ShouldReturnIdenticalList() {
     final CustomObjectSyncOptions customObjectSyncOptions =
         CustomObjectSyncOptionsBuilder.of(CTP_CLIENT).build();
 
-    final List<UpdateAction<CustomObject<JsonNode>>> updateActions = emptyList();
+    final List<NoopResourceUpdateAction> updateActions = emptyList();
 
-    final List<UpdateAction<CustomObject<JsonNode>>> filteredList =
+    final List<NoopResourceUpdateAction> filteredList =
         customObjectSyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(CustomObjectDraft.class), mock(CustomObject.class));
 
@@ -50,18 +47,18 @@ class CustomObjectSyncOptionsTest {
   void
       applyBeforeUpdateCallback_WithNullReturnCallbackAndEmptyUpdateActions_ShouldReturnEmptyList() {
     final TriFunction<
-            List<UpdateAction<CustomObject<JsonNode>>>,
-            CustomObjectDraft<JsonNode>,
-            CustomObject<JsonNode>,
-            List<UpdateAction<CustomObject<JsonNode>>>>
+            List<NoopResourceUpdateAction>,
+            CustomObjectDraft,
+            CustomObject,
+            List<NoopResourceUpdateAction>>
         beforeUpdateCallback = (updateActions, newCustomObject, oldCustomObject) -> null;
     final CustomObjectSyncOptions customObjectSyncOptions =
         CustomObjectSyncOptionsBuilder.of(CTP_CLIENT)
             .beforeUpdateCallback(beforeUpdateCallback)
             .build();
-    final List<UpdateAction<CustomObject<JsonNode>>> updateActions = emptyList();
+    final List<NoopResourceUpdateAction> updateActions = emptyList();
 
-    final List<UpdateAction<CustomObject<JsonNode>>> filteredList =
+    final List<NoopResourceUpdateAction> filteredList =
         customObjectSyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(CustomObjectDraft.class), mock(CustomObject.class));
 
@@ -72,14 +69,13 @@ class CustomObjectSyncOptionsTest {
 
   @Test
   void applyBeforeUpdateCallback_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
-    final CustomObjectSyncOptionsTest.MockTriFunction beforeUpdateCallback =
-        mock(CustomObjectSyncOptionsTest.MockTriFunction.class);
+    final MockTriFunction beforeUpdateCallback = mock(MockTriFunction.class);
     final CustomObjectSyncOptions customObjectSyncOptions =
         CustomObjectSyncOptionsBuilder.of(CTP_CLIENT)
             .beforeUpdateCallback(beforeUpdateCallback)
             .build();
 
-    final List<UpdateAction<CustomObject<JsonNode>>> filteredList =
+    final List<NoopResourceUpdateAction> filteredList =
         customObjectSyncOptions.applyBeforeUpdateCallback(
             emptyList(), mock(CustomObjectDraft.class), mock(CustomObject.class));
 
@@ -90,19 +86,21 @@ class CustomObjectSyncOptionsTest {
   @Test
   void applyBeforeCreateCallback_WithCallback_ShouldReturnFilteredDraft() {
 
-    final Function<CustomObjectDraft<JsonNode>, CustomObjectDraft<JsonNode>> draftFunction =
+    final Function<CustomObjectDraft, CustomObjectDraft> draftFunction =
         customObjectDraft ->
-            CustomObjectDraft.ofUnversionedUpsert(
-                customObjectDraft.getContainer() + "_filteredContainer",
-                customObjectDraft.getKey() + "_filteredKey",
-                customObjectDraft.getValue());
+            CustomObjectDraftBuilder.of()
+                .container(customObjectDraft.getContainer() + "_filteredContainer")
+                .key(customObjectDraft.getKey() + "_filteredKey")
+                .value(customObjectDraft.getValue())
+                .build();
     final CustomObjectSyncOptions customObjectSyncOptions =
         CustomObjectSyncOptionsBuilder.of(CTP_CLIENT).beforeCreateCallback(draftFunction).build();
-    final CustomObjectDraft<JsonNode> resourceDraft = mock(CustomObjectDraft.class);
+    final CustomObjectDraft resourceDraft = mock(CustomObjectDraft.class);
     when(resourceDraft.getKey()).thenReturn("myKey");
     when(resourceDraft.getContainer()).thenReturn("myContainer");
+    when(resourceDraft.getValue()).thenReturn("value");
 
-    final Optional<CustomObjectDraft<JsonNode>> filteredDraft =
+    final Optional<CustomObjectDraft> filteredDraft =
         customObjectSyncOptions.applyBeforeCreateCallback(resourceDraft);
 
     assertThat(filteredDraft)
@@ -119,9 +117,9 @@ class CustomObjectSyncOptionsTest {
   void applyBeforeCreateCallback_WithNullCallback_ShouldReturnIdenticalDraftInOptional() {
     final CustomObjectSyncOptions customObjectSyncOptions =
         CustomObjectSyncOptionsBuilder.of(CTP_CLIENT).build();
-    final CustomObjectDraft<JsonNode> resourceDraft = mock(CustomObjectDraft.class);
+    final CustomObjectDraft resourceDraft = mock(CustomObjectDraft.class);
 
-    final Optional<CustomObjectDraft<JsonNode>> filteredDraft =
+    final Optional<CustomObjectDraft> filteredDraft =
         customObjectSyncOptions.applyBeforeCreateCallback(resourceDraft);
 
     assertThat(filteredDraft).containsSame(resourceDraft);
@@ -129,13 +127,12 @@ class CustomObjectSyncOptionsTest {
 
   @Test
   void applyBeforeCreateCallback_WithCallbackReturningNull_ShouldReturnEmptyOptional() {
-    final Function<CustomObjectDraft<JsonNode>, CustomObjectDraft<JsonNode>> draftFunction =
-        customObjectDraft -> null;
+    final Function<CustomObjectDraft, CustomObjectDraft> draftFunction = customObjectDraft -> null;
     final CustomObjectSyncOptions customObjectSyncOptions =
         CustomObjectSyncOptionsBuilder.of(CTP_CLIENT).beforeCreateCallback(draftFunction).build();
-    final CustomObjectDraft<JsonNode> resourceDraft = mock(CustomObjectDraft.class);
+    final CustomObjectDraft resourceDraft = mock(CustomObjectDraft.class);
 
-    final Optional<CustomObjectDraft<JsonNode>> filteredDraft =
+    final Optional<CustomObjectDraft> filteredDraft =
         customObjectSyncOptions.applyBeforeCreateCallback(resourceDraft);
 
     assertThat(filteredDraft).isEmpty();

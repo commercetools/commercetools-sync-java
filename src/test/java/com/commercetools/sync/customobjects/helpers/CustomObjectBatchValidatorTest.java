@@ -1,17 +1,16 @@
 package com.commercetools.sync.customobjects.helpers;
 
-import static com.commercetools.sync.customobjects.helpers.CustomObjectBatchValidator.CUSTOM_OBJECT_DRAFT_IS_NULL;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.custom_object.CustomObjectDraft;
+import com.commercetools.api.models.custom_object.CustomObjectDraftBuilder;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.customobjects.CustomObjectDraft;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +28,7 @@ class CustomObjectBatchValidatorTest {
   @BeforeEach
   void setup() {
     errorCallBackMessages = new ArrayList<>();
-    final SphereClient ctpClient = mock(SphereClient.class);
+    final ProjectApiRoot ctpClient = mock(ProjectApiRoot.class);
     syncOptions =
         CustomObjectSyncOptionsBuilder.of(ctpClient)
             .errorCallback(
@@ -42,14 +41,17 @@ class CustomObjectBatchValidatorTest {
 
   @Test
   void validateAndCollectReferencedKeys_WithValidDraft_ShouldHaveCorrectResult() {
-    CustomObjectDraft<JsonNode> customObjectDraft =
-        CustomObjectDraft.ofUnversionedUpsert(
-            "container", "key", JsonNodeFactory.instance.numberNode(1));
+    CustomObjectDraft customObjectDraft =
+        CustomObjectDraftBuilder.of()
+            .container("container")
+            .key("key")
+            .value(JsonNodeFactory.instance.numberNode(1))
+            .build();
 
     final CustomObjectBatchValidator batchValidator =
         new CustomObjectBatchValidator(syncOptions, syncStatistics);
-    final ImmutablePair<Set<CustomObjectDraft<JsonNode>>, Set<CustomObjectCompositeIdentifier>>
-        result = batchValidator.validateAndCollectReferencedKeys(singletonList(customObjectDraft));
+    final ImmutablePair<Set<CustomObjectDraft>, Set<CustomObjectCompositeIdentifier>> result =
+        batchValidator.validateAndCollectReferencedKeys(singletonList(customObjectDraft));
 
     assertThat(result.getLeft()).contains(customObjectDraft);
     assertThat(errorCallBackMessages).isEmpty();
@@ -58,7 +60,7 @@ class CustomObjectBatchValidatorTest {
 
   @Test
   void validateAndCollectReferencedKeys_WithEmptyDraft_ShouldHaveEmptyResult() {
-    final Set<CustomObjectDraft<JsonNode>> validDrafts = getValidDrafts(emptyList());
+    final Set<CustomObjectDraft> validDrafts = getValidDrafts(emptyList());
 
     assertThat(validDrafts).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
@@ -67,22 +69,22 @@ class CustomObjectBatchValidatorTest {
   @Test
   void
       validateAndCollectReferencedKeys_WithNullTypeDraft_ShouldHaveValidationErrorAndEmptyResult() {
-    final Set<CustomObjectDraft<JsonNode>> validDrafts =
-        getValidDrafts(Collections.singletonList(null));
+    final Set<CustomObjectDraft> validDrafts = getValidDrafts(Collections.singletonList(null));
 
     assertThat(errorCallBackMessages).hasSize(1);
-    assertThat(errorCallBackMessages.get(0)).isEqualTo(CUSTOM_OBJECT_DRAFT_IS_NULL);
+    assertThat(errorCallBackMessages.get(0))
+        .isEqualTo(CustomObjectBatchValidator.CUSTOM_OBJECT_DRAFT_IS_NULL);
     assertThat(validDrafts).isEmpty();
   }
 
   @Nonnull
-  private Set<CustomObjectDraft<JsonNode>> getValidDrafts(
-      @Nonnull final List<CustomObjectDraft<JsonNode>> customObjectDrafts) {
+  private Set<CustomObjectDraft> getValidDrafts(
+      @Nonnull final List<CustomObjectDraft> customObjectDrafts) {
 
     final CustomObjectBatchValidator batchValidator =
         new CustomObjectBatchValidator(syncOptions, syncStatistics);
-    final ImmutablePair<Set<CustomObjectDraft<JsonNode>>, Set<CustomObjectCompositeIdentifier>>
-        pair = batchValidator.validateAndCollectReferencedKeys(customObjectDrafts);
+    final ImmutablePair<Set<CustomObjectDraft>, Set<CustomObjectCompositeIdentifier>> pair =
+        batchValidator.validateAndCollectReferencedKeys(customObjectDrafts);
     return pair.getLeft();
   }
 }

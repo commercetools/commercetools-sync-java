@@ -1,52 +1,68 @@
 package com.commercetools.sync.products.helpers;
 
-import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildActions;
-
+import com.commercetools.api.models.common.Asset;
+import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.api.models.product.ProductAddAssetAction;
+import com.commercetools.api.models.product.ProductChangeAssetOrderAction;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductRemoveAssetAction;
+import com.commercetools.api.models.product.ProductUpdateAction;
+import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.helpers.AssetActionFactory;
 import com.commercetools.sync.products.ProductSyncOptions;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Asset;
-import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.commands.updateactions.AddAsset;
-import io.sphere.sdk.products.commands.updateactions.ChangeAssetOrder;
-import io.sphere.sdk.products.commands.updateactions.RemoveAsset;
+import com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils;
 import java.util.List;
 import javax.annotation.Nonnull;
 
-public final class ProductAssetActionFactory extends AssetActionFactory<Product, ProductDraft> {
-  private Integer variantId;
+public final class ProductAssetActionFactory
+    extends AssetActionFactory<ProductUpdateAction, ProductDraft> {
+  private Long variantId;
+
+  private BaseSyncOptions syncOptions;
 
   public ProductAssetActionFactory(
-      @Nonnull final Integer variantId, @Nonnull final ProductSyncOptions syncOptions) {
+      @Nonnull final Long variantId, @Nonnull final ProductSyncOptions syncOptions) {
+
     this.variantId = variantId;
     this.syncOptions = syncOptions;
   }
 
   @Override
-  public List<UpdateAction<Product>> buildAssetActions(
+  public List<ProductUpdateAction> buildAssetActions(
       @Nonnull final ProductDraft newResource,
       @Nonnull final Asset oldAsset,
       @Nonnull final AssetDraft newAssetDraft) {
-    return buildActions(
+    return ProductVariantAssetUpdateActionUtils.buildActions(
         newResource, variantId, oldAsset, newAssetDraft, (ProductSyncOptions) syncOptions);
   }
 
   @Override
-  public UpdateAction<Product> buildRemoveAssetAction(@Nonnull final String assetKey) {
-    return RemoveAsset.ofVariantIdWithKey(variantId, assetKey, true);
+  public ProductUpdateAction buildRemoveAssetAction(@Nonnull final String assetKey) {
+    return ProductRemoveAssetAction.builder()
+        .variantId(variantId)
+        .assetKey(assetKey)
+        .staged(true)
+        .build();
   }
 
   @Override
-  public UpdateAction<Product> buildChangeAssetOrderAction(
+  public ProductUpdateAction buildChangeAssetOrderAction(
       @Nonnull final List<String> newAssetOrder) {
-    return ChangeAssetOrder.ofVariantId(variantId, newAssetOrder, true);
+    return ProductChangeAssetOrderAction.builder()
+        .variantId(variantId)
+        .assetOrder(newAssetOrder)
+        .staged(true)
+        .build();
   }
 
   @Override
-  public UpdateAction<Product> buildAddAssetAction(
+  public ProductUpdateAction buildAddAssetAction(
       @Nonnull final AssetDraft assetDraft, @Nonnull final Integer position) {
-    return AddAsset.ofVariantId(variantId, assetDraft).withPosition(position).withStaged(true);
+    return ProductAddAssetAction.builder()
+        .variantId(variantId)
+        .asset(assetDraft)
+        .position(position)
+        .staged(true)
+        .build();
   }
 }

@@ -1,23 +1,18 @@
 package com.commercetools.sync.inventories.helpers;
 
-import static com.commercetools.sync.inventories.helpers.InventoryBatchValidator.INVENTORY_DRAFT_IS_NULL;
-import static com.commercetools.sync.inventories.helpers.InventoryBatchValidator.INVENTORY_DRAFT_SKU_NOT_SET;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
+import com.commercetools.api.models.inventory.InventoryEntryDraft;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.commercetools.sync.inventories.InventorySyncOptions;
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.inventory.InventoryEntryDraft;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +27,7 @@ class InventoryBatchValidatorTest {
   @BeforeEach
   void setup() {
     errorCallBackMessages = new ArrayList<>();
-    final SphereClient ctpClient = mock(SphereClient.class);
+    final ProjectApiRoot ctpClient = mock(ProjectApiRoot.class);
 
     syncOptions =
         InventorySyncOptionsBuilder.of(ctpClient)
@@ -57,7 +52,8 @@ class InventoryBatchValidatorTest {
     final Set<InventoryEntryDraft> validDrafts = getValidDrafts(Collections.singletonList(null));
 
     assertThat(errorCallBackMessages).hasSize(1);
-    assertThat(errorCallBackMessages.get(0)).isEqualTo(INVENTORY_DRAFT_IS_NULL);
+    assertThat(errorCallBackMessages.get(0))
+        .isEqualTo(InventoryBatchValidator.INVENTORY_DRAFT_IS_NULL);
     assertThat(validDrafts).isEmpty();
   }
 
@@ -69,7 +65,8 @@ class InventoryBatchValidatorTest {
         getValidDrafts(Collections.singletonList(inventoryDraft));
 
     assertThat(errorCallBackMessages).hasSize(1);
-    assertThat(errorCallBackMessages.get(0)).isEqualTo(INVENTORY_DRAFT_SKU_NOT_SET);
+    assertThat(errorCallBackMessages.get(0))
+        .isEqualTo(InventoryBatchValidator.INVENTORY_DRAFT_SKU_NOT_SET);
     assertThat(validDrafts).isEmpty();
   }
 
@@ -82,7 +79,8 @@ class InventoryBatchValidatorTest {
         getValidDrafts(Collections.singletonList(inventoryDraft));
 
     assertThat(errorCallBackMessages).hasSize(1);
-    assertThat(errorCallBackMessages.get(0)).isEqualTo(INVENTORY_DRAFT_SKU_NOT_SET);
+    assertThat(errorCallBackMessages.get(0))
+        .isEqualTo(InventoryBatchValidator.INVENTORY_DRAFT_SKU_NOT_SET);
     assertThat(validDrafts).isEmpty();
   }
 
@@ -91,15 +89,19 @@ class InventoryBatchValidatorTest {
     final InventoryEntryDraft validInventoryDraft = mock(InventoryEntryDraft.class);
     when(validInventoryDraft.getSku()).thenReturn("validDraftSku");
     when(validInventoryDraft.getSupplyChannel())
-        .thenReturn(ResourceIdentifier.ofKey("validSupplyChannelKey"));
+        .thenReturn(ChannelResourceIdentifierBuilder.of().key("validSupplyChannelKey").build());
     when(validInventoryDraft.getCustom())
-        .thenReturn(CustomFieldsDraft.ofTypeKeyAndJson("typeKey", Collections.emptyMap()));
+        .thenReturn(
+            CustomFieldsDraftBuilder.of()
+                .type(TypeResourceIdentifierBuilder.of().key("typeKey").build())
+                .build());
 
     final InventoryEntryDraft validMainInventoryDraft = mock(InventoryEntryDraft.class);
     when(validMainInventoryDraft.getSku()).thenReturn("validDraftSku1");
 
     final InventoryEntryDraft invalidInventoryDraft = mock(InventoryEntryDraft.class);
-    when(invalidInventoryDraft.getSupplyChannel()).thenReturn(ResourceIdentifier.ofKey("key"));
+    when(invalidInventoryDraft.getSupplyChannel())
+        .thenReturn(ChannelResourceIdentifierBuilder.of().key("key").build());
 
     final InventoryBatchValidator inventoryBatchValidator =
         new InventoryBatchValidator(syncOptions, syncStatistics);
@@ -108,7 +110,8 @@ class InventoryBatchValidatorTest {
             Arrays.asList(validInventoryDraft, invalidInventoryDraft, validMainInventoryDraft));
 
     assertThat(errorCallBackMessages).hasSize(1);
-    assertThat(errorCallBackMessages.get(0)).isEqualTo(INVENTORY_DRAFT_SKU_NOT_SET);
+    assertThat(errorCallBackMessages.get(0))
+        .isEqualTo(InventoryBatchValidator.INVENTORY_DRAFT_SKU_NOT_SET);
     assertThat(pair.getLeft())
         .containsExactlyInAnyOrder(validInventoryDraft, validMainInventoryDraft);
     assertThat(pair.getRight().getChannelKeys()).containsExactlyInAnyOrder("validSupplyChannelKey");

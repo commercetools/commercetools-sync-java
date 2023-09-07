@@ -1,11 +1,11 @@
 package com.commercetools.sync.integration.externalsource.customobjects;
 
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.createCustomObject;
 import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteCustomObject;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createBadGatewayException;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createConcurrentModificationException;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static java.lang.String.format;
 
 import com.commercetools.api.client.ProjectApiRoot;
@@ -18,11 +18,11 @@ import com.commercetools.api.models.custom_object.CustomObjectDraft;
 import com.commercetools.api.models.custom_object.CustomObjectDraftBuilder;
 import com.commercetools.api.models.error.ErrorResponse;
 import com.commercetools.api.models.error.ErrorResponseBuilder;
-import com.commercetools.sync.sdk2.customobjects.CustomObjectSync;
-import com.commercetools.sync.sdk2.customobjects.CustomObjectSyncOptions;
-import com.commercetools.sync.sdk2.customobjects.CustomObjectSyncOptionsBuilder;
-import com.commercetools.sync.sdk2.customobjects.helpers.CustomObjectCompositeIdentifier;
-import com.commercetools.sync.sdk2.customobjects.helpers.CustomObjectSyncStatistics;
+import com.commercetools.sync.customobjects.CustomObjectSync;
+import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
+import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
+import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
+import com.commercetools.sync.customobjects.helpers.CustomObjectSyncStatistics;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;

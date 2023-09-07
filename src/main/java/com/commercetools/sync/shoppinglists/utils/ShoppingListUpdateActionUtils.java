@@ -3,16 +3,15 @@ package com.commercetools.sync.shoppinglists.utils;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActionForReferences;
 
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
-import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetAnonymousId;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetCustomer;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetDeleteDaysAfterLastModification;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetDescription;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetSlug;
+import com.commercetools.api.models.shopping_list.ShoppingList;
+import com.commercetools.api.models.shopping_list.ShoppingListChangeNameActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListSetAnonymousIdActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListSetCustomerActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListSetDeleteDaysAfterLastModificationActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListSetDescriptionActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListSetSlugActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 
@@ -21,10 +20,11 @@ public final class ShoppingListUpdateActionUtils {
   private ShoppingListUpdateActionUtils() {}
 
   /**
-   * Compares the {@link LocalizedString} slugs of a {@link ShoppingList} and a {@link
-   * ShoppingListDraft} and returns an {@link UpdateAction}&lt;{@link ShoppingList}&gt; as a result
-   * in an {@link Optional}. If both the {@link ShoppingList} and the {@link ShoppingListDraft} have
-   * the same slug, then no update action is needed and hence an empty {@link Optional} is returned.
+   * Compares the {@link com.commercetools.api.models.common.LocalizedString} slugs of a {@link
+   * ShoppingList} and a {@link ShoppingListDraft} and returns an {@link ShoppingListUpdateAction}
+   * as a result in an {@link java.util.Optional}. If both the {@link ShoppingList} and the {@link
+   * ShoppingListDraft} have the same slug, then no update action is needed and hence an empty
+   * {@link java.util.Optional} is returned.
    *
    * @param oldShoppingList the shopping list which should be updated.
    * @param newShoppingList the shopping list draft where we get the new slug.
@@ -32,21 +32,22 @@ public final class ShoppingListUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<ShoppingList>> buildSetSlugUpdateAction(
+  public static Optional<ShoppingListUpdateAction> buildSetSlugUpdateAction(
       @Nonnull final ShoppingList oldShoppingList,
       @Nonnull final ShoppingListDraft newShoppingList) {
 
     return buildUpdateAction(
         oldShoppingList.getSlug(),
         newShoppingList.getSlug(),
-        () -> SetSlug.of(newShoppingList.getSlug()));
+        () -> ShoppingListSetSlugActionBuilder.of().slug(newShoppingList.getSlug()).build());
   }
 
   /**
-   * Compares the {@link LocalizedString} names of a {@link ShoppingList} and a {@link
-   * ShoppingListDraft} and returns an {@link UpdateAction}&lt;{@link ShoppingList}&gt; as a result
-   * in an {@link Optional}. If both the {@link ShoppingList} and the {@link ShoppingListDraft} have
-   * the same name, then no update action is needed and hence an empty {@link Optional} is returned.
+   * Compares the {@link com.commercetools.api.models.common.LocalizedString} names of a {@link
+   * ShoppingList} and a {@link ShoppingListDraft} and returns an {@link ShoppingListUpdateAction}
+   * as a result in an {@link java.util.Optional}. If both the {@link ShoppingList} and the {@link
+   * ShoppingListDraft} have the same name, then no update action is needed and hence an empty
+   * {@link java.util.Optional} is returned.
    *
    * @param oldShoppingList the shopping list which should be updated.
    * @param newShoppingList the shopping list draft where we get the new name.
@@ -54,22 +55,22 @@ public final class ShoppingListUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<ShoppingList>> buildChangeNameUpdateAction(
+  public static Optional<ShoppingListUpdateAction> buildChangeNameUpdateAction(
       @Nonnull final ShoppingList oldShoppingList,
       @Nonnull final ShoppingListDraft newShoppingList) {
 
     return buildUpdateAction(
         oldShoppingList.getName(),
         newShoppingList.getName(),
-        () -> ChangeName.of(newShoppingList.getName()));
+        () -> ShoppingListChangeNameActionBuilder.of().name(newShoppingList.getName()).build());
   }
 
   /**
-   * Compares the {@link LocalizedString} descriptions of {@link ShoppingList} and a {@link
-   * ShoppingListDraft} and returns an {@link UpdateAction}&lt;{@link ShoppingList}&gt; as a result
-   * in an {@link Optional}. If both the {@link ShoppingList} and the {@link ShoppingListDraft} have
-   * the same description, then no update action is needed and hence an empty {@link Optional} is
-   * returned.
+   * Compares the {@link com.commercetools.api.models.common.LocalizedString} descriptions of {@link
+   * ShoppingList} and a {@link ShoppingListDraft} and returns an {@link ShoppingListUpdateAction}
+   * as a result in an {@link java.util.Optional}. If both the {@link ShoppingList} and the {@link
+   * ShoppingListDraft} have the same description, then no update action is needed and hence an
+   * empty {@link java.util.Optional} is returned.
    *
    * @param oldShoppingList the shopping list which should be updated.
    * @param newShoppingList the shopping list draft where we get the new description.
@@ -77,21 +78,24 @@ public final class ShoppingListUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<ShoppingList>> buildSetDescriptionUpdateAction(
+  public static Optional<ShoppingListUpdateAction> buildSetDescriptionUpdateAction(
       @Nonnull final ShoppingList oldShoppingList,
       @Nonnull final ShoppingListDraft newShoppingList) {
 
     return buildUpdateAction(
         oldShoppingList.getDescription(),
         newShoppingList.getDescription(),
-        () -> SetDescription.of(newShoppingList.getDescription()));
+        () ->
+            ShoppingListSetDescriptionActionBuilder.of()
+                .description(newShoppingList.getDescription())
+                .build());
   }
 
   /**
    * Compares the customer references of a {@link ShoppingList} and a {@link ShoppingListDraft} and
-   * returns an {@link UpdateAction}&lt;{@link ShoppingList}&gt; as a result in an {@link Optional}.
-   * If both the {@link ShoppingList} and the {@link ShoppingListDraft} have the same customer, then
-   * no update action is needed and hence an empty {@link Optional} is returned.
+   * returns an {@link ShoppingListUpdateAction} as a result in an {@link java.util.Optional}. If
+   * both the {@link ShoppingList} and the {@link ShoppingListDraft} have the same customer, then no
+   * update action is needed and hence an empty {@link java.util.Optional} is returned.
    *
    * @param oldShoppingList the shopping list which should be updated.
    * @param newShoppingList the shopping list draft which holds the new customer.
@@ -99,21 +103,24 @@ public final class ShoppingListUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<ShoppingList>> buildSetCustomerUpdateAction(
+  public static Optional<ShoppingListUpdateAction> buildSetCustomerUpdateAction(
       @Nonnull final ShoppingList oldShoppingList,
       @Nonnull final ShoppingListDraft newShoppingList) {
 
     return buildUpdateActionForReferences(
         oldShoppingList.getCustomer(),
         newShoppingList.getCustomer(),
-        () -> SetCustomer.of(newShoppingList.getCustomer()));
+        () ->
+            ShoppingListSetCustomerActionBuilder.of()
+                .customer(newShoppingList.getCustomer())
+                .build());
   }
 
   /**
    * Compares the anonymousIds of {@link ShoppingList} and a {@link ShoppingListDraft} and returns
-   * an {@link UpdateAction}&lt;{@link ShoppingList}&gt; as a result in an {@link Optional}. If both
-   * the {@link ShoppingList} and the {@link ShoppingListDraft} have the same anonymousId, then no
-   * update action is needed and hence an empty {@link Optional} is returned.
+   * an {@link ShoppingListUpdateAction} as a result in an {@link java.util.Optional}. If both the
+   * {@link ShoppingList} and the {@link ShoppingListDraft} have the same anonymousId, then no
+   * update action is needed and hence an empty {@link java.util.Optional} is returned.
    *
    * @param oldShoppingList the shopping list which should be updated.
    * @param newShoppingList the shopping list draft which holds the new anonymousId.
@@ -121,22 +128,25 @@ public final class ShoppingListUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<ShoppingList>> buildSetAnonymousIdUpdateAction(
+  public static Optional<ShoppingListUpdateAction> buildSetAnonymousIdUpdateAction(
       @Nonnull final ShoppingList oldShoppingList,
       @Nonnull final ShoppingListDraft newShoppingList) {
 
     return buildUpdateAction(
         oldShoppingList.getAnonymousId(),
         newShoppingList.getAnonymousId(),
-        () -> SetAnonymousId.of(newShoppingList.getAnonymousId()));
+        () ->
+            ShoppingListSetAnonymousIdActionBuilder.of()
+                .anonymousId(newShoppingList.getAnonymousId())
+                .build());
   }
 
   /**
    * Compares the deleteDaysAfterLastModification of {@link ShoppingList} and a {@link
-   * ShoppingListDraft} and returns an {@link UpdateAction}&lt;{@link ShoppingList}&gt; as a result
-   * in an {@link Optional}. If both the {@link ShoppingList} and the {@link ShoppingListDraft} have
+   * ShoppingListDraft} and returns an {@link ShoppingListUpdateAction} as a result in an {@link
+   * java.util.Optional}. If both the {@link ShoppingList} and the {@link ShoppingListDraft} have
    * the same deleteDaysAfterLastModification, then no update action is needed and hence an empty
-   * {@link Optional} is returned.
+   * {@link java.util.Optional} is returned.
    *
    * @param oldShoppingList the shopping list which should be updated.
    * @param newShoppingList the shopping list draft which holds the new
@@ -145,7 +155,7 @@ public final class ShoppingListUpdateActionUtils {
    *     deleteDaysAfterLastModifications are identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<ShoppingList>>
+  public static Optional<ShoppingListUpdateAction>
       buildSetDeleteDaysAfterLastModificationUpdateAction(
           @Nonnull final ShoppingList oldShoppingList,
           @Nonnull final ShoppingListDraft newShoppingList) {
@@ -154,7 +164,9 @@ public final class ShoppingListUpdateActionUtils {
         oldShoppingList.getDeleteDaysAfterLastModification(),
         newShoppingList.getDeleteDaysAfterLastModification(),
         () ->
-            SetDeleteDaysAfterLastModification.of(
-                newShoppingList.getDeleteDaysAfterLastModification()));
+            ShoppingListSetDeleteDaysAfterLastModificationActionBuilder.of()
+                .deleteDaysAfterLastModification(
+                    newShoppingList.getDeleteDaysAfterLastModification())
+                .build());
   }
 }

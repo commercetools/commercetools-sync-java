@@ -1,11 +1,11 @@
 package com.commercetools.sync.integration.ctpprojectsource.shoppinglists;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.ensureSampleCustomerJaneDoe;
 import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.*;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.api.models.customer.Customer;
@@ -18,13 +18,13 @@ import com.commercetools.api.models.shopping_list.ShoppingListPagedQueryResponse
 import com.commercetools.api.models.shopping_list.ShoppingListSetAnonymousIdActionBuilder;
 import com.commercetools.api.models.shopping_list.ShoppingListSetCustomerActionBuilder;
 import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
-import com.commercetools.sync.sdk2.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
-import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
-import com.commercetools.sync.sdk2.shoppinglists.ShoppingListSync;
-import com.commercetools.sync.sdk2.shoppinglists.ShoppingListSyncOptions;
-import com.commercetools.sync.sdk2.shoppinglists.ShoppingListSyncOptionsBuilder;
-import com.commercetools.sync.sdk2.shoppinglists.helpers.ShoppingListSyncStatistics;
-import com.commercetools.sync.sdk2.shoppinglists.utils.ShoppingListTransformUtils;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
+import com.commercetools.sync.shoppinglists.ShoppingListSync;
+import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
+import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
+import com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics;
+import com.commercetools.sync.shoppinglists.utils.ShoppingListTransformUtils;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.List;

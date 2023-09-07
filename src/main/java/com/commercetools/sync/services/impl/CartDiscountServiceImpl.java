@@ -1,32 +1,37 @@
 package com.commercetools.sync.services.impl;
 
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+
+import com.commercetools.api.client.ByProjectKeyCartDiscountsGet;
+import com.commercetools.api.client.ByProjectKeyCartDiscountsKeyByKeyGet;
+import com.commercetools.api.client.ByProjectKeyCartDiscountsPost;
+import com.commercetools.api.models.cart_discount.CartDiscount;
+import com.commercetools.api.models.cart_discount.CartDiscountDraft;
+import com.commercetools.api.models.cart_discount.CartDiscountPagedQueryResponse;
+import com.commercetools.api.models.cart_discount.CartDiscountUpdateAction;
+import com.commercetools.api.models.cart_discount.CartDiscountUpdateBuilder;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.services.CartDiscountService;
-import io.sphere.sdk.cartdiscounts.CartDiscount;
-import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
-import io.sphere.sdk.cartdiscounts.commands.CartDiscountCreateCommand;
-import io.sphere.sdk.cartdiscounts.commands.CartDiscountUpdateCommand;
-import io.sphere.sdk.cartdiscounts.expansion.CartDiscountExpansionModel;
-import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
-import io.sphere.sdk.cartdiscounts.queries.CartDiscountQueryBuilder;
-import io.sphere.sdk.cartdiscounts.queries.CartDiscountQueryModel;
-import io.sphere.sdk.commands.UpdateAction;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class CartDiscountServiceImpl
     extends BaseServiceWithKey<
-        CartDiscountDraft,
-        CartDiscount,
-        CartDiscount,
         CartDiscountSyncOptions,
-        CartDiscountQuery,
-        CartDiscountQueryModel,
-        CartDiscountExpansionModel<CartDiscount>>
+        CartDiscount,
+        CartDiscountDraft,
+        ByProjectKeyCartDiscountsGet,
+        CartDiscountPagedQueryResponse,
+        ByProjectKeyCartDiscountsKeyByKeyGet,
+        CartDiscount,
+        ByProjectKeyCartDiscountsPost>
     implements CartDiscountService {
 
   public CartDiscountServiceImpl(@Nonnull final CartDiscountSyncOptions syncOptions) {
@@ -41,36 +46,64 @@ public class CartDiscountServiceImpl
     return fetchMatchingResources(
         keys,
         (keysNotCached) ->
-            CartDiscountQueryBuilder.of()
-                .plusPredicates(queryModel -> queryModel.key().isIn(keysNotCached))
-                .build());
+            syncOptions
+                .getCtpClient()
+                .cartDiscounts()
+                .get()
+                .withWhere("key in :keys")
+                .withPredicateVar("keys", keysNotCached));
   }
 
   @Nonnull
   @Override
   public CompletionStage<Optional<CartDiscount>> fetchCartDiscount(@Nullable final String key) {
-
-    return fetchResource(
-        key,
-        () ->
-            CartDiscountQuery.of()
-                .plusPredicates(cartDiscountQueryModel -> cartDiscountQueryModel.key().is(key)));
+    final ByProjectKeyCartDiscountsKeyByKeyGet byProjectKeyCartDiscountsKeyByKeyGet =
+        syncOptions.getCtpClient().cartDiscounts().withKey(key).get();
+    return super.fetchResource(key, byProjectKeyCartDiscountsKeyByKeyGet);
   }
 
   @Nonnull
   @Override
   public CompletionStage<Optional<CartDiscount>> createCartDiscount(
       @Nonnull final CartDiscountDraft cartDiscountDraft) {
-
-    return createResource(cartDiscountDraft, CartDiscountCreateCommand::of);
+    return super.createResource(
+        cartDiscountDraft,
+        CartDiscountDraft::getKey,
+        CartDiscount::getId,
+        Function.identity(),
+        () -> syncOptions.getCtpClient().cartDiscounts().post(cartDiscountDraft));
   }
 
   @Nonnull
   @Override
   public CompletionStage<CartDiscount> updateCartDiscount(
       @Nonnull final CartDiscount cartDiscount,
-      @Nonnull final List<UpdateAction<CartDiscount>> updateActions) {
+      @Nonnull final List<CartDiscountUpdateAction> updateActions) {
 
-    return updateResource(cartDiscount, CartDiscountUpdateCommand::of, updateActions);
+    final List<List<CartDiscountUpdateAction>> actionBatches =
+        batchElements(updateActions, MAXIMUM_ALLOWED_UPDATE_ACTIONS);
+
+    CompletionStage<ApiHttpResponse<CartDiscount>> resultStage =
+        CompletableFuture.completedFuture(new ApiHttpResponse<>(200, null, cartDiscount));
+
+    for (final List<CartDiscountUpdateAction> batch : actionBatches) {
+      resultStage =
+          resultStage
+              .thenApply(ApiHttpResponse::getBody)
+              .thenCompose(
+                  updatedCartDiscount ->
+                      syncOptions
+                          .getCtpClient()
+                          .cartDiscounts()
+                          .withId(updatedCartDiscount.getId())
+                          .post(
+                              CartDiscountUpdateBuilder.of()
+                                  .actions(batch)
+                                  .version(updatedCartDiscount.getVersion())
+                                  .build())
+                          .execute());
+    }
+
+    return resultStage.thenApply(ApiHttpResponse::getBody);
   }
 }

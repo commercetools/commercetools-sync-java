@@ -1,40 +1,35 @@
 package com.commercetools.sync.products.utils.productvariantupdateactionutils;
 
-import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithProductTypeRefKey;
-import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions;
-import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static io.sphere.sdk.products.ProductProjectionType.STAGED;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.common.AssetDraftBuilder;
+import com.commercetools.api.models.common.AssetSourceBuilder;
+import com.commercetools.api.models.product.ProductAddAssetActionBuilder;
+import com.commercetools.api.models.product.ProductChangeAssetNameActionBuilder;
+import com.commercetools.api.models.product.ProductChangeAssetOrderActionBuilder;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductRemoveAssetActionBuilder;
+import com.commercetools.api.models.product.ProductSetAssetSourcesActionBuilder;
+import com.commercetools.api.models.product.ProductSetAssetTagsActionBuilder;
+import com.commercetools.api.models.product.ProductUpdateAction;
+import com.commercetools.api.models.product.ProductVariant;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product.ProductVariantDraftBuilder;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
+import com.commercetools.sync.products.ProductSyncMockUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.AssetDraftBuilder;
-import io.sphere.sdk.models.AssetSourceBuilder;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.ProductVariant;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.ProductVariantDraftBuilder;
-import io.sphere.sdk.products.commands.updateactions.AddAsset;
-import io.sphere.sdk.products.commands.updateactions.ChangeAssetName;
-import io.sphere.sdk.products.commands.updateactions.ChangeAssetOrder;
-import io.sphere.sdk.products.commands.updateactions.RemoveAsset;
-import io.sphere.sdk.products.commands.updateactions.SetAssetSources;
-import io.sphere.sdk.products.commands.updateactions.SetAssetTags;
+import com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -69,20 +64,22 @@ class BuildVariantAssetsUpdateActionsTest {
   private static final String PRODUCT_DRAFT_WITH_ASSETS_CBD_WITH_CHANGES =
       RES_ROOT + "product-draft-with-assets-cbd-with-changes.json";
   private static final ProductSyncOptions SYNC_OPTIONS =
-      ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+      ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
 
   @Test
   void
       buildProductVariantAssetsUpdateActions_WithNullNewAssetsAndExistingAssets_ShouldBuild3RemoveActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
+        ProductSyncMockUtils.createProductFromJson(PRODUCT_WITH_ASSETS_ABC);
 
     final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     ProductVariantDraft variant = ProductVariantDraftBuilder.of().build();
     final ProductDraft newProduct =
-        getBuilderWithProductTypeRefKey("productTypeKey").plusVariants(variant).build();
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAssetsUpdateActions(
+        ProductSyncMockUtils.getBuilderWithProductTypeRefKey("productTypeKey")
+            .plusVariants(variant)
+            .build();
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions(
             oldProduct,
             newProduct,
             oldMasterVariant,
@@ -91,27 +88,41 @@ class BuildVariantAssetsUpdateActionsTest {
 
     assertThat(updateActions)
         .containsExactlyInAnyOrder(
-            RemoveAsset.ofVariantIdWithKey(oldMasterVariant.getId(), "a", true),
-            RemoveAsset.ofVariantIdWithKey(oldMasterVariant.getId(), "b", true),
-            RemoveAsset.ofVariantIdWithKey(oldMasterVariant.getId(), "c", true));
+            ProductRemoveAssetActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .assetKey("a")
+                .staged(true)
+                .build(),
+            ProductRemoveAssetActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .assetKey("b")
+                .staged(true)
+                .build(),
+            ProductRemoveAssetActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .assetKey("c")
+                .staged(true)
+                .build());
   }
 
   @Test
   void
       buildProductVariantAssetsUpdateActions_WithNullNewAssetsAndNoOldAssets_ShouldNotBuildActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
+        ProductSyncMockUtils.createProductFromJson(PRODUCT_WITH_ASSETS_ABC);
     final ProductVariant productVariant = mock(ProductVariant.class);
     when(productVariant.getAssets()).thenReturn(emptyList());
     ProductVariantDraft variant = ProductVariantDraftBuilder.of().build();
     final ProductDraft newProduct =
-        getBuilderWithProductTypeRefKey("productTypeKey").plusVariants(variant).build();
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAssetsUpdateActions(
+        ProductSyncMockUtils.getBuilderWithProductTypeRefKey("productTypeKey")
+            .plusVariants(variant)
+            .build();
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions(
             oldProduct,
             newProduct,
             productVariant,
-            ProductVariantDraftBuilder.of().build().withAssets(null),
+            ProductVariantDraftBuilder.of().build(),
             SYNC_OPTIONS);
 
     assertThat(updateActions).isEmpty();
@@ -120,13 +131,13 @@ class BuildVariantAssetsUpdateActionsTest {
   @Test
   void buildProductVariantAssetsUpdateActions_WithNewAssetsAndNoOldAssets_ShouldBuild3AddActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITHOUT_ASSETS, Product.class).toProjection(STAGED);
+        ProductSyncMockUtils.createProductFromJson(PRODUCT_WITHOUT_ASSETS);
     final ProductVariant productVariant = oldProduct.getMasterVariant();
     final ProductDraft newProductDraft =
-        readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ABC, ProductDraft.class);
+        ProductSyncMockUtils.createProductDraftFromJson(PRODUCT_DRAFT_WITH_ASSETS_ABC);
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAssetsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions(
             oldProduct,
             newProductDraft,
             productVariant,
@@ -135,50 +146,56 @@ class BuildVariantAssetsUpdateActionsTest {
 
     assertThat(updateActions)
         .containsExactlyInAnyOrder(
-            AddAsset.ofVariantId(
-                    productVariant.getId(),
-                    AssetDraftBuilder.of(
-                            singletonList(AssetSourceBuilder.ofUri("uri").build()),
-                            ofEnglish("asset name"))
+            ProductAddAssetActionBuilder.of()
+                .variantId(productVariant.getId())
+                .asset(
+                    AssetDraftBuilder.of()
+                        .sources(AssetSourceBuilder.of().uri("uri").build())
+                        .name(ofEnglish("asset " + "name"))
                         .key("a")
-                        .tags(emptySet())
+                        .tags(emptyList())
                         .build())
-                .withStaged(true)
-                .withPosition(0),
-            AddAsset.ofVariantId(
-                    productVariant.getId(),
-                    AssetDraftBuilder.of(
-                            singletonList(AssetSourceBuilder.ofUri("uri").build()),
-                            ofEnglish("asset name"))
+                .staged(true)
+                .position(0)
+                .build(),
+            ProductAddAssetActionBuilder.of()
+                .variantId(productVariant.getId())
+                .asset(
+                    AssetDraftBuilder.of()
+                        .sources(AssetSourceBuilder.of().uri("uri").build())
+                        .name(ofEnglish("asset " + "name"))
                         .key("b")
-                        .tags(emptySet())
+                        .tags(emptyList())
                         .build())
-                .withStaged(true)
-                .withPosition(1),
-            AddAsset.ofVariantId(
-                    productVariant.getId(),
-                    AssetDraftBuilder.of(
-                            singletonList(AssetSourceBuilder.ofUri("uri").build()),
-                            ofEnglish("asset name"))
+                .staged(true)
+                .position(1)
+                .build(),
+            ProductAddAssetActionBuilder.of()
+                .variantId(productVariant.getId())
+                .asset(
+                    AssetDraftBuilder.of()
+                        .sources(AssetSourceBuilder.of().uri("uri").build())
+                        .name(ofEnglish("asset " + "name"))
                         .key("c")
-                        .tags(emptySet())
+                        .tags(emptyList())
                         .build())
-                .withStaged(true)
-                .withPosition(2));
+                .staged(true)
+                .position(2)
+                .build());
   }
 
   @Test
   void buildProductVariantAssetsUpdateActions_WithIdenticalAssets_ShouldNotBuildUpdateActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
+        ProductSyncMockUtils.createProductFromJson(PRODUCT_WITH_ASSETS_ABC);
     final ProductDraft newProductDraft =
-        readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ABC, ProductDraft.class);
+        ProductSyncMockUtils.createProductDraftFromJson(PRODUCT_DRAFT_WITH_ASSETS_ABC);
 
     final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAssetsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions(
             oldProduct, newProductDraft, oldMasterVariant, newMasterVariant, SYNC_OPTIONS);
 
     assertThat(updateActions).isEmpty();
@@ -188,9 +205,9 @@ class BuildVariantAssetsUpdateActionsTest {
   void
       buildProductVariantAssetsUpdateActions_WithDuplicateAssetKeys_ShouldNotBuildActionsAndTriggerErrorCb() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
+        ProductSyncMockUtils.createProductFromJson(PRODUCT_WITH_ASSETS_ABC);
     final ProductDraft newProductDraft =
-        readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ABB, ProductDraft.class);
+        ProductSyncMockUtils.createProductDraftFromJson(PRODUCT_DRAFT_WITH_ASSETS_ABB);
 
     final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
@@ -198,7 +215,7 @@ class BuildVariantAssetsUpdateActionsTest {
     final List<String> errorMessages = new ArrayList<>();
     final List<Throwable> exceptions = new ArrayList<>();
     final ProductSyncOptions syncOptions =
-        ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) -> {
                   errorMessages.add(exception.getMessage());
@@ -206,8 +223,8 @@ class BuildVariantAssetsUpdateActionsTest {
                 })
             .build();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAssetsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions(
             oldProduct, newProductDraft, oldMasterVariant, newMasterVariant, syncOptions);
 
     assertThat(updateActions).isEmpty();
@@ -233,280 +250,355 @@ class BuildVariantAssetsUpdateActionsTest {
   void
       buildProductVariantAssetsUpdateActions_WithSameAssetPositionButChangesWithin_ShouldBuildUpdateActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
+        ProductSyncMockUtils.createProductFromJson(PRODUCT_WITH_ASSETS_ABC);
     final ProductDraft newProductDraft =
-        readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ABC_WITH_CHANGES, ProductDraft.class);
+        ProductSyncMockUtils.createProductDraftFromJson(PRODUCT_DRAFT_WITH_ASSETS_ABC_WITH_CHANGES);
 
     final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAssetsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions(
             oldProduct, newProductDraft, oldMasterVariant, newMasterVariant, SYNC_OPTIONS);
 
-    final HashSet<String> expectedNewTags = new HashSet<>();
-    expectedNewTags.add("new tag");
+    final List<String> expectedNewTags = singletonList("new tag");
 
     assertThat(updateActions)
         .containsExactlyInAnyOrder(
-            ChangeAssetName.ofAssetKeyAndVariantId(
-                oldMasterVariant.getId(), "a", ofEnglish("asset new name"), true),
-            ChangeAssetName.ofAssetKeyAndVariantId(
-                oldMasterVariant.getId(), "b", ofEnglish("asset new name 2"), true),
-            ChangeAssetName.ofAssetKeyAndVariantId(
-                oldMasterVariant.getId(), "c", ofEnglish("asset new name 3"), true),
-            SetAssetTags.ofVariantIdAndAssetKey(
-                oldMasterVariant.getId(), "a", expectedNewTags, true),
-            SetAssetSources.ofVariantIdAndAssetKey(
-                oldMasterVariant.getId(),
-                "a",
-                asList(
-                    AssetSourceBuilder.ofUri("new uri").build(),
-                    AssetSourceBuilder.ofUri("new source").build()),
-                true),
-            SetAssetSources.ofVariantIdAndAssetKey(
-                oldMasterVariant.getId(),
-                "c",
-                singletonList(AssetSourceBuilder.ofUri("uri").key("newKey").build()),
-                true));
+            ProductChangeAssetNameActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .assetKey("a")
+                .name(ofEnglish("asset new name"))
+                .staged(true)
+                .build(),
+            ProductChangeAssetNameActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .assetKey("b")
+                .name(ofEnglish("asset new name 2"))
+                .staged(true)
+                .build(),
+            ProductChangeAssetNameActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .assetKey("c")
+                .name(ofEnglish("asset new name 3"))
+                .staged(true)
+                .build(),
+            ProductSetAssetTagsActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .assetKey("a")
+                .tags(expectedNewTags)
+                .staged(true)
+                .build(),
+            ProductSetAssetSourcesActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .assetKey("a")
+                .sources(
+                    asList(
+                        AssetSourceBuilder.of().uri("new uri").build(),
+                        AssetSourceBuilder.of().uri("new source").build()))
+                .staged(true)
+                .build(),
+            ProductSetAssetSourcesActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .assetKey("c")
+                .sources(singletonList(AssetSourceBuilder.of().uri("uri").key("newKey").build()))
+                .staged(true)
+                .build());
   }
 
   @Test
   void buildProductVariantAssetsUpdateActions_WithOneMissingAsset_ShouldBuildRemoveAssetAction() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
+        ProductSyncMockUtils.createProductFromJson(PRODUCT_WITH_ASSETS_ABC);
     final ProductDraft newProductDraft =
-        readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_AB, ProductDraft.class);
+        ProductSyncMockUtils.createProductDraftFromJson(PRODUCT_DRAFT_WITH_ASSETS_AB);
 
     final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAssetsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions(
             oldProduct, newProductDraft, oldMasterVariant, newMasterVariant, SYNC_OPTIONS);
 
     assertThat(updateActions)
-        .containsExactly(RemoveAsset.ofVariantIdWithKey(oldMasterVariant.getId(), "c", true));
+        .containsExactly(
+            ProductRemoveAssetActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .assetKey("c")
+                .staged(true)
+                .build());
   }
 
   @Test
   void buildProductVariantAssetsUpdateActions_WithOneExtraAsset_ShouldBuildAddAssetAction() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
+        ProductSyncMockUtils.createProductFromJson(PRODUCT_WITH_ASSETS_ABC);
     final ProductDraft newProductDraft =
-        readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ABCD, ProductDraft.class);
+        ProductSyncMockUtils.createProductDraftFromJson(PRODUCT_DRAFT_WITH_ASSETS_ABCD);
 
     final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAssetsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions(
             oldProduct, newProductDraft, oldMasterVariant, newMasterVariant, SYNC_OPTIONS);
 
     assertThat(updateActions)
         .containsExactly(
-            AddAsset.ofVariantId(
-                    oldMasterVariant.getId(),
-                    AssetDraftBuilder.of(
-                            singletonList(AssetSourceBuilder.ofUri("uri").build()),
-                            ofEnglish("asset name"))
+            ProductAddAssetActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .asset(
+                    AssetDraftBuilder.of()
+                        .sources(singletonList(AssetSourceBuilder.of().uri("uri").build()))
+                        .name(ofEnglish("asset name"))
                         .key("d")
-                        .tags(emptySet())
+                        .tags(emptyList())
                         .build())
-                .withStaged(true)
-                .withPosition(3));
+                .staged(true)
+                .position(3)
+                .build());
   }
 
   @Test
   void
       buildProductVariantAssetsUpdateActions_WithOneAssetSwitch_ShouldBuildRemoveAndAddAssetActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
+        ProductSyncMockUtils.createProductFromJson(PRODUCT_WITH_ASSETS_ABC);
     final ProductDraft newProductDraft =
-        readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ABD, ProductDraft.class);
+        ProductSyncMockUtils.createProductDraftFromJson(PRODUCT_DRAFT_WITH_ASSETS_ABD);
 
     final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAssetsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions(
             oldProduct, newProductDraft, oldMasterVariant, newMasterVariant, SYNC_OPTIONS);
 
     assertThat(updateActions)
         .containsExactly(
-            RemoveAsset.ofVariantIdWithKey(oldMasterVariant.getId(), "c", true),
-            AddAsset.ofVariantId(
-                    oldMasterVariant.getId(),
-                    AssetDraftBuilder.of(
-                            singletonList(AssetSourceBuilder.ofUri("uri").build()),
-                            ofEnglish("asset name"))
+            ProductRemoveAssetActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .assetKey("c")
+                .staged(true)
+                .build(),
+            ProductAddAssetActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .asset(
+                    AssetDraftBuilder.of()
+                        .sources(AssetSourceBuilder.of().uri("uri").build())
+                        .name(ofEnglish("asset name"))
                         .key("d")
-                        .tags(emptySet())
+                        .tags(emptyList())
                         .build())
-                .withStaged(true)
-                .withPosition(2));
+                .staged(true)
+                .position(2)
+                .build());
   }
 
   @Test
   void buildProductVariantAssetsUpdateActions_WithDifferent_ShouldBuildChangeAssetOrderAction() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
+        ProductSyncMockUtils.createProductFromJson(PRODUCT_WITH_ASSETS_ABC);
     final ProductDraft newProductDraft =
-        readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_CAB, ProductDraft.class);
+        ProductSyncMockUtils.createProductDraftFromJson(PRODUCT_DRAFT_WITH_ASSETS_CAB);
 
     final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAssetsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions(
             oldProduct, newProductDraft, oldMasterVariant, newMasterVariant, SYNC_OPTIONS);
 
     assertThat(updateActions)
         .containsExactly(
-            ChangeAssetOrder.ofVariantId(oldMasterVariant.getId(), asList("3", "1", "2"), true));
+            ProductChangeAssetOrderActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .assetOrder(asList("3", "1", "2"))
+                .staged(true)
+                .build());
   }
 
   @Test
   void
       buildProductVariantAssetsUpdateActions_WithRemovedAndDifferentOrder_ShouldBuildChangeOrderAndRemoveActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
+        ProductSyncMockUtils.createProductFromJson(PRODUCT_WITH_ASSETS_ABC);
     final ProductDraft newProductDraft =
-        readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_CB, ProductDraft.class);
+        ProductSyncMockUtils.createProductDraftFromJson(PRODUCT_DRAFT_WITH_ASSETS_CB);
 
     final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAssetsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions(
             oldProduct, newProductDraft, oldMasterVariant, newMasterVariant, SYNC_OPTIONS);
 
     assertThat(updateActions)
         .containsExactly(
-            RemoveAsset.ofVariantIdWithKey(oldMasterVariant.getId(), "a", true),
-            ChangeAssetOrder.ofVariantId(oldMasterVariant.getId(), asList("3", "2"), true));
+            ProductRemoveAssetActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .assetKey("a")
+                .staged(true)
+                .build(),
+            ProductChangeAssetOrderActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .assetOrder(asList("3", "2"))
+                .staged(true)
+                .build());
   }
 
   @Test
   void
       buildProductVariantAssetsUpdateActions_WithAddedAndDifferentOrder_ShouldBuildChangeOrderAndAddActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
+        ProductSyncMockUtils.createProductFromJson(PRODUCT_WITH_ASSETS_ABC);
     final ProductDraft newProductDraft =
-        readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ACBD, ProductDraft.class);
+        ProductSyncMockUtils.createProductDraftFromJson(PRODUCT_DRAFT_WITH_ASSETS_ACBD);
 
     final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAssetsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions(
             oldProduct, newProductDraft, oldMasterVariant, newMasterVariant, SYNC_OPTIONS);
 
     assertThat(updateActions)
         .containsExactly(
-            ChangeAssetOrder.ofVariantId(oldMasterVariant.getId(), asList("1", "3", "2"), true),
-            AddAsset.ofVariantId(
-                    oldMasterVariant.getId(),
-                    AssetDraftBuilder.of(
-                            singletonList(AssetSourceBuilder.ofUri("uri").build()),
-                            ofEnglish("asset name"))
+            ProductChangeAssetOrderActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .assetOrder(asList("1", "3", "2"))
+                .staged(true)
+                .build(),
+            ProductAddAssetActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .asset(
+                    AssetDraftBuilder.of()
+                        .sources(AssetSourceBuilder.of().uri("uri").build())
+                        .name(ofEnglish("asset name"))
                         .key("d")
-                        .tags(emptySet())
+                        .tags(emptyList())
                         .build())
-                .withStaged(true)
-                .withPosition(3));
+                .staged(true)
+                .position(3)
+                .build());
   }
 
   @Test
   void
       buildProductVariantAssetsUpdateActions_WithAddedAssetInBetween_ShouldBuildAddWithCorrectPositionActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
+        ProductSyncMockUtils.createProductFromJson(PRODUCT_WITH_ASSETS_ABC);
     final ProductDraft newProductDraft =
-        readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_ADBC, ProductDraft.class);
+        ProductSyncMockUtils.createProductDraftFromJson(PRODUCT_DRAFT_WITH_ASSETS_ADBC);
 
     final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAssetsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions(
             oldProduct, newProductDraft, oldMasterVariant, newMasterVariant, SYNC_OPTIONS);
 
     assertThat(updateActions)
         .containsExactly(
-            AddAsset.ofVariantId(
-                    oldMasterVariant.getId(),
-                    AssetDraftBuilder.of(
-                            singletonList(AssetSourceBuilder.ofUri("uri").build()),
-                            ofEnglish("asset name"))
+            ProductAddAssetActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .asset(
+                    AssetDraftBuilder.of()
+                        .sources(AssetSourceBuilder.of().uri("uri").build())
+                        .name(ofEnglish("asset name"))
                         .key("d")
-                        .tags(emptySet())
+                        .tags(emptyList())
                         .build())
-                .withStaged(true)
-                .withPosition(1));
+                .staged(true)
+                .position(1)
+                .build());
   }
 
   @Test
   void
       buildProductVariantAssetsUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAllThreeMoveAssetActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
+        ProductSyncMockUtils.createProductFromJson(PRODUCT_WITH_ASSETS_ABC);
     final ProductDraft newProductDraft =
-        readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_CBD, ProductDraft.class);
+        ProductSyncMockUtils.createProductDraftFromJson(PRODUCT_DRAFT_WITH_ASSETS_CBD);
 
     final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAssetsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions(
             oldProduct, newProductDraft, oldMasterVariant, newMasterVariant, SYNC_OPTIONS);
 
     assertThat(updateActions)
         .containsExactly(
-            RemoveAsset.ofVariantIdWithKey(oldMasterVariant.getId(), "a", true),
-            ChangeAssetOrder.ofVariantId(oldMasterVariant.getId(), asList("3", "2"), true),
-            AddAsset.ofVariantId(
-                    oldMasterVariant.getId(),
-                    AssetDraftBuilder.of(
-                            singletonList(AssetSourceBuilder.ofUri("uri").build()),
-                            ofEnglish("asset name"))
+            ProductRemoveAssetActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .assetKey("a")
+                .staged(true)
+                .build(),
+            ProductChangeAssetOrderActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .assetOrder("3", "2")
+                .staged(true)
+                .build(),
+            ProductAddAssetActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .asset(
+                    AssetDraftBuilder.of()
+                        .sources(AssetSourceBuilder.of().uri("uri").build())
+                        .name(ofEnglish("asset name"))
                         .key("d")
-                        .tags(emptySet())
+                        .tags(emptyList())
                         .build())
-                .withStaged(true)
-                .withPosition(2));
+                .position(2)
+                .staged(true)
+                .build());
   }
 
   @Test
   void
       buildProductVariantAssetsUpdateActions_WithAddedRemovedAndDifOrderAndNewName_ShouldBuildAllDiffAssetActions() {
     final ProductProjection oldProduct =
-        readObjectFromResource(PRODUCT_WITH_ASSETS_ABC, Product.class).toProjection(STAGED);
+        ProductSyncMockUtils.createProductFromJson(PRODUCT_WITH_ASSETS_ABC);
     final ProductDraft newProductDraft =
-        readObjectFromResource(PRODUCT_DRAFT_WITH_ASSETS_CBD_WITH_CHANGES, ProductDraft.class);
+        ProductSyncMockUtils.createProductDraftFromJson(PRODUCT_DRAFT_WITH_ASSETS_CBD_WITH_CHANGES);
 
     final ProductVariant oldMasterVariant = oldProduct.getMasterVariant();
     final ProductVariantDraft newMasterVariant = newProductDraft.getMasterVariant();
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantAssetsUpdateActions(
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions(
             oldProduct, newProductDraft, oldMasterVariant, newMasterVariant, SYNC_OPTIONS);
 
     assertThat(updateActions)
         .containsExactly(
-            RemoveAsset.ofVariantIdWithKey(oldMasterVariant.getId(), "a", true),
-            ChangeAssetName.ofAssetKeyAndVariantId(
-                oldMasterVariant.getId(), "c", ofEnglish("new name"), true),
-            ChangeAssetOrder.ofVariantId(oldMasterVariant.getId(), asList("3", "2"), true),
-            AddAsset.ofVariantId(
-                    oldMasterVariant.getId(),
-                    AssetDraftBuilder.of(
-                            singletonList(AssetSourceBuilder.ofUri("uri").build()),
-                            ofEnglish("asset name"))
+            ProductRemoveAssetActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .assetKey("a")
+                .staged(true)
+                .build(),
+            ProductChangeAssetNameActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .assetKey("c")
+                .name(ofEnglish("new name"))
+                .staged(true)
+                .build(),
+            ProductChangeAssetOrderActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .assetOrder("3", "2")
+                .staged(true)
+                .build(),
+            ProductAddAssetActionBuilder.of()
+                .variantId(oldMasterVariant.getId())
+                .asset(
+                    AssetDraftBuilder.of()
+                        .sources(AssetSourceBuilder.of().uri("uri").build())
+                        .name(ofEnglish("asset name"))
                         .key("d")
-                        .tags(emptySet())
+                        .tags(emptyList())
                         .build())
-                .withStaged(true)
-                .withPosition(2));
+                .staged(true)
+                .position(2)
+                .build());
   }
 }

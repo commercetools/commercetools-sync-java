@@ -1,14 +1,12 @@
 package com.commercetools.sync.types.utils;
 
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
-import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildChangeNameUpdateAction;
-import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildFieldDefinitionsUpdateActions;
-import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildSetDescriptionUpdateAction;
+import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.*;
 
+import com.commercetools.api.models.type.Type;
+import com.commercetools.api.models.type.TypeDraft;
+import com.commercetools.api.models.type.TypeUpdateAction;
 import com.commercetools.sync.types.TypeSyncOptions;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.types.Type;
-import io.sphere.sdk.types.TypeDraft;
 import java.util.List;
 import javax.annotation.Nonnull;
 
@@ -17,17 +15,15 @@ public final class TypeSyncUtils {
   /**
    * Compares all the fields (including the field definitions see {@link
    * TypeUpdateActionUtils#buildFieldDefinitionsUpdateActions(Type, TypeDraft, TypeSyncOptions)}) of
-   * a {@link Type} and a {@link TypeDraft}. It returns a {@link List} of {@link
-   * UpdateAction}&lt;{@link Type}&gt; as a result. If no update actions are needed, for example in
-   * case where both the {@link Type} and the {@link TypeDraft} have the same fields, an empty
-   * {@link List} is returned.
+   * a {@link Type} and a {@link TypeDraft}. It returns a {@link List} of {@link TypeUpdateAction}
+   * as a result. If no update actions are needed, for example in case where both the {@link Type}
+   * and the {@link TypeDraft} have the same fields, an empty {@link List} is returned.
    *
-   * <p>Note: Currently this util doesn't support the following:
+   * <p>Note: The commercetools API doesn't support the following:
    *
    * <ul>
-   *   <li>updating the inputHint of a FieldDefinition
    *   <li>removing the EnumValue/LocalizedEnumValue of a FieldDefinition
-   *   <li>updating the label of a EnumValue/LocalizedEnumValue of a FieldDefinition
+   *   <li>changing the required field of a FieldDefinition
    * </ul>
    *
    * @param oldType the {@link Type} which should be updated.
@@ -39,12 +35,12 @@ public final class TypeSyncUtils {
    * @return A list of type-specific update actions.
    */
   @Nonnull
-  public static List<UpdateAction<Type>> buildActions(
+  public static List<TypeUpdateAction> buildActions(
       @Nonnull final Type oldType,
       @Nonnull final TypeDraft newType,
       @Nonnull final TypeSyncOptions syncOptions) {
 
-    final List<UpdateAction<Type>> updateActions =
+    final List<TypeUpdateAction> updateActions =
         filterEmptyOptionals(
             buildChangeNameUpdateAction(oldType, newType),
             buildSetDescriptionUpdateAction(oldType, newType));

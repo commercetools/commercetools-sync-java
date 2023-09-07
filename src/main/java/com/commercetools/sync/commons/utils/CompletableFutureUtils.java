@@ -1,6 +1,5 @@
 package com.commercetools.sync.commons.utils;
 
-import static com.commercetools.sync.commons.utils.StreamUtils.filterNullAndMap;
 import static java.util.stream.Collectors.toList;
 
 import java.util.Collection;
@@ -21,8 +20,8 @@ public final class CompletableFutureUtils {
    * is decided by the supplied collector.
    *
    * @param values collection of values to apply a mapper function that would map each to a {@link
-   *     CompletionStage}.
-   * @param mapper function to map each value to a {@link CompletionStage}
+   *     java.util.concurrent.CompletionStage}.
+   * @param mapper function to map each value to a {@link java.util.concurrent.CompletionStage}
    * @param collector the collector to define the type of the collection returned.
    * @param <T> The type of the values.
    * @param <S> The type of the mapped completed values.
@@ -41,35 +40,13 @@ public final class CompletableFutureUtils {
   }
 
   /**
-   * Creates a Future containing a stream of value results after the mapper function is applied to
-   * each value in the supplied collection and completed it. The type of the collection is decided
-   * upon on by the supplied collector.
-   *
-   * @param values collection of values to apply a mapper function that would map each to a {@link
-   *     CompletionStage}.
-   * @param mapper function to map each value to a {@link CompletionStage}
-   * @param <T> The type of the values.
-   * @param <S> The type of the mapped completed values.
-   * @return a future containing a stream of completed stage results of the values after the mapper
-   *     function was applied to each value in the supplied collection.
-   */
-  @Nonnull
-  public static <T, S> CompletableFuture<Stream<S>> mapValuesToFutureOfCompletedValues(
-      @Nonnull final Collection<T> values, @Nonnull final Function<T, CompletionStage<S>> mapper) {
-
-    final List<CompletableFuture<S>> futureList =
-        mapValuesToFutures(values.stream(), mapper, toList());
-    return collectionOfFuturesToFutureOfCollection(futureList, toList()).thenApply(List::stream);
-  }
-
-  /**
    * Creates a Future containing a collection of value results after the mapper function is applied
    * to each value in the supplied stream and completed it. The type of the returned collection is
    * decided by the supplied collector.
    *
    * @param values stream of values to apply a mapper function that would map each to a {@link
-   *     CompletionStage}.
-   * @param mapper function to map each value to a {@link CompletionStage}
+   *     java.util.concurrent.CompletionStage}.
+   * @param mapper function to map each value to a {@link java.util.concurrent.CompletionStage}
    * @param collector the collector to define the type of the collection returned.
    * @param <T> The type of the values.
    * @param <S> The type of the mapping of the values.
@@ -78,7 +55,7 @@ public final class CompletableFutureUtils {
    *     function was applied to each one.
    */
   @Nonnull
-  public static <T, S, U extends Collection<S>>
+  private static <T, S, U extends Collection<S>>
       CompletableFuture<U> mapValuesToFutureOfCompletedValues(
           @Nonnull final Stream<T> values,
           @Nonnull final Function<T, CompletionStage<S>> mapper,
@@ -130,8 +107,8 @@ public final class CompletableFutureUtils {
    * the returned collection is decided by the supplied collector.
    *
    * @param values stream of values to apply a mapper function that would map each to a {@link
-   *     CompletionStage}.
-   * @param mapper function to map each value to a {@link CompletionStage}
+   *     java.util.concurrent.CompletionStage}.
+   * @param mapper function to map each value to a {@link java.util.concurrent.CompletionStage}
    * @param collector the collector to define the type of the collection returned.
    * @param <T> The type of the values.
    * @param <S> The type of the mapped values.
@@ -139,31 +116,33 @@ public final class CompletableFutureUtils {
    * @return a collection of futures resulting from applying the mapper function on each value.
    */
   @Nonnull
-  public static <T, S, U extends Collection<CompletableFuture<S>>> U mapValuesToFutures(
+  private static <T, S, U extends Collection<CompletableFuture<S>>> U mapValuesToFutures(
       @Nonnull final Stream<T> values,
       @Nonnull final Function<T, CompletionStage<S>> mapper,
       @Nonnull final Collector<CompletableFuture<S>, ?, U> collector) {
 
-    final Stream<CompletionStage<S>> stageStream = filterNullAndMap(values, mapper);
+    final Stream<CompletionStage<S>> stageStream = StreamUtils.filterNullAndMap(values, mapper);
     return toCompletableFutures(stageStream, collector);
   }
 
   /**
-   * Converts a stream of {@link CompletionStage} of values of type {@code <T>} into a {@link
-   * Collection} of the type of the supplied {@code collector} of {@link CompletableFuture} of
-   * values of type {@code <T>}. The type of the returned collection is decided by the supplied
-   * collector.
+   * Converts a stream of {@link java.util.concurrent.CompletionStage} of values of type {@code <T>}
+   * into a {@link java.util.Collection} of the type of the supplied {@code collector} of {@link
+   * java.util.concurrent.CompletableFuture} of values of type {@code <T>}. The type of the returned
+   * collection is decided by the supplied collector.
    *
    * <p>Note: Null futures in the stream are filtered out.
    *
-   * @param values stream of {@link CompletionStage} of values of type {@code <T>}
+   * @param values stream of {@link java.util.concurrent.CompletionStage} of values of type {@code
+   *     <T>}
    * @param collector the collector to define the type of the collection returned.
    * @param <T> the type of the results of the stages.
    * @param <S> the concrete type of the collection returned.
-   * @return a {@link List} of {@link CompletableFuture} elements of type {@code <T>}.
+   * @return a {@link java.util.List} of {@link java.util.concurrent.CompletableFuture} elements of
+   *     type {@code <T>}.
    */
   @Nonnull
-  public static <T, S extends Collection<CompletableFuture<T>>> S toCompletableFutures(
+  private static <T, S extends Collection<CompletableFuture<T>>> S toCompletableFutures(
       @Nonnull final Stream<CompletionStage<T>> values,
       @Nonnull final Collector<CompletableFuture<T>, ?, S> collector) {
     return values

@@ -1,12 +1,19 @@
 package com.commercetools.sync.customers.utils;
 
+import static java.util.stream.Collectors.toSet;
+
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.common.Reference;
+import com.commercetools.api.models.customer.Customer;
+import com.commercetools.api.models.customer.CustomerDraft;
+import com.commercetools.api.models.type.CustomFields;
+import com.commercetools.sync.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import com.commercetools.sync.customers.service.CustomerTransformService;
-import com.commercetools.sync.customers.service.impl.CustomerTransformServiceImpl;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.customers.CustomerDraft;
+import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
@@ -29,16 +36,70 @@ public final class CustomerTransformUtils {
    * @param referenceIdToKeyCache the instance that manages cache.
    * @param customers the customers to resolve the references.
    * @return a new list which contains customerDrafts which have all their references resolved.
-   *     <p>TODO: Move the implementation from service class to this util class.
    */
   @Nonnull
   public static CompletableFuture<List<CustomerDraft>> toCustomerDrafts(
-      @Nonnull final SphereClient client,
+      @Nonnull final ProjectApiRoot client,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache,
       @Nonnull final List<Customer> customers) {
 
-    final CustomerTransformService customerTransformService =
-        new CustomerTransformServiceImpl(client, referenceIdToKeyCache);
+    final CustomerTransformUtils.CustomerTransformServiceImpl customerTransformService =
+        new CustomerTransformUtils.CustomerTransformServiceImpl(client, referenceIdToKeyCache);
     return customerTransformService.toCustomerDrafts(customers);
+  }
+
+  private static class CustomerTransformServiceImpl extends BaseTransformServiceImpl {
+
+    public CustomerTransformServiceImpl(
+        @Nonnull final ProjectApiRoot ctpClient,
+        @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
+      super(ctpClient, referenceIdToKeyCache);
+    }
+
+    @Nonnull
+    public CompletableFuture<List<CustomerDraft>> toCustomerDrafts(
+        @Nonnull final List<Customer> customers) {
+
+      final List<CompletableFuture<Void>> transformReferencesToRunParallel = new ArrayList<>();
+      transformReferencesToRunParallel.add(this.transformCustomTypeReference(customers));
+      transformReferencesToRunParallel.add(this.transformCustomerGroupReference(customers));
+
+      return CompletableFuture.allOf(
+              transformReferencesToRunParallel.stream().toArray(CompletableFuture[]::new))
+          .thenApply(
+              ignore ->
+                  CustomerReferenceResolutionUtils.mapToCustomerDrafts(
+                      customers, referenceIdToKeyCache));
+    }
+
+    @Nonnull
+    private CompletableFuture<Void> transformCustomTypeReference(
+        @Nonnull final List<Customer> customers) {
+
+      final Set<String> setOfTypeIds =
+          customers.stream()
+              .map(Customer::getCustom)
+              .filter(Objects::nonNull)
+              .map(CustomFields::getType)
+              .map(Reference::getId)
+              .collect(toSet());
+
+      return fetchAndFillReferenceIdToKeyCache(setOfTypeIds, GraphQlQueryResource.TYPES);
+    }
+
+    @Nonnull
+    private CompletableFuture<Void> transformCustomerGroupReference(
+        @Nonnull final List<Customer> customers) {
+
+      final Set<String> customerGroupIds =
+          customers.stream()
+              .map(Customer::getCustomerGroup)
+              .filter(Objects::nonNull)
+              .map(Reference::getId)
+              .collect(toSet());
+
+      return fetchAndFillReferenceIdToKeyCache(
+          customerGroupIds, GraphQlQueryResource.CUSTOMER_GROUPS);
+    }
   }
 }

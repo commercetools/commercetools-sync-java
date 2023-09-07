@@ -1,27 +1,23 @@
 package com.commercetools.sync.producttypes.helpers;
 
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.product_type.*;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
 import com.commercetools.sync.services.ProductTypeService;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
-import io.sphere.sdk.products.attributes.NestedAttributeType;
-import io.sphere.sdk.products.attributes.SetAttributeType;
-import io.sphere.sdk.products.attributes.StringAttributeType;
-import io.sphere.sdk.producttypes.ProductType;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class AttributeDefinitionReferenceResolverTest {
 
@@ -29,14 +25,19 @@ class AttributeDefinitionReferenceResolverTest {
   void resolveReferences_WithNoNestedTypeReferences_ShouldNotResolveReferences() {
     // preparation
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(StringAttributeType.of(), "foo", ofEnglish("foo"), true)
+        AttributeDefinitionDraftBuilder.of()
+            .type(AttributeTextTypeBuilder.of().build())
+            .name("foo")
+            .label(ofEnglish("foo"))
+            .isRequired(true)
             .build();
 
     final ProductTypeSyncOptions syncOptions =
-        ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductTypeSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
 
     final AttributeDefinitionReferenceResolver attributeDefinitionReferenceResolver =
-        new AttributeDefinitionReferenceResolver(syncOptions, mock(ProductTypeService.class));
+        new AttributeDefinitionReferenceResolver(
+            syncOptions, Mockito.mock(ProductTypeService.class));
 
     // test and assertion
     assertThat(attributeDefinitionReferenceResolver.resolveReferences(attributeDefinitionDraft))
@@ -47,14 +48,20 @@ class AttributeDefinitionReferenceResolverTest {
   void
       resolveReferences_WithOneNestedTypeWithExistingProductTypeReference_ShouldResolveReferences() {
     // preparation
-    final NestedAttributeType nestedAttributeType =
-        NestedAttributeType.of(ProductType.reference("x"));
+    final AttributeNestedType nestedAttributeType =
+        AttributeNestedTypeBuilder.of()
+            .typeReference(ProductTypeReferenceBuilder.of().id("x").build())
+            .build();
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(nestedAttributeType, "foo", ofEnglish("foo"), true)
+        AttributeDefinitionDraftBuilder.of()
+            .type(nestedAttributeType)
+            .name("foo")
+            .label(ofEnglish("foo"))
+            .isRequired(true)
             .build();
 
     final ProductTypeSyncOptions syncOptions =
-        ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductTypeSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
 
     final ProductTypeService productTypeService = mock(ProductTypeService.class);
     when(productTypeService.fetchCachedProductTypeId(any()))
@@ -63,11 +70,13 @@ class AttributeDefinitionReferenceResolverTest {
     final AttributeDefinitionReferenceResolver attributeDefinitionReferenceResolver =
         new AttributeDefinitionReferenceResolver(syncOptions, productTypeService);
 
-    final NestedAttributeType expectedResolvedNestedAttributeType =
-        NestedAttributeType.of(ProductType.referenceOfId("foo"));
+    final AttributeNestedType expectedResolvedNestedAttributeType =
+        AttributeNestedTypeBuilder.of()
+            .typeReference(ProductTypeReferenceBuilder.of().id("foo").build())
+            .build();
     final AttributeDefinitionDraft expectedResolvedAttrDef =
         AttributeDefinitionDraftBuilder.of(attributeDefinitionDraft)
-            .attributeType(expectedResolvedNestedAttributeType)
+            .type(expectedResolvedNestedAttributeType)
             .build();
 
     // test and assertion
@@ -79,14 +88,20 @@ class AttributeDefinitionReferenceResolverTest {
   void
       resolveReferences_WithOneNestedTypeWithNonExistingProductTypeReference_ShouldNotResolveReferences() {
     // preparation
-    final NestedAttributeType nestedAttributeType =
-        NestedAttributeType.of(ProductType.reference("x"));
+    final AttributeNestedType nestedAttributeType =
+        AttributeNestedTypeBuilder.of()
+            .typeReference(ProductTypeReferenceBuilder.of().id("x").build())
+            .build();
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(nestedAttributeType, "foo", ofEnglish("foo"), true)
+        AttributeDefinitionDraftBuilder.of()
+            .type(nestedAttributeType)
+            .name("foo")
+            .label(ofEnglish("foo"))
+            .isRequired(true)
             .build();
 
     final ProductTypeSyncOptions syncOptions =
-        ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductTypeSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
 
     final ProductTypeService productTypeService = mock(ProductTypeService.class);
     when(productTypeService.fetchCachedProductTypeId(any()))
@@ -104,14 +119,20 @@ class AttributeDefinitionReferenceResolverTest {
   void
       resolveReferences_WithOneNestedTypeWithInvalidProductTypeReference_ShouldNotResolveReferences() {
     // preparation
-    final NestedAttributeType nestedAttributeType =
-        NestedAttributeType.of(ProductType.reference(""));
+    final AttributeNestedType nestedAttributeType =
+        AttributeNestedTypeBuilder.of()
+            .typeReference(ProductTypeReferenceBuilder.of().id("").build())
+            .build();
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(nestedAttributeType, "foo", ofEnglish("foo"), true)
+        AttributeDefinitionDraftBuilder.of()
+            .type(nestedAttributeType)
+            .name("foo")
+            .label(ofEnglish("foo"))
+            .isRequired(true)
             .build();
 
     final ProductTypeSyncOptions syncOptions =
-        ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductTypeSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
 
     final ProductTypeService productTypeService = mock(ProductTypeService.class);
     when(productTypeService.fetchCachedProductTypeId(any()))
@@ -132,13 +153,19 @@ class AttributeDefinitionReferenceResolverTest {
   @Test
   void resolveReferences_WithSetOfNonNestedType_ShouldResolveReferences() {
     // preparation
-    final SetAttributeType setAttributeType = SetAttributeType.of(StringAttributeType.of());
+    final AttributeSetType setAttributeType =
+        AttributeSetTypeBuilder.of().elementType(AttributeTextTypeBuilder.of().build()).build();
 
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(setAttributeType, "foo", ofEnglish("foo"), true).build();
+        AttributeDefinitionDraftBuilder.of()
+            .type(setAttributeType)
+            .name("foo")
+            .label(ofEnglish("foo"))
+            .isRequired(true)
+            .build();
 
     final ProductTypeSyncOptions syncOptions =
-        ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductTypeSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
 
     final ProductTypeService productTypeService = mock(ProductTypeService.class);
     when(productTypeService.fetchCachedProductTypeId(any()))
@@ -156,15 +183,23 @@ class AttributeDefinitionReferenceResolverTest {
   void
       resolveReferences_WithSetOfNestedTypeWithExistingProductTypeReference_ShouldResolveReferences() {
     // preparation
-    final NestedAttributeType nestedAttributeType =
-        NestedAttributeType.of(ProductType.reference("x"));
-    final SetAttributeType setAttributeType = SetAttributeType.of(nestedAttributeType);
+    final AttributeNestedType nestedAttributeType =
+        AttributeNestedTypeBuilder.of()
+            .typeReference(ProductTypeReferenceBuilder.of().id("x").build())
+            .build();
+    final AttributeSetType setAttributeType =
+        AttributeSetTypeBuilder.of().elementType(nestedAttributeType).build();
 
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(setAttributeType, "foo", ofEnglish("foo"), true).build();
+        AttributeDefinitionDraftBuilder.of()
+            .type(setAttributeType)
+            .name("foo")
+            .label(ofEnglish("foo"))
+            .isRequired(true)
+            .build();
 
     final ProductTypeSyncOptions syncOptions =
-        ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductTypeSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
 
     final ProductTypeService productTypeService = mock(ProductTypeService.class);
     when(productTypeService.fetchCachedProductTypeId(any()))
@@ -173,13 +208,15 @@ class AttributeDefinitionReferenceResolverTest {
     final AttributeDefinitionReferenceResolver attributeDefinitionReferenceResolver =
         new AttributeDefinitionReferenceResolver(syncOptions, productTypeService);
 
-    final NestedAttributeType expectedResolvedNestedAttributeType =
-        NestedAttributeType.of(ProductType.referenceOfId("foo"));
-    final SetAttributeType expectedResolvedSetAttributeType =
-        SetAttributeType.of(expectedResolvedNestedAttributeType);
+    final AttributeNestedType expectedResolvedNestedAttributeType =
+        AttributeNestedTypeBuilder.of()
+            .typeReference(ProductTypeReferenceBuilder.of().id("foo").build())
+            .build();
+    final AttributeSetType expectedResolvedSetAttributeType =
+        AttributeSetTypeBuilder.of().elementType(expectedResolvedNestedAttributeType).build();
     final AttributeDefinitionDraft expectedResolvedAttrDef =
         AttributeDefinitionDraftBuilder.of(attributeDefinitionDraft)
-            .attributeType(expectedResolvedSetAttributeType)
+            .type(expectedResolvedSetAttributeType)
             .build();
 
     // test and assertion
@@ -191,14 +228,22 @@ class AttributeDefinitionReferenceResolverTest {
   void
       resolveReferences_WithSetOfNestedTypeWithInvalidProductTypeReference_ShouldNotResolveReferences() {
     // preparation
-    final NestedAttributeType nestedAttributeType =
-        NestedAttributeType.of(ProductType.reference(""));
-    final SetAttributeType setAttributeType = SetAttributeType.of(nestedAttributeType);
+    final AttributeNestedType nestedAttributeType =
+        AttributeNestedTypeBuilder.of()
+            .typeReference(ProductTypeReferenceBuilder.of().id("").build())
+            .build();
+    final AttributeSetType setAttributeType =
+        AttributeSetTypeBuilder.of().elementType(nestedAttributeType).build();
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(setAttributeType, "foo", ofEnglish("foo"), true).build();
+        AttributeDefinitionDraftBuilder.of()
+            .type(setAttributeType)
+            .name("foo")
+            .label(ofEnglish("foo"))
+            .isRequired(true)
+            .build();
 
     final ProductTypeSyncOptions syncOptions =
-        ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductTypeSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
 
     final ProductTypeService productTypeService = mock(ProductTypeService.class);
     when(productTypeService.fetchCachedProductTypeId(any()))

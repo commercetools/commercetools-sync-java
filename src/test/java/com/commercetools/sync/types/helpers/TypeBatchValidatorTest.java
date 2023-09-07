@@ -1,26 +1,18 @@
 package com.commercetools.sync.types.helpers;
 
-import static com.commercetools.sync.types.helpers.TypeBatchValidator.TYPE_DRAFT_IS_NULL;
-import static com.commercetools.sync.types.helpers.TypeBatchValidator.TYPE_DRAFT_KEY_NOT_SET;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static java.lang.String.format;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.type.TypeDraft;
+import com.commercetools.api.models.type.TypeDraftBuilder;
 import com.commercetools.sync.types.TypeSyncOptions;
 import com.commercetools.sync.types.TypeSyncOptionsBuilder;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.types.TypeDraft;
-import io.sphere.sdk.types.TypeDraftBuilder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +26,7 @@ class TypeBatchValidatorTest {
   @BeforeEach
   void setup() {
     errorCallBackMessages = new ArrayList<>();
-    final SphereClient ctpClient = mock(SphereClient.class);
+    final ProjectApiRoot ctpClient = mock(ProjectApiRoot.class);
     syncOptions =
         TypeSyncOptionsBuilder.of(ctpClient)
             .errorCallback(
@@ -59,7 +51,7 @@ class TypeBatchValidatorTest {
     final Set<TypeDraft> validDrafts = getValidDrafts(Collections.singletonList(null));
 
     assertThat(errorCallBackMessages).hasSize(1);
-    assertThat(errorCallBackMessages.get(0)).isEqualTo(TYPE_DRAFT_IS_NULL);
+    assertThat(errorCallBackMessages.get(0)).isEqualTo(TypeBatchValidator.TYPE_DRAFT_IS_NULL);
     assertThat(validDrafts).isEmpty();
   }
 
@@ -71,7 +63,7 @@ class TypeBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(TYPE_DRAFT_KEY_NOT_SET, typeDraft.getName()));
+        .isEqualTo(String.format(TypeBatchValidator.TYPE_DRAFT_KEY_NOT_SET, typeDraft.getName()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -84,19 +76,29 @@ class TypeBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(TYPE_DRAFT_KEY_NOT_SET, typeDraft.getName()));
+        .isEqualTo(String.format(TypeBatchValidator.TYPE_DRAFT_KEY_NOT_SET, typeDraft.getName()));
     assertThat(validDrafts).isEmpty();
   }
 
   @Test
   void validateAndCollectReferencedKeys_WithMixOfValidAndInvalidDrafts_ShouldValidateCorrectly() {
-    final TypeDraft typeDraft = TypeDraftBuilder.of("foo", ofEnglish("name"), emptySet()).build();
+    final TypeDraft typeDraft =
+        TypeDraftBuilder.of()
+            .key("foo")
+            .name(ofEnglish("name"))
+            .resourceTypeIds(emptyList())
+            .build();
 
     final TypeDraft typeDraftWithEmptyKey =
-        TypeDraftBuilder.of("", ofEnglish("name"), emptySet()).build();
+        TypeDraftBuilder.of().key("").name(ofEnglish("name")).resourceTypeIds(emptyList()).build();
 
     final TypeDraft typeDraftWithNullKey =
-        TypeDraftBuilder.of(null, ofEnglish("name"), emptySet()).build();
+        TypeDraftBuilder.of()
+            .key("null")
+            .name(ofEnglish("name"))
+            .resourceTypeIds(emptyList())
+            .build();
+    typeDraftWithNullKey.setKey(null);
 
     final TypeBatchValidator batchValidator = new TypeBatchValidator(syncOptions, syncStatistics);
     final ImmutablePair<Set<TypeDraft>, Set<String>> pair =
@@ -107,11 +109,15 @@ class TypeBatchValidatorTest {
     assertThat(pair.getRight()).containsExactlyInAnyOrder("foo");
 
     assertThat(errorCallBackMessages).hasSize(3);
-    assertThat(errorCallBackMessages.get(0)).isEqualTo(TYPE_DRAFT_IS_NULL);
+    assertThat(errorCallBackMessages.get(0)).isEqualTo(TypeBatchValidator.TYPE_DRAFT_IS_NULL);
     assertThat(errorCallBackMessages.get(1))
-        .isEqualTo(format(TYPE_DRAFT_KEY_NOT_SET, typeDraftWithEmptyKey.getName()));
+        .isEqualTo(
+            String.format(
+                TypeBatchValidator.TYPE_DRAFT_KEY_NOT_SET, typeDraftWithEmptyKey.getName()));
     assertThat(errorCallBackMessages.get(2))
-        .isEqualTo(format(TYPE_DRAFT_KEY_NOT_SET, typeDraftWithNullKey.getName()));
+        .isEqualTo(
+            String.format(
+                TypeBatchValidator.TYPE_DRAFT_KEY_NOT_SET, typeDraftWithNullKey.getName()));
   }
 
   @Nonnull

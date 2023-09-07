@@ -1,38 +1,42 @@
 package com.commercetools.sync.services.impl;
 
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static java.util.Collections.singletonList;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockito.internal.verification.VerificationModeFactory.only;
 
+import com.commercetools.api.client.ByProjectKeyCartDiscountsByIDPost;
+import com.commercetools.api.client.ByProjectKeyCartDiscountsByIDRequestBuilder;
+import com.commercetools.api.client.ByProjectKeyCartDiscountsKeyByKeyGet;
+import com.commercetools.api.client.ByProjectKeyCartDiscountsKeyByKeyRequestBuilder;
+import com.commercetools.api.client.ByProjectKeyCartDiscountsPost;
+import com.commercetools.api.client.ByProjectKeyCartDiscountsRequestBuilder;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.cart_discount.CartDiscount;
+import com.commercetools.api.models.cart_discount.CartDiscountDraft;
+import com.commercetools.api.models.cart_discount.CartDiscountSetDescriptionActionBuilder;
+import com.commercetools.api.models.cart_discount.CartDiscountUpdate;
+import com.commercetools.api.models.cart_discount.CartDiscountUpdateAction;
+import com.commercetools.api.models.cart_discount.CartDiscountUpdateBuilder;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
+import com.commercetools.sync.commons.ExceptionUtils;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.CartDiscountService;
-import io.sphere.sdk.cartdiscounts.CartDiscount;
-import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
-import io.sphere.sdk.cartdiscounts.commands.CartDiscountUpdateCommand;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.SetDescription;
-import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
-import io.sphere.sdk.client.InternalServerErrorException;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.queries.PagedQueryResult;
-import io.sphere.sdk.utils.CompletableFutureUtils;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.error.BadGatewayException;
+import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -40,12 +44,20 @@ import org.junit.jupiter.api.Test;
 
 class CartDiscountServiceImplTest {
 
+  private final ByProjectKeyCartDiscountsKeyByKeyGet byProjectKeyCartDiscountsKeyByKeyGet = mock();
+
+  private final ByProjectKeyCartDiscountsPost byProjectKeyCartDiscountsPost = mock();
+  private final ByProjectKeyCartDiscountsByIDPost byProjectKeyCartDiscountsByIDPost = mock();
+
+  private final ByProjectKeyCartDiscountsByIDRequestBuilder
+      byProjectKeyCartDiscountsByIDRequestBuilder = mock();
+
   @Test
   void fetchCartDiscount_WithEmptyKey_ShouldNotFetchAnyCartDiscount() {
     // preparation
-    final SphereClient sphereClient = mock(SphereClient.class);
+    final ProjectApiRoot ctpClient = mockProjectApiRoot();
     final CartDiscountSyncOptions cartDiscountSyncOptions =
-        CartDiscountSyncOptionsBuilder.of(sphereClient).build();
+        CartDiscountSyncOptionsBuilder.of(ctpClient).build();
     final CartDiscountService cartDiscountService =
         new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
@@ -55,15 +67,15 @@ class CartDiscountServiceImplTest {
 
     // assertions
     assertThat(result).isCompletedWithValue(Optional.empty());
-    verify(sphereClient, never()).execute(any());
+    verify(byProjectKeyCartDiscountsKeyByKeyGet, never()).execute();
   }
 
   @Test
   void fetchCartDiscount_WithNullKey_ShouldNotFetchAnyCartDiscount() {
     // preparation
-    final SphereClient sphereClient = mock(SphereClient.class);
+    final ProjectApiRoot ctpClient = mockProjectApiRoot();
     final CartDiscountSyncOptions cartDiscountSyncOptions =
-        CartDiscountSyncOptionsBuilder.of(sphereClient).build();
+        CartDiscountSyncOptionsBuilder.of(ctpClient).build();
     final CartDiscountService cartDiscountService =
         new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
@@ -73,26 +85,25 @@ class CartDiscountServiceImplTest {
 
     // assertions
     assertThat(result).isCompletedWithValue(Optional.empty());
-    verify(sphereClient, never()).execute(any());
+    verify(byProjectKeyCartDiscountsKeyByKeyGet, never()).execute();
   }
 
   @Test
   void fetchCartDiscount_WithValidKey_ShouldReturnMockCartDiscount() {
     // preparation
-    final SphereClient sphereClient = mock(SphereClient.class);
+    final ProjectApiRoot ctpClient = mockProjectApiRoot();
     final CartDiscount mockCartDiscount = mock(CartDiscount.class);
     when(mockCartDiscount.getId()).thenReturn("testId");
     when(mockCartDiscount.getKey()).thenReturn("any_key");
     final CartDiscountSyncOptions cartDiscountSyncOptions =
-        CartDiscountSyncOptionsBuilder.of(sphereClient).build();
+        CartDiscountSyncOptionsBuilder.of(ctpClient).build();
     final CartDiscountService cartDiscountService =
         new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
-    @SuppressWarnings("unchecked")
-    final PagedQueryResult<CartDiscount> pagedQueryResult = mock(PagedQueryResult.class);
-    when(pagedQueryResult.head()).thenReturn(Optional.of(mockCartDiscount));
-    when(cartDiscountSyncOptions.getCtpClient().execute(any(CartDiscountQuery.class)))
-        .thenReturn(completedFuture(pagedQueryResult));
+    final ApiHttpResponse<CartDiscount> apiHttpResponse = mock(ApiHttpResponse.class);
+    when(byProjectKeyCartDiscountsKeyByKeyGet.execute())
+        .thenReturn(CompletableFuture.completedFuture(apiHttpResponse));
+    when(apiHttpResponse.getBody()).thenReturn(mockCartDiscount);
 
     // test
     final CompletionStage<Optional<CartDiscount>> result =
@@ -100,18 +111,22 @@ class CartDiscountServiceImplTest {
 
     // assertions
     assertThat(result).isCompletedWithValue(Optional.of(mockCartDiscount));
-    verify(sphereClient, only()).execute(any());
+    verify(byProjectKeyCartDiscountsKeyByKeyGet, only()).execute();
   }
 
   @Test
+  @SuppressFBWarnings(
+      value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT",
+      justification = "See: https://github.com/spotbugs/spotbugs/issues/872")
   void createCartDiscount_WithNullCartDiscountKey_ShouldNotCreateCartDiscount() {
     // preparation
     final CartDiscountDraft mockCartDiscountDraft = mock(CartDiscountDraft.class);
     final Map<String, Throwable> errors = new HashMap<>();
     when(mockCartDiscountDraft.getKey()).thenReturn(null);
 
+    final ProjectApiRoot projectApiRoot = mockProjectApiRoot();
     final CartDiscountSyncOptions cartDiscountSyncOptions =
-        CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class))
+        CartDiscountSyncOptionsBuilder.of(projectApiRoot)
             .errorCallback(
                 (exception, oldResource, newResource, actions) ->
                     errors.put(exception.getMessage(), exception))
@@ -127,19 +142,22 @@ class CartDiscountServiceImplTest {
     assertThat(result).isCompletedWithValue(Optional.empty());
     assertThat(errors.keySet())
         .containsExactly("Failed to create draft with key: 'null'. Reason: Draft key is blank!");
-    verify(cartDiscountSyncOptions.getCtpClient(), times(0)).execute(any());
+    verify(projectApiRoot, times(0)).cartDiscounts();
   }
 
   @Test
+  @SuppressFBWarnings(
+      value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT",
+      justification = "See: https://github.com/spotbugs/spotbugs/issues/872")
   void createCartDiscount_WithEmptyCartDiscountKey_ShouldHaveEmptyOptionalAsAResult() {
     // preparation
-    final SphereClient sphereClient = mock(SphereClient.class);
+    final ProjectApiRoot projectApiRoot = mockProjectApiRoot();
     final CartDiscountDraft mockCartDiscountDraft = mock(CartDiscountDraft.class);
     final Map<String, Throwable> errors = new HashMap<>();
     when(mockCartDiscountDraft.getKey()).thenReturn("");
 
     final CartDiscountSyncOptions options =
-        CartDiscountSyncOptionsBuilder.of(sphereClient)
+        CartDiscountSyncOptionsBuilder.of(projectApiRoot)
             .errorCallback(
                 (exception, oldResource, newResource, actions) ->
                     errors.put(exception.getMessage(), exception))
@@ -155,7 +173,7 @@ class CartDiscountServiceImplTest {
     assertThat(result).isCompletedWithValue(Optional.empty());
     assertThat(errors.keySet())
         .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
-    verify(options.getCtpClient(), times(0)).execute(any());
+    verify(projectApiRoot, times(0)).cartDiscounts();
   }
 
   @Test
@@ -165,8 +183,10 @@ class CartDiscountServiceImplTest {
     final Map<String, Throwable> errors = new HashMap<>();
     when(mockCartDiscountDraft.getKey()).thenReturn("cartDiscountKey");
 
+    final ProjectApiRoot projectApiRoot = mockProjectApiRoot();
+
     final CartDiscountSyncOptions cartDiscountSyncOptions =
-        CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class))
+        CartDiscountSyncOptionsBuilder.of(projectApiRoot)
             .errorCallback(
                 (exception, oldResource, newResource, actions) ->
                     errors.put(exception.getMessage(), exception))
@@ -175,8 +195,8 @@ class CartDiscountServiceImplTest {
     final CartDiscountService cartDiscountService =
         new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
-    when(cartDiscountSyncOptions.getCtpClient().execute(any()))
-        .thenReturn(CompletableFutureUtils.failed(new InternalServerErrorException()));
+    when(byProjectKeyCartDiscountsPost.execute())
+        .thenReturn(CompletableFutureUtils.failed(ExceptionUtils.createBadGatewayException()));
 
     // test
     final CompletionStage<Optional<CartDiscount>> result =
@@ -195,8 +215,7 @@ class CartDiscountServiceImplTest {
         .matches(
             exception -> {
               assertThat(exception).isExactlyInstanceOf(SyncException.class);
-              assertThat(exception.getCause())
-                  .isExactlyInstanceOf(InternalServerErrorException.class);
+              assertThat(exception.getCause()).isExactlyInstanceOf(BadGatewayException.class);
               return true;
             });
   }
@@ -204,44 +223,58 @@ class CartDiscountServiceImplTest {
   @Test
   void updateCartDiscount_WithMockSuccessfulCtpResponse_ShouldCallCartDiscountUpdateCommand() {
     // preparation
+    final ProjectApiRoot projectApiRoot = mockProjectApiRoot();
     final CartDiscount mockCartDiscount = mock(CartDiscount.class);
     final CartDiscountSyncOptions cartDiscountSyncOptions =
-        CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        CartDiscountSyncOptionsBuilder.of(projectApiRoot).build();
 
-    when(cartDiscountSyncOptions.getCtpClient().execute(any()))
-        .thenReturn(completedFuture(mockCartDiscount));
+    final ApiHttpResponse<CartDiscount> apiHttpResponse = mock(ApiHttpResponse.class);
+    when(apiHttpResponse.getBody()).thenReturn(mockCartDiscount);
+    when(byProjectKeyCartDiscountsByIDPost.execute())
+        .thenReturn(CompletableFuture.completedFuture(apiHttpResponse));
+
     final CartDiscountService cartDiscountService =
         new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
-    final List<UpdateAction<CartDiscount>> updateActions =
-        singletonList(SetDescription.of(LocalizedString.ofEnglish("new_desc")));
+    final List<CartDiscountUpdateAction> updateActions =
+        singletonList(
+            CartDiscountSetDescriptionActionBuilder.of()
+                .description(ofEnglish("new_desc"))
+                .build());
     // test
     final CompletionStage<CartDiscount> result =
         cartDiscountService.updateCartDiscount(mockCartDiscount, updateActions);
 
     // assertions
     assertThat(result).isCompletedWithValue(mockCartDiscount);
-    verify(cartDiscountSyncOptions.getCtpClient())
-        .execute(eq(CartDiscountUpdateCommand.of(mockCartDiscount, updateActions)));
+    verify(byProjectKeyCartDiscountsByIDRequestBuilder)
+        .post(
+            eq(
+                CartDiscountUpdateBuilder.of()
+                    .actions(updateActions)
+                    .version(mockCartDiscount.getVersion())
+                    .build()));
   }
 
   @Test
   void updateCartDiscount_WithMockUnsuccessfulCtpResponse_ShouldCompleteExceptionally() {
     // preparation
     final CartDiscount mockCartDiscount = mock(CartDiscount.class);
+    final ProjectApiRoot mockProjectApiRoot = mockProjectApiRoot();
     final CartDiscountSyncOptions cartDiscountSyncOptions =
-        CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        CartDiscountSyncOptionsBuilder.of(mockProjectApiRoot).build();
 
-    when(cartDiscountSyncOptions.getCtpClient().execute(any()))
-        .thenReturn(
-            CompletableFutureUtils.exceptionallyCompletedFuture(
-                new InternalServerErrorException()));
+    when(byProjectKeyCartDiscountsByIDPost.execute())
+        .thenReturn(CompletableFutureUtils.failed(ExceptionUtils.createBadGatewayException()));
 
     final CartDiscountService cartDiscountService =
         new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
-    final List<UpdateAction<CartDiscount>> updateActions =
-        singletonList(SetDescription.of(LocalizedString.ofEnglish("new_desc")));
+    final List<CartDiscountUpdateAction> updateActions =
+        singletonList(
+            CartDiscountSetDescriptionActionBuilder.of()
+                .description(ofEnglish("new_desc"))
+                .build());
     // test
     final CompletionStage<CartDiscount> result =
         cartDiscountService.updateCartDiscount(mockCartDiscount, updateActions);
@@ -250,6 +283,31 @@ class CartDiscountServiceImplTest {
     assertThat(result)
         .failsWithin(1, TimeUnit.SECONDS)
         .withThrowableOfType(ExecutionException.class)
-        .withCauseExactlyInstanceOf(InternalServerErrorException.class);
+        .withCauseExactlyInstanceOf(BadGatewayException.class);
+  }
+
+  private ProjectApiRoot mockProjectApiRoot() {
+    final ProjectApiRoot ctpClient = mock(ProjectApiRoot.class);
+    final ByProjectKeyCartDiscountsRequestBuilder byProjectKeyCartDiscountsRequestBuilder = mock();
+    when(ctpClient.cartDiscounts()).thenReturn(byProjectKeyCartDiscountsRequestBuilder);
+    final ByProjectKeyCartDiscountsKeyByKeyRequestBuilder
+        byProjectKeyCartDiscountsKeyByKeyRequestBuilder = mock();
+    when(byProjectKeyCartDiscountsRequestBuilder.withKey(any()))
+        .thenReturn(byProjectKeyCartDiscountsKeyByKeyRequestBuilder);
+    when(byProjectKeyCartDiscountsRequestBuilder.withId(any()))
+        .thenReturn(byProjectKeyCartDiscountsByIDRequestBuilder);
+    when(byProjectKeyCartDiscountsKeyByKeyRequestBuilder.get())
+        .thenReturn(byProjectKeyCartDiscountsKeyByKeyGet);
+    final CompletableFuture<ApiHttpResponse<CartDiscount>> apiHttpResponseCompletableFuture =
+        mock();
+    when(byProjectKeyCartDiscountsKeyByKeyGet.execute())
+        .thenReturn(apiHttpResponseCompletableFuture);
+    when(byProjectKeyCartDiscountsRequestBuilder.post(any(CartDiscountDraft.class)))
+        .thenReturn(byProjectKeyCartDiscountsPost);
+    when(byProjectKeyCartDiscountsByIDRequestBuilder.post(any(CartDiscountUpdate.class)))
+        .thenReturn(byProjectKeyCartDiscountsByIDPost);
+    when(byProjectKeyCartDiscountsPost.execute()).thenReturn(apiHttpResponseCompletableFuture);
+    when(byProjectKeyCartDiscountsByIDPost.execute()).thenReturn(apiHttpResponseCompletableFuture);
+    return ctpClient;
   }
 }

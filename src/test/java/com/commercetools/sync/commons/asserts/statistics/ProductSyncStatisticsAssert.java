@@ -1,5 +1,7 @@
 package com.commercetools.sync.commons.asserts.statistics;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import javax.annotation.Nullable;
 
@@ -30,7 +32,7 @@ public final class ProductSyncStatisticsAssert
       final int failed,
       final int numberOfProductsWithMissingParents) {
     super.hasValues(processed, created, updated, failed);
-    org.assertj.core.api.Assertions.assertThat(actual.getNumberOfProductsWithMissingParents())
+    assertThat(actual.getNumberOfProductsWithMissingParents())
         .isEqualTo(numberOfProductsWithMissingParents);
     return myself;
   }

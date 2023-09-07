@@ -1,7 +1,7 @@
 package com.commercetools.sync.integration.externalsource.categories;
 
-import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.sdk2.commons.helpers.CustomReferenceResolver.TYPE_DOES_NOT_EXIST;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.commons.helpers.CustomReferenceResolver.TYPE_DOES_NOT_EXIST;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,13 +13,13 @@ import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.api.models.type.FieldContainerBuilder;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
+import com.commercetools.sync.categories.CategorySync;
+import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
+import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.integration.commons.utils.CategoryITUtils;
 import com.commercetools.sync.integration.commons.utils.ITUtils;
 import com.commercetools.sync.integration.commons.utils.TestClientUtils;
-import com.commercetools.sync.sdk2.categories.CategorySync;
-import com.commercetools.sync.sdk2.categories.CategorySyncOptions;
-import com.commercetools.sync.sdk2.categories.CategorySyncOptionsBuilder;
-import com.commercetools.sync.sdk2.categories.helpers.CategorySyncStatistics;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.vrap.rmf.base.client.ApiHttpMethod;
 import io.vrap.rmf.base.client.ApiHttpResponse;

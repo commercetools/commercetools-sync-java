@@ -1,12 +1,25 @@
 package com.commercetools.sync.shoppinglists.utils;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.customer.CustomerReference;
+import com.commercetools.api.models.shopping_list.ShoppingList;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItem;
+import com.commercetools.api.models.shopping_list.TextLineItem;
+import com.commercetools.api.models.type.CustomFields;
+import com.commercetools.api.models.type.TypeReference;
+import com.commercetools.sync.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import com.commercetools.sync.shoppinglists.service.ShoppingListTransformService;
-import com.commercetools.sync.shoppinglists.service.impl.ShoppingListTransformServiceImpl;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
+import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
@@ -29,16 +42,109 @@ public final class ShoppingListTransformUtils {
    * @param referenceIdToKeyCache the instance that manages cache.
    * @param shoppingLists the shoppingLists to resolve the references.
    * @return a new list which contains ShoppingListDrafts which have all their references resolved.
-   *     <p>TODO: Move the implementation from service class to this util class.
    */
   @Nonnull
   public static CompletableFuture<List<ShoppingListDraft>> toShoppingListDrafts(
-      @Nonnull final SphereClient client,
+      @Nonnull final ProjectApiRoot client,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache,
       @Nonnull final List<ShoppingList> shoppingLists) {
 
-    final ShoppingListTransformService shoppingListTransformService =
+    final ShoppingListTransformServiceImpl shoppingListTransformService =
         new ShoppingListTransformServiceImpl(client, referenceIdToKeyCache);
     return shoppingListTransformService.toShoppingListDrafts(shoppingLists);
+  }
+}
+
+class ShoppingListTransformServiceImpl extends BaseTransformServiceImpl {
+
+  public ShoppingListTransformServiceImpl(
+      @Nonnull final ProjectApiRoot ctpClient,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
+    super(ctpClient, referenceIdToKeyCache);
+  }
+
+  @Nonnull
+  public CompletableFuture<List<ShoppingListDraft>> toShoppingListDrafts(
+      @Nonnull final List<ShoppingList> shoppingLists) {
+
+    final List<CompletableFuture<Void>> transformReferencesToRunParallel = new ArrayList<>();
+    transformReferencesToRunParallel.add(this.transformCustomTypeReference(shoppingLists));
+    transformReferencesToRunParallel.add(this.transformCustomerReference(shoppingLists));
+
+    return CompletableFuture.allOf(
+            transformReferencesToRunParallel.stream().toArray(CompletableFuture[]::new))
+        .thenApply(
+            ignore ->
+                ShoppingListReferenceResolutionUtils.mapToShoppingListDrafts(
+                    shoppingLists, referenceIdToKeyCache));
+  }
+
+  @Nonnull
+  private CompletableFuture<Void> transformCustomTypeReference(
+      @Nonnull final List<ShoppingList> shoppingLists) {
+
+    final Set<String> setOfTypeIds = new HashSet<>();
+
+    final Set<String> customTypeIds =
+        shoppingLists.stream()
+            .map(ShoppingList::getCustom)
+            .filter(Objects::nonNull)
+            .map(CustomFields::getType)
+            .map(TypeReference::getId)
+            .collect(toSet());
+
+    setOfTypeIds.addAll(customTypeIds);
+    setOfTypeIds.addAll(collectLineItemCustomTypeIds(shoppingLists));
+    setOfTypeIds.addAll(collectTextLineItemCustomTypeIds(shoppingLists));
+
+    return fetchAndFillReferenceIdToKeyCache(setOfTypeIds, GraphQlQueryResource.TYPES);
+  }
+
+  private Set<String> collectTextLineItemCustomTypeIds(List<ShoppingList> shoppingLists) {
+
+    return shoppingLists.stream()
+        .map(ShoppingList::getTextLineItems)
+        .map(
+            textLineItems ->
+                textLineItems.stream()
+                    .filter(Objects::nonNull)
+                    .map(TextLineItem::getCustom)
+                    .filter(Objects::nonNull)
+                    .map(CustomFields::getType)
+                    .map(TypeReference::getId)
+                    .collect(toList()))
+        .flatMap(Collection::stream)
+        .collect(toSet());
+  }
+
+  private Set<String> collectLineItemCustomTypeIds(List<ShoppingList> shoppingLists) {
+
+    return shoppingLists.stream()
+        .map(ShoppingList::getLineItems)
+        .map(
+            lineItems ->
+                lineItems.stream()
+                    .filter(Objects::nonNull)
+                    .map(ShoppingListLineItem::getCustom)
+                    .filter(Objects::nonNull)
+                    .map(CustomFields::getType)
+                    .map(TypeReference::getId)
+                    .collect(toList()))
+        .flatMap(Collection::stream)
+        .collect(toSet());
+  }
+
+  @Nonnull
+  private CompletableFuture<Void> transformCustomerReference(
+      @Nonnull final List<ShoppingList> shoppingLists) {
+
+    final Set<String> customerIds =
+        shoppingLists.stream()
+            .map(ShoppingList::getCustomer)
+            .filter(Objects::nonNull)
+            .map(CustomerReference::getId)
+            .collect(toSet());
+
+    return fetchAndFillReferenceIdToKeyCache(customerIds, GraphQlQueryResource.CUSTOMERS);
   }
 }

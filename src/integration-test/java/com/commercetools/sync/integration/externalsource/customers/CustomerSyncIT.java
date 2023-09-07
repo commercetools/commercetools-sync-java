@@ -1,6 +1,6 @@
 package com.commercetools.sync.integration.externalsource.customers;
 
-import static com.commercetools.sync.sdk2.customers.utils.CustomerUpdateActionUtils.CUSTOMER_NUMBER_EXISTS_WARNING;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.CUSTOMER_NUMBER_EXISTS_WARNING;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -39,13 +39,13 @@ import com.commercetools.api.models.store.Store;
 import com.commercetools.api.models.store.StoreResourceIdentifierBuilder;
 import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
+import com.commercetools.sync.customers.CustomerSync;
+import com.commercetools.sync.customers.CustomerSyncOptions;
+import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
+import com.commercetools.sync.customers.helpers.CustomerSyncStatistics;
 import com.commercetools.sync.integration.commons.utils.CustomerITUtils;
 import com.commercetools.sync.integration.commons.utils.ITUtils;
 import com.commercetools.sync.integration.commons.utils.TestClientUtils;
-import com.commercetools.sync.sdk2.customers.CustomerSync;
-import com.commercetools.sync.sdk2.customers.CustomerSyncOptions;
-import com.commercetools.sync.sdk2.customers.CustomerSyncOptionsBuilder;
-import com.commercetools.sync.sdk2.customers.helpers.CustomerSyncStatistics;
 import com.neovisionaries.i18n.CountryCode;
 import java.time.LocalDate;
 import java.util.ArrayList;

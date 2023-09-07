@@ -1,13 +1,13 @@
 package com.commercetools.sync.benchmark;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.*;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ensureProductType;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static java.util.Locale.ENGLISH;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,13 +22,13 @@ import com.commercetools.api.models.product.ProductVariantDraftBuilder;
 import com.commercetools.api.models.product_type.ProductType;
 import com.commercetools.api.models.product_type.ProductTypeResourceIdentifier;
 import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
-import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
-import com.commercetools.sync.sdk2.commons.utils.QuadConsumer;
-import com.commercetools.sync.sdk2.commons.utils.TriConsumer;
-import com.commercetools.sync.sdk2.products.ProductSync;
-import com.commercetools.sync.sdk2.products.ProductSyncOptions;
-import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
-import com.commercetools.sync.sdk2.products.helpers.ProductSyncStatistics;
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.utils.QuadConsumer;
+import com.commercetools.sync.commons.utils.TriConsumer;
+import com.commercetools.sync.products.ProductSync;
+import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.io.IOException;
 import java.util.ArrayList;

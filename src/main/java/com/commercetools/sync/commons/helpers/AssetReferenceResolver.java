@@ -2,10 +2,10 @@ package com.commercetools.sync.commons.helpers;
 
 import static java.lang.String.format;
 
+import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.api.models.common.AssetDraftBuilder;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.services.TypeService;
-import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.models.AssetDraftBuilder;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
 
@@ -16,9 +16,10 @@ public final class AssetReferenceResolver
       "Failed to resolve custom type reference on AssetDraft with key:'%s'.";
 
   /**
-   * Takes a {@link BaseSyncOptions} instance and a {@link TypeService} to instantiate a {@link
-   * AssetReferenceResolver} instance that could be used to resolve the asset drafts in the CTP
-   * project specified in the injected {@link BaseSyncOptions} instance.
+   * Takes a {@link BaseSyncOptions} instance and a {@link
+   * com.commercetools.sync.services.TypeService} to instantiate a {@link AssetReferenceResolver}
+   * instance that could be used to resolve the asset drafts in the CTP project specified in the
+   * injected {@link BaseSyncOptions} instance.
    *
    * @param options the container of all the options of the sync process including the CTP project
    *     client and/or configuration and other sync-specific options.

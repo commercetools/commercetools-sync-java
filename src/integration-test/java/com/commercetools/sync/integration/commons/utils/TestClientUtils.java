@@ -4,7 +4,7 @@ import static java.lang.String.format;
 
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.defaultconfig.ServiceRegion;
-import com.commercetools.sync.sdk2.commons.utils.ClientConfigurationUtils;
+import com.commercetools.sync.commons.utils.ClientConfigurationUtils;
 import io.vrap.rmf.base.client.oauth2.ClientCredentials;
 import java.io.InputStream;
 import java.util.InvalidPropertiesFormatException;

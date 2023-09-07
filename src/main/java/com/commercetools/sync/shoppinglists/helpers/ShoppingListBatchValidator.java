@@ -4,12 +4,12 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraft;
+import com.commercetools.api.models.shopping_list.TextLineItemDraft;
 import com.commercetools.sync.commons.helpers.BaseBatchValidator;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.shoppinglists.LineItemDraft;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
-import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -47,10 +47,11 @@ public class ShoppingListBatchValidator
   }
 
   /**
-   * Given the {@link List}&lt;{@link ShoppingListDraft}&gt; of drafts this method attempts to
-   * validate drafts and collect referenced type keys from the draft and return an {@link
-   * ImmutablePair}&lt;{@link Set}&lt; {@link ShoppingListDraft}&gt;,{@link ReferencedKeys}&gt;
-   * which contains the {@link Set} of valid drafts and referenced keys.
+   * Given the {@link java.util.List}&lt;{@link ShoppingListDraft}&gt; of drafts this method
+   * attempts to validate drafts and collect referenced type keys from the draft and return an
+   * {@link org.apache.commons.lang3.tuple.ImmutablePair}&lt;{@link java.util.Set}&lt; {@link
+   * ShoppingListDraft}&gt;,{@link ShoppingListBatchValidator.ReferencedKeys}&gt; which contains the
+   * {@link java.util.Set} of valid drafts and referenced keys.
    *
    * <p>A valid shopping list draft is one which satisfies the following conditions:
    *
@@ -70,9 +71,9 @@ public class ShoppingListBatchValidator
    * </ol>
    *
    * @param shoppingListDrafts the shopping list drafts to validate and collect referenced keys.
-   * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@link ShoppingListDraft}&gt;, {@link
-   *     ReferencedKeys}&gt; which contains the {@link Set} of valid drafts and referenced keys
-   *     within a wrapper.
+   * @return {@link org.apache.commons.lang3.tuple.ImmutablePair}&lt;{@link java.util.Set}&lt;{@link
+   *     ShoppingListDraft}&gt;, {@link ShoppingListBatchValidator.ReferencedKeys}&gt; which
+   *     contains the {@link java.util.Set} of valid drafts and referenced keys within a wrapper.
    */
   @Override
   public ImmutablePair<Set<ShoppingListDraft>, ReferencedKeys> validateAndCollectReferencedKeys(
@@ -114,7 +115,7 @@ public class ShoppingListBatchValidator
     final List<String> errorMessages = new ArrayList<>();
 
     if (shoppingListDraft.getLineItems() != null) {
-      final List<LineItemDraft> lineItemDrafts = shoppingListDraft.getLineItems();
+      final List<ShoppingListLineItemDraft> lineItemDrafts = shoppingListDraft.getLineItems();
       for (int i = 0; i < lineItemDrafts.size(); i++) {
         errorMessages.addAll(
             getLineItemDraftErrorsInAllLineItems(
@@ -136,7 +137,7 @@ public class ShoppingListBatchValidator
 
   @Nonnull
   private List<String> getLineItemDraftErrorsInAllLineItems(
-      @Nullable final LineItemDraft lineItemDraft,
+      @Nullable final ShoppingListLineItemDraft lineItemDraft,
       final int itemPosition,
       @Nonnull final String shoppingListDraftKey) {
     final List<String> errorMessages = new ArrayList<>();

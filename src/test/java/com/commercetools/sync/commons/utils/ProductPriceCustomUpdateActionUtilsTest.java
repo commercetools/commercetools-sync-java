@@ -1,23 +1,21 @@
 package com.commercetools.sync.commons.utils;
 
-import static com.commercetools.sync.commons.asserts.actions.AssertionsForUpdateActions.assertThat;
-import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction;
-import static io.sphere.sdk.models.ResourceIdentifier.ofId;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.common.Price;
+import com.commercetools.api.models.product.ProductSetProductPriceCustomFieldAction;
+import com.commercetools.api.models.product.ProductSetProductPriceCustomTypeAction;
+import com.commercetools.api.models.product.ProductUpdateAction;
+import com.commercetools.api.models.type.ResourceTypeId;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.PriceCustomActionBuilder;
+import com.commercetools.sync.products.models.PriceCustomTypeAdapter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.products.Price;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomField;
-import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomType;
 import java.util.HashMap;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -30,34 +28,45 @@ class ProductPriceCustomUpdateActionUtilsTest {
     when(price.getId()).thenReturn("priceId");
     final String newCustomTypeId = UUID.randomUUID().toString();
 
-    final UpdateAction<Product> updateAction =
-        buildTypedSetCustomTypeUpdateAction(
+    final ProductUpdateAction updateAction =
+        GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction(
                 newCustomTypeId,
                 new HashMap<>(),
-                price,
+                PriceCustomTypeAdapter.of(price),
                 new PriceCustomActionBuilder(),
-                1,
-                Price::getId,
-                priceResource -> Price.resourceTypeId(),
-                Price::getId,
-                ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build())
+                1L,
+                PriceCustomTypeAdapter::getId,
+                ignore -> ResourceTypeId.PRODUCT_PRICE.getJsonName(),
+                PriceCustomTypeAdapter::getId,
+                ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build())
             .orElse(null);
 
-    assertThat(updateAction).isInstanceOf(SetProductPriceCustomType.class);
-    assertThat((SetProductPriceCustomType) updateAction)
-        .hasValues(
-            "setProductPriceCustomType", price.getId(), true, emptyMap(), ofId(newCustomTypeId));
+    assertThat(updateAction).isInstanceOf(ProductSetProductPriceCustomTypeAction.class);
+    assertThat((ProductSetProductPriceCustomTypeAction) updateAction)
+        .satisfies(
+            productSetProductPriceCustomTypeAction -> {
+              assertThat(productSetProductPriceCustomTypeAction.getPriceId()).isEqualTo("priceId");
+              assertThat(productSetProductPriceCustomTypeAction.getType().getId())
+                  .isEqualTo(newCustomTypeId);
+              assertThat(productSetProductPriceCustomTypeAction.getFields().values())
+                  .isEqualTo(emptyMap());
+              assertThat(productSetProductPriceCustomTypeAction.getStaged()).isTrue();
+            });
   }
 
   @Test
   void buildRemoveCustomTypeAction_WithProductPrice_ShouldBuildChannelUpdateAction() {
     final String priceId = "1";
-    final UpdateAction<Product> updateAction =
-        new PriceCustomActionBuilder().buildRemoveCustomTypeAction(1, priceId);
+    final ProductUpdateAction updateAction =
+        new PriceCustomActionBuilder().buildRemoveCustomTypeAction(1L, priceId);
 
-    assertThat(updateAction).isInstanceOf(SetProductPriceCustomType.class);
-    assertThat((SetProductPriceCustomType) updateAction)
-        .hasValues("setProductPriceCustomType", priceId, true, null, ofId(null));
+    assertThat(updateAction).isInstanceOf(ProductSetProductPriceCustomTypeAction.class);
+    assertThat((ProductSetProductPriceCustomTypeAction) updateAction)
+        .satisfies(
+            productSetProductPriceCustomTypeAction -> {
+              assertThat(productSetProductPriceCustomTypeAction.getPriceId()).isEqualTo(priceId);
+              assertThat(productSetProductPriceCustomTypeAction.getType()).isEqualTo(null);
+            });
   }
 
   @Test
@@ -66,12 +75,20 @@ class ProductPriceCustomUpdateActionUtilsTest {
     final String customFieldName = "name";
     final JsonNode customFieldValue = JsonNodeFactory.instance.textNode("foo");
 
-    final UpdateAction<Product> updateAction =
+    final ProductUpdateAction updateAction =
         new PriceCustomActionBuilder()
-            .buildSetCustomFieldAction(1, priceId, customFieldName, customFieldValue);
+            .buildSetCustomFieldAction(1L, priceId, customFieldName, customFieldValue);
 
-    assertThat(updateAction).isInstanceOf(SetProductPriceCustomField.class);
-    assertThat((SetProductPriceCustomField) updateAction)
-        .hasValues("setProductPriceCustomField", true, priceId, customFieldName, customFieldValue);
+    assertThat(updateAction).isInstanceOf(ProductSetProductPriceCustomFieldAction.class);
+    assertThat((ProductSetProductPriceCustomFieldAction) updateAction)
+        .satisfies(
+            productSetProductPriceCustomFieldAction -> {
+              assertThat(productSetProductPriceCustomFieldAction.getPriceId()).isEqualTo(priceId);
+              assertThat(productSetProductPriceCustomFieldAction.getName())
+                  .isEqualTo(customFieldName);
+              assertThat(productSetProductPriceCustomFieldAction.getValue())
+                  .isEqualTo(customFieldValue);
+              assertThat(productSetProductPriceCustomFieldAction.getStaged()).isTrue();
+            });
   }
 }

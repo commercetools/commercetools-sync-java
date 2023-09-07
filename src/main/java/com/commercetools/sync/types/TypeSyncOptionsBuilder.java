@@ -1,30 +1,32 @@
 package com.commercetools.sync.types;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.type.Type;
+import com.commercetools.api.models.type.TypeDraft;
+import com.commercetools.api.models.type.TypeUpdateAction;
 import com.commercetools.sync.commons.BaseSyncOptionsBuilder;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.types.Type;
-import io.sphere.sdk.types.TypeDraft;
 import javax.annotation.Nonnull;
 
 public final class TypeSyncOptionsBuilder
-    extends BaseSyncOptionsBuilder<TypeSyncOptionsBuilder, TypeSyncOptions, Type, TypeDraft, Type> {
+    extends BaseSyncOptionsBuilder<
+        TypeSyncOptionsBuilder, TypeSyncOptions, Type, TypeDraft, TypeUpdateAction> {
 
   public static final int BATCH_SIZE_DEFAULT = 50;
 
-  private TypeSyncOptionsBuilder(@Nonnull final SphereClient ctpClient) {
+  private TypeSyncOptionsBuilder(@Nonnull final ProjectApiRoot ctpClient) {
     this.ctpClient = ctpClient;
   }
 
   /**
-   * Creates a new instance of {@link TypeSyncOptionsBuilder} given a {@link SphereClient}
+   * Creates a new instance of {@link TypeSyncOptionsBuilder} given a {@link ProjectApiRoot}
    * responsible for interaction with the target CTP project, with the default batch size ({@code
    * BATCH_SIZE_DEFAULT} = 50).
    *
-   * @param ctpClient instance of the {@link SphereClient} responsible for interaction with the
+   * @param ctpClient instance of the {@link ProjectApiRoot} responsible for interaction with the
    *     target CTP project.
    * @return new instance of {@link TypeSyncOptionsBuilder}
    */
-  public static TypeSyncOptionsBuilder of(@Nonnull final SphereClient ctpClient) {
+  public static TypeSyncOptionsBuilder of(@Nonnull final ProjectApiRoot ctpClient) {
     return new TypeSyncOptionsBuilder(ctpClient).batchSize(BATCH_SIZE_DEFAULT);
   }
 

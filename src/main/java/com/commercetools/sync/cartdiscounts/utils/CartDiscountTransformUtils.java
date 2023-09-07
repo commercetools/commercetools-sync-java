@@ -1,12 +1,16 @@
 package com.commercetools.sync.cartdiscounts.utils;
 
-import com.commercetools.sync.cartdiscounts.service.CartDiscountTransformService;
-import com.commercetools.sync.cartdiscounts.service.impl.CartDiscountTransformServiceImpl;
+import static java.util.stream.Collectors.toSet;
+
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.cart_discount.CartDiscount;
+import com.commercetools.api.models.cart_discount.CartDiscountDraft;
+import com.commercetools.sync.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import io.sphere.sdk.cartdiscounts.CartDiscount;
-import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
-import io.sphere.sdk.client.SphereClient;
+import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
@@ -29,16 +33,49 @@ public final class CartDiscountTransformUtils {
    * @param referenceIdToKeyCache the instance that manages cache.
    * @param cartDiscounts the cartDiscounts to resolve the references.
    * @return a new list which contains cartDiscountDrafts which have all their references resolved.
-   *     <p>TODO: Move the implementation from service class to this util class.
    */
   @Nonnull
   public static CompletableFuture<List<CartDiscountDraft>> toCartDiscountDrafts(
-      @Nonnull final SphereClient client,
+      @Nonnull final ProjectApiRoot client,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache,
       @Nonnull final List<CartDiscount> cartDiscounts) {
 
-    final CartDiscountTransformService cartDiscountTransformService =
+    final CartDiscountTransformServiceImpl cartDiscountTransformService =
         new CartDiscountTransformServiceImpl(client, referenceIdToKeyCache);
     return cartDiscountTransformService.toCartDiscountDrafts(cartDiscounts);
+  }
+
+  private static class CartDiscountTransformServiceImpl extends BaseTransformServiceImpl {
+
+    public CartDiscountTransformServiceImpl(
+        @Nonnull final ProjectApiRoot ctpClient,
+        @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
+      super(ctpClient, referenceIdToKeyCache);
+    }
+
+    @Nonnull
+    public CompletableFuture<List<CartDiscountDraft>> toCartDiscountDrafts(
+        @Nonnull final List<CartDiscount> cartDiscounts) {
+
+      return transformCustomTypeReference(cartDiscounts)
+          .thenApply(
+              ignore ->
+                  CartDiscountReferenceResolutionUtils.mapToCartDiscountDrafts(
+                      cartDiscounts, referenceIdToKeyCache));
+    }
+
+    @Nonnull
+    private CompletableFuture<Void> transformCustomTypeReference(
+        @Nonnull final List<CartDiscount> cartDiscounts) {
+
+      final Set<String> setOfTypeIds =
+          cartDiscounts.stream()
+              .map(CartDiscount::getCustom)
+              .filter(Objects::nonNull)
+              .map(customFields -> customFields.getType().getId())
+              .collect(toSet());
+
+      return fetchAndFillReferenceIdToKeyCache(setOfTypeIds, GraphQlQueryResource.TYPES);
+    }
   }
 }

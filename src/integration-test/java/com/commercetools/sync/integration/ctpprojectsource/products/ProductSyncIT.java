@@ -1,9 +1,9 @@
 package com.commercetools.sync.integration.ctpprojectsource.products;
 
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createReferenceObjectJson;
-import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.sdk2.products.ActionGroup.ATTRIBUTES;
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
+import static com.commercetools.sync.products.ActionGroup.ATTRIBUTES;
+import static com.commercetools.sync.products.ProductSyncMockUtils.*;
 import static java.util.Collections.*;
 import static java.util.Locale.ENGLISH;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,15 +40,15 @@ import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifier;
 import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.api.models.type.FieldContainerBuilder;
 import com.commercetools.api.models.type.Type;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.integration.commons.utils.*;
-import com.commercetools.sync.sdk2.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
-import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
-import com.commercetools.sync.sdk2.products.ProductSync;
-import com.commercetools.sync.sdk2.products.ProductSyncOptions;
-import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
-import com.commercetools.sync.sdk2.products.SyncFilter;
-import com.commercetools.sync.sdk2.products.helpers.ProductSyncStatistics;
-import com.commercetools.sync.sdk2.products.utils.ProductTransformUtils;
+import com.commercetools.sync.products.ProductSync;
+import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.products.SyncFilter;
+import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.commercetools.sync.products.utils.ProductTransformUtils;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -163,7 +163,7 @@ class ProductSyncIT {
 
   /**
    * Deletes Products from the source and target CTP projects, clears the callback collections then
-   * it instantiates a new {@link com.commercetools.sync.sdk2.products.ProductSync} instance.
+   * it instantiates a new {@link com.commercetools.sync.products.ProductSync} instance.
    */
   @BeforeEach
   void setupTest() {

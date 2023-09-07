@@ -1,24 +1,16 @@
 package com.commercetools.sync.categories.utils;
 
-import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildAssetsUpdateActions;
-import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeNameUpdateAction;
-import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeOrderHintUpdateAction;
-import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeParentUpdateAction;
-import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeSlugUpdateAction;
-import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetDescriptionUpdateAction;
-import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetExternalIdUpdateAction;
-import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaDescriptionUpdateAction;
-import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaKeywordsUpdateAction;
-import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaTitleUpdateAction;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryDraft;
+import com.commercetools.api.models.category.CategoryUpdateAction;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.helpers.CategoryCustomActionBuilder;
+import com.commercetools.sync.categories.models.CategoryCustomTypeAdapter;
+import com.commercetools.sync.categories.models.CategoryDraftCustomTypeAdapter;
 import com.commercetools.sync.commons.BaseSyncOptions;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.commands.UpdateAction;
 import java.util.List;
 import javax.annotation.Nonnull;
 
@@ -28,9 +20,9 @@ public final class CategorySyncUtils {
 
   /**
    * Compares all the fields of a {@link Category} and a {@link CategoryDraft}. It returns a {@link
-   * List} of {@link UpdateAction}&lt;{@link Category}&gt; as a result. If no update action is
-   * needed, for example in case where both the {@link Category} and the {@link CategoryDraft} have
-   * the same parents, an empty {@link List} is returned.
+   * List} of {@link com.commercetools.api.models.category.CategoryUpdateAction} as a result. If no
+   * update action is needed, for example in case where both the {@link Category} and the {@link
+   * CategoryDraft} have the same parents, an empty {@link List} is returned.
    *
    * @param oldCategory the category which should be updated.
    * @param newCategory the category draft where we get the new data.
@@ -41,29 +33,34 @@ public final class CategorySyncUtils {
    * @return A list of category-specific update actions.
    */
   @Nonnull
-  public static List<UpdateAction<Category>> buildActions(
+  public static List<CategoryUpdateAction> buildActions(
       @Nonnull final Category oldCategory,
       @Nonnull final CategoryDraft newCategory,
       @Nonnull final CategorySyncOptions syncOptions) {
 
-    final List<UpdateAction<Category>> updateActions =
+    final List<CategoryUpdateAction> updateActions =
         filterEmptyOptionals(
-            buildChangeNameUpdateAction(oldCategory, newCategory),
-            buildChangeSlugUpdateAction(oldCategory, newCategory),
-            buildSetExternalIdUpdateAction(oldCategory, newCategory),
-            buildSetDescriptionUpdateAction(oldCategory, newCategory),
-            buildChangeParentUpdateAction(oldCategory, newCategory, syncOptions),
-            buildChangeOrderHintUpdateAction(oldCategory, newCategory, syncOptions),
-            buildSetMetaTitleUpdateAction(oldCategory, newCategory),
-            buildSetMetaDescriptionUpdateAction(oldCategory, newCategory),
-            buildSetMetaKeywordsUpdateAction(oldCategory, newCategory));
+            CategoryUpdateActionUtils.buildChangeNameUpdateAction(oldCategory, newCategory),
+            CategoryUpdateActionUtils.buildChangeSlugUpdateAction(oldCategory, newCategory),
+            CategoryUpdateActionUtils.buildSetExternalIdUpdateAction(oldCategory, newCategory),
+            CategoryUpdateActionUtils.buildSetDescriptionUpdateAction(oldCategory, newCategory),
+            CategoryUpdateActionUtils.buildChangeParentUpdateAction(
+                oldCategory, newCategory, syncOptions),
+            CategoryUpdateActionUtils.buildChangeOrderHintUpdateAction(
+                oldCategory, newCategory, syncOptions),
+            CategoryUpdateActionUtils.buildSetMetaTitleUpdateAction(oldCategory, newCategory),
+            CategoryUpdateActionUtils.buildSetMetaDescriptionUpdateAction(oldCategory, newCategory),
+            CategoryUpdateActionUtils.buildSetMetaKeywordsUpdateAction(oldCategory, newCategory));
 
-    final List<UpdateAction<Category>> categoryCustomUpdateActions =
+    final List<CategoryUpdateAction> categoryCustomUpdateActions =
         buildPrimaryResourceCustomUpdateActions(
-            oldCategory, newCategory, categoryCustomActionBuilder, syncOptions);
+            CategoryCustomTypeAdapter.of(oldCategory),
+            CategoryDraftCustomTypeAdapter.of(newCategory),
+            categoryCustomActionBuilder,
+            syncOptions);
 
-    final List<UpdateAction<Category>> assetsUpdateActions =
-        buildAssetsUpdateActions(oldCategory, newCategory, syncOptions);
+    final List<CategoryUpdateAction> assetsUpdateActions =
+        CategoryUpdateActionUtils.buildAssetsUpdateActions(oldCategory, newCategory, syncOptions);
 
     updateActions.addAll(categoryCustomUpdateActions);
     updateActions.addAll(assetsUpdateActions);

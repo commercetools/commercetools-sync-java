@@ -1,5 +1,7 @@
 package com.commercetools.sync.commons.asserts.statistics;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
 import javax.annotation.Nullable;
 
@@ -32,8 +34,7 @@ public final class ProductTypeSyncStatisticsAssert
       final int failed,
       final int numberOfProductTypesWithMissingNestedReferences) {
     super.hasValues(processed, created, updated, failed);
-    org.assertj.core.api.Assertions.assertThat(
-            actual.getNumberOfProductTypesWithMissingNestedProductTypes())
+    assertThat(actual.getNumberOfProductTypesWithMissingNestedProductTypes())
         .isEqualTo(numberOfProductTypesWithMissingNestedReferences);
     return myself;
   }

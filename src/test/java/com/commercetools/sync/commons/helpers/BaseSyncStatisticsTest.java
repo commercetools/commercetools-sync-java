@@ -3,8 +3,7 @@ package com.commercetools.sync.commons.helpers;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
-import io.netty.util.internal.StringUtil;
+import com.commercetools.sync.customers.helpers.CustomerSyncStatistics;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,7 +13,7 @@ class BaseSyncStatisticsTest {
 
   @BeforeEach
   void setup() {
-    baseSyncStatistics = new CategorySyncStatistics();
+    baseSyncStatistics = new CustomerSyncStatistics();
   }
 
   @Test
@@ -89,8 +88,7 @@ class BaseSyncStatisticsTest {
   void calculateProcessingTime_ShouldSetProcessingTimeInAllUnitsAndHumanReadableString()
       throws InterruptedException {
     assertThat(baseSyncStatistics.getLatestBatchProcessingTimeInMillis()).isEqualTo(0);
-    assertThat(baseSyncStatistics.getLatestBatchHumanReadableProcessingTime())
-        .isEqualTo(StringUtil.EMPTY_STRING);
+    assertThat(baseSyncStatistics.getLatestBatchHumanReadableProcessingTime()).isEqualTo("");
 
     final int waitingTimeInMillis = 100;
     Thread.sleep(waitingTimeInMillis);

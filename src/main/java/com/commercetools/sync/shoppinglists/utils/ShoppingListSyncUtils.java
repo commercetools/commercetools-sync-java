@@ -3,18 +3,14 @@ package com.commercetools.sync.shoppinglists.utils;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.shoppinglists.utils.LineItemUpdateActionUtils.buildLineItemsUpdateActions;
-import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildChangeNameUpdateAction;
-import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetAnonymousIdUpdateAction;
-import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetCustomerUpdateAction;
-import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetDeleteDaysAfterLastModificationUpdateAction;
-import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetDescriptionUpdateAction;
-import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetSlugUpdateAction;
+import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.*;
 import static com.commercetools.sync.shoppinglists.utils.TextLineItemUpdateActionUtils.buildTextLineItemsUpdateActions;
 
+import com.commercetools.api.models.shopping_list.ShoppingList;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
+import com.commercetools.sync.shoppinglists.models.ShoppingListCustomTypeAdapter;
 import java.util.List;
 import javax.annotation.Nonnull;
 
@@ -25,9 +21,9 @@ public final class ShoppingListSyncUtils {
 
   /**
    * Compares all the fields of a {@link ShoppingList} and a {@link ShoppingListDraft}. It returns a
-   * {@link List} of {@link UpdateAction}&lt;{@link ShoppingList}&gt; as a result. If no update
-   * action is needed, for example in case where both the {@link ShoppingListDraft} and the {@link
-   * ShoppingList} have the same fields, an empty {@link List} is returned.
+   * {@link java.util.List} of {@link ShoppingListUpdateAction} as a result. If no update action is
+   * needed, for example in case where both the {@link ShoppingListDraft} and the {@link
+   * ShoppingList} have the same fields, an empty {@link java.util.List} is returned.
    *
    * @param oldShoppingList the shopping list which should be updated.
    * @param newShoppingList the shopping list draft where we get the new data.
@@ -38,12 +34,12 @@ public final class ShoppingListSyncUtils {
    * @return A list of shopping list specific update actions.
    */
   @Nonnull
-  public static List<UpdateAction<ShoppingList>> buildActions(
+  public static List<ShoppingListUpdateAction> buildActions(
       @Nonnull final ShoppingList oldShoppingList,
       @Nonnull final ShoppingListDraft newShoppingList,
       @Nonnull final ShoppingListSyncOptions syncOptions) {
 
-    final List<UpdateAction<ShoppingList>> updateActions =
+    final List<ShoppingListUpdateAction> updateActions =
         filterEmptyOptionals(
             buildSetSlugUpdateAction(oldShoppingList, newShoppingList),
             buildChangeNameUpdateAction(oldShoppingList, newShoppingList),
@@ -54,7 +50,7 @@ public final class ShoppingListSyncUtils {
 
     updateActions.addAll(
         buildPrimaryResourceCustomUpdateActions(
-            oldShoppingList,
+            ShoppingListCustomTypeAdapter.of(oldShoppingList),
             newShoppingList::getCustom,
             shoppingListCustomActionBuilder,
             syncOptions));

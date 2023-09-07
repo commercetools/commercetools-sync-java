@@ -8,10 +8,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.api.models.channel.*;
 import com.commercetools.api.models.inventory.*;
-import com.commercetools.sync.sdk2.inventories.InventorySyncOptionsBuilder;
-import com.commercetools.sync.sdk2.inventories.helpers.InventoryEntryIdentifier;
-import com.commercetools.sync.sdk2.services.InventoryService;
-import com.commercetools.sync.sdk2.services.impl.InventoryServiceImpl;
+import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
+import com.commercetools.sync.inventories.helpers.InventoryEntryIdentifier;
+import com.commercetools.sync.services.InventoryService;
+import com.commercetools.sync.services.impl.InventoryServiceImpl;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;

@@ -1,14 +1,26 @@
 package com.commercetools.sync.categories.utils;
 
-import com.commercetools.sync.categories.service.CategoryTransformService;
-import com.commercetools.sync.categories.service.impl.CategoryTransformServiceImpl;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryDraft;
+import com.commercetools.api.models.common.Asset;
+import com.commercetools.api.models.common.Reference;
+import com.commercetools.sync.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.client.SphereClient;
+import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import org.apache.commons.lang3.StringUtils;
 
 public final class CategoryTransformUtils {
 
@@ -30,16 +42,104 @@ public final class CategoryTransformUtils {
    * @param categories the categories to replace the references id's with keys.
    * @return a new list which contains categoryDrafts which have all their references resolved and
    *     already replaced with keys.
-   *     <p>TODO: Move the implementation from service class to this util class.
    */
   @Nonnull
   public static CompletableFuture<List<CategoryDraft>> toCategoryDrafts(
-      @Nonnull final SphereClient client,
+      @Nonnull final ProjectApiRoot client,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache,
       @Nonnull final List<Category> categories) {
 
-    final CategoryTransformService categoryTransformService =
+    final CategoryTransformServiceImpl categoryTransformService =
         new CategoryTransformServiceImpl(client, referenceIdToKeyCache);
     return categoryTransformService.toCategoryDrafts(categories);
+  }
+
+  private static class CategoryTransformServiceImpl extends BaseTransformServiceImpl {
+
+    public CategoryTransformServiceImpl(
+        @Nonnull final ProjectApiRoot ctpClient,
+        @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
+      super(ctpClient, referenceIdToKeyCache);
+    }
+
+    @Nonnull
+    public CompletableFuture<List<CategoryDraft>> toCategoryDrafts(
+        @Nonnull final List<Category> categories) {
+
+      /*
+       * This method will fill already-fetched category keys (as it's a native field of category) it
+       * means it could fill the cache with category id to category key without an extra query (or at
+       * least a minimum amount) because a category could be a parent to another category or a child of
+       * another parent category, this way we could optimize the query if the parent and child are in
+       * the same batch/page (which is highly probable).
+       *
+       * <p>Simply iterate and fill all category keys with their ids, which means more keys stored in
+       * the cache, which might not be an issue as the internal cache is fast and not putting much
+       * memory overhead.
+       */
+      categories.forEach(
+          category -> fillReferenceIdToKeyCache(category.getId(), category.getKey()));
+
+      final List<CompletableFuture<Void>> transformReferencesToRunParallel = new ArrayList<>();
+
+      transformReferencesToRunParallel.add(this.transformParentCategoryReference(categories));
+      transformReferencesToRunParallel.add(this.transformCustomTypeReference(categories));
+
+      return CompletableFuture.allOf(
+              transformReferencesToRunParallel.stream().toArray(CompletableFuture[]::new))
+          .thenApply(
+              ignore ->
+                  CategoryReferenceResolutionUtils.mapToCategoryDrafts(
+                      categories, super.referenceIdToKeyCache));
+    }
+
+    private void fillReferenceIdToKeyCache(String id, String key) {
+      final String keyValue = StringUtils.isBlank(key) ? KEY_IS_NOT_SET_PLACE_HOLDER : key;
+      super.referenceIdToKeyCache.add(id, keyValue);
+    }
+
+    @Nonnull
+    private CompletableFuture<Void> transformParentCategoryReference(
+        @Nonnull final List<Category> categories) {
+
+      final Set<String> parentCategoryIds =
+          categories.stream()
+              .map(Category::getParent)
+              .filter(Objects::nonNull)
+              .map(Reference::getId)
+              .collect(Collectors.toSet());
+
+      return super.fetchAndFillReferenceIdToKeyCache(
+          parentCategoryIds, GraphQlQueryResource.CATEGORIES);
+    }
+
+    @Nonnull
+    private CompletableFuture<Void> transformCustomTypeReference(
+        @Nonnull final List<Category> categories) {
+
+      final Set<String> setOfTypeIds = new HashSet<>();
+      setOfTypeIds.addAll(
+          categories.stream()
+              .map(Category::getCustom)
+              .filter(Objects::nonNull)
+              .map(customFields -> customFields.getType().getId())
+              .collect(Collectors.toSet()));
+
+      setOfTypeIds.addAll(
+          categories.stream()
+              .map(Category::getAssets)
+              .map(
+                  assets ->
+                      assets.stream()
+                          .filter(Objects::nonNull)
+                          .map(Asset::getCustom)
+                          .filter(Objects::nonNull)
+                          .map(customFields -> customFields.getType().getId())
+                          .collect(toList()))
+              .flatMap(Collection::stream)
+              .collect(toSet()));
+
+      return super.fetchAndFillReferenceIdToKeyCache(setOfTypeIds, GraphQlQueryResource.TYPES);
+    }
   }
 }

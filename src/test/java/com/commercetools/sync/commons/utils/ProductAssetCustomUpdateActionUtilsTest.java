@@ -1,23 +1,18 @@
 package com.commercetools.sync.commons.utils;
 
-import static com.commercetools.sync.commons.asserts.actions.AssertionsForUpdateActions.assertThat;
-import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction;
-import static io.sphere.sdk.models.ResourceIdentifier.ofId;
-import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.common.Asset;
+import com.commercetools.api.models.product.ProductSetAssetCustomFieldAction;
+import com.commercetools.api.models.product.ProductSetAssetCustomTypeAction;
+import com.commercetools.api.models.product.ProductUpdateAction;
+import com.commercetools.api.models.type.ResourceTypeId;
+import com.commercetools.sync.commons.models.AssetCustomTypeAdapter;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.AssetCustomActionBuilder;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Asset;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.commands.updateactions.SetAssetCustomField;
-import io.sphere.sdk.products.commands.updateactions.SetAssetCustomType;
 import java.util.HashMap;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -29,58 +24,61 @@ class ProductAssetCustomUpdateActionUtilsTest {
     final Asset asset = mock(Asset.class);
     when(asset.getKey()).thenReturn("assetKey");
     final String newCustomTypeId = UUID.randomUUID().toString();
-    final int variantId = 1;
+    final long variantId = 1L;
 
-    final UpdateAction<Product> updateAction =
-        buildTypedSetCustomTypeUpdateAction(
+    final ProductUpdateAction updateAction =
+        GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction(
                 newCustomTypeId,
                 new HashMap<>(),
-                asset,
+                AssetCustomTypeAdapter.of(asset),
                 new AssetCustomActionBuilder(),
                 variantId,
-                Asset::getId,
-                assetResource -> Asset.resourceTypeId(),
-                Asset::getKey,
-                ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build())
+                AssetCustomTypeAdapter::getId,
+                ignore -> ResourceTypeId.ASSET.getJsonName(),
+                AssetCustomTypeAdapter::getKey,
+                ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build())
             .orElse(null);
 
-    assertThat(updateAction).isInstanceOf(SetAssetCustomType.class);
-    assertThat((SetAssetCustomType) updateAction)
-        .hasValues(
-            "setAssetCustomType",
-            asset.getId(),
-            null,
-            variantId,
-            true,
-            emptyMap(),
-            ofId(newCustomTypeId));
+    assertThat(updateAction).isInstanceOf(ProductSetAssetCustomTypeAction.class);
+    ProductSetAssetCustomTypeAction productSetAssetCustomTypeAction =
+        (ProductSetAssetCustomTypeAction) updateAction;
+    assertThat(productSetAssetCustomTypeAction.getAssetId()).isEqualTo(asset.getId());
+    assertThat(productSetAssetCustomTypeAction.getAssetKey()).isEqualTo(asset.getKey());
+    assertThat(productSetAssetCustomTypeAction.getType().getId()).isEqualTo(newCustomTypeId);
   }
 
   @Test
-  void buildRemoveCustomTypeAction_WithProductAsset_ShouldBuildChannelUpdateAction() {
-    final int variantId = 1;
-    final UpdateAction<Product> updateAction =
-        new AssetCustomActionBuilder().buildRemoveCustomTypeAction(variantId, "assetKey");
+  void buildRemoveCustomTypeAction_WithProductAsset_ShouldBuildProductUpdateAction() {
+    final String assetKey = "assetKey";
 
-    assertThat(updateAction).isInstanceOf(SetAssetCustomType.class);
-    assertThat((SetAssetCustomType) updateAction)
-        .hasValues("setAssetCustomType", null, null, variantId, true, null, ofId(null));
+    final ProductUpdateAction updateAction =
+        new AssetCustomActionBuilder().buildRemoveCustomTypeAction(1L, assetKey);
+
+    assertThat(updateAction).isInstanceOf(ProductSetAssetCustomTypeAction.class);
+    ProductSetAssetCustomTypeAction productSetAssetCustomTypeAction =
+        (ProductSetAssetCustomTypeAction) updateAction;
+    assertThat(productSetAssetCustomTypeAction.getAssetId()).isEqualTo(null);
+    assertThat(productSetAssetCustomTypeAction.getAssetKey()).isEqualTo(assetKey);
+    assertThat(productSetAssetCustomTypeAction.getType()).isEqualTo(null);
   }
 
   @Test
   void buildSetCustomFieldAction_WithProductAsset_ShouldBuildProductUpdateAction() {
-    final JsonNode customFieldValue = JsonNodeFactory.instance.textNode("foo");
+    final String customFieldValue = "foo";
     final String customFieldName = "name";
     final String assetKey = "assetKey";
-    final int variantId = 1;
+    final long variantId = 1;
 
-    final UpdateAction<Product> updateAction =
+    final ProductUpdateAction updateAction =
         new AssetCustomActionBuilder()
             .buildSetCustomFieldAction(variantId, assetKey, customFieldName, customFieldValue);
 
-    assertThat(updateAction).isInstanceOf(SetAssetCustomField.class);
-    assertThat((SetAssetCustomField) updateAction)
-        .hasValues(
-            "setAssetCustomField", null, null, variantId, true, customFieldName, customFieldValue);
+    assertThat(updateAction).isInstanceOf(ProductSetAssetCustomFieldAction.class);
+    ProductSetAssetCustomFieldAction productSetAssetCustomFieldAction =
+        (ProductSetAssetCustomFieldAction) updateAction;
+    assertThat(productSetAssetCustomFieldAction.getAssetId()).isEqualTo(null);
+    assertThat(productSetAssetCustomFieldAction.getAssetKey()).isEqualTo(assetKey);
+    assertThat(productSetAssetCustomFieldAction.getName()).isEqualTo(customFieldName);
+    assertThat(productSetAssetCustomFieldAction.getValue()).isEqualTo(customFieldValue);
   }
 }

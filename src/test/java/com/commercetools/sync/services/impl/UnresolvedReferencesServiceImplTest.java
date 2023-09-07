@@ -1,40 +1,41 @@
 package com.commercetools.sync.services.impl;
 
-import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
-import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.lang.String.format;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import com.commercetools.api.client.*;
+import com.commercetools.api.client.error.BadRequestException;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.custom_object.CustomObject;
+import com.commercetools.api.models.custom_object.CustomObjectDraft;
+import com.commercetools.api.models.custom_object.CustomObjectPagedQueryResponse;
+import com.commercetools.api.models.custom_object.CustomObjectPagedQueryResponseBuilder;
+import com.commercetools.api.models.error.ErrorResponse;
+import com.commercetools.api.models.error.ErrorResponseBuilder;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductDraftBuilder;
+import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
+import com.commercetools.api.models.state.State;
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import io.sphere.sdk.client.BadRequestException;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.customobjects.commands.CustomObjectDeleteCommand;
-import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
-import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.queries.PagedQueryResult;
-import io.sphere.sdk.utils.CompletableFutureUtils;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,10 +51,14 @@ class UnresolvedReferencesServiceImplTest {
 
   @BeforeEach
   void setUp() {
+    final ProjectApiRoot apiRoot = mock(ProjectApiRoot.class);
+    when(apiRoot.customObjects()).thenReturn(mock());
+    when(apiRoot.customObjects().withContainer(anyString())).thenReturn(mock());
+    when(apiRoot.customObjects().withContainerAndKey(anyString(), anyString())).thenReturn(mock());
     errorMessages = new ArrayList<>();
     errorExceptions = new ArrayList<>();
     productSyncOptions =
-        ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+        ProductSyncOptionsBuilder.of(apiRoot)
             .errorCallback(
                 (exception, oldResource, newResource, actions) -> {
                   errorMessages.add(exception.getMessage());
@@ -72,7 +77,10 @@ class UnresolvedReferencesServiceImplTest {
     // test
     final Set<WaitingToBeResolvedProducts> result =
         service
-            .fetch(keys, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolvedProducts.class)
+            .fetch(
+                keys,
+                UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
 
@@ -85,23 +93,35 @@ class UnresolvedReferencesServiceImplTest {
   void fetch_OnSuccess_ShouldReturnMock() {
     // preparation
     final CustomObject customObjectMock = mock(CustomObject.class);
-    final ProductDraft productDraftMock = mock(ProductDraft.class);
-    when(productDraftMock.getKey()).thenReturn("product-draft-key");
+    final ProductDraft productDraftMock =
+        ProductDraftBuilder.of()
+            .productType(ProductTypeResourceIdentifierBuilder.of().key("product-type").build())
+            .key("product-draft-key")
+            .name(LocalizedString.ofEnglish("product-name"))
+            .slug(LocalizedString.ofEnglish("product-slug"))
+            .build();
 
     final WaitingToBeResolvedProducts waitingToBeResolved =
         new WaitingToBeResolvedProducts(productDraftMock, singleton("test-ref"));
     when(customObjectMock.getValue()).thenReturn(waitingToBeResolved);
 
-    final PagedQueryResult result = getMockPagedQueryResult(singletonList(customObjectMock));
-    when(productSyncOptions.getCtpClient().execute(any(CustomObjectQuery.class)))
-        .thenReturn(completedFuture(result));
+    final ApiHttpResponse<CustomObjectPagedQueryResponse> result =
+        getMockCustomObjectPagedQueryResponse(singletonList(customObjectMock));
+    final ByProjectKeyCustomObjectsByContainerGet customObjectGet =
+        mock(ByProjectKeyCustomObjectsByContainerGet.class);
+    when(customObjectGet.withWhere(anyString())).thenReturn(customObjectGet);
+    when(customObjectGet.withPredicateVar(anyString(), anyCollection()))
+        .thenReturn(customObjectGet);
+    when(customObjectGet.execute()).thenReturn(CompletableFuture.completedFuture(result));
+    when(productSyncOptions.getCtpClient().customObjects().withContainer(anyString()).get())
+        .thenReturn(customObjectGet);
 
     // test
     final Set<WaitingToBeResolvedProducts> toBeResolvedOptional =
         service
             .fetch(
                 singleton("product-draft-key"),
-                CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
                 WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
@@ -115,64 +135,84 @@ class UnresolvedReferencesServiceImplTest {
   void fetch_OnSuccess_ShouldRequestHashedKeys() {
     // preparation
     final CustomObject customObjectMock = mock(CustomObject.class);
-    final ProductDraft productDraftMock = mock(ProductDraft.class);
-    when(productDraftMock.getKey()).thenReturn("product-draft-key");
+    final ProductDraft productDraftMock =
+        ProductDraftBuilder.of()
+            .productType(ProductTypeResourceIdentifierBuilder.of().key("product-type").build())
+            .key("product-draft-key")
+            .name(LocalizedString.ofEnglish("product-name"))
+            .slug(LocalizedString.ofEnglish("product-slug"))
+            .build();
 
     final WaitingToBeResolvedProducts waitingToBeResolved =
         new WaitingToBeResolvedProducts(productDraftMock, singleton("test-ref"));
     when(customObjectMock.getValue()).thenReturn(waitingToBeResolved);
 
-    final PagedQueryResult result = getMockPagedQueryResult(singletonList(customObjectMock));
-    when(productSyncOptions.getCtpClient().execute(any(CustomObjectQuery.class)))
-        .thenReturn(completedFuture(result));
-    final ArgumentCaptor<CustomObjectQuery<WaitingToBeResolved>> requestArgumentCaptor =
-        ArgumentCaptor.forClass(CustomObjectQuery.class);
+    final ApiHttpResponse<CustomObjectPagedQueryResponse> result =
+        getMockCustomObjectPagedQueryResponse(singletonList(customObjectMock));
+    final ByProjectKeyCustomObjectsByContainerGet customObjectGet =
+        mock(ByProjectKeyCustomObjectsByContainerGet.class);
+    when(customObjectGet.withWhere(anyString())).thenReturn(customObjectGet);
+    when(customObjectGet.withPredicateVar(anyString(), anyCollection()))
+        .thenReturn(customObjectGet);
+    when(customObjectGet.execute()).thenReturn(CompletableFuture.completedFuture(result));
+    when(productSyncOptions.getCtpClient().customObjects().withContainer(anyString()).get())
+        .thenReturn(customObjectGet);
+
+    final ArgumentCaptor<List<String>> requestArgumentCaptor = ArgumentCaptor.forClass(List.class);
 
     // test
-    final Set<String> setOfSpecialCharKeys =
-        asSet(
+    final Set<String> setOfSpecialCharKeys = new HashSet<>();
+    setOfSpecialCharKeys.addAll(
+        Arrays.asList(
             "Get a $100 Visa® Reward Card because you’re ordering TV",
             "product$",
             "Visa®",
-            "Visa©");
+            "Visa©"));
     final Set<WaitingToBeResolvedProducts> toBeResolvedOptional =
         service
             .fetch(
                 setOfSpecialCharKeys,
-                CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
                 WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
 
     // assertions
-    verify(productSyncOptions.getCtpClient()).execute(requestArgumentCaptor.capture());
+    verify(customObjectGet).withPredicateVar(anyString(), requestArgumentCaptor.capture());
     assertThat(toBeResolvedOptional).containsOnly(waitingToBeResolved);
     setOfSpecialCharKeys.forEach(
-        key ->
-            assertThat(requestArgumentCaptor.getValue().httpRequestIntent().getPath())
-                .contains(sha1Hex(key)));
+        key -> assertThat(requestArgumentCaptor.getValue()).contains(sha1Hex(key)));
   }
 
   @Test
   void save_OnSuccess_ShouldSaveMock() {
     // preparation
     final CustomObject customObjectMock = mock(CustomObject.class);
-    final ProductDraft productDraftMock = mock(ProductDraft.class);
-    when(productDraftMock.getKey()).thenReturn("product-draft-key");
+    final ProductDraft productDraftMock =
+        ProductDraftBuilder.of()
+            .productType(ProductTypeResourceIdentifierBuilder.of().key("product-type").build())
+            .key("product-draft-key")
+            .name(LocalizedString.ofEnglish("product-name"))
+            .slug(LocalizedString.ofEnglish("product-slug"))
+            .build();
 
     final WaitingToBeResolvedProducts waitingToBeResolved =
         new WaitingToBeResolvedProducts(productDraftMock, singleton("test-ref"));
     when(customObjectMock.getValue()).thenReturn(waitingToBeResolved);
 
-    when(productSyncOptions.getCtpClient().execute(any()))
-        .thenReturn(completedFuture(customObjectMock));
+    final ApiHttpResponse<CustomObject> coResponse = getMockCustomObjectResponse(customObjectMock);
+    final ByProjectKeyCustomObjectsPost customObjectsPost =
+        mock(ByProjectKeyCustomObjectsPost.class);
+    when(customObjectsPost.execute()).thenReturn(CompletableFuture.completedFuture(coResponse));
+    when(productSyncOptions.getCtpClient().customObjects().post(any(CustomObjectDraft.class)))
+        .thenReturn(customObjectsPost);
 
     // test
     final Optional<WaitingToBeResolvedProducts> result =
         service
             .save(
                 waitingToBeResolved,
-                CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
                 WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
@@ -186,53 +226,93 @@ class UnresolvedReferencesServiceImplTest {
   void save_OnSuccess_ShouldSaveMockWithSha1HashedKey() {
     // preparation
     final CustomObject customObjectMock = mock(CustomObject.class);
-    final ProductDraft productDraftMock = mock(ProductDraft.class);
-    when(productDraftMock.getKey()).thenReturn("product-draft-key");
+    final ProductDraft productDraftMock =
+        ProductDraftBuilder.of()
+            .productType(ProductTypeResourceIdentifierBuilder.of().key("product-type").build())
+            .key("product-draft-key")
+            .name(LocalizedString.ofEnglish("product-name"))
+            .slug(LocalizedString.ofEnglish("product-slug"))
+            .build();
 
     final WaitingToBeResolvedProducts waitingToBeResolved =
         new WaitingToBeResolvedProducts(productDraftMock, singleton("test-ref"));
     when(customObjectMock.getValue()).thenReturn(waitingToBeResolved);
 
-    when(productSyncOptions.getCtpClient().execute(any()))
-        .thenReturn(completedFuture(customObjectMock));
-    final ArgumentCaptor<CustomObjectUpsertCommand<WaitingToBeResolved>> requestArgumentCaptor =
-        ArgumentCaptor.forClass(CustomObjectUpsertCommand.class);
+    final ApiHttpResponse<CustomObject> coResponse = getMockCustomObjectResponse(customObjectMock);
+    final ByProjectKeyCustomObjectsPost customObjectsPost =
+        mock(ByProjectKeyCustomObjectsPost.class);
+    when(customObjectsPost.execute()).thenReturn(CompletableFuture.completedFuture(coResponse));
+    final ByProjectKeyCustomObjectsRequestBuilder requestBuilder =
+        mock(ByProjectKeyCustomObjectsRequestBuilder.class);
+    when(requestBuilder.post(any(CustomObjectDraft.class))).thenReturn(customObjectsPost);
+    when(productSyncOptions.getCtpClient().customObjects()).thenReturn(requestBuilder);
+
+    final ArgumentCaptor<CustomObjectDraft> requestArgumentCaptor =
+        ArgumentCaptor.forClass(CustomObjectDraft.class);
 
     // test
     final Optional<WaitingToBeResolvedProducts> result =
         service
             .save(
                 waitingToBeResolved,
-                CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
                 WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
 
     // assertions
-    verify(productSyncOptions.getCtpClient()).execute(requestArgumentCaptor.capture());
+    verify(requestBuilder).post(requestArgumentCaptor.capture());
     assertThat(result).contains(waitingToBeResolved);
-    assertThat(requestArgumentCaptor.getValue().getDraft().getKey())
+    assertThat(requestArgumentCaptor.getValue().getKey())
         .isEqualTo(sha1Hex(productDraftMock.getKey()));
   }
 
   @Test
-  void save_WithUnsuccessfulMockCtpResponse_ShouldNotSaveMock() {
+  void save_WithUnsuccessfulMockCtpResponse_ShouldNotSaveMock() throws JsonProcessingException {
     // preparation
     final String productKey = "product-draft-key";
-    final ProductDraft productDraftMock = mock(ProductDraft.class);
-    when(productDraftMock.getKey()).thenReturn(productKey);
+    final ProductDraft productDraftMock =
+        ProductDraftBuilder.of()
+            .productType(ProductTypeResourceIdentifierBuilder.of().key("product-type").build())
+            .key(productKey)
+            .name(LocalizedString.ofEnglish("product-name"))
+            .slug(LocalizedString.ofEnglish("product-slug"))
+            .build();
     final WaitingToBeResolvedProducts waitingToBeResolved =
         new WaitingToBeResolvedProducts(productDraftMock, singleton("test-ref"));
 
-    when(productSyncOptions.getCtpClient().execute(any()))
-        .thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
+    final ApiHttpResponse<State> apiHttpResponse = mock(ApiHttpResponse.class);
+    when(apiHttpResponse.getBody()).thenReturn(mock());
+    final ErrorResponse errorResponse =
+        ErrorResponseBuilder.of()
+            .statusCode(400)
+            .errors(Collections.emptyList())
+            .message("test")
+            .build();
+
+    final ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+    final String json = ow.writeValueAsString(errorResponse);
+
+    final ByProjectKeyCustomObjectsPost customObjectsPost =
+        mock(ByProjectKeyCustomObjectsPost.class);
+    when(customObjectsPost.execute())
+        .thenReturn(
+            CompletableFutureUtils.failed(
+                new BadRequestException(
+                    400,
+                    "",
+                    null,
+                    "bad request",
+                    new ApiHttpResponse<>(400, null, json.getBytes(StandardCharsets.UTF_8)))));
+    when(productSyncOptions.getCtpClient().customObjects().post(any(CustomObjectDraft.class)))
+        .thenReturn(customObjectsPost);
 
     // test
     final Optional<WaitingToBeResolvedProducts> result =
         service
             .save(
                 waitingToBeResolved,
-                CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
                 WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
@@ -255,20 +335,54 @@ class UnresolvedReferencesServiceImplTest {
   }
 
   @Test
-  void delete_WithUnsuccessfulMockCtpResponse_ShouldReturnProperException() {
+  void delete_WithUnsuccessfulMockCtpResponse_ShouldReturnProperException()
+      throws JsonProcessingException {
     // preparation
-    final ProductDraft productDraftMock = mock(ProductDraft.class);
     final String key = "product-draft-key";
-    when(productDraftMock.getKey()).thenReturn(key);
-    when(productSyncOptions.getCtpClient().execute(any()))
-        .thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
+    final ProductDraft productDraftMock =
+        ProductDraftBuilder.of()
+            .productType(ProductTypeResourceIdentifierBuilder.of().key("product-type").build())
+            .key(key)
+            .name(LocalizedString.ofEnglish("product-name"))
+            .slug(LocalizedString.ofEnglish("product-slug"))
+            .build();
+
+    final ApiHttpResponse<State> apiHttpResponse = mock(ApiHttpResponse.class);
+    when(apiHttpResponse.getBody()).thenReturn(mock());
+    final ErrorResponse errorResponse =
+        ErrorResponseBuilder.of()
+            .statusCode(400)
+            .errors(Collections.emptyList())
+            .message("test")
+            .build();
+
+    final ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+    final String json = ow.writeValueAsString(errorResponse);
+
+    final ByProjectKeyCustomObjectsByContainerByKeyDelete customObjectsDelete =
+        mock(ByProjectKeyCustomObjectsByContainerByKeyDelete.class);
+    when(customObjectsDelete.execute())
+        .thenReturn(
+            CompletableFutureUtils.failed(
+                new BadRequestException(
+                    400,
+                    "",
+                    null,
+                    "bad request",
+                    new ApiHttpResponse<>(400, null, json.getBytes(StandardCharsets.UTF_8)))));
+    when(productSyncOptions
+            .getCtpClient()
+            .customObjects()
+            .withContainerAndKey(anyString(), anyString())
+            .delete())
+        .thenReturn(customObjectsDelete);
 
     // test
     final Optional<WaitingToBeResolvedProducts> toBeResolvedOptional =
         service
             .delete(
                 "product-draft-key",
-                CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
                 WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
@@ -297,21 +411,36 @@ class UnresolvedReferencesServiceImplTest {
     // preparation
     final CustomObject customObjectMock = mock(CustomObject.class);
 
-    final ProductDraft productDraftMock = mock(ProductDraft.class);
-    when(productDraftMock.getKey()).thenReturn("product-draft-key");
+    final ProductDraft productDraftMock =
+        ProductDraftBuilder.of()
+            .productType(ProductTypeResourceIdentifierBuilder.of().key("product-type").build())
+            .key("product-draft-key")
+            .name(LocalizedString.ofEnglish("product-name"))
+            .slug(LocalizedString.ofEnglish("product-slug"))
+            .build();
     final WaitingToBeResolvedProducts waitingDraft =
         new WaitingToBeResolvedProducts(productDraftMock, singleton("test-ref"));
     when(customObjectMock.getValue()).thenReturn(waitingDraft);
 
-    when(productSyncOptions.getCtpClient().execute(any(CustomObjectDeleteCommand.class)))
-        .thenReturn(completedFuture(customObjectMock));
+    ApiHttpResponse<CustomObject> mockCustomObjectResponse =
+        getMockCustomObjectResponse(customObjectMock);
+    final ByProjectKeyCustomObjectsByContainerByKeyDelete customObjectsDelete =
+        mock(ByProjectKeyCustomObjectsByContainerByKeyDelete.class);
+    when(customObjectsDelete.execute())
+        .thenReturn(CompletableFuture.completedFuture(mockCustomObjectResponse));
+    when(productSyncOptions
+            .getCtpClient()
+            .customObjects()
+            .withContainerAndKey(anyString(), anyString())
+            .delete())
+        .thenReturn(customObjectsDelete);
 
     // test
     final Optional<WaitingToBeResolvedProducts> toBeResolvedOptional =
         service
             .delete(
                 "product-draft-key",
-                CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
                 WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
@@ -326,38 +455,75 @@ class UnresolvedReferencesServiceImplTest {
     // preparation
     final CustomObject customObjectMock = mock(CustomObject.class);
 
-    final ProductDraft productDraftMock = mock(ProductDraft.class);
-    when(productDraftMock.getKey()).thenReturn("product-draft-key");
+    final ProductDraft productDraftMock =
+        ProductDraftBuilder.of()
+            .productType(ProductTypeResourceIdentifierBuilder.of().key("product-type").build())
+            .key("product-draft-key")
+            .name(LocalizedString.ofEnglish("product-name"))
+            .slug(LocalizedString.ofEnglish("product-slug"))
+            .build();
     final WaitingToBeResolvedProducts waitingDraft =
         new WaitingToBeResolvedProducts(productDraftMock, singleton("test-ref"));
     when(customObjectMock.getValue()).thenReturn(waitingDraft);
 
-    when(productSyncOptions.getCtpClient().execute(any(CustomObjectDeleteCommand.class)))
-        .thenReturn(completedFuture(customObjectMock));
-    final ArgumentCaptor<CustomObjectDeleteCommand<WaitingToBeResolved>> requestArgumentCaptor =
-        ArgumentCaptor.forClass(CustomObjectDeleteCommand.class);
+    ApiHttpResponse<CustomObject> mockCustomObjectResponse =
+        getMockCustomObjectResponse(customObjectMock);
+    final ByProjectKeyCustomObjectsByContainerByKeyDelete customObjectsDelete =
+        mock(ByProjectKeyCustomObjectsByContainerByKeyDelete.class);
+    when(customObjectsDelete.execute())
+        .thenReturn(CompletableFuture.completedFuture(mockCustomObjectResponse));
+    final ByProjectKeyCustomObjectsRequestBuilder requestBuilder =
+        mock(ByProjectKeyCustomObjectsRequestBuilder.class);
+    final ByProjectKeyCustomObjectsByContainerByKeyRequestBuilder requestBuilderByContainerByKey =
+        mock(ByProjectKeyCustomObjectsByContainerByKeyRequestBuilder.class);
+    when(requestBuilderByContainerByKey.delete()).thenReturn(customObjectsDelete);
+    when(requestBuilder.withContainerAndKey(anyString(), anyString()))
+        .thenReturn(requestBuilderByContainerByKey);
+    when(productSyncOptions.getCtpClient().customObjects()).thenReturn(requestBuilder);
+
+    final ArgumentCaptor<String> requestArgumentCaptor = ArgumentCaptor.forClass(String.class);
 
     // test
     final Optional<WaitingToBeResolvedProducts> toBeResolvedOptional =
         service
             .delete(
                 "product-draft-key",
-                CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
                 WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
 
     // assertions
-    verify(productSyncOptions.getCtpClient()).execute(requestArgumentCaptor.capture());
+    // Solve spotbugs @ChangeReturnValue violation
+    final ByProjectKeyCustomObjectsByContainerByKeyRequestBuilder
+        byProjectKeyCustomObjectsByContainerByKeyRequestBuilder =
+            verify(requestBuilder)
+                .withContainerAndKey(anyString(), requestArgumentCaptor.capture());
     assertThat(toBeResolvedOptional).contains(waitingDraft);
-    final CustomObjectDeleteCommand<WaitingToBeResolved> value = requestArgumentCaptor.getValue();
-    assertThat(value.httpRequestIntent().getPath()).contains(sha1Hex(productDraftMock.getKey()));
+    assertThat(requestArgumentCaptor.getValue()).contains(sha1Hex(productDraftMock.getKey()));
   }
 
   @Nonnull
-  private PagedQueryResult getMockPagedQueryResult(@Nonnull final List results) {
-    final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
-    when(pagedQueryResult.getResults()).thenReturn(results);
-    return pagedQueryResult;
+  private ApiHttpResponse<CustomObjectPagedQueryResponse> getMockCustomObjectPagedQueryResponse(
+      @Nonnull final List<CustomObject> results) {
+    final ApiHttpResponse<CustomObjectPagedQueryResponse> apiHttpResponse =
+        mock(ApiHttpResponse.class);
+    final CustomObjectPagedQueryResponse pagedQueryResponse =
+        CustomObjectPagedQueryResponseBuilder.of()
+            .results(results)
+            .limit(1L)
+            .offset(0L)
+            .count(1L)
+            .build();
+    when(apiHttpResponse.getBody()).thenReturn(pagedQueryResponse);
+    return apiHttpResponse;
+  }
+
+  @Nonnull
+  private ApiHttpResponse<CustomObject> getMockCustomObjectResponse(
+      @Nonnull final CustomObject result) {
+    final ApiHttpResponse<CustomObject> apiHttpResponse = mock(ApiHttpResponse.class);
+    when(apiHttpResponse.getBody()).thenReturn(result);
+    return apiHttpResponse;
   }
 }

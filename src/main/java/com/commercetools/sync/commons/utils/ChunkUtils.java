@@ -2,17 +2,15 @@ package com.commercetools.sync.commons.utils;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 
-import com.commercetools.sync.commons.models.GraphQlBaseResource;
-import com.commercetools.sync.commons.models.GraphQlBaseResult;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.client.SphereRequest;
-import io.sphere.sdk.queries.PagedQueryResult;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.PagedQueryResourceRequest;
+import com.commercetools.api.models.graph_ql.GraphQLRequest;
+import com.commercetools.api.models.graph_ql.GraphQLResponse;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -21,57 +19,43 @@ import javax.annotation.Nonnull;
 public class ChunkUtils {
 
   /**
-   * Executes the given {@link List} of {@link SphereRequest}s, and collects results in a list.
+   * Executes the given {@link List} of {@link PagedQueryResourceRequest}s, and collects results in
+   * a list.
    *
-   * @param client {@link SphereClient} responsible for interaction with the target CTP project.
-   * @param requests A list of {@link SphereRequest} implementation to allow {@link SphereClient} to
-   *     execute queries on CTP.
-   * @param <T> the type of the underlying model.
-   * @param <Q> the type of the request model.
-   * @return a list of lists where each list represents the results of passed {@link SphereRequest}.
+   * @param requests A list of {@link PagedQueryResourceRequest} implementation to allow {@link
+   *     ProjectApiRoot} to execute queries on CTP.
+   * @param <ResourceT> the type of the underlying model.
+   * @param <QueryT> the type of the request model.
+   * @return a list of lists where each list represents the results of passed {@link
+   *     PagedQueryResourceRequest}.
    */
-  public static <T, Q extends SphereRequest<T>> CompletableFuture<List<T>> executeChunks(
-      @Nonnull final SphereClient client, @Nonnull final List<Q> requests) {
+  public static <QueryT extends PagedQueryResourceRequest<QueryT, ResourceT>, ResourceT>
+      CompletableFuture<List<ApiHttpResponse<ResourceT>>> executeChunks(
+          @Nonnull final List<QueryT> requests) {
 
-    final List<CompletableFuture<T>> futures =
-        requests.stream()
-            .map(request -> client.execute(request).toCompletableFuture())
-            .collect(toList());
+    final List<CompletableFuture<ApiHttpResponse<ResourceT>>> futures =
+        requests.stream().map(request -> request.execute()).collect(toList());
 
     return collectionOfFuturesToFutureOfCollection(futures, toList());
   }
 
   /**
-   * Flat map the list of lists of {@link PagedQueryResult} to the list of {@link T}.
+   * Executes the given {@link List} of {@link GraphQLRequest}s, and collects results in a list.
    *
-   * @param pagedQueryResults query responses which contains a subset of the matching values.
-   * @param <T> the type of the underlying model.
-   * @return a list of {@link T}
+   * @param requests A list of {@link GraphQLRequest} implementation to allow {@link ProjectApiRoot}
+   *     to execute queries on CTP.
+   * @return a list of lists where each list represents the results of passed {@link
+   *     GraphQLRequest}.
    */
-  public static <T> List<T> flattenPagedQueryResults(
-      @Nonnull final List<PagedQueryResult<T>> pagedQueryResults) {
+  public static CompletableFuture<List<ApiHttpResponse<GraphQLResponse>>> executeChunks(
+      @Nonnull final ProjectApiRoot ctpClient, @Nonnull final List<GraphQLRequest> requests) {
 
-    return pagedQueryResults.stream()
-        .map(PagedQueryResult::getResults)
-        .flatMap(Collection::stream)
-        .collect(toList());
-  }
+    final List<CompletableFuture<ApiHttpResponse<GraphQLResponse>>> futures =
+        requests.stream()
+            .map(request -> ctpClient.graphql().post(request).execute())
+            .collect(toList());
 
-  /**
-   * Flat map the list of lists of {@link GraphQlBaseResult} to the set of {@link U}.
-   *
-   * @param graphQlBaseResults query responses which contains a subset of the matching values.
-   * @param <U> the type of the resource model.
-   * @param <T> the type of the generic result type.
-   * @return a set of {@link U}
-   */
-  public static <T extends GraphQlBaseResult<U>, U extends GraphQlBaseResource>
-      Set<U> flattenGraphQLBaseResults(@Nonnull final List<T> graphQlBaseResults) {
-
-    return graphQlBaseResults.stream()
-        .map(GraphQlBaseResult::getResults)
-        .flatMap(Collection::stream)
-        .collect(toSet());
+    return collectionOfFuturesToFutureOfCollection(futures, toList());
   }
 
   /**

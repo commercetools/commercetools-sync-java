@@ -1,7 +1,7 @@
 package com.commercetools.sync.products;
 
-import io.sphere.sdk.products.attributes.AttributeConstraint;
-import io.sphere.sdk.products.attributes.AttributeDefinition;
+import com.commercetools.api.models.product_type.AttributeConstraintEnum;
+import com.commercetools.api.models.product_type.AttributeDefinition;
 import javax.annotation.Nonnull;
 
 /**
@@ -27,7 +27,7 @@ public final class AttributeMetaData {
    */
   public static AttributeMetaData of(@Nonnull final AttributeDefinition attributeDefinition) {
     boolean isSameForAll =
-        attributeDefinition.getAttributeConstraint().equals(AttributeConstraint.SAME_FOR_ALL);
+        attributeDefinition.getAttributeConstraint().equals(AttributeConstraintEnum.SAME_FOR_ALL);
     return new AttributeMetaData(attributeDefinition.getName(), isSameForAll);
   }
 

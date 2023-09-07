@@ -2,20 +2,20 @@ package com.commercetools.sync.shoppinglists.helpers;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
-import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
+import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 
+import com.commercetools.api.models.customer.CustomerResourceIdentifier;
+import com.commercetools.api.models.customer.CustomerResourceIdentifierBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListDraftBuilder;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.CustomReferenceResolver;
 import com.commercetools.sync.services.CustomerService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
-import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +33,7 @@ public final class ShoppingListReferenceResolver
           + "ShoppingListDraft with key:'%s'. Reason: %s";
   static final String CUSTOMER_DOES_NOT_EXIST = "Customer with key '%s' doesn't exist.";
   static final String FAILED_TO_RESOLVE_CUSTOM_TYPE =
-      "Failed to resolve custom type reference on " + "ShoppingListDraft with key:'%s'. ";
+      "Failed to resolve custom type reference on ShoppingListDraft with key:'%s'. ";
 
   private final CustomerService customerService;
   private final TypeService typeService;
@@ -67,13 +67,13 @@ public final class ShoppingListReferenceResolver
 
   /**
    * Given a {@link ShoppingListDraft} this method attempts to resolve the customer and custom type
-   * references to return a {@link CompletionStage} which contains a new instance of the draft with
-   * the resolved references.
+   * references to return a {@link java.util.concurrent.CompletionStage} which contains a new
+   * instance of the draft with the resolved references.
    *
    * @param shoppingListDraft the shoppingListDraft to resolve its references.
-   * @return a {@link CompletionStage} that contains as a result a new shoppingListDraft instance
-   *     with resolved references or, in case an error occurs during reference resolution, a {@link
-   *     ReferenceResolutionException}.
+   * @return a {@link java.util.concurrent.CompletionStage} that contains as a result a new
+   *     shoppingListDraft instance with resolved references or, in case an error occurs during
+   *     reference resolution, a {@link ReferenceResolutionException}.
    */
   @Nonnull
   public CompletionStage<ShoppingListDraft> resolveReferences(
@@ -89,7 +89,7 @@ public final class ShoppingListReferenceResolver
   protected CompletionStage<ShoppingListDraftBuilder> resolveCustomerReference(
       @Nonnull final ShoppingListDraftBuilder draftBuilder) {
 
-    final ResourceIdentifier<Customer> customerResourceIdentifier = draftBuilder.getCustomer();
+    final CustomerResourceIdentifier customerResourceIdentifier = draftBuilder.getCustomer();
     if (customerResourceIdentifier != null && customerResourceIdentifier.getId() == null) {
       String customerKey;
       try {
@@ -121,8 +121,9 @@ public final class ShoppingListReferenceResolver
                         resolvedCustomerId ->
                             completedFuture(
                                 draftBuilder.customer(
-                                    Customer.referenceOfId(resolvedCustomerId)
-                                        .toResourceIdentifier())))
+                                    CustomerResourceIdentifierBuilder.of()
+                                        .id(resolvedCustomerId)
+                                        .build())))
                     .orElseGet(
                         () -> {
                           final String errorMessage = format(CUSTOMER_DOES_NOT_EXIST, customerKey);
@@ -152,7 +153,10 @@ public final class ShoppingListReferenceResolver
 
     if (draftBuilder.getLineItems() != null) {
       return mapValuesToFutureOfCompletedValues(
-              draftBuilder.getLineItems(), lineItemReferenceResolver::resolveReferences, toList())
+              draftBuilder.getLineItems(),
+              shoppingListLineItemDraft ->
+                  lineItemReferenceResolver.resolveReferences(shoppingListLineItemDraft),
+              toList())
           .thenApply(draftBuilder::lineItems);
     }
 
@@ -182,9 +186,9 @@ public final class ShoppingListReferenceResolver
    *
    * @param referencedKeys a wrapper for the custom type and customer references to fetch the keys,
    *     and store the corresponding keys -&gt; ids into cached maps.
-   * @return {@link CompletionStage}&lt;{@link Map}&lt;{@link String}&gt;{@link String}&gt;&gt; in
-   *     which the results of its completions contains a map of requested references keys -&gt; ids
-   *     of customer references.
+   * @return {@link java.util.concurrent.CompletionStage}&lt;{@link java.util.Map}&lt;{@link
+   *     String}&gt;{@link String}&gt;&gt; in which the results of its completions contains a map of
+   *     requested references keys -&gt; ids of customer references.
    */
   @Nonnull
   public CompletableFuture<List<Map<String, String>>> populateKeyToIdCachesForReferencedKeys(

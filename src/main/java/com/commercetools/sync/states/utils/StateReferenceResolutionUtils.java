@@ -1,16 +1,17 @@
 package com.commercetools.sync.states.utils;
 
-import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
+import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 
+import com.commercetools.api.models.state.State;
+import com.commercetools.api.models.state.StateDraft;
+import com.commercetools.api.models.state.StateDraftBuilder;
+import com.commercetools.api.models.state.StateReference;
+import com.commercetools.api.models.state.StateResourceIdentifier;
+import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.states.StateDraft;
-import io.sphere.sdk.states.StateDraftBuilder;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
@@ -21,8 +22,9 @@ import javax.annotation.Nonnull;
 public final class StateReferenceResolutionUtils {
 
   /**
-   * Returns an {@link List}&lt;{@link StateDraft}&gt; consisting of the results of applying the
-   * mapping from {@link State} to {@link StateDraft} with considering reference resolution.
+   * Returns an {@link java.util.List}&lt;{@link StateDraft}&gt; consisting of the results of
+   * applying the mapping from {@link State} to {@link StateDraft} with considering reference
+   * resolution.
    *
    * <table>
    *   <caption>Mapping of Reference fields for the reference resolution</caption>
@@ -36,8 +38,8 @@ public final class StateReferenceResolutionUtils {
    *   <tbody>
    *     <tr>
    *        <td>transitions</td>
-   *        <td>{@link Set}&lt;{@link Reference}&lt;{@link State}&gt;&gt;</td>
-   *        <td>{@link Set}&lt;{@link Reference}&lt;{@link State}&gt;&gt; (with key replaced with id field)</td>
+   *        <td>{@link java.util.List}&lt;{@link StateReference}&gt;</td>
+   *        <td>{@link java.util.List}&lt;{@link StateResourceIdentifier}&gt;</td>
    *     </tr>
    *   </tbody>
    * </table>
@@ -50,8 +52,8 @@ public final class StateReferenceResolutionUtils {
    *
    * @param states the states without expansion of references.
    * @param referenceIdToKeyCache the instance that manages cache.
-   * @return a {@link List} of {@link StateDraft} built from the supplied {@link List} of {@link
-   *     State}.
+   * @return a {@link java.util.List} of {@link StateDraft} built from the supplied {@link
+   *     java.util.List} of {@link State}.
    */
   @Nonnull
   public static List<StateDraft> mapToStateDrafts(
@@ -61,12 +63,14 @@ public final class StateReferenceResolutionUtils {
         .filter(Objects::nonNull)
         .map(
             state -> {
-              final Set<Reference<State>> newTransitions =
+              final List<StateResourceIdentifier> newTransitions =
                   replaceTransitionIdsWithKeys(state, referenceIdToKeyCache);
-              return StateDraftBuilder.of(state.getKey(), state.getType())
+              return StateDraftBuilder.of()
+                  .key(state.getKey())
+                  .type(state.getType())
                   .name(state.getName())
                   .description(state.getDescription())
-                  .initial(state.isInitial())
+                  .initial(state.getInitial())
                   .roles(state.getRoles())
                   .transitions(newTransitions)
                   .build();
@@ -75,21 +79,25 @@ public final class StateReferenceResolutionUtils {
   }
 
   @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
-  private static Set<Reference<State>> replaceTransitionIdsWithKeys(
+  private static List<StateResourceIdentifier> replaceTransitionIdsWithKeys(
       @Nonnull final State state, @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
-    final Set<Reference<State>> transitions = state.getTransitions();
+    final List<StateReference> transitions = state.getTransitions();
 
     if (transitions == null) return null;
 
-    final Set<Reference<State>> newTransitions = new HashSet<>();
+    final List<StateResourceIdentifier> newTransitions = new ArrayList<>();
     if (!transitions.isEmpty()) {
       transitions.forEach(
           transition -> {
             newTransitions.add(
-                getReferenceWithKeyReplaced(
+                getResourceIdentifierWithKey(
                     transition,
-                    () -> State.referenceOfId(referenceIdToKeyCache.get(transition.getId())),
-                    referenceIdToKeyCache));
+                    referenceIdToKeyCache,
+                    (id, key) ->
+                        StateResourceIdentifierBuilder.of()
+                            .id(id)
+                            .key(referenceIdToKeyCache.get(transition.getId()))
+                            .build()));
           });
     }
     return newTransitions;

@@ -1,9 +1,9 @@
 package com.commercetools.sync.integration.ctpprojectsource.producttypes;
 
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.*;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
@@ -11,11 +11,11 @@ import com.commercetools.api.models.product_type.ProductType;
 import com.commercetools.api.models.product_type.ProductTypeDraft;
 import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
 import com.commercetools.api.models.product_type.ProductTypePagedQueryResponse;
-import com.commercetools.sync.sdk2.producttypes.ProductTypeSync;
-import com.commercetools.sync.sdk2.producttypes.ProductTypeSyncOptions;
-import com.commercetools.sync.sdk2.producttypes.ProductTypeSyncOptionsBuilder;
-import com.commercetools.sync.sdk2.producttypes.helpers.ProductTypeSyncStatistics;
-import com.commercetools.sync.sdk2.producttypes.helpers.ResourceToDraftConverters;
+import com.commercetools.sync.producttypes.ProductTypeSync;
+import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
+import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
+import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
+import com.commercetools.sync.producttypes.helpers.ResourceToDraftConverters;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.List;

@@ -4,11 +4,11 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import com.commercetools.api.models.tax_category.TaxCategoryDraft;
+import com.commercetools.api.models.tax_category.TaxRateDraft;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.helpers.BaseBatchValidator;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptions;
-import io.sphere.sdk.taxcategories.TaxCategoryDraft;
-import io.sphere.sdk.taxcategories.TaxRateDraft;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -81,9 +81,8 @@ public class TaxCategoryBatchValidator
       handleError(TAX_CATEGORY_DRAFT_IS_NULL);
     } else if (isBlank(taxCategoryDraft.getKey())) {
       handleError(format(TAX_CATEGORY_DRAFT_KEY_NOT_SET, taxCategoryDraft.getName()));
-    } else if (taxCategoryDraft.getTaxRates() != null
-        && !taxCategoryDraft.getTaxRates().isEmpty()) {
-      return validateIfDuplicateCountryAndState(taxCategoryDraft.getTaxRates());
+    } else if (taxCategoryDraft.getRates() != null && !taxCategoryDraft.getRates().isEmpty()) {
+      return validateIfDuplicateCountryAndState(taxCategoryDraft.getRates());
     } else {
       return true;
     }
@@ -107,7 +106,7 @@ public class TaxCategoryBatchValidator
             ]
         }
     */
-    Map<String, Map<String, Long>> map =
+    final Map<String, Map<String, Long>> map =
         taxRateDrafts.stream()
             .collect(
                 Collectors.groupingBy(
@@ -118,7 +117,7 @@ public class TaxCategoryBatchValidator
     for (Map.Entry<String, Map<String, Long>> countryEntry : map.entrySet()) {
       for (Map.Entry<String, Long> stateEntry : countryEntry.getValue().entrySet()) {
         if (stateEntry.getValue() > 1L) {
-          String errorMessage =
+          final String errorMessage =
               StringUtils.isBlank(stateEntry.getKey())
                   ? format(TAX_CATEGORY_DUPLICATED_COUNTRY, countryEntry.getKey())
                   : format(

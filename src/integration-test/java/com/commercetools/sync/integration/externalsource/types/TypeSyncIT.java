@@ -1,8 +1,8 @@
 package com.commercetools.sync.integration.externalsource.types;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.*;
-import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -16,10 +16,10 @@ import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.type.*;
 import com.commercetools.sync.integration.commons.utils.ITUtils;
 import com.commercetools.sync.integration.commons.utils.TestClientUtils;
-import com.commercetools.sync.sdk2.types.TypeSync;
-import com.commercetools.sync.sdk2.types.TypeSyncOptions;
-import com.commercetools.sync.sdk2.types.TypeSyncOptionsBuilder;
-import com.commercetools.sync.sdk2.types.helpers.TypeSyncStatistics;
+import com.commercetools.sync.types.TypeSync;
+import com.commercetools.sync.types.TypeSyncOptions;
+import com.commercetools.sync.types.TypeSyncOptionsBuilder;
+import com.commercetools.sync.types.helpers.TypeSyncStatistics;
 import io.vrap.rmf.base.client.ApiHttpMethod;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;

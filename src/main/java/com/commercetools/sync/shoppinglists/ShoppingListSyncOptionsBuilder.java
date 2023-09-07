@@ -1,9 +1,10 @@
 package com.commercetools.sync.shoppinglists;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.shopping_list.ShoppingList;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
 import com.commercetools.sync.commons.BaseSyncOptionsBuilder;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import javax.annotation.Nonnull;
 
 public final class ShoppingListSyncOptionsBuilder
@@ -12,24 +13,24 @@ public final class ShoppingListSyncOptionsBuilder
         ShoppingListSyncOptions,
         ShoppingList,
         ShoppingListDraft,
-        ShoppingList> {
+        ShoppingListUpdateAction> {
 
   public static final int BATCH_SIZE_DEFAULT = 50;
 
-  private ShoppingListSyncOptionsBuilder(@Nonnull final SphereClient ctpClient) {
+  private ShoppingListSyncOptionsBuilder(@Nonnull final ProjectApiRoot ctpClient) {
     this.ctpClient = ctpClient;
   }
 
   /**
-   * Creates a new instance of {@link ShoppingListSyncOptionsBuilder} given a {@link SphereClient}
+   * Creates a new instance of {@link ShoppingListSyncOptionsBuilder} given a {@link ProjectApiRoot}
    * responsible for interaction with the target CTP project, with the default batch size ({@code
    * BATCH_SIZE_DEFAULT} = 50).
    *
-   * @param ctpClient instance of the {@link SphereClient} responsible for interaction with the
+   * @param ctpClient instance of the {@link ProjectApiRoot} responsible for interaction with the
    *     target CTP project.
    * @return new instance of {@link ShoppingListSyncOptionsBuilder}
    */
-  public static ShoppingListSyncOptionsBuilder of(@Nonnull final SphereClient ctpClient) {
+  public static ShoppingListSyncOptionsBuilder of(@Nonnull final ProjectApiRoot ctpClient) {
     return new ShoppingListSyncOptionsBuilder(ctpClient).batchSize(BATCH_SIZE_DEFAULT);
   }
 

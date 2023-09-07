@@ -1,18 +1,19 @@
 package com.commercetools.sync.commons.utils;
 
-import static com.commercetools.sync.categories.CategorySyncOptionsBuilder.of;
-import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryDraft;
+import com.commercetools.api.models.category.CategoryUpdateAction;
+import com.commercetools.api.models.common.Asset;
+import com.commercetools.api.models.type.ResourceTypeId;
 import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.categories.helpers.AssetCustomActionBuilder;
 import com.commercetools.sync.commons.exceptions.SyncException;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Asset;
+import com.commercetools.sync.commons.models.AssetCustomTypeAdapter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,28 +27,27 @@ class GenericUpdateActionUtilsTest {
       buildTypedSetCustomTypeUpdateAction_WithNullNewIdCategoryAsset_ShouldNotBuildCategoryUpdateAction() {
     final ArrayList<String> errorMessages = new ArrayList<>();
     final QuadConsumer<
-            SyncException,
-            Optional<CategoryDraft>,
-            Optional<Category>,
-            List<UpdateAction<Category>>>
+            SyncException, Optional<CategoryDraft>, Optional<Category>, List<CategoryUpdateAction>>
         errorCallback =
             (exception, oldResource, newResource, updateActions) ->
                 errorMessages.add(exception.getMessage());
 
     // Mock sync options
     final CategorySyncOptions categorySyncOptions =
-        of(mock(SphereClient.class)).errorCallback(errorCallback).build();
+        CategorySyncOptionsBuilder.of(mock(ProjectApiRoot.class))
+            .errorCallback(errorCallback)
+            .build();
 
-    final Optional<UpdateAction<Category>> updateAction =
-        buildTypedSetCustomTypeUpdateAction(
+    final Optional<CategoryUpdateAction> updateAction =
+        GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction(
             null,
             new HashMap<>(),
-            mock(Asset.class),
+            AssetCustomTypeAdapter.of(mock(Asset.class)),
             new AssetCustomActionBuilder(),
-            1,
-            Asset::getId,
-            assetResource -> Asset.resourceTypeId(),
-            Asset::getKey,
+            1L,
+            AssetCustomTypeAdapter::getId,
+            ignore -> ResourceTypeId.ASSET.getJsonName(),
+            AssetCustomTypeAdapter::getKey,
             categorySyncOptions);
 
     assertThat(errorMessages).hasSize(1);

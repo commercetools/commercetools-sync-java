@@ -1,8 +1,10 @@
 package com.commercetools.sync.customobjects.utils;
 
+import static com.commercetools.sync.commons.utils.CustomValueConverter.convertCustomValueObjDataToJsonNode;
+
+import com.commercetools.api.models.custom_object.CustomObject;
+import com.commercetools.api.models.custom_object.CustomObjectDraft;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.customobjects.CustomObjectDraft;
 import javax.annotation.Nonnull;
 
 public class CustomObjectSyncUtils {
@@ -17,11 +19,16 @@ public class CustomObjectSyncUtils {
    *     not.
    */
   public static boolean hasIdenticalValue(
-      @Nonnull final CustomObject<JsonNode> oldCustomObject,
-      @Nonnull final CustomObjectDraft<JsonNode> newCustomObject) {
-    JsonNode oldValue = oldCustomObject.getValue();
-    JsonNode newValue = newCustomObject.getValue();
+      @Nonnull final CustomObject oldCustomObject,
+      @Nonnull final CustomObjectDraft newCustomObject) {
+    // Values are JSON standard types Number, String, Boolean, Array, Object, and common API data
+    // types.
+    final Object oldValue = oldCustomObject.getValue();
+    final Object newValue = newCustomObject.getValue();
 
-    return oldValue.equals(newValue);
+    final JsonNode oldValueJsonNode = convertCustomValueObjDataToJsonNode(oldValue);
+    final JsonNode newValueJsonNode = convertCustomValueObjDataToJsonNode(newValue);
+
+    return oldValueJsonNode.equals(newValueJsonNode);
   }
 }

@@ -4,97 +4,95 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.commercetools.api.models.common.*;
+import com.commercetools.api.models.custom_object.CustomObject;
+import com.commercetools.api.models.custom_object.CustomObjectDraft;
+import com.commercetools.api.models.custom_object.CustomObjectDraftBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.customobjects.CustomObjectDraft;
 import org.junit.jupiter.api.Test;
 
 class CustomObjectSyncUtilsTest {
 
-  private CustomObject<JsonNode> oldCustomObject;
-  private CustomObjectDraft<JsonNode> newCustomObjectdraft;
+  private CustomObject oldCustomObject;
+  private CustomObjectDraft newCustomObjectdraft;
 
   @SuppressWarnings("unchecked")
-  private void prepareMockObjects(final JsonNode actualObj, final JsonNode mockedObj) {
+  private void prepareMockObjects(
+      final Object newCustomObjDraftValue, final Object oldCustomObjValue) {
     final String key = "testkey";
     final String container = "testcontainer";
 
-    newCustomObjectdraft = CustomObjectDraft.ofUnversionedUpsert(container, key, actualObj);
+    newCustomObjectdraft =
+        CustomObjectDraftBuilder.of()
+            .container(container)
+            .key(key)
+            .value(newCustomObjDraftValue)
+            .build();
     oldCustomObject = mock(CustomObject.class);
-    when(oldCustomObject.getValue()).thenReturn(mockedObj);
+    when(oldCustomObject.getValue()).thenReturn(oldCustomObjValue);
     when(oldCustomObject.getContainer()).thenReturn(container);
     when(oldCustomObject.getKey()).thenReturn(key);
   }
 
   @Test
-  void hasIdenticalValue_WithSameBooleanValue_ShouldBeIdentical() throws JsonProcessingException {
-    JsonNode actualObj = new ObjectMapper().readTree("true");
-    JsonNode mockedObj = new ObjectMapper().readTree("true");
-    prepareMockObjects(actualObj, mockedObj);
-    assertThat(actualObj.isBoolean()).isTrue();
-    assertThat(mockedObj.isBoolean()).isTrue();
+  void hasIdenticalValue_WithSameBooleanValue_ShouldBeIdentical() {
+    final JsonNode newDraftValue = JsonNodeFactory.instance.booleanNode(true);
+    final boolean oldValue = true;
+    prepareMockObjects(newDraftValue, oldValue);
+    assertThat(newDraftValue.isBoolean()).isTrue();
     assertThat(CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft))
         .isTrue();
   }
 
   @Test
-  void hasIdenticalValue_WithDifferentBooleanValue_ShouldNotBeIdentical()
-      throws JsonProcessingException {
-    JsonNode actualObj = new ObjectMapper().readTree("true");
-    JsonNode mockedObj = new ObjectMapper().readTree("false");
-    prepareMockObjects(actualObj, mockedObj);
-    assertThat(actualObj.isBoolean()).isTrue();
-    assertThat(mockedObj.isBoolean()).isTrue();
+  void hasIdenticalValue_WithDifferentBooleanValue_ShouldNotBeIdentical() {
+    final JsonNode newDraftValue = JsonNodeFactory.instance.booleanNode(true);
+    final JsonNode oldValue = JsonNodeFactory.instance.booleanNode(false);
+    prepareMockObjects(newDraftValue, oldValue);
+    assertThat(newDraftValue.isBoolean()).isTrue();
+    assertThat(oldValue.isBoolean()).isTrue();
     assertThat(CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft))
         .isFalse();
   }
 
   @Test
-  void hasIdenticalValue_WithSameNumberValue_ShouldBeIdentical() throws JsonProcessingException {
-    JsonNode actualObj = new ObjectMapper().readTree("2020");
-    JsonNode mockedObj = new ObjectMapper().readTree("2020");
-    prepareMockObjects(actualObj, mockedObj);
-    assertThat(actualObj.isNumber()).isTrue();
-    assertThat(mockedObj.isNumber()).isTrue();
+  void hasIdenticalValue_WithSameNumberValue_ShouldBeIdentical() {
+    final JsonNode newDraftValue = JsonNodeFactory.instance.numberNode(2020);
+    final JsonNode oldValue = JsonNodeFactory.instance.numberNode(2020);
+    prepareMockObjects(newDraftValue, oldValue);
+    assertThat(newDraftValue.isNumber()).isTrue();
+    assertThat(oldValue.isNumber()).isTrue();
     assertThat(CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft))
         .isTrue();
   }
 
   @Test
-  void hasIdenticalValue_WithDifferentNumberValue_ShouldNotBeIdentical()
-      throws JsonProcessingException {
-    JsonNode actualObj = new ObjectMapper().readTree("2020");
-    JsonNode mockedObj = new ObjectMapper().readTree("2021");
-    prepareMockObjects(actualObj, mockedObj);
-    assertThat(actualObj.isNumber()).isTrue();
-    assertThat(mockedObj.isNumber()).isTrue();
+  void hasIdenticalValue_WithDifferentNumberValue_ShouldNotBeIdentical() {
+    final JsonNode newDraftValue = JsonNodeFactory.instance.numberNode(2020);
+    final int oldValue = 2021;
+    prepareMockObjects(newDraftValue, oldValue);
+    assertThat(newDraftValue.isNumber()).isTrue();
     assertThat(CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft))
         .isFalse();
   }
 
   @Test
-  void hasIdenticalValue_WithSameStringValue_ShouldBeIdentical() throws JsonProcessingException {
-    JsonNode actualObj = new ObjectMapper().readTree("\"CommerceTools\"");
-    JsonNode mockedObj = new ObjectMapper().readTree("\"CommerceTools\"");
-    prepareMockObjects(actualObj, mockedObj);
-    assertThat(actualObj.isTextual()).isTrue();
-    assertThat(mockedObj.isTextual()).isTrue();
+  void hasIdenticalValue_WithSameStringValue_ShouldBeIdentical() {
+    final JsonNode newDraftValue = JsonNodeFactory.instance.textNode("\"CommerceTools\"");
+    final String oldValue = "\"CommerceTools\"";
+    prepareMockObjects(newDraftValue, oldValue);
+    assertThat(newDraftValue.isTextual()).isTrue();
     assertThat(CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft))
         .isTrue();
   }
 
   @Test
-  void hasIdenticalValue_WithDifferentStringValue_ShouldNotBeIdentical()
-      throws JsonProcessingException {
-    JsonNode actualObj = new ObjectMapper().readTree("\"CommerceToolsPlatform\"");
-    JsonNode mockedObj = new ObjectMapper().readTree("\"CommerceTools\"");
-    prepareMockObjects(actualObj, mockedObj);
-    assertThat(actualObj.isTextual()).isTrue();
-    assertThat(mockedObj.isTextual()).isTrue();
+  void hasIdenticalValue_WithDifferentStringValue_ShouldNotBeIdentical() {
+    final String newDraftValue = "\"CommerceToolsPlatform\"";
+    final String oldValue = "\"CommerceTools\"";
+    prepareMockObjects(newDraftValue, oldValue);
     assertThat(CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft))
         .isFalse();
   }
@@ -102,8 +100,8 @@ class CustomObjectSyncUtilsTest {
   @Test
   void hasIdenticalValue_WithSameFieldAndValueInJsonNode_ShouldBeIdentical() {
 
-    ObjectNode oldValue = JsonNodeFactory.instance.objectNode().put("username", "Peter");
-    ObjectNode newValue = JsonNodeFactory.instance.objectNode().put("username", "Peter");
+    final ObjectNode oldValue = JsonNodeFactory.instance.objectNode().put("username", "Peter");
+    final ObjectNode newValue = JsonNodeFactory.instance.objectNode().put("username", "Peter");
     prepareMockObjects(oldValue, newValue);
     assertThat(CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft))
         .isTrue();
@@ -112,9 +110,9 @@ class CustomObjectSyncUtilsTest {
   @Test
   void hasIdenticalValue_WithSameFieldAndDifferentValueInJsonNode_ShouldNotBeIdentical() {
 
-    ObjectNode oldValue = JsonNodeFactory.instance.objectNode().put("username", "Peter");
-    ObjectNode newValue = JsonNodeFactory.instance.objectNode().put("username", "Joe");
-    prepareMockObjects(oldValue, newValue);
+    final ObjectNode oldValue = JsonNodeFactory.instance.objectNode().put("username", "Peter");
+    final ObjectNode newValue = JsonNodeFactory.instance.objectNode().put("username", "Joe");
+    prepareMockObjects(newValue, oldValue);
     assertThat(CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft))
         .isFalse();
   }
@@ -122,13 +120,13 @@ class CustomObjectSyncUtilsTest {
   @Test
   void hasIdenticalValue_WithSameFieldAndValueInDifferentOrderInJsonNode_ShouldBeIdentical() {
 
-    ObjectNode oldValue =
+    final ObjectNode oldValue =
         JsonNodeFactory.instance.objectNode().put("username", "Peter").put("userId", "123-456-789");
 
-    ObjectNode newValue =
+    final ObjectNode newValue =
         JsonNodeFactory.instance.objectNode().put("userId", "123-456-789").put("username", "Peter");
 
-    prepareMockObjects(oldValue, newValue);
+    prepareMockObjects(newValue, oldValue);
 
     assertThat(oldValue.toString()).isNotEqualTo(newValue.toString());
     assertThat(CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft))
@@ -136,10 +134,61 @@ class CustomObjectSyncUtilsTest {
   }
 
   @Test
+  void hasIdenticalValue_WithSameMoneyValue_ShouldBeIdentical() {
+    final Money oldValue =
+        CentPrecisionMoneyBuilder.of()
+            .centAmount(100L)
+            .currencyCode("EUR")
+            .fractionDigits(2)
+            .build();
+    final TypedMoneyDraft newDraftValue =
+        TypedMoneyDraftBuilder.of()
+            .centPrecisionBuilder()
+            .centAmount(100L)
+            .currencyCode("EUR")
+            .fractionDigits(2)
+            .build();
+
+    prepareMockObjects(newDraftValue, oldValue);
+
+    assertThat(CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft))
+        .isTrue();
+  }
+
+  @Test
+  void hasIdenticalValue_WithDifferentMoneyValue_ShouldNotBeIdentical() {
+    final Money oldValue = MoneyBuilder.of().centAmount(100L).currencyCode("EUR").build();
+    final ObjectNode newDraftValue =
+        JsonNodeFactory.instance.objectNode().put("centAmount", 200L).put("currencyCode", "EUR");
+
+    prepareMockObjects(newDraftValue, oldValue);
+
+    assertThat(CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft))
+        .isFalse();
+  }
+
+  @Test
+  void hasIdenticalValue_WithDifferentMoneyTypeValues_ShouldNotBeIdentical() {
+    final Money oldValue = MoneyBuilder.of().centAmount(100L).currencyCode("EUR").build();
+    final HighPrecisionMoneyDraft newDraftValue =
+        HighPrecisionMoneyDraftBuilder.of()
+            .centAmount(100L)
+            .currencyCode("EUR")
+            .fractionDigits(2)
+            .preciseAmount(101L)
+            .build();
+
+    prepareMockObjects(newDraftValue, oldValue);
+
+    assertThat(CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft))
+        .isFalse();
+  }
+
+  @Test
   void
       hasIdenticalValue_WithSameNestedJsonNode_WithSameAttributeOrderInNestedJson_ShouldBeIdentical() {
 
-    JsonNode oldNestedJson =
+    final JsonNode oldNestedJson =
         JsonNodeFactory.instance.objectNode().put("username", "Peter").put("userId", "123-456-789");
     JsonNode newNestedJson =
         JsonNodeFactory.instance.objectNode().put("username", "Peter").put("userId", "123-456-789");

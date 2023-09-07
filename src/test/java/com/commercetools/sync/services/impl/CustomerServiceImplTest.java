@@ -5,25 +5,16 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import com.commercetools.api.client.*;
+import com.commercetools.api.models.customer.*;
+import com.commercetools.sync.commons.ExceptionUtils;
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
-import io.sphere.sdk.client.BadGatewayException;
-import io.sphere.sdk.client.BadRequestException;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.customers.CustomerDraft;
-import io.sphere.sdk.customers.CustomerName;
-import io.sphere.sdk.customers.CustomerSignInResult;
-import io.sphere.sdk.customers.commands.CustomerCreateCommand;
-import io.sphere.sdk.customers.commands.CustomerUpdateCommand;
-import io.sphere.sdk.customers.commands.updateactions.ChangeName;
-import io.sphere.sdk.utils.CompletableFutureUtils;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.error.BadGatewayException;
+import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +22,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class CustomerServiceImplTest {
 
@@ -44,7 +36,7 @@ class CustomerServiceImplTest {
     errorMessages = new ArrayList<>();
     errorExceptions = new ArrayList<>();
     customerSyncOptions =
-        CustomerSyncOptionsBuilder.of(mock(SphereClient.class))
+        CustomerSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) -> {
                   errorMessages.add(exception.getMessage());
@@ -62,7 +54,17 @@ class CustomerServiceImplTest {
     when(customerMock.getKey()).thenReturn("customerKey");
     when(resultMock.getCustomer()).thenReturn(customerMock);
 
-    when(customerSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(resultMock));
+    final ByProjectKeyCustomersRequestBuilder byProjectKeyCustomersRequestBuilder =
+        mock(ByProjectKeyCustomersRequestBuilder.class);
+    final ByProjectKeyCustomersPost byProjectKeyCustomersPost =
+        mock(ByProjectKeyCustomersPost.class);
+    final ApiHttpResponse apiHttpResponse = mock(ApiHttpResponse.class);
+    when(apiHttpResponse.getBody()).thenReturn(resultMock);
+    when(byProjectKeyCustomersPost.execute()).thenReturn(completedFuture(apiHttpResponse));
+    when(byProjectKeyCustomersRequestBuilder.post(any(CustomerDraft.class)))
+        .thenReturn(byProjectKeyCustomersPost);
+    when(customerSyncOptions.getCtpClient().customers())
+        .thenReturn(byProjectKeyCustomersRequestBuilder);
 
     final CustomerDraft draft = mock(CustomerDraft.class);
     when(draft.getKey()).thenReturn("customerKey");
@@ -71,19 +73,22 @@ class CustomerServiceImplTest {
 
     assertThat(customerOptional).isNotEmpty();
     assertThat(customerOptional).containsSame(customerMock);
-    verify(customerSyncOptions.getCtpClient()).execute(eq(CustomerCreateCommand.of(draft)));
+    verify(byProjectKeyCustomersPost).execute();
+    verify(byProjectKeyCustomersRequestBuilder).post(eq(draft));
   }
 
   @Test
   void createCustomer_WithUnSuccessfulMockResponse_ShouldNotCreate() {
-    final CustomerSignInResult resultMock = mock(CustomerSignInResult.class);
-    final Customer customerMock = mock(Customer.class);
-    when(customerMock.getId()).thenReturn("customerId");
-    when(customerMock.getKey()).thenReturn("customerKey");
-    when(resultMock.getCustomer()).thenReturn(customerMock);
-
-    when(customerSyncOptions.getCtpClient().execute(any()))
-        .thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
+    final ByProjectKeyCustomersRequestBuilder byProjectKeyCustomersRequestBuilder =
+        mock(ByProjectKeyCustomersRequestBuilder.class);
+    final ByProjectKeyCustomersPost byProjectKeyCustomersPost =
+        mock(ByProjectKeyCustomersPost.class);
+    when(byProjectKeyCustomersPost.execute())
+        .thenReturn(CompletableFutureUtils.failed(ExceptionUtils.createBadGatewayException()));
+    when(byProjectKeyCustomersRequestBuilder.post(any(CustomerDraft.class)))
+        .thenReturn(byProjectKeyCustomersPost);
+    when(customerSyncOptions.getCtpClient().customers())
+        .thenReturn(byProjectKeyCustomersRequestBuilder);
 
     final CustomerDraft draft = mock(CustomerDraft.class);
     when(draft.getKey()).thenReturn("customerKey");
@@ -92,10 +97,11 @@ class CustomerServiceImplTest {
 
     assertThat(customerOptional).isEmpty();
     assertThat(errorExceptions).hasSize(1);
-    assertThat(errorExceptions.get(0)).isExactlyInstanceOf(BadRequestException.class);
+    assertThat(errorExceptions.get(0)).isExactlyInstanceOf(BadGatewayException.class);
     assertThat(errorMessages).hasSize(1);
     assertThat(errorMessages.get(0)).contains("Failed to create draft with key: 'customerKey'.");
-    verify(customerSyncOptions.getCtpClient()).execute(eq(CustomerCreateCommand.of(draft)));
+    verify(byProjectKeyCustomersPost).execute();
+    verify(byProjectKeyCustomersRequestBuilder).post(eq(draft));
   }
 
   @Test
@@ -109,13 +115,20 @@ class CustomerServiceImplTest {
     assertThat(errorMessages).hasSize(1);
     assertThat(errorMessages.get(0))
         .contains("Failed to create draft with key: 'null'. Reason: Draft key is blank!");
-    verifyNoInteractions(customerSyncOptions.getCtpClient());
+    Mockito.verifyNoInteractions(customerSyncOptions.getCtpClient());
   }
 
   @Test
   void createCustomer_WithResponseIsNull_ShouldReturnEmpty() {
-    CustomerSignInResult resultMock = mock(CustomerSignInResult.class);
-    when(customerSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(resultMock));
+    final ByProjectKeyCustomersRequestBuilder byProjectKeyCustomersRequestBuilder =
+        mock(ByProjectKeyCustomersRequestBuilder.class);
+    final ByProjectKeyCustomersPost byProjectKeyCustomersPost =
+        mock(ByProjectKeyCustomersPost.class);
+    when(byProjectKeyCustomersPost.execute()).thenReturn(completedFuture(null));
+    when(byProjectKeyCustomersRequestBuilder.post(any(CustomerDraft.class)))
+        .thenReturn(byProjectKeyCustomersPost);
+    when(customerSyncOptions.getCtpClient().customers())
+        .thenReturn(byProjectKeyCustomersRequestBuilder);
 
     final CustomerDraft draft = mock(CustomerDraft.class);
     when(draft.getKey()).thenReturn("key");
@@ -129,16 +142,33 @@ class CustomerServiceImplTest {
 
   @Test
   void updateCustomer_WithSuccessfulMockCtpResponse_ShouldReturnMock() {
-    Customer customer = mock(Customer.class);
-    when(customerSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(customer));
+    final Customer customer = mock(Customer.class);
+    when(customer.getId()).thenReturn("customerId");
+    when(customer.getVersion()).thenReturn(1L);
+    final ByProjectKeyCustomersRequestBuilder byProjectKeyCustomersRequestBuilder =
+        mock(ByProjectKeyCustomersRequestBuilder.class);
+    final ByProjectKeyCustomersByIDRequestBuilder byProjectKeyCustomersByIDRequestBuilder =
+        mock(ByProjectKeyCustomersByIDRequestBuilder.class);
+    final ByProjectKeyCustomersByIDPost byProjectKeyCustomersByIDPost =
+        mock(ByProjectKeyCustomersByIDPost.class);
+    final ApiHttpResponse apiHttpResponse = mock(ApiHttpResponse.class);
+    when(apiHttpResponse.getBody()).thenReturn(customer);
+    when(byProjectKeyCustomersByIDPost.execute()).thenReturn(completedFuture(apiHttpResponse));
+    when(byProjectKeyCustomersByIDRequestBuilder.post(any(CustomerUpdate.class)))
+        .thenReturn(byProjectKeyCustomersByIDPost);
+    when(byProjectKeyCustomersRequestBuilder.withId(anyString()))
+        .thenReturn(byProjectKeyCustomersByIDRequestBuilder);
+    when(customerSyncOptions.getCtpClient().customers())
+        .thenReturn(byProjectKeyCustomersRequestBuilder);
 
-    List<UpdateAction<Customer>> updateActions =
-        singletonList(ChangeName.of(CustomerName.of("title", "Max", "", "Mustermann")));
+    List<CustomerUpdateAction> updateActions =
+        singletonList(CustomerSetFirstNameActionBuilder.of().firstName("Max").build());
     Customer result = service.updateCustomer(customer, updateActions).toCompletableFuture().join();
 
     assertThat(result).isSameAs(customer);
-    verify(customerSyncOptions.getCtpClient())
-        .execute(eq(CustomerUpdateCommand.of(customer, updateActions)));
+    verify(byProjectKeyCustomersByIDPost).execute();
+    verify(byProjectKeyCustomersByIDRequestBuilder)
+        .post(eq(CustomerUpdateBuilder.of().actions(updateActions).version(1L).build()));
   }
 
   @Test
@@ -148,7 +178,7 @@ class CustomerServiceImplTest {
     assertThat(customerId).isEmpty();
     assertThat(errorExceptions).isEmpty();
     assertThat(errorMessages).isEmpty();
-    verifyNoInteractions(customerSyncOptions.getCtpClient());
+    Mockito.verifyNoInteractions(customerSyncOptions.getCtpClient());
   }
 
   @Test
@@ -159,13 +189,25 @@ class CustomerServiceImplTest {
     assertThat(customerId).contains("id");
     assertThat(errorExceptions).isEmpty();
     assertThat(errorMessages).isEmpty();
-    verifyNoInteractions(customerSyncOptions.getCtpClient());
+    Mockito.verifyNoInteractions(customerSyncOptions.getCtpClient());
   }
 
   @Test
   void fetchCachedCustomerId_WithUnexpectedException_ShouldFail() {
-    when(customerSyncOptions.getCtpClient().execute(any()))
-        .thenReturn(CompletableFutureUtils.failed(new BadGatewayException("bad gateway")));
+    final ByProjectKeyCustomersRequestBuilder byProjectKeyCustomersRequestBuilder =
+        mock(ByProjectKeyCustomersRequestBuilder.class);
+    final ByProjectKeyCustomersKeyByKeyRequestBuilder byProjectKeyCustomersKeyByKeyRequestBuilder =
+        mock(ByProjectKeyCustomersKeyByKeyRequestBuilder.class);
+    final ByProjectKeyCustomersKeyByKeyGet byProjectKeyCustomersKeyByKeyGet =
+        mock(ByProjectKeyCustomersKeyByKeyGet.class);
+    when(byProjectKeyCustomersRequestBuilder.withKey(anyString()))
+        .thenReturn(byProjectKeyCustomersKeyByKeyRequestBuilder);
+    when(byProjectKeyCustomersKeyByKeyRequestBuilder.get())
+        .thenReturn(byProjectKeyCustomersKeyByKeyGet);
+    when(customerSyncOptions.getCtpClient().customers())
+        .thenReturn(byProjectKeyCustomersRequestBuilder);
+    when(byProjectKeyCustomersKeyByKeyGet.execute())
+        .thenReturn(CompletableFutureUtils.failed(ExceptionUtils.createBadGatewayException()));
 
     assertThat(service.fetchCachedCustomerId("key"))
         .failsWithin(1, TimeUnit.SECONDS)
@@ -176,25 +218,25 @@ class CustomerServiceImplTest {
   }
 
   @Test
-  void fetchCustomerByKey_WithUnexpectedException_ShouldFail() {
-    when(customerSyncOptions.getCtpClient().execute(any()))
-        .thenReturn(CompletableFutureUtils.failed(new BadGatewayException("bad gateway")));
-
-    assertThat(service.fetchCustomerByKey("key"))
-        .failsWithin(1, TimeUnit.SECONDS)
-        .withThrowableOfType(ExecutionException.class)
-        .withCauseExactlyInstanceOf(BadGatewayException.class);
-    assertThat(errorExceptions).isEmpty();
-    assertThat(errorMessages).isEmpty();
-  }
-
-  @Test
   void fetchCustomerByKey_WithBlankKey_ShouldNotFetchCustomer() {
+    final ByProjectKeyCustomersRequestBuilder byProjectKeyCustomersRequestBuilder =
+        mock(ByProjectKeyCustomersRequestBuilder.class);
+    final ByProjectKeyCustomersKeyByKeyRequestBuilder byProjectKeyCustomersKeyByKeyRequestBuilder =
+        mock(ByProjectKeyCustomersKeyByKeyRequestBuilder.class);
+    final ByProjectKeyCustomersKeyByKeyGet byProjectKeyCustomersKeyByKeyGet =
+        mock(ByProjectKeyCustomersKeyByKeyGet.class);
+    when(byProjectKeyCustomersRequestBuilder.withKey(anyString()))
+        .thenReturn(byProjectKeyCustomersKeyByKeyRequestBuilder);
+    when(byProjectKeyCustomersKeyByKeyRequestBuilder.get())
+        .thenReturn(byProjectKeyCustomersKeyByKeyGet);
+    when(customerSyncOptions.getCtpClient().customers())
+        .thenReturn(byProjectKeyCustomersRequestBuilder);
+
     Optional<Customer> customer = service.fetchCustomerByKey("").toCompletableFuture().join();
 
     assertThat(customer).isEmpty();
     assertThat(errorExceptions).isEmpty();
     assertThat(errorMessages).isEmpty();
-    verifyNoInteractions(customerSyncOptions.getCtpClient());
+    verifyNoInteractions(byProjectKeyCustomersKeyByKeyGet);
   }
 }

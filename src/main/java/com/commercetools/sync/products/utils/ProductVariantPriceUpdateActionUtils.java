@@ -3,16 +3,19 @@ package com.commercetools.sync.products.utils;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static java.lang.String.format;
 
+import com.commercetools.api.models.common.Price;
+import com.commercetools.api.models.common.PriceDraft;
+import com.commercetools.api.models.product.Product;
+import com.commercetools.api.models.product.ProductChangePriceAction;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductUpdateAction;
+import com.commercetools.api.models.type.ResourceTypeId;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.CustomUpdateActionUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.helpers.PriceCustomActionBuilder;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.products.Price;
-import io.sphere.sdk.products.PriceDraft;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.commands.updateactions.ChangePrice;
+import com.commercetools.sync.products.models.PriceCustomTypeAdapter;
+import com.commercetools.sync.products.models.PriceDraftCustomTypeAdapter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,9 +28,10 @@ public final class ProductVariantPriceUpdateActionUtils {
 
   /**
    * Compares all the fields of a {@link Price} and a {@link PriceDraft} and returns a list of
-   * {@link UpdateAction}&lt;{@link Product}&gt; as a result. If both the {@link Price} and the
-   * {@link PriceDraft} have identical fields, then no update action is needed and hence an empty
-   * {@link List} is returned.
+   *
+   * <p>{@link ProductUpdateAction}&lt;{@link Product}&gt; as a result. If both the {@link Price}
+   * and the {@link PriceDraft} have identical fields, then no update action is needed and hence an
+   * empty {@link List} is returned.
    *
    * @param newProduct new product draft, which provides the prices to update.
    * @param variantId the variantId needed for building the update action.
@@ -38,15 +42,14 @@ public final class ProductVariantPriceUpdateActionUtils {
    * @return A list with the update actions or an empty list if the price fields are identical.
    */
   @Nonnull
-  public static List<UpdateAction<Product>> buildActions(
+  public static List<ProductUpdateAction> buildActions(
       @Nonnull final ProductDraft newProduct,
-      @Nonnull final Integer variantId,
+      @Nonnull final Long variantId,
       @Nonnull final Price oldPrice,
       @Nonnull final PriceDraft newPrice,
       @Nonnull final ProductSyncOptions syncOptions) {
 
-    final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-
+    final List<ProductUpdateAction> updateActions = new ArrayList<>();
     buildChangePriceUpdateAction(oldPrice, newPrice, syncOptions).ifPresent(updateActions::add);
     updateActions.addAll(
         buildCustomUpdateActions(newProduct, variantId, oldPrice, newPrice, syncOptions));
@@ -55,18 +58,18 @@ public final class ProductVariantPriceUpdateActionUtils {
   }
 
   /**
-   * Builds a {@link ChangePrice} action based on the comparison of the following fields of the
-   * supplied {@link Price} and {@link PriceDraft}:
+   * Builds a {@link ProductChangePriceAction} action based on the comparison of the following
+   * fields of the supplied {@link Price} and {@link PriceDraft}:
    *
    * <ul>
    *   <li>{@link Price#getValue()} and {@link PriceDraft#getValue()}
    *   <li>{@link Price#getTiers()} and {@link PriceDraft#getTiers()}
    * </ul>
    *
-   * <p>If any of the aforementioned fields are different a {@link ChangePrice} update action will
-   * be returned in an {@link Optional}, otherwise if both are identical in the {@link Price} and
-   * the {@link PriceDraft}, then no update action is needed and hence an empty {@link Optional} is
-   * returned.
+   * <p>If any of the aforementioned fields are different a {@link ProductChangePriceAction} update
+   * action will be returned in an {@link Optional}, otherwise if both are identical in the {@link
+   * Price} and the {@link PriceDraft}, then no update action is needed and hence an empty {@link
+   * Optional} is returned.
    *
    * @param oldPrice the price which should be updated.
    * @param newPrice the price draft where we get the new name.
@@ -76,7 +79,7 @@ public final class ProductVariantPriceUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static Optional<ChangePrice> buildChangePriceUpdateAction(
+  public static Optional<ProductUpdateAction> buildChangePriceUpdateAction(
       @Nonnull final Price oldPrice,
       @Nonnull final PriceDraft newPrice,
       @Nonnull final ProductSyncOptions syncOptions) {
@@ -92,9 +95,16 @@ public final class ProductVariantPriceUpdateActionUtils {
       return Optional.empty();
     }
 
-    final Optional<ChangePrice> actionAfterValuesDiff =
+    final Optional<ProductUpdateAction> actionAfterValuesDiff =
         buildUpdateAction(
-            oldPriceValue, newPriceValue, () -> ChangePrice.of(oldPrice, newPrice, true));
+            oldPriceValue,
+            newPriceValue,
+            () ->
+                ProductChangePriceAction.builder()
+                    .priceId(oldPrice.getId())
+                    .price(newPrice)
+                    .staged(true)
+                    .build());
 
     return actionAfterValuesDiff
         .map(Optional::of)
@@ -102,16 +112,22 @@ public final class ProductVariantPriceUpdateActionUtils {
             () ->
                 // If values are not different, compare tiers.
                 buildUpdateAction(
-                    oldPrice.getTiers(),
+                    PriceUtils.createPriceTierDraft(oldPrice.getTiers()),
                     newPrice.getTiers(),
-                    () -> ChangePrice.of(oldPrice, newPrice, true)));
+                    () ->
+                        ProductChangePriceAction.builder()
+                            .priceId(oldPrice.getId())
+                            .price(newPrice)
+                            .staged(true)
+                            .build()));
   }
 
   /**
    * Compares the custom fields and custom types of a {@link Price} and a {@link PriceDraft} and
-   * returns a list of {@link UpdateAction}&lt;{@link Product}&gt; as a result. If both the {@link
-   * Price} and the {@link PriceDraft} have identical custom fields and types, then no update action
-   * is needed and hence an empty {@link List} is returned.
+   *
+   * <p>returns a list of {@link ProductUpdateAction}&lt;{@link Product}&gt; as a result. If both
+   * the {@link Price} and the {@link PriceDraft} have identical custom fields and types, then no
+   * update action is needed and hence an empty {@link List} is returned.
    *
    * @param newProduct new product draft, which provides the prices to update.
    * @param variantId the variantId needed for building the update action.
@@ -123,23 +139,34 @@ public final class ProductVariantPriceUpdateActionUtils {
    *     fields/types are identical.
    */
   @Nonnull
-  public static List<UpdateAction<Product>> buildCustomUpdateActions(
+  public static List<ProductUpdateAction> buildCustomUpdateActions(
       @Nonnull final ProductDraft newProduct,
-      @Nonnull final Integer variantId,
+      @Nonnull final Long variantId,
       @Nonnull final Price oldPrice,
       @Nonnull final PriceDraft newPrice,
       @Nonnull final ProductSyncOptions syncOptions) {
 
-    return CustomUpdateActionUtils.buildCustomUpdateActions(
-        newProduct,
-        oldPrice,
-        newPrice,
-        new PriceCustomActionBuilder(),
-        variantId,
-        Price::getId,
-        price -> Price.resourceTypeId(),
-        Price::getId,
-        syncOptions);
+    PriceCustomTypeAdapter priceAdapter = PriceCustomTypeAdapter.of(oldPrice);
+    PriceDraftCustomTypeAdapter priceDraftAdapter = PriceDraftCustomTypeAdapter.of(newPrice);
+
+    List<ProductUpdateAction> customUpdateAction =
+        CustomUpdateActionUtils.buildCustomUpdateActions(
+            newProduct,
+            priceAdapter,
+            priceDraftAdapter,
+            new PriceCustomActionBuilder(),
+            variantId,
+            PriceCustomTypeAdapter::getId,
+            priceCustomTypeAdapter ->
+                ResourceTypeId.PRODUCT_PRICE.getJsonName(), // return resource ID "product-price"
+            PriceCustomTypeAdapter::getId,
+            syncOptions);
+
+    List<ProductUpdateAction> productUpdateActions = new ArrayList<ProductUpdateAction>();
+    customUpdateAction.forEach(
+        resourceUpdateAction ->
+            productUpdateActions.add((ProductUpdateAction) resourceUpdateAction));
+    return productUpdateActions;
   }
 
   private ProductVariantPriceUpdateActionUtils() {}

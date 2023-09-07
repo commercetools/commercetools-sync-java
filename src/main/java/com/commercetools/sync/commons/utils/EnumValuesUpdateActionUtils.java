@@ -1,17 +1,13 @@
 package com.commercetools.sync.commons.utils;
 
-import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
+import static java.util.Optional.*;
 import static java.util.stream.Collectors.toMap;
 
+import com.commercetools.api.models.ResourceUpdateAction;
+import com.commercetools.api.models.WithKey;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.EnumValue;
-import io.sphere.sdk.models.WithKey;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -47,22 +43,32 @@ public final class EnumValuesUpdateActionUtils {
    * @param changeOrderEnumCallback the function that is called to apply the change in the order.
    * @param changeOrderWithKeysEnumCallback the function that is called to apply the change in the
    *     order with keys.
-   * @param <T> the enum type of the elements to change the order for.
-   * @param <U> the type of the resource in which the update actions will be applied on.
+   * @param <WithKeyT> the enum type of the elements to change the order for.
+   * @param <ResourceUpdateActionT> the type of the resource in which the update actions will be
+   *     applied on.
    * @return a list of enum values update actions if the list of plain enum values is not identical.
    *     Otherwise, if the plain enum values are identical, an empty list is returned.
    */
   @Nonnull
-  public static <T extends WithKey, U> List<UpdateAction<U>> buildActions(
-      @Nonnull final String definitionName,
-      @Nonnull final List<T> oldEnumValues,
-      @Nullable final List<T> newEnumValues,
-      @Nullable final BiFunction<String, List<String>, UpdateAction<U>> removeEnumCallback,
-      @Nullable final TriFunction<String, T, T, List<UpdateAction<U>>> matchingEnumCallback,
-      @Nullable final BiFunction<String, T, UpdateAction<U>> addEnumCallback,
-      @Nullable final BiFunction<String, List<T>, UpdateAction<U>> changeOrderEnumCallback,
-      @Nullable
-          final BiFunction<String, List<String>, UpdateAction<U>> changeOrderWithKeysEnumCallback) {
+  public static <
+          WithKeyT extends WithKey,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      List<ResourceUpdateActionT> buildActions(
+          @Nonnull final String definitionName,
+          @Nonnull final List<WithKeyT> oldEnumValues,
+          @Nullable final List<WithKeyT> newEnumValues,
+          @Nullable
+              final BiFunction<String, List<String>, ResourceUpdateActionT> removeEnumCallback,
+          @Nullable
+              final TriFunction<String, WithKeyT, WithKeyT, List<ResourceUpdateActionT>>
+                  matchingEnumCallback,
+          @Nullable final BiFunction<String, WithKeyT, ResourceUpdateActionT> addEnumCallback,
+          @Nullable
+              final BiFunction<String, List<WithKeyT>, ResourceUpdateActionT>
+                  changeOrderEnumCallback,
+          @Nullable
+              final BiFunction<String, List<String>, ResourceUpdateActionT>
+                  changeOrderWithKeysEnumCallback) {
 
     if (newEnumValues != null) {
       return buildUpdateActions(
@@ -85,36 +91,44 @@ public final class EnumValuesUpdateActionUtils {
   }
 
   @Nonnull
-  private static <T extends WithKey, U> List<UpdateAction<U>> buildUpdateActions(
-      @Nonnull final String definitionName,
-      @Nonnull final List<T> oldEnumValues,
-      @Nonnull final List<T> newEnumValues,
-      @Nullable
-          final BiFunction<String, List<String>, UpdateAction<U>>
-              removeEnumValuesUpdateActionCallback,
-      @Nullable final TriFunction<String, T, T, List<UpdateAction<U>>> matchingEnumCallback,
-      @Nullable final BiFunction<String, T, UpdateAction<U>> addEnumCallback,
-      @Nullable final BiFunction<String, List<T>, UpdateAction<U>> changeOrderEnumCallback,
-      @Nullable
-          final BiFunction<String, List<String>, UpdateAction<U>> changeOrderWithKeysEnumCallback) {
+  private static <
+          WithKeyT extends WithKey,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      List<ResourceUpdateActionT> buildUpdateActions(
+          @Nonnull final String definitionName,
+          @Nonnull final List<WithKeyT> oldEnumValues,
+          @Nonnull final List<WithKeyT> newEnumValues,
+          @Nullable
+              final BiFunction<String, List<String>, ResourceUpdateActionT>
+                  removeEnumValuesUpdateActionCallback,
+          @Nullable
+              final TriFunction<String, WithKeyT, WithKeyT, List<ResourceUpdateActionT>>
+                  matchingEnumCallback,
+          @Nullable final BiFunction<String, WithKeyT, ResourceUpdateActionT> addEnumCallback,
+          @Nullable
+              final BiFunction<String, List<WithKeyT>, ResourceUpdateActionT>
+                  changeOrderEnumCallback,
+          @Nullable
+              final BiFunction<String, List<String>, ResourceUpdateActionT>
+                  changeOrderWithKeysEnumCallback) {
 
-    final Optional<UpdateAction<U>> removeEnumValuesUpdateAction =
+    final Optional<ResourceUpdateActionT> removeEnumValuesUpdateAction =
         getRemoveEnumValuesUpdateAction(
             definitionName, oldEnumValues, newEnumValues, removeEnumValuesUpdateActionCallback);
 
-    final List<UpdateAction<U>> matchingEnumValuesUpdateActions =
+    final List<ResourceUpdateActionT> matchingEnumValuesUpdateActions =
         getMatchingEnumValuesUpdateActions(
             definitionName, oldEnumValues, newEnumValues, matchingEnumCallback);
 
-    final List<UpdateAction<U>> addEnumValuesUpdateActions =
+    final List<ResourceUpdateActionT> addEnumValuesUpdateActions =
         getAddEnumValuesUpdateActions(
             definitionName, oldEnumValues, newEnumValues, addEnumCallback);
 
-    final Optional<UpdateAction<U>> changeEnumValuesOrderUpdateAction =
+    final Optional<ResourceUpdateActionT> changeEnumValuesOrderUpdateAction =
         getChangeEnumValuesOrderUpdateAction(
             definitionName, oldEnumValues, newEnumValues, changeOrderEnumCallback);
 
-    final Optional<UpdateAction<U>> changeEnumValuesWithKeysOrderUpdateActions =
+    final Optional<ResourceUpdateActionT> changeEnumValuesWithKeysOrderUpdateActions =
         getChangeEnumValuesWithKeysOrderUpdateAction(
             definitionName, oldEnumValues, newEnumValues, changeOrderWithKeysEnumCallback);
 
@@ -131,13 +145,15 @@ public final class EnumValuesUpdateActionUtils {
   }
 
   @Nonnull
-  private static <T extends WithKey, U>
-      Optional<UpdateAction<U>> getChangeEnumValuesWithKeysOrderUpdateAction(
+  private static <
+          WithKeyT extends WithKey,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      Optional<ResourceUpdateActionT> getChangeEnumValuesWithKeysOrderUpdateAction(
           @Nonnull final String definitionName,
-          @Nonnull final List<T> oldEnumValues,
-          @Nonnull final List<T> newEnumValues,
+          @Nonnull final List<WithKeyT> oldEnumValues,
+          @Nonnull final List<WithKeyT> newEnumValues,
           @Nullable
-              final BiFunction<String, List<String>, UpdateAction<U>>
+              final BiFunction<String, List<String>, ResourceUpdateActionT>
                   changeOrderWithKeysEnumCallback) {
 
     return changeOrderWithKeysEnumCallback == null
@@ -147,12 +163,16 @@ public final class EnumValuesUpdateActionUtils {
   }
 
   @Nonnull
-  private static <T extends WithKey, U>
-      Optional<UpdateAction<U>> getChangeEnumValuesOrderUpdateAction(
+  private static <
+          WithKeyT extends WithKey,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      Optional<ResourceUpdateActionT> getChangeEnumValuesOrderUpdateAction(
           @Nonnull final String definitionName,
-          @Nonnull final List<T> oldEnumValues,
-          @Nonnull final List<T> newEnumValues,
-          @Nullable final BiFunction<String, List<T>, UpdateAction<U>> changeOrderEnumCallback) {
+          @Nonnull final List<WithKeyT> oldEnumValues,
+          @Nonnull final List<WithKeyT> newEnumValues,
+          @Nullable
+              final BiFunction<String, List<WithKeyT>, ResourceUpdateActionT>
+                  changeOrderEnumCallback) {
 
     return changeOrderEnumCallback == null
         ? Optional.empty()
@@ -161,11 +181,14 @@ public final class EnumValuesUpdateActionUtils {
   }
 
   @Nonnull
-  private static <T extends WithKey, U> List<UpdateAction<U>> getAddEnumValuesUpdateActions(
-      @Nonnull final String definitionName,
-      @Nonnull final List<T> oldEnumValues,
-      @Nonnull final List<T> newEnumValues,
-      @Nullable final BiFunction<String, T, UpdateAction<U>> addEnumCallback) {
+  private static <
+          WithKeyT extends WithKey,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      List<ResourceUpdateActionT> getAddEnumValuesUpdateActions(
+          @Nonnull final String definitionName,
+          @Nonnull final List<WithKeyT> oldEnumValues,
+          @Nonnull final List<WithKeyT> newEnumValues,
+          @Nullable final BiFunction<String, WithKeyT, ResourceUpdateActionT> addEnumCallback) {
 
     return addEnumCallback == null
         ? emptyList()
@@ -174,11 +197,16 @@ public final class EnumValuesUpdateActionUtils {
   }
 
   @Nonnull
-  private static <T extends WithKey, U> List<UpdateAction<U>> getMatchingEnumValuesUpdateActions(
-      @Nonnull final String definitionName,
-      @Nonnull final List<T> oldEnumValues,
-      @Nonnull final List<T> newEnumValues,
-      @Nullable final TriFunction<String, T, T, List<UpdateAction<U>>> matchingEnumCallback) {
+  private static <
+          WithKeyT extends WithKey,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      List<ResourceUpdateActionT> getMatchingEnumValuesUpdateActions(
+          @Nonnull final String definitionName,
+          @Nonnull final List<WithKeyT> oldEnumValues,
+          @Nonnull final List<WithKeyT> newEnumValues,
+          @Nullable
+              final TriFunction<String, WithKeyT, WithKeyT, List<ResourceUpdateActionT>>
+                  matchingEnumCallback) {
 
     return matchingEnumCallback == null
         ? emptyList()
@@ -187,13 +215,16 @@ public final class EnumValuesUpdateActionUtils {
   }
 
   @Nonnull
-  private static <T extends WithKey, U> Optional<UpdateAction<U>> getRemoveEnumValuesUpdateAction(
-      @Nonnull final String definitionName,
-      @Nonnull final List<T> oldEnumValues,
-      @Nonnull final List<T> newEnumValues,
-      @Nullable
-          final BiFunction<String, List<String>, UpdateAction<U>>
-              removeEnumValuesUpdateActionCallback) {
+  private static <
+          WithKeyT extends WithKey,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      Optional<ResourceUpdateActionT> getRemoveEnumValuesUpdateAction(
+          @Nonnull final String definitionName,
+          @Nonnull final List<WithKeyT> oldEnumValues,
+          @Nonnull final List<WithKeyT> newEnumValues,
+          @Nullable
+              final BiFunction<String, List<String>, ResourceUpdateActionT>
+                  removeEnumValuesUpdateActionCallback) {
 
     return removeEnumValuesUpdateActionCallback == null
         ? Optional.empty()
@@ -210,21 +241,27 @@ public final class EnumValuesUpdateActionUtils {
    * @param oldEnumValues the list of old enum values.
    * @param newEnumValues the list of new enum values.
    * @param changeOrderEnumCallback the function that is called to apply the change in the order.
-   * @param <T> the enum type of the elements to change the order for.
-   * @param <U> the type of the resource in which the update actions will be applied on.
+   * @param <WithKeyT> the enum type of the elements to change the order for.
+   * @param <ResourceUpdateActionT> the type of the resource in which the update actions will be
+   *     applied on.
    * @return an optional update action if the the order of the enum values is not identical.
    *     Otherwise, if the enum values order is identical, an empty optional is returned.
    */
   @Nonnull
-  static <T extends WithKey, U> Optional<UpdateAction<U>> buildChangeEnumValuesOrderUpdateAction(
-      @Nonnull final String definitionName,
-      @Nonnull final List<T> oldEnumValues,
-      @Nonnull final List<T> newEnumValues,
-      @Nonnull final BiFunction<String, List<T>, UpdateAction<U>> changeOrderEnumCallback) {
+  static <
+          WithKeyT extends WithKey,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      Optional<ResourceUpdateActionT> buildChangeEnumValuesOrderUpdateAction(
+          @Nonnull final String definitionName,
+          @Nonnull final List<WithKeyT> oldEnumValues,
+          @Nonnull final List<WithKeyT> newEnumValues,
+          @Nonnull
+              final BiFunction<String, List<WithKeyT>, ResourceUpdateActionT>
+                  changeOrderEnumCallback) {
 
     final Pair<List<String>, List<String>> keysPair =
         getAllKeysAndNewKeysPair(oldEnumValues, newEnumValues);
-    return buildUpdateAction(
+    return CommonTypeUpdateActionUtils.buildUpdateAction(
         keysPair.getLeft(), // all keys
         keysPair.getRight(), // new keys
         () -> changeOrderEnumCallback.apply(definitionName, newEnumValues));
@@ -239,30 +276,35 @@ public final class EnumValuesUpdateActionUtils {
    * @param oldEnumValues the list of old enum values.
    * @param newEnumValues the list of new enum values.
    * @param changeOrderEnumCallback the function that is called to apply the change in the order.
-   * @param <T> the enum type of the elements to change the order for.
+   * @param <WithKeyT> the enum type of the elements to change the order for.
    * @return an optional update action if the the order of the enum values is not identical.
    *     Otherwise, if the enum values order is identical, an empty optional is returned.
    */
   @Nonnull
-  private static <T extends WithKey, U>
-      Optional<UpdateAction<U>> buildChangeEnumValuesWithKeysOrderUpdateAction(
+  private static <
+          WithKeyT extends WithKey,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      Optional<ResourceUpdateActionT> buildChangeEnumValuesWithKeysOrderUpdateAction(
           @Nonnull final String definitionName,
-          @Nonnull final List<T> oldEnumValues,
-          @Nonnull final List<T> newEnumValues,
+          @Nonnull final List<WithKeyT> oldEnumValues,
+          @Nonnull final List<WithKeyT> newEnumValues,
           @Nonnull
-              final BiFunction<String, List<String>, UpdateAction<U>> changeOrderEnumCallback) {
+              final BiFunction<String, List<String>, ResourceUpdateActionT>
+                  changeOrderEnumCallback) {
 
     final Pair<List<String>, List<String>> keysPair =
         getAllKeysAndNewKeysPair(oldEnumValues, newEnumValues);
-    return buildUpdateAction(
+    return CommonTypeUpdateActionUtils.buildUpdateAction(
         keysPair.getLeft(), // all keys
         keysPair.getRight(), // new keys
         () -> changeOrderEnumCallback.apply(definitionName, keysPair.getRight()));
   }
 
   @Nonnull
-  private static <T extends WithKey> Pair<List<String>, List<String>> getAllKeysAndNewKeysPair(
-      @Nonnull final List<T> oldEnumValues, @Nonnull final List<T> newEnumValues) {
+  private static <WithKeyT extends WithKey>
+      Pair<List<String>, List<String>> getAllKeysAndNewKeysPair(
+          @Nonnull final List<WithKeyT> oldEnumValues,
+          @Nonnull final List<WithKeyT> newEnumValues) {
 
     final List<String> newKeys =
         newEnumValues.stream().map(WithKey::getKey).collect(Collectors.toList());
@@ -293,22 +335,26 @@ public final class EnumValuesUpdateActionUtils {
    * @param oldEnumValues the list of olf enum values.
    * @param newEnumValues the list of new enum values.
    * @param addEnumCallback the function that is called in order to add the new enum instance.
-   * @param <T> the enum type of the element to add.
-   * @param <U> the type of the resource in which the update actions will be applied on.
+   * @param <WithKeyT> the enum type of the element to add.
+   * @param <ResourceUpdateActionT> the type of the resource in which the update actions will be
+   *     applied on.
    * @return a list of enum values update actions if there are new enum value that should be added.
    *     Otherwise, if the enum values are identical, an empty optional is returned.
    */
   @Nonnull
-  static <T extends WithKey, U> List<UpdateAction<U>> buildAddEnumValuesUpdateActions(
-      @Nonnull final String definitionName,
-      @Nonnull final List<T> oldEnumValues,
-      @Nonnull final List<T> newEnumValues,
-      @Nonnull final BiFunction<String, T, UpdateAction<U>> addEnumCallback) {
+  static <
+          WithKeyT extends WithKey,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      List<ResourceUpdateActionT> buildAddEnumValuesUpdateActions(
+          @Nonnull final String definitionName,
+          @Nonnull final List<WithKeyT> oldEnumValues,
+          @Nonnull final List<WithKeyT> newEnumValues,
+          @Nonnull final BiFunction<String, WithKeyT, ResourceUpdateActionT> addEnumCallback) {
 
-    final Map<String, T> oldEnumValuesKeyMap =
+    final Map<String, WithKeyT> oldEnumValuesKeyMap =
         getEnumValuesKeyMapWithKeyValidation(definitionName, oldEnumValues);
 
-    final Map<String, T> newEnumValuesKeyMap =
+    final Map<String, WithKeyT> newEnumValuesKeyMap =
         getEnumValuesKeyMapWithKeyValidation(definitionName, newEnumValues);
 
     return newEnumValuesKeyMap.values().stream()
@@ -326,19 +372,24 @@ public final class EnumValuesUpdateActionUtils {
    * @param oldEnumValues the list of old enum values.
    * @param newEnumValues the list of new enum values.
    * @param removeEnumCallback the function that is called in order to remove the new enum instance.
-   * @param <T> the enum type of the elements of the list.
-   * @param <U> the type of the resource in which the update actions will be applied on.
+   * @param <WithKeyT> the enum type of the elements of the list.
+   * @param <ResourceUpdateActionT> the type of the resource in which the update actions will be
+   *     applied on.
    * @return a list of enum values update actions if there are any old enum value that should be
    *     removed. Otherwise, if the enum values are identical, an empty optional is returned.
    */
   @Nonnull
-  static <T extends WithKey, U> Optional<UpdateAction<U>> buildRemoveEnumValuesUpdateAction(
-      @Nonnull final String definitionName,
-      @Nonnull final List<T> oldEnumValues,
-      @Nullable final List<T> newEnumValues,
-      @Nonnull final BiFunction<String, List<String>, UpdateAction<U>> removeEnumCallback) {
+  static <
+          WithKeyT extends WithKey,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      Optional<ResourceUpdateActionT> buildRemoveEnumValuesUpdateAction(
+          @Nonnull final String definitionName,
+          @Nonnull final List<WithKeyT> oldEnumValues,
+          @Nullable final List<WithKeyT> newEnumValues,
+          @Nonnull
+              final BiFunction<String, List<String>, ResourceUpdateActionT> removeEnumCallback) {
 
-    final Map<String, T> newEnumValuesKeyMap =
+    final Map<String, WithKeyT> newEnumValuesKeyMap =
         getEnumValuesKeyMapWithKeyValidation(
             definitionName, ofNullable(newEnumValues).orElse(emptyList()));
 
@@ -363,21 +414,27 @@ public final class EnumValuesUpdateActionUtils {
    * @param newEnumValues the list of new enum values.
    * @param matchingEnumCallback the function that is called to get the update action resulting from
    *     comparing the enum value fields one by one.
-   * @param <T> the enum type of the elements of the list.
-   * @param <U> the type of the resource in which the update actions will be applied on.
+   * @param <WithKeyT> the enum type of the elements of the list.
+   * @param <ResourceUpdateActionT> the type of the resource in which the update actions will be
+   *     applied on.
    * @return a list of enum update actions if there are enum values that are existing in the map of
    *     new enum values. If the enum value still exists, then compare the enum value fields
    *     (label), and add the computed actions to the list of update actions. Otherwise, if the enum
    *     values are identical, an empty optional is returned.
    */
   @Nonnull
-  static <T extends WithKey, U> List<UpdateAction<U>> buildMatchingEnumValuesUpdateActions(
-      @Nonnull final String definitionName,
-      @Nonnull final List<T> oldEnumValues,
-      @Nonnull final List<T> newEnumValues,
-      @Nonnull final TriFunction<String, T, T, List<UpdateAction<U>>> matchingEnumCallback) {
+  static <
+          WithKeyT extends WithKey,
+          ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>>
+      List<ResourceUpdateActionT> buildMatchingEnumValuesUpdateActions(
+          @Nonnull final String definitionName,
+          @Nonnull final List<WithKeyT> oldEnumValues,
+          @Nonnull final List<WithKeyT> newEnumValues,
+          @Nonnull
+              final TriFunction<String, WithKeyT, WithKeyT, List<ResourceUpdateActionT>>
+                  matchingEnumCallback) {
 
-    final Map<String, T> newEnumValuesKeyMap =
+    final Map<String, WithKeyT> newEnumValuesKeyMap =
         getEnumValuesKeyMapWithKeyValidation(definitionName, newEnumValues);
 
     return oldEnumValues.stream()
@@ -391,18 +448,19 @@ public final class EnumValuesUpdateActionUtils {
   }
 
   /**
-   * Given a list of new {@link EnumValue}s, gets a map where the keys are the enum value key, and
-   * the values are the enum instances.
+   * Given a list of new enum values, gets a map where the keys are the enum value key, and the
+   * values are the enum instances.
    *
    * @param definitionName the definition name whose the enum values belong to.
    * @param enumValues the list of enum values.
-   * @param <T> the enum type of the elements of the list.
+   * @param <WithKeyT> the enum type of the elements of the list.
    * @return a map with the enum value key as a key of the map, and the enum value as a value of the
    *     map.
    */
   @Nonnull
-  private static <T extends WithKey> Map<String, T> getEnumValuesKeyMapWithKeyValidation(
-      @Nonnull final String definitionName, @Nonnull final List<T> enumValues) {
+  private static <WithKeyT extends WithKey>
+      Map<String, WithKeyT> getEnumValuesKeyMapWithKeyValidation(
+          @Nonnull final String definitionName, @Nonnull final List<WithKeyT> enumValues) {
 
     return enumValues.stream()
         .collect(

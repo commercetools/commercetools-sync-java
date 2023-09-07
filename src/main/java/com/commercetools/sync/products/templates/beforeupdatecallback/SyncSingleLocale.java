@@ -5,19 +5,9 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.LocalizedStringEntry;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.commands.updateactions.ChangeName;
-import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
-import io.sphere.sdk.products.commands.updateactions.SetDescription;
-import io.sphere.sdk.products.commands.updateactions.SetMetaDescription;
-import io.sphere.sdk.products.commands.updateactions.SetMetaKeywords;
-import io.sphere.sdk.products.commands.updateactions.SetMetaTitle;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.common.LocalizedStringEntry;
+import com.commercetools.api.models.product.*;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -40,12 +30,12 @@ public final class SyncSingleLocale {
    * @return a new list of update actions that corresponds to changes on French localizations only.
    */
   @Nonnull
-  public static List<UpdateAction<Product>> syncFrenchDataOnly(
-      @Nonnull final List<UpdateAction<Product>> updateActions,
+  public static List<ProductUpdateAction> syncFrenchDataOnly(
+      @Nonnull final List<ProductUpdateAction> updateActions,
       @Nonnull final ProductDraft newProductDraft,
       @Nonnull final ProductProjection oldProduct) {
 
-    final List<Optional<UpdateAction<Product>>> optionalActions =
+    final List<Optional<ProductUpdateAction>> optionalActions =
         updateActions.stream()
             .map(
                 action ->
@@ -61,12 +51,12 @@ public final class SyncSingleLocale {
    * actions:
    *
    * <ul>
-   *   <li>{@link ChangeName}
-   *   <li>{@link SetMetaKeywords}
-   *   <li>{@link SetMetaDescription}
-   *   <li>{@link SetMetaTitle}
-   *   <li>{@link ChangeSlug}
-   *   <li>{@link SetDescription}
+   *   <li>{@link com.commercetools.api.models.product.ProductChangeNameAction}
+   *   <li>{@link com.commercetools.api.models.product.ProductSetMetaKeywordsAction}
+   *   <li>{@link com.commercetools.api.models.product.ProductSetMetaDescriptionAction}
+   *   <li>{@link com.commercetools.api.models.product.ProductSetMetaTitleAction}
+   *   <li>{@link com.commercetools.api.models.product.ProductChangeSlugAction}
+   *   <li>{@link com.commercetools.api.models.product.ProductSetDescriptionAction}
    * </ul>
    *
    * If the update action is one of the aforementioned update actions, the method checks if the
@@ -86,65 +76,66 @@ public final class SyncSingleLocale {
    *     not needed.
    */
   @Nonnull
-  private static Optional<UpdateAction<Product>> filterSingleLocalization(
-      @Nonnull final UpdateAction<Product> updateAction,
+  private static Optional<ProductUpdateAction> filterSingleLocalization(
+      @Nonnull final ProductUpdateAction updateAction,
       @Nonnull final ProductDraft newProductDraft,
       @Nonnull final ProductProjection oldProduct,
       @Nonnull final Locale locale) {
 
-    if (updateAction instanceof ChangeName) {
+    if (updateAction instanceof ProductChangeNameAction) {
       return filterLocalizedField(
           newProductDraft,
           oldProduct,
           locale,
           ProductDraft::getName,
           (p) -> oldProduct.getName(),
-          ChangeName::of);
+          (updated) -> ProductChangeNameActionBuilder.of().name(updated).build());
     }
-    if (updateAction instanceof SetDescription) {
+    if (updateAction instanceof ProductSetDescriptionAction) {
       return filterLocalizedField(
           newProductDraft,
           oldProduct,
           locale,
           ProductDraft::getDescription,
           ProductProjection::getDescription,
-          SetDescription::of);
+          (updated) -> ProductSetDescriptionActionBuilder.of().description(updated).build());
     }
-    if (updateAction instanceof ChangeSlug) {
+    if (updateAction instanceof ProductChangeSlugAction) {
       return filterLocalizedField(
           newProductDraft,
           oldProduct,
           locale,
           ProductDraft::getSlug,
           ProductProjection::getSlug,
-          ChangeSlug::of);
+          (updated) -> ProductChangeSlugActionBuilder.of().slug(updated).build());
     }
-    if (updateAction instanceof SetMetaTitle) {
+    if (updateAction instanceof ProductSetMetaTitleAction) {
       return filterLocalizedField(
           newProductDraft,
           oldProduct,
           locale,
           ProductDraft::getMetaTitle,
           ProductProjection::getMetaTitle,
-          SetMetaTitle::of);
+          (updated) -> ProductSetMetaTitleActionBuilder.of().metaTitle(updated).build());
     }
-    if (updateAction instanceof SetMetaDescription) {
+    if (updateAction instanceof ProductSetMetaDescriptionAction) {
       return filterLocalizedField(
           newProductDraft,
           oldProduct,
           locale,
           ProductDraft::getMetaDescription,
           ProductProjection::getMetaDescription,
-          SetMetaDescription::of);
+          (updated) ->
+              ProductSetMetaDescriptionActionBuilder.of().metaDescription(updated).build());
     }
-    if (updateAction instanceof SetMetaKeywords) {
+    if (updateAction instanceof ProductSetMetaKeywordsAction) {
       return filterLocalizedField(
           newProductDraft,
           oldProduct,
           locale,
           ProductDraft::getMetaKeywords,
           ProductProjection::getMetaKeywords,
-          SetMetaKeywords::of);
+          (updated) -> ProductSetMetaKeywordsActionBuilder.of().metaKeywords(updated).build());
     }
     return Optional.of(updateAction);
   }
@@ -168,13 +159,13 @@ public final class SyncSingleLocale {
    *     has changed or empty otherwise.
    */
   @Nonnull
-  private static Optional<UpdateAction<Product>> filterLocalizedField(
+  private static Optional<ProductUpdateAction> filterLocalizedField(
       @Nonnull final ProductDraft newDraft,
       @Nonnull final ProductProjection oldProduct,
       @Nonnull final Locale locale,
       @Nonnull final Function<ProductDraft, LocalizedString> newLocalizedFieldMapper,
       @Nonnull final Function<ProductProjection, LocalizedString> oldLocalizedFieldMapper,
-      @Nonnull final Function<LocalizedString, UpdateAction<Product>> updateActionMapper) {
+      @Nonnull final Function<LocalizedString, ProductUpdateAction> updateActionMapper) {
     final LocalizedString newLocalizedField = newLocalizedFieldMapper.apply(newDraft);
     final LocalizedString oldLocalizedField = oldLocalizedFieldMapper.apply(oldProduct);
     if (oldLocalizedField != null && newLocalizedField != null) {

@@ -1,6 +1,6 @@
 package com.commercetools.sync.commons.models;
 
-import io.sphere.sdk.states.StateDraft;
+import com.commercetools.api.models.state.StateDraft;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;

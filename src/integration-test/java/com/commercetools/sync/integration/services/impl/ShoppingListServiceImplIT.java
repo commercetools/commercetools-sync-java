@@ -5,7 +5,7 @@ import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtil
 import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.deleteShoppingListTestData;
 import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.deleteShoppingLists;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -26,10 +26,10 @@ import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraftBuild
 import com.commercetools.api.models.shopping_list.TextLineItemDraft;
 import com.commercetools.api.models.shopping_list.TextLineItemDraftBuilder;
 import com.commercetools.sync.integration.commons.utils.ShoppingListITUtils;
-import com.commercetools.sync.sdk2.services.ShoppingListService;
-import com.commercetools.sync.sdk2.services.impl.ShoppingListServiceImpl;
-import com.commercetools.sync.sdk2.shoppinglists.ShoppingListSyncOptions;
-import com.commercetools.sync.sdk2.shoppinglists.ShoppingListSyncOptionsBuilder;
+import com.commercetools.sync.services.ShoppingListService;
+import com.commercetools.sync.services.impl.ShoppingListServiceImpl;
+import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
+import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.HashSet;

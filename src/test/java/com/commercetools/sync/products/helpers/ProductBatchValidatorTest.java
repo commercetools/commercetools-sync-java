@@ -1,15 +1,5 @@
 package com.commercetools.sync.products.helpers;
 
-import static com.commercetools.sync.products.ProductSyncMockUtils.createReferenceObject;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithId;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getReferenceSetAttributeDraft;
-import static com.commercetools.sync.products.helpers.ProductBatchValidator.PRODUCT_DRAFT_IS_NULL;
-import static com.commercetools.sync.products.helpers.ProductBatchValidator.PRODUCT_DRAFT_KEY_NOT_SET;
-import static com.commercetools.sync.products.helpers.ProductBatchValidator.PRODUCT_VARIANT_DRAFT_IS_NULL;
-import static com.commercetools.sync.products.helpers.ProductBatchValidator.PRODUCT_VARIANT_DRAFT_KEY_NOT_SET;
-import static com.commercetools.sync.products.helpers.ProductBatchValidator.PRODUCT_VARIANT_DRAFT_SKU_NOT_SET;
-import static com.commercetools.sync.products.helpers.ProductBatchValidator.getReferencedProductKeys;
-import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -17,35 +7,41 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.category.CategoryReference;
+import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
+import com.commercetools.api.models.common.DefaultCurrencyUnits;
+import com.commercetools.api.models.common.MoneyBuilder;
+import com.commercetools.api.models.common.PriceDraft;
+import com.commercetools.api.models.common.PriceDraftBuilder;
+import com.commercetools.api.models.custom_object.CustomObjectReference;
+import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
+import com.commercetools.api.models.product.Attribute;
+import com.commercetools.api.models.product.AttributeBuilder;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
+import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifierBuilder;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.FieldContainerBuilder;
+import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
+import com.commercetools.sync.products.ProductSyncMockUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.customergroups.CustomerGroup;
-import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.models.DefaultCurrencyUnits;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.PriceDraft;
-import io.sphere.sdk.products.PriceDraftBuilder;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.ProductVariantDraftBuilder;
-import io.sphere.sdk.products.attributes.AttributeDraft;
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.utils.MoneyImpl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -57,7 +53,7 @@ class ProductBatchValidatorTest {
   @BeforeEach
   void setup() {
     errorCallBackMessages = new ArrayList<>();
-    final SphereClient ctpClient = mock(SphereClient.class);
+    final ProjectApiRoot ctpClient = mock(ProjectApiRoot.class);
     syncOptions =
         ProductSyncOptionsBuilder.of(ctpClient)
             .errorCallback(
@@ -70,73 +66,77 @@ class ProductBatchValidatorTest {
 
   @Test
   void getReferencedProductKeys_WithNullAttributes_ShouldReturnEmptySet() {
-    assertThat(getReferencedProductKeys(ProductVariantDraftBuilder.of().build())).isEmpty();
+    Assertions.assertThat(
+            ProductBatchValidator.getReferencedProductKeys(ProductVariantDraftBuilder.of().build()))
+        .isEmpty();
   }
 
   @Test
   void getReferencedProductKeys_WithNoAttributes_ShouldReturnEmptySet() {
-    assertThat(getReferencedProductKeys(ProductVariantDraftBuilder.of().attributes().build()))
+    Assertions.assertThat(
+            ProductBatchValidator.getReferencedProductKeys(
+                ProductVariantDraftBuilder.of().attributes().build()))
         .isEmpty();
   }
 
   @Test
   void getReferencedProductKeys_WithANullAttribute_ShouldReturnEmptySet() {
-    assertThat(
-            getReferencedProductKeys(
+    Assertions.assertThat(
+            ProductBatchValidator.getReferencedProductKeys(
                 ProductVariantDraftBuilder.of().attributes(singletonList(null)).build()))
         .isEmpty();
   }
 
   @Test
   void getReferencedProductKeys_WithAProductRefAttribute_ShouldReturnEmptySet() {
-    final AttributeDraft productReferenceSetAttribute =
-        getReferenceSetAttributeDraft(
-            "foo", getProductReferenceWithId("foo"), getProductReferenceWithId("bar"));
-    final AttributeDraft productReferenceAttribute =
-        AttributeDraft.of("foo", getProductReferenceWithId("foo"));
+    final Attribute productReferenceSetAttribute =
+        ProductSyncMockUtils.getReferenceSetAttributeDraft(
+            "foo",
+            ProductSyncMockUtils.getProductReferenceWithId("foo"),
+            ProductSyncMockUtils.getProductReferenceWithId("bar"));
+    final Attribute productReferenceAttribute =
+        AttributeBuilder.of()
+            .name("foo")
+            .value(ProductSyncMockUtils.getProductReferenceWithId("foo"))
+            .build();
 
-    final List<AttributeDraft> attributes =
+    final List<Attribute> attributes =
         asList(null, productReferenceAttribute, productReferenceSetAttribute);
 
     final ProductVariantDraft variantDraft =
         ProductVariantDraftBuilder.of().attributes(attributes).build();
-    assertThat(getReferencedProductKeys(variantDraft)).containsExactlyInAnyOrder("foo", "bar");
-  }
-
-  @Test
-  void getReferencedProductKeys_WithANullAttrValue_ShouldReturnEmptySet() {
-    final AttributeDraft attributeDraft = AttributeDraft.of("foo", null);
-    final ProductVariantDraft productVariantDraft =
-        ProductVariantDraftBuilder.of().attributes(attributeDraft).build();
-
-    final Set<String> result = getReferencedProductKeys(productVariantDraft);
-
-    assertThat(result).isEmpty();
+    Assertions.assertThat(ProductBatchValidator.getReferencedProductKeys(variantDraft))
+        .containsExactlyInAnyOrder("foo", "bar");
   }
 
   @Test
   void getReferencedProductKeys_WithSetAsValue_ShouldReturnSetKeys() {
-    final AttributeDraft productReferenceSetAttribute =
-        getReferenceSetAttributeDraft(
-            "foo", getProductReferenceWithId("foo"), getProductReferenceWithId("bar"));
+    final Attribute productReferenceSetAttribute =
+        ProductSyncMockUtils.getReferenceSetAttributeDraft(
+            "foo",
+            ProductSyncMockUtils.getProductReferenceWithId("foo"),
+            ProductSyncMockUtils.getProductReferenceWithId("bar"));
 
     final ProductVariantDraft productVariantDraft =
         ProductVariantDraftBuilder.of().attributes(productReferenceSetAttribute).build();
 
-    final Set<String> result = getReferencedProductKeys(productVariantDraft);
+    final Set<String> result = ProductBatchValidator.getReferencedProductKeys(productVariantDraft);
 
     assertThat(result).containsExactlyInAnyOrder("foo", "bar");
   }
 
   @Test
   void getReferencedProductKeys_WithProductRefAsValue_ShouldReturnKeyInSet() {
-    final AttributeDraft productReferenceAttribute =
-        AttributeDraft.of("foo", getProductReferenceWithId("foo"));
+    final Attribute productReferenceAttribute =
+        AttributeBuilder.of()
+            .name("foo")
+            .value(ProductSyncMockUtils.getProductReferenceWithId("foo"))
+            .build();
 
     final ProductVariantDraft productVariantDraft =
         ProductVariantDraftBuilder.of().attributes(productReferenceAttribute).build();
 
-    final Set<String> result = getReferencedProductKeys(productVariantDraft);
+    final Set<String> result = ProductBatchValidator.getReferencedProductKeys(productVariantDraft);
 
     assertThat(result).containsExactly("foo");
   }
@@ -144,12 +144,13 @@ class ProductBatchValidatorTest {
   @Test
   void getProductKeyFromReference_WithNullJsonNode_ShouldReturnEmptyOpt() {
     final NullNode nullNode = JsonNodeFactory.instance.nullNode();
-    final AttributeDraft productReferenceAttribute = AttributeDraft.of("foo", nullNode);
+    final Attribute productReferenceAttribute =
+        AttributeBuilder.of().name("foo").value(nullNode).build();
 
     final ProductVariantDraft productVariantDraft =
         ProductVariantDraftBuilder.of().attributes(productReferenceAttribute).build();
 
-    final Set<String> result = getReferencedProductKeys(productVariantDraft);
+    final Set<String> result = ProductBatchValidator.getReferencedProductKeys(productVariantDraft);
 
     assertThat(result).isEmpty();
   }
@@ -158,42 +159,43 @@ class ProductBatchValidatorTest {
   void getProductKeyFromReference_WithoutAProductReference_ShouldReturnEmptyOpt() {
     final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
     objectNode.put("key", "value");
-    final AttributeDraft productReferenceAttribute = AttributeDraft.of("foo", objectNode);
+    final Attribute productReferenceAttribute =
+        AttributeBuilder.of().name("foo").value(objectNode).build();
 
     final ProductVariantDraft productVariantDraft =
         ProductVariantDraftBuilder.of().attributes(productReferenceAttribute).build();
 
-    final Set<String> result = getReferencedProductKeys(productVariantDraft);
+    final Set<String> result = ProductBatchValidator.getReferencedProductKeys(productVariantDraft);
 
     assertThat(result).isEmpty();
   }
 
   @Test
   void getReferencedProductKeysFromSet_WithOnlyNullRefsInSet_ShouldReturnEmptySet() {
-    final AttributeDraft productReferenceSetAttribute =
-        getReferenceSetAttributeDraft("foo", null, null);
+    final Attribute productReferenceSetAttribute =
+        ProductSyncMockUtils.getReferenceSetAttributeDraft("foo", null, null);
 
     final ProductVariantDraft productVariantDraft =
         ProductVariantDraftBuilder.of().attributes(productReferenceSetAttribute).build();
 
-    final Set<String> result = getReferencedProductKeys(productVariantDraft);
+    final Set<String> result = ProductBatchValidator.getReferencedProductKeys(productVariantDraft);
 
     assertThat(result).isEmpty();
   }
 
   @Test
   void getReferencedProductKeysFromSet_WithNullAndOtherRefsInSet_ShouldReturnSetOfNonNullIds() {
-    final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
-    objectNode.put("key", "value");
-
-    final AttributeDraft productReferenceSetAttribute =
-        getReferenceSetAttributeDraft(
-            "foo", getProductReferenceWithId("foo"), getProductReferenceWithId("bar"), objectNode);
+    final Attribute productReferenceSetAttribute =
+        ProductSyncMockUtils.getReferenceSetAttributeDraft(
+            "foo",
+            ProductSyncMockUtils.getProductReferenceWithId("foo"),
+            ProductSyncMockUtils.getProductReferenceWithId("bar"),
+            ProductSyncMockUtils.createReferenceObject("any", CategoryReference.CATEGORY));
 
     final ProductVariantDraft productVariantDraft =
         ProductVariantDraftBuilder.of().attributes(productReferenceSetAttribute).build();
 
-    final Set<String> result = getReferencedProductKeys(productVariantDraft);
+    final Set<String> result = ProductBatchValidator.getReferencedProductKeys(productVariantDraft);
 
     assertThat(result).containsExactlyInAnyOrder("foo", "bar");
   }
@@ -212,7 +214,7 @@ class ProductBatchValidatorTest {
     final Set<ProductDraft> validDrafts = getValidDrafts(Collections.singletonList(null));
 
     assertThat(errorCallBackMessages).hasSize(1);
-    assertThat(errorCallBackMessages.get(0)).isEqualTo(PRODUCT_DRAFT_IS_NULL);
+    assertThat(errorCallBackMessages.get(0)).isEqualTo(ProductBatchValidator.PRODUCT_DRAFT_IS_NULL);
     assertThat(validDrafts).isEmpty();
   }
 
@@ -224,7 +226,8 @@ class ProductBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(PRODUCT_DRAFT_KEY_NOT_SET, productDraft.getName()));
+        .isEqualTo(
+            String.format(ProductBatchValidator.PRODUCT_DRAFT_KEY_NOT_SET, productDraft.getName()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -237,7 +240,8 @@ class ProductBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(PRODUCT_DRAFT_KEY_NOT_SET, productDraft.getName()));
+        .isEqualTo(
+            String.format(ProductBatchValidator.PRODUCT_DRAFT_KEY_NOT_SET, productDraft.getName()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -254,7 +258,11 @@ class ProductBatchValidatorTest {
     assertThat(validDrafts).isEmpty();
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(PRODUCT_VARIANT_DRAFT_IS_NULL, variantPosition, productDraftKey));
+        .isEqualTo(
+            String.format(
+                ProductBatchValidator.PRODUCT_VARIANT_DRAFT_IS_NULL,
+                variantPosition,
+                productDraftKey));
   }
 
   @Test
@@ -273,8 +281,14 @@ class ProductBatchValidatorTest {
     assertThat(errorCallBackMessages).hasSize(2);
     assertThat(errorCallBackMessages)
         .containsExactlyInAnyOrder(
-            format(PRODUCT_VARIANT_DRAFT_SKU_NOT_SET, variantPosition, productDraftKey),
-            format(PRODUCT_VARIANT_DRAFT_KEY_NOT_SET, variantPosition, productDraftKey));
+            String.format(
+                ProductBatchValidator.PRODUCT_VARIANT_DRAFT_SKU_NOT_SET,
+                variantPosition,
+                productDraftKey),
+            String.format(
+                ProductBatchValidator.PRODUCT_VARIANT_DRAFT_KEY_NOT_SET,
+                variantPosition,
+                productDraftKey));
   }
 
   @Test
@@ -294,7 +308,11 @@ class ProductBatchValidatorTest {
     assertThat(validDrafts).isEmpty();
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(PRODUCT_VARIANT_DRAFT_KEY_NOT_SET, variantPosition, productDraftKey));
+        .isEqualTo(
+            String.format(
+                ProductBatchValidator.PRODUCT_VARIANT_DRAFT_KEY_NOT_SET,
+                variantPosition,
+                productDraftKey));
   }
 
   @Test
@@ -313,7 +331,11 @@ class ProductBatchValidatorTest {
     assertThat(validDrafts).isEmpty();
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(PRODUCT_VARIANT_DRAFT_SKU_NOT_SET, variantPosition, productDraftKey));
+        .isEqualTo(
+            String.format(
+                ProductBatchValidator.PRODUCT_VARIANT_DRAFT_SKU_NOT_SET,
+                variantPosition,
+                productDraftKey));
   }
 
   @Test
@@ -334,13 +356,18 @@ class ProductBatchValidatorTest {
 
   @Test
   void validateAndCollectReferencedKeys_WithDrafts_ShouldValidateCorrectly() {
-    final AttributeDraft productReferenceSetAttribute =
-        getReferenceSetAttributeDraft(
-            "foo", getProductReferenceWithId("foo"), getProductReferenceWithId("bar"));
-    final AttributeDraft productReferenceAttribute =
-        AttributeDraft.of("foo", getProductReferenceWithId("foo"));
+    final Attribute productReferenceSetAttribute =
+        ProductSyncMockUtils.getReferenceSetAttributeDraft(
+            "foo",
+            ProductSyncMockUtils.getProductReferenceWithId("foo"),
+            ProductSyncMockUtils.getProductReferenceWithId("bar"));
+    final Attribute productReferenceAttribute =
+        AttributeBuilder.of()
+            .name("foo")
+            .value(ProductSyncMockUtils.getProductReferenceWithId("foo"))
+            .build();
 
-    final List<AttributeDraft> attributes =
+    final List<Attribute> attributes =
         asList(null, productReferenceAttribute, productReferenceSetAttribute);
 
     final ProductVariantDraft validVariantDraft =
@@ -388,36 +415,70 @@ class ProductBatchValidatorTest {
     assertThat(errorCallBackMessages).hasSize(5);
     assertThat(errorCallBackMessages)
         .containsExactlyInAnyOrder(
-            PRODUCT_DRAFT_IS_NULL,
-            format(PRODUCT_DRAFT_KEY_NOT_SET, "null"),
-            format(PRODUCT_VARIANT_DRAFT_IS_NULL, 0, inValidProductDraft1.getKey()),
-            format(PRODUCT_VARIANT_DRAFT_SKU_NOT_SET, 0, inValidProductDraft2.getKey()),
-            format(PRODUCT_VARIANT_DRAFT_SKU_NOT_SET, 1, inValidProductDraft2.getKey()));
+            ProductBatchValidator.PRODUCT_DRAFT_IS_NULL,
+            String.format(ProductBatchValidator.PRODUCT_DRAFT_KEY_NOT_SET, "null"),
+            String.format(
+                ProductBatchValidator.PRODUCT_VARIANT_DRAFT_IS_NULL,
+                0,
+                inValidProductDraft1.getKey()),
+            String.format(
+                ProductBatchValidator.PRODUCT_VARIANT_DRAFT_SKU_NOT_SET,
+                0,
+                inValidProductDraft2.getKey()),
+            String.format(
+                ProductBatchValidator.PRODUCT_VARIANT_DRAFT_SKU_NOT_SET,
+                1,
+                inValidProductDraft2.getKey()));
   }
 
   @Test
   void
       validateAndCollectReferencedKeys_WithCustomerGroupRefsInPrices_ShouldCollectReferencesCorrectly() {
     final PriceDraft priceDraft =
-        PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-            .custom(CustomFieldsDraft.ofTypeKeyAndJson("customTypeKey", new HashMap<>()))
-            .customerGroup(ResourceIdentifier.ofKey("customerGroupKey"))
-            .channel(ResourceIdentifier.ofKey("channelKey"))
+        PriceDraftBuilder.of()
+            .value(
+                MoneyBuilder.of()
+                    .centAmount(BigDecimal.TEN.longValue())
+                    .currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode())
+                    .build())
+            .custom(
+                CustomFieldsDraftBuilder.of()
+                    .type(TypeResourceIdentifierBuilder.of().key("customTypeKey").build())
+                    .fields(FieldContainerBuilder.of().build())
+                    .build())
+            .customerGroup(
+                CustomerGroupResourceIdentifierBuilder.of().key("customerGroupKey").build())
+            .channel(ChannelResourceIdentifierBuilder.of().key("channelKey").build())
             .build();
 
     final PriceDraft priceDraftWithBlankCustomerGroup =
-        PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-            .customerGroup(ResourceIdentifier.ofKey(" "))
+        PriceDraftBuilder.of()
+            .value(
+                MoneyBuilder.of()
+                    .centAmount(BigDecimal.TEN.longValue())
+                    .currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode())
+                    .build())
+            .customerGroup(CustomerGroupResourceIdentifierBuilder.of().key(" ").build())
             .build();
 
     final PriceDraft priceDraftWithNullCustomerGroupId =
-        PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-            .customerGroup(ResourceIdentifier.ofKey(null))
+        PriceDraftBuilder.of()
+            .value(
+                MoneyBuilder.of()
+                    .centAmount(BigDecimal.TEN.longValue())
+                    .currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode())
+                    .build())
+            .customerGroup(CustomerGroupResourceIdentifierBuilder.of().key(null).build())
             .build();
 
     final PriceDraft priceDraftWithNullCustomerGroup =
-        PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-            .customerGroup((ResourceIdentifier<CustomerGroup>) null)
+        PriceDraftBuilder.of()
+            .value(
+                MoneyBuilder.of()
+                    .centAmount(BigDecimal.TEN.longValue())
+                    .currencyCode(DefaultCurrencyUnits.EUR.getCurrencyCode())
+                    .build())
+            .customerGroup(CustomerGroupResourceIdentifierBuilder.of().key(null).build())
             .build();
 
     final ProductVariantDraft validVariantDraft =
@@ -456,8 +517,9 @@ class ProductBatchValidatorTest {
   void validateAndCollectReferencedKeys_WithEmptyKeys_ShouldNotCollectKeys() {
     final ProductDraft productDraft = mock(ProductDraft.class);
     when(productDraft.getKey()).thenReturn("key");
-    when(productDraft.getTaxCategory()).thenReturn(ResourceIdentifier.ofKey(EMPTY));
-    when(productDraft.getState()).thenReturn(State.referenceOfId(EMPTY));
+    when(productDraft.getTaxCategory())
+        .thenReturn(TaxCategoryResourceIdentifierBuilder.of().key(EMPTY).build());
+    when(productDraft.getState()).thenReturn(StateResourceIdentifierBuilder.of().id(EMPTY).build());
     final ProductVariantDraft masterVariant = mock(ProductVariantDraft.class);
     when(masterVariant.getKey()).thenReturn("key");
     when(masterVariant.getSku()).thenReturn("sku");
@@ -481,14 +543,17 @@ class ProductBatchValidatorTest {
     final String validIdentifier = "container|key";
     final String invalidIdentifier = "container-key";
 
-    final AttributeDraft referenceSetAttributeDraft =
-        getReferenceSetAttributeDraft(
+    final Attribute referenceSetAttributeDraft =
+        ProductSyncMockUtils.getReferenceSetAttributeDraft(
             "foo",
-            createReferenceObject(validIdentifier, CustomObject.referenceTypeId()),
-            createReferenceObject(uuid, CustomObject.referenceTypeId()),
-            createReferenceObject(invalidIdentifier, CustomObject.referenceTypeId()));
+            ProductSyncMockUtils.createReferenceObject(
+                validIdentifier, CustomObjectReference.KEY_VALUE_DOCUMENT),
+            ProductSyncMockUtils.createReferenceObject(
+                uuid, CustomObjectReference.KEY_VALUE_DOCUMENT),
+            ProductSyncMockUtils.createReferenceObject(
+                invalidIdentifier, CustomObjectReference.KEY_VALUE_DOCUMENT));
 
-    final List<AttributeDraft> attributes = asList(referenceSetAttributeDraft);
+    final List<Attribute> attributes = asList(referenceSetAttributeDraft);
 
     final ProductVariantDraft validVariantDraft =
         ProductVariantDraftBuilder.of()

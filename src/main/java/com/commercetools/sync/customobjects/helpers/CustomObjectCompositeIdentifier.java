@@ -2,8 +2,9 @@ package com.commercetools.sync.customobjects.helpers;
 
 import static java.lang.String.format;
 
-import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.customobjects.CustomObjectDraft;
+import com.commercetools.api.models.custom_object.CustomObject;
+import com.commercetools.api.models.custom_object.CustomObjectDraft;
+import com.commercetools.api.models.custom_object.CustomObjectDraftBuilder;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
@@ -80,7 +81,7 @@ public final class CustomObjectCompositeIdentifier {
   public static CustomObjectCompositeIdentifier of(
       @Nonnull final String key, @Nonnull final String container) {
     return CustomObjectCompositeIdentifier.of(
-        CustomObjectDraft.ofUnversionedUpsert(container, key, null));
+        CustomObjectDraftBuilder.of().container(container).key(key).value("").build());
   }
 
   /**

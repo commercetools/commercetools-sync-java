@@ -1,24 +1,23 @@
 package com.commercetools.sync.services.impl;
 
-import static java.util.Collections.EMPTY_LIST;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
+import static java.util.Collections.*;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import com.commercetools.api.client.*;
+import com.commercetools.api.models.custom_object.CustomObject;
+import com.commercetools.api.models.custom_object.CustomObjectPagedQueryResponse;
+import com.commercetools.api.models.graph_ql.GraphQLRequest;
+import com.commercetools.api.models.graph_ql.GraphQLResponse;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductProjectionPagedQueryResponse;
+import com.commercetools.sync.commons.ExceptionUtils;
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
-import com.commercetools.sync.commons.models.ResourceKeyId;
-import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
+import com.commercetools.sync.commons.utils.TestUtils;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
@@ -26,22 +25,12 @@ import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentif
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.ProductService;
-import io.sphere.sdk.client.BadGatewayException;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.queries.ProductProjectionQuery;
-import io.sphere.sdk.queries.PagedQueryResult;
-import io.sphere.sdk.utils.CompletableFutureUtils;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.error.BadGatewayException;
+import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -62,11 +51,15 @@ class BaseServiceImplTest {
   private final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
       warningCallback = mock(TriConsumer.class);
 
-  private final SphereClient client = mock(SphereClient.class);
+  private final ByProjectKeyProductProjectionsKeyByKeyGet
+      byProjectKeyProductProjectionsKeyByKeyGet = mock();
+  private final ByProjectKeyProductProjectionsGet byProjectKeyProductProjectionsGet = mock();
+  private final ByProjectKeyGraphqlPost byProjectKeyGraphQlPost = mock();
   private ProductService service;
 
   @BeforeEach
   void setup() {
+    final ProjectApiRoot client = mockProjectApiRoot();
     final ProductSyncOptions syncOptions =
         ProductSyncOptionsBuilder.of(client)
             .warningCallback(warningCallback)
@@ -78,7 +71,7 @@ class BaseServiceImplTest {
 
   @AfterEach
   void cleanup() {
-    reset(client, warningCallback);
+    reset(byProjectKeyProductProjectionsKeyByKeyGet, byProjectKeyGraphQlPost, warningCallback);
   }
 
   @ParameterizedTest
@@ -91,21 +84,24 @@ class BaseServiceImplTest {
 
     // assertions
     assertThat(result).isEmpty();
-    verify(client, never()).execute(any());
+    verify(byProjectKeyProductProjectionsKeyByKeyGet, never()).execute();
   }
 
   @Test
   void fetchCachedResourceId_WithFetchResourceWithKey_ShouldReturnResourceId() {
     // preparation
-    final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
+    final ProductProjectionPagedQueryResponse pagedQueryResponse =
+        mock(ProductProjectionPagedQueryResponse.class);
     final ProductProjection mockProductResult = mock(ProductProjection.class);
     final String key = "testKey";
     final String id = "testId";
     when(mockProductResult.getKey()).thenReturn(key);
     when(mockProductResult.getId()).thenReturn(id);
-    when(pagedQueryResult.getResults()).thenReturn(singletonList(mockProductResult));
+    when(pagedQueryResponse.getResults()).thenReturn(singletonList(mockProductResult));
 
-    when(client.execute(any())).thenReturn(completedFuture(pagedQueryResult));
+    final ApiHttpResponse apiHttpResponse = mock(ApiHttpResponse.class);
+    when(apiHttpResponse.getBody()).thenReturn(pagedQueryResponse);
+    when(byProjectKeyProductProjectionsGet.execute()).thenReturn(completedFuture(apiHttpResponse));
 
     // test
     final Optional<String> result = service.getIdFromCacheOrFetch(key).toCompletableFuture().join();
@@ -117,14 +113,18 @@ class BaseServiceImplTest {
   @Test
   void fetchCachedResourceId_WithCachedResource_ShouldReturnResourceIdWithoutMakingRequest() {
     // preparation
-    final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
+    final ProductProjectionPagedQueryResponse pagedQueryResponse =
+        mock(ProductProjectionPagedQueryResponse.class);
     final ProductProjection mockProductResult = mock(ProductProjection.class);
     final String key = "testKey";
     final String id = "testId";
     when(mockProductResult.getKey()).thenReturn(key);
     when(mockProductResult.getId()).thenReturn(id);
-    when(pagedQueryResult.getResults()).thenReturn(singletonList(mockProductResult));
-    when(client.execute(any())).thenReturn(completedFuture(pagedQueryResult));
+    when(pagedQueryResponse.getResults()).thenReturn(singletonList(mockProductResult));
+
+    final ApiHttpResponse apiHttpResponse = mock(ApiHttpResponse.class);
+    when(apiHttpResponse.getBody()).thenReturn(pagedQueryResponse);
+    when(byProjectKeyProductProjectionsGet.execute()).thenReturn(completedFuture(apiHttpResponse));
     service.getIdFromCacheOrFetch(key).toCompletableFuture().join();
 
     // test
@@ -133,7 +133,7 @@ class BaseServiceImplTest {
     // assertions
     assertThat(result).contains(id);
     // only 1 request of the first fetch, but no more since second time it gets it from cache.
-    verify(client, times(1)).execute(any(ProductProjectionQuery.class));
+    verify(byProjectKeyProductProjectionsGet, times(1)).execute();
   }
 
   @Test
@@ -144,7 +144,7 @@ class BaseServiceImplTest {
 
     // assertions
     assertThat(resources).isEmpty();
-    verify(client, never()).execute(any(ProductProjectionQuery.class));
+    verify(byProjectKeyProductProjectionsGet, never()).execute();
   }
 
   @Test
@@ -155,15 +155,18 @@ class BaseServiceImplTest {
     final HashSet<String> resourceKeys = new HashSet<>();
     resourceKeys.add(key1);
 
-    final PagedQueryResult result = mock(PagedQueryResult.class);
+    final ProductProjectionPagedQueryResponse result =
+        mock(ProductProjectionPagedQueryResponse.class);
     when(result.getResults()).thenReturn(EMPTY_LIST);
-    when(client.execute(any(ProductProjectionQuery.class))).thenReturn(completedFuture(result));
+    final ApiHttpResponse apiHttpResponse = mock(ApiHttpResponse.class);
+    when(apiHttpResponse.getBody()).thenReturn(result);
+    when(byProjectKeyProductProjectionsGet.execute()).thenReturn(completedFuture(apiHttpResponse));
 
     // test
     service.fetchMatchingProductsByKeys(resourceKeys).toCompletableFuture().join();
 
     // assertions
-    verify(client, times(1)).execute(any(ProductProjectionQuery.class));
+    verify(byProjectKeyProductProjectionsGet, times(1)).execute();
   }
 
   @SuppressWarnings("unchecked")
@@ -185,10 +188,13 @@ class BaseServiceImplTest {
     when(mock2.getId()).thenReturn(RandomStringUtils.random(15));
     when(mock2.getKey()).thenReturn(key2);
 
-    final PagedQueryResult result = mock(PagedQueryResult.class);
+    final ProductProjectionPagedQueryResponse result =
+        mock(ProductProjectionPagedQueryResponse.class);
     when(result.getResults()).thenReturn(Arrays.asList(mock1, mock2));
 
-    when(client.execute(any(ProductProjectionQuery.class))).thenReturn(completedFuture(result));
+    final ApiHttpResponse apiHttpResponse = mock(ApiHttpResponse.class);
+    when(apiHttpResponse.getBody()).thenReturn(result);
+    when(byProjectKeyProductProjectionsGet.execute()).thenReturn(completedFuture(apiHttpResponse));
 
     // test fetch
     final Set<ProductProjection> resources =
@@ -196,7 +202,7 @@ class BaseServiceImplTest {
 
     // assertions
     assertThat(resources).containsExactlyInAnyOrder(mock1, mock2);
-    verify(client, times(1)).execute(any(ProductProjectionQuery.class));
+    verify(byProjectKeyProductProjectionsGet, times(1)).execute();
 
     // test caching
     final Optional<String> cachedKey1 =
@@ -209,7 +215,7 @@ class BaseServiceImplTest {
     assertThat(cachedKey1).contains(mock1.getId());
     assertThat(cachedKey2).contains(mock2.getId());
     // still 1 request from the first #fetchMatchingProductsByKeys call
-    verify(client, times(1)).execute(any(ProductProjectionQuery.class));
+    verify(byProjectKeyProductProjectionsGet, times(1)).execute();
   }
 
   @Test
@@ -229,10 +235,12 @@ class BaseServiceImplTest {
     when(mock2.getId()).thenReturn(RandomStringUtils.random(15));
     when(mock2.getKey()).thenReturn(randomKeys.get(251));
 
-    final PagedQueryResult result = mock(PagedQueryResult.class);
+    final ProductProjectionPagedQueryResponse result =
+        mock(ProductProjectionPagedQueryResponse.class);
     when(result.getResults()).thenReturn(Arrays.asList(mock1, mock2));
-
-    when(client.execute(any(ProductProjectionQuery.class))).thenReturn(completedFuture(result));
+    final ApiHttpResponse apiHttpResponse = mock(ApiHttpResponse.class);
+    when(apiHttpResponse.getBody()).thenReturn(result);
+    when(byProjectKeyProductProjectionsGet.execute()).thenReturn(completedFuture(apiHttpResponse));
 
     // test fetch
     final Set<ProductProjection> resources =
@@ -240,7 +248,7 @@ class BaseServiceImplTest {
 
     // assertions
     assertThat(resources).containsExactlyInAnyOrder(mock1, mock2);
-    verify(client, times(2)).execute(any(ProductProjectionQuery.class));
+    verify(byProjectKeyProductProjectionsGet, times(2)).execute();
 
     // test caching
     final Optional<String> cachedKey1 =
@@ -252,7 +260,7 @@ class BaseServiceImplTest {
     // assertions
     assertThat(cachedKey1).contains(mock1.getId());
     assertThat(cachedKey2).contains(mock2.getId());
-    verify(client, times(2)).execute(any(ProductProjectionQuery.class));
+    verify(byProjectKeyProductProjectionsGet, times(2)).execute();
   }
 
   @Test
@@ -265,8 +273,10 @@ class BaseServiceImplTest {
     resourceKeys.add(key1);
     resourceKeys.add(key2);
 
-    when(client.execute(any(ProductProjectionQuery.class)))
-        .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
+    when(byProjectKeyProductProjectionsGet.execute())
+        .thenReturn(
+            CompletableFutureUtils.exceptionallyCompletedFuture(
+                ExceptionUtils.createBadGatewayException()));
 
     // test
     final CompletionStage<Set<ProductProjection>> result =
@@ -277,7 +287,7 @@ class BaseServiceImplTest {
         .failsWithin(1, TimeUnit.SECONDS)
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(BadGatewayException.class);
-    verify(client).execute(any(ProductProjectionQuery.class));
+    verify(byProjectKeyProductProjectionsGet).execute();
   }
 
   @ParameterizedTest
@@ -290,7 +300,7 @@ class BaseServiceImplTest {
 
     // assertions
     assertThat(optional).isEmpty();
-    verify(client, never()).execute(any());
+    verify(byProjectKeyProductProjectionsKeyByKeyGet, never()).execute();
   }
 
   @SuppressWarnings("unchecked")
@@ -304,10 +314,10 @@ class BaseServiceImplTest {
     when(mockProductResult.getKey()).thenReturn(resourceKey);
     when(mockProductResult.getId()).thenReturn(resourceId);
 
-    final PagedQueryResult<ProductProjection> result = mock(PagedQueryResult.class);
-    when(result.head()).thenReturn(Optional.of(mockProductResult));
-
-    when(client.execute(any())).thenReturn(completedFuture(result));
+    final ApiHttpResponse apiHttpResponse = mock(ApiHttpResponse.class);
+    when(apiHttpResponse.getBody()).thenReturn(mockProductResult);
+    when(byProjectKeyProductProjectionsKeyByKeyGet.execute())
+        .thenReturn(completedFuture(apiHttpResponse));
 
     // test
     final Optional<ProductProjection> resourceOptional =
@@ -315,14 +325,16 @@ class BaseServiceImplTest {
 
     // assertions
     assertThat(resourceOptional).containsSame(mockProductResult);
-    verify(client).execute(any(ProductProjectionQuery.class));
+    verify(byProjectKeyProductProjectionsKeyByKeyGet).execute();
   }
 
   @Test
   void fetchResource_WithBadGateWayException_ShouldCompleteExceptionally() {
     // preparation
-    when(client.execute(any(ProductProjectionQuery.class)))
-        .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
+    when(byProjectKeyProductProjectionsKeyByKeyGet.execute())
+        .thenReturn(
+            CompletableFutureUtils.exceptionallyCompletedFuture(
+                ExceptionUtils.createBadGatewayException()));
 
     // test
     final CompletionStage<Optional<ProductProjection>> result = service.fetchProduct("foo");
@@ -332,7 +344,7 @@ class BaseServiceImplTest {
         .failsWithin(1, TimeUnit.SECONDS)
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(BadGatewayException.class);
-    verify(client, times(1)).execute(any(ProductProjectionQuery.class));
+    verify(byProjectKeyProductProjectionsKeyByKeyGet, times(1)).execute();
   }
 
   @Test
@@ -343,20 +355,23 @@ class BaseServiceImplTest {
 
     // assertions
     assertThat(optional).isEmpty();
-    verify(client, never()).execute(any());
+    verify(byProjectKeyProductProjectionsKeyByKeyGet, never()).execute();
   }
 
   @Test
   void cacheKeysToIdsUsingGraphQl_WithAllCachedKeys_ShouldMakeNoRequestAndReturnCachedEntry() {
     // preparation
-    final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
+    final ProductProjectionPagedQueryResponse pagedQueryResponse =
+        mock(ProductProjectionPagedQueryResponse.class);
     final ProductProjection mockProductResult = mock(ProductProjection.class);
     final String key = "testKey";
     final String id = "testId";
     when(mockProductResult.getKey()).thenReturn(key);
     when(mockProductResult.getId()).thenReturn(id);
-    when(pagedQueryResult.getResults()).thenReturn(singletonList(mockProductResult));
-    when(client.execute(any())).thenReturn(completedFuture(pagedQueryResult));
+    when(pagedQueryResponse.getResults()).thenReturn(singletonList(mockProductResult));
+    final ApiHttpResponse apiHttpResponse = mock(ApiHttpResponse.class);
+    when(apiHttpResponse.getBody()).thenReturn(pagedQueryResponse);
+    when(byProjectKeyProductProjectionsGet.execute()).thenReturn(completedFuture(apiHttpResponse));
     service.getIdFromCacheOrFetch(key).toCompletableFuture().join();
 
     // test
@@ -365,29 +380,31 @@ class BaseServiceImplTest {
 
     // assertions
     assertThat(optional).containsExactly(MapEntry.entry(key, id));
-    verify(client, times(1)).execute(any(ProductProjectionQuery.class));
+    verify(byProjectKeyProductProjectionsGet, times(1)).execute();
   }
 
   @Test
-  void cacheKeysToIds_WithCachedKeysExceedingCacheSize_ShouldNotReturnLeastUsedKeys() {
+  void cacheKeysToIds_WithCachedKeysExceedingCacheSize_ShouldNotReturnLeastUsedKeys()
+      throws JsonProcessingException {
     // preparation
-    final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
+    final ProductProjectionPagedQueryResponse pagedQueryResponse =
+        mock(ProductProjectionPagedQueryResponse.class);
     final ProductProjection product1 = mock(ProductProjection.class);
     when(product1.getKey()).thenReturn("key-1");
     when(product1.getId()).thenReturn("id-1");
     final ProductProjection product2 = mock(ProductProjection.class);
     when(product2.getKey()).thenReturn("key-2");
     when(product2.getId()).thenReturn("id-2");
-    when(pagedQueryResult.getResults()).thenReturn(Arrays.asList(product1, product2));
-    final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult =
-        mock(ResourceKeyIdGraphQlResult.class);
-    final ResourceKeyId resourceKeyId = mock(ResourceKeyId.class);
-    when(resourceKeyId.getKey()).thenReturn("testKey");
-    when(resourceKeyId.getId()).thenReturn("testId");
-    when(resourceKeyIdGraphQlResult.getResults()).thenReturn(singleton(resourceKeyId));
-    when(client.execute(any()))
-        .thenReturn(completedFuture(pagedQueryResult))
-        .thenReturn(completedFuture(resourceKeyIdGraphQlResult));
+    when(pagedQueryResponse.getResults()).thenReturn(Arrays.asList(product1, product2));
+    final ApiHttpResponse apiHttpResponse = mock(ApiHttpResponse.class);
+    when(apiHttpResponse.getBody()).thenReturn(pagedQueryResponse);
+    final String jsonStringProducts =
+        "{ \"products\": {\"results\":[{\"id\":\"testId\",\"key\":\"testKey\"}]}}";
+    final ApiHttpResponse<GraphQLResponse> productsResponse =
+        TestUtils.mockGraphQLResponse(jsonStringProducts);
+    when(byProjectKeyProductProjectionsGet.execute()).thenReturn(completedFuture(apiHttpResponse));
+    when(byProjectKeyGraphQlPost.execute())
+        .thenReturn(CompletableFuture.completedFuture(productsResponse));
     service.fetchMatchingProductsByKeys(
         Arrays.asList("key-1", "key-2").stream().collect(Collectors.toSet()));
     service.getIdFromCacheOrFetch("key-1"); // access the first added cache entry
@@ -399,22 +416,21 @@ class BaseServiceImplTest {
     // assertions
     assertThat(optional)
         .containsExactly(MapEntry.entry("key-1", "id-1"), MapEntry.entry("testKey", "testId"));
-    verify(client, times(1)).execute(any(ProductProjectionQuery.class));
-    verify(client, times(1)).execute(any(ResourceKeyIdGraphQlRequest.class));
+    verify(byProjectKeyProductProjectionsGet, times(1)).execute();
+    verify(byProjectKeyGraphQlPost, times(1)).execute();
   }
 
   @Test
-  void cacheKeysToIdsUsingGraphQl_WithNoCachedKeys_ShouldMakeRequestAndReturnCachedEntry() {
+  void cacheKeysToIdsUsingGraphQl_WithNoCachedKeys_ShouldMakeRequestAndReturnCachedEntry()
+      throws JsonProcessingException {
     // preparation
-    final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult =
-        mock(ResourceKeyIdGraphQlResult.class);
-    final ResourceKeyId mockResourceKeyId = mock(ResourceKeyId.class);
     final String key = "testKey";
     final String id = "testId";
-    when(mockResourceKeyId.getKey()).thenReturn(key);
-    when(mockResourceKeyId.getId()).thenReturn(id);
-    when(resourceKeyIdGraphQlResult.getResults()).thenReturn(singleton(mockResourceKeyId));
-    when(client.execute(any())).thenReturn(completedFuture(resourceKeyIdGraphQlResult));
+    final String jsonStringProducts =
+        "{ \"products\": {\"results\":[{\"id\":\"" + id + "\",\"key\":\"" + key + "\"}]}}";
+    final ApiHttpResponse<GraphQLResponse> productsResponse =
+        TestUtils.mockGraphQLResponse(jsonStringProducts);
+    when(byProjectKeyGraphQlPost.execute()).thenReturn(completedFuture(productsResponse));
 
     // test
     final Map<String, String> optional =
@@ -422,24 +438,22 @@ class BaseServiceImplTest {
 
     // assertions
     assertThat(optional).containsExactly(MapEntry.entry(key, id));
-    verify(client, times(1)).execute(any(ResourceKeyIdGraphQlRequest.class));
+    verify(byProjectKeyGraphQlPost, times(1)).execute();
   }
 
   @Test
-  void cacheKeysToIdsUsingGraphQl_With500Keys_ShouldChunkAndMakeRequestAndReturnCachedEntry() {
+  void cacheKeysToIdsUsingGraphQl_With500Keys_ShouldChunkAndMakeRequestAndReturnCachedEntry()
+      throws JsonProcessingException {
     // preparation
     Set<String> randomKeys = new HashSet<>();
     IntStream.range(0, 500).forEach(ignore -> randomKeys.add(RandomStringUtils.random(15)));
-
-    final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult =
-        mock(ResourceKeyIdGraphQlResult.class);
-    final ResourceKeyId mockResourceKeyId = mock(ResourceKeyId.class);
     final String key = randomKeys.stream().findFirst().get();
     final String id = "testId";
-    when(mockResourceKeyId.getKey()).thenReturn(key);
-    when(mockResourceKeyId.getId()).thenReturn(id);
-    when(resourceKeyIdGraphQlResult.getResults()).thenReturn(singleton(mockResourceKeyId));
-    when(client.execute(any())).thenReturn(completedFuture(resourceKeyIdGraphQlResult));
+    final String jsonStringProducts =
+        "{ \"products\": {\"results\":[{\"id\":\"" + id + "\",\"key\":\"" + key + "\"}]}}";
+    final ApiHttpResponse<GraphQLResponse> productsResponse =
+        TestUtils.mockGraphQLResponse(jsonStringProducts);
+    when(byProjectKeyGraphQlPost.execute()).thenReturn(completedFuture(productsResponse));
 
     // test
     final Map<String, String> optional =
@@ -447,22 +461,16 @@ class BaseServiceImplTest {
 
     // assertions
     assertThat(optional).containsExactly(MapEntry.entry(key, id));
-    verify(client, times(2)).execute(any(ResourceKeyIdGraphQlRequest.class));
+    verify(byProjectKeyGraphQlPost, times(2)).execute();
   }
 
   @Test
   void cacheKeysToIdsUsingGraphQl_WithBadGateWayException_ShouldCompleteExceptionally() {
     // preparation
-    final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult =
-        mock(ResourceKeyIdGraphQlResult.class);
-    final ResourceKeyId mockResourceKeyId = mock(ResourceKeyId.class);
-    final String key = "testKey";
-    final String id = "testId";
-    when(mockResourceKeyId.getKey()).thenReturn(key);
-    when(mockResourceKeyId.getId()).thenReturn(id);
-    when(resourceKeyIdGraphQlResult.getResults()).thenReturn(singleton(mockResourceKeyId));
-    when(client.execute(any(ResourceKeyIdGraphQlRequest.class)))
-        .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
+    when(byProjectKeyGraphQlPost.execute())
+        .thenReturn(
+            CompletableFutureUtils.exceptionallyCompletedFuture(
+                ExceptionUtils.createBadGatewayException()));
 
     // test
     final CompletionStage<Map<String, String>> result =
@@ -473,12 +481,13 @@ class BaseServiceImplTest {
         .failsWithin(1, TimeUnit.SECONDS)
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(BadGatewayException.class);
-    verify(client, times(1)).execute(any(ResourceKeyIdGraphQlRequest.class));
+    verify(byProjectKeyGraphQlPost, times(1)).execute();
   }
 
   @Test
   void cacheKeysToIds_WithEmptySetOfKeys_ShouldNotMakeRequestAndReturnEmpty() {
     // preparation
+    final ProjectApiRoot client = mockProjectApiRoot();
     CustomObjectSyncOptions customObjectSyncOptions =
         CustomObjectSyncOptionsBuilder.of(client).build();
     CustomObjectServiceImpl serviceImpl = new CustomObjectServiceImpl(customObjectSyncOptions);
@@ -489,27 +498,44 @@ class BaseServiceImplTest {
 
     // assertions
     assertThat(optional).isEmpty();
-    verify(client, never()).execute(any());
+    verify(byProjectKeyGraphQlPost, never()).execute();
   }
 
   @Test
   void cacheKeysToIds_WithEmptyCache_ShouldMakeRequestAndReturnCacheEntries() {
     // preparation
+    final ProjectApiRoot client = mock(ProjectApiRoot.class);
+    final ByProjectKeyCustomObjectsRequestBuilder byProjectKeyCustomObjectsRequestBuilder =
+        mock(ByProjectKeyCustomObjectsRequestBuilder.class);
+    final ByProjectKeyCustomObjectsGet byProjectKeyCustomObjectsGet =
+        mock(ByProjectKeyCustomObjectsGet.class);
+    when(byProjectKeyCustomObjectsGet.withWhere(anyString()))
+        .thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withLimit(anyInt())).thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withWithTotal(anyBoolean()))
+        .thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsRequestBuilder.get()).thenReturn(byProjectKeyCustomObjectsGet);
+    when(client.customObjects()).thenReturn(byProjectKeyCustomObjectsRequestBuilder);
+
     final CustomObjectSyncOptions customObjectSyncOptions =
         CustomObjectSyncOptionsBuilder.of(client).build();
     final CustomObjectServiceImpl serviceImpl =
         new CustomObjectServiceImpl(customObjectSyncOptions);
-    final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
-    final CustomObject customObject = mock(CustomObject.class);
     final String customObjectId = "customObjectId";
     final String customObjectContainer = "customObjectContainer";
     final String customObjectKey = "customObjectKey";
-
+    final CustomObject customObject = mock(CustomObject.class);
     when(customObject.getId()).thenReturn(customObjectId);
-    when(customObject.getKey()).thenReturn(customObjectKey);
     when(customObject.getContainer()).thenReturn(customObjectContainer);
-    when(pagedQueryResult.getResults()).thenReturn(singletonList(customObject));
-    when(client.execute(any())).thenReturn(completedFuture(pagedQueryResult));
+    when(customObject.getKey()).thenReturn(customObjectKey);
+
+    final CustomObjectPagedQueryResponse pagedQueryResponse =
+        mock(CustomObjectPagedQueryResponse.class);
+    when(pagedQueryResponse.getResults()).thenReturn(singletonList(customObject));
+    final ApiHttpResponse<CustomObjectPagedQueryResponse> apiHttpResponse =
+        mock(ApiHttpResponse.class);
+    when(apiHttpResponse.getBody()).thenReturn(pagedQueryResponse);
+    when(byProjectKeyCustomObjectsGet.execute()).thenReturn(completedFuture(apiHttpResponse));
 
     final Map<String, String> result =
         serviceImpl
@@ -527,13 +553,14 @@ class BaseServiceImplTest {
                         CustomObjectCompositeIdentifier.of(customObjectKey, customObjectContainer)
                             .toString()))
                 .isEqualTo(customObjectId));
-    verify(client).execute(any(CustomObjectQuery.class));
+    verify(byProjectKeyCustomObjectsGet).execute();
   }
 
   @Test
   void
       cacheKeysToIds_With500CustomObjectIdentifiers_ShouldChunkAndMakeRequestAndReturnCacheEntries() {
     // preparation
+    final ProjectApiRoot client = mock(ProjectApiRoot.class);
     Set<CustomObjectCompositeIdentifier> randomIdentifiers = new HashSet<>();
     IntStream.range(0, 500)
         .forEach(
@@ -542,27 +569,87 @@ class BaseServiceImplTest {
                     CustomObjectCompositeIdentifier.of(
                         "customObjectId" + i, "customObjectContainer" + i)));
 
-    final CustomObjectSyncOptions customObjectSyncOptions =
-        CustomObjectSyncOptionsBuilder.of(client).build();
-    final CustomObjectServiceImpl serviceImpl =
-        new CustomObjectServiceImpl(customObjectSyncOptions);
-    final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
-    final CustomObject customObject = mock(CustomObject.class);
     final String customObjectId = randomIdentifiers.stream().findFirst().get().getKey();
     final String customObjectContainer =
         randomIdentifiers.stream().findFirst().get().getContainer();
     final String customObjectKey = "customObjectKey";
+    final ByProjectKeyCustomObjectsRequestBuilder byProjectKeyCustomObjectsRequestBuilder =
+        mock(ByProjectKeyCustomObjectsRequestBuilder.class);
+    final ByProjectKeyCustomObjectsGet byProjectKeyCustomObjectsGet =
+        mock(ByProjectKeyCustomObjectsGet.class);
+    when(byProjectKeyCustomObjectsGet.withWhere(anyString()))
+        .thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withLimit(anyInt())).thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withWithTotal(anyBoolean()))
+        .thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsRequestBuilder.get()).thenReturn(byProjectKeyCustomObjectsGet);
+    when(client.customObjects()).thenReturn(byProjectKeyCustomObjectsRequestBuilder);
 
+    final CustomObjectSyncOptions customObjectSyncOptions =
+        CustomObjectSyncOptionsBuilder.of(client).build();
+    final CustomObjectServiceImpl serviceImpl =
+        new CustomObjectServiceImpl(customObjectSyncOptions);
+    final CustomObject customObject = mock(CustomObject.class);
     when(customObject.getId()).thenReturn(customObjectId);
-    when(customObject.getKey()).thenReturn(customObjectKey);
     when(customObject.getContainer()).thenReturn(customObjectContainer);
-    when(pagedQueryResult.getResults()).thenReturn(singletonList(customObject));
-    when(client.execute(any())).thenReturn(completedFuture(pagedQueryResult));
+    when(customObject.getKey()).thenReturn(customObjectKey);
+
+    final CustomObjectPagedQueryResponse pagedQueryResponse =
+        mock(CustomObjectPagedQueryResponse.class);
+    when(pagedQueryResponse.getResults()).thenReturn(singletonList(customObject));
+    final ApiHttpResponse<CustomObjectPagedQueryResponse> apiHttpResponse =
+        mock(ApiHttpResponse.class);
+    when(apiHttpResponse.getBody()).thenReturn(pagedQueryResponse);
+    when(byProjectKeyCustomObjectsGet.execute()).thenReturn(completedFuture(apiHttpResponse));
 
     // test
     serviceImpl.cacheKeysToIds(randomIdentifiers).toCompletableFuture().join();
 
     // assertion
-    verify(client, times(2)).execute(any(CustomObjectQuery.class));
+    verify(byProjectKeyCustomObjectsGet, times(2)).execute();
+  }
+
+  private ProjectApiRoot mockProjectApiRoot() {
+    final ProjectApiRoot ctpClient = mock(ProjectApiRoot.class);
+    final ByProjectKeyProductProjectionsRequestBuilder
+        byProjectKeyProductProjectionsRequestBuilder = mock();
+    when(ctpClient.productProjections()).thenReturn(byProjectKeyProductProjectionsRequestBuilder);
+    final ByProjectKeyProductProjectionsKeyByKeyRequestBuilder
+        byProjectKeyProductProjectionsKeyByKeyRequestBuilder = mock();
+    when(byProjectKeyProductProjectionsRequestBuilder.get())
+        .thenReturn(byProjectKeyProductProjectionsGet);
+    when(byProjectKeyProductProjectionsGet.withStaged(anyBoolean()))
+        .thenReturn(byProjectKeyProductProjectionsGet);
+    when(byProjectKeyProductProjectionsGet.withWhere(anyString()))
+        .thenReturn(byProjectKeyProductProjectionsGet);
+    when(byProjectKeyProductProjectionsGet.withPredicateVar(anyString(), anyString()))
+        .thenReturn(byProjectKeyProductProjectionsGet);
+    when(byProjectKeyProductProjectionsGet.withPredicateVar(anyString(), anyCollection()))
+        .thenReturn(byProjectKeyProductProjectionsGet);
+    when(byProjectKeyProductProjectionsGet.withLimit(anyInt()))
+        .thenReturn(byProjectKeyProductProjectionsGet);
+    when(byProjectKeyProductProjectionsGet.withWithTotal(anyBoolean()))
+        .thenReturn(byProjectKeyProductProjectionsGet);
+    when(byProjectKeyProductProjectionsGet.getQueryParam(anyString()))
+        .thenReturn(singletonList("foo"));
+    when(byProjectKeyProductProjectionsRequestBuilder.withKey(any()))
+        .thenReturn(byProjectKeyProductProjectionsKeyByKeyRequestBuilder);
+    when(byProjectKeyProductProjectionsKeyByKeyRequestBuilder.get())
+        .thenReturn(byProjectKeyProductProjectionsKeyByKeyGet);
+    final ByProjectKeyGraphqlRequestBuilder byProjectKeyGraphqlRequestBuilder = mock();
+    when(ctpClient.graphql()).thenReturn(byProjectKeyGraphqlRequestBuilder);
+    when(ctpClient.graphql().post(any(GraphQLRequest.class))).thenReturn(byProjectKeyGraphQlPost);
+    final CompletableFuture<ApiHttpResponse<ProductProjection>>
+        apiHttpResponseCompletableFutureProduct = mock();
+    final CompletableFuture<ApiHttpResponse<ProductProjectionPagedQueryResponse>>
+        apiHttpResponseCompletableFuturePagedQueryResponse = mock();
+    final CompletableFuture<ApiHttpResponse<GraphQLResponse>>
+        apihttpResponseCompletableFutureGraphQl = mock();
+    when(byProjectKeyProductProjectionsKeyByKeyGet.execute())
+        .thenReturn(apiHttpResponseCompletableFutureProduct);
+    when(byProjectKeyProductProjectionsGet.execute())
+        .thenReturn(apiHttpResponseCompletableFuturePagedQueryResponse);
+    when(byProjectKeyGraphQlPost.execute()).thenReturn(apihttpResponseCompletableFutureGraphQl);
+    return ctpClient;
   }
 }

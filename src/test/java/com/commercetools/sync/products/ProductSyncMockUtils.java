@@ -1,9 +1,7 @@
 package com.commercetools.sync.products;
 
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
-import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
-import static io.sphere.sdk.products.ProductProjectionType.STAGED;
+import static com.commercetools.api.models.common.DefaultCurrencyUnits.EUR;
+import static com.commercetools.sync.commons.utils.TestUtils.readObjectFromResource;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
@@ -12,6 +10,36 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.models.category.CategoryReference;
+import com.commercetools.api.models.category.CategoryReferenceBuilder;
+import com.commercetools.api.models.category.CategoryResourceIdentifier;
+import com.commercetools.api.models.category.CategoryResourceIdentifierBuilder;
+import com.commercetools.api.models.channel.Channel;
+import com.commercetools.api.models.channel.ChannelReference;
+import com.commercetools.api.models.common.*;
+import com.commercetools.api.models.custom_object.CustomObjectReference;
+import com.commercetools.api.models.custom_object.CustomObjectReferenceBuilder;
+import com.commercetools.api.models.customer.CustomerReference;
+import com.commercetools.api.models.customer.CustomerReferenceBuilder;
+import com.commercetools.api.models.customer_group.CustomerGroup;
+import com.commercetools.api.models.customer_group.CustomerGroupReference;
+import com.commercetools.api.models.product.*;
+import com.commercetools.api.models.product_type.ProductTypeReference;
+import com.commercetools.api.models.product_type.ProductTypeReferenceBuilder;
+import com.commercetools.api.models.product_type.ProductTypeResourceIdentifier;
+import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
+import com.commercetools.api.models.state.StateReference;
+import com.commercetools.api.models.state.StateReferenceBuilder;
+import com.commercetools.api.models.state.StateResourceIdentifier;
+import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
+import com.commercetools.api.models.tax_category.TaxCategoryReference;
+import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifier;
+import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifierBuilder;
+import com.commercetools.api.models.type.CustomFields;
+import com.commercetools.api.models.type.Type;
+import com.commercetools.api.models.type.TypeReference;
+import com.commercetools.sync.products.utils.AssetUtils;
+import com.commercetools.sync.products.utils.PriceUtils;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.CustomerGroupService;
@@ -20,32 +48,6 @@ import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TaxCategoryService;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.customergroups.CustomerGroup;
-import io.sphere.sdk.models.Asset;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifiable;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.CategoryOrderHints;
-import io.sphere.sdk.products.Price;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.ProductVariant;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.ProductVariantDraftBuilder;
-import io.sphere.sdk.products.attributes.AttributeDraft;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.taxcategories.TaxCategory;
-import io.sphere.sdk.types.CustomFields;
-import io.sphere.sdk.types.Type;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Arrays;
@@ -54,7 +56,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
@@ -124,69 +125,87 @@ public class ProductSyncMockUtils {
    * resource located at the {@code jsonResourcePath} and based on the supplied {@code productType}.
    *
    * @param jsonResourcePath the path of the JSON resource to build the product draft from.
-   * @param productTypeReference the reference of the product type that the product draft belongs
-   *     to.
+   * @param productTypeResourceIdentifier the reference of the product type that the product draft
+   *     belongs to.
    * @return a {@link ProductDraftBuilder} instance containing the data from the current projection
    *     of the specified JSON resource and the product type.
    */
   public static ProductDraftBuilder createProductDraftBuilder(
       @Nonnull final String jsonResourcePath,
-      @Nonnull final ResourceIdentifiable<ProductType> productTypeReference) {
-    final ProductProjection productFromJson =
-        readObjectFromResource(jsonResourcePath, Product.class).toProjection(STAGED);
+      @Nonnull final ProductTypeResourceIdentifier productTypeResourceIdentifier) {
+    final ProductProjection stagedProductData = createProductFromJson(jsonResourcePath);
 
     @SuppressWarnings("ConstantConditions")
     final List<ProductVariantDraft> allVariants =
-        productFromJson.getAllVariants().stream()
-            .map(productVariant -> ProductVariantDraftBuilder.of(productVariant).build())
+        stagedProductData.getVariants().stream()
+            .map(productVariant -> createProductVariantDraftBuilder(productVariant).build())
             .collect(toList());
 
-    return ProductDraftBuilder.of(
-            productTypeReference, productFromJson.getName(), productFromJson.getSlug(), allVariants)
-        .metaDescription(productFromJson.getMetaDescription())
-        .metaKeywords(productFromJson.getMetaKeywords())
-        .metaTitle(productFromJson.getMetaTitle())
-        .description(productFromJson.getDescription())
-        .searchKeywords(productFromJson.getSearchKeywords())
-        .taxCategory(productFromJson.getTaxCategory())
-        .state(productFromJson.getState())
-        .key(productFromJson.getKey())
-        .categories(
-            productFromJson.getCategories().stream()
-                .map(Reference::toResourceIdentifier)
-                .collect(Collectors.toSet()))
-        .categoryOrderHints(productFromJson.getCategoryOrderHints())
-        .publish(productFromJson.isPublished());
+    final ProductVariantDraft masterVariant =
+        createProductVariantDraftBuilder(stagedProductData.getMasterVariant()).build();
+
+    final ProductDraftBuilder productDraftBuilder =
+        ProductDraftBuilder.of()
+            .productType(productTypeResourceIdentifier)
+            .name(stagedProductData.getName())
+            .slug(stagedProductData.getSlug())
+            .masterVariant(masterVariant)
+            .variants(allVariants)
+            .metaDescription(stagedProductData.getMetaDescription())
+            .metaKeywords(stagedProductData.getMetaKeywords())
+            .metaTitle(stagedProductData.getMetaTitle())
+            .description(stagedProductData.getDescription())
+            .searchKeywords(stagedProductData.getSearchKeywords())
+            .key(stagedProductData.getKey())
+            .categories(
+                stagedProductData.getCategories().stream()
+                    .map(
+                        categoryReference ->
+                            CategoryResourceIdentifierBuilder.of()
+                                .id(categoryReference.getId())
+                                .build())
+                    .collect(toList()))
+            .categoryOrderHints(stagedProductData.getCategoryOrderHints())
+            .publish(stagedProductData.getPublished());
+    final TaxCategoryReference taxCategory = stagedProductData.getTaxCategory();
+    if (taxCategory != null) {
+      productDraftBuilder.taxCategory(
+          TaxCategoryResourceIdentifierBuilder.of()
+              .id(stagedProductData.getTaxCategory().getId())
+              .build());
+    }
+
+    return productDraftBuilder;
   }
 
   /**
-   * Given a {@link Set} of {@link Category} {@link ResourceIdentifier}, this method returns an
-   * instance of {@link CategoryOrderHints} containing a {@link Map}, in which each entry has
-   * category id from the supplied {@link Set} as a key and a random categoryOrderHint which is a
-   * {@link String} containing a random double value between 0 and 1 (exclusive).
+   * Given a {@link List} of {@link CategoryResourceIdentifier}, this method returns an instance of
+   * {@link CategoryOrderHints} containing a {@link Map}, in which each entry has category id from
+   * the supplied {@link List} as a key and a random categoryOrderHint which is a {@link String}
+   * containing a random double value between 0 and 1 (exclusive).
    *
    * <p>Note: The random double value is generated by the {@link ThreadLocalRandom#current()}
    * nextDouble method.
    *
-   * @param categoryResourceIdentifiers set of resource identifiers of categories to build
+   * @param categoryResourceIdentifiers list of resource identifiers of categories to build
    *     categoryOrderHints for.
    * @return an instance of {@link CategoryOrderHints} containing a categoryOrderHint for each
    *     category in the supplied set of category resource identifiers.
    */
-  public static CategoryOrderHints createRandomCategoryOrderHints(
-      @Nonnull final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers) {
+  public static CategoryOrderHints createRandomCategoryOrderHintsFromResourceIdentifiers(
+      @Nonnull final List<CategoryResourceIdentifier> categoryResourceIdentifiers) {
 
-    final List<Reference<Category>> references =
+    final List<CategoryReference> references =
         categoryResourceIdentifiers.stream()
             .map(
                 categoryResourceIdentifier ->
-                    Category.referenceOfId(categoryResourceIdentifier.getId()))
+                    CategoryReferenceBuilder.of().id(categoryResourceIdentifier.getId()).build())
             .collect(toList());
     return createRandomCategoryOrderHints(references);
   }
 
   /**
-   * Given a {@link List} of {@link Category}, this method returns an instance of {@link
+   * Given a {@link List} of {@link CategoryReference}, this method returns an instance of {@link
    * CategoryOrderHints} containing a {@link Map}, in which each entry has category id from the
    * supplied {@link List} as a key and a random categoryOrderHint which is a {@link String}
    * containing a random double value between 0 and 1 (exclusive).
@@ -199,7 +218,7 @@ public class ProductSyncMockUtils {
    *     category in the supplied list of categories.
    */
   public static CategoryOrderHints createRandomCategoryOrderHints(
-      @Nonnull final List<Reference<Category>> categoryResources) {
+      @Nonnull final List<CategoryReference> categoryResources) {
 
     final Map<String, String> categoryOrderHints = new HashMap<>();
     categoryResources.forEach(
@@ -208,15 +227,35 @@ public class ProductSyncMockUtils {
           categoryOrderHints.put(
               resourceIdentifier.getId(), ORDER_HINT_FORMAT.format(randomDouble));
         });
-    return CategoryOrderHints.of(categoryOrderHints);
+    return CategoryOrderHintsBuilder.of().values(categoryOrderHints).build();
+  }
+
+  public static ProductVariantDraftBuilder createProductVariantDraftBuilder(
+      final ProductVariant productVariant) {
+    final List<AssetDraft> assetDrafts = AssetUtils.createAssetDraft(productVariant.getAssets());
+    final List<PriceDraft> priceDrafts = PriceUtils.createPriceDraft(productVariant.getPrices());
+    final List<Attribute> attributes = createAttributes(productVariant.getAttributes());
+    return ProductVariantDraftBuilder.of()
+        .assets(assetDrafts)
+        .attributes(attributes)
+        .images(productVariant.getImages())
+        .prices(priceDrafts)
+        .sku(productVariant.getSku())
+        .key(productVariant.getKey());
+  }
+
+  public static List<Attribute> createAttributes(List<Attribute> attributes) {
+    return attributes.stream()
+        .map(attribute -> AttributeBuilder.of(attribute).build())
+        .collect(Collectors.toList());
   }
 
   public static ProductDraft createProductDraft(
       @Nonnull final String jsonResourcePath,
-      @Nonnull final ResourceIdentifiable<ProductType> productTypeReference,
-      @Nullable final ResourceIdentifier<TaxCategory> taxCategoryReference,
-      @Nullable final ResourceIdentifier<State> stateReference,
-      @Nonnull final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers,
+      @Nonnull final ProductTypeResourceIdentifier productTypeReference,
+      @Nullable final TaxCategoryResourceIdentifier taxCategoryReference,
+      @Nullable final StateResourceIdentifier stateReference,
+      @Nullable final List<CategoryResourceIdentifier> categoryResourceIdentifiers,
       @Nullable final CategoryOrderHints categoryOrderHints) {
     return createProductDraftBuilder(jsonResourcePath, productTypeReference)
         .taxCategory(taxCategoryReference)
@@ -244,21 +283,46 @@ public class ProductSyncMockUtils {
    */
   public static ProductDraft createProductDraft(
       @Nonnull final String jsonResourcePath,
-      @Nonnull final Reference<ProductType> productTypeReference,
-      @Nullable final Reference<TaxCategory> taxCategoryReference,
-      @Nullable final Reference<State> stateReference,
-      @Nonnull final List<Reference<Category>> categoryReferences,
+      @Nonnull final ProductTypeReference productTypeReference,
+      @Nullable final TaxCategoryReference taxCategoryReference,
+      @Nullable final StateReference stateReference,
+      @Nullable final List<CategoryReference> categoryReferences,
       @Nullable final CategoryOrderHints categoryOrderHints) {
-    return createProductDraftBuilder(jsonResourcePath, productTypeReference)
-        .taxCategory(taxCategoryReference)
-        .state(stateReference)
-        .categories(categoryReferences)
-        .categoryOrderHints(categoryOrderHints)
-        .build();
+    final ProductTypeResourceIdentifier productTypeRI =
+        ProductTypeResourceIdentifierBuilder.of().id(productTypeReference.getId()).build();
+    final ProductDraftBuilder productDraftBuilder =
+        createProductDraftBuilder(jsonResourcePath, productTypeRI)
+            .categories(
+                categoryReferences == null
+                    ? null
+                    : categoryReferences.stream()
+                        .map(
+                            categoryReference ->
+                                CategoryResourceIdentifierBuilder.of()
+                                    .id(categoryReference.getId())
+                                    .build())
+                        .collect(toList()))
+            .categoryOrderHints(categoryOrderHints);
+
+    if (taxCategoryReference == null) {
+      productDraftBuilder.taxCategory((TaxCategoryResourceIdentifier) null);
+    } else {
+      productDraftBuilder.taxCategory(
+          TaxCategoryResourceIdentifierBuilder.of().id(taxCategoryReference.getId()).build());
+    }
+    if (stateReference == null) {
+      productDraftBuilder.state((StateResourceIdentifier) null);
+    } else {
+      productDraftBuilder.state(
+          StateResourceIdentifierBuilder.of().id(stateReference.getId()).build());
+    }
+
+    return productDraftBuilder.build();
   }
 
   public static ProductProjection createProductFromJson(@Nonnull final String jsonResourcePath) {
-    return readObjectFromResource(jsonResourcePath, Product.class).toProjection(STAGED);
+    final Product productFromJson = readObjectFromResource(jsonResourcePath, Product.class);
+    return ProductMixin.toProjection(productFromJson, ProductProjectionType.STAGED);
   }
 
   public static ProductDraft createProductDraftFromJson(@Nonnull final String jsonResourcePath) {
@@ -266,15 +330,16 @@ public class ProductSyncMockUtils {
   }
 
   /**
-   * Creates a mock {@link ProductTypeService} that returns a completed {@link CompletableFuture}
-   * containing an {@link Optional} containing the id of the supplied value whenever the following
-   * method is called on the service:
+   * Creates a mock {@link com.commercetools.sync.services.ProductTypeService} that returns a
+   * completed {@link CompletableFuture} containing an {@link Optional} containing the id of the
+   * supplied value whenever the following method is called on the service:
    *
    * <ul>
-   *   <li>{@link ProductTypeService#fetchCachedProductTypeId(String)}
+   *   <li>{@link
+   *       com.commercetools.sync.services.ProductTypeService#fetchCachedProductTypeId(String)}
    * </ul>
    *
-   * @return the created mock of the {@link ProductTypeService}.
+   * @return the created mock of the {@link com.commercetools.sync.services.ProductTypeService}.
    */
   public static ProductTypeService getMockProductTypeService(@Nonnull final String id) {
     final ProductTypeService productTypeService = mock(ProductTypeService.class);
@@ -284,15 +349,16 @@ public class ProductSyncMockUtils {
   }
 
   /**
-   * Creates a mock {@link TaxCategoryService} that returns a completed {@link CompletableFuture}
-   * containing an {@link Optional} containing the id of the supplied value whenever the following
-   * method is called on the service:
+   * Creates a mock {@link com.commercetools.sync.services.TaxCategoryService} that returns a
+   * completed {@link CompletableFuture} containing an {@link Optional} containing the id of the
+   * supplied value whenever the following method is called on the service:
    *
    * <ul>
-   *   <li>{@link TaxCategoryService#fetchCachedTaxCategoryId(String)}
+   *   <li>{@link
+   *       com.commercetools.sync.services.TaxCategoryService#fetchCachedTaxCategoryId(String)}
    * </ul>
    *
-   * @return the created mock of the {@link TaxCategoryService}.
+   * @return the created mock of the {@link com.commercetools.sync.services.TaxCategoryService}.
    */
   public static TaxCategoryService getMockTaxCategoryService(@Nonnull final String id) {
     final TaxCategoryService taxCategoryService = mock(TaxCategoryService.class);
@@ -302,15 +368,15 @@ public class ProductSyncMockUtils {
   }
 
   /**
-   * Creates a mock {@link StateService} that returns a completed {@link CompletableFuture}
-   * containing an {@link Optional} containing the id of the supplied value whenever the following
-   * method is called on the service:
+   * Creates a mock {@link com.commercetools.sync.services.StateService} that returns a completed
+   * {@link CompletableFuture} containing an {@link Optional} containing the id of the supplied
+   * value whenever the following method is called on the service:
    *
    * <ul>
-   *   <li>{@link StateService#fetchCachedStateId(String)}
+   *   <li>{@link com.commercetools.sync.services.StateService#fetchCachedStateId(String)}
    * </ul>
    *
-   * @return the created mock of the {@link StateService}.
+   * @return the created mock of the {@link com.commercetools.sync.services.StateService}.
    */
   public static StateService getMockStateService(@Nonnull final String id) {
     final StateService stateService = mock(StateService.class);
@@ -334,15 +400,16 @@ public class ProductSyncMockUtils {
   }
 
   /**
-   * Creates a mock {@link CustomerGroupService} that returns a completed {@link CompletableFuture}
-   * containing an {@link Optional} containing the id of the supplied value whenever the following
-   * method is called on the service:
+   * Creates a mock {@link com.commercetools.sync.services.CustomerGroupService} that returns a
+   * completed {@link CompletableFuture} containing an {@link Optional} containing the id of the
+   * supplied value whenever the following method is called on the service:
    *
    * <ul>
-   *   <li>{@link CustomerGroupService#fetchCachedCustomerGroupId(String)}
+   *   <li>{@link
+   *       com.commercetools.sync.services.CustomerGroupService#fetchCachedCustomerGroupId(String)}
    * </ul>
    *
-   * @return the created mock of the {@link CustomerGroupService}.
+   * @return the created mock of the {@link com.commercetools.sync.services.CustomerGroupService}.
    */
   public static CustomerGroupService getMockCustomerGroupService(
       @Nonnull final CustomerGroup customerGroup) {
@@ -355,15 +422,15 @@ public class ProductSyncMockUtils {
   }
 
   /**
-   * Creates a mock {@link ProductService} that returns a completed {@link CompletableFuture}
-   * containing an {@link Optional} containing the id of the supplied value whenever the following
-   * method is called on the service:
+   * Creates a mock {@link com.commercetools.sync.services.ProductService} that returns a completed
+   * {@link CompletableFuture} containing an {@link Optional} containing the id of the supplied
+   * value whenever the following method is called on the service:
    *
    * <ul>
-   *   <li>{@link ProductService#getIdFromCacheOrFetch(String)}
+   *   <li>{@link com.commercetools.sync.services.ProductService#getIdFromCacheOrFetch(String)}
    * </ul>
    *
-   * @return the created mock of the {@link ProductService}.
+   * @return the created mock of the {@link com.commercetools.sync.services.ProductService}.
    */
   public static ProductService getMockProductService(@Nonnull final String id) {
     final ProductService productService = mock(ProductService.class);
@@ -373,15 +440,15 @@ public class ProductSyncMockUtils {
   }
 
   /**
-   * Creates a mock {@link CategoryService} that returns a completed {@link CompletableFuture}
-   * containing an {@link Optional} containing the id of the supplied value whenever the following
-   * method is called on the service:
+   * Creates a mock {@link com.commercetools.sync.services.CategoryService} that returns a completed
+   * {@link CompletableFuture} containing an {@link Optional} containing the id of the supplied
+   * value whenever the following method is called on the service:
    *
    * <ul>
-   *   <li>{@link CategoryService#fetchCachedCategoryId(String)}
+   *   <li>{@link com.commercetools.sync.services.CategoryService#fetchCachedCategoryId(String)}
    * </ul>
    *
-   * @return the created mock of the {@link CategoryService}.
+   * @return the created mock of the {@link com.commercetools.sync.services.CategoryService}.
    */
   public static CategoryService getMockCategoryService(@Nonnull final String id) {
     final CategoryService categoryService = mock(CategoryService.class);
@@ -404,12 +471,19 @@ public class ProductSyncMockUtils {
    */
   @Nonnull
   public static Price getPriceMockWithReferences(
-      @Nullable final Reference<Channel> channelReference,
-      @Nullable final Reference<Type> customTypeReference,
-      @Nullable final Reference<CustomerGroup> customerGroupReference) {
+      @Nullable final ChannelReference channelReference,
+      @Nullable final TypeReference customTypeReference,
+      @Nullable final CustomerGroupReference customerGroupReference) {
     final Price price = mock(Price.class);
     when(price.getChannel()).thenReturn(channelReference);
     when(price.getCustomerGroup()).thenReturn(customerGroupReference);
+    final CentPrecisionMoney money =
+        CentPrecisionMoneyBuilder.of()
+            .centAmount(100L)
+            .currencyCode(EUR.getCurrencyCode())
+            .fractionDigits(2)
+            .build();
+    when(price.getValue()).thenReturn(money);
 
     return ofNullable(customTypeReference)
         .map(
@@ -468,72 +542,77 @@ public class ProductSyncMockUtils {
   }
 
   /**
-   * Creates an {@link AttributeDraft} with the supplied {@code attributeName} and {@code
-   * references}.
+   * Creates an {@link Attribute} with the supplied {@code attributeName} and {@code references}.
    *
-   * @param attributeName the name to set on the {@link AttributeDraft}.
-   * @param references the references to set on the {@link AttributeDraft}.
-   * @return an {@link AttributeDraft} with the supplied {@code attributeName} and {@code
-   *     references}.
+   * @param attributeName the name to set on the {@link Attribute}.
+   * @param references the references to set on the {@link Attribute}.
+   * @return an {@link Attribute} with the supplied {@code attributeName} and {@code references}.
    */
   @Nonnull
-  public static AttributeDraft getReferenceSetAttributeDraft(
-      @Nonnull final String attributeName, @Nonnull final ObjectNode... references) {
-    final ArrayNode referenceSet = JsonNodeFactory.instance.arrayNode();
-    referenceSet.addAll(Arrays.asList(references));
-    return AttributeDraft.of(attributeName, referenceSet);
+  public static Attribute getReferenceSetAttributeDraft(
+      @Nonnull final String attributeName, @Nonnull final Reference... references) {
+    final List<Reference> referenceSet = Arrays.asList(references);
+    return AttributeBuilder.of().name(attributeName).value(referenceSet).build();
   }
 
   /**
-   * Creates an {@link ObjectNode} that represents a product reference with a random uuid in the id
-   * field.
+   * Creates an {@link ProductReference} that represents a product reference with a random uuid in
+   * the id field.
    *
-   * @return an {@link ObjectNode} that represents a product reference with a random uuid in the id
-   *     field.
+   * @return an {@link ProductReference} that represents a product reference with a random uuid in
+   *     the id field.
    */
   @Nonnull
-  public static ObjectNode getProductReferenceWithRandomId() {
-    final ObjectNode productReference = JsonNodeFactory.instance.objectNode();
-    productReference.put("typeId", "product");
-    productReference.put("id", UUID.randomUUID().toString());
-    return productReference;
+  public static ProductReference getProductReferenceWithRandomId() {
+    return ProductReferenceBuilder.of().id(UUID.randomUUID().toString()).build();
   }
 
   /**
-   * Creates an {@link ObjectNode} that represents a product reference with the supplied {@code id}
-   * in the id field.
+   * Creates an {@link ProductReference} that represents a product reference with the supplied
+   * {@code id} in the id field.
    *
-   * @return an {@link ObjectNode} that represents a product reference with the supplied {@code id}
-   *     in the id field.
+   * @return an {@link ProductReference} that represents a product reference with the supplied
+   *     {@code id} in the id field.
    */
   @Nonnull
-  public static ObjectNode getProductReferenceWithId(@Nonnull final String id) {
-    return createReferenceObject(id, Product.referenceTypeId());
+  public static ProductReference getProductReferenceWithId(@Nonnull final String id) {
+    return (ProductReference) createReferenceObject(id, ProductReference.PRODUCT);
   }
 
   /**
-   * Creates an {@link ObjectNode} that represents a reference with the supplied {@code id} in the
-   * id field and {@code typeId} field in the typeId field.
+   * Creates an {@link Reference} that represents a reference with the supplied {@code id} in the id
+   * field and {@code typeId} field in the typeId field.
    *
-   * @return an {@link ObjectNode} that represents a product reference with the supplied {@code id}
+   * @return an {@link Reference} that represents a product reference with the supplied {@code id}
    *     in the id field and {@code typeId} field in the typeId field.
    */
   @Nonnull
-  public static ObjectNode createReferenceObject(
+  public static Reference createReferenceObject(
       @Nonnull final String id, @Nonnull final String typeId) {
-    final ObjectNode reference = JsonNodeFactory.instance.objectNode();
-    reference.put(REFERENCE_TYPE_ID_FIELD, typeId);
-    reference.put(REFERENCE_ID_FIELD, id);
-    return reference;
+    switch (typeId) {
+      case ProductReference.PRODUCT:
+        return ProductReferenceBuilder.of().id(id).build();
+      case ProductTypeReference.PRODUCT_TYPE:
+        return ProductTypeReferenceBuilder.of().id(id).build();
+      case CategoryReference.CATEGORY:
+        return CategoryReferenceBuilder.of().id(id).build();
+      case CustomerReference.CUSTOMER:
+        return CustomerReferenceBuilder.of().id(id).build();
+      case CustomObjectReference.KEY_VALUE_DOCUMENT:
+        return CustomObjectReferenceBuilder.of().id(id).build();
+      case StateReference.STATE:
+        return StateReferenceBuilder.of().id(id).build();
+      default:
+        return new ReferenceImpl();
+    }
   }
 
   @Nonnull
   public static ProductDraftBuilder getBuilderWithProductTypeRefKey(@Nullable final String refKey) {
-    return ProductDraftBuilder.of(
-        ResourceIdentifier.ofKey(refKey),
-        LocalizedString.ofEnglish("testName"),
-        LocalizedString.ofEnglish("testSlug"),
-        (ProductVariantDraft) null);
+    return ProductDraftBuilder.of()
+        .productType(ProductTypeResourceIdentifierBuilder.of().key(refKey).build())
+        .name(LocalizedString.ofEnglish("testName"))
+        .slug(LocalizedString.ofEnglish("testSlug"));
   }
 
   @Nonnull
@@ -542,15 +621,15 @@ public class ProductSyncMockUtils {
   }
 
   /**
-   * Creates a mock {@link CustomObjectService} that returns a completed {@link CompletableFuture}
-   * containing an {@link Optional} containing the id of the supplied value whenever the following
-   * method is called on the service:
+   * Creates a mock {@link com.commercetools.sync.services.CustomObjectService} that returns a
+   * completed {@link CompletableFuture} containing an {@link Optional} containing the id of the
+   * supplied value whenever the following method is called on the service:
    *
    * <ul>
-   *   <li>{@link CustomObjectService#fetchCachedCustomObjectId}
+   *   <li>{@link com.commercetools.sync.services.CustomObjectService#fetchCachedCustomObjectId}
    * </ul>
    *
-   * @return the created mock of the {@link CustomObjectService}.
+   * @return the created mock of the {@link com.commercetools.sync.services.CustomObjectService}.
    */
   public static CustomObjectService getMockCustomObjectService(@Nonnull final String id) {
     final CustomObjectService customObjectService = mock(CustomObjectService.class);
@@ -560,15 +639,15 @@ public class ProductSyncMockUtils {
   }
 
   /**
-   * Creates a mock {@link CustomerService} that returns a completed {@link CompletableFuture}
-   * containing an {@link Optional} containing the id of the supplied value whenever the following
-   * method is called on the service:
+   * Creates a mock {@link com.commercetools.sync.services.CustomerService} that returns a completed
+   * {@link CompletableFuture} containing an {@link Optional} containing the id of the supplied
+   * value whenever the following method is called on the service:
    *
    * <ul>
-   *   <li>{@link CustomerService#fetchCachedCustomerId(String)}
+   *   <li>{@link com.commercetools.sync.services.CustomerService#fetchCachedCustomerId(String)}
    * </ul>
    *
-   * @return the created mock of the {@link CustomerService}.
+   * @return the created mock of the {@link com.commercetools.sync.services.CustomerService}.
    */
   public static CustomerService getMockCustomerService(@Nonnull final String id) {
     final CustomerService customerService = mock(CustomerService.class);

@@ -1,14 +1,14 @@
 package com.commercetools.sync.inventories;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.inventory.InventoryEntry;
+import com.commercetools.api.models.inventory.InventoryEntryDraft;
+import com.commercetools.api.models.inventory.InventoryEntryUpdateAction;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.inventory.InventoryEntry;
-import io.sphere.sdk.inventory.InventoryEntryDraft;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -16,17 +16,17 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public final class InventorySyncOptions
-    extends BaseSyncOptions<InventoryEntry, InventoryEntryDraft, InventoryEntry> {
+    extends BaseSyncOptions<InventoryEntry, InventoryEntryDraft, InventoryEntryUpdateAction> {
   private final boolean ensureChannels;
 
   InventorySyncOptions(
-      @Nonnull final SphereClient ctpClient,
+      @Nonnull final ProjectApiRoot ctpClient,
       @Nullable
           final QuadConsumer<
                   SyncException,
                   Optional<InventoryEntryDraft>,
                   Optional<InventoryEntry>,
-                  List<UpdateAction<InventoryEntry>>>
+                  List<InventoryEntryUpdateAction>>
               errorCallback,
       @Nullable
           final TriConsumer<SyncException, Optional<InventoryEntryDraft>, Optional<InventoryEntry>>
@@ -35,10 +35,10 @@ public final class InventorySyncOptions
       boolean ensureChannels,
       @Nullable
           final TriFunction<
-                  List<UpdateAction<InventoryEntry>>,
+                  List<InventoryEntryUpdateAction>,
                   InventoryEntryDraft,
                   InventoryEntry,
-                  List<UpdateAction<InventoryEntry>>>
+                  List<InventoryEntryUpdateAction>>
               beforeUpdateCallback,
       @Nullable final Function<InventoryEntryDraft, InventoryEntryDraft> beforeCreateCallback,
       final long cacheSize) {

@@ -5,26 +5,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.custom_object.CustomObject;
+import com.commercetools.api.models.custom_object.CustomObjectDraft;
+import com.commercetools.api.models.custom_object.CustomObjectDraftBuilder;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
-import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.customobjects.CustomObjectDraft;
+import com.commercetools.sync.customobjects.models.NoopResourceUpdateAction;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("unchecked")
 class CustomObjectSyncOptionsBuilderTest {
 
-  private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
-  private CustomObjectSyncOptionsBuilder customObjectSyncOptionsBuilder =
+  private static final ProjectApiRoot CTP_CLIENT = mock(ProjectApiRoot.class);
+  private final CustomObjectSyncOptionsBuilder customObjectSyncOptionsBuilder =
       CustomObjectSyncOptionsBuilder.of(CTP_CLIENT);
 
   @Test
@@ -37,45 +38,44 @@ class CustomObjectSyncOptionsBuilderTest {
   void build_WithClient_ShouldBuildSyncOptions() {
     final CustomObjectSyncOptions customObjectSyncOptions = customObjectSyncOptionsBuilder.build();
     assertThat(customObjectSyncOptions).isNotNull();
-    assertThat(customObjectSyncOptions.getBeforeUpdateCallback()).isNull();
-    assertThat(customObjectSyncOptions.getBeforeCreateCallback()).isNull();
-    assertThat(customObjectSyncOptions.getErrorCallback()).isNull();
-    assertThat(customObjectSyncOptions.getWarningCallback()).isNull();
-    assertThat(customObjectSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
-    assertThat(customObjectSyncOptions.getBatchSize())
+    Assertions.assertThat(customObjectSyncOptions.getBeforeUpdateCallback()).isNull();
+    Assertions.assertThat(customObjectSyncOptions.getBeforeCreateCallback()).isNull();
+    Assertions.assertThat(customObjectSyncOptions.getErrorCallback()).isNull();
+    Assertions.assertThat(customObjectSyncOptions.getWarningCallback()).isNull();
+    Assertions.assertThat(customObjectSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
+    Assertions.assertThat(customObjectSyncOptions.getBatchSize())
         .isEqualTo(CustomObjectSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
-    assertThat(customObjectSyncOptions.getCacheSize()).isEqualTo(10_000);
+    Assertions.assertThat(customObjectSyncOptions.getCacheSize()).isEqualTo(10_000);
   }
 
   @Test
   void beforeCreateCallback_WithFilterAsCallback_ShouldSetCallback() {
     customObjectSyncOptionsBuilder.beforeCreateCallback((newCustomObject) -> null);
     final CustomObjectSyncOptions customObjectSyncOptions = customObjectSyncOptionsBuilder.build();
-    assertThat(customObjectSyncOptions.getBeforeCreateCallback()).isNotNull();
+    Assertions.assertThat(customObjectSyncOptions.getBeforeCreateCallback()).isNotNull();
   }
 
   @Test
   void errorCallBack_WithCallBack_ShouldSetCallBack() {
     final QuadConsumer<
             SyncException,
-            Optional<CustomObjectDraft<JsonNode>>,
-            Optional<CustomObject<JsonNode>>,
-            List<UpdateAction<CustomObject<JsonNode>>>>
+            Optional<CustomObjectDraft>,
+            Optional<CustomObject>,
+            List<NoopResourceUpdateAction>>
         mockErrorCallBack = (exception, newResource, oldResource, updateActions) -> {};
     customObjectSyncOptionsBuilder.errorCallback(mockErrorCallBack);
 
     final CustomObjectSyncOptions customObjectSyncOptions = customObjectSyncOptionsBuilder.build();
-    assertThat(customObjectSyncOptions.getErrorCallback()).isNotNull();
+    Assertions.assertThat(customObjectSyncOptions.getErrorCallback()).isNotNull();
   }
 
   @Test
   void warningCallBack_WithCallBack_ShouldSetCallBack() {
-    final TriConsumer<
-            SyncException, Optional<CustomObjectDraft<JsonNode>>, Optional<CustomObject<JsonNode>>>
+    final TriConsumer<SyncException, Optional<CustomObjectDraft>, Optional<CustomObject>>
         mockWarningCallBack = (exception, newResource, oldResource) -> {};
     customObjectSyncOptionsBuilder.warningCallback(mockWarningCallBack);
     final CustomObjectSyncOptions cutomObjectSyncOptions = customObjectSyncOptionsBuilder.build();
-    assertThat(cutomObjectSyncOptions.getWarningCallback()).isNotNull();
+    Assertions.assertThat(cutomObjectSyncOptions.getWarningCallback()).isNotNull();
   }
 
   @Test
@@ -101,18 +101,18 @@ class CustomObjectSyncOptionsBuilderTest {
   void batchSize_WithPositiveValue_ShouldSetBatchSize() {
     final CustomObjectSyncOptions customObjectSyncOptions =
         CustomObjectSyncOptionsBuilder.of(CTP_CLIENT).batchSize(10).build();
-    assertThat(customObjectSyncOptions.getBatchSize()).isEqualTo(10);
+    Assertions.assertThat(customObjectSyncOptions.getBatchSize()).isEqualTo(10);
   }
 
   @Test
   void batchSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
     final CustomObjectSyncOptions customObjectSyncOptionsWithZeroBatchSize =
         CustomObjectSyncOptionsBuilder.of(CTP_CLIENT).batchSize(0).build();
-    assertThat(customObjectSyncOptionsWithZeroBatchSize.getBatchSize())
+    Assertions.assertThat(customObjectSyncOptionsWithZeroBatchSize.getBatchSize())
         .isEqualTo(CustomObjectSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
     final CustomObjectSyncOptions customObjectSyncOptionsWithNegativeBatchSize =
         CustomObjectSyncOptionsBuilder.of(CTP_CLIENT).batchSize(-100).build();
-    assertThat(customObjectSyncOptionsWithNegativeBatchSize.getBatchSize())
+    Assertions.assertThat(customObjectSyncOptionsWithNegativeBatchSize.getBatchSize())
         .isEqualTo(CustomObjectSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
   }
 
@@ -120,21 +120,21 @@ class CustomObjectSyncOptionsBuilderTest {
   void
       applyBeforeUpdateCallBack_WithNullReturnCallbackAndEmptyUpdateActions_ShouldReturnEmptyList() {
     final TriFunction<
-            List<UpdateAction<CustomObject<JsonNode>>>,
-            CustomObjectDraft<JsonNode>,
-            CustomObject<JsonNode>,
-            List<UpdateAction<CustomObject<JsonNode>>>>
+            List<NoopResourceUpdateAction>,
+            CustomObjectDraft,
+            CustomObject,
+            List<NoopResourceUpdateAction>>
         beforeUpdateCallback = (updateActions, newCustomObject, oldCustomObject) -> null;
 
     final CustomObjectSyncOptions customObjectSyncOptions =
         CustomObjectSyncOptionsBuilder.of(CTP_CLIENT)
             .beforeUpdateCallback(beforeUpdateCallback)
             .build();
-    assertThat(customObjectSyncOptions.getBeforeUpdateCallback()).isNotNull();
+    Assertions.assertThat(customObjectSyncOptions.getBeforeUpdateCallback()).isNotNull();
 
-    final List<UpdateAction<CustomObject<JsonNode>>> updateActions = Collections.emptyList();
+    final List<NoopResourceUpdateAction> updateActions = Collections.emptyList();
 
-    final List<UpdateAction<CustomObject<JsonNode>>> filteredList =
+    final List<NoopResourceUpdateAction> filteredList =
         customObjectSyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(CustomObjectDraft.class), mock(CustomObject.class));
     assertThat(filteredList).isEqualTo(updateActions);
@@ -143,20 +143,22 @@ class CustomObjectSyncOptionsBuilderTest {
 
   @Test
   void applyBeforeCreateCallBack_WithCallback_ShouldReturnFilteredDraft() {
-    final Function<CustomObjectDraft<JsonNode>, CustomObjectDraft<JsonNode>> draftFunction =
+    final Function<CustomObjectDraft, CustomObjectDraft> draftFunction =
         customObjectDraft ->
-            CustomObjectDraft.ofUnversionedUpsert(
-                customObjectDraft.getContainer() + "_filteredContainer",
-                customObjectDraft.getKey() + "_filteredKey",
-                (JsonNode) customObjectDraft.getValue());
+            CustomObjectDraftBuilder.of()
+                .container(customObjectDraft.getContainer() + "_filteredContainer")
+                .key(customObjectDraft.getKey() + "_filteredKey")
+                .value(customObjectDraft.getValue())
+                .build();
 
     final CustomObjectSyncOptions customObjectSyncOptions =
         CustomObjectSyncOptionsBuilder.of(CTP_CLIENT).beforeCreateCallback(draftFunction).build();
-    assertThat(customObjectSyncOptions.getBeforeCreateCallback()).isNotNull();
-    final CustomObjectDraft<JsonNode> resourceDraft = mock(CustomObjectDraft.class);
+    Assertions.assertThat(customObjectSyncOptions.getBeforeCreateCallback()).isNotNull();
+    final CustomObjectDraft resourceDraft = mock(CustomObjectDraft.class);
     when(resourceDraft.getKey()).thenReturn("myKey");
     when(resourceDraft.getContainer()).thenReturn("myContainer");
-    final Optional<CustomObjectDraft<JsonNode>> filteredDraft =
+    when(resourceDraft.getValue()).thenReturn("myValue");
+    final Optional<CustomObjectDraft> filteredDraft =
         customObjectSyncOptions.applyBeforeCreateCallback(resourceDraft);
     assertThat(filteredDraft).isNotEmpty();
     assertThat(filteredDraft.get().getKey()).isEqualTo("myKey_filteredKey");
@@ -167,22 +169,21 @@ class CustomObjectSyncOptionsBuilderTest {
   void applyBeforeCreateCallBack_WithNullCallback_ShouldReturnIdenticalDraftInOptional() {
     final CustomObjectSyncOptions customObjectSyncOptions =
         CustomObjectSyncOptionsBuilder.of(CTP_CLIENT).build();
-    assertThat(customObjectSyncOptions.getBeforeCreateCallback()).isNull();
-    final CustomObjectDraft<JsonNode> resourceDraft = mock(CustomObjectDraft.class);
-    final Optional<CustomObjectDraft<JsonNode>> filteredDraft =
+    Assertions.assertThat(customObjectSyncOptions.getBeforeCreateCallback()).isNull();
+    final CustomObjectDraft resourceDraft = mock(CustomObjectDraft.class);
+    final Optional<CustomObjectDraft> filteredDraft =
         customObjectSyncOptions.applyBeforeCreateCallback(resourceDraft);
     assertThat(filteredDraft).containsSame(resourceDraft);
   }
 
   @Test
   void applyBeforeCreateCallBack_WithCallbackReturningNull_ShouldReturnEmptyOptional() {
-    final Function<CustomObjectDraft<JsonNode>, CustomObjectDraft<JsonNode>> draftFunction =
-        customObjectDraft -> null;
+    final Function<CustomObjectDraft, CustomObjectDraft> draftFunction = customObjectDraft -> null;
     final CustomObjectSyncOptions customObjectSyncOptions =
         CustomObjectSyncOptionsBuilder.of(CTP_CLIENT).beforeCreateCallback(draftFunction).build();
-    assertThat(customObjectSyncOptions.getBeforeCreateCallback()).isNotNull();
-    final CustomObjectDraft<JsonNode> resourceDraft = mock(CustomObjectDraft.class);
-    final Optional<CustomObjectDraft<JsonNode>> filteredDraft =
+    Assertions.assertThat(customObjectSyncOptions.getBeforeCreateCallback()).isNotNull();
+    final CustomObjectDraft resourceDraft = mock(CustomObjectDraft.class);
+    final Optional<CustomObjectDraft> filteredDraft =
         customObjectSyncOptions.applyBeforeCreateCallback(resourceDraft);
     assertThat(filteredDraft).isEmpty();
   }
@@ -191,17 +192,19 @@ class CustomObjectSyncOptionsBuilderTest {
   void cacheSize_WithPositiveValue_ShouldSetCacheSize() {
     final CustomObjectSyncOptions customObjectSyncOptions =
         CustomObjectSyncOptionsBuilder.of(CTP_CLIENT).cacheSize(10).build();
-    assertThat(customObjectSyncOptions.getCacheSize()).isEqualTo(10);
+    Assertions.assertThat(customObjectSyncOptions.getCacheSize()).isEqualTo(10);
   }
 
   @Test
   void cacheSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
     final CustomObjectSyncOptions customObjectSyncOptionsWithZeroCacheSize =
         CustomObjectSyncOptionsBuilder.of(CTP_CLIENT).cacheSize(0).build();
-    assertThat(customObjectSyncOptionsWithZeroCacheSize.getCacheSize()).isEqualTo(10_000);
+    Assertions.assertThat(customObjectSyncOptionsWithZeroCacheSize.getCacheSize())
+        .isEqualTo(10_000);
 
     final CustomObjectSyncOptions customObjectSyncOptionsWithNegativeCacheSize =
         CustomObjectSyncOptionsBuilder.of(CTP_CLIENT).cacheSize(-100).build();
-    assertThat(customObjectSyncOptionsWithNegativeCacheSize.getCacheSize()).isEqualTo(10_000);
+    Assertions.assertThat(customObjectSyncOptionsWithNegativeCacheSize.getCacheSize())
+        .isEqualTo(10_000);
   }
 }

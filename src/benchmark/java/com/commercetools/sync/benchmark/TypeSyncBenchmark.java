@@ -1,22 +1,22 @@
 package com.commercetools.sync.benchmark;
 
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.FIELD_DEFINITION_1;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.FIELD_DEFINITION_NAME_1;
-import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.type.*;
-import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
-import com.commercetools.sync.sdk2.commons.utils.QuadConsumer;
-import com.commercetools.sync.sdk2.commons.utils.TriConsumer;
-import com.commercetools.sync.sdk2.types.TypeSync;
-import com.commercetools.sync.sdk2.types.TypeSyncOptions;
-import com.commercetools.sync.sdk2.types.TypeSyncOptionsBuilder;
-import com.commercetools.sync.sdk2.types.helpers.TypeSyncStatistics;
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.utils.QuadConsumer;
+import com.commercetools.sync.commons.utils.TriConsumer;
+import com.commercetools.sync.types.TypeSync;
+import com.commercetools.sync.types.TypeSyncOptions;
+import com.commercetools.sync.types.TypeSyncOptionsBuilder;
+import com.commercetools.sync.types.helpers.TypeSyncStatistics;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.io.IOException;
 import java.util.ArrayList;

@@ -1,16 +1,10 @@
 package com.commercetools.sync.customers;
 
-import static com.commercetools.sync.commons.helpers.CustomReferenceResolver.TYPE_DOES_NOT_EXIST;
-import static com.commercetools.sync.customers.helpers.CustomerBatchValidator.CUSTOMER_DRAFT_EMAIL_NOT_SET;
-import static com.commercetools.sync.customers.helpers.CustomerBatchValidator.CUSTOMER_DRAFT_IS_NULL;
-import static com.commercetools.sync.customers.helpers.CustomerBatchValidator.CUSTOMER_DRAFT_KEY_NOT_SET;
-import static com.commercetools.sync.customers.helpers.CustomerReferenceResolver.FAILED_TO_RESOLVE_CUSTOM_TYPE;
-import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
+import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
-import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
@@ -30,58 +24,53 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.customer.Customer;
+import com.commercetools.api.models.customer.CustomerDraft;
+import com.commercetools.api.models.customer.CustomerDraftBuilder;
+import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
+import com.commercetools.api.models.store.StoreResourceIdentifierBuilder;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.helpers.CustomReferenceResolver;
+import com.commercetools.sync.customers.helpers.CustomerBatchValidator;
+import com.commercetools.sync.customers.helpers.CustomerReferenceResolver;
 import com.commercetools.sync.customers.helpers.CustomerSyncStatistics;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.CustomerService;
 import com.commercetools.sync.services.TypeService;
-import com.commercetools.sync.services.impl.CustomerGroupServiceImpl;
-import com.commercetools.sync.services.impl.CustomerServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
-import io.sphere.sdk.client.BadRequestException;
-import io.sphere.sdk.client.ConcurrentModificationException;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.customers.CustomerDraft;
-import io.sphere.sdk.customers.CustomerDraftBuilder;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.models.SphereException;
-import io.sphere.sdk.types.CustomFieldsDraft;
+import io.vrap.rmf.base.client.error.BadRequestException;
+import io.vrap.rmf.base.client.error.ConcurrentModificationException;
+import io.vrap.rmf.base.client.error.NotFoundException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 public class CustomerSyncTest {
 
   private CustomerSyncOptions syncOptions;
   private List<String> errorMessages;
   private List<Throwable> exceptions;
-  private Customer errorCallbackOldResource;
-  private CustomerDraft errorCallbackNewResource;
-  private List<UpdateAction<Customer>> errorCallbackUpdateActions;
 
   @BeforeEach
   void setup() {
     errorMessages = new ArrayList<>();
     exceptions = new ArrayList<>();
-    final SphereClient ctpClient = mock(SphereClient.class);
+    final ProjectApiRoot ctpClient = mock(ProjectApiRoot.class);
 
     syncOptions =
         CustomerSyncOptionsBuilder.of(ctpClient)
             .errorCallback(
-                (exception, newResource, oldResource, updateActions) -> {
-                  this.errorCallbackOldResource = oldResource.orElse(null);
-                  this.errorCallbackNewResource = newResource.orElse(null);
-                  this.errorCallbackUpdateActions = updateActions;
+                (exception, oldResource, newResource, updateActions) -> {
                   errorMessages.add(exception.getMessage());
                   exceptions.add(exception);
                 })
@@ -102,7 +91,7 @@ public class CustomerSyncTest {
     assertThat(errorMessages)
         .hasSize(1)
         .singleElement(as(STRING))
-        .isEqualTo(CUSTOMER_DRAFT_IS_NULL);
+        .isEqualTo(CustomerBatchValidator.CUSTOMER_DRAFT_IS_NULL);
   }
 
   @Test
@@ -112,7 +101,7 @@ public class CustomerSyncTest {
     // test
     final CustomerSyncStatistics customerSyncStatistics =
         customerSync
-            .sync(singletonList(CustomerDraftBuilder.of("email", "pass").build()))
+            .sync(singletonList(CustomerDraftBuilder.of().email("email").password("pass").build()))
             .toCompletableFuture()
             .join();
 
@@ -122,7 +111,7 @@ public class CustomerSyncTest {
     assertThat(errorMessages)
         .hasSize(1)
         .singleElement(as(STRING))
-        .isEqualTo(format(CUSTOMER_DRAFT_KEY_NOT_SET, "email"));
+        .isEqualTo(String.format(CustomerBatchValidator.CUSTOMER_DRAFT_KEY_NOT_SET, "email"));
   }
 
   @Test
@@ -132,7 +121,9 @@ public class CustomerSyncTest {
     // test
     final CustomerSyncStatistics customerSyncStatistics =
         customerSync
-            .sync(singletonList(CustomerDraftBuilder.of(" ", "pass").key("key").build()))
+            .sync(
+                singletonList(
+                    CustomerDraftBuilder.of().email(" ").password("pass").key("key").build()))
             .toCompletableFuture()
             .join();
 
@@ -142,37 +133,44 @@ public class CustomerSyncTest {
     assertThat(errorMessages)
         .hasSize(1)
         .singleElement(as(STRING))
-        .isEqualTo(format(CUSTOMER_DRAFT_EMAIL_NOT_SET, "key"));
+        .isEqualTo(String.format(CustomerBatchValidator.CUSTOMER_DRAFT_EMAIL_NOT_SET, "key"));
   }
 
+  @SuppressWarnings("PMD")
   @Test
   void sync_WithFailOnCachingKeysToIds_ShouldTriggerErrorCallbackAndReturnProperStats() {
     // preparation
-    final TypeService typeService = spy(new TypeServiceImpl(syncOptions));
+    final TypeService typeService = Mockito.spy(new TypeServiceImpl(syncOptions));
     when(typeService.cacheKeysToIds(anySet()))
         .thenReturn(
             supplyAsync(
                 () -> {
-                  throw new SphereException();
+                  throw new RuntimeException();
                 }));
 
     final CustomerSync customerSync =
         new CustomerSync(
             syncOptions,
-            mock(CustomerService.class),
+            Mockito.mock(CustomerService.class),
             typeService,
-            mock(CustomerGroupService.class));
+            Mockito.mock(CustomerGroupService.class));
 
     final CustomerDraft customerDraft =
-        CustomerDraftBuilder.of("email", "pass")
+        CustomerDraftBuilder.of()
+            .email("email")
+            .password("pass")
             .key("customerKey")
-            .customerGroup(ResourceIdentifier.ofKey("customerGroupKey"))
-            .custom(CustomFieldsDraft.ofTypeKeyAndJson("typeKey", emptyMap()))
+            .customerGroup(
+                CustomerGroupResourceIdentifierBuilder.of().key("customerGroupKey").build())
+            .custom(
+                CustomFieldsDraftBuilder.of()
+                    .type(TypeResourceIdentifierBuilder.of().key("typeKey").build())
+                    .build())
             .stores(
                 asList(
-                    ResourceIdentifier.ofKey("storeKey1"),
-                    ResourceIdentifier.ofKey("storeKey2"),
-                    ResourceIdentifier.ofId("storeId3")))
+                    StoreResourceIdentifierBuilder.of().key("storeKey1").build(),
+                    StoreResourceIdentifierBuilder.of().key("storeKey2").build(),
+                    StoreResourceIdentifierBuilder.of().id("storeId3").build()))
             .build();
 
     // test
@@ -192,9 +190,10 @@ public class CustomerSyncTest {
         .singleElement(as(THROWABLE))
         .isExactlyInstanceOf(SyncException.class)
         .hasCauseExactlyInstanceOf(CompletionException.class)
-        .hasRootCauseExactlyInstanceOf(SphereException.class);
+        .hasRootCauseExactlyInstanceOf(RuntimeException.class);
   }
 
+  @SuppressWarnings("PMD")
   @Test
   void sync_WithErrorFetchingExistingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
     final CustomerService mockCustomerService = mock(CustomerService.class);
@@ -203,7 +202,7 @@ public class CustomerSyncTest {
         .thenReturn(
             supplyAsync(
                 () -> {
-                  throw new SphereException();
+                  throw new RuntimeException();
                 }));
 
     final CustomerSync customerSync =
@@ -217,7 +216,12 @@ public class CustomerSyncTest {
     final CustomerSyncStatistics customerSyncStatistics =
         customerSync
             .sync(
-                singletonList(CustomerDraftBuilder.of("email", "pass").key("customer-key").build()))
+                singletonList(
+                    CustomerDraftBuilder.of()
+                        .email("email")
+                        .password("pass")
+                        .key("customer-key")
+                        .build()))
             .toCompletableFuture()
             .join();
 
@@ -234,7 +238,7 @@ public class CustomerSyncTest {
         .singleElement(as(THROWABLE))
         .isExactlyInstanceOf(SyncException.class)
         .hasCauseExactlyInstanceOf(CompletionException.class)
-        .hasRootCauseExactlyInstanceOf(SphereException.class);
+        .hasRootCauseExactlyInstanceOf(RuntimeException.class);
   }
 
   @Test
@@ -253,9 +257,15 @@ public class CustomerSyncTest {
             syncOptions, mockCustomerService, mockTypeService, mock(CustomerGroupService.class));
 
     final CustomerDraft customerDraft =
-        CustomerDraftBuilder.of("email", "pass")
+        CustomerDraftBuilder.of()
+            .email("email")
+            .password("pass")
             .key("customerKey")
-            .custom(CustomFieldsDraft.ofTypeKeyAndJson("typeKey", emptyMap()))
+            .key("customerKey")
+            .custom(
+                CustomFieldsDraftBuilder.of()
+                    .type(TypeResourceIdentifierBuilder.of().key("typeKey").build())
+                    .build())
             .build();
 
     // test
@@ -266,9 +276,13 @@ public class CustomerSyncTest {
     AssertionsForStatistics.assertThat(customerSyncStatistics).hasValues(1, 0, 0, 1);
 
     final String expectedExceptionMessage =
-        format(FAILED_TO_RESOLVE_CUSTOM_TYPE, customerDraft.getKey());
+        String.format(
+            CustomerReferenceResolver.FAILED_TO_RESOLVE_CUSTOM_TYPE, customerDraft.getKey());
     final String expectedMessageWithCause =
-        format("%s Reason: %s", expectedExceptionMessage, format(TYPE_DOES_NOT_EXIST, "typeKey"));
+        format(
+            "%s Reason: %s",
+            expectedExceptionMessage,
+            String.format(CustomReferenceResolver.TYPE_DOES_NOT_EXIST, "typeKey"));
 
     assertThat(errorMessages)
         .hasSize(1)
@@ -303,7 +317,7 @@ public class CustomerSyncTest {
             mock(CustomerGroupService.class));
 
     final CustomerDraft customerDraft =
-        CustomerDraftBuilder.of("email", "pass").key("customerKey").build();
+        CustomerDraftBuilder.of().email("email").password("pass").key("customerKey").build();
 
     // test
     final CustomerSyncStatistics customerSyncStatistics =
@@ -336,7 +350,7 @@ public class CustomerSyncTest {
             mock(CustomerGroupService.class));
 
     final CustomerDraft customerDraft =
-        CustomerDraftBuilder.of("email", "pass").key("customerKey").build();
+        CustomerDraftBuilder.of().email("email").password("pass").key("customerKey").build();
 
     // test
     final CustomerSyncStatistics customerSyncStatistics =
@@ -371,7 +385,7 @@ public class CustomerSyncTest {
             mock(CustomerGroupService.class));
 
     final CustomerDraft customerDraft =
-        CustomerDraftBuilder.of("email", "pass").key("customerKey").build();
+        CustomerDraftBuilder.of().email("email").password("pass").key("customerKey").build();
 
     // test
     final CustomerSyncStatistics customerSyncStatistics =
@@ -404,7 +418,7 @@ public class CustomerSyncTest {
             mock(CustomerGroupService.class));
 
     final CustomerDraft customerDraft =
-        CustomerDraftBuilder.of("email", "pass").key("customerKey").build();
+        CustomerDraftBuilder.of().email("email").password("pass").key("customerKey").build();
 
     // test
     final CustomerSyncStatistics customerSyncStatistics =
@@ -428,8 +442,11 @@ public class CustomerSyncTest {
     when(mockCustomerService.fetchMatchingCustomersByKeys(anySet()))
         .thenReturn(completedFuture(singleton(mockCustomer)));
 
+    final BadRequestException badRequestException = mock(BadRequestException.class);
+    when(badRequestException.getMessage()).thenReturn("bad request");
+
     when(mockCustomerService.updateCustomer(any(), anyList()))
-        .thenReturn(exceptionallyCompletedFuture(new BadRequestException("Invalid request")));
+        .thenReturn(exceptionallyCompletedFuture(badRequestException));
 
     final CustomerSyncOptions spyCustomerSyncOptions = spy(syncOptions);
     final CustomerSync customerSync =
@@ -440,7 +457,7 @@ public class CustomerSyncTest {
             mock(CustomerGroupService.class));
 
     final CustomerDraft customerDraft =
-        CustomerDraftBuilder.of("email", "pass").key("customerKey").build();
+        CustomerDraftBuilder.of().email("email").password("pass").key("customerKey").build();
 
     // test
     final CustomerSyncStatistics customerSyncStatistics =
@@ -449,7 +466,7 @@ public class CustomerSyncTest {
     // assertions
     AssertionsForStatistics.assertThat(customerSyncStatistics).hasValues(1, 0, 0, 1);
 
-    assertThat(errorMessages).hasSize(1).singleElement(as(STRING)).contains("Invalid request");
+    assertThat(errorMessages).hasSize(1).singleElement(as(STRING)).contains("bad request");
 
     assertThat(exceptions)
         .hasSize(1)
@@ -468,10 +485,12 @@ public class CustomerSyncTest {
     when(mockCustomerService.fetchMatchingCustomersByKeys(anySet()))
         .thenReturn(completedFuture(singleton(mockCustomer)));
 
+    final ConcurrentModificationException concurrentModificationException =
+        mock(ConcurrentModificationException.class);
+    when(concurrentModificationException.getCause()).thenReturn(concurrentModificationException);
+
     when(mockCustomerService.updateCustomer(any(), anyList()))
-        .thenReturn(
-            exceptionallyCompletedFuture(
-                new SphereException(new ConcurrentModificationException())))
+        .thenReturn(exceptionallyCompletedFuture(concurrentModificationException))
         .thenReturn(completedFuture(mockCustomer));
 
     when(mockCustomerService.fetchCustomerByKey("customerKey"))
@@ -486,7 +505,7 @@ public class CustomerSyncTest {
             mock(CustomerGroupService.class));
 
     final CustomerDraft customerDraft =
-        CustomerDraftBuilder.of("email", "pass").key("customerKey").build();
+        CustomerDraftBuilder.of().email("email").password("pass").key("customerKey").build();
 
     // test
     final CustomerSyncStatistics customerSyncStatistics =
@@ -506,14 +525,18 @@ public class CustomerSyncTest {
     when(mockCustomerService.fetchMatchingCustomersByKeys(anySet()))
         .thenReturn(completedFuture(singleton(mockCustomer)));
 
+    final ConcurrentModificationException concurrentModificationException =
+        mock(ConcurrentModificationException.class);
+    when(concurrentModificationException.getCause()).thenReturn(concurrentModificationException);
+
     when(mockCustomerService.updateCustomer(any(), anyList()))
-        .thenReturn(
-            exceptionallyCompletedFuture(
-                new SphereException(new ConcurrentModificationException())))
+        .thenReturn(exceptionallyCompletedFuture(concurrentModificationException))
         .thenReturn(completedFuture(mockCustomer));
 
+    final NotFoundException notFoundException = mock(NotFoundException.class);
+
     when(mockCustomerService.fetchCustomerByKey("customerKey"))
-        .thenReturn(exceptionallyCompletedFuture(new SphereException()));
+        .thenReturn(exceptionallyCompletedFuture(notFoundException));
 
     final CustomerSyncOptions spyCustomerSyncOptions = spy(syncOptions);
     final CustomerSync customerSync =
@@ -524,7 +547,7 @@ public class CustomerSyncTest {
             mock(CustomerGroupService.class));
 
     final CustomerDraft customerDraft =
-        CustomerDraftBuilder.of("email", "pass").key("customerKey").build();
+        CustomerDraftBuilder.of().email("email").password("pass").key("customerKey").build();
 
     // test
     final CustomerSyncStatistics customerSyncStatistics =
@@ -542,7 +565,7 @@ public class CustomerSyncTest {
         .hasSize(1)
         .singleElement(as(THROWABLE))
         .isExactlyInstanceOf(SyncException.class)
-        .hasRootCauseExactlyInstanceOf(SphereException.class);
+        .hasRootCauseExactlyInstanceOf(NotFoundException.class);
   }
 
   @Test
@@ -555,10 +578,12 @@ public class CustomerSyncTest {
     when(mockCustomerService.fetchMatchingCustomersByKeys(anySet()))
         .thenReturn(completedFuture(singleton(mockCustomer)));
 
+    final ConcurrentModificationException concurrentModificationException =
+        mock(ConcurrentModificationException.class);
+    when(concurrentModificationException.getCause()).thenReturn(concurrentModificationException);
+
     when(mockCustomerService.updateCustomer(any(), anyList()))
-        .thenReturn(
-            exceptionallyCompletedFuture(
-                new SphereException(new ConcurrentModificationException())))
+        .thenReturn(exceptionallyCompletedFuture(concurrentModificationException))
         .thenReturn(completedFuture(mockCustomer));
 
     when(mockCustomerService.fetchCustomerByKey("customerKey"))
@@ -573,7 +598,7 @@ public class CustomerSyncTest {
             mock(CustomerGroupService.class));
 
     final CustomerDraft customerDraft =
-        CustomerDraftBuilder.of("email", "pass").key("customerKey").build();
+        CustomerDraftBuilder.of().email("email").password("pass").key("customerKey").build();
 
     // test
     final CustomerSyncStatistics customerSyncStatistics =
@@ -593,50 +618,5 @@ public class CustomerSyncTest {
         .singleElement(as(THROWABLE))
         .isExactlyInstanceOf(SyncException.class)
         .hasNoCause();
-  }
-
-  @Test
-  void
-      sync_WithErrorUpdatingCustomerAndCustomErrorCallback_ShouldCallErrorCallbackAndContainResourceName() {
-    // preparation
-    final CustomerDraft newCustomerDraft =
-        CustomerDraftBuilder.of("customerEmail", "customerPassword").key("customerKey").build();
-    final CustomerService mockCustomerService = mock(CustomerServiceImpl.class);
-
-    final Customer existingCustomer = mock(Customer.class);
-    when(existingCustomer.getKey()).thenReturn(newCustomerDraft.getKey());
-    when(mockCustomerService.fetchMatchingCustomersByKeys(any()))
-        .thenReturn(CompletableFuture.completedFuture(singleton(existingCustomer)));
-    when(mockCustomerService.fetchMatchingCustomersByKeys(emptySet()))
-        .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
-    when(mockCustomerService.updateCustomer(any(), any()))
-        .thenReturn(
-            supplyAsync(
-                () -> {
-                  throw new SphereException();
-                }));
-
-    when(mockCustomerService.createCustomer(any()))
-        .thenReturn(CompletableFuture.completedFuture(Optional.of(existingCustomer)));
-    when(mockCustomerService.fetchCustomerByKey(any()))
-        .thenReturn(CompletableFuture.completedFuture(Optional.of(existingCustomer)));
-
-    // test
-    final CustomerSync customerSync =
-        new CustomerSync(
-            syncOptions,
-            mockCustomerService,
-            mock(TypeServiceImpl.class),
-            mock(CustomerGroupServiceImpl.class));
-    customerSync.sync(singletonList(newCustomerDraft)).toCompletableFuture().join();
-
-    // assertions
-    assertThat(this.errorCallbackOldResource).isEqualTo(existingCustomer);
-    assertThat(this.errorCallbackNewResource).isEqualTo(newCustomerDraft);
-    assertThat(errorCallbackUpdateActions.get(0).getAction()).isEqualTo("changeEmail");
-
-    assertThat(errorMessages.get(0))
-        .contains(
-            "Failed to update customer with key: 'customerKey'. Reason: io.sphere.sdk.models.SphereException:");
   }
 }

@@ -1,18 +1,17 @@
 package com.commercetools.sync.states.utils;
 
-import static com.commercetools.sync.states.utils.StateReferenceResolutionUtils.mapToStateDrafts;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.models.state.State;
+import com.commercetools.api.models.state.StateDraft;
+import com.commercetools.api.models.state.StateReference;
+import com.commercetools.api.models.state.StateReferenceBuilder;
+import com.commercetools.api.models.state.StateTypeEnum;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.states.StateDraft;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nonnull;
@@ -23,38 +22,42 @@ class StateReferenceResolutionUtilsTest {
   private final ReferenceIdToKeyCache referenceIdToKeyCache =
       new CaffeineReferenceIdToKeyCacheImpl();
 
+  private static final String STATE_REFERENCE_KEY = "state-key";
+  private static final String STATE_KEY = "mock-state-key";
+
   @Test
-  void mapToStateDrafts_WithAllUnexpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
+  void
+      mapToStateDrafts_WithAllUnexpandedReferences_ShouldReturnResourceIdentifiersWithReplacedKeys() {
     // preparation
     final List<State> mockStates = new ArrayList<>();
-    final String stateReferenceKey = "state-key";
 
     for (int i = 0; i < 3; i++) {
-      final State mockState = mock(State.class);
+      final State referencedState = getStateMock(STATE_REFERENCE_KEY);
+      final String stateId = referencedState.getId();
+      final StateReference unexpandedStateReference =
+          StateReferenceBuilder.of().id(stateId).build();
 
-      final State state = getStateMock(stateReferenceKey);
-      final String stateId = state.getId();
-      final Reference<State> unexpandedStateReference =
-          Reference.ofResourceTypeIdAndId(State.referenceTypeId(), stateId);
-      when(mockState.getTransitions()).thenReturn(Collections.singleton(unexpandedStateReference));
-      referenceIdToKeyCache.add(stateId, stateReferenceKey);
+      final State mockState = getStateMock(STATE_KEY);
+      when(mockState.getTransitions()).thenReturn(List.of(unexpandedStateReference));
+      referenceIdToKeyCache.add(stateId, STATE_REFERENCE_KEY);
 
       mockStates.add(mockState);
     }
 
     // test
-    final List<StateDraft> referenceReplacedDrafts =
-        mapToStateDrafts(mockStates, referenceIdToKeyCache);
+    final List<StateDraft> resourceIdentifiersReplacedDrafts =
+        StateReferenceResolutionUtils.mapToStateDrafts(mockStates, referenceIdToKeyCache);
 
     // assertion
-    referenceReplacedDrafts.forEach(
+    resourceIdentifiersReplacedDrafts.forEach(
         stateDraft -> {
           stateDraft
               .getTransitions()
               .forEach(
-                  stateReference -> {
-                    assertThat(stateReference.getId()).isEqualTo(stateReferenceKey);
-                    assertThat(stateReference.getObj()).isEqualTo(null);
+                  stateResourceIdentifiers -> {
+                    assertThat(stateResourceIdentifiers.getId())
+                        .isEqualTo(stateResourceIdentifiers.getId());
+                    assertThat(stateResourceIdentifiers.getKey()).isEqualTo(STATE_REFERENCE_KEY);
                   });
         });
   }
@@ -63,21 +66,21 @@ class StateReferenceResolutionUtilsTest {
   void mapToStateDrafts_WithAllNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
     // preparation
     final List<State> mockStates = new ArrayList<>();
-    final String stateReferenceKey = "state-key";
 
     for (int i = 0; i < 3; i++) {
-      final State mockState = mock(State.class);
+      final State referencedState = getStateMock(STATE_REFERENCE_KEY);
+      final StateReference nonExpandedStateReference =
+          StateReferenceBuilder.of().id(referencedState.getId()).build();
 
-      final State state = getStateMock(stateReferenceKey);
-      final Reference<State> nonExpandedStateReference = State.referenceOfId(state.getId());
-      when(mockState.getTransitions()).thenReturn(Collections.singleton(nonExpandedStateReference));
+      final State mockState = getStateMock(STATE_KEY);
+      when(mockState.getTransitions()).thenReturn(List.of(nonExpandedStateReference));
 
       mockStates.add(mockState);
     }
 
     // test
     final List<StateDraft> referenceReplacedDrafts =
-        mapToStateDrafts(mockStates, referenceIdToKeyCache);
+        StateReferenceResolutionUtils.mapToStateDrafts(mockStates, referenceIdToKeyCache);
 
     // assertion
     referenceReplacedDrafts.forEach(
@@ -86,7 +89,7 @@ class StateReferenceResolutionUtilsTest {
               .getTransitions()
               .forEach(
                   stateReference -> {
-                    assertThat(stateReference.getId()).isNotEqualTo(stateReferenceKey);
+                    assertThat(stateReference.getId()).isNotEqualTo(STATE_REFERENCE_KEY);
                   });
         });
   }
@@ -94,25 +97,25 @@ class StateReferenceResolutionUtilsTest {
   @Test
   void mapToStateDrafts_WithEmptyReferences_ShouldNotFail() {
     // preparation
-    final State mockState = mock(State.class);
-    when(mockState.getTransitions()).thenReturn(Collections.emptySet());
+    final State mockState = getStateMock(STATE_KEY);
+    when(mockState.getTransitions()).thenReturn(List.of());
 
     // test
     final List<StateDraft> referenceReplacedDrafts =
-        mapToStateDrafts(Arrays.asList(mockState), referenceIdToKeyCache);
+        StateReferenceResolutionUtils.mapToStateDrafts(List.of(mockState), referenceIdToKeyCache);
 
-    assertThat(referenceReplacedDrafts.get(0).getTransitions()).isEqualTo(Collections.emptySet());
+    assertThat(referenceReplacedDrafts.get(0).getTransitions()).isEqualTo(List.of());
   }
 
   @Test
   void mapToStateDrafts_WithNullReferences_ShouldNotFail() {
     // preparation
-    final State mockState = mock(State.class);
+    final State mockState = getStateMock(STATE_KEY);
     when(mockState.getTransitions()).thenReturn(null);
 
     // test
     final List<StateDraft> referenceReplacedDrafts =
-        mapToStateDrafts(Arrays.asList(mockState), referenceIdToKeyCache);
+        StateReferenceResolutionUtils.mapToStateDrafts(List.of(mockState), referenceIdToKeyCache);
 
     assertThat(referenceReplacedDrafts.get(0).getTransitions()).isEqualTo(null);
   }
@@ -122,6 +125,7 @@ class StateReferenceResolutionUtilsTest {
     final State state = mock(State.class);
     when(state.getKey()).thenReturn(key);
     when(state.getId()).thenReturn(UUID.randomUUID().toString());
+    when(state.getType()).thenReturn(StateTypeEnum.PRODUCT_STATE);
     return state;
   }
 }

@@ -1,11 +1,11 @@
 package com.commercetools.sync.states.helpers;
 
-import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.lang.String.format;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 import java.util.Collection;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
@@ -14,15 +14,16 @@ import javax.annotation.Nullable;
 public class StateSyncStatistics extends BaseSyncStatistics {
 
   /**
-   * The following {@link Map} ({@code stateKeysWithMissingParents}) represents products with
-   * missing states (other referenced states).
+   * The following {@link java.util.Map} ({@code stateKeysWithMissingParents}) represents products
+   * with missing states (other referenced states).
    *
    * <ul>
    *   <li>key: key of the missing parent state
    *   <li>value: a set of the parent's children state keys
    * </ul>
    *
-   * <p>The map is thread-safe (by instantiating it with {@link ConcurrentHashMap}).
+   * <p>The map is thread-safe (by instantiating it with {@link
+   * java.util.concurrent.ConcurrentHashMap}).
    */
   private ConcurrentHashMap<String, Set<String>> stateKeysWithMissingParents =
       new ConcurrentHashMap<>();
@@ -73,7 +74,7 @@ public class StateSyncStatistics extends BaseSyncStatistics {
       @Nonnull final String parentKey, @Nonnull final String childKey) {
     stateKeysWithMissingParents.merge(
         parentKey,
-        asSet(childKey),
+        new HashSet<>(List.of(childKey)),
         (existingSet, newChildAsSet) -> {
           existingSet.addAll(newChildAsSet);
           return existingSet;

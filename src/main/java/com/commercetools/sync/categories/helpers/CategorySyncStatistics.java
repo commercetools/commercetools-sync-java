@@ -5,7 +5,6 @@ import static java.lang.String.format;
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
@@ -14,15 +13,16 @@ import javax.annotation.Nullable;
 public class CategorySyncStatistics extends BaseSyncStatistics {
 
   /**
-   * The following {@link Map} ({@code categoryKeysWithMissingParents}) represents categories with
-   * missing parents.
+   * The following {@link java.util.Map} ({@code categoryKeysWithMissingParents}) represents
+   * categories with missing parents.
    *
    * <ul>
    *   <li>key: key of the missing parent category
    *   <li>value: a set of the parent's children category keys
    * </ul>
    *
-   * <p>The map is thread-safe (by instantiating it with {@link ConcurrentHashMap}).
+   * <p>The map is thread-safe (by instantiating it with {@link
+   * java.util.concurrent.ConcurrentHashMap}).
    */
   private final ConcurrentHashMap<String, Set<String>> categoryKeysWithMissingParents =
       new ConcurrentHashMap<>();

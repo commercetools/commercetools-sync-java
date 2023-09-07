@@ -1,23 +1,16 @@
 package com.commercetools.sync.commons.utils;
 
-import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildActions;
-import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildAddEnumValuesUpdateActions;
-import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildChangeEnumValuesOrderUpdateAction;
-import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildMatchingEnumValuesUpdateActions;
-import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildRemoveEnumValuesUpdateAction;
-import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
-import static com.commercetools.sync.commons.utils.PlainEnumValueFixtures.*;
-import static com.commercetools.sync.producttypes.utils.PlainEnumValueUpdateActionUtils.buildChangeLabelAction;
+import static com.commercetools.sync.commons.utils.PlainEnumValueFixtures.AttributePlainEnumValueFixtures.*;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.EnumValue;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.commands.updateactions.AddEnumValue;
-import io.sphere.sdk.producttypes.commands.updateactions.ChangeEnumValueOrder;
-import io.sphere.sdk.producttypes.commands.updateactions.ChangePlainEnumValueLabel;
-import io.sphere.sdk.producttypes.commands.updateactions.RemoveEnumValues;
+import com.commercetools.api.models.product_type.AttributePlainEnumValue;
+import com.commercetools.api.models.product_type.ProductTypeAddPlainEnumValueActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeChangePlainEnumValueLabelActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeChangePlainEnumValueOrderActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeRemoveEnumValuesActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
+import com.commercetools.sync.producttypes.utils.PlainEnumValueUpdateActionUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -30,8 +23,8 @@ class EnumValuesUpdateActionUtilsTest {
 
   @Test
   void buildActions_WithoutCallbacks_ShouldNotBuildActions() {
-    final List<UpdateAction<ProductType>> updateActions =
-        buildActions(
+    final List<ProductTypeUpdateAction> updateActions =
+        EnumValuesUpdateActionUtils.buildActions(
             attributeDefinitionName,
             ENUM_VALUES_ABC,
             ENUM_VALUES_ABCD,
@@ -46,85 +39,137 @@ class EnumValuesUpdateActionUtilsTest {
 
   @Test
   void buildActions_WithoutRemoveCallback_ShouldNotBuildRemoveAction() {
-    final List<UpdateAction<ProductType>> updateActions =
-        buildActions(attributeDefinitionName, ENUM_VALUES_ABC, null, null, null, null, null, null);
+    final List<ProductTypeUpdateAction> updateActions =
+        EnumValuesUpdateActionUtils.buildActions(
+            attributeDefinitionName, ENUM_VALUES_ABC, null, null, null, null, null, null);
 
     assertThat(updateActions)
-        .doesNotContain(RemoveEnumValues.of(attributeDefinitionName, asList("a", "b", "c")));
+        .doesNotContain(
+            ProductTypeRemoveEnumValuesActionBuilder.of()
+                .attributeName(attributeDefinitionName)
+                .keys(asList("a", "b", "c"))
+                .build());
   }
 
   @Test
   void buildActions_WithNullNewEnumValues_ShouldJustBuildRemoveActions() {
-    final List<UpdateAction<ProductType>> updateActions =
-        buildActions(
+    final List<ProductTypeUpdateAction> updateActions =
+        EnumValuesUpdateActionUtils.buildActions(
             attributeDefinitionName,
             ENUM_VALUES_ABC,
             null,
-            RemoveEnumValues::of,
+            (defintionName, keysToRemove) ->
+                ProductTypeRemoveEnumValuesActionBuilder.of()
+                    .attributeName(defintionName)
+                    .keys(keysToRemove)
+                    .build(),
             null,
-            AddEnumValue::of,
+            (definitionName, newEnumValue) ->
+                ProductTypeAddPlainEnumValueActionBuilder.of()
+                    .attributeName(definitionName)
+                    .value(newEnumValue)
+                    .build(),
             null,
             null);
 
     assertThat(updateActions)
-        .containsAnyOf(RemoveEnumValues.of(attributeDefinitionName, asList("a", "b", "c")));
+        .containsAnyOf(
+            ProductTypeRemoveEnumValuesActionBuilder.of()
+                .attributeName(attributeDefinitionName)
+                .keys(asList("a", "b", "c"))
+                .build());
 
     assertThat(updateActions)
-        .doesNotContain(AddEnumValue.of(attributeDefinitionName, ENUM_VALUE_A));
+        .doesNotContain(
+            ProductTypeAddPlainEnumValueActionBuilder.of()
+                .attributeName(attributeDefinitionName)
+                .value(ENUM_VALUE_A)
+                .build());
   }
 
   @Test
   void buildActions_WithEmptyNewEnumValues_ShouldJustBuildRemoveActions() {
-    final List<UpdateAction<ProductType>> updateActions =
-        buildActions(
+    final List<ProductTypeUpdateAction> updateActions =
+        EnumValuesUpdateActionUtils.buildActions(
             attributeDefinitionName,
             ENUM_VALUES_ABC,
             Collections.emptyList(),
-            RemoveEnumValues::of,
+            (defintionName, keysToRemove) ->
+                ProductTypeRemoveEnumValuesActionBuilder.of()
+                    .attributeName(defintionName)
+                    .keys(keysToRemove)
+                    .build(),
             null,
-            AddEnumValue::of,
+            (definitionName, newEnumValue) ->
+                ProductTypeAddPlainEnumValueActionBuilder.of()
+                    .attributeName(definitionName)
+                    .value(newEnumValue)
+                    .build(),
             null,
             null);
 
     assertThat(updateActions)
-        .containsAnyOf(RemoveEnumValues.of(attributeDefinitionName, asList("a", "b", "c")));
+        .containsAnyOf(
+            ProductTypeRemoveEnumValuesActionBuilder.of()
+                .attributeName(attributeDefinitionName)
+                .keys(asList("a", "b", "c"))
+                .build());
 
     assertThat(updateActions)
-        .doesNotContain(AddEnumValue.of(attributeDefinitionName, ENUM_VALUE_A));
+        .doesNotContain(
+            ProductTypeAddPlainEnumValueActionBuilder.of()
+                .attributeName(attributeDefinitionName)
+                .value(ENUM_VALUE_A)
+                .build());
   }
 
   @Test
   void buildActions_WithRemoveCallback_ShouldBuildRemoveAction() {
-    final List<UpdateAction<ProductType>> updateActions =
-        buildActions(
+    final List<ProductTypeUpdateAction> updateActions =
+        EnumValuesUpdateActionUtils.buildActions(
             attributeDefinitionName,
             ENUM_VALUES_ABC,
             null,
-            RemoveEnumValues::of,
+            (defintionName, keysToRemove) ->
+                ProductTypeRemoveEnumValuesActionBuilder.of()
+                    .attributeName(defintionName)
+                    .keys(keysToRemove)
+                    .build(),
             null,
             null,
             null,
             null);
 
     assertThat(updateActions)
-        .containsAnyOf(RemoveEnumValues.of(attributeDefinitionName, asList("a", "b", "c")));
+        .containsAnyOf(
+            ProductTypeRemoveEnumValuesActionBuilder.of()
+                .attributeName(attributeDefinitionName)
+                .keys(asList("a", "b", "c"))
+                .build());
   }
 
   @Test
   void buildActions_WithoutMatchingEnumCallback_ShouldNotBuildMatchingActions() {
-    final List<UpdateAction<ProductType>> updateActions =
-        buildActions(attributeDefinitionName, ENUM_VALUES_AB, null, null, null, null, null, null);
+    final List<ProductTypeUpdateAction> updateActions =
+        EnumValuesUpdateActionUtils.buildActions(
+            attributeDefinitionName, ENUM_VALUES_AB, null, null, null, null, null, null);
 
     assertThat(updateActions)
         .doesNotContain(
-            ChangePlainEnumValueLabel.of(attributeDefinitionName, ENUM_VALUE_A),
-            ChangePlainEnumValueLabel.of(attributeDefinitionName, ENUM_VALUE_B));
+            ProductTypeChangePlainEnumValueLabelActionBuilder.of()
+                .attributeName(attributeDefinitionName)
+                .newValue(ENUM_VALUE_A)
+                .build(),
+            ProductTypeChangePlainEnumValueLabelActionBuilder.of()
+                .attributeName(attributeDefinitionName)
+                .newValue(ENUM_VALUE_B)
+                .build());
   }
 
   @Test
   void buildActions_WithMatchingEnumCallback_ShouldBuildMatchingActions() {
-    final List<UpdateAction<ProductType>> updateActions =
-        buildActions(
+    final List<ProductTypeUpdateAction> updateActions =
+        EnumValuesUpdateActionUtils.buildActions(
             attributeDefinitionName,
             ENUM_VALUES_AB,
             ENUM_VALUES_AB_WITH_DIFFERENT_LABEL,
@@ -136,39 +181,55 @@ class EnumValuesUpdateActionUtilsTest {
 
     assertThat(updateActions)
         .containsAnyOf(
-            ChangePlainEnumValueLabel.of(attributeDefinitionName, ENUM_VALUE_A_DIFFERENT_LABEL));
+            ProductTypeChangePlainEnumValueLabelActionBuilder.of()
+                .attributeName(attributeDefinitionName)
+                .newValue(ENUM_VALUE_A_DIFFERENT_LABEL)
+                .build());
   }
 
   @Test
   void buildActions_WithoutAddEnumCallback_ShouldNotBuildAddEnumActions() {
-    final List<UpdateAction<ProductType>> updateActions =
-        buildActions(
+    final List<ProductTypeUpdateAction> updateActions =
+        EnumValuesUpdateActionUtils.buildActions(
             attributeDefinitionName, ENUM_VALUES_AB, ENUM_VALUES_ABC, null, null, null, null, null);
 
     assertThat(updateActions)
-        .doesNotContain(AddEnumValue.of(attributeDefinitionName, ENUM_VALUE_C));
+        .doesNotContain(
+            ProductTypeAddPlainEnumValueActionBuilder.of()
+                .attributeName(attributeDefinitionName)
+                .value(ENUM_VALUE_C)
+                .build());
   }
 
   @Test
   void buildActions_WithAddEnumCallback_ShouldBuildAddEnumActions() {
-    final List<UpdateAction<ProductType>> updateActions =
-        buildActions(
+    final List<ProductTypeUpdateAction> updateActions =
+        EnumValuesUpdateActionUtils.buildActions(
             attributeDefinitionName,
             ENUM_VALUES_AB,
             ENUM_VALUES_ABC,
             null,
             null,
-            AddEnumValue::of,
+            (definitionName, newEnumValue) ->
+                ProductTypeAddPlainEnumValueActionBuilder.of()
+                    .attributeName(definitionName)
+                    .value(newEnumValue)
+                    .build(),
             null,
             null);
 
-    assertThat(updateActions).containsAnyOf(AddEnumValue.of(attributeDefinitionName, ENUM_VALUE_C));
+    assertThat(updateActions)
+        .containsAnyOf(
+            ProductTypeAddPlainEnumValueActionBuilder.of()
+                .attributeName(attributeDefinitionName)
+                .value(ENUM_VALUE_C)
+                .build());
   }
 
   @Test
   void buildActions_WithoutChangeOrderEnumCallback_ShouldNotBuildChangeOrderEnumActions() {
-    final List<UpdateAction<ProductType>> updateActions =
-        buildActions(
+    final List<ProductTypeUpdateAction> updateActions =
+        EnumValuesUpdateActionUtils.buildActions(
             attributeDefinitionName,
             ENUM_VALUES_ABC,
             ENUM_VALUES_CAB,
@@ -180,46 +241,65 @@ class EnumValuesUpdateActionUtilsTest {
 
     assertThat(updateActions)
         .doesNotContain(
-            ChangeEnumValueOrder.of(
-                attributeDefinitionName, asList(ENUM_VALUE_C, ENUM_VALUE_A, ENUM_VALUE_B)));
+            ProductTypeChangePlainEnumValueOrderActionBuilder.of()
+                .attributeName(attributeDefinitionName)
+                .values(asList(ENUM_VALUE_C, ENUM_VALUE_A, ENUM_VALUE_B))
+                .build());
   }
 
   @Test
   void buildActions_WithChangeOrderEnumCallback_ShouldBuildChangeOrderEnumActions() {
-    final List<UpdateAction<ProductType>> updateActions =
-        buildActions(
+    final List<ProductTypeUpdateAction> updateActions =
+        EnumValuesUpdateActionUtils.buildActions(
             attributeDefinitionName,
             ENUM_VALUES_ABC,
             ENUM_VALUES_CAB,
             null,
             null,
             null,
-            ChangeEnumValueOrder::of,
+            (definitionName, newEnumValues) ->
+                ProductTypeChangePlainEnumValueOrderActionBuilder.of()
+                    .attributeName(definitionName)
+                    .values(newEnumValues)
+                    .build(),
             null);
 
     assertThat(updateActions)
         .containsAnyOf(
-            ChangeEnumValueOrder.of(
-                attributeDefinitionName, asList(ENUM_VALUE_C, ENUM_VALUE_A, ENUM_VALUE_B)));
+            ProductTypeChangePlainEnumValueOrderActionBuilder.of()
+                .attributeName(attributeDefinitionName)
+                .values(asList(ENUM_VALUE_C, ENUM_VALUE_A, ENUM_VALUE_B))
+                .build());
   }
 
   @Test
   void buildRemoveEnumValuesUpdateAction_WithNullNewEnumValues_ShouldBuildRemoveActions() {
-    final Optional<UpdateAction<ProductType>> updateAction =
-        buildRemoveEnumValuesUpdateAction(
-            attributeDefinitionName, ENUM_VALUES_ABC, null, RemoveEnumValues::of);
+    final Optional<ProductTypeUpdateAction> updateAction =
+        EnumValuesUpdateActionUtils.buildRemoveEnumValuesUpdateAction(
+            attributeDefinitionName,
+            ENUM_VALUES_ABC,
+            null,
+            (defintionName, keysToRemove) ->
+                ProductTypeRemoveEnumValuesActionBuilder.of()
+                    .attributeName(defintionName)
+                    .keys(keysToRemove)
+                    .build());
 
     assertThat(updateAction).isNotEmpty();
     assertThat(updateAction)
         .isEqualTo(
-            Optional.of(RemoveEnumValues.of(attributeDefinitionName, asList("a", "b", "c"))));
+            Optional.of(
+                ProductTypeRemoveEnumValuesActionBuilder.of()
+                    .attributeName(attributeDefinitionName)
+                    .keys(asList("a", "b", "c"))
+                    .build()));
   }
 
   @Test
   void
       buildMatchingEnumValuesUpdateActions_WithDifferentEnumValues_ShouldBuildChangeLabelActions() {
-    final List<UpdateAction<ProductType>> updateActions =
-        buildMatchingEnumValuesUpdateActions(
+    final List<ProductTypeUpdateAction> updateActions =
+        EnumValuesUpdateActionUtils.buildMatchingEnumValuesUpdateActions(
             attributeDefinitionName,
             ENUM_VALUES_AB,
             ENUM_VALUES_AB_WITH_DIFFERENT_LABEL,
@@ -227,14 +307,17 @@ class EnumValuesUpdateActionUtilsTest {
 
     assertThat(updateActions)
         .containsAnyOf(
-            ChangePlainEnumValueLabel.of(attributeDefinitionName, ENUM_VALUE_A_DIFFERENT_LABEL));
+            ProductTypeChangePlainEnumValueLabelActionBuilder.of()
+                .attributeName(attributeDefinitionName)
+                .newValue(ENUM_VALUE_A_DIFFERENT_LABEL)
+                .build());
   }
 
   @Test
   void
       buildMatchingEnumValuesUpdateActions_WithSameNewEnumValues_ShouldNotBuildChangeLabelActions() {
-    final List<UpdateAction<ProductType>> updateActions =
-        buildMatchingEnumValuesUpdateActions(
+    final List<ProductTypeUpdateAction> updateActions =
+        EnumValuesUpdateActionUtils.buildMatchingEnumValuesUpdateActions(
             attributeDefinitionName, ENUM_VALUES_AB, ENUM_VALUES_AB, getMatchingValueFunction());
 
     assertThat(updateActions).isEmpty();
@@ -242,55 +325,91 @@ class EnumValuesUpdateActionUtilsTest {
 
   @Test
   void buildAddEnumValuesUpdateActions_WithNewEnumValues_ShouldBuildAddActions() {
-    final List<UpdateAction<ProductType>> updateActions =
-        buildAddEnumValuesUpdateActions(
-            attributeDefinitionName, ENUM_VALUES_AB, ENUM_VALUES_ABC, AddEnumValue::of);
+    final List<ProductTypeUpdateAction> updateActions =
+        EnumValuesUpdateActionUtils.buildAddEnumValuesUpdateActions(
+            attributeDefinitionName,
+            ENUM_VALUES_AB,
+            ENUM_VALUES_ABC,
+            (definitionName, newEnumValue) ->
+                ProductTypeAddPlainEnumValueActionBuilder.of()
+                    .attributeName(definitionName)
+                    .value(newEnumValue)
+                    .build());
 
-    assertThat(updateActions).containsAnyOf(AddEnumValue.of(attributeDefinitionName, ENUM_VALUE_C));
+    assertThat(updateActions)
+        .containsAnyOf(
+            ProductTypeAddPlainEnumValueActionBuilder.of()
+                .attributeName(attributeDefinitionName)
+                .value(ENUM_VALUE_C)
+                .build());
   }
 
   @Test
   void buildAddEnumValuesUpdateActions_WithSameEnumValues_ShouldNotBuildAddActions() {
-    final List<UpdateAction<ProductType>> updateActions =
-        buildAddEnumValuesUpdateActions(
-            attributeDefinitionName, ENUM_VALUES_AB, ENUM_VALUES_AB, AddEnumValue::of);
+    final List<ProductTypeUpdateAction> updateActions =
+        EnumValuesUpdateActionUtils.buildAddEnumValuesUpdateActions(
+            attributeDefinitionName,
+            ENUM_VALUES_AB,
+            ENUM_VALUES_AB,
+            (definitionName, newEnumValue) ->
+                ProductTypeAddPlainEnumValueActionBuilder.of()
+                    .attributeName(definitionName)
+                    .value(newEnumValue)
+                    .build());
 
     assertThat(updateActions).isEmpty();
   }
 
   @Test
   void buildChangeEnumValuesOrderUpdateAction_WithNewEnumValues_ShouldBuildAddActions() {
-    final Optional<UpdateAction<ProductType>> updateAction =
-        buildChangeEnumValuesOrderUpdateAction(
-            attributeDefinitionName, ENUM_VALUES_ABC, ENUM_VALUES_CAB, ChangeEnumValueOrder::of);
+    final Optional<ProductTypeUpdateAction> updateAction =
+        EnumValuesUpdateActionUtils.buildChangeEnumValuesOrderUpdateAction(
+            attributeDefinitionName,
+            ENUM_VALUES_ABC,
+            ENUM_VALUES_CAB,
+            (definitionName, newEnumValues) ->
+                ProductTypeChangePlainEnumValueOrderActionBuilder.of()
+                    .attributeName(definitionName)
+                    .values(newEnumValues)
+                    .build());
 
     assertThat(updateAction).isNotEmpty();
     assertThat(updateAction)
         .isEqualTo(
             Optional.of(
-                ChangeEnumValueOrder.of(
-                    attributeDefinitionName, asList(ENUM_VALUE_C, ENUM_VALUE_A, ENUM_VALUE_B))));
+                ProductTypeChangePlainEnumValueOrderActionBuilder.of()
+                    .attributeName(attributeDefinitionName)
+                    .values(asList(ENUM_VALUE_C, ENUM_VALUE_A, ENUM_VALUE_B))
+                    .build()));
   }
 
   @Test
   void buildChangeEnumValuesOrderUpdateAction_WithSameEnumValues_ShouldNotBuildAddActions() {
-    final List<UpdateAction<ProductType>> updateActions =
-        buildAddEnumValuesUpdateActions(
-            attributeDefinitionName, ENUM_VALUES_AB, ENUM_VALUES_AB, AddEnumValue::of);
+    final List<ProductTypeUpdateAction> updateActions =
+        EnumValuesUpdateActionUtils.buildAddEnumValuesUpdateActions(
+            attributeDefinitionName,
+            ENUM_VALUES_AB,
+            ENUM_VALUES_AB,
+            (definitionName, newEnumValue) ->
+                ProductTypeAddPlainEnumValueActionBuilder.of()
+                    .attributeName(definitionName)
+                    .value(newEnumValue)
+                    .build());
 
     assertThat(updateActions).isEmpty();
   }
 
   @Nonnull
-  private TriFunction<String, EnumValue, EnumValue, List<UpdateAction<ProductType>>>
+  private TriFunction<
+          String, AttributePlainEnumValue, AttributePlainEnumValue, List<ProductTypeUpdateAction>>
       getMatchingValueFunction() {
     return (definitionName, oldEnumValue, newEnumValue) -> {
       if (oldEnumValue == null || newEnumValue == null) {
         return Collections.emptyList();
       }
 
-      return filterEmptyOptionals(
-          buildChangeLabelAction(attributeDefinitionName, oldEnumValue, newEnumValue));
+      return PlainEnumValueUpdateActionUtils.buildEnumValueUpdateActions(
+          attributeDefinitionName, oldEnumValue, newEnumValue);
     };
   }
 }

@@ -4,13 +4,12 @@ import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapVal
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 
-import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
+import com.commercetools.api.models.product_type.ProductTypeDraft;
+import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
 import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.services.ProductTypeService;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
-import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
@@ -40,13 +39,14 @@ public final class ProductTypeReferenceResolver
 
   /**
    * Given a {@link ProductTypeDraft} this method attempts to resolve the attribute definition
-   * references to return a {@link CompletionStage} which contains a new instance of the draft with
-   * the resolved references.
+   * references to return a {@link java.util.concurrent.CompletionStage} which contains a new
+   * instance of the draft with the resolved references.
    *
    * @param productTypeDraft the productTypeDraft to resolve its references.
-   * @return a {@link CompletionStage} that contains as a result a new productTypeDraft instance
-   *     with resolved references or, in case an error occurs during reference resolution, a {@link
-   *     ReferenceResolutionException}.
+   * @return a {@link java.util.concurrent.CompletionStage} that contains as a result a new
+   *     productTypeDraft instance with resolved references or, in case an error occurs during
+   *     reference resolution, a {@link
+   *     com.commercetools.sync.commons.exceptions.ReferenceResolutionException}.
    */
   @Nonnull
   public CompletionStage<ProductTypeDraft> resolveReferences(

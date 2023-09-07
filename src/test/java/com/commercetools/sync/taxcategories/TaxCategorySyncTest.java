@@ -2,9 +2,7 @@ package com.commercetools.sync.taxcategories;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singletonList;
+import static java.util.Collections.*;
 import static java.util.Optional.empty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
@@ -13,29 +11,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.tax_category.*;
+import com.commercetools.sync.commons.ExceptionUtils;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.taxcategories.helpers.TaxCategorySyncStatistics;
 import com.neovisionaries.i18n.CountryCode;
-import io.sphere.sdk.client.ConcurrentModificationException;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.SphereException;
-import io.sphere.sdk.taxcategories.TaxCategory;
-import io.sphere.sdk.taxcategories.TaxCategoryDraft;
-import io.sphere.sdk.taxcategories.TaxCategoryDraftBuilder;
-import io.sphere.sdk.taxcategories.TaxRateDraftBuilder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -52,25 +42,24 @@ class TaxCategorySyncTest {
   void sync_WithInvalidDrafts_ShouldApplyErrorCallbackAndIncrementFailed() {
     final List<String> errors = new ArrayList<>();
     final TaxCategorySyncOptions options =
-        TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
+        TaxCategorySyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback((exception, draft, entry, actions) -> errors.add(exception.getMessage()))
             .build();
     final TaxCategorySync sync = new TaxCategorySync(options, taxCategoryService);
-    final TaxCategoryDraft withoutKeyDraft =
-        TaxCategoryDraftBuilder.of(null, emptyList(), null).build();
+    final TaxCategoryDraft withoutKeyDraft = TaxCategoryDraftBuilder.of().name("").build();
 
     final TaxCategorySyncStatistics result =
         sync.sync(asList(null, withoutKeyDraft)).toCompletableFuture().join();
 
     assertAll(
-        () -> assertThat(result.getProcessed().get()).isEqualTo(2),
-        () -> assertThat(result.getFailed().get()).isEqualTo(2),
+        () -> Assertions.assertThat(result.getProcessed().get()).isEqualTo(2),
+        () -> Assertions.assertThat(result.getFailed().get()).isEqualTo(2),
         () -> assertThat(errors).hasSize(2),
         () ->
             assertThat(errors)
                 .contains(
                     "TaxCategoryDraft is null.",
-                    "TaxCategoryDraft with name: null doesn't have a key. "
+                    "TaxCategoryDraft with name:  doesn't have a key. "
                         + "Please make sure all tax category drafts have keys."));
     verifyNoMoreInteractions(taxCategoryService);
   }
@@ -79,25 +68,25 @@ class TaxCategorySyncTest {
   void sync_WithErrorFetchingExistingKeys_ShouldApplyErrorCallbackAndIncrementFailed() {
     final List<String> errors = new ArrayList<>();
     final TaxCategorySyncOptions options =
-        TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
+        TaxCategorySyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback((exception, draft, entry, actions) -> errors.add(exception.getMessage()))
             .build();
     final TaxCategorySync sync = new TaxCategorySync(options, taxCategoryService);
     final TaxCategoryDraft draft =
-        TaxCategoryDraftBuilder.of("someName", emptyList(), null).key("someKey").build();
+        TaxCategoryDraftBuilder.of().name("someName").key("someKey").build();
 
     when(taxCategoryService.fetchMatchingTaxCategoriesByKeys(any()))
         .thenReturn(
             supplyAsync(
                 () -> {
-                  throw new SphereException();
+                  throw ExceptionUtils.createBadGatewayException();
                 }));
 
     final TaxCategorySyncStatistics result =
         sync.sync(singletonList(draft)).toCompletableFuture().join();
 
     assertAll(
-        () -> assertThat(result.getProcessed().get()).isEqualTo(1),
+        () -> Assertions.assertThat(result.getProcessed().get()).isEqualTo(1),
         () -> assertThat(errors).hasSize(1),
         () ->
             assertThat(errors)
@@ -110,12 +99,12 @@ class TaxCategorySyncTest {
   void sync_WithErrorCreating_ShouldIncrementFailedButNotApplyErrorCallback() {
     final List<String> errors = new ArrayList<>();
     final TaxCategorySyncOptions options =
-        TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
+        TaxCategorySyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback((exception, draft, entry, actions) -> errors.add(exception.getMessage()))
             .build();
     final TaxCategorySync sync = new TaxCategorySync(options, taxCategoryService);
     final TaxCategoryDraft draft =
-        TaxCategoryDraftBuilder.of("someName", emptyList(), null).key("someKey").build();
+        TaxCategoryDraftBuilder.of().name("someName").key("someKey").build();
 
     when(taxCategoryService.fetchMatchingTaxCategoriesByKeys(any()))
         .thenReturn(completedFuture(emptySet()));
@@ -125,8 +114,8 @@ class TaxCategorySyncTest {
         sync.sync(singletonList(draft)).toCompletableFuture().join();
 
     assertAll(
-        () -> assertThat(result.getProcessed().get()).isEqualTo(1),
-        () -> assertThat(result.getFailed().get()).isEqualTo(1),
+        () -> Assertions.assertThat(result.getProcessed().get()).isEqualTo(1),
+        () -> Assertions.assertThat(result.getFailed().get()).isEqualTo(1),
         () -> assertThat(errors).isEmpty());
     verify(taxCategoryService, times(1)).fetchMatchingTaxCategoriesByKeys(any());
     verify(taxCategoryService, times(1)).createTaxCategory(any());
@@ -137,7 +126,7 @@ class TaxCategorySyncTest {
   void sync_WithNoError_ShouldApplyBeforeCreateCallbackAndIncrementCreated() {
     final AtomicBoolean callbackApplied = new AtomicBoolean(false);
     final TaxCategorySyncOptions options =
-        TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
+        TaxCategorySyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .beforeCreateCallback(
                 (draft) -> {
                   callbackApplied.set(true);
@@ -146,7 +135,7 @@ class TaxCategorySyncTest {
             .build();
     final TaxCategorySync sync = new TaxCategorySync(options, taxCategoryService);
     final TaxCategoryDraft draft =
-        TaxCategoryDraftBuilder.of("someName", emptyList(), null).key("someKey").build();
+        TaxCategoryDraftBuilder.of().name("someName").key("someKey").build();
     final TaxCategory taxCategory = mock(TaxCategory.class);
 
     when(taxCategoryService.fetchMatchingTaxCategoriesByKeys(any()))
@@ -158,9 +147,9 @@ class TaxCategorySyncTest {
         sync.sync(singletonList(draft)).toCompletableFuture().join();
 
     assertAll(
-        () -> assertThat(result.getProcessed().get()).isEqualTo(1),
-        () -> assertThat(result.getCreated().get()).isEqualTo(1),
-        () -> assertThat(result.getFailed().get()).isEqualTo(0),
+        () -> Assertions.assertThat(result.getProcessed().get()).isEqualTo(1),
+        () -> Assertions.assertThat(result.getCreated().get()).isEqualTo(1),
+        () -> Assertions.assertThat(result.getFailed().get()).isEqualTo(0),
         () -> assertThat(callbackApplied.get()).isTrue());
     verify(taxCategoryService, times(1)).fetchMatchingTaxCategoriesByKeys(any());
     verify(taxCategoryService, times(1)).createTaxCategory(any());
@@ -171,12 +160,12 @@ class TaxCategorySyncTest {
   void sync_WithErrorUpdating_ShouldApplyErrorCallbackAndIncrementFailed() {
     final List<String> errors = new ArrayList<>();
     final TaxCategorySyncOptions options =
-        TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
+        TaxCategorySyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback((exception, draft, entry, actions) -> errors.add(exception.getMessage()))
             .build();
     final TaxCategorySync sync = new TaxCategorySync(options, taxCategoryService);
     final TaxCategoryDraft draft =
-        TaxCategoryDraftBuilder.of("someName", emptyList(), "changed").key("someKey").build();
+        TaxCategoryDraftBuilder.of().name("someName").description("changed").key("someKey").build();
     final TaxCategory taxCategory = mock(TaxCategory.class);
 
     when(taxCategory.getKey()).thenReturn("someKey");
@@ -187,16 +176,16 @@ class TaxCategorySyncTest {
         .thenReturn(
             supplyAsync(
                 () -> {
-                  throw new SphereException();
+                  throw ExceptionUtils.createBadGatewayException();
                 }));
 
     final TaxCategorySyncStatistics result =
         sync.sync(singletonList(draft)).toCompletableFuture().join();
 
     assertAll(
-        () -> assertThat(result.getProcessed().get()).isEqualTo(1),
-        () -> assertThat(result.getUpdated().get()).isEqualTo(0),
-        () -> assertThat(result.getFailed().get()).isEqualTo(1),
+        () -> Assertions.assertThat(result.getProcessed().get()).isEqualTo(1),
+        () -> Assertions.assertThat(result.getUpdated().get()).isEqualTo(0),
+        () -> Assertions.assertThat(result.getFailed().get()).isEqualTo(1),
         () -> assertThat(errors).hasSize(1));
     verify(taxCategoryService, times(1)).fetchMatchingTaxCategoriesByKeys(any());
     verify(taxCategoryService, times(1)).updateTaxCategory(any(), any());
@@ -208,12 +197,12 @@ class TaxCategorySyncTest {
       sync_WithErrorUpdatingAndTryingToRecoverWithFetchException_ShouldApplyErrorCallbackAndIncrementFailed() {
     final List<String> errors = new ArrayList<>();
     final TaxCategorySyncOptions options =
-        TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
+        TaxCategorySyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback((exception, draft, entry, actions) -> errors.add(exception.getMessage()))
             .build();
     final TaxCategorySync sync = new TaxCategorySync(options, taxCategoryService);
     final TaxCategoryDraft draft =
-        TaxCategoryDraftBuilder.of("someName", emptyList(), "changed").key("someKey").build();
+        TaxCategoryDraftBuilder.of().name("someName").description("changed").key("someKey").build();
     final TaxCategory taxCategory = mock(TaxCategory.class);
 
     when(taxCategory.getKey()).thenReturn("someKey");
@@ -224,22 +213,22 @@ class TaxCategorySyncTest {
         .thenReturn(
             supplyAsync(
                 () -> {
-                  throw new io.sphere.sdk.client.ConcurrentModificationException();
+                  throw ExceptionUtils.createConcurrentModificationException("CTP Error on update");
                 }));
     when(taxCategoryService.fetchTaxCategory(any()))
         .thenReturn(
             supplyAsync(
                 () -> {
-                  throw new SphereException();
+                  throw ExceptionUtils.createBadGatewayException();
                 }));
 
     final TaxCategorySyncStatistics result =
         sync.sync(singletonList(draft)).toCompletableFuture().join();
 
     assertAll(
-        () -> assertThat(result.getProcessed().get()).isEqualTo(1),
-        () -> assertThat(result.getUpdated().get()).isEqualTo(0),
-        () -> assertThat(result.getFailed().get()).isEqualTo(1),
+        () -> Assertions.assertThat(result.getProcessed().get()).isEqualTo(1),
+        () -> Assertions.assertThat(result.getUpdated().get()).isEqualTo(0),
+        () -> Assertions.assertThat(result.getFailed().get()).isEqualTo(1),
         () -> assertThat(errors).hasSize(1),
         () ->
             assertThat(errors)
@@ -257,12 +246,12 @@ class TaxCategorySyncTest {
       sync_WithErrorUpdatingAndTryingToRecoverWithEmptyResponse_ShouldApplyErrorCallbackAndIncrementFailed() {
     final List<String> errors = new ArrayList<>();
     final TaxCategorySyncOptions options =
-        TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
+        TaxCategorySyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback((exception, draft, entry, actions) -> errors.add(exception.getMessage()))
             .build();
     final TaxCategorySync sync = new TaxCategorySync(options, taxCategoryService);
     final TaxCategoryDraft draft =
-        TaxCategoryDraftBuilder.of("someName", emptyList(), "changed").key("someKey").build();
+        TaxCategoryDraftBuilder.of().name("someName").description("changed").key("someKey").build();
     final TaxCategory taxCategory = mock(TaxCategory.class);
 
     when(taxCategory.getKey()).thenReturn("someKey");
@@ -273,7 +262,7 @@ class TaxCategorySyncTest {
         .thenReturn(
             supplyAsync(
                 () -> {
-                  throw new ConcurrentModificationException();
+                  throw ExceptionUtils.createConcurrentModificationException("CTP Error on update");
                 }));
     when(taxCategoryService.fetchTaxCategory(any())).thenReturn(completedFuture(Optional.empty()));
 
@@ -281,9 +270,9 @@ class TaxCategorySyncTest {
         sync.sync(singletonList(draft)).toCompletableFuture().join();
 
     assertAll(
-        () -> assertThat(result.getProcessed().get()).isEqualTo(1),
-        () -> assertThat(result.getUpdated().get()).isEqualTo(0),
-        () -> assertThat(result.getFailed().get()).isEqualTo(1),
+        () -> Assertions.assertThat(result.getProcessed().get()).isEqualTo(1),
+        () -> Assertions.assertThat(result.getUpdated().get()).isEqualTo(0),
+        () -> Assertions.assertThat(result.getFailed().get()).isEqualTo(1),
         () -> assertThat(errors).hasSize(1),
         () ->
             assertThat(errors)
@@ -300,7 +289,7 @@ class TaxCategorySyncTest {
   void sync_WithNoError_ShouldApplyBeforeUpdateCallbackAndIncrementUpdated() {
     final AtomicBoolean callbackApplied = new AtomicBoolean(false);
     final TaxCategorySyncOptions options =
-        TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
+        TaxCategorySyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .beforeUpdateCallback(
                 (actions, draft, old) -> {
                   callbackApplied.set(true);
@@ -309,7 +298,7 @@ class TaxCategorySyncTest {
             .build();
     final TaxCategorySync sync = new TaxCategorySync(options, taxCategoryService);
     final TaxCategoryDraft draft =
-        TaxCategoryDraftBuilder.of("someName", emptyList(), "changed").key("someKey").build();
+        TaxCategoryDraftBuilder.of().name("someName").description("changed").key("someKey").build();
     final TaxCategory taxCategory = mock(TaxCategory.class);
 
     when(taxCategory.getId()).thenReturn("id");
@@ -324,9 +313,9 @@ class TaxCategorySyncTest {
         sync.sync(singletonList(draft)).toCompletableFuture().join();
 
     assertAll(
-        () -> assertThat(result.getProcessed().get()).isEqualTo(1),
-        () -> assertThat(result.getUpdated().get()).isEqualTo(1),
-        () -> assertThat(result.getFailed().get()).isEqualTo(0),
+        () -> Assertions.assertThat(result.getProcessed().get()).isEqualTo(1),
+        () -> Assertions.assertThat(result.getUpdated().get()).isEqualTo(1),
+        () -> Assertions.assertThat(result.getFailed().get()).isEqualTo(0),
         () -> assertThat(callbackApplied.get()).isTrue());
     verify(taxCategoryService, times(1)).fetchMatchingTaxCategoriesByKeys(any());
     verify(taxCategoryService, times(1)).updateTaxCategory(any(), any());
@@ -337,7 +326,7 @@ class TaxCategorySyncTest {
   void sync_WithFilteredActions_ShouldApplyBeforeUpdateCallbackAndNotIncrementUpdated() {
     final AtomicBoolean callbackApplied = new AtomicBoolean(false);
     final TaxCategorySyncOptions options =
-        TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
+        TaxCategorySyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .beforeUpdateCallback(
                 (actions, draft, old) -> {
                   callbackApplied.set(true);
@@ -346,7 +335,7 @@ class TaxCategorySyncTest {
             .build();
     final TaxCategorySync sync = new TaxCategorySync(options, taxCategoryService);
     final TaxCategoryDraft draft =
-        TaxCategoryDraftBuilder.of("someName", emptyList(), "changed").key("someKey").build();
+        TaxCategoryDraftBuilder.of().name("someName").description("changed").key("someKey").build();
     final TaxCategory taxCategory = mock(TaxCategory.class);
 
     when(taxCategory.getId()).thenReturn("id");
@@ -359,9 +348,9 @@ class TaxCategorySyncTest {
         sync.sync(singletonList(draft)).toCompletableFuture().join();
 
     assertAll(
-        () -> assertThat(result.getProcessed().get()).isEqualTo(1),
-        () -> assertThat(result.getUpdated().get()).isEqualTo(0),
-        () -> assertThat(result.getFailed().get()).isEqualTo(0),
+        () -> Assertions.assertThat(result.getProcessed().get()).isEqualTo(1),
+        () -> Assertions.assertThat(result.getUpdated().get()).isEqualTo(0),
+        () -> Assertions.assertThat(result.getFailed().get()).isEqualTo(0),
         () -> assertThat(callbackApplied.get()).isTrue());
     verify(taxCategoryService, times(1)).fetchMatchingTaxCategoriesByKeys(any());
     verifyNoMoreInteractions(taxCategoryService);
@@ -370,26 +359,42 @@ class TaxCategorySyncTest {
   @Test
   void sync_WithDuplicatedState_ShouldNotBuildActionAndTriggerErrorCallback() {
     final String name = "DuplicatedName";
+    final TaxRateDraft taxRateGermanyBerlin =
+        TaxRateDraftBuilder.of()
+            .name(name)
+            .amount(2.0)
+            .includedInPrice(false)
+            .country(CountryCode.DE.getAlpha2())
+            .state("BERLIN")
+            .build();
+
     final TaxCategoryDraft draft =
-        TaxCategoryDraftBuilder.of(
-                name,
-                asList(
-                    // replace
-                    TaxRateDraftBuilder.of(name, 2.0, false, CountryCode.FR).state("NYON").build(),
-                    TaxRateDraftBuilder.of(name, 2.0, false, CountryCode.FR).state("PARIS").build(),
-                    TaxRateDraftBuilder.of(name, 3.0, false, CountryCode.DE)
-                        .state("BERLIN")
-                        .build(),
-                    TaxRateDraftBuilder.of(name, 3.0, false, CountryCode.DE)
-                        .state("BERLIN")
-                        .build()),
-                "desc")
+        TaxCategoryDraftBuilder.of()
+            .name(name)
+            .rates(
+                TaxRateDraftBuilder.of()
+                    .name(name)
+                    .amount(2.0)
+                    .includedInPrice(false)
+                    .country(CountryCode.FR.getAlpha2())
+                    .state("LYON")
+                    .build(),
+                TaxRateDraftBuilder.of()
+                    .name(name)
+                    .amount(2.0)
+                    .includedInPrice(false)
+                    .country(CountryCode.FR.getAlpha2())
+                    .state("PARIS")
+                    .build(),
+                taxRateGermanyBerlin,
+                taxRateGermanyBerlin)
+            .description("desc")
             .key("someKey")
             .build();
 
     final AtomicReference<String> callback = new AtomicReference<>(null);
     final TaxCategorySyncOptions syncOptions =
-        TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
+        TaxCategorySyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback(
                 (exception, taxDraft, entry, actions) -> callback.set(exception.getMessage()))
             .build();
@@ -408,9 +413,9 @@ class TaxCategorySyncTest {
         sync.sync(singletonList(draft)).toCompletableFuture().join();
 
     assertAll(
-        () -> assertThat(result.getProcessed().get()).isEqualTo(1),
-        () -> assertThat(result.getUpdated().get()).isEqualTo(0),
-        () -> assertThat(result.getFailed().get()).isEqualTo(1),
+        () -> Assertions.assertThat(result.getProcessed().get()).isEqualTo(1),
+        () -> Assertions.assertThat(result.getUpdated().get()).isEqualTo(0),
+        () -> Assertions.assertThat(result.getFailed().get()).isEqualTo(1),
         () ->
             assertThat(callback.get())
                 .contains(
@@ -419,53 +424,5 @@ class TaxCategorySyncTest {
                             + "tax rate country code: '%s'. state : '%s'. Tax rate country codes and states are "
                             + "expected to be unique inside their tax category.",
                         CountryCode.DE, "BERLIN")));
-  }
-
-  @Test
-  void sync_WithDuplicatedCountryCode_ShouldNotBuildActionAndTriggerErrorCallback() {
-    final String name = "DuplicatedName";
-    final TaxCategoryDraft draft =
-        TaxCategoryDraftBuilder.of(
-                name,
-                asList(
-                    // replace
-                    TaxRateDraftBuilder.of(name, 2.0, false, CountryCode.FR).build(),
-                    TaxRateDraftBuilder.of(name, 2.0, false, CountryCode.FR).build()),
-                "desc")
-            .key("someKey")
-            .build();
-
-    final AtomicReference<String> callback = new AtomicReference<>(null);
-    final TaxCategorySyncOptions syncOptions =
-        TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback(
-                (exception, taxDraft, entry, actions) -> callback.set(exception.getMessage()))
-            .build();
-    final TaxCategorySync sync = new TaxCategorySync(syncOptions, taxCategoryService);
-    final TaxCategory taxCategory = mock(TaxCategory.class);
-
-    when(taxCategory.getId()).thenReturn("id");
-    when(taxCategory.getKey()).thenReturn("someKey");
-
-    when(taxCategoryService.fetchMatchingTaxCategoriesByKeys(any()))
-        .thenReturn(completedFuture(new HashSet<>(singletonList(taxCategory))));
-    when(taxCategoryService.updateTaxCategory(any(), any()))
-        .thenReturn(completedFuture(taxCategory));
-
-    final TaxCategorySyncStatistics result =
-        sync.sync(singletonList(draft)).toCompletableFuture().join();
-
-    assertAll(
-        () -> assertThat(result.getProcessed().get()).isEqualTo(1),
-        () -> assertThat(result.getUpdated().get()).isEqualTo(0),
-        () -> assertThat(result.getFailed().get()).isEqualTo(1),
-        () ->
-            assertThat(callback.get())
-                .contains(
-                    format(
-                        "Tax rate drafts have duplicated country codes. Duplicated "
-                            + "tax rate country code: '%s'. Tax rate country codes and states are "
-                            + "expected to be unique inside their tax category.",
-                        CountryCode.FR)));
   }
 }

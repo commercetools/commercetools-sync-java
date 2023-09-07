@@ -4,13 +4,13 @@ import static com.commercetools.sync.commons.MockUtils.getMockCustomFieldsDraft;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.categories.CategoryDraftBuilder;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.types.CustomFieldsDraft;
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryDraft;
+import com.commercetools.api.models.category.CategoryDraftBuilder;
+import com.commercetools.api.models.category.CategoryReferenceBuilder;
+import com.commercetools.api.models.category.CategoryResourceIdentifierBuilder;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -65,16 +65,24 @@ public class CategorySyncMockUtils {
     when(category.getMetaTitle()).thenReturn(LocalizedString.of(locale, metaTitle));
     when(category.getMetaKeywords()).thenReturn(LocalizedString.of(locale, metaKeywords));
     when(category.getOrderHint()).thenReturn(orderHint);
-    when(category.getParent()).thenReturn(Category.referenceOfId(parentId));
-    when(category.toReference()).thenReturn(Category.referenceOfId(UUID.randomUUID().toString()));
+    when(category.getParent()).thenReturn(CategoryReferenceBuilder.of().id(parentId).build());
+    when(category.toReference())
+        .thenReturn(CategoryReferenceBuilder.of().id(UUID.randomUUID().toString()).build());
     return category;
   }
 
-  public static Category getMockCategory(@Nonnull final String id, @Nonnull final String key) {
+  public static Category getMockCategory(
+      @Nonnull final String id,
+      @Nonnull final String key,
+      @Nonnull String name,
+      @Nonnull String slug,
+      @Nonnull Locale locale) {
     final Category category = mock(Category.class);
     when(category.getKey()).thenReturn(key);
     when(category.getId()).thenReturn(id);
-    when(category.toReference()).thenReturn(Category.referenceOfId(id));
+    when(category.getName()).thenReturn(LocalizedString.of(locale, name));
+    when(category.getSlug()).thenReturn(LocalizedString.of(locale, slug));
+    when(category.toReference()).thenReturn(CategoryReferenceBuilder.of().id(id).build());
     return category;
   }
 
@@ -159,7 +167,8 @@ public class CategorySyncMockUtils {
     when(categoryDraft.getMetaTitle()).thenReturn(LocalizedString.of(locale, metaTitle));
     when(categoryDraft.getMetaKeywords()).thenReturn(LocalizedString.of(locale, metaKeywords));
     when(categoryDraft.getOrderHint()).thenReturn(orderHint);
-    when(categoryDraft.getParent()).thenReturn(Category.referenceOfId(parentId));
+    when(categoryDraft.getParent())
+        .thenReturn(CategoryResourceIdentifierBuilder.of().id(parentId).build());
     return categoryDraft;
   }
 
@@ -169,7 +178,7 @@ public class CategorySyncMockUtils {
       @Nonnull final String key,
       @Nullable final String parentKey,
       @Nonnull final String customTypeKey,
-      @Nonnull final Map<String, JsonNode> customFields) {
+      @Nonnull final Map<String, Object> customFields) {
     return getMockCategoryDraftBuilder(locale, name, key, parentKey, customTypeKey, customFields)
         .build();
   }
@@ -225,11 +234,32 @@ public class CategorySyncMockUtils {
       @Nonnull final String key,
       @Nullable final String parentKey,
       @Nonnull final String customTypeKey,
-      @Nonnull final Map<String, JsonNode> customFields) {
-    return CategoryDraftBuilder.of(
-            LocalizedString.of(locale, name), LocalizedString.of(locale, "testSlug"))
+      @Nonnull final Map<String, Object> customFields) {
+    return CategoryDraftBuilder.of()
+        .name(LocalizedString.of(locale, name))
+        .slug(LocalizedString.of(locale, "testSlug"))
         .key(key)
-        .parent(ResourceIdentifier.ofKey(parentKey))
-        .custom(CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, customFields));
+        .parent(CategoryResourceIdentifierBuilder.of().key(parentKey).build())
+        .custom(
+            CustomFieldsDraftBuilder.of()
+                .type(
+                    typeResourceIdentifierBuilder ->
+                        typeResourceIdentifierBuilder.key(customTypeKey))
+                .fields(fieldContainerBuilder -> fieldContainerBuilder.values(customFields))
+                .build());
+  }
+
+  public static CategoryDraft getCategoryDraftFromCategory(@Nonnull final Category category) {
+    return CategoryDraftBuilder.of()
+        .key(category.getKey())
+        .name(category.getName())
+        .slug(category.getSlug())
+        .externalId(category.getExternalId())
+        .description(category.getDescription())
+        .metaDescription(category.getMetaDescription())
+        .metaTitle(category.getMetaTitle())
+        .metaKeywords(category.getMetaKeywords())
+        .orderHint(category.getOrderHint())
+        .build();
   }
 }

@@ -2,12 +2,12 @@ package com.commercetools.sync.cartdiscounts.helpers;
 
 import static java.lang.String.format;
 
+import com.commercetools.api.models.cart_discount.CartDiscountDraft;
+import com.commercetools.api.models.cart_discount.CartDiscountDraftBuilder;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.CustomReferenceResolver;
 import com.commercetools.sync.services.TypeService;
-import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
-import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
 
@@ -19,7 +19,8 @@ public final class CartDiscountReferenceResolver
       "Failed to resolve custom type reference on CartDiscountDraft with key:'%s'.";
 
   /**
-   * Takes a {@link CartDiscountSyncOptions} instance, a {@link TypeService} to instantiate a {@link
+   * Takes a {@link CartDiscountSyncOptions} instance, a {@link
+   * com.commercetools.sync.services.TypeService} to instantiate a {@link
    * CartDiscountReferenceResolver} instance that could be used to resolve the cartDiscount drafts
    * in the CTP project specified in the injected {@link CartDiscountSyncOptions} instance.
    *

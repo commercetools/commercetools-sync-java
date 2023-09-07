@@ -1,35 +1,34 @@
 package com.commercetools.sync.services.impl;
 
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.inventories.helpers.InventoryEntryQueryBuilder.buildQueries;
+import static java.util.stream.Collectors.toList;
 
+import com.commercetools.api.client.*;
+import com.commercetools.api.models.inventory.*;
 import com.commercetools.sync.commons.utils.ChunkUtils;
 import com.commercetools.sync.inventories.InventorySyncOptions;
 import com.commercetools.sync.inventories.helpers.InventoryEntryIdentifier;
 import com.commercetools.sync.services.InventoryService;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.inventory.InventoryEntry;
-import io.sphere.sdk.inventory.InventoryEntryDraft;
-import io.sphere.sdk.inventory.commands.InventoryEntryCreateCommand;
-import io.sphere.sdk.inventory.commands.InventoryEntryUpdateCommand;
-import io.sphere.sdk.inventory.expansion.InventoryEntryExpansionModel;
-import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
-import io.sphere.sdk.inventory.queries.InventoryEntryQueryModel;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
 
 public final class InventoryServiceImpl
     extends BaseService<
-        InventoryEntryDraft,
-        InventoryEntry,
-        InventoryEntry,
         InventorySyncOptions,
-        InventoryEntryQuery,
-        InventoryEntryQueryModel,
-        InventoryEntryExpansionModel<InventoryEntry>>
+        InventoryEntry,
+        InventoryEntryDraft,
+        ByProjectKeyInventoryGet,
+        InventoryPagedQueryResponse,
+        ByProjectKeyInventoryByIDGet,
+        InventoryEntry,
+        ByProjectKeyInventoryPost>
     implements InventoryService {
 
   public InventoryServiceImpl(@Nonnull final InventorySyncOptions syncOptions) {
@@ -41,8 +40,14 @@ public final class InventoryServiceImpl
   public CompletionStage<Set<InventoryEntry>> fetchInventoryEntriesByIdentifiers(
       @Nonnull final Set<InventoryEntryIdentifier> identifiers) {
 
-    return ChunkUtils.executeChunks(syncOptions.getCtpClient(), buildQueries(identifiers))
-        .thenApply(ChunkUtils::flattenPagedQueryResults)
+    final ProjectApiRoot ctpClient = this.syncOptions.getCtpClient();
+    return ChunkUtils.executeChunks(buildQueries(ctpClient, identifiers))
+        .thenApply(
+            apiHttpResponses ->
+                apiHttpResponses.stream()
+                    .map(apiHttpResponse -> apiHttpResponse.getBody().getResults())
+                    .flatMap(List::stream)
+                    .collect(toList()))
         .thenApply(this::cacheAndMapToSet);
   }
 
@@ -59,18 +64,43 @@ public final class InventoryServiceImpl
   public CompletionStage<Optional<InventoryEntry>> createInventoryEntry(
       @Nonnull final InventoryEntryDraft inventoryEntryDraft) {
 
-    return createResource(
+    return super.createResource(
         inventoryEntryDraft,
-        draft -> String.valueOf(InventoryEntryIdentifier.of(draft)),
-        InventoryEntryCreateCommand::of);
+        draft -> InventoryEntryIdentifier.of(draft).toString(),
+        entry -> entry.getId(),
+        inventoryEntry -> inventoryEntry,
+        () -> syncOptions.getCtpClient().inventory().post(inventoryEntryDraft));
   }
 
   @Nonnull
   @Override
   public CompletionStage<InventoryEntry> updateInventoryEntry(
       @Nonnull final InventoryEntry inventoryEntry,
-      @Nonnull final List<UpdateAction<InventoryEntry>> updateActions) {
+      @Nonnull final List<InventoryEntryUpdateAction> updateActions) {
+    final List<List<InventoryEntryUpdateAction>> actionBatches =
+        batchElements(updateActions, MAXIMUM_ALLOWED_UPDATE_ACTIONS);
 
-    return updateResource(inventoryEntry, InventoryEntryUpdateCommand::of, updateActions);
+    CompletionStage<ApiHttpResponse<InventoryEntry>> resultStage =
+        CompletableFuture.completedFuture(new ApiHttpResponse<>(200, null, inventoryEntry));
+
+    for (final List<InventoryEntryUpdateAction> batch : actionBatches) {
+      resultStage =
+          resultStage
+              .thenApply(ApiHttpResponse::getBody)
+              .thenCompose(
+                  updatedInventory ->
+                      syncOptions
+                          .getCtpClient()
+                          .inventory()
+                          .withId(updatedInventory.getId())
+                          .post(
+                              InventoryEntryUpdateBuilder.of()
+                                  .actions(batch)
+                                  .version(updatedInventory.getVersion())
+                                  .build())
+                          .execute());
+    }
+
+    return resultStage.thenApply(ApiHttpResponse::getBody);
   }
 }

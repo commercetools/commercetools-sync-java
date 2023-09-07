@@ -1,10 +1,10 @@
 package com.commercetools.sync.integration.externalsource.producttypes;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createBadGatewayException;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.*;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -26,11 +26,11 @@ import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
 import com.commercetools.api.models.product_type.ProductTypeReferenceBuilder;
 import com.commercetools.api.models.product_type.ProductTypeRemoveAttributeDefinitionActionBuilder;
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
-import com.commercetools.sync.sdk2.commons.exceptions.SyncException;
-import com.commercetools.sync.sdk2.producttypes.ProductTypeSync;
-import com.commercetools.sync.sdk2.producttypes.ProductTypeSyncOptions;
-import com.commercetools.sync.sdk2.producttypes.ProductTypeSyncOptionsBuilder;
-import com.commercetools.sync.sdk2.producttypes.helpers.ProductTypeSyncStatistics;
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.producttypes.ProductTypeSync;
+import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
+import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
+import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
 import io.vrap.rmf.base.client.ApiHttpMethod;
 import io.vrap.rmf.base.client.error.BadGatewayException;
 import io.vrap.rmf.base.client.utils.CompletableFutureUtils;

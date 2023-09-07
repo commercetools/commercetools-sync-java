@@ -1,14 +1,14 @@
 package com.commercetools.sync.taxcategories;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.tax_category.TaxCategory;
+import com.commercetools.api.models.tax_category.TaxCategoryDraft;
+import com.commercetools.api.models.tax_category.TaxCategoryUpdateAction;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.taxcategories.TaxCategory;
-import io.sphere.sdk.taxcategories.TaxCategoryDraft;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -16,16 +16,16 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public final class TaxCategorySyncOptions
-    extends BaseSyncOptions<TaxCategory, TaxCategoryDraft, TaxCategory> {
+    extends BaseSyncOptions<TaxCategory, TaxCategoryDraft, TaxCategoryUpdateAction> {
 
   TaxCategorySyncOptions(
-      @Nonnull final SphereClient ctpClient,
+      @Nonnull final ProjectApiRoot ctpClient,
       @Nullable
           final QuadConsumer<
                   SyncException,
                   Optional<TaxCategoryDraft>,
                   Optional<TaxCategory>,
-                  List<UpdateAction<TaxCategory>>>
+                  List<TaxCategoryUpdateAction>>
               errorCallBack,
       @Nullable
           final TriConsumer<SyncException, Optional<TaxCategoryDraft>, Optional<TaxCategory>>
@@ -33,10 +33,10 @@ public final class TaxCategorySyncOptions
       final int batchSize,
       @Nullable
           final TriFunction<
-                  List<UpdateAction<TaxCategory>>,
+                  List<TaxCategoryUpdateAction>,
                   TaxCategoryDraft,
                   TaxCategory,
-                  List<UpdateAction<TaxCategory>>>
+                  List<TaxCategoryUpdateAction>>
               beforeUpdateCallback,
       @Nullable final Function<TaxCategoryDraft, TaxCategoryDraft> beforeCreateCallback,
       final long cacheSize) {

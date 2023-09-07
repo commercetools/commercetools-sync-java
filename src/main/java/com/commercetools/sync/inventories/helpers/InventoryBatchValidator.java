@@ -2,9 +2,9 @@ package com.commercetools.sync.inventories.helpers;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import com.commercetools.api.models.inventory.InventoryEntryDraft;
 import com.commercetools.sync.commons.helpers.BaseBatchValidator;
 import com.commercetools.sync.inventories.InventorySyncOptions;
-import io.sphere.sdk.inventory.InventoryEntryDraft;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

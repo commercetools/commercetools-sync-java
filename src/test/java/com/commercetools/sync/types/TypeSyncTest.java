@@ -1,11 +1,8 @@
 package com.commercetools.sync.types;
 
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
+import static java.util.Collections.*;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.as;
@@ -14,20 +11,16 @@ import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.type.ResourceTypeId;
+import com.commercetools.api.models.type.Type;
+import com.commercetools.api.models.type.TypeDraft;
+import com.commercetools.api.models.type.TypeDraftBuilder;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.types.helpers.TypeSyncStatistics;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.SphereException;
-import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
-import io.sphere.sdk.types.Type;
-import io.sphere.sdk.types.TypeDraft;
-import io.sphere.sdk.types.TypeDraftBuilder;
+import io.vrap.rmf.base.client.error.BaseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -38,10 +31,11 @@ class TypeSyncTest {
   @Test
   void sync_WithErrorFetchingExistingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
     // preparation
-
     final TypeDraft newTypeDraft =
-        TypeDraftBuilder.of(
-                "foo", ofEnglish("name"), ResourceTypeIdsSetBuilder.of().addCategories().build())
+        TypeDraftBuilder.of()
+            .key("foo")
+            .name(ofEnglish("name"))
+            .resourceTypeIds(ResourceTypeId.CATEGORY)
             .description(ofEnglish("desc"))
             .fieldDefinitions(emptyList())
             .build();
@@ -49,7 +43,7 @@ class TypeSyncTest {
     final List<Throwable> exceptions = new ArrayList<>();
 
     final TypeSyncOptions syncOptions =
-        TypeSyncOptionsBuilder.of(mock(SphereClient.class))
+        TypeSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) -> {
                   errorMessages.add(exception.getMessage());
@@ -63,7 +57,7 @@ class TypeSyncTest {
         .thenReturn(
             supplyAsync(
                 () -> {
-                  throw new SphereException();
+                  throw new BaseException();
                 }));
 
     final TypeSync typeSync = new TypeSync(syncOptions, mockTypeService);
@@ -82,7 +76,7 @@ class TypeSyncTest {
         .hasSize(1)
         .singleElement(as(THROWABLE))
         .isExactlyInstanceOf(CompletionException.class)
-        .hasCauseExactlyInstanceOf(SphereException.class);
+        .hasCauseExactlyInstanceOf(BaseException.class);
 
     assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
   }
@@ -91,12 +85,14 @@ class TypeSyncTest {
   void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
     // preparation
     final TypeDraft newTypeDraft =
-        TypeDraftBuilder.of(
-                "newType", ofEnglish("typeName"), ResourceTypeIdsSetBuilder.of().addChannels())
+        TypeDraftBuilder.of()
+            .key("newType")
+            .name(ofEnglish("typeName"))
+            .resourceTypeIds(ResourceTypeId.CHANNEL)
             .build();
 
     final TypeSyncOptions typeSyncOptions =
-        TypeSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        TypeSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
 
     final TypeService typeService = mock(TypeService.class);
     when(typeService.fetchMatchingTypesByKeys(anySet())).thenReturn(completedFuture(emptySet()));
@@ -119,12 +115,14 @@ class TypeSyncTest {
   void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
     // preparation
     final TypeDraft newTypeDraft =
-        TypeDraftBuilder.of(
-                "newType", ofEnglish("typeName"), ResourceTypeIdsSetBuilder.of().addChannels())
+        TypeDraftBuilder.of()
+            .key("newType")
+            .name(ofEnglish("typeName"))
+            .resourceTypeIds(ResourceTypeId.CHANNEL)
             .build();
 
     final TypeSyncOptions typeSyncOptions =
-        TypeSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        TypeSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
 
     final Type mockedExistingType = mock(Type.class);
     when(mockedExistingType.getKey()).thenReturn(newTypeDraft.getKey());

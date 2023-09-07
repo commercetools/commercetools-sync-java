@@ -1,22 +1,26 @@
 package com.commercetools.sync.states.helpers;
 
-import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
+import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.toList;
 
+import com.commercetools.api.models.state.State;
+import com.commercetools.api.models.state.StateDraft;
+import com.commercetools.api.models.state.StateDraftBuilder;
+import com.commercetools.api.models.state.StateReference;
+import com.commercetools.api.models.state.StateResourceIdentifier;
+import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.states.StateSyncOptions;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.states.StateDraft;
-import io.sphere.sdk.states.StateDraftBuilder;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 public final class StateReferenceResolver
     extends BaseReferenceResolver<StateDraft, StateSyncOptions> {
@@ -41,13 +45,14 @@ public final class StateReferenceResolver
 
   /**
    * Given a {@link StateDraft} this method attempts to resolve the transition state references to
-   * return a {@link CompletionStage} which contains a new instance of the draft with the resolved
-   * references. The keys of the references are taken from the id field of the references.
+   * return a {@link java.util.concurrent.CompletionStage} which contains a new instance of the
+   * draft with the resolved references. The keys of the references are taken from the id field of
+   * the references.
    *
    * @param stateDraft the stateDraft to resolve its references.
-   * @return a {@link CompletionStage} that contains as a result a new Statedraft instance with
-   *     resolved category references or, in case an error occurs during reference resolution, a
-   *     {@link ReferenceResolutionException}.
+   * @return a {@link java.util.concurrent.CompletionStage} that contains as a result a new
+   *     Statedraft instance with resolved category references or, in case an error occurs during
+   *     reference resolution, a {@link ReferenceResolutionException}.
    */
   @Override
   @Nonnull
@@ -58,25 +63,26 @@ public final class StateReferenceResolver
 
   /**
    * Given a {@link StateDraftBuilder} this method attempts to resolve the transitions to return a
-   * {@link CompletionStage} which contains a new instance of the builder with the resolved
-   * references. The key of the state references is taken from the value of the id fields.
+   * {@link java.util.concurrent.CompletionStage} which contains a new instance of the builder with
+   * the resolved references. The key of the state references is taken from the value of the id
+   * fields.
    *
    * @param draftBuilder the state to resolve its transition references.
-   * @return a {@link CompletionStage} that contains as a result a new builder instance with
-   *     resolved references or, in case an error occurs during reference resolution, a {@link
-   *     ReferenceResolutionException}.
+   * @return a {@link java.util.concurrent.CompletionStage} that contains as a result a new builder
+   *     instance with resolved references or, in case an error occurs during reference resolution,
+   *     a {@link ReferenceResolutionException}.
    */
   @Nonnull
   private CompletionStage<StateDraftBuilder> resolveTransitionReferences(
       @Nonnull final StateDraftBuilder draftBuilder) {
 
-    final Set<Reference<State>> stateReferences = draftBuilder.getTransitions();
+    final List<StateResourceIdentifier> stateReferences = draftBuilder.getTransitions();
     final Set<String> stateKeys = new HashSet<>();
     if (stateReferences != null) {
-      for (Reference<State> stateReference : stateReferences) {
+      for (StateResourceIdentifier stateReference : stateReferences) {
         if (stateReference != null) {
           try {
-            final String stateKey = getIdFromReference(stateReference);
+            final String stateKey = getKeyFromResourceIdentifier(stateReference);
             stateKeys.add(stateKey);
           } catch (ReferenceResolutionException referenceResolutionException) {
             return exceptionallyCompletedFuture(
@@ -93,14 +99,14 @@ public final class StateReferenceResolver
   }
 
   /**
-   * Given a {@link StateDraftBuilder} and a {@link Set} of {@code stateKeys} this method fetches
-   * the states corresponding to these keys. Then it sets the state references on the {@code
+   * Given a {@link StateDraftBuilder} and a {@link java.util.Set} of {@code stateKeys} this method
+   * fetches the states corresponding to these keys. Then it sets the state references on the {@code
    * draftBuilder}.
    *
    * @param draftBuilder the state draft builder to resolve it's state references.
    * @param stateKeys the state keys of to resolve their actual id on the draft.
-   * @return a {@link CompletionStage} that contains as a result a new stateDraft instance with
-   *     resolved state references or an exception.
+   * @return a {@link java.util.concurrent.CompletionStage} that contains as a result a new
+   *     stateDraft instance with resolved state resource identifiers or an exception.
    */
   @Nonnull
   private CompletionStage<StateDraftBuilder> fetchAndResolveStateTransitions(
@@ -110,7 +116,10 @@ public final class StateReferenceResolver
         .fetchMatchingStatesByKeysWithTransitions(stateKeys)
         .thenApply(
             states ->
-                states.stream().map(State::toReference).filter(Objects::nonNull).collect(toSet()))
+                states.stream()
+                    .map(State::toResourceIdentifier)
+                    .filter(Objects::nonNull)
+                    .collect(toList()))
         .thenApply(
             references -> {
               if (!references.isEmpty()) {
@@ -118,5 +127,15 @@ public final class StateReferenceResolver
               }
               return draftBuilder;
             });
+  }
+
+  @NotNull
+  private static List<StateResourceIdentifier> toStateResourceIdentifiers(
+      final Set<StateReference> references) {
+    return references.stream()
+        .map(
+            stateReference ->
+                StateResourceIdentifierBuilder.of().id(stateReference.getId()).build())
+        .collect(toList());
   }
 }

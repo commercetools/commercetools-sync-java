@@ -5,22 +5,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.tax_category.TaxCategory;
+import com.commercetools.api.models.tax_category.TaxCategoryDraft;
+import com.commercetools.api.models.tax_category.TaxCategoryUpdateAction;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.taxcategories.TaxCategory;
-import io.sphere.sdk.taxcategories.TaxCategoryDraft;
 import java.util.List;
 import java.util.Optional;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class TaxCategorySyncOptionsBuilderTest {
 
-  private static SphereClient CTP_CLIENT = mock(SphereClient.class);
-  private TaxCategorySyncOptionsBuilder taxCategorySyncOptionsBuilder =
+  private static final ProjectApiRoot CTP_CLIENT = mock(ProjectApiRoot.class);
+  private final TaxCategorySyncOptionsBuilder taxCategorySyncOptionsBuilder =
       TaxCategorySyncOptionsBuilder.of(CTP_CLIENT);
 
   @Test
@@ -44,30 +45,30 @@ class TaxCategorySyncOptionsBuilderTest {
 
     assertThat(taxCategorySyncOptions).isNotNull();
     assertAll(
-        () -> assertThat(taxCategorySyncOptions.getBeforeUpdateCallback()).isNull(),
-        () -> assertThat(taxCategorySyncOptions.getBeforeCreateCallback()).isNull(),
-        () -> assertThat(taxCategorySyncOptions.getErrorCallback()).isNull(),
-        () -> assertThat(taxCategorySyncOptions.getWarningCallback()).isNull(),
-        () -> assertThat(taxCategorySyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT),
+        () -> Assertions.assertThat(taxCategorySyncOptions.getBeforeUpdateCallback()).isNull(),
+        () -> Assertions.assertThat(taxCategorySyncOptions.getBeforeCreateCallback()).isNull(),
+        () -> Assertions.assertThat(taxCategorySyncOptions.getErrorCallback()).isNull(),
+        () -> Assertions.assertThat(taxCategorySyncOptions.getWarningCallback()).isNull(),
+        () -> Assertions.assertThat(taxCategorySyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT),
         () ->
-            assertThat(taxCategorySyncOptions.getBatchSize())
+            Assertions.assertThat(taxCategorySyncOptions.getBatchSize())
                 .isEqualTo(TaxCategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT),
-        () -> assertThat(taxCategorySyncOptions.getCacheSize()).isEqualTo(10_000));
+        () -> Assertions.assertThat(taxCategorySyncOptions.getCacheSize()).isEqualTo(10_000));
   }
 
   @Test
   void build_WithBeforeUpdateCallback_ShouldSetBeforeUpdateCallback() {
     final TriFunction<
-            List<UpdateAction<TaxCategory>>,
+            List<TaxCategoryUpdateAction>,
             TaxCategoryDraft,
             TaxCategory,
-            List<UpdateAction<TaxCategory>>>
+            List<TaxCategoryUpdateAction>>
         beforeUpdateCallback = (updateActions, newTaxCategory, oldTaxCategory) -> emptyList();
     taxCategorySyncOptionsBuilder.beforeUpdateCallback(beforeUpdateCallback);
 
     final TaxCategorySyncOptions taxCategorySyncOptions = taxCategorySyncOptionsBuilder.build();
 
-    assertThat(taxCategorySyncOptions.getBeforeUpdateCallback()).isNotNull();
+    Assertions.assertThat(taxCategorySyncOptions.getBeforeUpdateCallback()).isNotNull();
   }
 
   @Test
@@ -76,7 +77,7 @@ class TaxCategorySyncOptionsBuilderTest {
 
     final TaxCategorySyncOptions taxCategorySyncOptions = taxCategorySyncOptionsBuilder.build();
 
-    assertThat(taxCategorySyncOptions.getBeforeCreateCallback()).isNotNull();
+    Assertions.assertThat(taxCategorySyncOptions.getBeforeCreateCallback()).isNotNull();
   }
 
   @Test
@@ -85,13 +86,13 @@ class TaxCategorySyncOptionsBuilderTest {
             SyncException,
             Optional<TaxCategoryDraft>,
             Optional<TaxCategory>,
-            List<UpdateAction<TaxCategory>>>
+            List<TaxCategoryUpdateAction>>
         mockErrorCallBack = (exception, entry, draft, actions) -> {};
     taxCategorySyncOptionsBuilder.errorCallback(mockErrorCallBack);
 
     final TaxCategorySyncOptions taxCategorySyncOptions = taxCategorySyncOptionsBuilder.build();
 
-    assertThat(taxCategorySyncOptions.getErrorCallback()).isNotNull();
+    Assertions.assertThat(taxCategorySyncOptions.getErrorCallback()).isNotNull();
   }
 
   @Test
@@ -102,7 +103,7 @@ class TaxCategorySyncOptionsBuilderTest {
 
     final TaxCategorySyncOptions taxCategorySyncOptions = taxCategorySyncOptionsBuilder.build();
 
-    assertThat(taxCategorySyncOptions.getWarningCallback()).isNotNull();
+    Assertions.assertThat(taxCategorySyncOptions.getWarningCallback()).isNotNull();
   }
 
   @Test
@@ -110,7 +111,7 @@ class TaxCategorySyncOptionsBuilderTest {
     final TaxCategorySyncOptions taxCategorySyncOptions =
         TaxCategorySyncOptionsBuilder.of(CTP_CLIENT).batchSize(10).build();
 
-    assertThat(taxCategorySyncOptions.getBatchSize()).isEqualTo(10);
+    Assertions.assertThat(taxCategorySyncOptions.getBatchSize()).isEqualTo(10);
   }
 
   @Test
@@ -118,13 +119,13 @@ class TaxCategorySyncOptionsBuilderTest {
     final TaxCategorySyncOptions taxCategorySyncOptionsWithZeroBatchSize =
         TaxCategorySyncOptionsBuilder.of(CTP_CLIENT).batchSize(0).build();
 
-    assertThat(taxCategorySyncOptionsWithZeroBatchSize.getBatchSize())
+    Assertions.assertThat(taxCategorySyncOptionsWithZeroBatchSize.getBatchSize())
         .isEqualTo(TaxCategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT);
 
     final TaxCategorySyncOptions taxCategorySyncOptionsWithNegativeBatchSize =
         TaxCategorySyncOptionsBuilder.of(CTP_CLIENT).batchSize(-100).build();
 
-    assertThat(taxCategorySyncOptionsWithNegativeBatchSize.getBatchSize())
+    Assertions.assertThat(taxCategorySyncOptionsWithNegativeBatchSize.getBatchSize())
         .isEqualTo(TaxCategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT);
   }
 
@@ -133,7 +134,7 @@ class TaxCategorySyncOptionsBuilderTest {
     final TaxCategorySyncOptions taxCategorySyncOptions =
         TaxCategorySyncOptionsBuilder.of(CTP_CLIENT).cacheSize(10).build();
 
-    assertThat(taxCategorySyncOptions.getCacheSize()).isEqualTo(10);
+    Assertions.assertThat(taxCategorySyncOptions.getCacheSize()).isEqualTo(10);
   }
 
   @Test
@@ -141,11 +142,12 @@ class TaxCategorySyncOptionsBuilderTest {
     final TaxCategorySyncOptions taxCategorySyncOptionsWithZeroCacheSize =
         TaxCategorySyncOptionsBuilder.of(CTP_CLIENT).cacheSize(0).build();
 
-    assertThat(taxCategorySyncOptionsWithZeroCacheSize.getCacheSize()).isEqualTo(10_000);
+    Assertions.assertThat(taxCategorySyncOptionsWithZeroCacheSize.getCacheSize()).isEqualTo(10_000);
 
     final TaxCategorySyncOptions taxCategorySyncOptionsWithNegativeCacheSize =
         TaxCategorySyncOptionsBuilder.of(CTP_CLIENT).cacheSize(-100).build();
 
-    assertThat(taxCategorySyncOptionsWithNegativeCacheSize.getCacheSize()).isEqualTo(10_000);
+    Assertions.assertThat(taxCategorySyncOptionsWithNegativeCacheSize.getCacheSize())
+        .isEqualTo(10_000);
   }
 }

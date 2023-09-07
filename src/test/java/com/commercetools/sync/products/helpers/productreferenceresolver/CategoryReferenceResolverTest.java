@@ -1,48 +1,32 @@
 package com.commercetools.sync.products.helpers.productreferenceresolver;
 
-import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
-import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.MockUtils.mockCategoryService;
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithRandomProductType;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomObjectService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockStateService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockTaxCategoryService;
-import static com.commercetools.sync.products.helpers.ProductReferenceResolver.CATEGORIES_DO_NOT_EXIST;
-import static com.commercetools.sync.products.helpers.ProductReferenceResolver.FAILED_TO_RESOLVE_REFERENCE;
-import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
-import static java.lang.String.format;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
-import static java.util.stream.Collectors.toSet;
+import static java.util.Collections.*;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryResourceIdentifier;
+import com.commercetools.api.models.category.CategoryResourceIdentifierBuilder;
+import com.commercetools.api.models.product.CategoryOrderHints;
+import com.commercetools.api.models.product.CategoryOrderHintsBuilder;
+import com.commercetools.api.models.product.ProductDraftBuilder;
+import com.commercetools.sync.categories.CategorySyncMockUtils;
+import com.commercetools.sync.commons.MockUtils;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
+import com.commercetools.sync.inventories.InventorySyncMockUtils;
+import com.commercetools.sync.products.ProductSyncMockUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.CustomerGroupService;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.models.SphereException;
-import io.sphere.sdk.products.CategoryOrderHints;
-import io.sphere.sdk.products.ProductDraftBuilder;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -50,6 +34,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class CategoryReferenceResolverTest {
   private static final String CHANNEL_KEY = "channel-key_1";
@@ -68,25 +53,29 @@ class CategoryReferenceResolverTest {
     final List<Category> categories =
         IntStream.range(0, nCategories)
             .mapToObj(i -> i + "")
-            .map(key -> getMockCategory(key, key))
+            .map(
+                key ->
+                    CategorySyncMockUtils.getMockCategory(
+                        key, key, "name" + key, "slug" + key, Locale.ENGLISH))
             .collect(Collectors.toList());
 
     final CategoryService mockCategoryService =
-        mockCategoryService(new HashSet<>(categories), null);
+        MockUtils.mockCategoryService(new HashSet<>(categories), null);
 
-    final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers =
+    final List<CategoryResourceIdentifier> categoryResourceIdentifiers =
         categories.stream()
-            .map(category -> ResourceIdentifier.<Category>ofKey(category.getKey()))
-            .collect(toSet());
+            .map(category -> CategoryResourceIdentifierBuilder.of().key(category.getKey()).build())
+            .collect(toList());
 
     final Map<String, String> categoryOrderHintValues =
         categories.stream()
             .collect(Collectors.toMap(Category::getKey, (category -> "0.00" + category.getId())));
 
     final ProductDraftBuilder productBuilder =
-        getBuilderWithRandomProductType()
+        ProductSyncMockUtils.getBuilderWithRandomProductType()
             .categories(categoryResourceIdentifiers)
-            .categoryOrderHints(CategoryOrderHints.of(categoryOrderHintValues));
+            .categoryOrderHints(
+                CategoryOrderHintsBuilder.of().values(categoryOrderHintValues).build());
 
     final ProductReferenceResolver productReferenceResolver =
         createProductReferenceResolver(mockCategoryService);
@@ -104,10 +93,12 @@ class CategoryReferenceResolverTest {
             categoryResourceIdentifiers.stream()
                 .map(
                     categoryResourceIdentifier ->
-                        Category.referenceOfId(categoryResourceIdentifier.getKey()))
-                .collect(Collectors.toSet()));
+                        CategoryResourceIdentifierBuilder.of()
+                            .id(categoryResourceIdentifier.getKey())
+                            .build())
+                .collect(Collectors.toList()));
     assertThat(resolvedDraft.getCategoryOrderHints()).isNotNull();
-    assertThat(resolvedDraft.getCategoryOrderHints().getAsMap())
+    assertThat(resolvedDraft.getCategoryOrderHints().values())
         .hasSize(categoryOrderHintValues.size());
   }
 
@@ -118,18 +109,22 @@ class CategoryReferenceResolverTest {
     final List<Category> categories =
         IntStream.range(0, nCategories)
             .mapToObj(i -> i + "")
-            .map(key -> getMockCategory(key, key))
+            .map(
+                key ->
+                    CategorySyncMockUtils.getMockCategory(
+                        key, key, "name" + key, "slug" + key, Locale.ENGLISH))
             .collect(Collectors.toList());
     final CategoryService mockCategoryService =
-        mockCategoryService(new HashSet<>(categories), null);
+        MockUtils.mockCategoryService(new HashSet<>(categories), null);
 
-    final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers =
+    final List<CategoryResourceIdentifier> categoryResourceIdentifiers =
         categories.stream()
-            .map(category -> ResourceIdentifier.<Category>ofKey(category.getKey()))
-            .collect(toSet());
+            .map(category -> CategoryResourceIdentifierBuilder.of().key(category.getKey()).build())
+            .collect(toList());
 
     final ProductDraftBuilder productBuilder =
-        getBuilderWithRandomProductType().categories(categoryResourceIdentifiers);
+        ProductSyncMockUtils.getBuilderWithRandomProductType()
+            .categories(categoryResourceIdentifiers);
     final ProductReferenceResolver productReferenceResolver =
         createProductReferenceResolver(mockCategoryService);
 
@@ -146,10 +141,12 @@ class CategoryReferenceResolverTest {
             categoryResourceIdentifiers.stream()
                 .map(
                     categoryResourceIdentifier ->
-                        Category.referenceOfId(categoryResourceIdentifier.getKey()))
-                .collect(toSet()));
+                        CategoryResourceIdentifierBuilder.of()
+                            .id(categoryResourceIdentifier.getKey())
+                            .build())
+                .collect(Collectors.toList()));
     assertThat(resolvedDraft.getCategoryOrderHints()).isNotNull();
-    assertThat(resolvedDraft.getCategoryOrderHints().getAsMap()).isEmpty();
+    assertThat(resolvedDraft.getCategoryOrderHints().values()).isEmpty();
   }
 
   @Test
@@ -160,23 +157,27 @@ class CategoryReferenceResolverTest {
     final List<Category> categories =
         IntStream.range(0, nCategories)
             .mapToObj(i -> i + "")
-            .map(key -> getMockCategory(key, key))
+            .map(
+                key ->
+                    CategorySyncMockUtils.getMockCategory(
+                        key, key, "name" + key, "slug" + key, Locale.ENGLISH))
             .collect(Collectors.toList());
     final CategoryService mockCategoryService =
-        mockCategoryService(new HashSet<>(categories), null);
+        MockUtils.mockCategoryService(new HashSet<>(categories), null);
 
-    final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers =
+    final List<CategoryResourceIdentifier> categoryResourceIdentifiers =
         categories.stream()
-            .map(category -> ResourceIdentifier.<Category>ofKey(category.getKey()))
-            .collect(toSet());
+            .map(category -> CategoryResourceIdentifierBuilder.of().key(category.getKey()).build())
+            .collect(toList());
 
     final Map<String, String> categoryOrderHintValues =
         categories.stream()
             .limit(3)
             .collect(Collectors.toMap(Category::getKey, (category -> "0.00" + category.getId())));
-    final CategoryOrderHints categoryOrderHints = CategoryOrderHints.of(categoryOrderHintValues);
+    final CategoryOrderHints categoryOrderHints =
+        CategoryOrderHintsBuilder.of().values(categoryOrderHintValues).build();
     final ProductDraftBuilder productBuilder =
-        getBuilderWithRandomProductType()
+        ProductSyncMockUtils.getBuilderWithRandomProductType()
             .categories(categoryResourceIdentifiers)
             .categoryOrderHints(categoryOrderHints);
     final ProductReferenceResolver productReferenceResolver =
@@ -195,17 +196,22 @@ class CategoryReferenceResolverTest {
             categoryResourceIdentifiers.stream()
                 .map(
                     categoryResourceIdentifier ->
-                        Category.referenceOfId(categoryResourceIdentifier.getKey()))
-                .collect(toSet()));
+                        CategoryResourceIdentifierBuilder.of()
+                            .id(categoryResourceIdentifier.getKey())
+                            .build())
+                .collect(Collectors.toList()));
     assertThat(resolvedDraft.getCategoryOrderHints()).isNotNull();
-    assertThat(resolvedDraft.getCategoryOrderHints().getAsMap()).hasSize(3);
+    assertThat(resolvedDraft.getCategoryOrderHints().values()).hasSize(3);
   }
 
   @Test
-  void resolveCategoryReferences_WithNullCategoryReferences_ShouldNotResolveReferences() {
+  void resolveCategoryReferences_WithEmptyCategoryReferences_ShouldNotResolveReferences() {
     // preparation
-    final CategoryService mockCategoryService = mockCategoryService(emptySet(), null);
-    final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType();
+    final CategoryService mockCategoryService = MockUtils.mockCategoryService(emptySet(), null);
+    final ProductDraftBuilder productBuilder =
+        ProductSyncMockUtils.getBuilderWithRandomProductType();
+
+    productBuilder.categories(emptyList());
 
     final ProductReferenceResolver productReferenceResolver =
         createProductReferenceResolver(mockCategoryService);
@@ -222,25 +228,29 @@ class CategoryReferenceResolverTest {
   @Test
   void resolveCategoryReferences_WithNonExistentCategoryReferences_ShouldNotResolveReferences() {
     // preparation
-    final CategoryService mockCategoryService = mockCategoryService(emptySet(), null);
+    final CategoryService mockCategoryService = MockUtils.mockCategoryService(emptySet(), null);
 
-    final Set<ResourceIdentifier<Category>> categories = new HashSet<>();
-    categories.add(ResourceIdentifier.ofKey("non-existent-category-1"));
-    categories.add(ResourceIdentifier.ofKey("non-existent-category-2"));
+    final List<CategoryResourceIdentifier> categories = new ArrayList<>();
+    categories.add(CategoryResourceIdentifierBuilder.of().key("non-existent-category-1").build());
+    categories.add(CategoryResourceIdentifierBuilder.of().key("non-existent-category-2").build());
 
     final ProductDraftBuilder productBuilder =
-        getBuilderWithRandomProductType().key("dummyKey").categories(categories);
+        ProductSyncMockUtils.getBuilderWithRandomProductType()
+            .key("dummyKey")
+            .categories(categories);
 
     final ProductReferenceResolver productReferenceResolver =
         createProductReferenceResolver(mockCategoryService);
 
     // test and assertion
     final String expectedMessageWithCause =
-        format(
-            FAILED_TO_RESOLVE_REFERENCE,
-            Category.resourceTypeId(),
+        String.format(
+            ProductReferenceResolver.FAILED_TO_RESOLVE_REFERENCE,
+            Category.referenceTypeId().getJsonName(),
             "dummyKey",
-            format(CATEGORIES_DO_NOT_EXIST, "non-existent-category-1, non-existent-category-2"));
+            String.format(
+                ProductReferenceResolver.CATEGORIES_DO_NOT_EXIST,
+                "non-existent-category-1, non-existent-category-2"));
 
     productReferenceResolver
         .resolveCategoryReferences(productBuilder)
@@ -257,9 +267,10 @@ class CategoryReferenceResolverTest {
   @Test
   void resolveCategoryReferences_WithNullKeyOnCategoryReference_ShouldNotResolveReference() {
     // preparation
-    final CategoryService mockCategoryService = mockCategoryService(emptySet(), null);
+    final CategoryService mockCategoryService = MockUtils.mockCategoryService(emptySet(), null);
     final ProductDraftBuilder productBuilder =
-        getBuilderWithRandomProductType().categories(singleton(ResourceIdentifier.ofKey(null)));
+        ProductSyncMockUtils.getBuilderWithRandomProductType()
+            .categories(singletonList(CategoryResourceIdentifierBuilder.of().key(null).build()));
 
     final ProductReferenceResolver productReferenceResolver =
         createProductReferenceResolver(mockCategoryService);
@@ -270,18 +281,20 @@ class CategoryReferenceResolverTest {
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
         .withMessageContaining(
-            format(
+            String.format(
                 "Failed to resolve 'category' resource identifier on ProductDraft with "
                     + "key:'%s'. Reason: %s",
-                productBuilder.getKey(), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                productBuilder.getKey(),
+                BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
   }
 
   @Test
   void resolveCategoryReferences_WithEmptyKeyOnCategoryReference_ShouldNotResolveReference() {
     // preparation
-    final CategoryService mockCategoryService = mockCategoryService(emptySet(), null);
+    final CategoryService mockCategoryService = MockUtils.mockCategoryService(emptySet(), null);
     final ProductDraftBuilder productBuilder =
-        getBuilderWithRandomProductType().categories(singleton(ResourceIdentifier.ofKey("")));
+        ProductSyncMockUtils.getBuilderWithRandomProductType()
+            .categories(singletonList(CategoryResourceIdentifierBuilder.of().key("").build()));
 
     final ProductReferenceResolver productReferenceResolver =
         createProductReferenceResolver(mockCategoryService);
@@ -292,19 +305,22 @@ class CategoryReferenceResolverTest {
         .withThrowableOfType(ExecutionException.class)
         .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
         .withMessageContaining(
-            format(
+            String.format(
                 "Failed to resolve 'category' resource identifier on ProductDraft with "
                     + "key:'%s'. Reason: %s",
-                productBuilder.getKey(), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                productBuilder.getKey(),
+                BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
   }
 
   @Test
   void resolveCategoryReferences_WithCategoryReferencesWithId_ShouldResolveReference() {
     // preparation
-    final CategoryService mockCategoryService = mockCategoryService(emptySet(), null);
+    final CategoryService mockCategoryService = MockUtils.mockCategoryService(emptySet(), null);
     final ProductDraftBuilder productBuilder =
-        getBuilderWithRandomProductType()
-            .categories(singleton(ResourceIdentifier.ofId("existing-category-id")));
+        ProductSyncMockUtils.getBuilderWithRandomProductType()
+            .categories(
+                singletonList(
+                    CategoryResourceIdentifierBuilder.of().id("existing-category-id").build()));
 
     final ProductReferenceResolver productReferenceResolver =
         createProductReferenceResolver(mockCategoryService);
@@ -317,27 +333,32 @@ class CategoryReferenceResolverTest {
 
     // assertion
     assertThat(resolvedDraft.getCategories())
-        .isEqualTo(singleton(ResourceIdentifier.ofId("existing-category-id")));
+        .isEqualTo(
+            singletonList(
+                CategoryResourceIdentifierBuilder.of().id("existing-category-id").build()));
   }
 
   @Test
   void resolveCategoryReferences_WithExceptionCategoryFetch_ShouldNotResolveReference() {
-    final Category category = getMockCategory("categoryKey", "categoryKey");
+    final Category category =
+        CategorySyncMockUtils.getMockCategory(
+            "categoryKey", "categoryKey", "name", "slug", Locale.ENGLISH);
     final List<Category> categories = Collections.singletonList(category);
 
-    final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers =
+    final List<CategoryResourceIdentifier> categoryResourceIdentifiers =
         categories.stream()
-            .map(cat -> ResourceIdentifier.<Category>ofKey(cat.getKey()))
-            .collect(toSet());
+            .map(cat -> CategoryResourceIdentifierBuilder.of().key(cat.getKey()).build())
+            .collect(toList());
 
     final CategoryService mockCategoryService =
-        mockCategoryService(new HashSet<>(categories), null);
+        MockUtils.mockCategoryService(new HashSet<>(categories), null);
     final ProductDraftBuilder productBuilder =
-        getBuilderWithRandomProductType().categories(categoryResourceIdentifiers);
+        ProductSyncMockUtils.getBuilderWithRandomProductType()
+            .categories(categoryResourceIdentifiers);
 
     final CompletableFuture<Set<Category>> futureThrowingSphereException =
         new CompletableFuture<>();
-    futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
+    futureThrowingSphereException.completeExceptionally(new RuntimeException("CTP error on fetch"));
     when(mockCategoryService.fetchMatchingCategoriesByKeys(anySet()))
         .thenReturn(futureThrowingSphereException);
 
@@ -348,17 +369,19 @@ class CategoryReferenceResolverTest {
     assertThat(productReferenceResolver.resolveCategoryReferences(productBuilder))
         .failsWithin(1, TimeUnit.SECONDS)
         .withThrowableOfType(ExecutionException.class)
-        .withCauseExactlyInstanceOf(SphereException.class)
+        .withCauseExactlyInstanceOf(RuntimeException.class)
         .withMessageContaining("CTP error on fetch");
   }
 
   @Test
   void resolveCategoryReferences_WithIdOnCategoryReference_ShouldNotResolveReference() {
     // preparation
-    final CategoryService mockCategoryService = mockCategoryService(emptySet(), null);
+    final CategoryService mockCategoryService = MockUtils.mockCategoryService(emptySet(), null);
     final ProductDraftBuilder productBuilder =
-        getBuilderWithRandomProductType()
-            .categories(asSet(ResourceIdentifier.ofId("existing-id"), null));
+        ProductSyncMockUtils.getBuilderWithRandomProductType()
+            .categories(
+                Arrays.asList(
+                    CategoryResourceIdentifierBuilder.of().id("existing-id").build(), null));
 
     final ProductReferenceResolver productReferenceResolver =
         createProductReferenceResolver(mockCategoryService);
@@ -379,18 +402,19 @@ class CategoryReferenceResolverTest {
       @Nonnull final CategoryService categoryService) {
 
     final ProductSyncOptions productSyncOptions =
-        ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
     return new ProductReferenceResolver(
         productSyncOptions,
-        getMockProductTypeService(PRODUCT_TYPE_ID),
+        ProductSyncMockUtils.getMockProductTypeService(PRODUCT_TYPE_ID),
         categoryService,
-        getMockTypeService(),
-        getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
-        mock(CustomerGroupService.class),
-        getMockTaxCategoryService(TAX_CATEGORY_ID),
-        getMockStateService(STATE_ID),
-        getMockProductService(PRODUCT_ID),
-        getMockCustomObjectService(CUSTOM_OBJECT_ID),
-        getMockCustomerService(CUSTOMER_ID));
+        MockUtils.getMockTypeService(),
+        InventorySyncMockUtils.getMockChannelService(
+            InventorySyncMockUtils.getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
+        Mockito.mock(CustomerGroupService.class),
+        ProductSyncMockUtils.getMockTaxCategoryService(TAX_CATEGORY_ID),
+        ProductSyncMockUtils.getMockStateService(STATE_ID),
+        ProductSyncMockUtils.getMockProductService(PRODUCT_ID),
+        ProductSyncMockUtils.getMockCustomObjectService(CUSTOM_OBJECT_ID),
+        ProductSyncMockUtils.getMockCustomerService(CUSTOMER_ID));
   }
 }

@@ -1,6 +1,6 @@
 package com.commercetools.sync.products.helpers;
 
-import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
+import static com.commercetools.api.models.InternalUtils.asSet;
 import static java.lang.String.format;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;

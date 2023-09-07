@@ -1,7 +1,5 @@
 package com.commercetools.sync.products.utils.productvariantupdateactionutils;
 
-import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildMoveImageToPositionUpdateActions;
-import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -9,15 +7,20 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.products.Image;
-import io.sphere.sdk.products.ImageDimensions;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductVariant;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
-import io.sphere.sdk.products.commands.updateactions.MoveImageToPosition;
-import io.sphere.sdk.products.commands.updateactions.RemoveImage;
+import com.commercetools.api.models.common.Image;
+import com.commercetools.api.models.common.ImageBuilder;
+import com.commercetools.api.models.common.ImageDimensionsBuilder;
+import com.commercetools.api.models.product.ProductAddExternalImageAction;
+import com.commercetools.api.models.product.ProductAddExternalImageActionImpl;
+import com.commercetools.api.models.product.ProductMoveImageToPositionAction;
+import com.commercetools.api.models.product.ProductMoveImageToPositionActionBuilder;
+import com.commercetools.api.models.product.ProductMoveImageToPositionActionImpl;
+import com.commercetools.api.models.product.ProductRemoveImageAction;
+import com.commercetools.api.models.product.ProductRemoveImageActionImpl;
+import com.commercetools.api.models.product.ProductUpdateAction;
+import com.commercetools.api.models.product.ProductVariant;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -28,8 +31,9 @@ class BuildProductVariantImagesUpdateActionsTest {
     final ProductVariant oldVariant = mock(ProductVariant.class);
     final ProductVariantDraft newVariantDraft = mock(ProductVariantDraft.class);
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantImagesUpdateActions(oldVariant, newVariantDraft);
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions(
+            oldVariant, newVariantDraft);
     assertThat(updateActions).hasSize(0);
   }
 
@@ -40,17 +44,28 @@ class BuildProductVariantImagesUpdateActionsTest {
     final ProductVariantDraft newVariantDraft = mock(ProductVariantDraft.class);
 
     final List<Image> oldImages = new ArrayList<>();
-    oldImages.add(Image.of("https://image.url.com", ImageDimensions.of(2, 2), "imageLabel"));
-    oldImages.add(Image.of("https://image2.url.com", ImageDimensions.of(2, 2), "image2Label"));
+    oldImages.add(
+        ImageBuilder.of()
+            .url("https://image.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("imageLabel")
+            .build());
+    oldImages.add(
+        ImageBuilder.of()
+            .url("https://image2.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image2Label")
+            .build());
     when(oldVariant.getImages()).thenReturn(oldImages);
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantImagesUpdateActions(oldVariant, newVariantDraft);
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions(
+            oldVariant, newVariantDraft);
     assertThat(updateActions).hasSize(2);
     updateActions.forEach(
         productUpdateAction -> {
           assertThat(productUpdateAction.getAction()).isEqualTo("removeImage");
-          assertThat(productUpdateAction).isExactlyInstanceOf(RemoveImage.class);
+          assertThat(productUpdateAction).isExactlyInstanceOf(ProductRemoveImageActionImpl.class);
         });
   }
 
@@ -61,17 +76,29 @@ class BuildProductVariantImagesUpdateActionsTest {
     final ProductVariantDraft newVariantDraft = mock(ProductVariantDraft.class);
 
     final List<Image> newImages = new ArrayList<>();
-    newImages.add(Image.of("https://image.url.com", ImageDimensions.of(2, 2), "imageLabel"));
-    newImages.add(Image.of("https://image2.url.com", ImageDimensions.of(2, 2), "image2Label"));
+    newImages.add(
+        ImageBuilder.of()
+            .url("https://image.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("imageLabel")
+            .build());
+    newImages.add(
+        ImageBuilder.of()
+            .url("https://image2.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image2Label")
+            .build());
     when(newVariantDraft.getImages()).thenReturn(newImages);
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantImagesUpdateActions(oldVariant, newVariantDraft);
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions(
+            oldVariant, newVariantDraft);
     assertThat(updateActions).hasSize(2);
     updateActions.forEach(
         productUpdateAction -> {
           assertThat(productUpdateAction.getAction()).isEqualTo("addExternalImage");
-          assertThat(productUpdateAction).isExactlyInstanceOf(AddExternalImage.class);
+          assertThat(productUpdateAction)
+              .isExactlyInstanceOf(ProductAddExternalImageActionImpl.class);
         });
   }
 
@@ -82,17 +109,38 @@ class BuildProductVariantImagesUpdateActionsTest {
     final ProductVariantDraft newVariantDraft = mock(ProductVariantDraft.class);
 
     final List<Image> oldImages = new ArrayList<>();
-    oldImages.add(Image.of("https://image.url.com", ImageDimensions.of(2, 2), "imageLabel"));
-    oldImages.add(Image.of("https://image2.url.com", ImageDimensions.of(2, 2), "image2Label"));
+    oldImages.add(
+        ImageBuilder.of()
+            .url("https://image.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("imageLabel")
+            .build());
+    oldImages.add(
+        ImageBuilder.of()
+            .url("https://image2.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image2Label")
+            .build());
     when(oldVariant.getImages()).thenReturn(oldImages);
 
     final List<Image> newImages = new ArrayList<>();
-    newImages.add(Image.of("https://image.url.com", ImageDimensions.of(2, 2), "imageLabel"));
-    newImages.add(Image.of("https://image2.url.com", ImageDimensions.of(2, 2), "image2Label"));
+    newImages.add(
+        ImageBuilder.of()
+            .url("https://image.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("imageLabel")
+            .build());
+    newImages.add(
+        ImageBuilder.of()
+            .url("https://image2.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image2Label")
+            .build());
     when(newVariantDraft.getImages()).thenReturn(newImages);
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantImagesUpdateActions(oldVariant, newVariantDraft);
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions(
+            oldVariant, newVariantDraft);
     assertThat(updateActions).isEmpty();
   }
 
@@ -102,9 +150,18 @@ class BuildProductVariantImagesUpdateActionsTest {
     final ProductVariant oldVariant = mock(ProductVariant.class);
     final ProductVariantDraft newVariantDraft = mock(ProductVariantDraft.class);
 
-    final Image image = Image.of("https://image.url.com", ImageDimensions.of(2, 2), "imageLabel");
+    final Image image =
+        ImageBuilder.of()
+            .url("https://image.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("imageLabel")
+            .build();
     final Image image2 =
-        Image.of("https://image2.url.com", ImageDimensions.of(2, 2), "image2Label");
+        ImageBuilder.of()
+            .url("https://image2.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image2Label")
+            .build();
 
     final List<Image> oldImages = new ArrayList<>();
     oldImages.add(image);
@@ -115,11 +172,13 @@ class BuildProductVariantImagesUpdateActionsTest {
     newImages.add(image2);
     when(newVariantDraft.getImages()).thenReturn(newImages);
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantImagesUpdateActions(oldVariant, newVariantDraft);
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions(
+            oldVariant, newVariantDraft);
     assertThat(updateActions).hasSize(1);
-    assertThat(updateActions.get(0)).isExactlyInstanceOf(AddExternalImage.class);
-    final AddExternalImage updateAction = (AddExternalImage) updateActions.get(0);
+    assertThat(updateActions.get(0)).isExactlyInstanceOf(ProductAddExternalImageActionImpl.class);
+    final ProductAddExternalImageAction updateAction =
+        (ProductAddExternalImageAction) updateActions.get(0);
     assertThat(updateAction.getImage()).isEqualTo(image2);
   }
 
@@ -129,9 +188,18 @@ class BuildProductVariantImagesUpdateActionsTest {
     final ProductVariant oldVariant = mock(ProductVariant.class);
     final ProductVariantDraft newVariantDraft = mock(ProductVariantDraft.class);
 
-    final Image image = Image.of("https://image.url.com", ImageDimensions.of(2, 2), "imageLabel");
+    final Image image =
+        ImageBuilder.of()
+            .url("https://image.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("imageLabel")
+            .build();
     final Image image2 =
-        Image.of("https://image2.url.com", ImageDimensions.of(2, 2), "image2Label");
+        ImageBuilder.of()
+            .url("https://image2.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image2Label")
+            .build();
 
     final List<Image> oldImages = new ArrayList<>();
     oldImages.add(image);
@@ -142,11 +210,12 @@ class BuildProductVariantImagesUpdateActionsTest {
     newImages.add(image);
     when(newVariantDraft.getImages()).thenReturn(newImages);
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantImagesUpdateActions(oldVariant, newVariantDraft);
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions(
+            oldVariant, newVariantDraft);
     assertThat(updateActions).hasSize(1);
-    assertThat(updateActions.get(0)).isExactlyInstanceOf(RemoveImage.class);
-    final RemoveImage updateAction = (RemoveImage) updateActions.get(0);
+    assertThat(updateActions.get(0)).isExactlyInstanceOf(ProductRemoveImageActionImpl.class);
+    final ProductRemoveImageAction updateAction = (ProductRemoveImageAction) updateActions.get(0);
     assertThat(updateAction.getImageUrl()).isEqualTo(image2.getUrl());
   }
 
@@ -156,9 +225,18 @@ class BuildProductVariantImagesUpdateActionsTest {
     final ProductVariant oldVariant = mock(ProductVariant.class);
     final ProductVariantDraft newVariantDraft = mock(ProductVariantDraft.class);
 
-    final Image image = Image.of("https://image.url.com", ImageDimensions.of(2, 2), "imageLabel");
+    final Image image =
+        ImageBuilder.of()
+            .url("https://image.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("imageLabel")
+            .build();
     final Image image2 =
-        Image.of("https://image2.url.com", ImageDimensions.of(2, 2), "image2Label");
+        ImageBuilder.of()
+            .url("https://image2.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image2Label")
+            .build();
 
     final List<Image> oldImages = new ArrayList<>();
     oldImages.add(image2);
@@ -170,16 +248,20 @@ class BuildProductVariantImagesUpdateActionsTest {
     newImages.add(image2);
     when(newVariantDraft.getImages()).thenReturn(newImages);
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantImagesUpdateActions(oldVariant, newVariantDraft);
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions(
+            oldVariant, newVariantDraft);
     assertThat(updateActions).hasSize(2);
     updateActions.forEach(
         productUpdateAction -> {
           assertThat(productUpdateAction.getAction()).isEqualTo("moveImageToPosition");
-          assertThat(productUpdateAction).isExactlyInstanceOf(MoveImageToPosition.class);
+          assertThat(productUpdateAction)
+              .isExactlyInstanceOf(ProductMoveImageToPositionActionImpl.class);
         });
-    final MoveImageToPosition moveImageToPosition = (MoveImageToPosition) updateActions.get(0);
-    final MoveImageToPosition moveImage2ToPosition = (MoveImageToPosition) updateActions.get(1);
+    final ProductMoveImageToPositionAction moveImageToPosition =
+        (ProductMoveImageToPositionAction) updateActions.get(0);
+    final ProductMoveImageToPositionAction moveImage2ToPosition =
+        (ProductMoveImageToPositionAction) updateActions.get(1);
 
     assertThat(moveImageToPosition.getImageUrl()).isEqualTo(image2.getUrl());
     assertThat(moveImageToPosition.getPosition()).isEqualTo(newImages.indexOf(image2));
@@ -192,15 +274,36 @@ class BuildProductVariantImagesUpdateActionsTest {
     final ProductVariant oldVariant = mock(ProductVariant.class);
     final ProductVariantDraft newVariantDraft = mock(ProductVariantDraft.class);
 
-    final Image image = Image.of("https://image.url.com", ImageDimensions.of(2, 2), "imageLabel");
+    final Image image =
+        ImageBuilder.of()
+            .url("https://image.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("imageLabel")
+            .build();
     final Image image2 =
-        Image.of("https://image2.url.com", ImageDimensions.of(2, 2), "image2Label");
+        ImageBuilder.of()
+            .url("https://image2.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image2Label")
+            .build();
     final Image image3 =
-        Image.of("https://image3.url.com", ImageDimensions.of(2, 2), "image3Label");
+        ImageBuilder.of()
+            .url("https://image3.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image3Label")
+            .build();
     final Image image4 =
-        Image.of("https://image4.url.com", ImageDimensions.of(2, 2), "image4Label");
+        ImageBuilder.of()
+            .url("https://image4.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image4Label")
+            .build();
     final Image image5 =
-        Image.of("https://image5.url.com", ImageDimensions.of(2, 2), "image5Label");
+        ImageBuilder.of()
+            .url("https://image5.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image5Label")
+            .build();
 
     final List<Image> oldImages = new ArrayList<>();
     oldImages.add(image5);
@@ -216,35 +319,45 @@ class BuildProductVariantImagesUpdateActionsTest {
     newImages.add(image3);
     when(newVariantDraft.getImages()).thenReturn(newImages);
 
-    final List<UpdateAction<Product>> updateActions =
-        buildProductVariantImagesUpdateActions(oldVariant, newVariantDraft);
+    final List<ProductUpdateAction> updateActions =
+        ProductVariantUpdateActionUtils.buildProductVariantImagesUpdateActions(
+            oldVariant, newVariantDraft);
     assertThat(updateActions).hasSize(6);
-    final RemoveImage removeImage = (RemoveImage) updateActions.get(0);
-    final AddExternalImage addImage = (AddExternalImage) updateActions.get(1);
-    final MoveImageToPosition moveImage5ToPosition = (MoveImageToPosition) updateActions.get(2);
-    final MoveImageToPosition moveImage2ToPosition = (MoveImageToPosition) updateActions.get(3);
-    final MoveImageToPosition moveImage3ToPosition = (MoveImageToPosition) updateActions.get(4);
-    final MoveImageToPosition moveImage4ToPosition = (MoveImageToPosition) updateActions.get(5);
+    final ProductRemoveImageAction removeImage = (ProductRemoveImageAction) updateActions.get(0);
+    final ProductAddExternalImageAction addImage =
+        (ProductAddExternalImageAction) updateActions.get(1);
+    final ProductMoveImageToPositionAction moveImage5ToPosition =
+        (ProductMoveImageToPositionAction) updateActions.get(2);
+    final ProductMoveImageToPositionAction moveImage2ToPosition =
+        (ProductMoveImageToPositionAction) updateActions.get(3);
+    final ProductMoveImageToPositionAction moveImage3ToPosition =
+        (ProductMoveImageToPositionAction) updateActions.get(4);
+    final ProductMoveImageToPositionAction moveImage4ToPosition =
+        (ProductMoveImageToPositionAction) updateActions.get(5);
 
-    assertThat(removeImage).isExactlyInstanceOf(RemoveImage.class);
+    assertThat(removeImage).isExactlyInstanceOf(ProductRemoveImageActionImpl.class);
     assertThat(removeImage.getImageUrl()).isEqualTo(image.getUrl());
 
-    assertThat(addImage).isExactlyInstanceOf(AddExternalImage.class);
+    assertThat(addImage).isExactlyInstanceOf(ProductAddExternalImageActionImpl.class);
     assertThat(addImage.getImage()).isEqualTo(image4);
 
-    assertThat(moveImage5ToPosition).isExactlyInstanceOf(MoveImageToPosition.class);
+    assertThat(moveImage5ToPosition)
+        .isExactlyInstanceOf(ProductMoveImageToPositionActionImpl.class);
     assertThat(moveImage5ToPosition.getImageUrl()).isEqualTo(image5.getUrl());
     assertThat(moveImage5ToPosition.getPosition()).isEqualTo(newImages.indexOf(image5));
 
-    assertThat(moveImage2ToPosition).isExactlyInstanceOf(MoveImageToPosition.class);
+    assertThat(moveImage2ToPosition)
+        .isExactlyInstanceOf(ProductMoveImageToPositionActionImpl.class);
     assertThat(moveImage2ToPosition.getImageUrl()).isEqualTo(image2.getUrl());
     assertThat(moveImage2ToPosition.getPosition()).isEqualTo(newImages.indexOf(image2));
 
-    assertThat(moveImage3ToPosition).isExactlyInstanceOf(MoveImageToPosition.class);
+    assertThat(moveImage3ToPosition)
+        .isExactlyInstanceOf(ProductMoveImageToPositionActionImpl.class);
     assertThat(moveImage3ToPosition.getImageUrl()).isEqualTo(image3.getUrl());
     assertThat(moveImage3ToPosition.getPosition()).isEqualTo(newImages.indexOf(image3));
 
-    assertThat(moveImage4ToPosition).isExactlyInstanceOf(MoveImageToPosition.class);
+    assertThat(moveImage4ToPosition)
+        .isExactlyInstanceOf(ProductMoveImageToPositionActionImpl.class);
     assertThat(moveImage4ToPosition.getImageUrl()).isEqualTo(image4.getUrl());
     assertThat(moveImage4ToPosition.getPosition()).isEqualTo(newImages.indexOf(image4));
   }
@@ -252,13 +365,29 @@ class BuildProductVariantImagesUpdateActionsTest {
   @Test
   void buildMoveImageToPositionUpdateActions_WithDifferentOrder_ShouldBuildActions() {
     final Image image2 =
-        Image.of("https://image2.url.com", ImageDimensions.of(2, 2), "image2Label");
+        ImageBuilder.of()
+            .url("https://image2.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image2Label")
+            .build();
     final Image image3 =
-        Image.of("https://image3.url.com", ImageDimensions.of(2, 2), "image3Label");
+        ImageBuilder.of()
+            .url("https://image3.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image3Label")
+            .build();
     final Image image4 =
-        Image.of("https://image4.url.com", ImageDimensions.of(2, 2), "image4Label");
+        ImageBuilder.of()
+            .url("https://image4.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image4Label")
+            .build();
     final Image image5 =
-        Image.of("https://image5.url.com", ImageDimensions.of(2, 2), "image5Label");
+        ImageBuilder.of()
+            .url("https://image5.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image5Label")
+            .build();
 
     final List<Image> oldImages = new ArrayList<>();
     oldImages.add(image5);
@@ -272,27 +401,64 @@ class BuildProductVariantImagesUpdateActionsTest {
     newImages.add(image2);
     newImages.add(image3);
 
-    final List<MoveImageToPosition> updateActions =
-        buildMoveImageToPositionUpdateActions(1, oldImages, newImages);
+    final List<ProductMoveImageToPositionAction> updateActions =
+        ProductVariantUpdateActionUtils.buildMoveImageToPositionUpdateActions(
+            1, oldImages, newImages);
 
     assertThat(updateActions)
         .containsExactlyInAnyOrder(
-            MoveImageToPosition.ofImageUrlAndVariantId(image4.getUrl(), 1, 0, true),
-            MoveImageToPosition.ofImageUrlAndVariantId(image5.getUrl(), 1, 1, true),
-            MoveImageToPosition.ofImageUrlAndVariantId(image2.getUrl(), 1, 2, true),
-            MoveImageToPosition.ofImageUrlAndVariantId(image3.getUrl(), 1, 3, true));
+            ProductMoveImageToPositionActionBuilder.of()
+                .imageUrl(image4.getUrl())
+                .variantId(1L)
+                .position(0L)
+                .staged(true)
+                .build(),
+            ProductMoveImageToPositionActionBuilder.of()
+                .imageUrl(image5.getUrl())
+                .variantId(1L)
+                .position(1L)
+                .staged(true)
+                .build(),
+            ProductMoveImageToPositionActionBuilder.of()
+                .imageUrl(image2.getUrl())
+                .variantId(1L)
+                .position(2L)
+                .staged(true)
+                .build(),
+            ProductMoveImageToPositionActionBuilder.of()
+                .imageUrl(image3.getUrl())
+                .variantId(1L)
+                .position(3L)
+                .staged(true)
+                .build());
   }
 
   @Test
   void buildMoveImageToPositionUpdateActions_WithSameOrder_ShouldNotBuildActions() {
     final Image image2 =
-        Image.of("https://image2.url.com", ImageDimensions.of(2, 2), "image2Label");
+        ImageBuilder.of()
+            .url("https://image2.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image2Label")
+            .build();
     final Image image3 =
-        Image.of("https://image3.url.com", ImageDimensions.of(2, 2), "image3Label");
+        ImageBuilder.of()
+            .url("https://image3.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image3Label")
+            .build();
     final Image image4 =
-        Image.of("https://image4.url.com", ImageDimensions.of(2, 2), "image4Label");
+        ImageBuilder.of()
+            .url("https://image4.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image4Label")
+            .build();
     final Image image5 =
-        Image.of("https://image5.url.com", ImageDimensions.of(2, 2), "image5Label");
+        ImageBuilder.of()
+            .url("https://image5.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image5Label")
+            .build();
 
     final List<Image> oldImages = new ArrayList<>();
     oldImages.add(image5);
@@ -306,8 +472,9 @@ class BuildProductVariantImagesUpdateActionsTest {
     newImages.add(image3);
     newImages.add(image4);
 
-    final List<MoveImageToPosition> updateActions =
-        buildMoveImageToPositionUpdateActions(1, oldImages, newImages);
+    final List<ProductMoveImageToPositionAction> updateActions =
+        ProductVariantUpdateActionUtils.buildMoveImageToPositionUpdateActions(
+            1, oldImages, newImages);
     assertThat(updateActions).isEmpty();
   }
 
@@ -316,33 +483,56 @@ class BuildProductVariantImagesUpdateActionsTest {
     final List<Image> oldImages = new ArrayList<>();
     final List<Image> newImages = new ArrayList<>();
 
-    final List<MoveImageToPosition> updateActions =
-        buildMoveImageToPositionUpdateActions(1, oldImages, newImages);
+    final List<ProductMoveImageToPositionAction> updateActions =
+        ProductVariantUpdateActionUtils.buildMoveImageToPositionUpdateActions(
+            1, oldImages, newImages);
     assertThat(updateActions).isEmpty();
   }
 
   @Test
   void buildMoveImageToPositionUpdateActions_WithDifferentImages_ShouldThrowException() {
     final Image image2 =
-        Image.of("https://image2.url.com", ImageDimensions.of(2, 2), "image2Label");
+        ImageBuilder.of()
+            .url("https://image2.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image2Label")
+            .build();
     final Image image3 =
-        Image.of("https://image3.url.com", ImageDimensions.of(2, 2), "image3Label");
+        ImageBuilder.of()
+            .url("https://image3.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image3Label")
+            .build();
     final Image image4 =
-        Image.of("https://image4.url.com", ImageDimensions.of(2, 2), "image4Label");
+        ImageBuilder.of()
+            .url("https://image4.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image4Label")
+            .build();
     final Image image5 =
-        Image.of("https://image5.url.com", ImageDimensions.of(2, 2), "image5Label");
+        ImageBuilder.of()
+            .url("https://image5.url.com")
+            .dimensions(ImageDimensionsBuilder.of().h(2).w(2).build())
+            .label("image5Label")
+            .build();
 
     final List<Image> oldImages = asList(image5, image2, image3);
     final List<Image> newImagesWithout5 = asList(image4, image2, image3);
 
-    assertThatThrownBy(() -> buildMoveImageToPositionUpdateActions(1, oldImages, newImagesWithout5))
+    assertThatThrownBy(
+            () ->
+                ProductVariantUpdateActionUtils.buildMoveImageToPositionUpdateActions(
+                    1, oldImages, newImagesWithout5))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining(format("[%s] not found", image5));
 
     final List<Image> newImagesWith4 = new ArrayList<>(newImagesWithout5);
     newImagesWith4.add(image5);
 
-    assertThatThrownBy(() -> buildMoveImageToPositionUpdateActions(1, oldImages, newImagesWith4))
+    assertThatThrownBy(
+            () ->
+                ProductVariantUpdateActionUtils.buildMoveImageToPositionUpdateActions(
+                    1, oldImages, newImagesWith4))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("size")
         .hasMessageContaining(String.valueOf(oldImages.size()))

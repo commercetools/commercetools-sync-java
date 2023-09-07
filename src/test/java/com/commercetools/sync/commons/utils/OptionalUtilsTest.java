@@ -1,6 +1,5 @@
 package com.commercetools.sync.commons.utils;
 
-import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -20,7 +19,7 @@ class OptionalUtilsTest {
     final List<Optional<String>> optionalStrings = emptyList();
 
     // test
-    final List<String> filteredOptionals = filterEmptyOptionals(optionalStrings);
+    final List<String> filteredOptionals = OptionalUtils.filterEmptyOptionals(optionalStrings);
 
     // assertion
     assertEquals(emptyList(), filteredOptionals);
@@ -32,7 +31,7 @@ class OptionalUtilsTest {
     final List<Optional<String>> optionalStrings = asList(Optional.of("foo"), Optional.of("bar"));
 
     // test
-    final List<String> filteredOptionals = filterEmptyOptionals(optionalStrings);
+    final List<String> filteredOptionals = OptionalUtils.filterEmptyOptionals(optionalStrings);
 
     // assertion
     assertEquals(asList("foo", "bar"), filteredOptionals);
@@ -44,7 +43,7 @@ class OptionalUtilsTest {
     final List<Optional<String>> optionalStrings = asList(empty(), empty());
 
     // test
-    final List<String> filteredOptionals = filterEmptyOptionals(optionalStrings);
+    final List<String> filteredOptionals = OptionalUtils.filterEmptyOptionals(optionalStrings);
 
     // assertion
     assertEquals(emptyList(), filteredOptionals);
@@ -56,7 +55,7 @@ class OptionalUtilsTest {
     final List<Optional<String>> optionalStrings = asList(Optional.of("foo"), empty());
 
     // test
-    final List<String> filteredOptionals = filterEmptyOptionals(optionalStrings);
+    final List<String> filteredOptionals = OptionalUtils.filterEmptyOptionals(optionalStrings);
 
     // assertion
     assertEquals(singletonList("foo"), filteredOptionals);
@@ -65,7 +64,7 @@ class OptionalUtilsTest {
   @Test
   void filterEmptyOptionals_withNoVarArgs_ShouldReturnEmptyList() {
     // test
-    final List<String> filteredOptionals = filterEmptyOptionals();
+    final List<String> filteredOptionals = OptionalUtils.filterEmptyOptionals();
 
     // assertion
     assertEquals(emptyList(), filteredOptionals);
@@ -74,7 +73,7 @@ class OptionalUtilsTest {
   @Test
   void filterEmptyOptionals_withVarArgsAllEmptyOptionals_ShouldReturnEmptyList() {
     // test
-    final List<String> filteredOptionals = filterEmptyOptionals(empty(), empty());
+    final List<String> filteredOptionals = OptionalUtils.filterEmptyOptionals(empty(), empty());
 
     // assertion
     assertEquals(emptyList(), filteredOptionals);
@@ -83,7 +82,7 @@ class OptionalUtilsTest {
   @Test
   void filterEmptyOptionals_withVarArgsAllNonEmptyOptionals_ShouldReturnAllElementsInList() {
     // test
-    final List<String> filteredOptionals = filterEmptyOptionals(of("foo"), of("bar"));
+    final List<String> filteredOptionals = OptionalUtils.filterEmptyOptionals(of("foo"), of("bar"));
 
     // assertion
     assertEquals(asList("foo", "bar"), filteredOptionals);
@@ -92,7 +91,7 @@ class OptionalUtilsTest {
   @Test
   void filterEmptyOptionals_withVarArgsSomeEmptyOptionals_ShouldFilterEmptyOptionals() {
     // test
-    final List<String> filteredOptionals = filterEmptyOptionals(of("foo"), empty());
+    final List<String> filteredOptionals = OptionalUtils.filterEmptyOptionals(of("foo"), empty());
 
     // assertion
     assertEquals(singletonList("foo"), filteredOptionals);

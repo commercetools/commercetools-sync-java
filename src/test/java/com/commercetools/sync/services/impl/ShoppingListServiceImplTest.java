@@ -1,49 +1,49 @@
 package com.commercetools.sync.services.impl;
 
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
-import static java.util.concurrent.CompletableFuture.completedFuture;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-import static org.mockito.internal.verification.VerificationModeFactory.only;
+import static org.mockito.Mockito.*;
 
+import com.commercetools.api.client.ByProjectKeyShoppingListsByIDPost;
+import com.commercetools.api.client.ByProjectKeyShoppingListsByIDRequestBuilder;
+import com.commercetools.api.client.ByProjectKeyShoppingListsGet;
+import com.commercetools.api.client.ByProjectKeyShoppingListsKeyByKeyGet;
+import com.commercetools.api.client.ByProjectKeyShoppingListsKeyByKeyRequestBuilder;
+import com.commercetools.api.client.ByProjectKeyShoppingListsPost;
+import com.commercetools.api.client.ByProjectKeyShoppingListsRequestBuilder;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.shopping_list.ShoppingList;
+import com.commercetools.api.models.shopping_list.ShoppingListChangeNameActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListUpdate;
+import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
+import com.commercetools.api.models.shopping_list.ShoppingListUpdateBuilder;
+import com.commercetools.sync.commons.ExceptionUtils;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.ShoppingListService;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
-import io.sphere.sdk.client.BadGatewayException;
-import io.sphere.sdk.client.InternalServerErrorException;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.queries.PagedQueryResult;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
-import io.sphere.sdk.shoppinglists.commands.ShoppingListUpdateCommand;
-import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
-import io.sphere.sdk.shoppinglists.queries.ShoppingListQuery;
-import io.sphere.sdk.utils.CompletableFutureUtils;
+import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.error.BadGatewayException;
+import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class ShoppingListServiceImplTest {
 
@@ -52,16 +52,59 @@ class ShoppingListServiceImplTest {
   private List<String> errorMessages;
   private List<Throwable> errorExceptions;
 
+  private ByProjectKeyShoppingListsKeyByKeyGet byProjectKeyShoppingListsKeyByKeyGet;
+
+  private ByProjectKeyShoppingListsGet byProjectKeyShoppingListsGet;
+
+  private ByProjectKeyShoppingListsPost byProjectKeyShoppingListsPost;
+
+  private ByProjectKeyShoppingListsByIDPost byProjectKeyShoppingListsByIDPost;
+
+  private ByProjectKeyShoppingListsByIDRequestBuilder byProjectKeyShoppingListsByIDRequestBuilder;
+
   @BeforeEach
   void setUp() {
+    final ProjectApiRoot projectApiRoot = mock(ProjectApiRoot.class);
+    final ByProjectKeyShoppingListsRequestBuilder byProjectKeyShoppingListsRequestBuilder = mock();
+    when(projectApiRoot.shoppingLists()).thenReturn(byProjectKeyShoppingListsRequestBuilder);
+    byProjectKeyShoppingListsGet = mock();
+    when(byProjectKeyShoppingListsRequestBuilder.get()).thenReturn(byProjectKeyShoppingListsGet);
+    byProjectKeyShoppingListsByIDRequestBuilder = mock();
+    when(byProjectKeyShoppingListsRequestBuilder.withId(anyString()))
+        .thenReturn(byProjectKeyShoppingListsByIDRequestBuilder);
+    byProjectKeyShoppingListsByIDPost = mock();
+    when(byProjectKeyShoppingListsByIDRequestBuilder.post(any(ShoppingListUpdate.class)))
+        .thenReturn(byProjectKeyShoppingListsByIDPost);
+    byProjectKeyShoppingListsPost = mock();
+    when(byProjectKeyShoppingListsRequestBuilder.post(any(ShoppingListDraft.class)))
+        .thenReturn(byProjectKeyShoppingListsPost);
+    when(byProjectKeyShoppingListsGet.withWhere(anyString()))
+        .thenReturn(byProjectKeyShoppingListsGet);
+    when(byProjectKeyShoppingListsGet.withPredicateVar(anyString(), anyCollection()))
+        .thenReturn(byProjectKeyShoppingListsGet);
+    when(byProjectKeyShoppingListsGet.addExpand(anyString()))
+        .thenReturn(byProjectKeyShoppingListsGet);
+    when(byProjectKeyShoppingListsGet.withLimit(anyInt())).thenReturn(byProjectKeyShoppingListsGet);
+    when(byProjectKeyShoppingListsGet.withWithTotal(anyBoolean()))
+        .thenReturn(byProjectKeyShoppingListsGet);
+    final ByProjectKeyShoppingListsKeyByKeyRequestBuilder
+        byProjectKeyShoppingListsKeyByKeyRequestBuilder = mock();
+    when(byProjectKeyShoppingListsRequestBuilder.withKey(any()))
+        .thenReturn(byProjectKeyShoppingListsKeyByKeyRequestBuilder);
+    byProjectKeyShoppingListsKeyByKeyGet = mock();
+    when(byProjectKeyShoppingListsKeyByKeyRequestBuilder.get())
+        .thenReturn(byProjectKeyShoppingListsKeyByKeyGet);
+    when(byProjectKeyShoppingListsKeyByKeyGet.addExpand(anyString()))
+        .thenReturn(byProjectKeyShoppingListsKeyByKeyGet);
+
     errorMessages = new ArrayList<>();
     errorExceptions = new ArrayList<>();
     shoppingListSyncOptions =
-        ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class))
+        ShoppingListSyncOptionsBuilder.of(projectApiRoot)
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) -> {
                   errorMessages.add(exception.getMessage());
-                  errorExceptions.add(exception.getCause());
+                  errorExceptions.add(exception);
                 })
             .build();
     service = new ShoppingListServiceImpl(shoppingListSyncOptions);
@@ -77,7 +120,8 @@ class ShoppingListServiceImplTest {
     assertThat(result).isEmpty();
     assertThat(errorExceptions).isEmpty();
     assertThat(errorMessages).isEmpty();
-    verify(shoppingListSyncOptions.getCtpClient(), never()).execute(any());
+
+    verify(byProjectKeyShoppingListsKeyByKeyGet, never()).execute();
   }
 
   @Test
@@ -90,7 +134,7 @@ class ShoppingListServiceImplTest {
     assertThat(result).isEmpty();
     assertThat(errorExceptions).isEmpty();
     assertThat(errorMessages).isEmpty();
-    verify(shoppingListSyncOptions.getCtpClient(), never()).execute(any());
+    verify(byProjectKeyShoppingListsKeyByKeyGet, never()).execute();
   }
 
   @Test
@@ -100,11 +144,10 @@ class ShoppingListServiceImplTest {
     when(mockShoppingList.getId()).thenReturn("testId");
     when(mockShoppingList.getKey()).thenReturn("any_key");
 
-    @SuppressWarnings("unchecked")
-    final PagedQueryResult<ShoppingList> pagedQueryResult = mock(PagedQueryResult.class);
-    when(pagedQueryResult.head()).thenReturn(Optional.of(mockShoppingList));
-    when(shoppingListSyncOptions.getCtpClient().execute(any(ShoppingListQuery.class)))
-        .thenReturn(completedFuture(pagedQueryResult));
+    final ApiHttpResponse<ShoppingList> response = mock(ApiHttpResponse.class);
+    when(response.getBody()).thenReturn(mockShoppingList);
+    when(byProjectKeyShoppingListsKeyByKeyGet.execute())
+        .thenReturn(CompletableFuture.completedFuture(response));
 
     // test
     final Optional<ShoppingList> result =
@@ -114,13 +157,15 @@ class ShoppingListServiceImplTest {
     assertThat(result).containsSame(mockShoppingList);
     assertThat(errorExceptions).isEmpty();
     assertThat(errorMessages).isEmpty();
-    verify(shoppingListSyncOptions.getCtpClient(), only()).execute(any());
+    verify(byProjectKeyShoppingListsKeyByKeyGet, atMostOnce()).execute();
   }
 
   @Test
   void fetchMatchingShoppingListsByKeys_WithUnexpectedException_ShouldFail() {
-    when(shoppingListSyncOptions.getCtpClient().execute(any()))
-        .thenReturn(CompletableFutureUtils.failed(new BadGatewayException("bad gateway")));
+    final BadGatewayException badGatewayException =
+        new BadGatewayException(500, "", null, "Failed request", null);
+    when(byProjectKeyShoppingListsGet.execute())
+        .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(badGatewayException));
 
     assertThat(service.fetchMatchingShoppingListsByKeys(singleton("key")))
         .failsWithin(1, TimeUnit.SECONDS)
@@ -138,7 +183,7 @@ class ShoppingListServiceImplTest {
     assertThat(customer).isEmpty();
     assertThat(errorExceptions).isEmpty();
     assertThat(errorMessages).isEmpty();
-    verifyNoInteractions(shoppingListSyncOptions.getCtpClient());
+    Mockito.verifyNoInteractions(shoppingListSyncOptions.getCtpClient());
   }
 
   @Test
@@ -149,7 +194,7 @@ class ShoppingListServiceImplTest {
     when(mockShoppingListDraft.getKey()).thenReturn(null);
 
     final ShoppingListSyncOptions shoppingListSyncOptions =
-        ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class))
+        ShoppingListSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback(
                 (exception, oldResource, newResource, actions) ->
                     errors.put(exception.getMessage(), exception))
@@ -165,25 +210,17 @@ class ShoppingListServiceImplTest {
     assertThat(result).isCompletedWithValue(Optional.empty());
     assertThat(errors.keySet())
         .containsExactly("Failed to create draft with key: 'null'. Reason: Draft key is blank!");
-    verify(shoppingListSyncOptions.getCtpClient(), times(0)).execute(any());
+    verify(byProjectKeyShoppingListsPost, times(0)).execute();
   }
 
   @Test
   void createShoppingList_WithEmptyShoppingListKey_ShouldHaveEmptyOptionalAsAResult() {
     // preparation
-    final SphereClient sphereClient = mock(SphereClient.class);
     final ShoppingListDraft shoppingListDraft = mock(ShoppingListDraft.class);
-    final Map<String, Throwable> errors = new HashMap<>();
     when(shoppingListDraft.getKey()).thenReturn("");
 
-    final ShoppingListSyncOptions options =
-        ShoppingListSyncOptionsBuilder.of(sphereClient)
-            .errorCallback(
-                (exception, oldResource, newResource, actions) ->
-                    errors.put(exception.getMessage(), exception))
-            .build();
-
-    final ShoppingListService shoppingListService = new ShoppingListServiceImpl(options);
+    final ShoppingListService shoppingListService =
+        new ShoppingListServiceImpl(shoppingListSyncOptions);
 
     // test
     final CompletionStage<Optional<ShoppingList>> result =
@@ -191,29 +228,22 @@ class ShoppingListServiceImplTest {
 
     // assertion
     assertThat(result).isCompletedWithValue(Optional.empty());
-    assertThat(errors.keySet())
-        .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
-    verify(options.getCtpClient(), times(0)).execute(any());
+    assertThat(errorMessages.get(0))
+        .contains("Failed to create draft with key: ''. Reason: Draft key is blank!");
+    verify(byProjectKeyShoppingListsPost, times(0)).execute();
   }
 
   @Test
   void createShoppingList_WithUnsuccessfulMockCtpResponse_ShouldNotCreateShoppingList() {
     // preparation
     final ShoppingListDraft shoppingListDraft = mock(ShoppingListDraft.class);
-    final Map<String, Throwable> errors = new HashMap<>();
     when(shoppingListDraft.getKey()).thenReturn("key");
 
-    final ShoppingListSyncOptions options =
-        ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback(
-                (exception, oldResource, newResource, actions) ->
-                    errors.put(exception.getMessage(), exception))
-            .build();
+    final ShoppingListService shoppingListService =
+        new ShoppingListServiceImpl(shoppingListSyncOptions);
 
-    final ShoppingListService shoppingListService = new ShoppingListServiceImpl(options);
-
-    when(options.getCtpClient().execute(any()))
-        .thenReturn(CompletableFutureUtils.failed(new InternalServerErrorException()));
+    when(byProjectKeyShoppingListsPost.execute())
+        .thenReturn(CompletableFuture.failedFuture(ExceptionUtils.createBadGatewayException()));
 
     // test
     final CompletionStage<Optional<ShoppingList>> result =
@@ -221,19 +251,18 @@ class ShoppingListServiceImplTest {
 
     // assertions
     assertThat(result).isCompletedWithValue(Optional.empty());
-    assertThat(errors.keySet())
+    assertThat(errorMessages)
         .hasSize(1)
         .singleElement(as(STRING))
         .contains("Failed to create draft with key: 'key'.");
 
-    assertThat(errors.values())
+    assertThat(errorExceptions)
         .hasSize(1)
         .singleElement()
         .satisfies(
             exception -> {
               assertThat(exception).isExactlyInstanceOf(SyncException.class);
-              assertThat(exception.getCause())
-                  .isExactlyInstanceOf(InternalServerErrorException.class);
+              assertThat(exception.getCause()).isExactlyInstanceOf(BadGatewayException.class);
             });
   }
 
@@ -241,41 +270,49 @@ class ShoppingListServiceImplTest {
   void updateShoppingList_WithMockSuccessfulCtpResponse_ShouldCallShoppingListUpdateCommand() {
     // preparation
     final ShoppingList shoppingList = mock(ShoppingList.class);
-    final ShoppingListSyncOptions options =
-        ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+    when(shoppingList.getId()).thenReturn("testId");
 
-    when(options.getCtpClient().execute(any())).thenReturn(completedFuture(shoppingList));
-    final ShoppingListService shoppingListService = new ShoppingListServiceImpl(options);
+    final ApiHttpResponse<ShoppingList> apiHttpResponse = mock(ApiHttpResponse.class);
+    when(apiHttpResponse.getBody()).thenReturn(shoppingList);
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        singletonList(ChangeName.of(LocalizedString.ofEnglish("new_name")));
+    when(byProjectKeyShoppingListsByIDPost.execute())
+        .thenReturn(CompletableFuture.completedFuture(apiHttpResponse));
+    final ShoppingListService shoppingListService =
+        new ShoppingListServiceImpl(shoppingListSyncOptions);
+
+    final List<ShoppingListUpdateAction> updateActions =
+        singletonList(ShoppingListChangeNameActionBuilder.of().name(ofEnglish("new_name")).build());
     // test
     final CompletionStage<ShoppingList> result =
         shoppingListService.updateShoppingList(shoppingList, updateActions);
 
     // assertions
     assertThat(result).isCompletedWithValue(shoppingList);
-    verify(options.getCtpClient())
-        .execute(eq(ShoppingListUpdateCommand.of(shoppingList, updateActions)));
+    verify(byProjectKeyShoppingListsByIDRequestBuilder)
+        .post(
+            eq(
+                ShoppingListUpdateBuilder.of()
+                    .actions(updateActions)
+                    .version(shoppingList.getVersion())
+                    .build()));
   }
 
   @Test
   void updateShoppingList_WithMockUnsuccessfulCtpResponse_ShouldCompleteExceptionally() {
     // preparation
     final ShoppingList shoppingList = mock(ShoppingList.class);
-    final ShoppingListSyncOptions shoppingListSyncOptions =
-        ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+    when(shoppingList.getId()).thenReturn("testId");
 
-    when(shoppingListSyncOptions.getCtpClient().execute(any()))
+    when(byProjectKeyShoppingListsByIDPost.execute())
         .thenReturn(
             CompletableFutureUtils.exceptionallyCompletedFuture(
-                new InternalServerErrorException()));
+                ExceptionUtils.createBadGatewayException()));
 
     final ShoppingListService shoppingListService =
         new ShoppingListServiceImpl(shoppingListSyncOptions);
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        singletonList(ChangeName.of(LocalizedString.ofEnglish("new_name")));
+    final List<ShoppingListUpdateAction> updateActions =
+        singletonList(ShoppingListChangeNameActionBuilder.of().name(ofEnglish("new_name")).build());
     // test
     final CompletionStage<ShoppingList> result =
         shoppingListService.updateShoppingList(shoppingList, updateActions);
@@ -284,6 +321,6 @@ class ShoppingListServiceImplTest {
     assertThat(result)
         .failsWithin(1, TimeUnit.SECONDS)
         .withThrowableOfType(ExecutionException.class)
-        .withCauseExactlyInstanceOf(InternalServerErrorException.class);
+        .withCauseExactlyInstanceOf(BadGatewayException.class);
   }
 }

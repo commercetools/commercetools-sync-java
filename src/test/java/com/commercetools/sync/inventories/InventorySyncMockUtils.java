@@ -1,22 +1,21 @@
 package com.commercetools.sync.inventories;
 
-import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.models.channel.Channel;
+import com.commercetools.api.models.channel.ChannelReference;
+import com.commercetools.api.models.channel.ChannelRoleEnum;
+import com.commercetools.api.models.inventory.InventoryEntry;
+import com.commercetools.api.models.inventory.InventoryEntryDraftBuilder;
+import com.commercetools.api.models.type.CustomFields;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.InventoryService;
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.channels.ChannelRole;
-import io.sphere.sdk.inventory.InventoryEntry;
-import io.sphere.sdk.inventory.InventoryEntryDraft;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.types.CustomFields;
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -27,7 +26,7 @@ public class InventorySyncMockUtils {
 
   /**
    * Returns mock {@link Channel} instance. Returned instance represents channel of passed {@code
-   * id}, {@code key} and of role {@link ChannelRole#INVENTORY_SUPPLY}.
+   * id}, {@code key} and of role {@link ChannelRoleEnum#INVENTORY_SUPPLY}.
    *
    * @param id result of calling {@link Channel#getId()}
    * @param key result of calling {@link Channel#getKey()}
@@ -37,8 +36,7 @@ public class InventorySyncMockUtils {
     final Channel channel = mock(Channel.class);
     when(channel.getId()).thenReturn(id);
     when(channel.getKey()).thenReturn(key);
-    when(channel.getRoles()).thenReturn(singleton(ChannelRole.INVENTORY_SUPPLY));
-    when(channel.toReference()).thenReturn(Channel.referenceOfId(id));
+    when(channel.getRoles()).thenReturn(singletonList(ChannelRoleEnum.INVENTORY_SUPPLY));
     return channel;
   }
 
@@ -57,9 +55,9 @@ public class InventorySyncMockUtils {
   public static InventoryEntry getMockInventoryEntry(
       final String sku,
       final Long quantityOnStock,
-      final Integer restockableInDays,
+      final Long restockableInDays,
       final ZonedDateTime expectedDelivery,
-      final Reference<Channel> supplyChannel,
+      final ChannelReference supplyChannel,
       final CustomFields customFields) {
     final InventoryEntry inventoryEntry = mock(InventoryEntry.class);
     when(inventoryEntry.getSku()).thenReturn(sku);
@@ -72,16 +70,18 @@ public class InventorySyncMockUtils {
   }
 
   /**
-   * Returns mock instance of {@link InventoryService}. Executing any method with any parameter on
-   * this instance returns values passed in parameters, wrapped in {@link CompletionStage}.
+   * Returns mock instance of {@link com.commercetools.sync.services.InventoryService}. Executing
+   * any method with any parameter on this instance returns values passed in parameters, wrapped in
+   * {@link java.util.concurrent.CompletionStage}.
    *
    * @param inventoryEntries result of calling {@link
-   *     InventoryService#fetchInventoryEntriesByIdentifiers(Set)}
+   *     com.commercetools.sync.services.InventoryService#fetchInventoryEntriesByIdentifiers(java.util.Set)}
    * @param createdInventoryEntry result of calling {@link
-   *     InventoryService#createInventoryEntry(InventoryEntryDraft)}
+   *     com.commercetools.sync.services.InventoryService#createInventoryEntry(com.commercetools.api.models.inventory.InventoryEntryDraft)}
    * @param updatedInventoryEntry result of calling {@link
-   *     InventoryService#updateInventoryEntry(InventoryEntry, List)}
-   * @return mock instance of {@link InventoryService}
+   *     com.commercetools.sync.services.InventoryService#updateInventoryEntry(InventoryEntry,
+   *     java.util.List)}
+   * @return mock instance of {@link com.commercetools.sync.services.InventoryService}
    */
   static InventoryService getMockInventoryService(
       final Set<InventoryEntry> inventoryEntries,
@@ -99,11 +99,13 @@ public class InventorySyncMockUtils {
 
   /**
    * Returns mock instance of {@link InventoryService} with the specified parameters as mock results
-   * of calling the {@link ChannelService#createAndCacheChannel(String)} and {@link
-   * ChannelService#fetchCachedChannelId(String)} (String)} of the mock channel service.
+   * of calling the {@link
+   * com.commercetools.sync.services.ChannelService#createAndCacheChannel(String)} and {@link
+   * com.commercetools.sync.services.ChannelService#fetchCachedChannelId(String)} (String)} of the
+   * mock channel service.
    *
    * @param createdSupplyChannel result of future resulting from calling {@link
-   *     ChannelService#createAndCacheChannel(String)}
+   *     com.commercetools.sync.services.ChannelService#createAndCacheChannel(String)}
    * @return mock instance of {@link InventoryService}.
    */
   public static ChannelService getMockChannelService(@Nonnull final Channel createdSupplyChannel) {
@@ -118,15 +120,28 @@ public class InventorySyncMockUtils {
   }
 
   /**
-   * Returns {@link CompletionStage} completed exceptionally.
+   * Returns {@link java.util.concurrent.CompletionStage} completed exceptionally.
    *
-   * @param <T> type of result that is supposed to be inside {@link CompletionStage}
-   * @return {@link CompletionStage} instance that is completed exceptionally with {@link
-   *     RuntimeException}
+   * @param <T> type of result that is supposed to be inside {@link
+   *     java.util.concurrent.CompletionStage}
+   * @return {@link java.util.concurrent.CompletionStage} instance that is completed exceptionally
+   *     with {@link RuntimeException}
    */
   static <T> CompletionStage<T> getCompletionStageWithException() {
     final CompletableFuture<T> exceptionalStage = new CompletableFuture<>();
     exceptionalStage.completeExceptionally(new RuntimeException());
     return exceptionalStage;
+  }
+
+  static InventoryEntryDraftBuilder createInventoryDraftBuilderWithoutChannel(
+      final String sku,
+      final Long quantity,
+      final ZonedDateTime expectedDelivery,
+      final Long restockableDays) {
+    return InventoryEntryDraftBuilder.of()
+        .sku(sku)
+        .quantityOnStock(quantity)
+        .expectedDelivery(expectedDelivery)
+        .restockableInDays(restockableDays);
   }
 }

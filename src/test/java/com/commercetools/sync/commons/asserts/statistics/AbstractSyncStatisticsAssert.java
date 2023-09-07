@@ -8,10 +8,13 @@ import javax.annotation.Nullable;
 import org.assertj.core.api.AbstractAssert;
 
 class AbstractSyncStatisticsAssert<
-        S extends AbstractSyncStatisticsAssert<S, A>, A extends BaseSyncStatistics>
-    extends AbstractAssert<S, A> {
+        SyncStatisticsAssert extends
+            AbstractSyncStatisticsAssert<SyncStatisticsAssert, SyncStatistics>,
+        SyncStatistics extends BaseSyncStatistics>
+    extends AbstractAssert<SyncStatisticsAssert, SyncStatistics> {
 
-  AbstractSyncStatisticsAssert(@Nullable final A actual, @Nonnull final Class<S> selfType) {
+  AbstractSyncStatisticsAssert(
+      @Nullable final SyncStatistics actual, @Nonnull final Class<SyncStatisticsAssert> selfType) {
     super(actual, selfType);
   }
 
@@ -27,7 +30,8 @@ class AbstractSyncStatisticsAssert<
    * @throws AssertionError if the actual value is {@code null}.
    * @throws AssertionError if the actual statistics do not match the supplied values.
    */
-  public S hasValues(final int processed, final int created, final int updated, final int failed) {
+  public SyncStatisticsAssert hasValues(
+      final int processed, final int created, final int updated, final int failed) {
     assertThat(actual).isNotNull();
     assertThat(actual.getProcessed()).hasValue(processed);
     assertThat(actual.getCreated()).hasValue(created);

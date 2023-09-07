@@ -1,46 +1,53 @@
 package com.commercetools.sync.shoppinglists.utils;
 
+import com.commercetools.api.models.shopping_list.ShoppingListSetTextLineItemCustomFieldActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListSetTextLineItemCustomTypeActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
 import com.commercetools.sync.commons.helpers.GenericCustomActionBuilder;
-import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetTextLineItemCustomField;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetTextLineItemCustomType;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public final class TextLineItemCustomActionBuilder
-    implements GenericCustomActionBuilder<ShoppingList> {
+    implements GenericCustomActionBuilder<ShoppingListUpdateAction> {
 
   @Nonnull
   @Override
-  public UpdateAction<ShoppingList> buildRemoveCustomTypeAction(
-      @Nullable final Integer variantId, @Nullable final String textLineItemId) {
+  public ShoppingListUpdateAction buildRemoveCustomTypeAction(
+      @Nullable final Long variantId, @Nullable final String textLineItemId) {
 
-    return SetTextLineItemCustomType.ofRemoveType(textLineItemId);
+    return ShoppingListSetTextLineItemCustomTypeActionBuilder.of()
+        .textLineItemId(textLineItemId)
+        .build();
   }
 
   @Nonnull
   @Override
-  public UpdateAction<ShoppingList> buildSetCustomTypeAction(
-      @Nullable final Integer variantId,
+  public ShoppingListUpdateAction buildSetCustomTypeAction(
+      @Nullable final Long variantId,
       @Nullable final String textLineItemId,
       @Nonnull final String customTypeId,
-      @Nullable final Map<String, JsonNode> customFieldsJsonMap) {
+      @Nullable final Map<String, Object> customFieldsJsonMap) {
 
-    return SetTextLineItemCustomType.ofTypeIdAndJson(
-        customTypeId, customFieldsJsonMap, textLineItemId);
+    return ShoppingListSetTextLineItemCustomTypeActionBuilder.of()
+        .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.id(customTypeId))
+        .fields(fieldContainerBuilder -> fieldContainerBuilder.values(customFieldsJsonMap))
+        .textLineItemId(textLineItemId)
+        .build();
   }
 
   @Nonnull
   @Override
-  public UpdateAction<ShoppingList> buildSetCustomFieldAction(
-      @Nullable final Integer variantId,
+  public ShoppingListUpdateAction buildSetCustomFieldAction(
+      @Nullable final Long variantId,
       @Nullable final String textLineItemId,
       @Nullable final String customFieldName,
-      @Nullable final JsonNode customFieldValue) {
+      @Nullable final Object customFieldValue) {
 
-    return SetTextLineItemCustomField.ofJson(customFieldName, customFieldValue, textLineItemId);
+    return ShoppingListSetTextLineItemCustomFieldActionBuilder.of()
+        .name(customFieldName)
+        .value(customFieldValue)
+        .textLineItemId(textLineItemId)
+        .build();
   }
 }

@@ -10,7 +10,6 @@ plugins {
 }
 
 ext{
-    commercetoolsJvmSdkVersion = '2.14.0'
     commercetoolsJavaSdkV2Version = '14.4.0'
     mockitoJunitJupiterVersion = '5.3.1'
     jupiterApiVersion = '5.9.2'
@@ -45,10 +44,6 @@ apply from: "$rootDir/gradle-scripts/mkdocs.gradle"
 apply from: "$rootDir/gradle-scripts/spotless.gradle"
 
 dependencies {
-    api "com.commercetools.sdk.jvm.core:commercetools-models:${commercetoolsJvmSdkVersion}"
-    api "com.commercetools.sdk.jvm.core:commercetools-java-client-ahc-2_5:${commercetoolsJvmSdkVersion}"
-    api "com.commercetools.sdk.jvm.core:commercetools-convenience:${commercetoolsJvmSdkVersion}"
-
     implementation "com.commercetools.sdk:commercetools-http-client:${commercetoolsJavaSDK2Version}"
     implementation "com.commercetools.sdk:commercetools-sdk-java-api:${commercetoolsJavaSDK2Version}"
 

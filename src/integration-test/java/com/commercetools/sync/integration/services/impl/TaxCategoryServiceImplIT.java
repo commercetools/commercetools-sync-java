@@ -24,10 +24,10 @@ import com.commercetools.api.models.tax_category.TaxCategoryChangeNameActionBuil
 import com.commercetools.api.models.tax_category.TaxCategoryDraft;
 import com.commercetools.api.models.tax_category.TaxCategoryDraftBuilder;
 import com.commercetools.api.models.tax_category.TaxCategorySetKeyActionBuilder;
-import com.commercetools.sync.sdk2.services.TaxCategoryService;
-import com.commercetools.sync.sdk2.services.impl.TaxCategoryServiceImpl;
-import com.commercetools.sync.sdk2.taxcategories.TaxCategorySyncOptions;
-import com.commercetools.sync.sdk2.taxcategories.TaxCategorySyncOptionsBuilder;
+import com.commercetools.sync.services.TaxCategoryService;
+import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
+import com.commercetools.sync.taxcategories.TaxCategorySyncOptions;
+import com.commercetools.sync.taxcategories.TaxCategorySyncOptionsBuilder;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;
 import java.util.ArrayList;

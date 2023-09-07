@@ -1,8 +1,8 @@
 package com.commercetools.sync.integration.ctpprojectsource.products;
 
-import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.sdk2.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
-import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.products.ProductSyncMockUtils.*;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,15 +25,15 @@ import com.commercetools.api.models.state.StateReference;
 import com.commercetools.api.models.state.StateReferenceBuilder;
 import com.commercetools.api.models.state.StateTypeEnum;
 import com.commercetools.api.models.tax_category.TaxCategory;
+import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.integration.commons.utils.*;
-import com.commercetools.sync.sdk2.commons.exceptions.ReferenceResolutionException;
-import com.commercetools.sync.sdk2.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
-import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
-import com.commercetools.sync.sdk2.products.ProductSync;
-import com.commercetools.sync.sdk2.products.ProductSyncOptions;
-import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
-import com.commercetools.sync.sdk2.products.helpers.ProductSyncStatistics;
-import com.commercetools.sync.sdk2.products.utils.ProductTransformUtils;
+import com.commercetools.sync.products.ProductSync;
+import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.commercetools.sync.products.utils.ProductTransformUtils;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.HashSet;

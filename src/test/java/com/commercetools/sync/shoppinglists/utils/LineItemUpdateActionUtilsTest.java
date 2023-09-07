@@ -1,30 +1,27 @@
 package com.commercetools.sync.shoppinglists.utils;
 
-import static com.commercetools.sync.shoppinglists.utils.LineItemUpdateActionUtils.buildChangeLineItemQuantityUpdateAction;
-import static com.commercetools.sync.shoppinglists.utils.LineItemUpdateActionUtils.buildLineItemCustomUpdateActions;
-import static com.commercetools.sync.shoppinglists.utils.LineItemUpdateActionUtils.buildLineItemUpdateActions;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.shopping_list.ShoppingList;
+import com.commercetools.api.models.shopping_list.ShoppingListChangeLineItemQuantityActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItem;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraftBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListSetLineItemCustomFieldActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListSetLineItemCustomTypeActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
+import com.commercetools.api.models.type.CustomFields;
+import com.commercetools.api.models.type.CustomFieldsDraft;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.FieldContainerBuilder;
+import com.commercetools.api.models.type.TypeReferenceBuilder;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.shoppinglists.LineItem;
-import io.sphere.sdk.shoppinglists.LineItemDraft;
-import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
-import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeLineItemQuantity;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetLineItemCustomField;
-import io.sphere.sdk.shoppinglists.commands.updateactions.SetLineItemCustomType;
-import io.sphere.sdk.types.CustomFields;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.Type;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,36 +34,42 @@ import org.junit.jupiter.api.Test;
 class LineItemUpdateActionUtilsTest {
 
   private static final ShoppingListSyncOptions SYNC_OPTIONS =
-      ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+      ShoppingListSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
 
   final ShoppingList oldShoppingList = mock(ShoppingList.class);
   final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
 
   @Test
   void buildLineItemCustomUpdateActions_WithSameValues_ShouldNotBuildUpdateAction() {
-    final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
-    oldCustomFieldsMap.put("field1", JsonNodeFactory.instance.booleanNode(true));
-    oldCustomFieldsMap.put("field2", JsonNodeFactory.instance.objectNode().put("de", "val"));
+    final Map<String, Object> oldCustomFieldsMap = new HashMap<>();
+    oldCustomFieldsMap.put("field1", true);
+    oldCustomFieldsMap.put("field2", Map.of("de", "val"));
 
     final CustomFields oldCustomFields = mock(CustomFields.class);
-    when(oldCustomFields.getType()).thenReturn(Type.referenceOfId("1"));
-    when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+    when(oldCustomFields.getType()).thenReturn(TypeReferenceBuilder.of().id("1").build());
+    when(oldCustomFields.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(oldCustomFieldsMap).build());
 
     final CustomFieldsDraft newCustomFieldsDraft =
-        CustomFieldsDraft.ofTypeIdAndJson("1", oldCustomFieldsMap);
+        CustomFieldsDraftBuilder.of()
+            .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.id("1"))
+            .fields(fieldContainerBuilder -> fieldContainerBuilder.values(oldCustomFieldsMap))
+            .build();
 
-    final LineItem oldLineItem = mock(LineItem.class);
+    final ShoppingListLineItem oldLineItem = mock(ShoppingListLineItem.class);
     when(oldLineItem.getId()).thenReturn("line_item_id");
     when(oldLineItem.getCustom()).thenReturn(oldCustomFields);
 
-    final LineItemDraft newLineItem =
-        LineItemDraftBuilder.ofSku("sku", 1L)
+    final ShoppingListLineItemDraft newLineItem =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("sku")
+            .quantity(1L)
             .addedAt(ZonedDateTime.now())
             .custom(newCustomFieldsDraft)
             .build();
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemCustomUpdateActions(
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemCustomUpdateActions(
             oldShoppingList, newShoppingList, oldLineItem, newLineItem, SYNC_OPTIONS);
 
     assertThat(updateActions).isEmpty();
@@ -74,95 +77,122 @@ class LineItemUpdateActionUtilsTest {
 
   @Test
   void buildLineItemCustomUpdateActions_WithDifferentValues_ShouldBuildUpdateAction() {
-    final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
-    oldCustomFieldsMap.put("field1", JsonNodeFactory.instance.booleanNode(true));
-    oldCustomFieldsMap.put("field2", JsonNodeFactory.instance.objectNode().put("de", "val1"));
+    final Map<String, Object> oldCustomFieldsMap = new HashMap<>();
+    oldCustomFieldsMap.put("field1", true);
+    oldCustomFieldsMap.put("field2", Map.of("de", "val1"));
 
-    final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
-    newCustomFieldsMap.put("field1", JsonNodeFactory.instance.booleanNode(false));
-    newCustomFieldsMap.put("field2", JsonNodeFactory.instance.objectNode().put("es", "val2"));
+    final Map<String, Object> newCustomFieldsMap = new HashMap<>();
+    newCustomFieldsMap.put("field1", false);
+    newCustomFieldsMap.put("field2", Map.of("es", "val2"));
 
     final CustomFields oldCustomFields = mock(CustomFields.class);
-    when(oldCustomFields.getType()).thenReturn(Type.referenceOfId("1"));
-    when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+    when(oldCustomFields.getType()).thenReturn(TypeReferenceBuilder.of().id("1").build());
+    when(oldCustomFields.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(oldCustomFieldsMap).build());
 
     final CustomFieldsDraft newCustomFieldsDraft =
-        CustomFieldsDraft.ofTypeIdAndJson("1", newCustomFieldsMap);
+        CustomFieldsDraftBuilder.of()
+            .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.id("1"))
+            .fields(fieldContainerBuilder -> fieldContainerBuilder.values(newCustomFieldsMap))
+            .build();
 
-    final LineItem oldLineItem = mock(LineItem.class);
+    final ShoppingListLineItem oldLineItem = mock(ShoppingListLineItem.class);
     when(oldLineItem.getId()).thenReturn("line_item_id");
     when(oldLineItem.getCustom()).thenReturn(oldCustomFields);
 
-    final LineItemDraft newLineItem =
-        LineItemDraftBuilder.ofSku("sku", 1L)
+    final ShoppingListLineItemDraft newLineItem =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("sku")
+            .quantity(1L)
             .addedAt(ZonedDateTime.now())
             .custom(newCustomFieldsDraft)
             .build();
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemCustomUpdateActions(
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemCustomUpdateActions(
             oldShoppingList, newShoppingList, oldLineItem, newLineItem, SYNC_OPTIONS);
 
     assertThat(updateActions)
         .containsExactly(
-            SetLineItemCustomField.ofJson(
-                "field1", JsonNodeFactory.instance.booleanNode(false), "line_item_id"),
-            SetLineItemCustomField.ofJson(
-                "field2", JsonNodeFactory.instance.objectNode().put("es", "val2"), "line_item_id"));
+            ShoppingListSetLineItemCustomFieldActionBuilder.of()
+                .name("field1")
+                .value(false)
+                .lineItemId("line_item_id")
+                .build(),
+            ShoppingListSetLineItemCustomFieldActionBuilder.of()
+                .name("field2")
+                .value(Map.of("es", "val2"))
+                .lineItemId("line_item_id")
+                .build());
   }
 
   @Test
   void buildLineItemCustomUpdateActions_WithNullOldValues_ShouldBuildUpdateAction() {
-    final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
-    newCustomFieldsMap.put("field1", JsonNodeFactory.instance.booleanNode(false));
-    newCustomFieldsMap.put("field2", JsonNodeFactory.instance.objectNode().put("es", "val"));
+    final Map<String, Object> newCustomFieldsMap = new HashMap<>();
+    newCustomFieldsMap.put("field1", false);
+    newCustomFieldsMap.put("field2", Map.of("es", "val"));
 
     final CustomFieldsDraft newCustomFieldsDraft =
-        CustomFieldsDraft.ofTypeIdAndJson("1", newCustomFieldsMap);
+        CustomFieldsDraftBuilder.of()
+            .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.id("1"))
+            .fields(fieldContainerBuilder -> fieldContainerBuilder.values(newCustomFieldsMap))
+            .build();
 
-    final LineItem oldLineItem = mock(LineItem.class);
+    final ShoppingListLineItem oldLineItem = mock(ShoppingListLineItem.class);
     when(oldLineItem.getId()).thenReturn("line_item_id");
     when(oldLineItem.getCustom()).thenReturn(null);
 
-    final LineItemDraft newLineItem =
-        LineItemDraftBuilder.ofSku("sku", 1L)
+    final ShoppingListLineItemDraft newLineItem =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("sku")
+            .quantity(1L)
             .addedAt(ZonedDateTime.now())
             .custom(newCustomFieldsDraft)
             .build();
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemCustomUpdateActions(
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemCustomUpdateActions(
             oldShoppingList, newShoppingList, oldLineItem, newLineItem, SYNC_OPTIONS);
 
     assertThat(updateActions)
         .containsExactly(
-            SetLineItemCustomType.ofTypeIdAndJson("1", newCustomFieldsMap, "line_item_id"));
+            ShoppingListSetLineItemCustomTypeActionBuilder.of()
+                .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.id("1"))
+                .fields(fieldContainerBuilder -> fieldContainerBuilder.values(newCustomFieldsMap))
+                .lineItemId("line_item_id")
+                .build());
   }
 
   @Test
   void
       buildLineItemCustomUpdateActions_WithBadCustomFieldData_ShouldNotBuildUpdateActionAndTriggerErrorCallback() {
-    final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
-    oldCustomFieldsMap.put("field1", JsonNodeFactory.instance.booleanNode(true));
-    oldCustomFieldsMap.put("field2", JsonNodeFactory.instance.objectNode().put("de", "val1"));
+    final Map<String, Object> oldCustomFieldsMap = new HashMap<>();
+    oldCustomFieldsMap.put("field1", true);
+    oldCustomFieldsMap.put("field2", Map.of("de", "val1"));
 
-    final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
-    newCustomFieldsMap.put("field1", JsonNodeFactory.instance.booleanNode(false));
-    newCustomFieldsMap.put("field2", JsonNodeFactory.instance.objectNode().put("es", "val2"));
+    final Map<String, Object> newCustomFieldsMap = new HashMap<>();
+    newCustomFieldsMap.put("field1", false);
+    newCustomFieldsMap.put("field2", Map.of("es", "val2"));
 
     final CustomFields oldCustomFields = mock(CustomFields.class);
-    when(oldCustomFields.getType()).thenReturn(Type.referenceOfId(""));
-    when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+    when(oldCustomFields.getType()).thenReturn(TypeReferenceBuilder.of().id("").build());
+    when(oldCustomFields.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(oldCustomFieldsMap).build());
 
     final CustomFieldsDraft newCustomFieldsDraft =
-        CustomFieldsDraft.ofTypeIdAndJson("", newCustomFieldsMap);
+        CustomFieldsDraftBuilder.of()
+            .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.id(""))
+            .fields(fieldContainerBuilder -> fieldContainerBuilder.values(newCustomFieldsMap))
+            .build();
 
-    final LineItem oldLineItem = mock(LineItem.class);
+    final ShoppingListLineItem oldLineItem = mock(ShoppingListLineItem.class);
     when(oldLineItem.getId()).thenReturn("line_item_id");
     when(oldLineItem.getCustom()).thenReturn(oldCustomFields);
 
-    final LineItemDraft newLineItem =
-        LineItemDraftBuilder.ofSku("sku", 1L)
+    final ShoppingListLineItemDraft newLineItem =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("sku")
+            .quantity(1L)
             .addedAt(ZonedDateTime.now())
             .custom(newCustomFieldsDraft)
             .build();
@@ -170,14 +200,14 @@ class LineItemUpdateActionUtilsTest {
     final List<String> errors = new ArrayList<>();
 
     final ShoppingListSyncOptions syncOptions =
-        ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class))
+        ShoppingListSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) ->
                     errors.add(exception.getMessage()))
             .build();
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemCustomUpdateActions(
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemCustomUpdateActions(
             oldShoppingList, newShoppingList, oldLineItem, newLineItem, syncOptions);
 
     assertThat(updateActions).isEmpty();
@@ -192,30 +222,34 @@ class LineItemUpdateActionUtilsTest {
 
   @Test
   void buildLineItemCustomUpdateActions_WithNullValue_ShouldCorrectlyBuildAction() {
-    final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
-    oldCustomFieldsMap.put("field1", JsonNodeFactory.instance.booleanNode(true));
-    oldCustomFieldsMap.put(
-        "field2",
-        JsonNodeFactory.instance.arrayNode().add(JsonNodeFactory.instance.booleanNode(false)));
+    final Map<String, Object> oldCustomFieldsMap = new HashMap<>();
+    oldCustomFieldsMap.put("field1", true);
+    oldCustomFieldsMap.put("field2", List.of(false));
 
-    final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
-    newCustomFieldsMap.put("field1", JsonNodeFactory.instance.booleanNode(true));
+    final Map<String, Object> newCustomFieldsMap = new HashMap<>();
+    newCustomFieldsMap.put("field1", true);
     newCustomFieldsMap.put("field2", null);
 
     final CustomFields oldCustomFields = mock(CustomFields.class);
     final String typeId = UUID.randomUUID().toString();
-    when(oldCustomFields.getType()).thenReturn(Type.referenceOfId(typeId));
-    when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+    when(oldCustomFields.getType()).thenReturn(TypeReferenceBuilder.of().id(typeId).build());
+    when(oldCustomFields.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(oldCustomFieldsMap).build());
 
     final CustomFieldsDraft newCustomFieldsDraft =
-        CustomFieldsDraft.ofTypeIdAndJson(typeId, newCustomFieldsMap);
+        CustomFieldsDraftBuilder.of()
+            .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.id(typeId))
+            .fields(fieldContainerBuilder -> fieldContainerBuilder.values(newCustomFieldsMap))
+            .build();
 
-    final LineItem oldLineItem = mock(LineItem.class);
+    final ShoppingListLineItem oldLineItem = mock(ShoppingListLineItem.class);
     when(oldLineItem.getId()).thenReturn("line_item_id");
     when(oldLineItem.getCustom()).thenReturn(oldCustomFields);
 
-    final LineItemDraft newLineItem =
-        LineItemDraftBuilder.ofSku("sku", 1L)
+    final ShoppingListLineItemDraft newLineItem =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("sku")
+            .quantity(1L)
             .addedAt(ZonedDateTime.now())
             .custom(newCustomFieldsDraft)
             .build();
@@ -223,45 +257,54 @@ class LineItemUpdateActionUtilsTest {
     final List<String> errors = new ArrayList<>();
 
     final ShoppingListSyncOptions syncOptions =
-        ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class))
+        ShoppingListSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) ->
                     errors.add(exception.getMessage()))
             .build();
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemCustomUpdateActions(
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemCustomUpdateActions(
             oldShoppingList, newShoppingList, oldLineItem, newLineItem, syncOptions);
 
     assertThat(errors).isEmpty();
     assertThat(updateActions)
-        .containsExactly(SetLineItemCustomField.ofJson("field2", null, "line_item_id"));
+        .containsExactly(
+            ShoppingListSetLineItemCustomFieldActionBuilder.of()
+                .name("field2")
+                .value(null)
+                .lineItemId("line_item_id")
+                .build());
   }
 
   @Test
   void buildLineItemCustomUpdateActions_WithNullJsonNodeValue_ShouldCorrectlyBuildAction() {
-    final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
-    oldCustomFieldsMap.put(
-        "field",
-        JsonNodeFactory.instance.arrayNode().add(JsonNodeFactory.instance.booleanNode(false)));
+    final Map<String, Object> oldCustomFieldsMap = new HashMap<>();
+    oldCustomFieldsMap.put("field", List.of(false));
 
-    final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
-    newCustomFieldsMap.put("field", JsonNodeFactory.instance.nullNode());
+    final Map<String, Object> newCustomFieldsMap = new HashMap<>();
+    newCustomFieldsMap.put("field", null);
 
     final CustomFields oldCustomFields = mock(CustomFields.class);
     final String typeId = UUID.randomUUID().toString();
-    when(oldCustomFields.getType()).thenReturn(Type.referenceOfId(typeId));
-    when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+    when(oldCustomFields.getType()).thenReturn(TypeReferenceBuilder.of().id(typeId).build());
+    when(oldCustomFields.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(oldCustomFieldsMap).build());
 
     final CustomFieldsDraft newCustomFieldsDraft =
-        CustomFieldsDraft.ofTypeIdAndJson(typeId, newCustomFieldsMap);
+        CustomFieldsDraftBuilder.of()
+            .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.id(typeId))
+            .fields(fieldContainerBuilder -> fieldContainerBuilder.values(newCustomFieldsMap))
+            .build();
 
-    final LineItem oldLineItem = mock(LineItem.class);
+    final ShoppingListLineItem oldLineItem = mock(ShoppingListLineItem.class);
     when(oldLineItem.getId()).thenReturn("line_item_id");
     when(oldLineItem.getCustom()).thenReturn(oldCustomFields);
 
-    final LineItemDraft newLineItem =
-        LineItemDraftBuilder.ofSku("sku", 1L)
+    final ShoppingListLineItemDraft newLineItem =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("sku")
+            .quantity(1L)
             .addedAt(ZonedDateTime.now())
             .custom(newCustomFieldsDraft)
             .build();
@@ -269,32 +312,41 @@ class LineItemUpdateActionUtilsTest {
     final List<String> errors = new ArrayList<>();
 
     final ShoppingListSyncOptions syncOptions =
-        ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class))
+        ShoppingListSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) ->
                     errors.add(exception.getMessage()))
             .build();
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemCustomUpdateActions(
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemCustomUpdateActions(
             oldShoppingList, newShoppingList, oldLineItem, newLineItem, syncOptions);
 
     assertThat(errors).isEmpty();
     assertThat(updateActions)
-        .containsExactly(SetLineItemCustomField.ofJson("field", null, "line_item_id"));
+        .containsExactly(
+            ShoppingListSetLineItemCustomFieldActionBuilder.of()
+                .name("field")
+                .value(null)
+                .lineItemId("line_item_id")
+                .build());
   }
 
   @Test
   void buildChangeLineItemQuantityUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
-    final LineItem oldLineItem = mock(LineItem.class);
+    final ShoppingListLineItem oldLineItem = mock(ShoppingListLineItem.class);
     when(oldLineItem.getId()).thenReturn("line_item_id");
     when(oldLineItem.getQuantity()).thenReturn(2L);
 
-    final LineItemDraft newLineItem =
-        LineItemDraftBuilder.ofSku("sku", 2L).addedAt(ZonedDateTime.now()).build();
+    final ShoppingListLineItemDraft newLineItem =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("sku")
+            .quantity(2L)
+            .addedAt(ZonedDateTime.now())
+            .build();
 
-    final Optional<UpdateAction<ShoppingList>> updateAction =
-        buildChangeLineItemQuantityUpdateAction(oldLineItem, newLineItem);
+    final Optional<ShoppingListUpdateAction> updateAction =
+        LineItemUpdateActionUtils.buildChangeLineItemQuantityUpdateAction(oldLineItem, newLineItem);
 
     assertThat(updateAction).isNotNull();
     assertThat(updateAction).isNotPresent();
@@ -302,100 +354,137 @@ class LineItemUpdateActionUtilsTest {
 
   @Test
   void buildChangeLineItemQuantityUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
-    final LineItem oldLineItem = mock(LineItem.class);
+    final ShoppingListLineItem oldLineItem = mock(ShoppingListLineItem.class);
     when(oldLineItem.getId()).thenReturn("line_item_id");
     when(oldLineItem.getQuantity()).thenReturn(2L);
 
-    final LineItemDraft newLineItem =
-        LineItemDraftBuilder.ofSku("sku", 4L).addedAt(ZonedDateTime.now()).build();
+    final ShoppingListLineItemDraft newLineItem =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("sku")
+            .quantity(4L)
+            .addedAt(ZonedDateTime.now())
+            .build();
 
-    final UpdateAction<ShoppingList> updateAction =
-        buildChangeLineItemQuantityUpdateAction(oldLineItem, newLineItem).orElse(null);
+    final ShoppingListUpdateAction updateAction =
+        LineItemUpdateActionUtils.buildChangeLineItemQuantityUpdateAction(oldLineItem, newLineItem)
+            .orElse(null);
 
     assertThat(updateAction).isNotNull();
     assertThat(updateAction.getAction()).isEqualTo("changeLineItemQuantity");
-    assertThat((ChangeLineItemQuantity) updateAction)
-        .isEqualTo(ChangeLineItemQuantity.of("line_item_id", 4L));
+    assertThat(updateAction)
+        .isEqualTo(
+            ShoppingListChangeLineItemQuantityActionBuilder.of()
+                .lineItemId("line_item_id")
+                .quantity(4L)
+                .build());
   }
 
   @Test
   void buildChangeLineItemQuantityUpdateAction_WithNewNullValue_ShouldBuildUpdateAction() {
-    final LineItem oldLineItem = mock(LineItem.class);
+    final ShoppingListLineItem oldLineItem = mock(ShoppingListLineItem.class);
     when(oldLineItem.getId()).thenReturn("line_item_id");
     when(oldLineItem.getQuantity()).thenReturn(2L);
 
-    final LineItemDraft newLineItem =
-        LineItemDraftBuilder.ofSku("sku", null).addedAt(ZonedDateTime.now()).build();
+    final ShoppingListLineItemDraft newLineItem =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("sku")
+            .quantity(null)
+            .addedAt(ZonedDateTime.now())
+            .build();
 
-    final UpdateAction<ShoppingList> updateAction =
-        buildChangeLineItemQuantityUpdateAction(oldLineItem, newLineItem).orElse(null);
+    final ShoppingListUpdateAction updateAction =
+        LineItemUpdateActionUtils.buildChangeLineItemQuantityUpdateAction(oldLineItem, newLineItem)
+            .orElse(null);
 
     assertThat(updateAction).isNotNull();
     assertThat(updateAction.getAction()).isEqualTo("changeLineItemQuantity");
-    assertThat((ChangeLineItemQuantity) updateAction)
-        .isEqualTo(ChangeLineItemQuantity.of("line_item_id", 1L));
+    assertThat(updateAction)
+        .isEqualTo(
+            ShoppingListChangeLineItemQuantityActionBuilder.of()
+                .lineItemId("line_item_id")
+                .quantity(1L)
+                .build());
   }
 
   @Test
   void buildChangeLineItemQuantityUpdateAction_WithNewZeroValue_ShouldBuildUpdateAction() {
-    final LineItem oldLineItem = mock(LineItem.class);
+    final ShoppingListLineItem oldLineItem = mock(ShoppingListLineItem.class);
     when(oldLineItem.getId()).thenReturn("line_item_id");
     when(oldLineItem.getQuantity()).thenReturn(2L);
 
-    final LineItemDraft newLineItem =
-        LineItemDraftBuilder.ofSku("sku", null).quantity(0L).addedAt(ZonedDateTime.now()).build();
+    final ShoppingListLineItemDraft newLineItem =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("sku")
+            .quantity(0L)
+            .addedAt(ZonedDateTime.now())
+            .build();
 
-    final UpdateAction<ShoppingList> updateAction =
-        buildChangeLineItemQuantityUpdateAction(oldLineItem, newLineItem).orElse(null);
+    final ShoppingListUpdateAction updateAction =
+        LineItemUpdateActionUtils.buildChangeLineItemQuantityUpdateAction(oldLineItem, newLineItem)
+            .orElse(null);
 
     assertThat(updateAction).isNotNull();
     assertThat(updateAction.getAction()).isEqualTo("changeLineItemQuantity");
-    assertThat((ChangeLineItemQuantity) updateAction)
-        .isEqualTo(ChangeLineItemQuantity.of("line_item_id", 0L));
+    assertThat(updateAction)
+        .isEqualTo(
+            ShoppingListChangeLineItemQuantityActionBuilder.of()
+                .lineItemId("line_item_id")
+                .quantity(0L)
+                .build());
   }
 
   @Test
   void
       buildChangeLineItemQuantityUpdateAction_WithNewNullValueAndOldDefaultValue_ShouldNotBuildAction() {
-    final LineItem oldLineItem = mock(LineItem.class);
+    final ShoppingListLineItem oldLineItem = mock(ShoppingListLineItem.class);
     when(oldLineItem.getId()).thenReturn("line_item_id");
     when(oldLineItem.getQuantity()).thenReturn(1L);
 
-    final LineItemDraft newLineItem =
-        LineItemDraftBuilder.ofSku("sku", null).addedAt(ZonedDateTime.now()).build();
+    final ShoppingListLineItemDraft newLineItem =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("sku")
+            .quantity(null)
+            .addedAt(ZonedDateTime.now())
+            .build();
 
-    final Optional<UpdateAction<ShoppingList>> updateAction =
-        buildChangeLineItemQuantityUpdateAction(oldLineItem, newLineItem);
+    final Optional<ShoppingListUpdateAction> updateAction =
+        LineItemUpdateActionUtils.buildChangeLineItemQuantityUpdateAction(oldLineItem, newLineItem);
 
     assertThat(updateAction).isNotPresent();
   }
 
   @Test
   void buildLineItemUpdateActions_WithSameValues_ShouldNotBuildUpdateAction() {
-    final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
-    oldCustomFieldsMap.put("field1", JsonNodeFactory.instance.booleanNode(true));
-    oldCustomFieldsMap.put("field2", JsonNodeFactory.instance.objectNode().put("de", "val"));
+    final Map<String, Object> oldCustomFieldsMap = new HashMap<>();
+    oldCustomFieldsMap.put("field1", true);
+    oldCustomFieldsMap.put("field2", Map.of("de", "val"));
 
     final CustomFields oldCustomFields = mock(CustomFields.class);
-    when(oldCustomFields.getType()).thenReturn(Type.referenceOfId("1"));
-    when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+    when(oldCustomFields.getType()).thenReturn(TypeReferenceBuilder.of().id("1").build());
+    when(oldCustomFields.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(oldCustomFieldsMap).build());
 
     final CustomFieldsDraft newCustomFieldsDraft =
-        CustomFieldsDraft.ofTypeIdAndJson("1", oldCustomFieldsMap);
+        CustomFieldsDraftBuilder.of()
+            .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.id("1"))
+            .fields(fieldContainerBuilder -> fieldContainerBuilder.values(oldCustomFieldsMap))
+            .build();
 
-    final LineItem oldLineItem = mock(LineItem.class);
+    final ShoppingListLineItem oldLineItem = mock(ShoppingListLineItem.class);
     when(oldLineItem.getId()).thenReturn("line_item_id");
     when(oldLineItem.getQuantity()).thenReturn(1L);
     when(oldLineItem.getCustom()).thenReturn(oldCustomFields);
 
-    final LineItemDraft newLineItem =
-        LineItemDraftBuilder.ofSku("sku", 1L)
+    final ShoppingListLineItemDraft newLineItem =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("sku")
+            .quantity(1L)
             .addedAt(ZonedDateTime.now())
             .custom(newCustomFieldsDraft)
             .build();
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemUpdateActions(
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemUpdateActions(
             oldShoppingList, newShoppingList, oldLineItem, newLineItem, SYNC_OPTIONS);
 
     assertThat(updateActions).isEmpty();
@@ -403,42 +492,57 @@ class LineItemUpdateActionUtilsTest {
 
   @Test
   void buildLineItemUpdateActions_WithDifferentValues_ShouldBuildUpdateAction() {
-    final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
-    oldCustomFieldsMap.put("field1", JsonNodeFactory.instance.booleanNode(true));
-    oldCustomFieldsMap.put("field2", JsonNodeFactory.instance.objectNode().put("de", "val1"));
+    final Map<String, Object> oldCustomFieldsMap = new HashMap<>();
+    oldCustomFieldsMap.put("field1", true);
+    oldCustomFieldsMap.put("field2", Map.of("de", "val1"));
 
-    final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
-    newCustomFieldsMap.put("field1", JsonNodeFactory.instance.booleanNode(false));
-    newCustomFieldsMap.put("field2", JsonNodeFactory.instance.objectNode().put("es", "val2"));
+    final Map<String, Object> newCustomFieldsMap = new HashMap<>();
+    newCustomFieldsMap.put("field1", false);
+    newCustomFieldsMap.put("field2", Map.of("es", "val2"));
 
     final CustomFields oldCustomFields = mock(CustomFields.class);
-    when(oldCustomFields.getType()).thenReturn(Type.referenceOfId("1"));
-    when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+    when(oldCustomFields.getType()).thenReturn(TypeReferenceBuilder.of().id("1").build());
+    when(oldCustomFields.getFields())
+        .thenReturn(FieldContainerBuilder.of().values(oldCustomFieldsMap).build());
 
     final CustomFieldsDraft newCustomFieldsDraft =
-        CustomFieldsDraft.ofTypeIdAndJson("1", newCustomFieldsMap);
+        CustomFieldsDraftBuilder.of()
+            .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.id("1"))
+            .fields(fieldContainerBuilder -> fieldContainerBuilder.values(newCustomFieldsMap))
+            .build();
 
-    final LineItem oldLineItem = mock(LineItem.class);
+    final ShoppingListLineItem oldLineItem = mock(ShoppingListLineItem.class);
     when(oldLineItem.getId()).thenReturn("line_item_id");
     when(oldLineItem.getQuantity()).thenReturn(2L);
     when(oldLineItem.getCustom()).thenReturn(oldCustomFields);
 
-    final LineItemDraft newLineItem =
-        LineItemDraftBuilder.ofSku("sku", 4L)
+    final ShoppingListLineItemDraft newLineItem =
+        ShoppingListLineItemDraftBuilder.of()
+            .sku("sku")
+            .quantity(4L)
             .addedAt(ZonedDateTime.now())
             .custom(newCustomFieldsDraft)
             .build();
 
-    final List<UpdateAction<ShoppingList>> updateActions =
-        buildLineItemUpdateActions(
+    final List<ShoppingListUpdateAction> updateActions =
+        LineItemUpdateActionUtils.buildLineItemUpdateActions(
             oldShoppingList, newShoppingList, oldLineItem, newLineItem, SYNC_OPTIONS);
 
     assertThat(updateActions)
         .containsExactly(
-            ChangeLineItemQuantity.of("line_item_id", 4L),
-            SetLineItemCustomField.ofJson(
-                "field1", JsonNodeFactory.instance.booleanNode(false), "line_item_id"),
-            SetLineItemCustomField.ofJson(
-                "field2", JsonNodeFactory.instance.objectNode().put("es", "val2"), "line_item_id"));
+            ShoppingListChangeLineItemQuantityActionBuilder.of()
+                .lineItemId("line_item_id")
+                .quantity(4L)
+                .build(),
+            ShoppingListSetLineItemCustomFieldActionBuilder.of()
+                .name("field1")
+                .value(false)
+                .lineItemId("line_item_id")
+                .build(),
+            ShoppingListSetLineItemCustomFieldActionBuilder.of()
+                .name("field2")
+                .value(Map.of("es", "val2"))
+                .lineItemId("line_item_id")
+                .build());
   }
 }

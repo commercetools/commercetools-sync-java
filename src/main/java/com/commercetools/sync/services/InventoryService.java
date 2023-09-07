@@ -1,9 +1,9 @@
 package com.commercetools.sync.services;
 
+import com.commercetools.api.models.inventory.InventoryEntry;
+import com.commercetools.api.models.inventory.InventoryEntryDraft;
+import com.commercetools.api.models.inventory.InventoryEntryUpdateAction;
 import com.commercetools.sync.inventories.helpers.InventoryEntryIdentifier;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.inventory.InventoryEntry;
-import io.sphere.sdk.inventory.InventoryEntryDraft;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -15,9 +15,10 @@ public interface InventoryService {
   /**
    * Queries existing {@link InventoryEntry}'s against set of sku and supply channels.
    *
-   * @param inventoryEntryIdentifiers {@link Set} of unique inventory identifiers, used in search
-   *     predicate
-   * @return {@link List} of matching entries or empty list when there was no matching resources.
+   * @param inventoryEntryIdentifiers {@link java.util.Set} of unique inventory identifiers, used in
+   *     search predicate
+   * @return {@link java.util.List} of matching entries or empty list when there was no matching
+   *     resources.
    */
   @Nonnull
   CompletionStage<Set<InventoryEntry>> fetchInventoryEntriesByIdentifiers(
@@ -27,7 +28,8 @@ public interface InventoryService {
    * Creates new inventory entry from {@code inventoryEntryDraft}.
    *
    * @param inventoryEntryDraft draft with data for new inventory entry
-   * @return {@link CompletionStage} with created {@link InventoryEntry} or an exception
+   * @return {@link java.util.concurrent.CompletionStage} with created {@link InventoryEntry} or an
+   *     exception
    */
   @Nonnull
   CompletionStage<Optional<InventoryEntry>> createInventoryEntry(
@@ -37,11 +39,13 @@ public interface InventoryService {
    * Updates existing inventory entry with {@code updateActions}.
    *
    * @param inventoryEntry entry that should be updated
-   * @param updateActions {@link List} of actions that should be applied to {@code inventoryEntry}
-   * @return {@link CompletionStage} with updated {@link InventoryEntry} or an exception
+   * @param updateActions {@link java.util.List} of actions that should be applied to {@code
+   *     inventoryEntry}
+   * @return {@link java.util.concurrent.CompletionStage} with updated {@link InventoryEntry} or an
+   *     exception
    */
   @Nonnull
   CompletionStage<InventoryEntry> updateInventoryEntry(
       @Nonnull final InventoryEntry inventoryEntry,
-      @Nonnull final List<UpdateAction<InventoryEntry>> updateActions);
+      @Nonnull final List<InventoryEntryUpdateAction> updateActions);
 }

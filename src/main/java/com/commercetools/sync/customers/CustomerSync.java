@@ -8,6 +8,9 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
+import com.commercetools.api.models.customer.Customer;
+import com.commercetools.api.models.customer.CustomerDraft;
+import com.commercetools.api.models.customer.CustomerUpdateAction;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.customers.helpers.CustomerBatchValidator;
 import com.commercetools.sync.customers.helpers.CustomerReferenceResolver;
@@ -18,9 +21,7 @@ import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CustomerGroupServiceImpl;
 import com.commercetools.sync.services.impl.CustomerServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.customers.CustomerDraft;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,7 +33,12 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 /** This class syncs customer drafts with the corresponding customers in the CTP project. */
 public class CustomerSync
-    extends BaseSync<CustomerDraft, Customer, CustomerSyncStatistics, CustomerSyncOptions> {
+    extends BaseSync<
+        Customer,
+        CustomerDraft,
+        CustomerUpdateAction,
+        CustomerSyncStatistics,
+        CustomerSyncOptions> {
 
   private static final String CTP_CUSTOMER_FETCH_FAILED =
       "Failed to fetch existing customers with keys: '%s'.";
@@ -133,7 +139,7 @@ public class CustomerSync
                     cachingException,
                     null,
                     null,
-                    null,
+                    Collections.emptyList(),
                     validCustomerDrafts.size());
                 return CompletableFuture.completedFuture(null);
               }
@@ -153,7 +159,12 @@ public class CustomerSync
                           final String errorMessage =
                               format(CTP_CUSTOMER_FETCH_FAILED, validCustomerKeys);
                           handleError(
-                              errorMessage, exception, null, null, null, validCustomerKeys.size());
+                              errorMessage,
+                              exception,
+                              null,
+                              null,
+                              Collections.emptyList(),
+                              validCustomerKeys.size());
                           return CompletableFuture.completedFuture(null);
                         } else {
                           return syncBatch(fetchedCustomers, validCustomerDrafts);
@@ -192,7 +203,12 @@ public class CustomerSync
                                       customerDraft.getKey(),
                                       completionException.getMessage());
                               handleError(
-                                  errorMessage, completionException, null, customerDraft, null, 1);
+                                  errorMessage,
+                                  completionException,
+                                  null,
+                                  customerDraft,
+                                  Collections.emptyList(),
+                                  1);
                               return null;
                             }))
             .map(CompletionStage::toCompletableFuture)
@@ -214,10 +230,10 @@ public class CustomerSync
   private CompletionStage<Void> buildActionsAndUpdate(
       @Nonnull final Customer oldCustomer, @Nonnull final CustomerDraft newCustomerDraft) {
 
-    final List<UpdateAction<Customer>> updateActions =
+    final List<CustomerUpdateAction> updateActions =
         buildActions(oldCustomer, newCustomerDraft, syncOptions);
 
-    final List<UpdateAction<Customer>> updateActionsAfterCallback =
+    final List<CustomerUpdateAction> updateActionsAfterCallback =
         syncOptions.applyBeforeUpdateCallback(updateActions, newCustomerDraft, oldCustomer);
 
     if (!updateActionsAfterCallback.isEmpty()) {
@@ -231,7 +247,7 @@ public class CustomerSync
   private CompletionStage<Void> updateCustomer(
       @Nonnull final Customer oldCustomer,
       @Nonnull final CustomerDraft newCustomerDraft,
-      @Nonnull final List<UpdateAction<Customer>> updateActionsAfterCallback) {
+      @Nonnull final List<CustomerUpdateAction> updateActionsAfterCallback) {
 
     return customerService
         .updateCustomer(oldCustomer, updateActionsAfterCallback)
@@ -284,7 +300,13 @@ public class CustomerSync
                         CTP_CUSTOMER_UPDATE_FAILED,
                         customerKey,
                         "Failed to fetch from CTP while retrying after concurrency modification.");
-                handleError(errorMessage, exception, oldCustomer, newCustomerDraft, null, 1);
+                handleError(
+                    errorMessage,
+                    exception,
+                    oldCustomer,
+                    newCustomerDraft,
+                    Collections.emptyList(),
+                    1);
                 return CompletableFuture.completedFuture(null);
               }
 
@@ -297,7 +319,13 @@ public class CustomerSync
                                 CTP_CUSTOMER_UPDATE_FAILED,
                                 customerKey,
                                 "Not found when attempting to fetch while retrying after concurrency modification.");
-                        handleError(errorMessage, null, oldCustomer, newCustomerDraft, null, 1);
+                        handleError(
+                            errorMessage,
+                            null,
+                            oldCustomer,
+                            newCustomerDraft,
+                            Collections.emptyList(),
+                            1);
                         return CompletableFuture.completedFuture(null);
                       });
             });

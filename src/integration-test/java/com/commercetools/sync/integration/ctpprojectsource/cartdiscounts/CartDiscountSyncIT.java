@@ -1,10 +1,10 @@
 package com.commercetools.sync.integration.ctpprojectsource.cartdiscounts;
 
 import static com.commercetools.api.models.common.DefaultCurrencyUnits.EUR;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.*;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,13 +22,13 @@ import com.commercetools.api.models.cart_discount.CartDiscountValueAbsoluteDraft
 import com.commercetools.api.models.common.MoneyBuilder;
 import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.api.models.type.Type;
-import com.commercetools.sync.sdk2.cartdiscounts.CartDiscountSync;
-import com.commercetools.sync.sdk2.cartdiscounts.CartDiscountSyncOptions;
-import com.commercetools.sync.sdk2.cartdiscounts.CartDiscountSyncOptionsBuilder;
-import com.commercetools.sync.sdk2.cartdiscounts.helpers.CartDiscountSyncStatistics;
-import com.commercetools.sync.sdk2.cartdiscounts.utils.CartDiscountTransformUtils;
-import com.commercetools.sync.sdk2.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
-import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
+import com.commercetools.sync.cartdiscounts.CartDiscountSync;
+import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
+import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
+import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
+import com.commercetools.sync.cartdiscounts.utils.CartDiscountTransformUtils;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.List;

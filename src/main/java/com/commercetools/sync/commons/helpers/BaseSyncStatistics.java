@@ -2,7 +2,6 @@ package com.commercetools.sync.commons.helpers;
 
 import static java.lang.String.format;
 
-import io.netty.util.internal.StringUtil;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
@@ -30,7 +29,7 @@ public abstract class BaseSyncStatistics {
     created = new AtomicInteger();
     failed = new AtomicInteger();
     processed = new AtomicInteger();
-    latestBatchHumanReadableProcessingTime = StringUtil.EMPTY_STRING;
+    latestBatchHumanReadableProcessingTime = "";
   }
 
   /**

@@ -5,16 +5,17 @@ import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 
+import com.commercetools.api.models.channel.Channel;
+import com.commercetools.api.models.channel.ChannelResourceIdentifier;
+import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
+import com.commercetools.api.models.inventory.InventoryEntryDraft;
+import com.commercetools.api.models.inventory.InventoryEntryDraftBuilder;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.CustomReferenceResolver;
 import com.commercetools.sync.inventories.InventorySyncOptions;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.TypeService;
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.inventory.InventoryEntryDraft;
-import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.utils.CompletableFutureUtils;
+import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -108,7 +109,7 @@ public final class InventoryReferenceResolver
   CompletionStage<InventoryEntryDraftBuilder> resolveSupplyChannelReference(
       @Nonnull final InventoryEntryDraftBuilder draftBuilder) {
 
-    final ResourceIdentifier<Channel> channelReference = draftBuilder.getSupplyChannel();
+    final ChannelResourceIdentifier channelReference = draftBuilder.getSupplyChannel();
     if (channelReference != null && channelReference.getId() == null) {
       try {
         final String channelKey = getKeyFromResourceIdentifier(channelReference);
@@ -190,7 +191,8 @@ public final class InventoryReferenceResolver
   @Nonnull
   private static CompletionStage<InventoryEntryDraftBuilder> setChannelReference(
       @Nonnull final String channelId, @Nonnull final InventoryEntryDraftBuilder draftBuilder) {
-    return completedFuture(draftBuilder.supplyChannel(ResourceIdentifier.ofId(channelId)));
+    return completedFuture(
+        draftBuilder.supplyChannel(ChannelResourceIdentifierBuilder.of().id(channelId).build()));
   }
 
   /**

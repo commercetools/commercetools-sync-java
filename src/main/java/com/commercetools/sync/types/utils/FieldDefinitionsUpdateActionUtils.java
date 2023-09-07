@@ -8,16 +8,16 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
+import com.commercetools.api.models.type.FieldDefinition;
+import com.commercetools.api.models.type.FieldDefinitionBuilder;
+import com.commercetools.api.models.type.FieldType;
+import com.commercetools.api.models.type.TypeAddFieldDefinitionActionBuilder;
+import com.commercetools.api.models.type.TypeChangeFieldDefinitionOrderActionBuilder;
+import com.commercetools.api.models.type.TypeRemoveFieldDefinitionActionBuilder;
+import com.commercetools.api.models.type.TypeUpdateAction;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.commons.exceptions.DuplicateNameException;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.types.FieldDefinition;
-import io.sphere.sdk.types.FieldType;
-import io.sphere.sdk.types.Type;
-import io.sphere.sdk.types.commands.updateactions.AddFieldDefinition;
-import io.sphere.sdk.types.commands.updateactions.ChangeFieldDefinitionOrder;
-import io.sphere.sdk.types.commands.updateactions.RemoveFieldDefinition;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,17 +34,14 @@ import javax.annotation.Nullable;
 final class FieldDefinitionsUpdateActionUtils {
 
   /**
-   * Compares a list of {@link FieldDefinition}s with a list of {@link FieldDefinition}s. The method
-   * serves as an implementation for field definitions syncing and building the required update
-   * actions (AddFieldDefinition, RemoveFieldDefinition, ChangeFieldDefinitionOrder) and 1-1 update
-   * actions on field definitions (e.g. changeFieldDefinitionLabel, etc..) for the required
-   * resource.
+   * This method compares two lists of FieldDefinitions and performs actions for syncing and
+   * updating the field definitions. It handles adding, removing, changing order, changing labels
+   * etc. on the field definitions.
    *
    * <p>If the list of new {@link FieldDefinition}s is {@code null}, then remove actions are built
    * for every existing field definition in the {@code oldFieldDefinitions} list.
    *
-   * <p>Note: The method will ignore/filter out {@code null} field definitions from the passed
-   * {@code newFieldDefinitions}.
+   * <p>Note: Null field definitions are ignored and filtered out from {@code newFieldDefinitions}.
    *
    * @param oldFieldDefinitions the old list of field definitions.
    * @param newFieldDefinitions the new list of field definitions.
@@ -54,7 +51,7 @@ final class FieldDefinitionsUpdateActionUtils {
    *     enums duplicate keys.
    */
   @Nonnull
-  static List<UpdateAction<Type>> buildFieldDefinitionsUpdateActions(
+  static List<TypeUpdateAction> buildFieldDefinitionsUpdateActions(
       @Nonnull final List<FieldDefinition> oldFieldDefinitions,
       @Nullable final List<FieldDefinition> newFieldDefinitions)
       throws BuildUpdateActionException {
@@ -66,7 +63,7 @@ final class FieldDefinitionsUpdateActionUtils {
     } else {
       return oldFieldDefinitions.stream()
           .map(FieldDefinition::getName)
-          .map(RemoveFieldDefinition::of)
+          .map(name -> TypeRemoveFieldDefinitionActionBuilder.of().fieldName(name).build())
           .collect(Collectors.toList());
     }
   }
@@ -86,14 +83,14 @@ final class FieldDefinitionsUpdateActionUtils {
    *     enums duplicate keys.
    */
   @Nonnull
-  private static List<UpdateAction<Type>> buildUpdateActions(
+  private static List<TypeUpdateAction> buildUpdateActions(
       @Nonnull final List<FieldDefinition> oldFieldDefinitions,
       @Nonnull final List<FieldDefinition> newFieldDefinitions)
       throws BuildUpdateActionException {
 
     try {
 
-      final List<UpdateAction<Type>> updateActions =
+      final List<TypeUpdateAction> updateActions =
           buildRemoveFieldDefinitionOrFieldDefinitionUpdateActions(
               oldFieldDefinitions, newFieldDefinitions);
 
@@ -117,8 +114,8 @@ final class FieldDefinitionsUpdateActionUtils {
    * field definition fields (label, etc..), and add the computed actions to the list of update
    * actions.
    *
-   * <p>Note: If the field type field is different, the old field definition is removed and the new
-   * field definition is added with the new field type.
+   * <p>Note: If the field type is different, the old field definition is removed and the new field
+   * definition is added with the new field type.
    *
    * @param oldFieldDefinitions the list of old {@link FieldDefinition}s.
    * @param newFieldDefinitions the list of new {@link FieldDefinition}s.
@@ -131,7 +128,7 @@ final class FieldDefinitionsUpdateActionUtils {
    * @throws DuplicateKeyException in case there are enum values with duplicate keys.
    */
   @Nonnull
-  private static List<UpdateAction<Type>> buildRemoveFieldDefinitionOrFieldDefinitionUpdateActions(
+  private static List<TypeUpdateAction> buildRemoveFieldDefinitionOrFieldDefinitionUpdateActions(
       @Nonnull final List<FieldDefinition> oldFieldDefinitions,
       @Nonnull final List<FieldDefinition> newFieldDefinitions) {
 
@@ -170,14 +167,23 @@ final class FieldDefinitionsUpdateActionUtils {
                             // we remove the field definition and add a new one with a new field
                             // type
                             return Arrays.asList(
-                                RemoveFieldDefinition.of(oldFieldDefinitionName),
-                                AddFieldDefinition.of(newFieldDefinition));
+                                TypeRemoveFieldDefinitionActionBuilder.of()
+                                    .fieldName(oldFieldDefinitionName)
+                                    .build(),
+                                TypeAddFieldDefinitionActionBuilder.of()
+                                    .fieldDefinition(newFieldDefinition)
+                                    .build());
                           }
                         } else {
-                          return new ArrayList<UpdateAction<Type>>();
+                          return new ArrayList<TypeUpdateAction>();
                         }
                       })
-                  .orElseGet(() -> singletonList(RemoveFieldDefinition.of(oldFieldDefinitionName)));
+                  .orElseGet(
+                      () ->
+                          singletonList(
+                              TypeRemoveFieldDefinitionActionBuilder.of()
+                                  .fieldName(oldFieldDefinitionName)
+                                  .build()));
             })
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
@@ -192,7 +198,6 @@ final class FieldDefinitionsUpdateActionUtils {
    */
   private static boolean haveSameFieldType(
       @Nonnull final FieldType fieldTypeA, @Nonnull final FieldType fieldTypeB) {
-
     return fieldTypeA.getClass() == fieldTypeB.getClass();
   }
 
@@ -203,12 +208,12 @@ final class FieldDefinitionsUpdateActionUtils {
    *
    * @param oldFieldDefinitions the list of old {@link FieldDefinition}s
    * @param newFieldDefinitions the list of new {@link FieldDefinition}s
-   * @return a list of field definition update actions if the the order of field definitions is not
+   * @return a list of field definition update actions if the order of field definitions is not
    *     identical. Otherwise, if the field definitions order is identical, an empty optional is
    *     returned.
    */
   @Nonnull
-  private static Optional<UpdateAction<Type>> buildChangeFieldDefinitionOrderUpdateAction(
+  private static Optional<TypeUpdateAction> buildChangeFieldDefinitionOrderUpdateAction(
       @Nonnull final List<FieldDefinition> oldFieldDefinitions,
       @Nonnull final List<FieldDefinition> newFieldDefinitions) {
 
@@ -224,14 +229,13 @@ final class FieldDefinitionsUpdateActionUtils {
     final List<String> notExistingNames =
         newNames.stream().filter(newName -> !existingNames.contains(newName)).collect(toList());
 
-    final List<String> newFieldDefinitionsOrderNames =
-        newFieldDefinitions.stream().map(FieldDefinition::getName).collect(toList());
-
     final List<String> allNames =
         Stream.concat(existingNames.stream(), notExistingNames.stream()).collect(toList());
 
     return buildUpdateAction(
-        allNames, newNames, () -> ChangeFieldDefinitionOrder.of(newFieldDefinitionsOrderNames));
+        allNames,
+        newNames,
+        () -> TypeChangeFieldDefinitionOrderActionBuilder.of().fieldNames(newNames).build());
   }
 
   /**
@@ -245,7 +249,7 @@ final class FieldDefinitionsUpdateActionUtils {
    *     be added. Otherwise, if the field definitions are identical, an empty optional is returned.
    */
   @Nonnull
-  private static List<UpdateAction<Type>> buildAddFieldDefinitionUpdateActions(
+  private static List<TypeUpdateAction> buildAddFieldDefinitionUpdateActions(
       @Nonnull final List<FieldDefinition> oldFieldDefinitions,
       @Nonnull final List<FieldDefinition> newFieldDefinitions) {
 
@@ -258,13 +262,16 @@ final class FieldDefinitionsUpdateActionUtils {
             fieldDefinition -> !oldFieldDefinitionsNameMap.containsKey(fieldDefinition.getName()))
         .map(
             fieldDefinition ->
-                FieldDefinition.of(
-                    fieldDefinition.getType(),
-                    fieldDefinition.getName(),
-                    fieldDefinition.getLabel(),
-                    fieldDefinition.isRequired(),
-                    fieldDefinition.getInputHint()))
-        .map(AddFieldDefinition::of)
+                FieldDefinitionBuilder.of()
+                    .type(fieldDefinition.getType())
+                    .name(fieldDefinition.getName())
+                    .label(fieldDefinition.getLabel())
+                    .required(fieldDefinition.getRequired())
+                    .inputHint(fieldDefinition.getInputHint())
+                    .build())
+        .map(
+            fieldDefinition ->
+                TypeAddFieldDefinitionActionBuilder.of().fieldDefinition(fieldDefinition).build())
         .collect(Collectors.toList());
   }
 

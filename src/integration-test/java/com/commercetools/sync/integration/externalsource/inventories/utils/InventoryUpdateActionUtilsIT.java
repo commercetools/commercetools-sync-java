@@ -1,10 +1,10 @@
 package com.commercetools.sync.integration.externalsource.inventories.utils;
 
+import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
+import static com.commercetools.sync.commons.utils.CustomValueConverter.convertCustomValueObjDataToJsonNode;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.*;
 import static com.commercetools.sync.integration.commons.utils.InventoryITUtils.*;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.sdk2.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
-import static com.commercetools.sync.sdk2.commons.utils.CustomValueConverter.convertCustomValueObjDataToJsonNode;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.api.models.channel.Channel;
@@ -13,11 +13,11 @@ import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
 import com.commercetools.api.models.inventory.*;
 import com.commercetools.api.models.type.*;
 import com.commercetools.sync.integration.commons.utils.ChannelITUtils;
-import com.commercetools.sync.sdk2.inventories.InventorySyncOptions;
-import com.commercetools.sync.sdk2.inventories.InventorySyncOptionsBuilder;
-import com.commercetools.sync.sdk2.inventories.helpers.InventoryCustomActionBuilder;
-import com.commercetools.sync.sdk2.inventories.models.InventoryEntryCustomTypeAdapter;
-import com.commercetools.sync.sdk2.inventories.models.InventoryEntryDraftCustomTypeAdapter;
+import com.commercetools.sync.inventories.InventorySyncOptions;
+import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
+import com.commercetools.sync.inventories.helpers.InventoryCustomActionBuilder;
+import com.commercetools.sync.inventories.models.InventoryEntryCustomTypeAdapter;
+import com.commercetools.sync.inventories.models.InventoryEntryDraftCustomTypeAdapter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;

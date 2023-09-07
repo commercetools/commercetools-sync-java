@@ -1,6 +1,6 @@
 package com.commercetools.sync.integration.ctpprojectsource.categories;
 
-import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,16 +14,16 @@ import com.commercetools.api.models.error.DuplicateFieldError;
 import com.commercetools.api.models.error.DuplicateFieldErrorBuilder;
 import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
+import com.commercetools.sync.categories.CategorySync;
+import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
+import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
+import com.commercetools.sync.categories.utils.CategoryTransformUtils;
+import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
+import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.integration.commons.utils.CategoryITUtils;
 import com.commercetools.sync.integration.commons.utils.ITUtils;
 import com.commercetools.sync.integration.commons.utils.TestClientUtils;
-import com.commercetools.sync.sdk2.categories.CategorySync;
-import com.commercetools.sync.sdk2.categories.CategorySyncOptions;
-import com.commercetools.sync.sdk2.categories.CategorySyncOptionsBuilder;
-import com.commercetools.sync.sdk2.categories.helpers.CategorySyncStatistics;
-import com.commercetools.sync.sdk2.categories.utils.CategoryTransformUtils;
-import com.commercetools.sync.sdk2.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
-import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.Collections;

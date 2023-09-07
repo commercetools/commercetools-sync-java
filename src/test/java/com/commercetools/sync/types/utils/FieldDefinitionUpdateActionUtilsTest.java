@@ -1,30 +1,28 @@
 package com.commercetools.sync.types.utils;
 
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static com.commercetools.sync.commons.utils.PlainEnumValueFixtures.CustomFieldEnumValueFixtures.ENUM_VALUE_A;
+import static com.commercetools.sync.commons.utils.PlainEnumValueFixtures.CustomFieldEnumValueFixtures.ENUM_VALUE_B;
 import static com.commercetools.sync.types.utils.FieldDefinitionFixtures.stringFieldDefinition;
-import static com.commercetools.sync.types.utils.FieldDefinitionUpdateActionUtils.buildActions;
-import static com.commercetools.sync.types.utils.FieldDefinitionUpdateActionUtils.buildChangeLabelUpdateAction;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.EnumValue;
-import io.sphere.sdk.models.LocalizedEnumValue;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.TextInputHint;
-import io.sphere.sdk.types.EnumFieldType;
-import io.sphere.sdk.types.FieldDefinition;
-import io.sphere.sdk.types.LocalizedEnumFieldType;
-import io.sphere.sdk.types.SetFieldType;
-import io.sphere.sdk.types.StringFieldType;
-import io.sphere.sdk.types.Type;
-import io.sphere.sdk.types.commands.updateactions.AddEnumValue;
-import io.sphere.sdk.types.commands.updateactions.AddLocalizedEnumValue;
-import io.sphere.sdk.types.commands.updateactions.ChangeEnumValueOrder;
-import io.sphere.sdk.types.commands.updateactions.ChangeFieldDefinitionLabel;
-import io.sphere.sdk.types.commands.updateactions.ChangeLocalizedEnumValueOrder;
+import com.commercetools.api.models.type.CustomFieldEnumTypeBuilder;
+import com.commercetools.api.models.type.CustomFieldEnumValueBuilder;
+import com.commercetools.api.models.type.CustomFieldLocalizedEnumTypeBuilder;
+import com.commercetools.api.models.type.CustomFieldLocalizedEnumValue;
+import com.commercetools.api.models.type.CustomFieldLocalizedEnumValueBuilder;
+import com.commercetools.api.models.type.FieldDefinition;
+import com.commercetools.api.models.type.FieldDefinitionBuilder;
+import com.commercetools.api.models.type.TypeAddEnumValueActionBuilder;
+import com.commercetools.api.models.type.TypeAddLocalizedEnumValueActionBuilder;
+import com.commercetools.api.models.type.TypeChangeEnumValueOrderActionBuilder;
+import com.commercetools.api.models.type.TypeChangeInputHintActionBuilder;
+import com.commercetools.api.models.type.TypeChangeLabelActionBuilder;
+import com.commercetools.api.models.type.TypeChangeLocalizedEnumValueOrderActionBuilder;
+import com.commercetools.api.models.type.TypeTextInputHint;
+import com.commercetools.api.models.type.TypeUpdateAction;
+import com.commercetools.sync.commons.utils.LocalizedEnumValueFixtures;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,49 +37,61 @@ class FieldDefinitionUpdateActionUtilsTest {
   private static FieldDefinition newSame;
   private static FieldDefinition newDifferent;
 
-  private static final EnumValue ENUM_VALUE_A = EnumValue.of("a", "label_a");
-  private static final EnumValue ENUM_VALUE_B = EnumValue.of("b", "label_b");
-
-  private static final LocalizedEnumValue LOCALIZED_ENUM_VALUE_A =
-      LocalizedEnumValue.of("a", ofEnglish("label_a"));
-  private static final LocalizedEnumValue LOCALIZED_ENUM_VALUE_B =
-      LocalizedEnumValue.of("b", ofEnglish("label_b"));
+  private static final CustomFieldLocalizedEnumValue LOCALIZED_ENUM_VALUE_A =
+      LocalizedEnumValueFixtures.CustomFieldLocalizedEnumValueFixtures.ENUM_VALUE_A;
+  private static final CustomFieldLocalizedEnumValue LOCALIZED_ENUM_VALUE_B =
+      LocalizedEnumValueFixtures.CustomFieldLocalizedEnumValueFixtures.ENUM_VALUE_B;
 
   /** Initialises test data. */
   @BeforeAll
   static void setup() {
-    old = stringFieldDefinition(FIELD_NAME_1, LABEL_1, false, TextInputHint.SINGLE_LINE);
-    newSame = stringFieldDefinition(FIELD_NAME_1, LABEL_1, false, TextInputHint.SINGLE_LINE);
-    newDifferent = stringFieldDefinition(FIELD_NAME_1, LABEL_2, true, TextInputHint.MULTI_LINE);
+    old = stringFieldDefinition(FIELD_NAME_1, LABEL_1, false, TypeTextInputHint.SINGLE_LINE);
+    newSame = stringFieldDefinition(FIELD_NAME_1, LABEL_1, false, TypeTextInputHint.SINGLE_LINE);
+    newDifferent = stringFieldDefinition(FIELD_NAME_1, LABEL_2, true, TypeTextInputHint.MULTI_LINE);
   }
 
   @Test
   void buildChangeLabelAction_WithDifferentValues_ShouldReturnAction() {
-    final Optional<UpdateAction<Type>> result = buildChangeLabelUpdateAction(old, newDifferent);
+    final Optional<TypeUpdateAction> result =
+        FieldDefinitionUpdateActionUtils.buildChangeLabelUpdateAction(old, newDifferent);
 
     assertThat(result)
-        .contains(ChangeFieldDefinitionLabel.of(old.getName(), newDifferent.getLabel()));
+        .contains(
+            TypeChangeLabelActionBuilder.of()
+                .fieldName(old.getName())
+                .label(newDifferent.getLabel())
+                .build());
   }
 
   @Test
   void buildChangeLabelAction_WithSameValues_ShouldReturnEmptyOptional() {
-    final Optional<UpdateAction<Type>> result = buildChangeLabelUpdateAction(old, newSame);
+    final Optional<TypeUpdateAction> result =
+        FieldDefinitionUpdateActionUtils.buildChangeLabelUpdateAction(old, newSame);
 
     assertThat(result).isEmpty();
   }
 
   @Test
   void buildActions_WithNewDifferentValues_ShouldReturnActions() {
-    final List<UpdateAction<Type>> result = buildActions(old, newDifferent);
+    final List<TypeUpdateAction> result =
+        FieldDefinitionUpdateActionUtils.buildActions(old, newDifferent);
 
     assertThat(result)
         .containsExactlyInAnyOrder(
-            ChangeFieldDefinitionLabel.of(old.getName(), newDifferent.getLabel()));
+            TypeChangeLabelActionBuilder.of()
+                .fieldName(old.getName())
+                .label(newDifferent.getLabel())
+                .build(),
+            TypeChangeInputHintActionBuilder.of()
+                .fieldName(old.getName())
+                .inputHint(newDifferent.getInputHint())
+                .build());
   }
 
   @Test
   void buildActions_WithSameValues_ShouldReturnEmpty() {
-    final List<UpdateAction<Type>> result = buildActions(old, newSame);
+    final List<TypeUpdateAction> result =
+        FieldDefinitionUpdateActionUtils.buildActions(old, newSame);
 
     assertThat(result).isEmpty();
   }
@@ -89,46 +99,53 @@ class FieldDefinitionUpdateActionUtilsTest {
   @Test
   void buildActions_WithNewPlainEnum_ShouldReturnAddEnumValueAction() {
     final FieldDefinition oldFieldDefinition =
-        FieldDefinition.of(
-            EnumFieldType.of(singletonList(ENUM_VALUE_A)),
-            FIELD_NAME_1,
-            LocalizedString.ofEnglish(LABEL_1),
-            false,
-            TextInputHint.SINGLE_LINE);
+        FieldDefinitionBuilder.of()
+            .type(CustomFieldEnumTypeBuilder.of().plusValues(ENUM_VALUE_A).build())
+            .name(FIELD_NAME_1)
+            .label(ofEnglish(LABEL_1))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
     final FieldDefinition newFieldDefinition =
-        FieldDefinition.of(
-            EnumFieldType.of(asList(ENUM_VALUE_A, ENUM_VALUE_B)),
-            FIELD_NAME_1,
-            LocalizedString.ofEnglish(LABEL_1),
-            false,
-            TextInputHint.SINGLE_LINE);
+        FieldDefinitionBuilder.of()
+            .type(CustomFieldEnumTypeBuilder.of().plusValues(ENUM_VALUE_A, ENUM_VALUE_B).build())
+            .name(FIELD_NAME_1)
+            .label(ofEnglish(LABEL_1))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
-    final List<UpdateAction<Type>> result = buildActions(oldFieldDefinition, newFieldDefinition);
+    final List<TypeUpdateAction> result =
+        FieldDefinitionUpdateActionUtils.buildActions(oldFieldDefinition, newFieldDefinition);
 
-    assertThat(result).containsExactly(AddEnumValue.of(FIELD_NAME_1, ENUM_VALUE_B));
+    assertThat(result)
+        .containsExactly(
+            TypeAddEnumValueActionBuilder.of().fieldName(FIELD_NAME_1).value(ENUM_VALUE_B).build());
   }
 
   @Test
   void buildActions_WithoutOldPlainEnum_ShouldNotReturnAnyValueAction() {
-
     final FieldDefinition oldFieldDefinition =
-        FieldDefinition.of(
-            EnumFieldType.of(singletonList(ENUM_VALUE_A)),
-            FIELD_NAME_1,
-            LocalizedString.ofEnglish(LABEL_1),
-            false,
-            TextInputHint.SINGLE_LINE);
+        FieldDefinitionBuilder.of()
+            .type(CustomFieldEnumTypeBuilder.of().plusValues(ENUM_VALUE_A).build())
+            .name(FIELD_NAME_1)
+            .label(ofEnglish(LABEL_1))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
     final FieldDefinition newFieldDefinition =
-        FieldDefinition.of(
-            EnumFieldType.of(emptyList()),
-            FIELD_NAME_1,
-            LocalizedString.ofEnglish(LABEL_1),
-            false,
-            TextInputHint.SINGLE_LINE);
+        FieldDefinitionBuilder.of()
+            .type(CustomFieldEnumTypeBuilder.of().values(emptyList()).build())
+            .name(FIELD_NAME_1)
+            .label(ofEnglish(LABEL_1))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
-    final List<UpdateAction<Type>> result = buildActions(oldFieldDefinition, newFieldDefinition);
+    final List<TypeUpdateAction> result =
+        FieldDefinitionUpdateActionUtils.buildActions(oldFieldDefinition, newFieldDefinition);
 
     assertThat(result).isEmpty();
   }
@@ -137,188 +154,375 @@ class FieldDefinitionUpdateActionUtilsTest {
   void buildActions_WithNewLocalizedEnum_ShouldReturnAddLocalizedEnumValueAction() {
 
     final FieldDefinition oldFieldDefinition =
-        FieldDefinition.of(
-            LocalizedEnumFieldType.of(singletonList(LOCALIZED_ENUM_VALUE_A)),
-            FIELD_NAME_1,
-            LocalizedString.ofEnglish(LABEL_1),
-            false,
-            TextInputHint.SINGLE_LINE);
+        FieldDefinitionBuilder.of()
+            .type(CustomFieldLocalizedEnumTypeBuilder.of().values(LOCALIZED_ENUM_VALUE_A).build())
+            .name(FIELD_NAME_1)
+            .label(ofEnglish(LABEL_1))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
     final FieldDefinition newFieldDefinition =
-        FieldDefinition.of(
-            LocalizedEnumFieldType.of(asList(LOCALIZED_ENUM_VALUE_A, LOCALIZED_ENUM_VALUE_B)),
-            FIELD_NAME_1,
-            LocalizedString.ofEnglish(LABEL_1),
-            false,
-            TextInputHint.SINGLE_LINE);
+        FieldDefinitionBuilder.of()
+            .type(
+                CustomFieldLocalizedEnumTypeBuilder.of()
+                    .values(LOCALIZED_ENUM_VALUE_A, LOCALIZED_ENUM_VALUE_B)
+                    .build())
+            .name(FIELD_NAME_1)
+            .label(ofEnglish(LABEL_1))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
-    final List<UpdateAction<Type>> result = buildActions(oldFieldDefinition, newFieldDefinition);
+    final List<TypeUpdateAction> result =
+        FieldDefinitionUpdateActionUtils.buildActions(oldFieldDefinition, newFieldDefinition);
 
     assertThat(result)
-        .containsExactly(AddLocalizedEnumValue.of(FIELD_NAME_1, LOCALIZED_ENUM_VALUE_B));
+        .containsExactly(
+            TypeAddLocalizedEnumValueActionBuilder.of()
+                .fieldName(FIELD_NAME_1)
+                .value(LOCALIZED_ENUM_VALUE_B)
+                .build());
   }
 
   @Test
   void buildActions_WithStringFieldTypesWithLabelChanges_ShouldBuildChangeLabelAction() {
     final FieldDefinition oldFieldDefinition =
-        FieldDefinition.of(StringFieldType.of(), "fieldName1", ofEnglish("label1"), false);
+        FieldDefinitionBuilder.of()
+            .type(fieldTypeBuilder -> fieldTypeBuilder.stringBuilder())
+            .name("fieldName1")
+            .label(ofEnglish("label1"))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
     final FieldDefinition newFieldDefinition =
-        FieldDefinition.of(StringFieldType.of(), "fieldName1", ofEnglish("label2"), false);
+        FieldDefinitionBuilder.of()
+            .type(fieldTypeBuilder -> fieldTypeBuilder.stringBuilder())
+            .name("fieldName1")
+            .label(ofEnglish("label2"))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
-    final List<UpdateAction<Type>> result = buildActions(oldFieldDefinition, newFieldDefinition);
+    final List<TypeUpdateAction> result =
+        FieldDefinitionUpdateActionUtils.buildActions(oldFieldDefinition, newFieldDefinition);
 
     assertThat(result)
         .containsExactly(
-            ChangeFieldDefinitionLabel.of("fieldName1", newFieldDefinition.getLabel()));
+            TypeChangeLabelActionBuilder.of()
+                .fieldName("fieldName1")
+                .label(newFieldDefinition.getLabel())
+                .build());
   }
 
   @Test
   void
       buildActions_WithSetOfStringFieldTypesWithDefinitionLabelChanges_ShouldBuildChangeLabelAction() {
     final FieldDefinition oldFieldDefinition =
-        FieldDefinition.of(
-            SetFieldType.of(StringFieldType.of()), "fieldName1", ofEnglish("label1"), false);
+        FieldDefinitionBuilder.of()
+            .type(
+                fieldTypeBuilder ->
+                    fieldTypeBuilder
+                        .setBuilder()
+                        .elementType(fieldTypeBuilder1 -> fieldTypeBuilder1.stringBuilder()))
+            .name("fieldName1")
+            .label(ofEnglish("label1"))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
     final FieldDefinition newFieldDefinition =
-        FieldDefinition.of(
-            SetFieldType.of(StringFieldType.of()), "fieldName1", ofEnglish("label2"), false);
+        FieldDefinitionBuilder.of()
+            .type(
+                fieldTypeBuilder ->
+                    fieldTypeBuilder
+                        .setBuilder()
+                        .elementType(fieldTypeBuilder1 -> fieldTypeBuilder1.stringBuilder()))
+            .name("fieldName1")
+            .label(ofEnglish("label2"))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
-    final List<UpdateAction<Type>> result = buildActions(oldFieldDefinition, newFieldDefinition);
+    final List<TypeUpdateAction> result =
+        FieldDefinitionUpdateActionUtils.buildActions(oldFieldDefinition, newFieldDefinition);
 
     assertThat(result)
         .containsExactly(
-            ChangeFieldDefinitionLabel.of("fieldName1", newFieldDefinition.getLabel()));
+            TypeChangeLabelActionBuilder.of()
+                .fieldName("fieldName1")
+                .label(newFieldDefinition.getLabel())
+                .build());
   }
 
   @Test
   void
       buildActions_WithSetOfSetOfStringFieldTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
     final FieldDefinition oldFieldDefinition =
-        FieldDefinition.of(
-            SetFieldType.of(SetFieldType.of(StringFieldType.of())),
-            "fieldName1",
-            ofEnglish("label1"),
-            false);
+        FieldDefinitionBuilder.of()
+            .type(
+                fieldTypeBuilder ->
+                    fieldTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            fieldTypeBuilder1 ->
+                                fieldTypeBuilder1
+                                    .setBuilder()
+                                    .elementType(
+                                        fieldTypeBuilder2 -> fieldTypeBuilder2.stringBuilder())))
+            .name("fieldName1")
+            .label(ofEnglish("label1"))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
     final FieldDefinition newFieldDefinition =
-        FieldDefinition.of(
-            SetFieldType.of(SetFieldType.of(StringFieldType.of())),
-            "fieldName1",
-            ofEnglish("label2"),
-            false);
+        FieldDefinitionBuilder.of()
+            .type(
+                fieldTypeBuilder ->
+                    fieldTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            fieldTypeBuilder1 ->
+                                fieldTypeBuilder1
+                                    .setBuilder()
+                                    .elementType(
+                                        fieldTypeBuilder2 -> fieldTypeBuilder2.stringBuilder())))
+            .name("fieldName1")
+            .label(ofEnglish("label2"))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
-    final List<UpdateAction<Type>> result = buildActions(oldFieldDefinition, newFieldDefinition);
+    final List<TypeUpdateAction> result =
+        FieldDefinitionUpdateActionUtils.buildActions(oldFieldDefinition, newFieldDefinition);
 
     assertThat(result)
         .containsExactly(
-            ChangeFieldDefinitionLabel.of("fieldName1", newFieldDefinition.getLabel()));
+            TypeChangeLabelActionBuilder.of()
+                .fieldName("fieldName1")
+                .label(newFieldDefinition.getLabel())
+                .build());
   }
 
   @Test
   void buildActions_WithSameSetOfEnumsFieldTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
     final FieldDefinition oldFieldDefinition =
-        FieldDefinition.of(
-            SetFieldType.of(EnumFieldType.of(emptyList())),
-            "fieldName1",
-            ofEnglish("label1"),
-            false);
+        FieldDefinitionBuilder.of()
+            .type(
+                fieldTypeBuilder ->
+                    fieldTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            fieldTypeBuilder1 ->
+                                fieldTypeBuilder1.enumBuilder().values(emptyList())))
+            .name("fieldName1")
+            .label(ofEnglish("label1"))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
     final FieldDefinition newFieldDefinition =
-        FieldDefinition.of(
-            SetFieldType.of(EnumFieldType.of(emptyList())),
-            "fieldName1",
-            ofEnglish("label2"),
-            false);
+        FieldDefinitionBuilder.of()
+            .type(
+                fieldTypeBuilder ->
+                    fieldTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            fieldTypeBuilder1 ->
+                                fieldTypeBuilder1.enumBuilder().values(emptyList())))
+            .name("fieldName1")
+            .label(ofEnglish("label2"))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
-    final List<UpdateAction<Type>> result = buildActions(oldFieldDefinition, newFieldDefinition);
+    final List<TypeUpdateAction> result =
+        FieldDefinitionUpdateActionUtils.buildActions(oldFieldDefinition, newFieldDefinition);
 
     assertThat(result)
         .containsExactly(
-            ChangeFieldDefinitionLabel.of("fieldName1", newFieldDefinition.getLabel()));
+            TypeChangeLabelActionBuilder.of()
+                .fieldName("fieldName1")
+                .label(newFieldDefinition.getLabel())
+                .build());
   }
 
   @Test
   void buildActions_WithChangedSetOfEnumFieldTypes_ShouldBuildEnumActions() {
     final FieldDefinition oldFieldDefinition =
-        FieldDefinition.of(
-            SetFieldType.of(EnumFieldType.of(asList(ENUM_VALUE_A, ENUM_VALUE_B))),
-            "fieldName1",
-            ofEnglish("label1"),
-            false);
+        FieldDefinitionBuilder.of()
+            .type(
+                fieldTypeBuilder ->
+                    fieldTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            fieldTypeBuilder1 ->
+                                fieldTypeBuilder1.enumBuilder().values(ENUM_VALUE_A, ENUM_VALUE_B)))
+            .name("fieldName1")
+            .label(ofEnglish("label1"))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
     final FieldDefinition newFieldDefinition =
-        FieldDefinition.of(
-            SetFieldType.of(
-                EnumFieldType.of(asList(ENUM_VALUE_B, ENUM_VALUE_A, EnumValue.of("c", "c")))),
-            "fieldName1",
-            ofEnglish("label1"),
-            false);
+        FieldDefinitionBuilder.of()
+            .type(
+                fieldTypeBuilder ->
+                    fieldTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            fieldTypeBuilder1 ->
+                                fieldTypeBuilder1
+                                    .enumBuilder()
+                                    .values(
+                                        ENUM_VALUE_B,
+                                        ENUM_VALUE_A,
+                                        CustomFieldEnumValueBuilder.of()
+                                            .key("c")
+                                            .label("c")
+                                            .build())))
+            .name("fieldName1")
+            .label(ofEnglish("label1"))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
-    final List<UpdateAction<Type>> result = buildActions(oldFieldDefinition, newFieldDefinition);
+    final List<TypeUpdateAction> result =
+        FieldDefinitionUpdateActionUtils.buildActions(oldFieldDefinition, newFieldDefinition);
 
     assertThat(result)
         .containsExactly(
-            AddEnumValue.of("fieldName1", EnumValue.of("c", "c")),
-            ChangeEnumValueOrder.of("fieldName1", asList("b", "a", "c")));
+            TypeAddEnumValueActionBuilder.of()
+                .fieldName("fieldName1")
+                .value(CustomFieldEnumValueBuilder.of().key("c").label("c").build())
+                .build(),
+            TypeChangeEnumValueOrderActionBuilder.of()
+                .fieldName("fieldName1")
+                .keys("b", "a", "c")
+                .build());
   }
 
   @Test
   void buildActions_WithSameSetOfLEnumFieldTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
     // preparation
     final FieldDefinition oldFieldDefinition =
-        FieldDefinition.of(
-            SetFieldType.of(SetFieldType.of(LocalizedEnumFieldType.of(emptyList()))),
-            "fieldName1",
-            ofEnglish("label1"),
-            false);
+        FieldDefinitionBuilder.of()
+            .type(
+                fieldTypeBuilder ->
+                    fieldTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            fieldTypeBuilder1 ->
+                                fieldTypeBuilder1
+                                    .setBuilder()
+                                    .elementType(
+                                        fieldTypeBuilder2 ->
+                                            fieldTypeBuilder2
+                                                .localizedEnumBuilder()
+                                                .values(emptyList()))))
+            .name("fieldName1")
+            .label(ofEnglish("label1"))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
     final FieldDefinition newFieldDefinition =
-        FieldDefinition.of(
-            SetFieldType.of(SetFieldType.of(LocalizedEnumFieldType.of(emptyList()))),
-            "fieldName1",
-            ofEnglish("label2"),
-            false);
+        FieldDefinitionBuilder.of()
+            .type(
+                fieldTypeBuilder ->
+                    fieldTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            fieldTypeBuilder1 ->
+                                fieldTypeBuilder1
+                                    .setBuilder()
+                                    .elementType(
+                                        fieldTypeBuilder2 ->
+                                            fieldTypeBuilder2
+                                                .localizedEnumBuilder()
+                                                .values(emptyList()))))
+            .name("fieldName1")
+            .label(ofEnglish("label2"))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
     // test
-    final List<UpdateAction<Type>> result = buildActions(oldFieldDefinition, newFieldDefinition);
+    final List<TypeUpdateAction> result =
+        FieldDefinitionUpdateActionUtils.buildActions(oldFieldDefinition, newFieldDefinition);
 
     // assertion
     assertThat(result)
         .containsExactly(
-            ChangeFieldDefinitionLabel.of("fieldName1", newFieldDefinition.getLabel()));
+            TypeChangeLabelActionBuilder.of()
+                .fieldName("fieldName1")
+                .label(newFieldDefinition.getLabel())
+                .build());
   }
 
   @Test
   void buildActions_WithChangedSetOfLocalizedEnumFieldTypes_ShouldBuildEnumActions() {
     // preparation
     final FieldDefinition oldFieldDefinition =
-        FieldDefinition.of(
-            SetFieldType.of(
-                LocalizedEnumFieldType.of(asList(LOCALIZED_ENUM_VALUE_A, LOCALIZED_ENUM_VALUE_B))),
-            "fieldName1",
-            ofEnglish("label1"),
-            false);
+        FieldDefinitionBuilder.of()
+            .type(
+                fieldTypeBuilder ->
+                    fieldTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            fieldTypeBuilder1 ->
+                                fieldTypeBuilder1
+                                    .localizedEnumBuilder()
+                                    .values(LOCALIZED_ENUM_VALUE_A, LOCALIZED_ENUM_VALUE_B)))
+            .name("fieldName1")
+            .label(ofEnglish("label1"))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
     final FieldDefinition newFieldDefinition =
-        FieldDefinition.of(
-            SetFieldType.of(
-                LocalizedEnumFieldType.of(
-                    asList(
-                        LOCALIZED_ENUM_VALUE_B,
-                        LOCALIZED_ENUM_VALUE_A,
-                        LocalizedEnumValue.of("c", ofEnglish("c"))))),
-            "fieldName1",
-            ofEnglish("label1"),
-            false);
+        FieldDefinitionBuilder.of()
+            .type(
+                fieldTypeBuilder ->
+                    fieldTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            fieldTypeBuilder1 ->
+                                fieldTypeBuilder1
+                                    .localizedEnumBuilder()
+                                    .values(
+                                        LOCALIZED_ENUM_VALUE_B,
+                                        LOCALIZED_ENUM_VALUE_A,
+                                        CustomFieldLocalizedEnumValueBuilder.of()
+                                            .key("c")
+                                            .label(ofEnglish("c"))
+                                            .build())))
+            .name("fieldName1")
+            .label(ofEnglish("label1"))
+            .required(false)
+            .inputHint(TypeTextInputHint.SINGLE_LINE)
+            .build();
 
     // test
-    final List<UpdateAction<Type>> result = buildActions(oldFieldDefinition, newFieldDefinition);
+    final List<TypeUpdateAction> result =
+        FieldDefinitionUpdateActionUtils.buildActions(oldFieldDefinition, newFieldDefinition);
 
     // assertion
     assertThat(result)
         .containsExactly(
-            AddLocalizedEnumValue.of("fieldName1", LocalizedEnumValue.of("c", ofEnglish("c"))),
-            ChangeLocalizedEnumValueOrder.of("fieldName1", asList("b", "a", "c")));
+            TypeAddLocalizedEnumValueActionBuilder.of()
+                .fieldName("fieldName1")
+                .value(
+                    CustomFieldLocalizedEnumValueBuilder.of()
+                        .key("c")
+                        .label(ofEnglish("c"))
+                        .build())
+                .build(),
+            TypeChangeLocalizedEnumValueOrderActionBuilder.of()
+                .fieldName("fieldName1")
+                .keys("b", "a", "c")
+                .build());
   }
 }

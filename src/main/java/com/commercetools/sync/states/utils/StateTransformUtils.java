@@ -1,12 +1,20 @@
 package com.commercetools.sync.states.utils;
 
+import static com.commercetools.sync.states.utils.StateReferenceResolutionUtils.mapToStateDrafts;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.state.State;
+import com.commercetools.api.models.state.StateDraft;
+import com.commercetools.api.models.state.StateReference;
+import com.commercetools.sync.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import com.commercetools.sync.states.service.StateTransformService;
-import com.commercetools.sync.states.service.impl.StateTransformServiceImpl;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.states.StateDraft;
+import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 
@@ -29,16 +37,52 @@ public final class StateTransformUtils {
    * @param referenceIdToKeyCache the instance that manages cache.
    * @param states the states to resolve the references.
    * @return a new list which contains StateDrafts which have all their references resolved.
-   *     <p>TODO: Move the implementation from service class to this util class.
    */
   @Nonnull
   public static CompletableFuture<List<StateDraft>> toStateDrafts(
-      @Nonnull final SphereClient client,
+      @Nonnull final ProjectApiRoot client,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache,
       @Nonnull final List<State> states) {
 
-    final StateTransformService stateTransformService =
+    final StateTransformServiceImpl stateTransformService =
         new StateTransformServiceImpl(client, referenceIdToKeyCache);
     return stateTransformService.toStateDrafts(states);
+  }
+
+  private static class StateTransformServiceImpl extends BaseTransformServiceImpl {
+
+    StateTransformServiceImpl(
+        @Nonnull final ProjectApiRoot ctpClient,
+        @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
+      super(ctpClient, referenceIdToKeyCache);
+    }
+
+    @Nonnull
+    public CompletableFuture<List<StateDraft>> toStateDrafts(@Nonnull final List<State> states) {
+
+      return transformTransitionReference(states)
+          .thenApply(ignore -> mapToStateDrafts(states, referenceIdToKeyCache));
+    }
+
+    @Nonnull
+    private CompletableFuture<Void> transformTransitionReference(
+        @Nonnull final List<State> states) {
+
+      final Set<String> setOfTransitionStateIds =
+          states.stream()
+              .map(State::getTransitions)
+              .filter(Objects::nonNull)
+              .map(
+                  transitions ->
+                      transitions.stream()
+                          .filter(Objects::nonNull)
+                          .map(StateReference::getId)
+                          .collect(toList()))
+              .flatMap(Collection::stream)
+              .collect(toSet());
+
+      return fetchAndFillReferenceIdToKeyCache(
+          setOfTransitionStateIds, GraphQlQueryResource.STATES);
+    }
   }
 }

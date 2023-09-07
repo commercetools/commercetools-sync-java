@@ -5,10 +5,10 @@ import static com.commercetools.sync.integration.commons.utils.TestClientUtils.C
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.api.models.customer_group.CustomerGroup;
-import com.commercetools.sync.sdk2.products.ProductSyncOptions;
-import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
-import com.commercetools.sync.sdk2.services.CustomerGroupService;
-import com.commercetools.sync.sdk2.services.impl.CustomerGroupServiceImpl;
+import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.services.CustomerGroupService;
+import com.commercetools.sync.services.impl.CustomerGroupServiceImpl;
 import java.util.ArrayList;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;

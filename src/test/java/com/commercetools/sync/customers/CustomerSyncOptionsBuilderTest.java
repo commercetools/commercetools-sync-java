@@ -9,24 +9,25 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.customer.Customer;
+import com.commercetools.api.models.customer.CustomerChangeEmailActionBuilder;
+import com.commercetools.api.models.customer.CustomerDraft;
+import com.commercetools.api.models.customer.CustomerDraftBuilder;
+import com.commercetools.api.models.customer.CustomerUpdateAction;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.customers.CustomerDraft;
-import io.sphere.sdk.customers.CustomerDraftBuilder;
-import io.sphere.sdk.customers.commands.updateactions.ChangeEmail;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class CustomerSyncOptionsBuilderTest {
 
-  private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
+  private static final ProjectApiRoot CTP_CLIENT = mock(ProjectApiRoot.class);
   private final CustomerSyncOptionsBuilder customerSyncOptionsBuilder =
       CustomerSyncOptionsBuilder.of(CTP_CLIENT);
 
@@ -40,26 +41,26 @@ class CustomerSyncOptionsBuilderTest {
   void build_WithClient_ShouldBuildSyncOptions() {
     final CustomerSyncOptions customerSyncOptions = customerSyncOptionsBuilder.build();
     assertThat(customerSyncOptions).isNotNull();
-    assertThat(customerSyncOptions.getBeforeUpdateCallback()).isNull();
-    assertThat(customerSyncOptions.getBeforeCreateCallback()).isNull();
-    assertThat(customerSyncOptions.getErrorCallback()).isNull();
-    assertThat(customerSyncOptions.getWarningCallback()).isNull();
-    assertThat(customerSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
-    assertThat(customerSyncOptions.getBatchSize())
+    Assertions.assertThat(customerSyncOptions.getBeforeUpdateCallback()).isNull();
+    Assertions.assertThat(customerSyncOptions.getBeforeCreateCallback()).isNull();
+    Assertions.assertThat(customerSyncOptions.getErrorCallback()).isNull();
+    Assertions.assertThat(customerSyncOptions.getWarningCallback()).isNull();
+    Assertions.assertThat(customerSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
+    Assertions.assertThat(customerSyncOptions.getBatchSize())
         .isEqualTo(CustomerSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
-    assertThat(customerSyncOptions.getCacheSize()).isEqualTo(10_000);
+    Assertions.assertThat(customerSyncOptions.getCacheSize()).isEqualTo(10_000);
   }
 
   @Test
   void beforeUpdateCallback_WithFilterAsCallback_ShouldSetCallback() {
     final TriFunction<
-            List<UpdateAction<Customer>>, CustomerDraft, Customer, List<UpdateAction<Customer>>>
+            List<CustomerUpdateAction>, CustomerDraft, Customer, List<CustomerUpdateAction>>
         beforeUpdateCallback = (updateActions, newCustomer, oldCustomer) -> emptyList();
 
     customerSyncOptionsBuilder.beforeUpdateCallback(beforeUpdateCallback);
 
     final CustomerSyncOptions customerSyncOptions = customerSyncOptionsBuilder.build();
-    assertThat(customerSyncOptions.getBeforeUpdateCallback()).isNotNull();
+    Assertions.assertThat(customerSyncOptions.getBeforeUpdateCallback()).isNotNull();
   }
 
   @Test
@@ -67,21 +68,18 @@ class CustomerSyncOptionsBuilderTest {
     customerSyncOptionsBuilder.beforeCreateCallback((newCustomer) -> null);
 
     final CustomerSyncOptions customerSyncOptions = customerSyncOptionsBuilder.build();
-    assertThat(customerSyncOptions.getBeforeCreateCallback()).isNotNull();
+    Assertions.assertThat(customerSyncOptions.getBeforeCreateCallback()).isNotNull();
   }
 
   @Test
   void errorCallBack_WithCallBack_ShouldSetCallBack() {
     final QuadConsumer<
-            SyncException,
-            Optional<CustomerDraft>,
-            Optional<Customer>,
-            List<UpdateAction<Customer>>>
+            SyncException, Optional<CustomerDraft>, Optional<Customer>, List<CustomerUpdateAction>>
         mockErrorCallBack = (exception, newResource, oldResource, updateActions) -> {};
     customerSyncOptionsBuilder.errorCallback(mockErrorCallBack);
 
     final CustomerSyncOptions customerSyncOptions = customerSyncOptionsBuilder.build();
-    assertThat(customerSyncOptions.getErrorCallback()).isNotNull();
+    Assertions.assertThat(customerSyncOptions.getErrorCallback()).isNotNull();
   }
 
   @Test
@@ -91,7 +89,7 @@ class CustomerSyncOptionsBuilderTest {
     customerSyncOptionsBuilder.warningCallback(mockWarningCallBack);
 
     final CustomerSyncOptions customerSyncOptions = customerSyncOptionsBuilder.build();
-    assertThat(customerSyncOptions.getWarningCallback()).isNotNull();
+    Assertions.assertThat(customerSyncOptions.getWarningCallback()).isNotNull();
   }
 
   @Test
@@ -117,19 +115,19 @@ class CustomerSyncOptionsBuilderTest {
   void batchSize_WithPositiveValue_ShouldSetBatchSize() {
     CustomerSyncOptions customerSyncOptions =
         CustomerSyncOptionsBuilder.of(CTP_CLIENT).batchSize(10).build();
-    assertThat(customerSyncOptions.getBatchSize()).isEqualTo(10);
+    Assertions.assertThat(customerSyncOptions.getBatchSize()).isEqualTo(10);
   }
 
   @Test
   void batchSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
     final CustomerSyncOptions customerSyncOptionsWithZeroBatchSize =
         CustomerSyncOptionsBuilder.of(CTP_CLIENT).batchSize(0).build();
-    assertThat(customerSyncOptionsWithZeroBatchSize.getBatchSize())
+    Assertions.assertThat(customerSyncOptionsWithZeroBatchSize.getBatchSize())
         .isEqualTo(CustomerSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
 
     final CustomerSyncOptions customerSyncOptionsWithNegativeBatchSize =
         CustomerSyncOptionsBuilder.of(CTP_CLIENT).batchSize(-100).build();
-    assertThat(customerSyncOptionsWithNegativeBatchSize.getBatchSize())
+    Assertions.assertThat(customerSyncOptionsWithNegativeBatchSize.getBatchSize())
         .isEqualTo(CustomerSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
   }
 
@@ -137,12 +135,12 @@ class CustomerSyncOptionsBuilderTest {
   void applyBeforeUpdateCallBack_WithNullCallback_ShouldReturnIdenticalList() {
     final CustomerSyncOptions customerSyncOptions =
         CustomerSyncOptionsBuilder.of(CTP_CLIENT).build();
-    assertThat(customerSyncOptions.getBeforeUpdateCallback()).isNull();
+    Assertions.assertThat(customerSyncOptions.getBeforeUpdateCallback()).isNull();
 
-    final List<UpdateAction<Customer>> updateActions =
-        singletonList(ChangeEmail.of("mail@mail.com"));
+    final List<CustomerUpdateAction> updateActions =
+        singletonList(CustomerChangeEmailActionBuilder.of().email("mail@mail.com").build());
 
-    final List<UpdateAction<Customer>> filteredList =
+    final List<CustomerUpdateAction> filteredList =
         customerSyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(CustomerDraft.class), mock(Customer.class));
 
@@ -152,17 +150,17 @@ class CustomerSyncOptionsBuilderTest {
   @Test
   void applyBeforeUpdateCallBack_WithNullReturnCallback_ShouldReturnEmptyList() {
     final TriFunction<
-            List<UpdateAction<Customer>>, CustomerDraft, Customer, List<UpdateAction<Customer>>>
+            List<CustomerUpdateAction>, CustomerDraft, Customer, List<CustomerUpdateAction>>
         beforeUpdateCallback = (updateActions, newCustomer, oldCustomer) -> null;
     final CustomerSyncOptions customerSyncOptions =
         CustomerSyncOptionsBuilder.of(CTP_CLIENT)
             .beforeUpdateCallback(beforeUpdateCallback)
             .build();
-    assertThat(customerSyncOptions.getBeforeUpdateCallback()).isNotNull();
+    Assertions.assertThat(customerSyncOptions.getBeforeUpdateCallback()).isNotNull();
 
-    final List<UpdateAction<Customer>> updateActions =
-        singletonList(ChangeEmail.of("mail@mail.com"));
-    final List<UpdateAction<Customer>> filteredList =
+    final List<CustomerUpdateAction> updateActions =
+        singletonList(CustomerChangeEmailActionBuilder.of().email("mail@mail.com").build());
+    final List<CustomerUpdateAction> filteredList =
         customerSyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(CustomerDraft.class), mock(Customer.class));
     assertThat(filteredList).isNotEqualTo(updateActions);
@@ -171,7 +169,7 @@ class CustomerSyncOptionsBuilderTest {
 
   private interface MockTriFunction
       extends TriFunction<
-          List<UpdateAction<Customer>>, CustomerDraft, Customer, List<UpdateAction<Customer>>> {}
+          List<CustomerUpdateAction>, CustomerDraft, Customer, List<CustomerUpdateAction>> {}
 
   @Test
   void applyBeforeUpdateCallBack_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
@@ -182,10 +180,10 @@ class CustomerSyncOptionsBuilderTest {
             .beforeUpdateCallback(beforeUpdateCallback)
             .build();
 
-    assertThat(customerSyncOptions.getBeforeUpdateCallback()).isNotNull();
+    Assertions.assertThat(customerSyncOptions.getBeforeUpdateCallback()).isNotNull();
 
-    final List<UpdateAction<Customer>> updateActions = emptyList();
-    final List<UpdateAction<Customer>> filteredList =
+    final List<CustomerUpdateAction> updateActions = emptyList();
+    final List<CustomerUpdateAction> filteredList =
         customerSyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(CustomerDraft.class), mock(Customer.class));
 
@@ -196,18 +194,18 @@ class CustomerSyncOptionsBuilderTest {
   @Test
   void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
     final TriFunction<
-            List<UpdateAction<Customer>>, CustomerDraft, Customer, List<UpdateAction<Customer>>>
+            List<CustomerUpdateAction>, CustomerDraft, Customer, List<CustomerUpdateAction>>
         beforeUpdateCallback = (updateActions, newType, oldType) -> emptyList();
 
     final CustomerSyncOptions customerSyncOptions =
         CustomerSyncOptionsBuilder.of(CTP_CLIENT)
             .beforeUpdateCallback(beforeUpdateCallback)
             .build();
-    assertThat(customerSyncOptions.getBeforeUpdateCallback()).isNotNull();
+    Assertions.assertThat(customerSyncOptions.getBeforeUpdateCallback()).isNotNull();
 
-    final List<UpdateAction<Customer>> updateActions =
-        singletonList(ChangeEmail.of("mail@mail.com"));
-    final List<UpdateAction<Customer>> filteredList =
+    final List<CustomerUpdateAction> updateActions =
+        singletonList(CustomerChangeEmailActionBuilder.of().email("mail@mail.com").build());
+    final List<CustomerUpdateAction> filteredList =
         customerSyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(CustomerDraft.class), mock(Customer.class));
     assertThat(filteredList).isNotEqualTo(updateActions);
@@ -225,10 +223,12 @@ class CustomerSyncOptionsBuilderTest {
     final CustomerSyncOptions customerSyncOptions =
         CustomerSyncOptionsBuilder.of(CTP_CLIENT).beforeCreateCallback(draftFunction).build();
 
-    assertThat(customerSyncOptions.getBeforeCreateCallback()).isNotNull();
+    Assertions.assertThat(customerSyncOptions.getBeforeCreateCallback()).isNotNull();
 
     final CustomerDraft resourceDraft = mock(CustomerDraft.class);
     when(resourceDraft.getKey()).thenReturn("myKey");
+    when(resourceDraft.getEmail()).thenReturn("mail@mail.com");
+    when(resourceDraft.getPassword()).thenReturn("pass");
     when(resourceDraft.getDefaultBillingAddress()).thenReturn(null);
     when(resourceDraft.getDefaultShippingAddress()).thenReturn(null);
 
@@ -243,7 +243,7 @@ class CustomerSyncOptionsBuilderTest {
   void applyBeforeCreateCallBack_WithNullCallback_ShouldReturnIdenticalDraftInOptional() {
     final CustomerSyncOptions customerSyncOptions =
         CustomerSyncOptionsBuilder.of(CTP_CLIENT).build();
-    assertThat(customerSyncOptions.getBeforeCreateCallback()).isNull();
+    Assertions.assertThat(customerSyncOptions.getBeforeCreateCallback()).isNull();
 
     final CustomerDraft resourceDraft = mock(CustomerDraft.class);
     final Optional<CustomerDraft> filteredDraft =
@@ -257,7 +257,7 @@ class CustomerSyncOptionsBuilderTest {
     final Function<CustomerDraft, CustomerDraft> draftFunction = customerDraft -> null;
     final CustomerSyncOptions customerSyncOptions =
         CustomerSyncOptionsBuilder.of(CTP_CLIENT).beforeCreateCallback(draftFunction).build();
-    assertThat(customerSyncOptions.getBeforeCreateCallback()).isNotNull();
+    Assertions.assertThat(customerSyncOptions.getBeforeCreateCallback()).isNotNull();
 
     final CustomerDraft resourceDraft = mock(CustomerDraft.class);
     final Optional<CustomerDraft> filteredDraft =
@@ -270,17 +270,18 @@ class CustomerSyncOptionsBuilderTest {
   void cacheSize_WithPositiveValue_ShouldSetCacheSize() {
     CustomerSyncOptions customerSyncOptions =
         CustomerSyncOptionsBuilder.of(CTP_CLIENT).cacheSize(10).build();
-    assertThat(customerSyncOptions.getCacheSize()).isEqualTo(10);
+    Assertions.assertThat(customerSyncOptions.getCacheSize()).isEqualTo(10);
   }
 
   @Test
   void cacheSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
     final CustomerSyncOptions customerSyncOptionsWithZeroCacheSize =
         CustomerSyncOptionsBuilder.of(CTP_CLIENT).cacheSize(0).build();
-    assertThat(customerSyncOptionsWithZeroCacheSize.getCacheSize()).isEqualTo(10_000);
+    Assertions.assertThat(customerSyncOptionsWithZeroCacheSize.getCacheSize()).isEqualTo(10_000);
 
     final CustomerSyncOptions customerSyncOptionsWithNegativeCacheSize =
         CustomerSyncOptionsBuilder.of(CTP_CLIENT).cacheSize(-100).build();
-    assertThat(customerSyncOptionsWithNegativeCacheSize.getCacheSize()).isEqualTo(10_000);
+    Assertions.assertThat(customerSyncOptionsWithNegativeCacheSize.getCacheSize())
+        .isEqualTo(10_000);
   }
 }

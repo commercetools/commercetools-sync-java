@@ -1,29 +1,28 @@
 package com.commercetools.sync.products.utils;
 
-import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
-import static io.sphere.sdk.products.ProductProjectionType.STAGED;
-import static java.util.Arrays.asList;
-import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.commercetools.sync.commons.helpers.CategoryReferencePair;
+import com.commercetools.api.models.category.CategoryReference;
+import com.commercetools.api.models.category.CategoryReferenceBuilder;
+import com.commercetools.api.models.category.CategoryResourceIdentifier;
+import com.commercetools.api.models.common.ResourceIdentifier;
+import com.commercetools.api.models.product.CategoryOrderHints;
+import com.commercetools.api.models.product.CategoryOrderHintsBuilder;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.sync.commons.helpers.CategoryResourceIdentifierPair;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.CategoryOrderHints;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductProjection;
+import com.commercetools.sync.products.ProductSyncMockUtils;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -44,9 +43,8 @@ class ProductReferenceResolutionUtilsTest {
   void mapToProductDrafts_WithNonExpandedReferences_ShouldUseCacheAndReplaceReferences() {
 
     final List<ProductProjection> products =
-        asList(
-            readObjectFromResource("product-with-unresolved-references.json", Product.class)
-                .toProjection(STAGED));
+        Arrays.asList(
+            ProductSyncMockUtils.createProductFromJson("product-with-unresolved-references.json"));
 
     referenceIdToKeyCache.add("cda0dbf7-b42e-40bf-8453-241d5b587f93", "productTypeKey");
     referenceIdToKeyCache.add("1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f", "categoryKey1");
@@ -98,18 +96,18 @@ class ProductReferenceResolutionUtilsTest {
   void
       mapToCategoryReferencePair_WithReferencesNotInCache_ShouldReturnReferencesWithoutReplacedKeys() {
     final String categoryId = UUID.randomUUID().toString();
-    final Set<Reference<Category>> categoryReferences =
-        singleton(Category.referenceOfId(categoryId));
+    final List<CategoryReference> categoryReferences =
+        singletonList(CategoryReferenceBuilder.of().id(categoryId).build());
     final CategoryOrderHints categoryOrderHints = getCategoryOrderHintsMock(categoryReferences);
 
     final ProductProjection product = getProductMock(categoryReferences, categoryOrderHints);
 
-    final CategoryReferencePair categoryReferencePair =
+    final CategoryResourceIdentifierPair categoryReferencePair =
         ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, referenceIdToKeyCache);
 
     assertThat(categoryReferencePair).isNotNull();
 
-    final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
+    final List<CategoryResourceIdentifier> categoryReferencesWithKeys =
         categoryReferencePair.getCategoryResourceIdentifiers();
     final CategoryOrderHints categoryOrderHintsWithKeys =
         categoryReferencePair.getCategoryOrderHints();
@@ -124,16 +122,16 @@ class ProductReferenceResolutionUtilsTest {
   void
       mapToCategoryReferencePair_WithReferencesNotInCacheAndNoCategoryOrderHints_ShouldNotReplaceIds() {
     final String categoryId = UUID.randomUUID().toString();
-    final Set<Reference<Category>> categoryReferences =
-        singleton(Category.referenceOfId(categoryId));
+    final List<CategoryReference> categoryReferences =
+        singletonList(CategoryReferenceBuilder.of().id(categoryId).build());
     final ProductProjection product = getProductMock(categoryReferences, null);
 
-    final CategoryReferencePair categoryReferencePair =
+    final CategoryResourceIdentifierPair categoryReferencePair =
         ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, referenceIdToKeyCache);
 
     assertThat(categoryReferencePair).isNotNull();
 
-    final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
+    final List<CategoryResourceIdentifier> categoryReferencesWithKeys =
         categoryReferencePair.getCategoryResourceIdentifiers();
     final CategoryOrderHints categoryOrderHintsWithKeys =
         categoryReferencePair.getCategoryOrderHints();
@@ -146,14 +144,14 @@ class ProductReferenceResolutionUtilsTest {
 
   @Test
   void mapToCategoryReferencePair_WithNoReferences_ShouldNotReplaceIds() {
-    final ProductProjection product = getProductMock(Collections.emptySet(), null);
+    final ProductProjection product = getProductMock(Collections.emptyList(), null);
 
-    final CategoryReferencePair categoryReferencePair =
+    final CategoryResourceIdentifierPair categoryReferencePair =
         ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, referenceIdToKeyCache);
 
     assertThat(categoryReferencePair).isNotNull();
 
-    final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
+    final List<CategoryResourceIdentifier> categoryReferencesWithKeys =
         categoryReferencePair.getCategoryResourceIdentifiers();
     final CategoryOrderHints categoryOrderHintsWithKeys =
         categoryReferencePair.getCategoryOrderHints();
@@ -163,14 +161,14 @@ class ProductReferenceResolutionUtilsTest {
 
   @Test
   void mapToCategoryReferencePair_WithNullReferences_ShouldNotReplaceIds() {
-    final ProductProjection product = getProductMock(singleton(null), null);
+    final ProductProjection product = getProductMock(singletonList(null), null);
 
-    final CategoryReferencePair categoryReferencePair =
+    final CategoryResourceIdentifierPair categoryReferencePair =
         ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, referenceIdToKeyCache);
 
     assertThat(categoryReferencePair).isNotNull();
 
-    final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
+    final List<CategoryResourceIdentifier> categoryReferencesWithKeys =
         categoryReferencePair.getCategoryResourceIdentifiers();
     final CategoryOrderHints categoryOrderHintsWithKeys =
         categoryReferencePair.getCategoryOrderHints();
@@ -180,7 +178,7 @@ class ProductReferenceResolutionUtilsTest {
 
   @Nonnull
   private static ProductProjection getProductMock(
-      @Nonnull final Set<Reference<Category>> references,
+      @Nonnull final List<CategoryReference> references,
       @Nullable final CategoryOrderHints categoryOrderHints) {
     final ProductProjection product = mock(ProductProjection.class);
     mockProductCategories(references, categoryOrderHints, product);
@@ -188,7 +186,7 @@ class ProductReferenceResolutionUtilsTest {
   }
 
   private static void mockProductCategories(
-      @Nonnull final Set<Reference<Category>> references,
+      @Nonnull final List<CategoryReference> references,
       @Nullable final CategoryOrderHints categoryOrderHints,
       @Nonnull final ProductProjection product) {
     when(product.getCategories()).thenReturn(references);
@@ -197,10 +195,10 @@ class ProductReferenceResolutionUtilsTest {
 
   @Nonnull
   private static CategoryOrderHints getCategoryOrderHintsMock(
-      @Nonnull final Set<Reference<Category>> references) {
+      @Nonnull final List<CategoryReference> references) {
     final Map<String, String> categoryOrderHintMap = new HashMap<>();
     references.forEach(
         categoryReference -> categoryOrderHintMap.put(categoryReference.getId(), "0.1"));
-    return CategoryOrderHints.of(categoryOrderHintMap);
+    return CategoryOrderHintsBuilder.of().values(categoryOrderHintMap).build();
   }
 }

@@ -1,30 +1,29 @@
 package com.commercetools.sync.products.utils.productvariantupdateactionutils.prices;
 
-import static com.neovisionaries.i18n.CountryCode.DE;
-import static com.neovisionaries.i18n.CountryCode.FR;
-import static com.neovisionaries.i18n.CountryCode.NE;
-import static com.neovisionaries.i18n.CountryCode.UK;
-import static com.neovisionaries.i18n.CountryCode.US;
+import static com.neovisionaries.i18n.CountryCode.*;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.USD;
 import static java.util.Optional.ofNullable;
 
+import com.commercetools.api.models.channel.ChannelResourceIdentifier;
+import com.commercetools.api.models.common.CentPrecisionMoneyBuilder;
+import com.commercetools.api.models.common.PriceDraft;
+import com.commercetools.api.models.common.PriceDraftBuilder;
+import com.commercetools.api.models.common.TypedMoney;
+import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifier;
+import com.commercetools.api.models.type.CustomFieldsDraft;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.FieldContainer;
+import com.commercetools.api.models.type.FieldContainerBuilder;
+import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.neovisionaries.i18n.CountryCode;
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.customergroups.CustomerGroup;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.Price;
-import io.sphere.sdk.products.PriceDraft;
-import io.sphere.sdk.products.PriceDraftBuilder;
-import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.MoneyImpl;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.money.CurrencyUnit;
@@ -210,9 +209,10 @@ public final class PriceDraftFixtures {
           byMonth(1),
           byMonth(2),
           "channel1",
-          CustomFieldsDraft.ofTypeIdAndJson(
-              "customType1",
-              createCustomFieldsJsonMap("foo", JsonNodeFactory.instance.textNode("X"))));
+          CustomFieldsDraftBuilder.of()
+              .type(TypeResourceIdentifierBuilder.of().id("customType1").build())
+              .fields(createCustomFieldsContainer("foo", JsonNodeFactory.instance.textNode("X")))
+              .build());
 
   public static final PriceDraft DRAFT_DE_100_EUR_01_02_CHANNEL2_CUSTOMTYPE1_CUSTOMFIELDX =
       getPriceDraft(
@@ -223,9 +223,10 @@ public final class PriceDraftFixtures {
           byMonth(1),
           byMonth(2),
           "channel2",
-          CustomFieldsDraft.ofTypeIdAndJson(
-              "customType1",
-              createCustomFieldsJsonMap("foo", JsonNodeFactory.instance.textNode("X"))));
+          CustomFieldsDraftBuilder.of()
+              .type(TypeResourceIdentifierBuilder.of().id("customType1").build())
+              .fields(createCustomFieldsContainer("foo", JsonNodeFactory.instance.textNode("X")))
+              .build());
 
   public static final PriceDraft DRAFT_UK_22_GBP_CUSTOMTYPE1_CUSTOMFIELDX =
       getPriceDraft(
@@ -236,9 +237,10 @@ public final class PriceDraftFixtures {
           null,
           null,
           null,
-          CustomFieldsDraft.ofTypeIdAndJson(
-              "customType1",
-              createCustomFieldsJsonMap("foo", JsonNodeFactory.instance.textNode("X"))));
+          CustomFieldsDraftBuilder.of()
+              .type(TypeResourceIdentifierBuilder.of().id("customType1").build())
+              .fields(createCustomFieldsContainer("foo", JsonNodeFactory.instance.textNode("X")))
+              .build());
 
   public static final PriceDraft DRAFT_UK_22_USD_CUSTOMTYPE1_CUSTOMFIELDX =
       getPriceDraft(
@@ -249,9 +251,10 @@ public final class PriceDraftFixtures {
           null,
           null,
           null,
-          CustomFieldsDraft.ofTypeIdAndJson(
-              "customType1",
-              createCustomFieldsJsonMap("foo", JsonNodeFactory.instance.textNode("X"))));
+          CustomFieldsDraftBuilder.of()
+              .type(TypeResourceIdentifierBuilder.of().id("customType1").build())
+              .fields(createCustomFieldsContainer("foo", JsonNodeFactory.instance.textNode("X")))
+              .build());
 
   public static final PriceDraft DRAFT_UK_666_GBP_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDX =
       getPriceDraft(
@@ -262,9 +265,10 @@ public final class PriceDraftFixtures {
           null,
           null,
           "channel1",
-          CustomFieldsDraft.ofTypeIdAndJson(
-              "customType1",
-              createCustomFieldsJsonMap("foo", JsonNodeFactory.instance.textNode("X"))));
+          CustomFieldsDraftBuilder.of()
+              .type(TypeResourceIdentifierBuilder.of().id("customType1").build())
+              .fields(createCustomFieldsContainer("foo", JsonNodeFactory.instance.textNode("X")))
+              .build());
 
   public static final PriceDraft DRAFT_DE_22_USD =
       getPriceDraft(BigDecimal.valueOf(22), USD, DE, null, null, null, null, null);
@@ -278,11 +282,9 @@ public final class PriceDraftFixtures {
   }
 
   @Nonnull
-  public static Map<String, JsonNode> createCustomFieldsJsonMap(
+  public static FieldContainer createCustomFieldsContainer(
       @Nonnull final String fieldName, @Nonnull final JsonNode fieldValue) {
-    final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
-    customFieldsJsons.put(fieldName, fieldValue);
-    return customFieldsJsons;
+    return FieldContainerBuilder.of().addValue(fieldName, fieldValue).build();
   }
 
   @Nonnull
@@ -295,13 +297,26 @@ public final class PriceDraftFixtures {
       @Nullable final ZonedDateTime validUntil,
       @Nullable final String channelId,
       @Nullable final CustomFieldsDraft customFieldsDraft) {
-    return PriceDraftBuilder.of(Price.of(value, currencyUnits))
-        .country(countryCode)
+
+    final TypedMoney typedMoney =
+        CentPrecisionMoneyBuilder.of()
+            .centAmount(value.multiply(BigDecimal.valueOf(100)).longValue())
+            .currencyCode(currencyUnits.getCurrencyCode())
+            .fractionDigits(2)
+            .build();
+    return PriceDraftBuilder.of()
+        .value(typedMoney)
+        .country(Optional.ofNullable(countryCode).map(CountryCode::getAlpha2).orElse(null))
         .customerGroup(
-            ofNullable(customerGroupId).map(ResourceIdentifier::<CustomerGroup>ofId).orElse(null))
+            ofNullable(customerGroupId)
+                .map(id -> CustomerGroupResourceIdentifier.builder().id(id).build())
+                .orElse(null))
         .validFrom(validFrom)
         .validUntil(validUntil)
-        .channel(ofNullable(channelId).map(ResourceIdentifier::<Channel>ofId).orElse(null))
+        .channel(
+            ofNullable(channelId)
+                .map(id -> ChannelResourceIdentifier.builder().id(id).build())
+                .orElse(null))
         .custom(customFieldsDraft)
         .build();
   }
@@ -316,13 +331,26 @@ public final class PriceDraftFixtures {
       @Nullable final ZonedDateTime validUntil,
       @Nullable final String channelKey,
       @Nullable final CustomFieldsDraft customFieldsDraft) {
-    return PriceDraftBuilder.of(Price.of(value, currencyUnits))
-        .country(countryCode)
+
+    final TypedMoney typedMoney =
+        CentPrecisionMoneyBuilder.of()
+            .centAmount(value.multiply(BigDecimal.valueOf(100)).longValue())
+            .currencyCode(currencyUnits.getCurrencyCode())
+            .fractionDigits(2)
+            .build();
+    return PriceDraftBuilder.of()
+        .value(typedMoney)
+        .country(Optional.ofNullable(countryCode).map(CountryCode::getAlpha2).orElse(null))
         .customerGroup(
-            ofNullable(customerGroupKey).map(ResourceIdentifier::<CustomerGroup>ofKey).orElse(null))
+            ofNullable(customerGroupKey)
+                .map(key -> CustomerGroupResourceIdentifier.builder().key(key).build())
+                .orElse(null))
         .validFrom(validFrom)
         .validUntil(validUntil)
-        .channel(ofNullable(channelKey).map(ResourceIdentifier::<Channel>ofKey).orElse(null))
+        .channel(
+            ofNullable(channelKey)
+                .map(key -> ChannelResourceIdentifier.builder().key(key).build())
+                .orElse(null))
         .custom(customFieldsDraft)
         .build();
   }

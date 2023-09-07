@@ -1,17 +1,9 @@
 package com.commercetools.sync.products;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_2_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
-import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static io.sphere.sdk.products.ProductProjectionType.STAGED;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
+import static com.commercetools.sync.commons.utils.TestUtils.readObjectFromResource;
+import static com.commercetools.sync.products.ProductSyncMockUtils.*;
+import static java.util.Collections.*;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.as;
@@ -20,25 +12,38 @@ import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import com.commercetools.api.client.ByProjectKeyGraphqlPost;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.graph_ql.GraphQLRequest;
+import com.commercetools.api.models.product.Product;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductDraftBuilder;
+import com.commercetools.api.models.product.ProductMixin;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductProjectionType;
+import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
+import com.commercetools.api.models.state.StateResourceIdentifier;
+import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifier;
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
-import com.commercetools.sync.services.*;
+import com.commercetools.sync.services.CategoryService;
+import com.commercetools.sync.services.ChannelService;
+import com.commercetools.sync.services.CustomObjectService;
+import com.commercetools.sync.services.CustomerGroupService;
+import com.commercetools.sync.services.CustomerService;
+import com.commercetools.sync.services.ProductService;
+import com.commercetools.sync.services.ProductTypeService;
+import com.commercetools.sync.services.StateService;
+import com.commercetools.sync.services.TaxCategoryService;
+import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.commercetools.sync.services.impl.ProductServiceImpl;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.models.SphereException;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.queries.ProductProjectionQuery;
+import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
+import io.vrap.rmf.base.client.ApiHttpException;
+import io.vrap.rmf.base.client.ApiHttpHeaders;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +52,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class ProductSyncTest {
 
@@ -54,7 +60,7 @@ class ProductSyncTest {
   @SuppressWarnings("unchecked")
   void sync_WithNoValidDrafts_ShouldCompleteWithoutAnyProcessing() {
     // preparation
-    final SphereClient ctpClient = mock(SphereClient.class);
+    final ProjectApiRoot ctpClient = mock(ProjectApiRoot.class);
     final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(ctpClient).build();
 
     final ProductService productService = mock(ProductService.class);
@@ -62,23 +68,23 @@ class ProductSyncTest {
         new ProductSync(
             productSyncOptions,
             productService,
-            mock(ProductTypeService.class),
-            mock(CategoryService.class),
-            mock(TypeService.class),
-            mock(ChannelService.class),
-            mock(CustomerGroupService.class),
-            mock(TaxCategoryService.class),
-            mock(StateService.class),
-            mock(UnresolvedReferencesService.class),
-            mock(CustomObjectService.class),
-            mock(CustomerService.class));
+            Mockito.mock(ProductTypeService.class),
+            Mockito.mock(CategoryService.class),
+            Mockito.mock(TypeService.class),
+            Mockito.mock(ChannelService.class),
+            Mockito.mock(CustomerGroupService.class),
+            Mockito.mock(TaxCategoryService.class),
+            Mockito.mock(StateService.class),
+            Mockito.mock(UnresolvedReferencesService.class),
+            Mockito.mock(CustomObjectService.class),
+            Mockito.mock(CustomerService.class));
 
     final ProductDraft productDraftWithoutKey =
-        ProductDraftBuilder.of(
-                ResourceIdentifier.ofKey("productTypeKey"),
-                ofEnglish("name"),
-                ofEnglish("slug"),
-                emptyList())
+        ProductDraftBuilder.of()
+            .productType(ProductTypeResourceIdentifierBuilder.of().key("productTypeKey").build())
+            .name(LocalizedString.ofEnglish("name"))
+            .slug(LocalizedString.ofEnglish("slug"))
+            .variants(emptyList())
             .build();
 
     // test
@@ -97,14 +103,15 @@ class ProductSyncTest {
     // preparation
     final ProductDraft productDraft =
         createProductDraftBuilder(
-                PRODUCT_KEY_2_RESOURCE_PATH, ResourceIdentifier.ofKey("productTypeKey"))
+                PRODUCT_KEY_2_RESOURCE_PATH,
+                ProductTypeResourceIdentifierBuilder.of().key("productTypeKey").build())
             .build();
 
     final List<String> errorMessages = new ArrayList<>();
     final List<Throwable> exceptions = new ArrayList<>();
 
     final ProductSyncOptions syncOptions =
-        ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) -> {
                   errorMessages.add(exception.getMessage());
@@ -112,14 +119,14 @@ class ProductSyncTest {
                 })
             .build();
 
-    final ProductService productService = spy(new ProductServiceImpl(syncOptions));
+    final ProductService productService = Mockito.spy(new ProductServiceImpl(syncOptions));
 
     final ProductTypeService productTypeService = mock(ProductTypeService.class);
     when(productTypeService.cacheKeysToIds(any()))
         .thenReturn(
             supplyAsync(
                 () -> {
-                  throw new SphereException();
+                  throw new ApiHttpException(500, "", new ApiHttpHeaders());
                 }));
 
     final ProductSync productSync =
@@ -151,7 +158,7 @@ class ProductSyncTest {
         .hasSize(1)
         .singleElement(as(THROWABLE))
         .isExactlyInstanceOf(CompletionException.class)
-        .hasCauseExactlyInstanceOf(SphereException.class);
+        .hasCauseExactlyInstanceOf(ApiHttpException.class);
 
     assertThat(productSyncStatistics).hasValues(1, 0, 0, 1);
   }
@@ -162,17 +169,22 @@ class ProductSyncTest {
     // preparation
     final ProductDraft productDraft =
         createProductDraftBuilder(
-                PRODUCT_KEY_2_RESOURCE_PATH, ResourceIdentifier.ofKey("productTypeKey"))
-            .taxCategory(null)
-            .state(null)
+                PRODUCT_KEY_2_RESOURCE_PATH,
+                ProductTypeResourceIdentifierBuilder.of().key("productTypeKey").build())
+            .taxCategory((TaxCategoryResourceIdentifier) null)
+            .state((StateResourceIdentifier) null)
             .build();
 
-    final SphereClient mockClient = mock(SphereClient.class);
-    when(mockClient.execute(any(ProductProjectionQuery.class)))
+    final ProjectApiRoot mockClient = mock(ProjectApiRoot.class);
+
+    when(mockClient.graphql()).thenReturn(mock());
+    final ByProjectKeyGraphqlPost byProjectKeyGraphqlPost = mock();
+    when(mockClient.graphql().post(any(GraphQLRequest.class))).thenReturn(byProjectKeyGraphqlPost);
+    when(byProjectKeyGraphqlPost.execute())
         .thenReturn(
             supplyAsync(
                 () -> {
-                  throw new SphereException();
+                  throw new ApiHttpException(500, "", new ApiHttpHeaders());
                 }));
 
     final List<String> errorMessages = new ArrayList<>();
@@ -191,9 +203,7 @@ class ProductSyncTest {
     keyToIds.put(productDraft.getKey(), UUID.randomUUID().toString());
     when(productService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
 
-    final ProductTypeService productTypeService = mock(ProductTypeService.class);
-    when(productTypeService.fetchCachedProductTypeId(any()))
-        .thenReturn(completedFuture(Optional.of(UUID.randomUUID().toString())));
+    final ProductTypeService productTypeService = new ProductTypeServiceImpl(syncOptions);
 
     final CategoryService categoryService = mock(CategoryService.class);
     when(categoryService.fetchMatchingCategoriesByKeys(any()))
@@ -222,13 +232,13 @@ class ProductSyncTest {
     assertThat(errorMessages)
         .hasSize(1)
         .singleElement(as(STRING))
-        .contains("Failed to fetch existing products");
+        .contains("Failed to build a cache of keys to ids.");
 
     assertThat(exceptions)
         .hasSize(1)
         .singleElement(as(THROWABLE))
         .isExactlyInstanceOf(CompletionException.class)
-        .hasCauseExactlyInstanceOf(SphereException.class);
+        .hasCauseExactlyInstanceOf(ApiHttpException.class);
 
     assertThat(productSyncStatistics).hasValues(1, 0, 0, 1);
   }
@@ -239,13 +249,14 @@ class ProductSyncTest {
     // preparation
     final ProductDraft productDraft =
         createProductDraftBuilder(
-                PRODUCT_KEY_2_RESOURCE_PATH, ResourceIdentifier.ofKey("productTypeKey"))
-            .taxCategory(null)
-            .state(null)
+                PRODUCT_KEY_2_RESOURCE_PATH,
+                ProductTypeResourceIdentifierBuilder.of().key("productTypeKey").build())
+            .taxCategory((TaxCategoryResourceIdentifier) null)
+            .state((StateResourceIdentifier) null)
             .build();
 
     final ProductSyncOptions productSyncOptions =
-        ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
 
     final ProductService productService = mock(ProductService.class);
     when(productService.cacheKeysToIds(anySet())).thenReturn(completedFuture(emptyMap()));
@@ -292,17 +303,19 @@ class ProductSyncTest {
     // preparation
     final ProductDraft productDraft =
         createProductDraftBuilder(
-                PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, ResourceIdentifier.ofKey("productTypeKey"))
-            .taxCategory(null)
-            .state(null)
+                PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
+                ProductTypeResourceIdentifierBuilder.of().key("productTypeKey").build())
+            .taxCategory((TaxCategoryResourceIdentifier) null)
+            .state((StateResourceIdentifier) null)
             .build();
 
     final ProductProjection mockedExistingProduct =
-        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class)
-            .toProjection(STAGED);
+        ProductMixin.toProjection(
+            readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class),
+            ProductProjectionType.STAGED);
 
     final ProductSyncOptions productSyncOptions =
-        ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class)).build();
 
     final ProductService productService = mock(ProductService.class);
     final Map<String, String> keyToIds = new HashMap<>();
@@ -354,19 +367,21 @@ class ProductSyncTest {
     // preparation
     final ProductDraft productDraft =
         createProductDraftBuilder(
-                PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, ResourceIdentifier.ofKey("productTypeKey"))
-            .taxCategory(null)
-            .state(null)
+                PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
+                ProductTypeResourceIdentifierBuilder.of().key("productTypeKey").build())
+            .taxCategory((TaxCategoryResourceIdentifier) null)
+            .state((StateResourceIdentifier) null)
             .build();
 
     final ProductProjection mockedExistingProduct =
-        readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class)
-            .toProjection(STAGED);
+        ProductMixin.toProjection(
+            readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class),
+            ProductProjectionType.STAGED);
     final List<String> errorMessages = new ArrayList<>();
     final List<Throwable> exceptions = new ArrayList<>();
 
     final ProductSyncOptions productSyncOptions =
-        ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+        ProductSyncOptionsBuilder.of(mock(ProjectApiRoot.class))
             .errorCallback(
                 (exception, oldResource, newResource, updateActions) -> {
                   errorMessages.add(exception.getMessage());

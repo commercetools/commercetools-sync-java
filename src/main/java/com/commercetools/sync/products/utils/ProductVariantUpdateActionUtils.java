@@ -1,52 +1,46 @@
 package com.commercetools.sync.products.utils;
 
+import static com.commercetools.sync.commons.utils.CollectionUtils.*;
 import static com.commercetools.sync.commons.utils.AssetsUpdateActionUtils.buildAssetsUpdateActions;
-import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToMap;
-import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
-import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
-import static com.commercetools.sync.internals.utils.UnorderedCollectionSyncUtils.buildRemoveUpdateActions;
-import static com.commercetools.sync.internals.utils.UpdateActionsSortUtils.sortPriceActions;
+import static com.commercetools.sync.products.utils.UnorderedCollectionSyncUtils.buildRemoveUpdateActions;
+import static com.commercetools.sync.products.utils.UpdateActionsSortUtils.sortPriceActions;
 import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA;
 import static com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils.buildProductVariantAttributeUpdateAction;
 import static com.commercetools.sync.products.utils.ProductVariantPriceUpdateActionUtils.buildActions;
+
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 
+import com.commercetools.api.models.common.AssetDraft;
+import com.commercetools.api.models.common.Image;
+import com.commercetools.api.models.common.Price;
+import com.commercetools.api.models.common.PriceDraft;
+import com.commercetools.api.models.product.Attribute;
+import com.commercetools.api.models.product.Product;
+import com.commercetools.api.models.product.ProductAddExternalImageAction;
+import com.commercetools.api.models.product.ProductAddPriceAction;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductMoveImageToPositionAction;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductRemoveImageAction;
+import com.commercetools.api.models.product.ProductRemovePriceActionBuilder;
+import com.commercetools.api.models.product.ProductSetAttributeAction;
+import com.commercetools.api.models.product.ProductSetAttributeInAllVariantsAction;
+import com.commercetools.api.models.product.ProductSetSkuAction;
+import com.commercetools.api.models.product.ProductUpdateAction;
+import com.commercetools.api.models.product.ProductVariant;
+import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.internals.helpers.PriceCompositeId;
 import com.commercetools.sync.products.AttributeMetaData;
-import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.products.helpers.PriceCompositeId;
 import com.commercetools.sync.products.helpers.ProductAssetActionFactory;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.products.Image;
-import io.sphere.sdk.products.Price;
-import io.sphere.sdk.products.PriceDraft;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.ProductVariant;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.attributes.Attribute;
-import io.sphere.sdk.products.attributes.AttributeDraft;
-import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
-import io.sphere.sdk.products.commands.updateactions.AddPrice;
-import io.sphere.sdk.products.commands.updateactions.MoveImageToPosition;
-import io.sphere.sdk.products.commands.updateactions.RemoveImage;
-import io.sphere.sdk.products.commands.updateactions.RemovePrice;
-import io.sphere.sdk.products.commands.updateactions.SetAttribute;
-import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
-import io.sphere.sdk.products.commands.updateactions.SetSku;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+
+import java.util.*;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -60,9 +54,11 @@ public final class ProductVariantUpdateActionUtils {
 
   /**
    * Compares the SKUs of a {@link ProductVariantDraft} and a {@link ProductVariant}. It returns a
-   * {@link SetSku} update action as a result in an {@link Optional}. If both the {@link
-   * ProductVariantDraft} and the {@link ProductVariant} have identical identical SKUs, then no
-   * update action is needed and hence an empty {@link Optional} is returned.
+
+   * {@link ProductSetSkuAction} update action as a result in an {@link Optional}. If both the
+   * {@link ProductVariantDraft} and the {@link ProductVariant} have identical identical SKUs, then
+   * no update action is needed and hence an empty {@link Optional} is returned.
+
    *
    * @param oldProductVariant the variant which should be updated.
    * @param newProductVariant the variant draft where we get the new SKU.
@@ -70,7 +66,8 @@ public final class ProductVariantUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static Optional<SetSku> buildProductVariantSkuUpdateAction(
+
+  public static Optional<ProductUpdateAction> buildProductVariantSkuUpdateAction(
       @Nonnull final ProductVariant oldProductVariant,
       @Nonnull final ProductVariantDraft newProductVariant) {
     final String oldProductVariantSku = oldProductVariant.getSku();
@@ -78,15 +75,24 @@ public final class ProductVariantUpdateActionUtils {
     return buildUpdateAction(
         oldProductVariantSku,
         newProductVariantSku,
-        () -> SetSku.of(oldProductVariant.getId(), newProductVariantSku, true));
+
+        () ->
+            ProductSetSkuAction.builder()
+                .variantId(oldProductVariant.getId())
+                .sku(newProductVariantSku)
+                .staged(true)
+                .build());
+
   }
 
   /**
-   * Compares the {@link List} of {@link io.sphere.sdk.products.Price}s of a {@link
-   * ProductVariantDraft} and a {@link ProductVariant} and returns a {@link List} of {@link
-   * UpdateAction}&lt;{@link Product}&gt;. If both the {@link ProductVariantDraft} and the {@link
-   * ProductVariant} have identical list of prices, then no update action is needed and hence an
-   * empty {@link List} is returned.
+   * Compares the {@link List} of {@link Price}s of a {@link ProductVariantDraft} and a {@link
+
+   * ProductVariant} and returns a {@link List} of {@link ProductUpdateAction}&lt;{@link
+   * Product}&gt;. If both the {@link ProductVariantDraft} and the {@link ProductVariant} have
+   * identical list of prices, then no update action is needed and hence an empty {@link List} is
+   * returned.
+
    *
    * @param oldProduct the product which should be updated.
    * @param newProduct the product draft.
@@ -95,12 +101,14 @@ public final class ProductVariantUpdateActionUtils {
    * @param syncOptions the sync options wrapper which contains options related to the sync process
    *     supplied by the user. For example, custom callbacks to call in case of warnings or errors
    *     occurring on the build update action process. And other options (See {@link
-   *     ProductSyncOptions} for more info).
+   *     com.commercetools.sync.products.ProductSyncOptions} for more info).
    * @return a list that contains all the update actions needed, otherwise an empty list if no
    *     update actions are needed.
    */
   @Nonnull
-  public static List<UpdateAction<Product>> buildProductVariantPricesUpdateActions(
+
+  public static List<ProductUpdateAction> buildProductVariantPricesUpdateActions(
+
       @Nullable final ProductProjection oldProduct,
       @Nonnull final ProductDraft newProduct,
       @Nonnull final ProductVariant oldProductVariant,
@@ -110,15 +118,20 @@ public final class ProductVariantUpdateActionUtils {
     final List<Price> oldPrices = oldProductVariant.getPrices();
     final List<PriceDraft> newPrices = newProductVariant.getPrices();
 
-    final List<UpdateAction<Product>> updateActions =
+
+    final List<ProductUpdateAction> updateActions =
+
         buildRemoveUpdateActions(
             oldPrices,
             newPrices,
             PriceCompositeId::of,
             PriceCompositeId::of,
-            price -> RemovePrice.of(price, true));
 
-    final Integer variantId = oldProductVariant.getId();
+            price ->
+                ProductRemovePriceActionBuilder.of().priceId(price.getId()).staged(true).build());
+
+    final Long variantId = oldProductVariant.getId();
+
     final Map<PriceCompositeId, Price> oldPricesMap =
         collectionToMap(oldPrices, PriceCompositeId::of);
 
@@ -138,14 +151,24 @@ public final class ProductVariantUpdateActionUtils {
               } else {
                 final PriceCompositeId newPriceCompositeId = PriceCompositeId.of(newPrice);
                 final Price matchingOldPrice = oldPricesMap.get(newPriceCompositeId);
-                final List<UpdateAction<Product>> updateOrAddPrice =
+
+                final List<ProductUpdateAction> updateOrAddPrice =
+
                     ofNullable(matchingOldPrice)
                         .map(
                             oldPrice ->
                                 buildActions(
                                     newProduct, variantId, oldPrice, newPrice, syncOptions))
                         .orElseGet(
-                            () -> singletonList(AddPrice.ofVariantId(variantId, newPrice, true)));
+
+                            () ->
+                                singletonList(
+                                    ProductAddPriceAction.builder()
+                                        .variantId(variantId)
+                                        .price(newPrice)
+                                        .staged(true)
+                                        .build()));
+
                 updateActions.addAll(updateOrAddPrice);
               }
             });
@@ -155,9 +178,12 @@ public final class ProductVariantUpdateActionUtils {
 
   /**
    * Compares the {@link List} of {@link Image}s of a {@link ProductVariantDraft} and a {@link
-   * ProductVariant} and returns a {@link List} of {@link UpdateAction}&lt;{@link Product}&gt;. If
-   * both the {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of
-   * images, then no update action is needed and hence an empty {@link List} is returned.
+
+   * ProductVariant} and returns a {@link List} of {@link ProductUpdateAction}&lt;{@link
+   * Product}&gt;. If both the {@link ProductVariantDraft} and the {@link ProductVariant} have
+   * identical list of images, then no update action is needed and hence an empty {@link List} is
+   * returned.
+
    *
    * @param oldProductVariant the {@link ProductVariant} which should be updated.
    * @param newProductVariant the {@link ProductVariantDraft} where we get the new list of images.
@@ -165,11 +191,13 @@ public final class ProductVariantUpdateActionUtils {
    *     update actions are needed.
    */
   @Nonnull
-  public static List<UpdateAction<Product>> buildProductVariantImagesUpdateActions(
+
+  public static List<ProductUpdateAction> buildProductVariantImagesUpdateActions(
       @Nonnull final ProductVariant oldProductVariant,
       @Nonnull final ProductVariantDraft newProductVariant) {
-    final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-    final Integer oldProductVariantId = oldProductVariant.getId();
+    final List<ProductUpdateAction> updateActions = new ArrayList<>();
+    final Long oldProductVariantId = oldProductVariant.getId();
+
     final List<Image> oldProductVariantImages = oldProductVariant.getImages();
     final List<Image> newProductVariantImages = newProductVariant.getImages();
 
@@ -187,7 +215,14 @@ public final class ProductVariantUpdateActionUtils {
               oldProductVariantImages, oldVariantImage -> !newImages.contains(oldVariantImage))
           .forEach(
               oldImage -> {
-                updateActions.add(RemoveImage.ofVariantId(oldProductVariantId, oldImage, true));
+
+                updateActions.add(
+                    ProductRemoveImageAction.builder()
+                        .variantId(oldProductVariantId)
+                        .imageUrl(oldImage.getUrl())
+                        .staged(true)
+                        .build());
+
                 updatedOldImages.remove(oldImage);
               });
 
@@ -197,7 +232,13 @@ public final class ProductVariantUpdateActionUtils {
           .forEach(
               newImage -> {
                 updateActions.add(
-                    AddExternalImage.ofVariantId(oldProductVariantId, newImage, true));
+
+                    ProductAddExternalImageAction.builder()
+                        .variantId(oldProductVariantId)
+                        .image(newImage)
+                        .staged(true)
+                        .build());
+
                 updatedOldImages.add(newImage);
               });
       updateActions.addAll(
@@ -208,24 +249,30 @@ public final class ProductVariantUpdateActionUtils {
 
   /**
    * Compares an old {@link List} of {@link Image}s and a new one and returns a {@link List} of
-   * {@link MoveImageToPosition} with the given {@code variantId}. If both the lists are identical,
-   * then no update action is needed and hence an empty {@link List} is returned.
+
+   * {@link ProductMoveImageToPositionAction} with the given {@code variantId}. If both the lists
+   * are identical, then no update action is needed and hence an empty {@link List} is returned.
+
    *
    * <p>This method expects the two lists two contain the same images only in different order.
    * Otherwise, an {@link IllegalArgumentException} would be thrown.
    *
-   * <p><b>Note</b>: the solution is still not optimized and may contain {@link MoveImageToPosition}
-   * actions for items which are already on desired positions (after previous moves in the
-   * sequence). This will be re-optimized in the next releases.
+
+   * <p><b>Note</b>: the solution is still not optimized and may contain {@link
+   * ProductMoveImageToPositionAction} actions for items which are already on desired positions
+   * (after previous moves in the sequence). This will be re-optimized in the next releases.
    *
-   * @param variantId the variantId for the {@link MoveImageToPosition} update actions.
+   * @param variantId the variantId for the {@link ProductMoveImageToPositionAction} update actions.
+
    * @param oldImages the old list of images.
    * @param newImages the new list of images.
    * @return a list that contains all the update actions needed, otherwise an empty list if no
    *     update actions are needed.
    */
-  public static List<MoveImageToPosition> buildMoveImageToPositionUpdateActions(
-      final int variantId,
+
+  public static List<ProductMoveImageToPositionAction> buildMoveImageToPositionUpdateActions(
+      final long variantId,
+
       @Nonnull final List<Image> oldImages,
       @Nonnull final List<Image> newImages) {
     final int oldImageListSize = oldImages.size();
@@ -240,17 +287,21 @@ public final class ProductVariantUpdateActionUtils {
     // optimization: to avoid multiple linear image index searching in the loop below - create an
     // [image -> index]
     // map. This avoids quadratic order of growth of the implementation for large arrays.
-    final Map<Image, Integer> imageIndexMap = new HashMap<>(oldImageListSize);
-    int index = 0;
+
+    final Map<Image, Long> imageIndexMap = new HashMap<>(oldImageListSize);
+    long index = 0;
+
     for (Image newImage : newImages) {
       imageIndexMap.put(newImage, index++);
     }
 
-    final List<MoveImageToPosition> updateActions = new ArrayList<>();
+
+    final List<ProductMoveImageToPositionAction> updateActions = new ArrayList<>();
 
     for (int oldIndex = 0; oldIndex < oldImageListSize; oldIndex++) {
       final Image oldImage = oldImages.get(oldIndex);
-      final Integer newIndex =
+      final Long newIndex =
+
           ofNullable(imageIndexMap.get(oldImage))
               .orElseThrow(
                   () ->
@@ -259,8 +310,14 @@ public final class ProductVariantUpdateActionUtils {
 
       if (oldIndex != newIndex) {
         updateActions.add(
-            MoveImageToPosition.ofImageUrlAndVariantId(
-                oldImage.getUrl(), variantId, newIndex, true));
+
+            ProductMoveImageToPositionAction.builder()
+                .imageUrl(oldImage.getUrl())
+                .variantId(variantId)
+                .position(newIndex)
+                .staged(true)
+                .build());
+
       }
     }
     return updateActions;
@@ -268,11 +325,13 @@ public final class ProductVariantUpdateActionUtils {
 
   /**
    * Compares the {@link List} of {@link AssetDraft}s of a {@link ProductVariantDraft} and a {@link
-   * ProductVariant} and returns a {@link List} of {@link UpdateAction}&lt;{@link Product}&gt;. If
-   * both the {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of
-   * assets, then no update action is needed and hence an empty {@link List} is returned. In case,
-   * the new product variant draft has a list of assets in which a duplicate key exists, the error
-   * callback is triggered and an empty list is returned.
+
+   * ProductVariant} and returns a {@link List} of {@link ProductUpdateAction}&lt;{@link
+   * Product}&gt;. If both the {@link ProductVariantDraft} and the {@link ProductVariant} have
+   * identical list of assets, then no update action is needed and hence an empty {@link List} is
+   * returned. In case, the new product variant draft has a list of assets in which a duplicate key
+   * exists, the error callback is triggered and an empty list is returned.
+
    *
    * @param oldProduct old Product, whose variant assets should be updated.
    * @param newProduct new product draft, which provides the assets to update.
@@ -284,7 +343,9 @@ public final class ProductVariantUpdateActionUtils {
    *     update actions are needed.
    */
   @Nonnull
-  public static List<UpdateAction<Product>> buildProductVariantAssetsUpdateActions(
+
+  public static List<ProductUpdateAction> buildProductVariantAssetsUpdateActions(
+
       @Nonnull final ProductProjection oldProduct,
       @Nonnull final ProductDraft newProduct,
       @Nonnull final ProductVariant oldProductVariant,
@@ -296,7 +357,7 @@ public final class ProductVariantUpdateActionUtils {
           newProduct,
           oldProductVariant.getAssets(),
           newProductVariant.getAssets(),
-          new ProductAssetActionFactory(oldProductVariant.getId(), syncOptions),
+          new ProductAssetActionFactory(oldProductVariant.getId(), syncOptions), // AssetActionFactory : T = ProductUpdateAction, D = ProductDraft
           syncOptions);
     } catch (final BuildUpdateActionException exception) {
       SyncException syncException =
@@ -313,10 +374,12 @@ public final class ProductVariantUpdateActionUtils {
 
   /**
    * Compares the attributes of a {@link ProductVariantDraft} and a {@link ProductVariant} to build
-   * either {@link io.sphere.sdk.products.commands.updateactions.SetAttribute} or {@link
-   * io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants} update actions. If
-   * both the {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of
-   * attributes, then no update action is needed and hence an empty {@link List} is returned.
+
+   * either {@link ProductSetAttributeAction} or {@link ProductSetAttributeInAllVariantsAction}
+   * update actions. If both the {@link ProductVariantDraft} and the {@link ProductVariant} have
+   * identical list of attributes, then no update action is needed and hence an empty {@link List}
+   * is returned.
+
    *
    * @param oldProduct the product that the variants belong to. It is used only in the error
    *     messages if any.
@@ -335,7 +398,9 @@ public final class ProductVariantUpdateActionUtils {
    *     update actions are needed.
    */
   @Nonnull
-  public static List<UpdateAction<Product>> buildProductVariantAttributesUpdateActions(
+
+  public static List<ProductUpdateAction> buildProductVariantAttributesUpdateActions(
+
       @Nonnull final ProductProjection oldProduct,
       @Nonnull final ProductDraft newProduct,
       @Nonnull final ProductVariant oldProductVariant,
@@ -345,16 +410,20 @@ public final class ProductVariantUpdateActionUtils {
 
     final String productKey = oldProduct.getKey();
 
-    final Integer oldProductVariantId = oldProductVariant.getId();
-    final List<AttributeDraft> newProductVariantAttributes = newProductVariant.getAttributes();
+
+    final long oldProductVariantId = oldProductVariant.getId();
+    final List<Attribute> newProductVariantAttributes = newProductVariant.getAttributes();
     final List<Attribute> oldProductVariantAttributes = oldProductVariant.getAttributes();
 
-    final List<UpdateAction<Product>> updateActions =
+    final List<ProductUpdateAction> updateActions =
+
         buildRemoveUpdateActions(
             oldProductVariantAttributes,
             newProductVariantAttributes,
             Attribute::getName,
-            AttributeDraft::getName,
+
+            Attribute::getName,
+
             attribute -> {
               try {
                 return buildUnSetAttribute(
@@ -430,8 +499,10 @@ public final class ProductVariantUpdateActionUtils {
     return updateActions;
   }
 
-  private static UpdateAction<Product> buildUnSetAttribute(
-      @Nonnull final Integer variantId,
+
+  private static ProductUpdateAction buildUnSetAttribute(
+      @Nonnull final long variantId,
+
       @Nonnull final String attributeName,
       @Nonnull final Map<String, AttributeMetaData> attributesMetaData)
       throws BuildUpdateActionException {
@@ -444,8 +515,19 @@ public final class ProductVariantUpdateActionUtils {
     }
 
     return attributeMetaData.isSameForAll()
-        ? SetAttributeInAllVariants.ofUnsetAttribute(attributeName, true)
-        : SetAttribute.ofUnsetAttribute(variantId, attributeName, true);
+
+        ? ProductSetAttributeInAllVariantsAction.builder()
+            .name(attributeName)
+            .value(null)
+            .staged(true)
+            .build()
+        : ProductSetAttributeAction.builder()
+            .variantId(variantId)
+            .name(attributeName)
+            .value(null)
+            .staged(true)
+            .build();
+
   }
 
   private ProductVariantUpdateActionUtils() {}

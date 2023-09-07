@@ -1,14 +1,12 @@
 package com.commercetools.sync.producttypes.helpers;
 
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
-import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
-import io.sphere.sdk.products.attributes.NestedAttributeType;
-import io.sphere.sdk.producttypes.ProductType;
+import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
+import com.commercetools.api.models.product_type.AttributeDefinitionDraftBuilder;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
@@ -182,11 +180,17 @@ class ProductTypeSyncStatisticsTest {
         productTypesReferencingMissing1 = new ConcurrentHashMap<>();
 
     final AttributeDefinitionDraft referencingAttributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(
-                NestedAttributeType.of(ProductType.referenceOfId("missingPT")),
-                "attr-name",
-                ofEnglish("label"),
-                true)
+        AttributeDefinitionDraftBuilder.of()
+            .name("attr-name")
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .nestedBuilder()
+                        .typeReference(
+                            productTypeReferenceBuilder ->
+                                productTypeReferenceBuilder.id("missingPT")))
+            .label(ofEnglish("label"))
+            .isRequired(true)
             .build();
 
     final ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean> definitionDrafts =
@@ -228,11 +232,17 @@ class ProductTypeSyncStatisticsTest {
         productTypesReferencingMissing1 = new ConcurrentHashMap<>();
 
     final AttributeDefinitionDraft referencingAttributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(
-                NestedAttributeType.of(ProductType.referenceOfId("missingPT")),
-                "attr-name",
-                ofEnglish("label"),
-                true)
+        AttributeDefinitionDraftBuilder.of()
+            .name("attr-name")
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .nestedBuilder()
+                        .typeReference(
+                            productTypeReferenceBuilder ->
+                                productTypeReferenceBuilder.id("missingPT")))
+            .label(ofEnglish("label"))
+            .isRequired(true)
             .build();
 
     final ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean> definitionDrafts =
@@ -274,11 +284,17 @@ class ProductTypeSyncStatisticsTest {
         productTypesReferencingMissing1 = new ConcurrentHashMap<>();
 
     final AttributeDefinitionDraft referencingAttributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(
-                NestedAttributeType.of(ProductType.referenceOfId("missingPT")),
-                "attr-name",
-                ofEnglish("label"),
-                true)
+        AttributeDefinitionDraftBuilder.of()
+            .name("attr-name")
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .nestedBuilder()
+                        .typeReference(
+                            productTypeReferenceBuilder ->
+                                productTypeReferenceBuilder.id("missingPT")))
+            .label(ofEnglish("label"))
+            .isRequired(true)
             .build();
 
     final ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean> definitionDrafts =
@@ -314,11 +330,17 @@ class ProductTypeSyncStatisticsTest {
         new ProductTypeSyncStatistics(new ConcurrentHashMap<>());
 
     final AttributeDefinitionDraft referencingAttributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(
-                NestedAttributeType.of(ProductType.referenceOfId("missingPT")),
-                "attr-name",
-                ofEnglish("label"),
-                true)
+        AttributeDefinitionDraftBuilder.of()
+            .name("attr-name")
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .nestedBuilder()
+                        .typeReference(
+                            productTypeReferenceBuilder ->
+                                productTypeReferenceBuilder.id("missingPT")))
+            .label(ofEnglish("label"))
+            .isRequired(true)
             .build();
 
     // test
@@ -367,11 +389,17 @@ class ProductTypeSyncStatisticsTest {
         new ProductTypeSyncStatistics(missingProductTypeReferences);
 
     final AttributeDefinitionDraft referencingAttributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(
-                NestedAttributeType.of(ProductType.referenceOfId("missingPT")),
-                "attr-name",
-                ofEnglish("label"),
-                true)
+        AttributeDefinitionDraftBuilder.of()
+            .name("attr-name")
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .nestedBuilder()
+                        .typeReference(
+                            productTypeReferenceBuilder ->
+                                productTypeReferenceBuilder.id("missingPT")))
+            .label(ofEnglish("label"))
+            .isRequired(true)
             .build();
 
     // test
@@ -404,12 +432,19 @@ class ProductTypeSyncStatisticsTest {
     final ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean> definitionDrafts =
         ConcurrentHashMap.newKeySet();
     final AttributeDefinitionDraft existingReferencingAttr =
-        AttributeDefinitionDraftBuilder.of(
-                NestedAttributeType.of(ProductType.referenceOfId("missing1")),
-                "attr-name-1",
-                ofEnglish("label"),
-                true)
+        AttributeDefinitionDraftBuilder.of()
+            .name("attr-name-1")
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .nestedBuilder()
+                        .typeReference(
+                            productTypeReferenceBuilder ->
+                                productTypeReferenceBuilder.id("missing1")))
+            .label(ofEnglish("label"))
+            .isRequired(true)
             .build();
+
     definitionDrafts.add(existingReferencingAttr);
 
     productTypesReferencingMissing1.put("referencing-product-type-1", definitionDrafts);
@@ -430,11 +465,17 @@ class ProductTypeSyncStatisticsTest {
         new ProductTypeSyncStatistics(missingProductTypeReferences);
 
     final AttributeDefinitionDraft referencingAttributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(
-                NestedAttributeType.of(ProductType.referenceOfId("missing1")),
-                "attr-name",
-                ofEnglish("label"),
-                true)
+        AttributeDefinitionDraftBuilder.of()
+            .name("attr-name")
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .nestedBuilder()
+                        .typeReference(
+                            productTypeReferenceBuilder ->
+                                productTypeReferenceBuilder.id("missing1")))
+            .label(ofEnglish("label"))
+            .isRequired(true)
             .build();
 
     // test
@@ -468,11 +509,17 @@ class ProductTypeSyncStatisticsTest {
     final ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean> definitionDrafts =
         ConcurrentHashMap.newKeySet();
     final AttributeDefinitionDraft existingReferencingAttr =
-        AttributeDefinitionDraftBuilder.of(
-                NestedAttributeType.of(ProductType.referenceOfId("missing1")),
-                "attr-name-1",
-                ofEnglish("label"),
-                true)
+        AttributeDefinitionDraftBuilder.of()
+            .name("attr-name-1")
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .nestedBuilder()
+                        .typeReference(
+                            productTypeReferenceBuilder ->
+                                productTypeReferenceBuilder.id("missing1")))
+            .label(ofEnglish("label"))
+            .isRequired(true)
             .build();
     definitionDrafts.add(existingReferencingAttr);
 
@@ -494,11 +541,17 @@ class ProductTypeSyncStatisticsTest {
         new ProductTypeSyncStatistics(missingProductTypeReferences);
 
     final AttributeDefinitionDraft referencingAttributeDefinitionDraft =
-        AttributeDefinitionDraftBuilder.of(
-                NestedAttributeType.of(ProductType.referenceOfId("missing1")),
-                "attr-name",
-                ofEnglish("label"),
-                true)
+        AttributeDefinitionDraftBuilder.of()
+            .name("attr-name")
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .nestedBuilder()
+                        .typeReference(
+                            productTypeReferenceBuilder ->
+                                productTypeReferenceBuilder.id("missing1")))
+            .label(ofEnglish("label"))
+            .isRequired(true)
             .build();
 
     // test
@@ -550,11 +603,17 @@ class ProductTypeSyncStatisticsTest {
     final ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean> definitionDrafts =
         ConcurrentHashMap.newKeySet();
     final AttributeDefinitionDraft existingReferencingAttr =
-        AttributeDefinitionDraftBuilder.of(
-                NestedAttributeType.of(ProductType.referenceOfId("missing1")),
-                "attr-name-1",
-                ofEnglish("label"),
-                true)
+        AttributeDefinitionDraftBuilder.of()
+            .name("attr-name-1")
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .nestedBuilder()
+                        .typeReference(
+                            productTypeReferenceBuilder ->
+                                productTypeReferenceBuilder.id("missing1")))
+            .label(ofEnglish("label"))
+            .isRequired(true)
             .build();
     definitionDrafts.add(existingReferencingAttr);
 

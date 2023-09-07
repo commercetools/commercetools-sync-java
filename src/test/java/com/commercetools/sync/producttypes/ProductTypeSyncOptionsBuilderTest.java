@@ -4,30 +4,28 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.product_type.ProductType;
+import com.commercetools.api.models.product_type.ProductTypeChangeNameActionBuilder;
+import com.commercetools.api.models.product_type.ProductTypeDraft;
+import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
+import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
-import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
-import io.sphere.sdk.producttypes.commands.updateactions.ChangeName;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class ProductTypeSyncOptionsBuilderTest {
-  private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
-  private ProductTypeSyncOptionsBuilder productTypeSyncOptionsBuilder =
+  private static final ProjectApiRoot CTP_CLIENT = mock(ProjectApiRoot.class);
+  private final ProductTypeSyncOptionsBuilder productTypeSyncOptionsBuilder =
       ProductTypeSyncOptionsBuilder.of(CTP_CLIENT);
 
   @Test
@@ -40,29 +38,29 @@ class ProductTypeSyncOptionsBuilderTest {
   void build_WithClient_ShouldBuildProductSyncOptions() {
     final ProductTypeSyncOptions productTypeSyncOptions = productTypeSyncOptionsBuilder.build();
     assertThat(productTypeSyncOptions).isNotNull();
-    assertThat(productTypeSyncOptions.getBeforeUpdateCallback()).isNull();
-    assertThat(productTypeSyncOptions.getBeforeCreateCallback()).isNull();
-    assertThat(productTypeSyncOptions.getErrorCallback()).isNull();
-    assertThat(productTypeSyncOptions.getWarningCallback()).isNull();
-    assertThat(productTypeSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
-    assertThat(productTypeSyncOptions.getBatchSize())
+    Assertions.assertThat(productTypeSyncOptions.getBeforeUpdateCallback()).isNull();
+    Assertions.assertThat(productTypeSyncOptions.getBeforeCreateCallback()).isNull();
+    Assertions.assertThat(productTypeSyncOptions.getErrorCallback()).isNull();
+    Assertions.assertThat(productTypeSyncOptions.getWarningCallback()).isNull();
+    Assertions.assertThat(productTypeSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
+    Assertions.assertThat(productTypeSyncOptions.getBatchSize())
         .isEqualTo(ProductTypeSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
-    assertThat(productTypeSyncOptions.getCacheSize()).isEqualTo(10_000);
+    Assertions.assertThat(productTypeSyncOptions.getCacheSize()).isEqualTo(10_000);
   }
 
   @Test
   void beforeUpdateCallback_WithFilterAsCallback_ShouldSetCallback() {
     final TriFunction<
-            List<UpdateAction<ProductType>>,
+            List<ProductTypeUpdateAction>,
             ProductTypeDraft,
             ProductType,
-            List<UpdateAction<ProductType>>>
+            List<ProductTypeUpdateAction>>
         beforeUpdateCallback =
             (updateActions, newProductType, oldProductType) -> Collections.emptyList();
     productTypeSyncOptionsBuilder.beforeUpdateCallback(beforeUpdateCallback);
 
     final ProductTypeSyncOptions productTypeSyncOptions = productTypeSyncOptionsBuilder.build();
-    assertThat(productTypeSyncOptions.getBeforeUpdateCallback()).isNotNull();
+    Assertions.assertThat(productTypeSyncOptions.getBeforeUpdateCallback()).isNotNull();
   }
 
   @Test
@@ -70,7 +68,7 @@ class ProductTypeSyncOptionsBuilderTest {
     productTypeSyncOptionsBuilder.beforeCreateCallback((newProductType) -> null);
 
     final ProductTypeSyncOptions productTypeSyncOptions = productTypeSyncOptionsBuilder.build();
-    assertThat(productTypeSyncOptions.getBeforeCreateCallback()).isNotNull();
+    Assertions.assertThat(productTypeSyncOptions.getBeforeCreateCallback()).isNotNull();
   }
 
   @Test
@@ -79,12 +77,12 @@ class ProductTypeSyncOptionsBuilderTest {
             SyncException,
             Optional<ProductTypeDraft>,
             Optional<ProductType>,
-            List<UpdateAction<ProductType>>>
+            List<ProductTypeUpdateAction>>
         mockErrorCallback = (exception, newDraft, old, actions) -> {};
     productTypeSyncOptionsBuilder.errorCallback(mockErrorCallback);
 
     final ProductTypeSyncOptions productTypeSyncOptions = productTypeSyncOptionsBuilder.build();
-    assertThat(productTypeSyncOptions.getErrorCallback()).isNotNull();
+    Assertions.assertThat(productTypeSyncOptions.getErrorCallback()).isNotNull();
   }
 
   @Test
@@ -94,7 +92,7 @@ class ProductTypeSyncOptionsBuilderTest {
     productTypeSyncOptionsBuilder.warningCallback(mockWarningCallBack);
 
     final ProductTypeSyncOptions productTypeSyncOptions = productTypeSyncOptionsBuilder.build();
-    assertThat(productTypeSyncOptions.getWarningCallback()).isNotNull();
+    Assertions.assertThat(productTypeSyncOptions.getWarningCallback()).isNotNull();
   }
 
   @Test
@@ -121,7 +119,7 @@ class ProductTypeSyncOptionsBuilderTest {
   void batchSize_WithPositiveValue_ShouldSetBatchSize() {
     final ProductTypeSyncOptions productTypeSyncOptions =
         ProductTypeSyncOptionsBuilder.of(CTP_CLIENT).batchSize(10).build();
-    assertThat(productTypeSyncOptions.getBatchSize()).isEqualTo(10);
+    Assertions.assertThat(productTypeSyncOptions.getBatchSize()).isEqualTo(10);
   }
 
   @Test
@@ -129,13 +127,13 @@ class ProductTypeSyncOptionsBuilderTest {
     final ProductTypeSyncOptions productTypeSyncOptionsWithZeroBatchSize =
         ProductTypeSyncOptionsBuilder.of(CTP_CLIENT).batchSize(0).build();
 
-    assertThat(productTypeSyncOptionsWithZeroBatchSize.getBatchSize())
+    Assertions.assertThat(productTypeSyncOptionsWithZeroBatchSize.getBatchSize())
         .isEqualTo(ProductTypeSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
 
     final ProductTypeSyncOptions productTypeSyncOptionsWithNegativeBatchSize =
         ProductTypeSyncOptionsBuilder.of(CTP_CLIENT).batchSize(-100).build();
 
-    assertThat(productTypeSyncOptionsWithNegativeBatchSize.getBatchSize())
+    Assertions.assertThat(productTypeSyncOptionsWithNegativeBatchSize.getBatchSize())
         .isEqualTo(ProductTypeSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
   }
 
@@ -143,10 +141,11 @@ class ProductTypeSyncOptionsBuilderTest {
   void applyBeforeUpdateCallBack_WithNullCallback_ShouldReturnIdenticalList() {
     final ProductTypeSyncOptions productTypeSyncOptions =
         ProductTypeSyncOptionsBuilder.of(CTP_CLIENT).build();
-    assertThat(productTypeSyncOptions.getBeforeUpdateCallback()).isNull();
+    Assertions.assertThat(productTypeSyncOptions.getBeforeUpdateCallback()).isNull();
 
-    final List<UpdateAction<ProductType>> updateActions = singletonList(ChangeName.of("name"));
-    final List<UpdateAction<ProductType>> filteredList =
+    final List<ProductTypeUpdateAction> updateActions =
+        singletonList(ProductTypeChangeNameActionBuilder.of().name("name").build());
+    final List<ProductTypeUpdateAction> filteredList =
         productTypeSyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(ProductTypeDraft.class), mock(ProductType.class));
     assertThat(filteredList).isSameAs(updateActions);
@@ -155,19 +154,20 @@ class ProductTypeSyncOptionsBuilderTest {
   @Test
   void applyBeforeUpdateCallBack_WithNullReturnCallback_ShouldReturnEmptyList() {
     final TriFunction<
-            List<UpdateAction<ProductType>>,
+            List<ProductTypeUpdateAction>,
             ProductTypeDraft,
             ProductType,
-            List<UpdateAction<ProductType>>>
+            List<ProductTypeUpdateAction>>
         beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> null;
     final ProductTypeSyncOptions productTypeSyncOptions =
         ProductTypeSyncOptionsBuilder.of(CTP_CLIENT)
             .beforeUpdateCallback(beforeUpdateCallback)
             .build();
-    assertThat(productTypeSyncOptions.getBeforeUpdateCallback()).isNotNull();
+    Assertions.assertThat(productTypeSyncOptions.getBeforeUpdateCallback()).isNotNull();
 
-    final List<UpdateAction<ProductType>> updateActions = singletonList(ChangeName.of("name"));
-    final List<UpdateAction<ProductType>> filteredList =
+    final List<ProductTypeUpdateAction> updateActions =
+        singletonList(ProductTypeChangeNameActionBuilder.of().name("name").build());
+    final List<ProductTypeUpdateAction> filteredList =
         productTypeSyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(ProductTypeDraft.class), mock(ProductType.class));
     assertThat(filteredList).isNotEqualTo(updateActions);
@@ -176,10 +176,10 @@ class ProductTypeSyncOptionsBuilderTest {
 
   private interface MockTriFunction
       extends TriFunction<
-          List<UpdateAction<ProductType>>,
+          List<ProductTypeUpdateAction>,
           ProductTypeDraft,
           ProductType,
-          List<UpdateAction<ProductType>>> {}
+          List<ProductTypeUpdateAction>> {}
 
   @Test
   void applyBeforeUpdateCallBack_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
@@ -190,10 +190,10 @@ class ProductTypeSyncOptionsBuilderTest {
             .beforeUpdateCallback(beforeUpdateCallback)
             .build();
 
-    assertThat(productTypeSyncOptions.getBeforeUpdateCallback()).isNotNull();
+    Assertions.assertThat(productTypeSyncOptions.getBeforeUpdateCallback()).isNotNull();
 
-    final List<UpdateAction<ProductType>> updateActions = emptyList();
-    final List<UpdateAction<ProductType>> filteredList =
+    final List<ProductTypeUpdateAction> updateActions = emptyList();
+    final List<ProductTypeUpdateAction> filteredList =
         productTypeSyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(ProductTypeDraft.class), mock(ProductType.class));
 
@@ -204,19 +204,20 @@ class ProductTypeSyncOptionsBuilderTest {
   @Test
   void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
     final TriFunction<
-            List<UpdateAction<ProductType>>,
+            List<ProductTypeUpdateAction>,
             ProductTypeDraft,
             ProductType,
-            List<UpdateAction<ProductType>>>
+            List<ProductTypeUpdateAction>>
         beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> Collections.emptyList();
     final ProductTypeSyncOptions productTypeSyncOptions =
         ProductTypeSyncOptionsBuilder.of(CTP_CLIENT)
             .beforeUpdateCallback(beforeUpdateCallback)
             .build();
-    assertThat(productTypeSyncOptions.getBeforeUpdateCallback()).isNotNull();
+    Assertions.assertThat(productTypeSyncOptions.getBeforeUpdateCallback()).isNotNull();
 
-    final List<UpdateAction<ProductType>> updateActions = singletonList(ChangeName.of("name"));
-    final List<UpdateAction<ProductType>> filteredList =
+    final List<ProductTypeUpdateAction> updateActions =
+        singletonList(ProductTypeChangeNameActionBuilder.of().name("name").build());
+    final List<ProductTypeUpdateAction> filteredList =
         productTypeSyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(ProductTypeDraft.class), mock(ProductType.class));
     assertThat(filteredList).isNotEqualTo(updateActions);
@@ -228,12 +229,14 @@ class ProductTypeSyncOptionsBuilderTest {
     final Function<ProductTypeDraft, ProductTypeDraft> draftFunction =
         productTypeDraft ->
             ProductTypeDraftBuilder.of(productTypeDraft)
+                .name("testName")
+                .description("testDescription")
                 .key(productTypeDraft.getKey() + "_filteredKey")
                 .build();
 
     final ProductTypeSyncOptions productTypeSyncOptions =
         ProductTypeSyncOptionsBuilder.of(CTP_CLIENT).beforeCreateCallback(draftFunction).build();
-    assertThat(productTypeSyncOptions.getBeforeCreateCallback()).isNotNull();
+    Assertions.assertThat(productTypeSyncOptions.getBeforeCreateCallback()).isNotNull();
 
     final ProductTypeDraft resourceDraft = mock(ProductTypeDraft.class);
     when(resourceDraft.getKey()).thenReturn("myKey");
@@ -251,7 +254,7 @@ class ProductTypeSyncOptionsBuilderTest {
   void applyBeforeCreateCallBack_WithNullCallback_ShouldReturnIdenticalDraftInOptional() {
     final ProductTypeSyncOptions productTypeSyncOptions =
         ProductTypeSyncOptionsBuilder.of(CTP_CLIENT).build();
-    assertThat(productTypeSyncOptions.getBeforeCreateCallback()).isNull();
+    Assertions.assertThat(productTypeSyncOptions.getBeforeCreateCallback()).isNull();
 
     final ProductTypeDraft resourceDraft = mock(ProductTypeDraft.class);
     final Optional<ProductTypeDraft> filteredDraft =
@@ -265,7 +268,7 @@ class ProductTypeSyncOptionsBuilderTest {
     final Function<ProductTypeDraft, ProductTypeDraft> draftFunction = productDraft -> null;
     final ProductTypeSyncOptions productTypeSyncOptions =
         ProductTypeSyncOptionsBuilder.of(CTP_CLIENT).beforeCreateCallback(draftFunction).build();
-    assertThat(productTypeSyncOptions.getBeforeCreateCallback()).isNotNull();
+    Assertions.assertThat(productTypeSyncOptions.getBeforeCreateCallback()).isNotNull();
 
     final ProductTypeDraft resourceDraft = mock(ProductTypeDraft.class);
     final Optional<ProductTypeDraft> filteredDraft =
@@ -278,7 +281,7 @@ class ProductTypeSyncOptionsBuilderTest {
   void cacheSize_WithPositiveValue_ShouldSetCacheSize() {
     final ProductTypeSyncOptions productTypeSyncOptions =
         ProductTypeSyncOptionsBuilder.of(CTP_CLIENT).cacheSize(10).build();
-    assertThat(productTypeSyncOptions.getCacheSize()).isEqualTo(10);
+    Assertions.assertThat(productTypeSyncOptions.getCacheSize()).isEqualTo(10);
   }
 
   @Test
@@ -286,11 +289,12 @@ class ProductTypeSyncOptionsBuilderTest {
     final ProductTypeSyncOptions productTypeSyncOptionsWithZeroCacheSize =
         ProductTypeSyncOptionsBuilder.of(CTP_CLIENT).cacheSize(0).build();
 
-    assertThat(productTypeSyncOptionsWithZeroCacheSize.getCacheSize()).isEqualTo(10_000);
+    Assertions.assertThat(productTypeSyncOptionsWithZeroCacheSize.getCacheSize()).isEqualTo(10_000);
 
     final ProductTypeSyncOptions productTypeSyncOptionsWithNegativeCacheSize =
         ProductTypeSyncOptionsBuilder.of(CTP_CLIENT).cacheSize(-100).build();
 
-    assertThat(productTypeSyncOptionsWithNegativeCacheSize.getCacheSize()).isEqualTo(10_000);
+    Assertions.assertThat(productTypeSyncOptionsWithNegativeCacheSize.getCacheSize())
+        .isEqualTo(10_000);
   }
 }

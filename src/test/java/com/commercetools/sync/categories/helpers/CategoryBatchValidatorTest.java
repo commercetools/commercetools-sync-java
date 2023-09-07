@@ -1,19 +1,17 @@
 package com.commercetools.sync.categories.helpers;
 
-import static com.commercetools.sync.categories.helpers.CategoryBatchValidator.CATEGORY_DRAFT_IS_NULL;
-import static com.commercetools.sync.categories.helpers.CategoryBatchValidator.CATEGORY_DRAFT_KEY_NOT_SET;
-import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.category.CategoryDraft;
+import com.commercetools.api.models.category.CategoryResourceIdentifierBuilder;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.FieldContainerBuilder;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
-import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.types.CustomFieldsDraft;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,7 +31,7 @@ class CategoryBatchValidatorTest {
   @BeforeEach
   void setup() {
     errorCallBackMessages = new ArrayList<>();
-    final SphereClient ctpClient = mock(SphereClient.class);
+    final ProjectApiRoot ctpClient = mock(ProjectApiRoot.class);
 
     syncOptions =
         CategorySyncOptionsBuilder.of(ctpClient)
@@ -58,7 +56,8 @@ class CategoryBatchValidatorTest {
     final Set<CategoryDraft> validDrafts = getValidDrafts(Collections.singletonList(null));
 
     assertThat(errorCallBackMessages).hasSize(1);
-    assertThat(errorCallBackMessages.get(0)).isEqualTo(CATEGORY_DRAFT_IS_NULL);
+    assertThat(errorCallBackMessages.get(0))
+        .isEqualTo(CategoryBatchValidator.CATEGORY_DRAFT_IS_NULL);
     assertThat(validDrafts).isEmpty();
   }
 
@@ -70,7 +69,9 @@ class CategoryBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(CATEGORY_DRAFT_KEY_NOT_SET, categoryDraft.getName()));
+        .isEqualTo(
+            String.format(
+                CategoryBatchValidator.CATEGORY_DRAFT_KEY_NOT_SET, categoryDraft.getName()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -83,7 +84,9 @@ class CategoryBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(CATEGORY_DRAFT_KEY_NOT_SET, categoryDraft.getName()));
+        .isEqualTo(
+            String.format(
+                CategoryBatchValidator.CATEGORY_DRAFT_KEY_NOT_SET, categoryDraft.getName()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -91,15 +94,21 @@ class CategoryBatchValidatorTest {
   void validateAndCollectReferencedKeys_WithValidDrafts_ShouldReturnCorrectResults() {
     final CategoryDraft validCategoryDraft = mock(CategoryDraft.class);
     when(validCategoryDraft.getKey()).thenReturn("validDraftKey");
-    when(validCategoryDraft.getParent()).thenReturn(ResourceIdentifier.ofKey("validParentKey"));
+    when(validCategoryDraft.getParent())
+        .thenReturn(CategoryResourceIdentifierBuilder.of().key("validParentKey").build());
     when(validCategoryDraft.getCustom())
-        .thenReturn(CustomFieldsDraft.ofTypeKeyAndJson("typeKey", Collections.emptyMap()));
+        .thenReturn(
+            CustomFieldsDraftBuilder.of()
+                .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.key("typeKey"))
+                .fields(FieldContainerBuilder.of().values(Collections.emptyMap()).build())
+                .build());
 
     final CategoryDraft validMainCategoryDraft = mock(CategoryDraft.class);
     when(validMainCategoryDraft.getKey()).thenReturn("validDraftKey1");
 
     final CategoryDraft invalidCategoryDraft = mock(CategoryDraft.class);
-    when(invalidCategoryDraft.getParent()).thenReturn(ResourceIdentifier.ofKey("key"));
+    when(invalidCategoryDraft.getParent())
+        .thenReturn(CategoryResourceIdentifierBuilder.of().key("key").build());
 
     final CategoryBatchValidator categoryBatchValidator =
         new CategoryBatchValidator(syncOptions, syncStatistics);
@@ -109,7 +118,9 @@ class CategoryBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(format(CATEGORY_DRAFT_KEY_NOT_SET, invalidCategoryDraft.getName()));
+        .isEqualTo(
+            String.format(
+                CategoryBatchValidator.CATEGORY_DRAFT_KEY_NOT_SET, invalidCategoryDraft.getName()));
     assertThat(pair.getLeft())
         .containsExactlyInAnyOrder(validCategoryDraft, validMainCategoryDraft);
     assertThat(pair.getRight().getCategoryKeys())

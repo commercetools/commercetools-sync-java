@@ -1,9 +1,9 @@
 package com.commercetools.sync.integration.externalsource.taxcategories;
 
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.*;
 import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.*;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -11,10 +11,10 @@ import static java.util.Collections.singletonList;
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.defaultconfig.ApiRootBuilder;
 import com.commercetools.api.models.tax_category.*;
-import com.commercetools.sync.sdk2.taxcategories.TaxCategorySync;
-import com.commercetools.sync.sdk2.taxcategories.TaxCategorySyncOptions;
-import com.commercetools.sync.sdk2.taxcategories.TaxCategorySyncOptionsBuilder;
-import com.commercetools.sync.sdk2.taxcategories.helpers.TaxCategorySyncStatistics;
+import com.commercetools.sync.taxcategories.TaxCategorySync;
+import com.commercetools.sync.taxcategories.TaxCategorySyncOptions;
+import com.commercetools.sync.taxcategories.TaxCategorySyncOptionsBuilder;
+import com.commercetools.sync.taxcategories.helpers.TaxCategorySyncStatistics;
 import com.neovisionaries.i18n.CountryCode;
 import io.vrap.rmf.base.client.ApiHttpMethod;
 import io.vrap.rmf.base.client.ApiHttpResponse;

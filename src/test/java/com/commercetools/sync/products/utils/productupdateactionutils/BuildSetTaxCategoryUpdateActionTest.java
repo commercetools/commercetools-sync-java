@@ -1,76 +1,82 @@
 package com.commercetools.sync.products.utils.productupdateactionutils;
 
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetTaxCategoryUpdateAction;
-import static io.sphere.sdk.json.SphereJsonUtils.readObject;
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.vrap.rmf.base.client.utils.json.JsonUtils.fromJsonString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductProjection;
-import io.sphere.sdk.products.commands.updateactions.SetTaxCategory;
-import io.sphere.sdk.taxcategories.TaxCategory;
+import com.commercetools.api.models.product.ProductDraft;
+import com.commercetools.api.models.product.ProductProjection;
+import com.commercetools.api.models.product.ProductSetTaxCategoryActionBuilder;
+import com.commercetools.api.models.tax_category.TaxCategoryReference;
+import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifier;
+import com.commercetools.sync.products.utils.ProductUpdateActionUtils;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
 class BuildSetTaxCategoryUpdateActionTest {
 
-  @Mock private ProductProjection oldProduct;
+  private ProductProjection oldProduct = mock(ProductProjection.class);
 
-  @Mock private ProductDraft newProduct;
+  private ProductDraft newProduct = mock(ProductDraft.class);
 
   @SuppressWarnings("unchecked")
-  private static final Reference<TaxCategory> oldTaxCategory =
-      readObject(
+  private static final TaxCategoryReference oldTaxCategory =
+      fromJsonString(
           "{\"typeId\": \"tax-category\",\"id\": \"11111111-1111-1111-1111-111111111111\"}",
-          Reference.class);
+          TaxCategoryReference.class);
 
   @SuppressWarnings("unchecked")
-  private static final ResourceIdentifier<TaxCategory> newSameTaxCategory =
-      readObject(
+  private static final TaxCategoryResourceIdentifier newSameTaxCategory =
+      fromJsonString(
           "{\"typeId\": \"tax-category\",\"id\": \"11111111-1111-1111-1111-111111111111\"}",
-          ResourceIdentifier.class);
+          TaxCategoryResourceIdentifier.class);
 
   @SuppressWarnings("unchecked")
-  private static final ResourceIdentifier<TaxCategory> newChangedTaxCategory =
-      readObject(
+  private static final TaxCategoryResourceIdentifier newChangedTaxCategory =
+      fromJsonString(
           "{\"typeId\": \"tax-category\",\"id\": \"22222222-2222-2222-2222-222222222222\"}",
-          ResourceIdentifier.class);
+          TaxCategoryResourceIdentifier.class);
 
   @Test
   void buildSetTaxCategoryUpdateAction_withEmptyOld_containsNewCategory() {
-    assertThat(buildSetTaxCategoryUpdateAction(oldProduct, newProduct)).isEmpty();
+    Assertions.assertThat(
+            ProductUpdateActionUtils.buildSetTaxCategoryUpdateAction(oldProduct, newProduct))
+        .isEmpty();
 
     when(newProduct.getTaxCategory()).thenReturn(newSameTaxCategory);
-    assertThat(buildSetTaxCategoryUpdateAction(oldProduct, newProduct))
-        .contains(SetTaxCategory.of(newSameTaxCategory));
+    Assertions.assertThat(
+            ProductUpdateActionUtils.buildSetTaxCategoryUpdateAction(oldProduct, newProduct))
+        .contains(ProductSetTaxCategoryActionBuilder.of().taxCategory(newSameTaxCategory).build());
   }
 
   @Test
   void buildSetTaxCategoryUpdateAction_withEmptyNew_ShouldUnset() {
-    assertThat(buildSetTaxCategoryUpdateAction(oldProduct, newProduct)).isEmpty();
+    Assertions.assertThat(
+            ProductUpdateActionUtils.buildSetTaxCategoryUpdateAction(oldProduct, newProduct))
+        .isEmpty();
 
     when(oldProduct.getTaxCategory()).thenReturn(oldTaxCategory);
-    assertThat(buildSetTaxCategoryUpdateAction(oldProduct, newProduct))
-        .contains(SetTaxCategory.of(null));
+    Assertions.assertThat(
+            ProductUpdateActionUtils.buildSetTaxCategoryUpdateAction(oldProduct, newProduct))
+        .contains(ProductSetTaxCategoryActionBuilder.of().build());
   }
 
   @Test
   void buildSetTaxCategoryUpdateAction_withEqual_isEmpty() {
     when(oldProduct.getTaxCategory()).thenReturn(oldTaxCategory);
     when(newProduct.getTaxCategory()).thenReturn(newSameTaxCategory);
-    assertThat(buildSetTaxCategoryUpdateAction(oldProduct, newProduct)).isEmpty();
+    Assertions.assertThat(
+            ProductUpdateActionUtils.buildSetTaxCategoryUpdateAction(oldProduct, newProduct))
+        .isEmpty();
   }
 
   @Test
   void buildSetTaxCategoryUpdateAction_withDifferent_containsNew() {
     when(oldProduct.getTaxCategory()).thenReturn(oldTaxCategory);
     when(newProduct.getTaxCategory()).thenReturn(newChangedTaxCategory);
-    assertThat(buildSetTaxCategoryUpdateAction(oldProduct, newProduct))
-        .contains(SetTaxCategory.of(newChangedTaxCategory));
+    Assertions.assertThat(
+            ProductUpdateActionUtils.buildSetTaxCategoryUpdateAction(oldProduct, newProduct))
+        .contains(
+            ProductSetTaxCategoryActionBuilder.of().taxCategory(newChangedTaxCategory).build());
   }
 }

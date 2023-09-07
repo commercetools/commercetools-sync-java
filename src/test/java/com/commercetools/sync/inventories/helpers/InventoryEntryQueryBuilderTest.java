@@ -1,62 +1,64 @@
 package com.commercetools.sync.inventories.helpers;
 
-import static com.commercetools.sync.inventories.helpers.InventoryEntryQueryBuilder.buildQueries;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.sphere.sdk.inventory.InventoryEntryDraft;
-import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.queries.QueryPredicate;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import com.commercetools.api.client.ByProjectKeyInventoryGet;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.defaultconfig.ApiRootBuilder;
+import com.commercetools.api.models.channel.ChannelResourceIdentifierBuilder;
+import com.commercetools.api.models.inventory.InventoryEntryDraftBuilder;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class InventoryEntryQueryBuilderTest {
 
+  private static ProjectApiRoot ctpClient;
+
+  @BeforeAll
+  static void setup() {
+    ctpClient = ApiRootBuilder.of().withApiBaseUrl("testBaseUri").build("testProjectKey");
+  }
+
   @Test
   void buildQueries_WithoutIdentifiers_ShouldReturnEmptyList() {
-    final List<InventoryEntryQuery> inventoryEntryQueries = buildQueries(Collections.emptySet());
+    final List<ByProjectKeyInventoryGet> inventoryEntryQueries =
+        InventoryEntryQueryBuilder.buildQueries(ctpClient, Collections.emptySet());
     assertThat(inventoryEntryQueries).isEmpty();
   }
 
   @Test
   void buildQueries_WithOneIdentifierWithoutSupplyChannel_ShouldReturnOneQuery() {
     final InventoryEntryIdentifier identifier =
-        InventoryEntryIdentifier.of(InventoryEntryDraft.of("sku", 0L));
+        InventoryEntryIdentifier.of(
+            InventoryEntryDraftBuilder.of().sku("sku").quantityOnStock(0L).build());
 
-    final List<InventoryEntryQuery> inventoryEntryQueries =
-        buildQueries(Collections.singleton(identifier));
-
+    final List<ByProjectKeyInventoryGet> inventoryEntryQueries =
+        InventoryEntryQueryBuilder.buildQueries(ctpClient, Collections.singleton(identifier));
+    final String queryString = "(sku=\"sku\" and supplyChannel is not defined)";
     assertThat(inventoryEntryQueries)
         .contains(
-            InventoryEntryQuery.of()
-                .plusPredicates(QueryPredicate.of("(sku=\"sku\" and supplyChannel is not defined)"))
-                .withLimit(1)
-                .withFetchTotal(false));
+            ctpClient.inventory().get().withWhere(queryString).withLimit(1).withWithTotal(false));
   }
 
   @Test
   void buildQueries_WithOneIdentifierWithSupplyChannel_ShouldReturnOneQuery() {
     final InventoryEntryIdentifier identifier =
         InventoryEntryIdentifier.of(
-            InventoryEntryDraft.of("sku", 0L)
-                .withSupplyChannel(ResourceIdentifier.ofId("channel-id")));
+            InventoryEntryDraftBuilder.of()
+                .sku("sku")
+                .quantityOnStock(0L)
+                .supplyChannel(ChannelResourceIdentifierBuilder.of().id("channel-id").build())
+                .build());
 
-    final List<InventoryEntryQuery> inventoryEntryQueries =
-        buildQueries(Collections.singleton(identifier));
+    final List<ByProjectKeyInventoryGet> inventoryEntryQueries =
+        InventoryEntryQueryBuilder.buildQueries(ctpClient, Collections.singleton(identifier));
 
+    final String queryString = "(sku=\"sku\" and supplyChannel(id=\"channel-id\"))";
     assertThat(inventoryEntryQueries)
         .contains(
-            InventoryEntryQuery.of()
-                .plusPredicates(
-                    QueryPredicate.of("(sku=\"sku\" and supplyChannel(id=\"channel-id\"))"))
-                .withLimit(1)
-                .withFetchTotal(false));
+            ctpClient.inventory().get().withWhere(queryString).withLimit(1).withWithTotal(false));
   }
 
   @Test
@@ -67,20 +69,24 @@ class InventoryEntryQueryBuilderTest {
     for (int i = 0; i < 500; i++) {
       final InventoryEntryIdentifier identifier =
           InventoryEntryIdentifier.of(
-              InventoryEntryDraft.of("sku_" + i, i)
-                  .withSupplyChannel(
+              InventoryEntryDraftBuilder.of()
+                  .sku("sku_" + i)
+                  .quantityOnStock((long) i)
+                  .supplyChannel(
                       ThreadLocalRandom.current().nextBoolean()
                           ? null
-                          : ResourceIdentifier.ofId(channelId)));
+                          : ChannelResourceIdentifierBuilder.of().id(channelId).build())
+                  .build());
       identifiers.add(identifier);
     }
 
-    final List<InventoryEntryQuery> inventoryEntryQueries = buildQueries(identifiers);
+    final List<ByProjectKeyInventoryGet> inventoryEntryQueries =
+        InventoryEntryQueryBuilder.buildQueries(ctpClient, identifiers);
     assertThat(inventoryEntryQueries).isNotEmpty();
 
     final int totalIdentifiers =
         inventoryEntryQueries.stream()
-            .mapToInt(value -> Objects.requireNonNull(value.limit()).intValue())
+            .mapToInt(value -> Integer.parseInt(value.getLimit().stream().findFirst().orElse("0")))
             .sum();
     assertThat(totalIdentifiers).isEqualTo(500);
   }

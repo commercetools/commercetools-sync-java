@@ -1,17 +1,17 @@
 package com.commercetools.sync.benchmark;
 
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.InventoryITUtils.deleteInventoryEntries;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.api.models.inventory.InventoryEntryDraft;
 import com.commercetools.api.models.inventory.InventoryEntryDraftBuilder;
 import com.commercetools.api.models.inventory.InventoryPagedQueryResponse;
-import com.commercetools.sync.sdk2.inventories.InventorySync;
-import com.commercetools.sync.sdk2.inventories.InventorySyncOptions;
-import com.commercetools.sync.sdk2.inventories.InventorySyncOptionsBuilder;
-import com.commercetools.sync.sdk2.inventories.helpers.InventorySyncStatistics;
+import com.commercetools.sync.inventories.InventorySync;
+import com.commercetools.sync.inventories.InventorySyncOptions;
+import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
+import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.io.IOException;
 import java.time.ZoneId;

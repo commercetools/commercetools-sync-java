@@ -1,28 +1,26 @@
 package com.commercetools.sync.states.utils;
 
-import static com.commercetools.sync.states.utils.StateSyncUtils.buildActions;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.states.State;
-import io.sphere.sdk.states.StateDraft;
-import io.sphere.sdk.states.StateRole;
-import io.sphere.sdk.states.StateType;
-import io.sphere.sdk.states.commands.updateactions.AddRoles;
-import io.sphere.sdk.states.commands.updateactions.ChangeInitial;
-import io.sphere.sdk.states.commands.updateactions.ChangeType;
-import io.sphere.sdk.states.commands.updateactions.RemoveRoles;
-import io.sphere.sdk.states.commands.updateactions.SetDescription;
-import io.sphere.sdk.states.commands.updateactions.SetName;
-import java.util.HashSet;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.state.State;
+import com.commercetools.api.models.state.StateAddRolesActionBuilder;
+import com.commercetools.api.models.state.StateChangeInitialActionBuilder;
+import com.commercetools.api.models.state.StateChangeTypeActionBuilder;
+import com.commercetools.api.models.state.StateDraft;
+import com.commercetools.api.models.state.StateDraftBuilder;
+import com.commercetools.api.models.state.StateRemoveRolesActionBuilder;
+import com.commercetools.api.models.state.StateRoleEnum;
+import com.commercetools.api.models.state.StateSetDescriptionActionBuilder;
+import com.commercetools.api.models.state.StateSetNameActionBuilder;
+import com.commercetools.api.models.state.StateTypeEnum;
+import com.commercetools.api.models.state.StateUpdateAction;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class StateSyncUtilsTest {
@@ -31,7 +29,7 @@ class StateSyncUtilsTest {
 
   @Test
   void buildActions_WithSameValues_ShouldNotBuildUpdateActions() {
-    final StateType type = StateType.LINE_ITEM_STATE;
+    final StateTypeEnum type = StateTypeEnum.LINE_ITEM_STATE;
     final LocalizedString name = LocalizedString.of(Locale.GERMANY, "name");
     final LocalizedString description = LocalizedString.of(Locale.GERMANY, "description");
 
@@ -40,12 +38,18 @@ class StateSyncUtilsTest {
     when(state.getType()).thenReturn(type);
     when(state.getName()).thenReturn(name);
     when(state.getDescription()).thenReturn(description);
-    when(state.isInitial()).thenReturn(true);
+    when(state.getInitial()).thenReturn(true);
 
     final StateDraft stateDraft =
-        StateDraft.of(KEY, type).withName(name).withDescription(description).withInitial(true);
+        StateDraftBuilder.of()
+            .key(KEY)
+            .type(type)
+            .name(name)
+            .description(description)
+            .initial(true)
+            .build();
 
-    final List<UpdateAction<State>> result = buildActions(state, stateDraft);
+    final List<StateUpdateAction> result = StateSyncUtils.buildActions(state, stateDraft);
 
     assertThat(result).isEmpty();
   }
@@ -54,30 +58,49 @@ class StateSyncUtilsTest {
   void buildActions_WithDifferentValues_ShouldBuildAllUpdateActions() {
     final State state = mock(State.class);
     when(state.getKey()).thenReturn(KEY);
-    when(state.getType()).thenReturn(StateType.LINE_ITEM_STATE);
+    when(state.getType()).thenReturn(StateTypeEnum.LINE_ITEM_STATE);
     when(state.getName()).thenReturn(LocalizedString.of(Locale.GERMANY, "name"));
     when(state.getDescription()).thenReturn(LocalizedString.of(Locale.GERMANY, "description"));
-    when(state.isInitial()).thenReturn(false);
-    final Set<StateRole> oldStateRoles = new HashSet<>(singletonList(StateRole.RETURN));
+    when(state.getInitial()).thenReturn(false);
+    final List<StateRoleEnum> oldStateRoles = new ArrayList<>(List.of(StateRoleEnum.RETURN));
     when(state.getRoles()).thenReturn(oldStateRoles);
 
-    final Set<StateRole> newStateRoles =
-        new HashSet<>(singletonList(StateRole.REVIEW_INCLUDED_IN_STATISTICS));
+    final List<StateRoleEnum> newStateRoles =
+        new ArrayList<>(List.of(StateRoleEnum.REVIEW_INCLUDED_IN_STATISTICS));
     final StateDraft stateDraft =
-        StateDraft.of(KEY, StateType.PRODUCT_STATE)
-            .withName(LocalizedString.of(Locale.GERMANY, "different name"))
-            .withDescription(LocalizedString.of(Locale.GERMANY, "different description"))
-            .withInitial(true)
-            .withRoles(newStateRoles);
+        StateDraftBuilder.of()
+            .key(KEY)
+            .type(StateTypeEnum.PRODUCT_STATE)
+            .name(LocalizedString.of(Locale.GERMANY, "different name"))
+            .description(LocalizedString.of(Locale.GERMANY, "different description"))
+            .initial(true)
+            .roles(newStateRoles)
+            .build();
 
-    final List<UpdateAction<State>> result = buildActions(state, stateDraft);
+    final List<StateUpdateAction> result = StateSyncUtils.buildActions(state, stateDraft);
 
     assertAll(
-        () -> assertThat(result).contains(ChangeType.of(stateDraft.getType())),
-        () -> assertThat(result).contains(SetName.of(stateDraft.getName())),
-        () -> assertThat(result).contains(SetDescription.of(stateDraft.getDescription())),
-        () -> assertThat(result).contains(ChangeInitial.of(stateDraft.isInitial())),
-        () -> assertThat(result).contains(RemoveRoles.of(oldStateRoles)),
-        () -> assertThat(result).contains(AddRoles.of(newStateRoles)));
+        () ->
+            assertThat(result)
+                .contains(StateChangeTypeActionBuilder.of().type(stateDraft.getType()).build()),
+        () ->
+            assertThat(result)
+                .contains(StateSetNameActionBuilder.of().name(stateDraft.getName()).build()),
+        () ->
+            assertThat(result)
+                .contains(
+                    StateSetDescriptionActionBuilder.of()
+                        .description(stateDraft.getDescription())
+                        .build()),
+        () ->
+            assertThat(result)
+                .contains(
+                    StateChangeInitialActionBuilder.of().initial(stateDraft.getInitial()).build()),
+        () ->
+            assertThat(result)
+                .contains(StateRemoveRolesActionBuilder.of().roles(oldStateRoles).build()),
+        () ->
+            assertThat(result)
+                .contains(StateAddRolesActionBuilder.of().roles(newStateRoles).build()));
   }
 }

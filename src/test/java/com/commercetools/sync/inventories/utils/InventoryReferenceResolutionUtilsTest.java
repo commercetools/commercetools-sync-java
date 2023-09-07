@@ -1,18 +1,18 @@
 package com.commercetools.sync.inventories.utils;
 
-import static com.commercetools.sync.inventories.utils.InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.commercetools.api.models.channel.ChannelReference;
+import com.commercetools.api.models.channel.ChannelReferenceBuilder;
+import com.commercetools.api.models.inventory.InventoryEntry;
+import com.commercetools.api.models.inventory.InventoryEntryDraft;
+import com.commercetools.api.models.type.CustomFields;
+import com.commercetools.api.models.type.TypeReference;
+import com.commercetools.api.models.type.TypeReferenceBuilder;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.inventory.InventoryEntry;
-import io.sphere.sdk.inventory.InventoryEntryDraft;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.types.CustomFields;
-import io.sphere.sdk.types.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -47,14 +47,14 @@ class InventoryReferenceResolutionUtilsTest {
 
     for (int i = 0; i < 2; i++) {
       final InventoryEntry mockInventoryEntry = mock(InventoryEntry.class);
+      when(mockInventoryEntry.getSku()).thenReturn("sku_" + i);
+      when(mockInventoryEntry.getQuantityOnStock()).thenReturn(1L);
       final CustomFields mockCustomFields = mock(CustomFields.class);
-      final Reference<Type> typeReference =
-          Reference.ofResourceTypeIdAndId(UUID.randomUUID().toString(), customTypeId);
+      final TypeReference typeReference = TypeReferenceBuilder.of().id(customTypeId).build();
       when(mockCustomFields.getType()).thenReturn(typeReference);
       when(mockInventoryEntry.getCustom()).thenReturn(mockCustomFields);
 
-      final Reference<Channel> channelReference =
-          Reference.ofResourceTypeIdAndId(Channel.referenceTypeId(), channelId);
+      final ChannelReference channelReference = ChannelReferenceBuilder.of().id(channelId).build();
       when(mockInventoryEntry.getSupplyChannel()).thenReturn(channelReference);
 
       mockInventoryEntries.add(mockInventoryEntry);
@@ -62,7 +62,8 @@ class InventoryReferenceResolutionUtilsTest {
 
     // test
     final List<InventoryEntryDraft> referenceReplacedDrafts =
-        mapToInventoryEntryDrafts(mockInventoryEntries, referenceIdToKeyCache);
+        InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts(
+            mockInventoryEntries, referenceIdToKeyCache);
 
     // assertion
     for (InventoryEntryDraft referenceReplacedDraft : referenceReplacedDrafts) {
@@ -80,14 +81,16 @@ class InventoryReferenceResolutionUtilsTest {
     final String channelId = UUID.randomUUID().toString();
 
     for (int i = 0; i < 2; i++) {
-      final CustomFields mockCustomFields = mock(CustomFields.class);
-      final Reference<Type> typeReference = Type.referenceOfId(customTypeId);
-      when(mockCustomFields.getType()).thenReturn(typeReference);
-
       final InventoryEntry mockInventoryEntry = mock(InventoryEntry.class);
+      when(mockInventoryEntry.getSku()).thenReturn("sku_" + i);
+      when(mockInventoryEntry.getQuantityOnStock()).thenReturn(1L);
+
+      final CustomFields mockCustomFields = mock(CustomFields.class);
+      final TypeReference typeReference = TypeReferenceBuilder.of().id(customTypeId).build();
+      when(mockCustomFields.getType()).thenReturn(typeReference);
       when(mockInventoryEntry.getCustom()).thenReturn(mockCustomFields);
 
-      final Reference<Channel> channelReference = Channel.referenceOfId(channelId);
+      final ChannelReference channelReference = ChannelReferenceBuilder.of().id(channelId).build();
       when(mockInventoryEntry.getSupplyChannel()).thenReturn(channelReference);
 
       mockInventoryEntries.add(mockInventoryEntry);
@@ -95,7 +98,8 @@ class InventoryReferenceResolutionUtilsTest {
 
     // test
     final List<InventoryEntryDraft> referenceReplacedDrafts =
-        mapToInventoryEntryDrafts(mockInventoryEntries, referenceIdToKeyCache);
+        InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts(
+            mockInventoryEntries, referenceIdToKeyCache);
 
     // assertion
     for (InventoryEntryDraft referenceReplacedDraft : referenceReplacedDrafts) {
@@ -106,10 +110,14 @@ class InventoryReferenceResolutionUtilsTest {
 
   @Test
   void mapToInventoryEntryDrafts_WithNullReferences_ShouldNotReturnResourceIdentifiers() {
+    // preparation
+    final InventoryEntry mockInventoryEntry = mock(InventoryEntry.class);
+    when(mockInventoryEntry.getSku()).thenReturn("sku");
+    when(mockInventoryEntry.getQuantityOnStock()).thenReturn(1L);
     // test
     final List<InventoryEntryDraft> referenceReplacedDrafts =
-        mapToInventoryEntryDrafts(
-            Collections.singletonList(mock(InventoryEntry.class)), referenceIdToKeyCache);
+        InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts(
+            Collections.singletonList(mockInventoryEntry), referenceIdToKeyCache);
 
     // assertion
     for (InventoryEntryDraft referenceReplacedDraft : referenceReplacedDrafts) {

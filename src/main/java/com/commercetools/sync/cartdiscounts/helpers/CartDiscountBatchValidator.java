@@ -3,10 +3,9 @@ package com.commercetools.sync.cartdiscounts.helpers;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import com.commercetools.api.models.cart_discount.CartDiscountDraft;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.commons.helpers.BaseBatchValidator;
-import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
-import io.sphere.sdk.producttypes.ProductTypeDraft;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,10 +31,11 @@ public class CartDiscountBatchValidator
   }
 
   /**
-   * Given the {@link List}&lt;{@link CartDiscountDraft}&gt; of drafts this method attempts to
-   * validate drafts and collect referenced type keys from the draft and return an {@link
-   * ImmutablePair}&lt;{@link Set}&lt;{@link CartDiscountDraft}&gt; ,{@link Set}&lt;{@link
-   * String}&gt;&gt; which contains the {@link Set} of valid drafts and referenced type keys.
+   * Given the {@link java.util.List}&lt;{@link CartDiscountDraft}&gt; of drafts this method
+   * attempts to validate drafts and collect referenced type keys from the draft and return an
+   * {@link org.apache.commons.lang3.tuple.ImmutablePair}&lt;{@link java.util.Set}&lt;{@link
+   * CartDiscountDraft}&gt; ,{@link java.util.Set}&lt;{@link String}&gt;&gt; which contains the
+   * {@link java.util.Set} of valid drafts and referenced type keys.
    *
    * <p>A valid cart discount draft is one which satisfies the following conditions:
    *
@@ -46,9 +46,9 @@ public class CartDiscountBatchValidator
    *
    * @param cartDiscountDrafts the cart discount drafts to validate and collect referenced type
    *     keys.
-   * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@link ProductTypeDraft}&gt;, {@link
-   *     Set}&lt;{@link String}&gt;&gt; which contains the {@link Set} of valid drafts and
-   *     referenced type keys.
+   * @return {@link org.apache.commons.lang3.tuple.ImmutablePair}&lt;{@link java.util.Set}&lt;{@link
+   *     CartDiscountDraft}&gt;, {@link java.util.Set}&lt;{@link String}&gt;&gt; which contains the
+   *     {@link java.util.Set} of valid drafts and referenced type keys.
    */
   @Override
   public ImmutablePair<Set<CartDiscountDraft>, Set<String>> validateAndCollectReferencedKeys(

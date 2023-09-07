@@ -1,42 +1,49 @@
 package com.commercetools.sync.products.helpers;
 
+import com.commercetools.api.models.product.*;
 import com.commercetools.sync.commons.helpers.GenericCustomActionBuilder;
-import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomField;
-import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomType;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class PriceCustomActionBuilder implements GenericCustomActionBuilder<Product> {
+public class PriceCustomActionBuilder implements GenericCustomActionBuilder<ProductUpdateAction> {
 
   @Override
   @Nonnull
-  public UpdateAction<Product> buildRemoveCustomTypeAction(
-      @Nullable final Integer variantId, @Nullable final String priceId) {
-    return SetProductPriceCustomType.ofRemoveType(priceId, true);
+  public ProductUpdateAction buildRemoveCustomTypeAction(
+      @Nullable final Long variantId, @Nullable final String priceId) {
+    return ProductSetProductPriceCustomTypeActionBuilder.of().priceId(priceId).build();
   }
 
   @Override
   @Nonnull
-  public UpdateAction<Product> buildSetCustomTypeAction(
-      @Nullable final Integer variantId,
+  public ProductUpdateAction buildSetCustomTypeAction(
+      @Nullable final Long variantId,
       @Nullable final String priceId,
       @Nonnull final String customTypeId,
-      @Nullable final Map<String, JsonNode> customFieldsJsonMap) {
-    return SetProductPriceCustomType.ofTypeIdAndJson(
-        customTypeId, customFieldsJsonMap, priceId, true);
+      @Nullable final Map<String, Object> customFieldsJsonMap) {
+
+    return ProductSetProductPriceCustomTypeActionBuilder.of()
+        .priceId(priceId)
+        .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.id(customTypeId))
+        .fields(fieldContainerBuilder -> fieldContainerBuilder.values(customFieldsJsonMap))
+        .staged(true)
+        .build();
   }
 
   @Override
   @Nonnull
-  public UpdateAction<Product> buildSetCustomFieldAction(
-      @Nullable final Integer variantId,
+  public ProductUpdateAction buildSetCustomFieldAction(
+      @Nullable final Long variantId,
       @Nullable final String priceId,
       @Nullable final String customFieldName,
-      @Nullable final JsonNode customFieldValue) {
-    return SetProductPriceCustomField.ofJson(customFieldName, customFieldValue, priceId, true);
+      @Nullable final Object customFieldValue) {
+
+    return ProductSetProductPriceCustomFieldActionBuilder.of()
+        .priceId(priceId)
+        .name(customFieldName)
+        .value(customFieldValue)
+        .staged(true)
+        .build();
   }
 }

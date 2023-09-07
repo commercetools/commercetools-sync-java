@@ -1,16 +1,15 @@
 package com.commercetools.sync.customers.utils;
 
+import com.commercetools.api.models.customer.CustomerSetCustomFieldActionBuilder;
+import com.commercetools.api.models.customer.CustomerSetCustomTypeActionBuilder;
+import com.commercetools.api.models.customer.CustomerUpdateAction;
 import com.commercetools.sync.commons.helpers.GenericCustomActionBuilder;
-import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.customers.commands.updateactions.SetCustomField;
-import io.sphere.sdk.customers.commands.updateactions.SetCustomType;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class CustomerCustomActionBuilder implements GenericCustomActionBuilder<Customer> {
+public final class CustomerCustomActionBuilder
+    implements GenericCustomActionBuilder<CustomerUpdateAction> {
 
   private static final CustomerCustomActionBuilder builder = new CustomerCustomActionBuilder();
 
@@ -25,31 +24,37 @@ public final class CustomerCustomActionBuilder implements GenericCustomActionBui
 
   @Nonnull
   @Override
-  public UpdateAction<Customer> buildRemoveCustomTypeAction(
-      @Nullable final Integer variantId, @Nullable final String objectId) {
+  public CustomerUpdateAction buildRemoveCustomTypeAction(
+      @Nullable final Long variantId, @Nullable final String objectId) {
 
-    return SetCustomType.ofRemoveType();
+    return CustomerSetCustomTypeActionBuilder.of().build();
   }
 
   @Nonnull
   @Override
-  public UpdateAction<Customer> buildSetCustomTypeAction(
-      @Nullable final Integer variantId,
+  public CustomerUpdateAction buildSetCustomTypeAction(
+      @Nullable final Long variantId,
       @Nullable final String objectId,
       @Nonnull final String customTypeId,
-      @Nullable final Map<String, JsonNode> customFieldsJsonMap) {
+      @Nullable final Map<String, Object> customFieldsJsonMap) {
 
-    return SetCustomType.ofTypeIdAndJson(customTypeId, customFieldsJsonMap);
+    return CustomerSetCustomTypeActionBuilder.of()
+        .type(typeResourceIdentifierBuilder -> typeResourceIdentifierBuilder.id(customTypeId))
+        .fields(fieldContainerBuilder -> fieldContainerBuilder.values(customFieldsJsonMap))
+        .build();
   }
 
   @Nonnull
   @Override
-  public UpdateAction<Customer> buildSetCustomFieldAction(
-      @Nullable final Integer variantId,
+  public CustomerUpdateAction buildSetCustomFieldAction(
+      @Nullable final Long variantId,
       @Nullable final String objectId,
       @Nullable final String customFieldName,
-      @Nullable final JsonNode customFieldValue) {
+      @Nullable final Object customFieldValue) {
 
-    return SetCustomField.ofJson(customFieldName, customFieldValue);
+    return CustomerSetCustomFieldActionBuilder.of()
+        .name(customFieldName)
+        .value(customFieldValue)
+        .build();
   }
 }

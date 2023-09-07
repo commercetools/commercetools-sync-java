@@ -4,18 +4,11 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.tax_category.*;
 import com.commercetools.sync.commons.utils.TriFunction;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.taxcategories.TaxCategory;
-import io.sphere.sdk.taxcategories.TaxCategoryDraft;
-import io.sphere.sdk.taxcategories.TaxCategoryDraftBuilder;
-import io.sphere.sdk.taxcategories.commands.updateactions.SetKey;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -23,14 +16,17 @@ import org.junit.jupiter.api.Test;
 
 class TaxCategorySyncOptionsTest {
 
-  private static SphereClient CTP_CLIENT = mock(SphereClient.class);
+  private static final TaxCategorySetKeyAction TAX_CATEGORY_SET_KEY_ACTION =
+      TaxCategorySetKeyActionBuilder.of().key("key").build();
+  private static ProjectApiRoot CTP_CLIENT = mock(ProjectApiRoot.class);
 
   @Test
   void applyBeforeUpdateCallback_WithNullCallback_ShouldReturnIdenticalList() {
     final TaxCategorySyncOptions taxCategorySyncOptions =
         TaxCategorySyncOptionsBuilder.of(CTP_CLIENT).build();
-    final List<UpdateAction<TaxCategory>> updateActions = singletonList(SetKey.of("key"));
-    final List<UpdateAction<TaxCategory>> filteredList =
+    final List<TaxCategoryUpdateAction> updateActions =
+        singletonList(TaxCategorySetKeyActionBuilder.of().key("key").build());
+    final List<TaxCategoryUpdateAction> filteredList =
         taxCategorySyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(TaxCategoryDraft.class), mock(TaxCategory.class));
 
@@ -40,18 +36,19 @@ class TaxCategorySyncOptionsTest {
   @Test
   void applyBeforeUpdateCallback_WithNullReturnCallback_ShouldReturnEmptyList() {
     final TriFunction<
-            List<UpdateAction<TaxCategory>>,
+            List<TaxCategoryUpdateAction>,
             TaxCategoryDraft,
             TaxCategory,
-            List<UpdateAction<TaxCategory>>>
+            List<TaxCategoryUpdateAction>>
         beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> null;
     final TaxCategorySyncOptions taxCategorySyncOptions =
         TaxCategorySyncOptionsBuilder.of(CTP_CLIENT)
             .beforeUpdateCallback(beforeUpdateCallback)
             .build();
-    final List<UpdateAction<TaxCategory>> updateActions = singletonList(SetKey.of("key"));
+    final List<TaxCategoryUpdateAction> updateActions =
+        singletonList(TaxCategorySetKeyActionBuilder.of().key("key").build());
 
-    final List<UpdateAction<TaxCategory>> filteredList =
+    final List<TaxCategoryUpdateAction> filteredList =
         taxCategorySyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(TaxCategoryDraft.class), mock(TaxCategory.class));
 
@@ -60,20 +57,19 @@ class TaxCategorySyncOptionsTest {
 
   private interface MockTriFunction
       extends TriFunction<
-          List<UpdateAction<TaxCategory>>,
+          List<TaxCategoryUpdateAction>,
           TaxCategoryDraft,
           TaxCategory,
-          List<UpdateAction<TaxCategory>>> {}
+          List<TaxCategoryUpdateAction>> {}
 
   @Test
   void applyBeforeUpdateCallback_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
-    final TaxCategorySyncOptionsTest.MockTriFunction beforeUpdateCallback =
-        mock(TaxCategorySyncOptionsTest.MockTriFunction.class);
+    final MockTriFunction beforeUpdateCallback = mock(MockTriFunction.class);
     final TaxCategorySyncOptions taxCategorySyncOptions =
         TaxCategorySyncOptionsBuilder.of(CTP_CLIENT)
             .beforeUpdateCallback(beforeUpdateCallback)
             .build();
-    final List<UpdateAction<TaxCategory>> filteredList =
+    final List<TaxCategoryUpdateAction> filteredList =
         taxCategorySyncOptions.applyBeforeUpdateCallback(
             emptyList(), mock(TaxCategoryDraft.class), mock(TaxCategory.class));
 
@@ -84,18 +80,18 @@ class TaxCategorySyncOptionsTest {
   @Test
   void applyBeforeUpdateCallback_WithCallback_ShouldReturnFilteredList() {
     final TriFunction<
-            List<UpdateAction<TaxCategory>>,
+            List<TaxCategoryUpdateAction>,
             TaxCategoryDraft,
             TaxCategory,
-            List<UpdateAction<TaxCategory>>>
+            List<TaxCategoryUpdateAction>>
         beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> emptyList();
     final TaxCategorySyncOptions taxCategorySyncOptions =
         TaxCategorySyncOptionsBuilder.of(CTP_CLIENT)
             .beforeUpdateCallback(beforeUpdateCallback)
             .build();
-    final List<UpdateAction<TaxCategory>> updateActions = singletonList(SetKey.of("key"));
+    final List<TaxCategoryUpdateAction> updateActions = singletonList(TAX_CATEGORY_SET_KEY_ACTION);
 
-    final List<UpdateAction<TaxCategory>> filteredList =
+    final List<TaxCategoryUpdateAction> filteredList =
         taxCategorySyncOptions.applyBeforeUpdateCallback(
             updateActions, mock(TaxCategoryDraft.class), mock(TaxCategory.class));
 
@@ -113,6 +109,7 @@ class TaxCategorySyncOptionsTest {
         TaxCategorySyncOptionsBuilder.of(CTP_CLIENT).beforeCreateCallback(draftFunction).build();
     final TaxCategoryDraft resourceDraft = mock(TaxCategoryDraft.class);
     when(resourceDraft.getKey()).thenReturn("myKey");
+    when(resourceDraft.getName()).thenReturn("myName");
 
     final Optional<TaxCategoryDraft> filteredDraft =
         taxCategorySyncOptions.applyBeforeCreateCallback(resourceDraft);

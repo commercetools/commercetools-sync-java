@@ -1,21 +1,22 @@
 package com.commercetools.sync.customers.helpers;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
-import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
+import static io.vrap.rmf.base.client.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 
+import com.commercetools.api.models.common.ResourceIdentifier;
+import com.commercetools.api.models.customer.CustomerDraft;
+import com.commercetools.api.models.customer.CustomerDraftBuilder;
+import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
+import com.commercetools.api.models.store.StoreResourceIdentifier;
+import com.commercetools.api.models.store.StoreResourceIdentifierBuilder;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.CustomReferenceResolver;
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.TypeService;
-import io.sphere.sdk.customergroups.CustomerGroup;
-import io.sphere.sdk.customers.CustomerDraft;
-import io.sphere.sdk.customers.CustomerDraftBuilder;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.stores.Store;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -105,8 +106,7 @@ public final class CustomerReferenceResolver
   public CompletionStage<CustomerDraftBuilder> resolveCustomerGroupReference(
       @Nonnull final CustomerDraftBuilder draftBuilder) {
 
-    final ResourceIdentifier<CustomerGroup> customerGroupResourceIdentifier =
-        draftBuilder.getCustomerGroup();
+    final ResourceIdentifier customerGroupResourceIdentifier = draftBuilder.getCustomerGroup();
     if (customerGroupResourceIdentifier != null
         && customerGroupResourceIdentifier.getId() == null) {
       String customerGroupKey;
@@ -139,8 +139,9 @@ public final class CustomerReferenceResolver
                         resolvedCustomerGroupId ->
                             completedFuture(
                                 draftBuilder.customerGroup(
-                                    CustomerGroup.referenceOfId(resolvedCustomerGroupId)
-                                        .toResourceIdentifier())))
+                                    CustomerGroupResourceIdentifierBuilder.of()
+                                        .id(resolvedCustomerGroupId)
+                                        .build())))
                     .orElseGet(
                         () -> {
                           final String errorMessage =
@@ -168,17 +169,17 @@ public final class CustomerReferenceResolver
   public CompletionStage<CustomerDraftBuilder> resolveStoreReferences(
       @Nonnull final CustomerDraftBuilder draftBuilder) {
 
-    final List<ResourceIdentifier<Store>> storeResourceIdentifiers = draftBuilder.getStores();
+    final List<StoreResourceIdentifier> storeResourceIdentifiers = draftBuilder.getStores();
     if (storeResourceIdentifiers == null || storeResourceIdentifiers.isEmpty()) {
       return completedFuture(draftBuilder);
     }
-    final List<ResourceIdentifier<Store>> resolvedReferences = new ArrayList<>();
-    for (ResourceIdentifier<Store> storeResourceIdentifier : storeResourceIdentifiers) {
+    final List<StoreResourceIdentifier> resolvedReferences = new ArrayList<>();
+    for (StoreResourceIdentifier storeResourceIdentifier : storeResourceIdentifiers) {
       if (storeResourceIdentifier != null) {
         if (storeResourceIdentifier.getId() == null) {
           try {
             final String storeKey = getKeyFromResourceIdentifier(storeResourceIdentifier);
-            resolvedReferences.add(ResourceIdentifier.ofKey(storeKey));
+            resolvedReferences.add(StoreResourceIdentifierBuilder.of().key(storeKey).build());
           } catch (ReferenceResolutionException referenceResolutionException) {
             return exceptionallyCompletedFuture(
                 new ReferenceResolutionException(
@@ -188,7 +189,8 @@ public final class CustomerReferenceResolver
                         referenceResolutionException.getMessage())));
           }
         } else {
-          resolvedReferences.add(ResourceIdentifier.ofId(storeResourceIdentifier.getId()));
+          resolvedReferences.add(
+              StoreResourceIdentifierBuilder.of().id(storeResourceIdentifier.getId()).build());
         }
       }
     }

@@ -6,17 +6,20 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
+import com.commercetools.api.models.shopping_list.ShoppingList;
+import com.commercetools.api.models.shopping_list.ShoppingListAddLineItemActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListChangeLineItemQuantityActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItem;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListRemoveLineItemActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
+import com.commercetools.api.models.type.ResourceTypeId;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.CustomUpdateActionUtils;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.shoppinglists.LineItem;
-import io.sphere.sdk.shoppinglists.LineItemDraft;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
-import io.sphere.sdk.shoppinglists.commands.updateactions.AddLineItem;
-import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeLineItemQuantity;
-import io.sphere.sdk.shoppinglists.commands.updateactions.RemoveLineItem;
+import com.commercetools.sync.shoppinglists.models.ShoppingListLineItemCustomTypeAdapter;
+import com.commercetools.sync.shoppinglists.models.ShoppingListLineItemDraftCustomTypeAdapter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -28,12 +31,13 @@ import org.apache.commons.lang3.math.NumberUtils;
 public final class LineItemUpdateActionUtils {
 
   /**
-   * Compares a list of {@link LineItem}s with a list of {@link LineItemDraft}s. The method takes in
-   * functions for building the required update actions (AddLineItem, RemoveLineItem and 1-1 update
-   * actions on line items (e.g. changeLineItemQuantity, setLineItemCustomType, etc..).
+   * Compares a list of {@link ShoppingListLineItem}s with a list of {@link
+   * ShoppingListLineItemDraft}s. The method takes in functions for building the required update
+   * actions (AddLineItem, RemoveLineItem and 1-1 update actions on line items (e.g.
+   * changeLineItemQuantity, setLineItemCustomType, etc..).
    *
-   * <p>If the list of new {@link LineItemDraft}s is {@code null}, then remove actions are built for
-   * every existing line item.
+   * <p>If the list of new {@link ShoppingListLineItemDraft}s is {@code null}, then remove actions
+   * are built for every existing line item.
    *
    * @param oldShoppingList shopping list resource, whose line item should be updated.
    * @param newShoppingList new shopping list draft, which contains the line item to update.
@@ -44,7 +48,7 @@ public final class LineItemUpdateActionUtils {
    *     returned.
    */
   @Nonnull
-  public static List<UpdateAction<ShoppingList>> buildLineItemsUpdateActions(
+  public static List<ShoppingListUpdateAction> buildLineItemsUpdateActions(
       @Nonnull final ShoppingList oldShoppingList,
       @Nonnull final ShoppingListDraft newShoppingList,
       @Nonnull final ShoppingListSyncOptions syncOptions) {
@@ -58,7 +62,13 @@ public final class LineItemUpdateActionUtils {
 
     if (hasOldLineItems && !hasNewLineItems) {
 
-      return oldShoppingList.getLineItems().stream().map(RemoveLineItem::of).collect(toList());
+      return oldShoppingList.getLineItems().stream()
+          .map(
+              shoppingListLineItem ->
+                  ShoppingListRemoveLineItemActionBuilder.of()
+                      .lineItemId(shoppingListLineItem.getId())
+                      .build())
+          .collect(toList());
 
     } else if (!hasOldLineItems) {
 
@@ -69,19 +79,28 @@ public final class LineItemUpdateActionUtils {
       return newShoppingList.getLineItems().stream()
           .filter(Objects::nonNull)
           .filter(LineItemUpdateActionUtils::hasQuantity)
-          .map(AddLineItem::of)
+          .map(
+              shoppingListLineItemDraft ->
+                  ShoppingListAddLineItemActionBuilder.of()
+                      .addedAt(shoppingListLineItemDraft.getAddedAt())
+                      .custom(shoppingListLineItemDraft.getCustom())
+                      .sku(shoppingListLineItemDraft.getSku())
+                      .productId(shoppingListLineItemDraft.getProductId())
+                      .quantity(shoppingListLineItemDraft.getQuantity())
+                      .variantId(shoppingListLineItemDraft.getVariantId())
+                      .build())
           .collect(toList());
     }
 
-    final List<LineItem> oldLineItems = oldShoppingList.getLineItems();
-    final List<LineItemDraft> newlineItems =
+    final List<ShoppingListLineItem> oldLineItems = oldShoppingList.getLineItems();
+    final List<ShoppingListLineItemDraft> newlineItems =
         newShoppingList.getLineItems().stream().filter(Objects::nonNull).collect(toList());
 
     return buildUpdateActions(
         oldShoppingList, newShoppingList, oldLineItems, newlineItems, syncOptions);
   }
 
-  private static boolean hasQuantity(@Nonnull final LineItemDraft lineItemDraft) {
+  private static boolean hasQuantity(@Nonnull final ShoppingListLineItemDraft lineItemDraft) {
     /*
 
      with this check, it's avoided bad request case like below:
@@ -98,21 +117,21 @@ public final class LineItemUpdateActionUtils {
    * `docs/adr/0002-shopping-lists-lineitem-and-textlineitem-update-actions.md`
    */
   @Nonnull
-  private static List<UpdateAction<ShoppingList>> buildUpdateActions(
+  private static List<ShoppingListUpdateAction> buildUpdateActions(
       @Nonnull final ShoppingList oldShoppingList,
       @Nonnull final ShoppingListDraft newShoppingList,
-      @Nonnull final List<LineItem> oldLineItems,
-      @Nonnull final List<LineItemDraft> newlineItems,
+      @Nonnull final List<ShoppingListLineItem> oldLineItems,
+      @Nonnull final List<ShoppingListLineItemDraft> newlineItems,
       @Nonnull final ShoppingListSyncOptions syncOptions) {
 
-    final List<UpdateAction<ShoppingList>> updateActions = new ArrayList<>();
+    final List<ShoppingListUpdateAction> updateActions = new ArrayList<>();
 
     final int minSize = Math.min(oldLineItems.size(), newlineItems.size());
     int indexOfFirstDifference = minSize;
     for (int i = 0; i < minSize; i++) {
 
-      final LineItem oldLineItem = oldLineItems.get(i);
-      final LineItemDraft newLineItem = newlineItems.get(i);
+      final ShoppingListLineItem oldLineItem = oldLineItems.get(i);
+      final ShoppingListLineItemDraft newLineItem = newlineItems.get(i);
 
       if (oldLineItem.getVariant() == null
           || StringUtils.isBlank(oldLineItem.getVariant().getSku())) {
@@ -164,12 +183,24 @@ public final class LineItemUpdateActionUtils {
     // indexOfFirstDifference: 1 (li-2 vs li-3)
     // expected: remove from old li-2, add from draft li-3, li-2 starting from the index.
     for (int i = indexOfFirstDifference; i < oldLineItems.size(); i++) {
-      updateActions.add(RemoveLineItem.of(oldLineItems.get(i).getId()));
+      updateActions.add(
+          ShoppingListRemoveLineItemActionBuilder.of()
+              .lineItemId(oldLineItems.get(i).getId())
+              .build());
     }
 
     for (int i = indexOfFirstDifference; i < newlineItems.size(); i++) {
-      if (hasQuantity(newlineItems.get(i))) {
-        updateActions.add(AddLineItem.of(newlineItems.get(i)));
+      final ShoppingListLineItemDraft lineItemDraft = newlineItems.get(i);
+      if (hasQuantity(lineItemDraft)) {
+        updateActions.add(
+            ShoppingListAddLineItemActionBuilder.of()
+                .addedAt(lineItemDraft.getAddedAt())
+                .custom(lineItemDraft.getCustom())
+                .sku(lineItemDraft.getSku())
+                .productId(lineItemDraft.getProductId())
+                .quantity(lineItemDraft.getQuantity())
+                .variantId(lineItemDraft.getVariantId())
+                .build());
       }
     }
 
@@ -177,10 +208,11 @@ public final class LineItemUpdateActionUtils {
   }
 
   /**
-   * Compares all the fields of a {@link LineItem} and a {@link LineItemDraft} and returns a list of
-   * {@link UpdateAction}&lt;{@link ShoppingList}&gt; as a result. If both the {@link LineItem} and
-   * the {@link LineItemDraft} have identical fields, then no update action is needed and hence an
-   * empty {@link List} is returned.
+   * Compares all the fields of a {@link ShoppingListLineItem} and a {@link
+   * ShoppingListLineItemDraft} and returns a list of {@link ShoppingListUpdateAction} as a result.
+   * If both the {@link ShoppingListLineItem} and the {@link ShoppingListLineItemDraft} have
+   * identical fields, then no update action is needed and hence an empty {@link java.util.List} is
+   * returned.
    *
    * @param oldShoppingList shopping list resource, whose line item should be updated.
    * @param newShoppingList new shopping list draft, which contains the line item to update.
@@ -192,14 +224,14 @@ public final class LineItemUpdateActionUtils {
    * @return A list with the update actions or an empty list if the line item fields are identical.
    */
   @Nonnull
-  public static List<UpdateAction<ShoppingList>> buildLineItemUpdateActions(
+  public static List<ShoppingListUpdateAction> buildLineItemUpdateActions(
       @Nonnull final ShoppingList oldShoppingList,
       @Nonnull final ShoppingListDraft newShoppingList,
-      @Nonnull final LineItem oldLineItem,
-      @Nonnull final LineItemDraft newLineItem,
+      @Nonnull final ShoppingListLineItem oldLineItem,
+      @Nonnull final ShoppingListLineItemDraft newLineItem,
       @Nonnull final ShoppingListSyncOptions syncOptions) {
 
-    final List<UpdateAction<ShoppingList>> updateActions =
+    final List<ShoppingListUpdateAction> updateActions =
         filterEmptyOptionals(buildChangeLineItemQuantityUpdateAction(oldLineItem, newLineItem));
 
     updateActions.addAll(
@@ -210,11 +242,11 @@ public final class LineItemUpdateActionUtils {
   }
 
   /**
-   * Compares the {@code quantity} values of a {@link LineItem} and a {@link LineItemDraft} and
-   * returns an {@link Optional} of update action, which would contain the {@code
-   * "changeLineItemQuantity"} {@link UpdateAction}. If both {@link LineItem} and {@link
-   * LineItemDraft} have the same {@code quantity} values, then no update action is needed and empty
-   * optional will be returned.
+   * Compares the {@code quantity} values of a {@link ShoppingListLineItem} and a {@link
+   * ShoppingListLineItemDraft} and returns an {@link java.util.Optional} of update action, which
+   * would contain the {@code "changeLineItemQuantity"} {@link ShoppingListUpdateAction}. If both
+   * {@link ShoppingListLineItem} and {@link ShoppingListLineItemDraft} have the same {@code
+   * quantity} values, then no update action is needed and empty optional will be returned.
    *
    * <p>Note: If {@code quantity} from the {@code newLineItem} is {@code null}, the new {@code
    * quantity} will be set to default value {@code 1L}. If {@code quantity} from the {@code
@@ -226,8 +258,9 @@ public final class LineItemUpdateActionUtils {
    *     identical.
    */
   @Nonnull
-  public static Optional<UpdateAction<ShoppingList>> buildChangeLineItemQuantityUpdateAction(
-      @Nonnull final LineItem oldLineItem, @Nonnull final LineItemDraft newLineItem) {
+  public static Optional<ShoppingListUpdateAction> buildChangeLineItemQuantityUpdateAction(
+      @Nonnull final ShoppingListLineItem oldLineItem,
+      @Nonnull final ShoppingListLineItemDraft newLineItem) {
 
     final Long newLineItemQuantity =
         newLineItem.getQuantity() == null ? NumberUtils.LONG_ONE : newLineItem.getQuantity();
@@ -235,14 +268,19 @@ public final class LineItemUpdateActionUtils {
     return buildUpdateAction(
         oldLineItem.getQuantity(),
         newLineItemQuantity,
-        () -> ChangeLineItemQuantity.of(oldLineItem.getId(), newLineItemQuantity));
+        () ->
+            ShoppingListChangeLineItemQuantityActionBuilder.of()
+                .lineItemId(oldLineItem.getId())
+                .quantity(newLineItemQuantity)
+                .build());
   }
 
   /**
-   * Compares the custom fields and custom types of a {@link LineItem} and a {@link LineItemDraft}
-   * and returns a list of {@link UpdateAction}&lt;{@link ShoppingList}&gt; as a result. If both the
-   * {@link LineItem} and the {@link LineItemDraft} have identical custom fields and types, then no
-   * update action is needed and hence an empty {@link List} is returned.
+   * Compares the custom fields and custom types of a {@link ShoppingListLineItem} and a {@link
+   * ShoppingListLineItemDraft} and returns a list of {@link ShoppingListUpdateAction} as a result.
+   * If both the {@link ShoppingListLineItem} and the {@link ShoppingListLineItemDraft} have
+   * identical custom fields and types, then no update action is needed and hence an empty {@link
+   * java.util.List} is returned.
    *
    * @param oldShoppingList shopping list resource, whose line item should be updated.
    * @param newShoppingList new shopping list draft, which contains the line item to update.
@@ -254,21 +292,21 @@ public final class LineItemUpdateActionUtils {
    *     fields/types are identical.
    */
   @Nonnull
-  public static List<UpdateAction<ShoppingList>> buildLineItemCustomUpdateActions(
+  public static List<ShoppingListUpdateAction> buildLineItemCustomUpdateActions(
       @Nonnull final ShoppingList oldShoppingList,
       @Nonnull final ShoppingListDraft newShoppingList,
-      @Nonnull final LineItem oldLineItem,
-      @Nonnull final LineItemDraft newLineItem,
+      @Nonnull final ShoppingListLineItem oldLineItem,
+      @Nonnull final ShoppingListLineItemDraft newLineItem,
       @Nonnull final ShoppingListSyncOptions syncOptions) {
 
     return CustomUpdateActionUtils.buildCustomUpdateActions(
         newShoppingList,
-        oldLineItem::getCustom,
-        newLineItem::getCustom,
+        ShoppingListLineItemCustomTypeAdapter.of(oldLineItem),
+        ShoppingListLineItemDraftCustomTypeAdapter.of(newLineItem),
         new LineItemCustomActionBuilder(),
         null, // not used by util.
         t -> oldLineItem.getId(),
-        lineItem -> LineItem.resourceTypeId(),
+        lineItem -> ResourceTypeId.LINE_ITEM.getJsonName(),
         t -> oldLineItem.getId(),
         syncOptions);
   }

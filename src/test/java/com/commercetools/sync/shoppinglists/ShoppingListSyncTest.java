@@ -1,32 +1,33 @@
 package com.commercetools.sync.shoppinglists;
 
-import static com.commercetools.sync.shoppinglists.helpers.ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_IS_NULL;
-import static com.commercetools.sync.shoppinglists.helpers.ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_KEY_NOT_SET;
-import static com.commercetools.sync.shoppinglists.helpers.ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_NAME_NOT_SET;
-import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
-import static java.lang.String.format;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
+import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static java.util.Collections.*;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anySet;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
-import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
+import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.customer.CustomerResourceIdentifierBuilder;
+import com.commercetools.api.models.product.ProductVariant;
+import com.commercetools.api.models.shopping_list.ShoppingList;
+import com.commercetools.api.models.shopping_list.ShoppingListDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListDraftBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItem;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraft;
+import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraftBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
+import com.commercetools.api.models.shopping_list.TextLineItem;
+import com.commercetools.api.models.shopping_list.TextLineItemDraft;
+import com.commercetools.api.models.shopping_list.TextLineItemDraftBuilder;
+import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.sync.commons.ExceptionUtils;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.CustomerService;
 import com.commercetools.sync.services.ShoppingListService;
@@ -34,26 +35,10 @@ import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CustomerServiceImpl;
 import com.commercetools.sync.services.impl.ShoppingListServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
+import com.commercetools.sync.shoppinglists.helpers.ShoppingListBatchValidator;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics;
-import io.sphere.sdk.client.BadRequestException;
-import io.sphere.sdk.client.ConcurrentModificationException;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.models.SphereException;
-import io.sphere.sdk.products.ProductVariant;
-import io.sphere.sdk.shoppinglists.LineItem;
-import io.sphere.sdk.shoppinglists.LineItemDraft;
-import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
-import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
-import io.sphere.sdk.shoppinglists.TextLineItem;
-import io.sphere.sdk.shoppinglists.TextLineItemDraft;
-import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.utils.CompletableFutureUtils;
+import io.vrap.rmf.base.client.error.BadGatewayException;
+import io.vrap.rmf.base.client.error.BaseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -63,6 +48,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 public class ShoppingListSyncTest {
 
@@ -71,13 +57,13 @@ public class ShoppingListSyncTest {
   private List<Throwable> exceptions;
   private ShoppingList errorCallbackOldResource;
   private ShoppingListDraft errorCallbackNewResource;
-  private List<UpdateAction<ShoppingList>> errorCallbackUpdateActions;
+  private List<ShoppingListUpdateAction> errorCallbackUpdateActions;
 
   @BeforeEach
   void setup() {
     errorMessages = new ArrayList<>();
     exceptions = new ArrayList<>();
-    final SphereClient ctpClient = mock(SphereClient.class);
+    final ProjectApiRoot ctpClient = mock(ProjectApiRoot.class);
 
     syncOptions =
         ShoppingListSyncOptionsBuilder.of(ctpClient)
@@ -95,81 +81,88 @@ public class ShoppingListSyncTest {
   @Test
   void sync_WithNullDraft_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
     // preparation
-    ShoppingListSync shoppingListSync = new ShoppingListSync(syncOptions);
+    final ShoppingListSync shoppingListSync = new ShoppingListSync(syncOptions);
 
     // test
-    ShoppingListSyncStatistics statistics =
+    final ShoppingListSyncStatistics statistics =
         shoppingListSync.sync(singletonList(null)).toCompletableFuture().join();
 
-    AssertionsForStatistics.assertThat(statistics).hasValues(1, 0, 0, 1);
+    assertThat(statistics).hasValues(1, 0, 0, 1);
 
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
         .singleElement(as(STRING))
-        .isEqualTo(SHOPPING_LIST_DRAFT_IS_NULL);
+        .isEqualTo(ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_IS_NULL);
   }
 
   @Test
   void sync_WithNullKeyDraft_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
     // preparation
-    ShoppingListDraft shoppingListDraft =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shopping-list-name")).build();
-    ShoppingListSync shoppingListSync = new ShoppingListSync(syncOptions);
+    final ShoppingListDraft shoppingListDraft =
+        ShoppingListDraftBuilder.of().name(ofEnglish("shopping-list-name")).build();
+    final ShoppingListSync shoppingListSync = new ShoppingListSync(syncOptions);
 
     // test
-    ShoppingListSyncStatistics statistics =
+    final ShoppingListSyncStatistics statistics =
         shoppingListSync.sync(singletonList(shoppingListDraft)).toCompletableFuture().join();
 
-    AssertionsForStatistics.assertThat(statistics).hasValues(1, 0, 0, 1);
+    assertThat(statistics).hasValues(1, 0, 0, 1);
 
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
         .singleElement(as(STRING))
-        .isEqualTo(format(SHOPPING_LIST_DRAFT_KEY_NOT_SET, shoppingListDraft.getName()));
+        .isEqualTo(
+            String.format(
+                ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_KEY_NOT_SET,
+                shoppingListDraft.getName()));
   }
 
   @Test
   void sync_WithEmptyKeyDraft_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
     // preparation
-    ShoppingListDraft shoppingListDraft =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shopping-list-name"))
-            .key("")
-            .build();
-    ShoppingListSync shoppingListSync = new ShoppingListSync(syncOptions);
+    final ShoppingListDraft shoppingListDraft =
+        ShoppingListDraftBuilder.of().name(ofEnglish("shopping-list-name")).key("").build();
+    final ShoppingListSync shoppingListSync = new ShoppingListSync(syncOptions);
 
     // test
-    ShoppingListSyncStatistics statistics =
+    final ShoppingListSyncStatistics statistics =
         shoppingListSync.sync(singletonList(shoppingListDraft)).toCompletableFuture().join();
 
-    AssertionsForStatistics.assertThat(statistics).hasValues(1, 0, 0, 1);
+    assertThat(statistics).hasValues(1, 0, 0, 1);
 
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
         .singleElement(as(STRING))
-        .isEqualTo(format(SHOPPING_LIST_DRAFT_KEY_NOT_SET, shoppingListDraft.getName()));
+        .isEqualTo(
+            String.format(
+                ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_KEY_NOT_SET,
+                shoppingListDraft.getName()));
   }
 
   @Test
   void sync_WithoutName_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
     // preparation
-    ShoppingListDraft shoppingListDraft =
-        ShoppingListDraftBuilder.of(LocalizedString.of()).key("shopping-list-key").build();
-    ShoppingListSync shoppingListSync = new ShoppingListSync(syncOptions);
+    final ShoppingListDraft shoppingListDraft =
+        ShoppingListDraftBuilder.of().name(LocalizedString.of()).key("shopping-list-key").build();
+    final ShoppingListSync shoppingListSync = new ShoppingListSync(syncOptions);
 
     // test
-    ShoppingListSyncStatistics statistics =
+    final ShoppingListSyncStatistics statistics =
         shoppingListSync.sync(singletonList(shoppingListDraft)).toCompletableFuture().join();
 
-    AssertionsForStatistics.assertThat(statistics).hasValues(1, 0, 0, 1);
+    assertThat(statistics).hasValues(1, 0, 0, 1);
 
     // assertions
     assertThat(errorMessages)
         .hasSize(1)
         .singleElement(as(STRING))
-        .isEqualTo(format(SHOPPING_LIST_DRAFT_NAME_NOT_SET, shoppingListDraft.getKey()));
+        .isEqualTo(
+            String.format(
+                ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_NAME_NOT_SET,
+                shoppingListDraft.getKey()));
   }
 
   @Test
@@ -182,32 +175,39 @@ public class ShoppingListSyncTest {
         .thenReturn(
             supplyAsync(
                 () -> {
-                  throw new SphereException();
+                  throw new BaseException();
                 }));
 
     when(customerService.cacheKeysToIds(any()))
         .thenReturn(
             supplyAsync(
                 () -> {
-                  throw new SphereException();
+                  throw new BaseException();
                 }));
 
     final ShoppingListSync shoppingListSync =
         new ShoppingListSync(
-            syncOptions, mock(ShoppingListService.class), customerService, typeService);
+            syncOptions, Mockito.mock(ShoppingListService.class), customerService, typeService);
 
-    ShoppingListDraft shoppingListDraft =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shopping-list-name"))
+    final ShoppingListDraft shoppingListDraft =
+        ShoppingListDraftBuilder.of()
+            .name(ofEnglish("shopping-list-name"))
             .key("shopping-list-key")
-            .customer(ResourceIdentifier.ofKey("customer-key"))
-            .custom(CustomFieldsDraft.ofTypeKeyAndJson("typeKey", emptyMap()))
+            .customer(CustomerResourceIdentifierBuilder.of().key("customer-key").build())
+            .custom(
+                CustomFieldsDraftBuilder.of()
+                    .type(
+                        typeResourceIdentifierBuilder ->
+                            typeResourceIdentifierBuilder.key("typeKey"))
+                    .fields(fieldContainerBuilder -> fieldContainerBuilder.values(emptyMap()))
+                    .build())
             .build();
 
     // test
     ShoppingListSyncStatistics statistics =
         shoppingListSync.sync(singletonList(shoppingListDraft)).toCompletableFuture().join();
 
-    AssertionsForStatistics.assertThat(statistics).hasValues(1, 0, 0, 1);
+    assertThat(statistics).hasValues(1, 0, 0, 1);
 
     // assertions
     assertThat(errorMessages)
@@ -220,7 +220,7 @@ public class ShoppingListSyncTest {
         .singleElement(as(THROWABLE))
         .isExactlyInstanceOf(SyncException.class)
         .hasCauseExactlyInstanceOf(CompletionException.class)
-        .hasRootCauseExactlyInstanceOf(SphereException.class);
+        .hasRootCauseExactlyInstanceOf(BaseException.class);
   }
 
   @Test
@@ -231,7 +231,7 @@ public class ShoppingListSyncTest {
         .thenReturn(
             supplyAsync(
                 () -> {
-                  throw new SphereException();
+                  throw new BaseException();
                 }));
 
     final ShoppingListSync shoppingListSync =
@@ -239,17 +239,24 @@ public class ShoppingListSyncTest {
             syncOptions, shoppingListService, mock(CustomerService.class), mock(TypeService.class));
 
     ShoppingListDraft shoppingListDraft =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shopping-list-name"))
+        ShoppingListDraftBuilder.of()
+            .name(ofEnglish("shopping-list-name"))
             .key("shopping-list-key")
-            .customer(ResourceIdentifier.ofKey("customer-key"))
-            .custom(CustomFieldsDraft.ofTypeKeyAndJson("typeKey", emptyMap()))
+            .customer(CustomerResourceIdentifierBuilder.of().key("customer-key").build())
+            .custom(
+                CustomFieldsDraftBuilder.of()
+                    .type(
+                        typeResourceIdentifierBuilder ->
+                            typeResourceIdentifierBuilder.key("typeKey"))
+                    .fields(fieldContainerBuilder -> fieldContainerBuilder.values(emptyMap()))
+                    .build())
             .build();
     // test
     final ShoppingListSyncStatistics statistics =
         shoppingListSync.sync(singletonList(shoppingListDraft)).toCompletableFuture().join();
 
     // assertions
-    AssertionsForStatistics.assertThat(statistics).hasValues(1, 0, 0, 1);
+    assertThat(statistics).hasValues(1, 0, 0, 1);
 
     assertThat(errorMessages)
         .hasSize(1)
@@ -261,7 +268,7 @@ public class ShoppingListSyncTest {
         .singleElement(as(THROWABLE))
         .isExactlyInstanceOf(SyncException.class)
         .hasCauseExactlyInstanceOf(CompletionException.class)
-        .hasRootCauseExactlyInstanceOf(SphereException.class);
+        .hasRootCauseExactlyInstanceOf(BaseException.class);
   }
 
   @Test
@@ -284,16 +291,14 @@ public class ShoppingListSyncTest {
             mock(TypeService.class));
 
     final ShoppingListDraft shoppingListDraft =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("NAME"))
-            .key("shoppingListKey")
-            .build();
+        ShoppingListDraftBuilder.of().name(ofEnglish("NAME")).key("shoppingListKey").build();
 
     // test
     final ShoppingListSyncStatistics shoppingListSyncStatistics =
         shoppingListSync.sync(singletonList(shoppingListDraft)).toCompletableFuture().join();
 
     // assertions
-    AssertionsForStatistics.assertThat(shoppingListSyncStatistics).hasValues(1, 1, 0, 0);
+    assertThat(shoppingListSyncStatistics).hasValues(1, 1, 0, 0);
 
     verify(spySyncOptions).applyBeforeCreateCallback(shoppingListDraft);
     verify(spySyncOptions, never()).applyBeforeUpdateCallback(any(), any(), any());
@@ -320,16 +325,14 @@ public class ShoppingListSyncTest {
             mock(TypeService.class));
 
     final ShoppingListDraft shoppingListDraft =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("NAME"))
-            .key("shoppingListKey")
-            .build();
+        ShoppingListDraftBuilder.of().name(ofEnglish("NAME")).key("shoppingListKey").build();
 
     // test
     final ShoppingListSyncStatistics shoppingListSyncStatistics =
         shoppingListSync.sync(singletonList(shoppingListDraft)).toCompletableFuture().join();
 
     // assertions
-    AssertionsForStatistics.assertThat(shoppingListSyncStatistics).hasValues(1, 0, 0, 1);
+    assertThat(shoppingListSyncStatistics).hasValues(1, 0, 0, 1);
 
     verify(spySyncOptions).applyBeforeCreateCallback(shoppingListDraft);
     verify(spySyncOptions, never()).applyBeforeUpdateCallback(any(), any(), any());
@@ -357,16 +360,14 @@ public class ShoppingListSyncTest {
             mock(TypeService.class));
 
     final ShoppingListDraft shoppingListDraft =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("NAME"))
-            .key("shoppingListKey")
-            .build();
+        ShoppingListDraftBuilder.of().name(ofEnglish("NAME")).key("shoppingListKey").build();
 
     // test
     final ShoppingListSyncStatistics shoppingListSyncStatistics =
         shoppingListSync.sync(singletonList(shoppingListDraft)).toCompletableFuture().join();
 
     // assertions
-    AssertionsForStatistics.assertThat(shoppingListSyncStatistics).hasValues(1, 0, 1, 0);
+    assertThat(shoppingListSyncStatistics).hasValues(1, 0, 1, 0);
 
     verify(spySyncOptions).applyBeforeUpdateCallback(any(), any(), any());
     verify(spySyncOptions, never()).applyBeforeCreateCallback(shoppingListDraft);
@@ -378,9 +379,9 @@ public class ShoppingListSyncTest {
     final ShoppingListService mockShoppingListService = mock(ShoppingListService.class);
     final ShoppingList mockShoppingList = mock(ShoppingList.class);
 
-    final LineItem mockLineItem = mock(LineItem.class);
+    final ShoppingListLineItem mockLineItem = mock(ShoppingListLineItem.class);
     when(mockShoppingList.getKey()).thenReturn("shoppingListKey");
-    when(mockShoppingList.getName()).thenReturn(LocalizedString.ofEnglish("shoppingListName"));
+    when(mockShoppingList.getName()).thenReturn(ofEnglish("shoppingListName"));
 
     final ProductVariant mockProductVariant = mock(ProductVariant.class);
     when(mockProductVariant.getSku()).thenReturn("dummy-sku");
@@ -401,11 +402,12 @@ public class ShoppingListSyncTest {
             mock(CustomerService.class),
             mock(TypeService.class));
 
-    final List<LineItemDraft> lineItemDrafts =
-        singletonList(LineItemDraftBuilder.ofSku("dummy-sku", 5L).build());
+    final List<ShoppingListLineItemDraft> lineItemDrafts =
+        singletonList(ShoppingListLineItemDraftBuilder.of().sku("dummy-sku").quantity(5L).build());
 
     final ShoppingListDraft shoppingListDraft =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shoppingListName"))
+        ShoppingListDraftBuilder.of()
+            .name(ofEnglish("shoppingListName"))
             .key("shoppingListKey")
             .lineItems(lineItemDrafts)
             .build();
@@ -415,7 +417,7 @@ public class ShoppingListSyncTest {
         shoppingListSync.sync(singletonList(shoppingListDraft)).toCompletableFuture().join();
 
     // assertions
-    AssertionsForStatistics.assertThat(shoppingListSyncStatistics).hasValues(1, 0, 1, 0);
+    assertThat(shoppingListSyncStatistics).hasValues(1, 0, 1, 0);
 
     verify(spySyncOptions).applyBeforeUpdateCallback(any(), any(), any());
     verify(spySyncOptions, never()).applyBeforeCreateCallback(shoppingListDraft);
@@ -426,10 +428,10 @@ public class ShoppingListSyncTest {
     // preparation
     final ShoppingList mockShoppingList = mock(ShoppingList.class);
     when(mockShoppingList.getKey()).thenReturn("shoppingListKey");
-    when(mockShoppingList.getName()).thenReturn(LocalizedString.ofEnglish("shoppingListName"));
+    when(mockShoppingList.getName()).thenReturn(ofEnglish("shoppingListName"));
 
     final TextLineItem mockTextLineItem = mock(TextLineItem.class);
-    when(mockTextLineItem.getName()).thenReturn(LocalizedString.ofEnglish("textLineItemName"));
+    when(mockTextLineItem.getName()).thenReturn(ofEnglish("textLineItemName"));
     when(mockTextLineItem.getQuantity()).thenReturn(10L);
 
     final ShoppingListService mockShoppingListService = mock(ShoppingListService.class);
@@ -448,10 +450,11 @@ public class ShoppingListSyncTest {
 
     final List<TextLineItemDraft> textLineItemDrafts =
         singletonList(
-            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("textLineItemName"), 5L).build());
+            TextLineItemDraftBuilder.of().name(ofEnglish("textLineItemName")).quantity(5L).build());
 
     final ShoppingListDraft shoppingListDraft =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shoppingListName"))
+        ShoppingListDraftBuilder.of()
+            .name(ofEnglish("shoppingListName"))
             .key("shoppingListKey")
             .textLineItems(textLineItemDrafts)
             .build();
@@ -461,7 +464,7 @@ public class ShoppingListSyncTest {
         shoppingListSync.sync(singletonList(shoppingListDraft)).toCompletableFuture().join();
 
     // assertions
-    AssertionsForStatistics.assertThat(shoppingListSyncStatistics).hasValues(1, 0, 1, 0);
+    assertThat(shoppingListSyncStatistics).hasValues(1, 0, 1, 0);
 
     verify(spySyncOptions).applyBeforeUpdateCallback(any(), any(), any());
     verify(spySyncOptions, never()).applyBeforeCreateCallback(shoppingListDraft);
@@ -473,12 +476,11 @@ public class ShoppingListSyncTest {
     final ShoppingListService mockShoppingListService = mock(ShoppingListService.class);
     final ShoppingList mockShoppingList = mock(ShoppingList.class);
     when(mockShoppingList.getKey()).thenReturn("shoppingListKey");
-    when(mockShoppingList.getName()).thenReturn(LocalizedString.ofEnglish("shoppingListName"));
-    when(mockShoppingList.getDescription())
-        .thenReturn(LocalizedString.ofEnglish("shoppingListDesc"));
-    when(mockShoppingList.getSlug()).thenReturn(LocalizedString.ofEnglish("shoppingListSlug"));
+    when(mockShoppingList.getName()).thenReturn(ofEnglish("shoppingListName"));
+    when(mockShoppingList.getDescription()).thenReturn(ofEnglish("shoppingListDesc"));
+    when(mockShoppingList.getSlug()).thenReturn(ofEnglish("shoppingListSlug"));
     when(mockShoppingList.getAnonymousId()).thenReturn("shoppingListAnonymousId");
-    when(mockShoppingList.getDeleteDaysAfterLastModification()).thenReturn(360);
+    when(mockShoppingList.getDeleteDaysAfterLastModification()).thenReturn(360L);
 
     when(mockShoppingListService.fetchMatchingShoppingListsByKeys(anySet()))
         .thenReturn(completedFuture(singleton(mockShoppingList)));
@@ -492,7 +494,8 @@ public class ShoppingListSyncTest {
             mock(TypeService.class));
 
     final ShoppingListDraft shoppingListDraft =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shoppingListName"))
+        ShoppingListDraftBuilder.of()
+            .name(ofEnglish("shoppingListName"))
             .key("shoppingListKey")
             .description(mockShoppingList.getDescription())
             .slug(mockShoppingList.getSlug())
@@ -505,7 +508,7 @@ public class ShoppingListSyncTest {
         shoppingListSync.sync(singletonList(shoppingListDraft)).toCompletableFuture().join();
 
     // assertions
-    AssertionsForStatistics.assertThat(shoppingListSyncStatistics).hasValues(1, 0, 0, 0);
+    assertThat(shoppingListSyncStatistics).hasValues(1, 0, 0, 0);
 
     verify(spySyncOptions)
         .applyBeforeUpdateCallback(emptyList(), shoppingListDraft, mockShoppingList);
@@ -513,7 +516,7 @@ public class ShoppingListSyncTest {
   }
 
   @Test
-  void sync_WithBadRequestException_ShouldFailToUpdateAndIncreaseFailedCounter() {
+  void sync_WithBadGatewayException_ShouldFailToUpdateAndIncreaseFailedCounter() {
     // preparation
     final ShoppingListService mockShoppingListService = mock(ShoppingListService.class);
     final ShoppingList mockShoppingList = mock(ShoppingList.class);
@@ -523,7 +526,7 @@ public class ShoppingListSyncTest {
         .thenReturn(completedFuture(singleton(mockShoppingList)));
 
     when(mockShoppingListService.updateShoppingList(any(), anyList()))
-        .thenReturn(exceptionallyCompletedFuture(new BadRequestException("Invalid request")));
+        .thenReturn(CompletableFuture.failedFuture(ExceptionUtils.createBadGatewayException()));
 
     final ShoppingListSyncOptions spySyncOptions = spy(syncOptions);
     final ShoppingListSync shoppingListSync =
@@ -534,7 +537,8 @@ public class ShoppingListSyncTest {
             mock(TypeService.class));
 
     final ShoppingListDraft shoppingListDraft =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shoppingListName"))
+        ShoppingListDraftBuilder.of()
+            .name(ofEnglish("shoppingListName"))
             .key("shoppingListKey")
             .build();
 
@@ -543,15 +547,15 @@ public class ShoppingListSyncTest {
         shoppingListSync.sync(singletonList(shoppingListDraft)).toCompletableFuture().join();
 
     // assertions
-    AssertionsForStatistics.assertThat(shoppingListSyncStatistics).hasValues(1, 0, 0, 1);
+    assertThat(shoppingListSyncStatistics).hasValues(1, 0, 0, 1);
 
-    assertThat(errorMessages).hasSize(1).singleElement(as(STRING)).contains("Invalid request");
+    assertThat(errorMessages).hasSize(1).singleElement(as(STRING)).contains("test");
 
     assertThat(exceptions)
         .hasSize(1)
         .singleElement(as(THROWABLE))
         .isExactlyInstanceOf(SyncException.class)
-        .hasRootCauseExactlyInstanceOf(BadRequestException.class);
+        .hasRootCauseExactlyInstanceOf(BadGatewayException.class);
   }
 
   @Test
@@ -559,21 +563,20 @@ public class ShoppingListSyncTest {
     // preparation
     final ShoppingListService mockShoppingListService = mock(ShoppingListService.class);
     final ShoppingList mockShoppingList = mock(ShoppingList.class);
-    when(mockShoppingList.getName()).thenReturn(LocalizedString.ofEnglish("shoppingListName"));
+    when(mockShoppingList.getName()).thenReturn(ofEnglish("shoppingListName"));
     when(mockShoppingList.getKey()).thenReturn("shoppingListKey");
-    when(mockShoppingList.getDescription())
-        .thenReturn(LocalizedString.ofEnglish("shoppingListDesc"));
-    when(mockShoppingList.getSlug()).thenReturn(LocalizedString.ofEnglish("shoppingListSlug"));
+    when(mockShoppingList.getDescription()).thenReturn(ofEnglish("shoppingListDesc"));
+    when(mockShoppingList.getSlug()).thenReturn(ofEnglish("shoppingListSlug"));
     when(mockShoppingList.getAnonymousId()).thenReturn("shoppingListAnonymousId");
-    when(mockShoppingList.getDeleteDaysAfterLastModification()).thenReturn(360);
+    when(mockShoppingList.getDeleteDaysAfterLastModification()).thenReturn(360L);
 
     when(mockShoppingListService.fetchMatchingShoppingListsByKeys(anySet()))
         .thenReturn(completedFuture(singleton(mockShoppingList)));
 
     when(mockShoppingListService.updateShoppingList(any(), anyList()))
         .thenReturn(
-            exceptionallyCompletedFuture(
-                new SphereException(new ConcurrentModificationException())))
+            CompletableFuture.failedFuture(
+                new BaseException(ExceptionUtils.createConcurrentModificationException("test"))))
         .thenReturn(completedFuture(mockShoppingList));
 
     when(mockShoppingListService.fetchShoppingList("shoppingListKey"))
@@ -588,9 +591,10 @@ public class ShoppingListSyncTest {
             mock(TypeService.class));
 
     final ShoppingListDraft shoppingListDraft =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shoppingListName"))
+        ShoppingListDraftBuilder.of()
+            .name(ofEnglish("shoppingListName"))
             .key("shoppingListKey")
-            .description(LocalizedString.ofEnglish("newShoppingListDesc"))
+            .description(ofEnglish("newShoppingListDesc"))
             .slug(mockShoppingList.getSlug())
             .anonymousId(mockShoppingList.getAnonymousId())
             .deleteDaysAfterLastModification(mockShoppingList.getDeleteDaysAfterLastModification())
@@ -601,7 +605,7 @@ public class ShoppingListSyncTest {
         shoppingListSync.sync(singletonList(shoppingListDraft)).toCompletableFuture().join();
 
     // assertions
-    AssertionsForStatistics.assertThat(shoppingListSyncStatistics).hasValues(1, 0, 1, 0);
+    assertThat(shoppingListSyncStatistics).hasValues(1, 0, 1, 0);
   }
 
   @Test
@@ -616,12 +620,12 @@ public class ShoppingListSyncTest {
 
     when(mockShoppingListService.updateShoppingList(any(), anyList()))
         .thenReturn(
-            exceptionallyCompletedFuture(
-                new SphereException(new ConcurrentModificationException())))
+            CompletableFuture.failedFuture(
+                new BaseException(ExceptionUtils.createConcurrentModificationException("test"))))
         .thenReturn(completedFuture(mockShoppingList));
 
     when(mockShoppingListService.fetchShoppingList("shoppingListKey"))
-        .thenReturn(exceptionallyCompletedFuture(new SphereException()));
+        .thenReturn(CompletableFuture.failedFuture(ExceptionUtils.createBadGatewayException()));
 
     final ShoppingListSyncOptions spySyncOptions = spy(syncOptions);
     final ShoppingListSync shoppingListSync =
@@ -632,7 +636,8 @@ public class ShoppingListSyncTest {
             mock(TypeService.class));
 
     final ShoppingListDraft shoppingListDraft =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shoppingListName"))
+        ShoppingListDraftBuilder.of()
+            .name(ofEnglish("shoppingListName"))
             .key("shoppingListKey")
             .build();
 
@@ -641,7 +646,7 @@ public class ShoppingListSyncTest {
         shoppingListSync.sync(singletonList(shoppingListDraft)).toCompletableFuture().join();
 
     // assertions
-    AssertionsForStatistics.assertThat(shoppingListSyncStatistics).hasValues(1, 0, 0, 1);
+    assertThat(shoppingListSyncStatistics).hasValues(1, 0, 0, 1);
 
     assertThat(errorMessages)
         .hasSize(1)
@@ -652,7 +657,7 @@ public class ShoppingListSyncTest {
         .hasSize(1)
         .singleElement(as(THROWABLE))
         .isExactlyInstanceOf(SyncException.class)
-        .hasRootCauseExactlyInstanceOf(SphereException.class);
+        .hasRootCauseExactlyInstanceOf(BadGatewayException.class);
   }
 
   @Test
@@ -667,8 +672,8 @@ public class ShoppingListSyncTest {
 
     when(mockShoppingListService.updateShoppingList(any(), anyList()))
         .thenReturn(
-            exceptionallyCompletedFuture(
-                new SphereException(new ConcurrentModificationException())))
+            CompletableFuture.failedFuture(
+                new BaseException(ExceptionUtils.createConcurrentModificationException("test"))))
         .thenReturn(completedFuture(mockShoppingList));
 
     when(mockShoppingListService.fetchShoppingList("shoppingListKey"))
@@ -683,7 +688,8 @@ public class ShoppingListSyncTest {
             mock(TypeService.class));
 
     final ShoppingListDraft shoppingListDraft =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shoppingListName"))
+        ShoppingListDraftBuilder.of()
+            .name(ofEnglish("shoppingListName"))
             .key("shoppingListKey")
             .build();
 
@@ -692,7 +698,7 @@ public class ShoppingListSyncTest {
         shoppingListSync.sync(singletonList(shoppingListDraft)).toCompletableFuture().join();
 
     // assertions
-    AssertionsForStatistics.assertThat(shoppingListSyncStatistics).hasValues(1, 0, 0, 1);
+    assertThat(shoppingListSyncStatistics).hasValues(1, 0, 0, 1);
 
     assertThat(errorMessages)
         .hasSize(1)
@@ -720,14 +726,15 @@ public class ShoppingListSyncTest {
     final ShoppingListSyncOptions spySyncOptions = spy(syncOptions);
     final TypeService typeService = mock(TypeService.class);
     when(typeService.fetchCachedTypeId(anyString()))
-        .thenReturn(CompletableFutureUtils.failed(new SphereException("CTP error on fetch")));
+        .thenReturn(CompletableFuture.failedFuture(new BaseException("CTP error on fetch")));
 
     final ShoppingListSync shoppingListSync =
         new ShoppingListSync(
             spySyncOptions, mockShoppingListService, mock(CustomerService.class), typeService);
 
     final ShoppingListDraft shoppingListDraft =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shoppingListName"))
+        ShoppingListDraftBuilder.of()
+            .name(ofEnglish("shoppingListName"))
             .key("shoppingListKey")
             .build();
 
@@ -736,7 +743,7 @@ public class ShoppingListSyncTest {
         shoppingListSync.sync(singletonList(shoppingListDraft)).toCompletableFuture().join();
 
     // assertions
-    AssertionsForStatistics.assertThat(shoppingListSyncStatistics).hasValues(1, 0, 0, 1);
+    assertThat(shoppingListSyncStatistics).hasValues(1, 0, 0, 1);
 
     assertThat(errorMessages)
         .hasSize(1)
@@ -754,13 +761,14 @@ public class ShoppingListSyncTest {
       sync_WithErrorUpdatingShoppingListAndCustomErrorCallback_ShouldCallErrorCallbackAndContainResourceName() {
     // preparation
     final ShoppingListDraft newShoppingListDraft1 =
-        ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shoppingListName1"))
+        ShoppingListDraftBuilder.of()
+            .name(ofEnglish("shoppingListName1"))
             .key("shoppingListKey1")
             .build();
 
-    final ShoppingListService mockShoppingListService = mock(ShoppingListServiceImpl.class);
-    final CustomerService mockCustomerService = mock(CustomerServiceImpl.class);
-    final TypeService mockTypeService = mock(TypeServiceImpl.class);
+    final ShoppingListService mockShoppingListService = Mockito.mock(ShoppingListServiceImpl.class);
+    final CustomerService mockCustomerService = Mockito.mock(CustomerServiceImpl.class);
+    final TypeService mockTypeService = Mockito.mock(TypeServiceImpl.class);
 
     final ShoppingList existingShoppingList = mock(ShoppingList.class);
     when(existingShoppingList.getKey()).thenReturn(newShoppingListDraft1.getKey());
@@ -772,7 +780,7 @@ public class ShoppingListSyncTest {
         .thenReturn(
             supplyAsync(
                 () -> {
-                  throw new SphereException();
+                  throw new BaseException();
                 }));
     when(mockShoppingListService.createShoppingList(any()))
         .thenReturn(CompletableFuture.completedFuture(Optional.of(existingShoppingList)));
@@ -792,6 +800,6 @@ public class ShoppingListSyncTest {
 
     assertThat(errorMessages.get(0))
         .contains(
-            "Failed to update shopping lists with key: 'shoppingListKey1'. Reason: io.sphere.sdk.models.SphereException:");
+            "Failed to update shopping lists with key: 'shoppingListKey1'. Reason: io.vrap.rmf.base.client.error.BaseException");
   }
 }
