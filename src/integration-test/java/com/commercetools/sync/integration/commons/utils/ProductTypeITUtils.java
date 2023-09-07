@@ -10,6 +10,9 @@ import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.product.Attribute;
 import com.commercetools.api.models.product.AttributeBuilder;
 import com.commercetools.api.models.product_type.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.NotFoundException;
 import java.util.ArrayList;
@@ -499,6 +502,29 @@ public final class ProductTypeITUtils {
               assertThat(enumValue.getKey()).isEqualTo(enumValueDraft.getKey());
               assertThat(enumValue.getLabel()).isEqualTo(enumValueDraft.getLabel());
             });
+  }
+
+  @Nonnull
+  public static ObjectNode createNestedAttributeValueObjectNodeReferences(
+      @Nonnull final String attributeName, @Nonnull final JsonNode referenceValue) {
+
+    final ObjectNode referenceAttribute = JsonNodeFactory.instance.objectNode();
+    referenceAttribute.put("name", attributeName);
+    referenceAttribute.set("value", referenceValue);
+
+    return referenceAttribute;
+  }
+
+  @Nonnull
+  public static Map<String, Object> createNestedAttributeValueMapReferences(
+      @Nonnull final String attributeName, @Nonnull final Object referenceValue) {
+    return Map.of("name", attributeName, "value", referenceValue);
+  }
+
+  @Nonnull
+  public static Map<String, Object> createNestedAttributeValueMapSetOfReferences(
+      @Nonnull final String attributeName, @Nonnull final Object... referenceValues) {
+    return Map.of("name", attributeName, "value", List.of(referenceValues));
   }
 
   @Nonnull

@@ -11,6 +11,8 @@ import com.commercetools.api.models.product.ProductSetAttributeInAllVariantsActi
 import com.commercetools.api.models.product.ProductUpdateAction;
 import com.commercetools.sync.sdk2.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.sdk2.products.AttributeMetaData;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -56,6 +58,10 @@ public final class ProductVariantAttributeUpdateActionUtils {
     final Object oldProductVariantAttributeValue =
         oldProductVariantAttribute != null ? oldProductVariantAttribute.getValue() : null;
 
+    // Make the attribute values comparable - convert to JsonNode
+    final JsonNode newAttributeValueAsJson = JsonUtils.toJsonNode(newProductVariantAttributeValue);
+    final JsonNode oldAttributeValueAsJson = JsonUtils.toJsonNode(oldProductVariantAttributeValue);
+
     final AttributeMetaData attributeMetaData =
         attributesMetaData.get(newProductVariantAttributeName);
 
@@ -67,8 +73,8 @@ public final class ProductVariantAttributeUpdateActionUtils {
 
     return attributeMetaData.isSameForAll()
         ? buildUpdateAction(
-            oldProductVariantAttributeValue,
-            newProductVariantAttributeValue,
+            oldAttributeValueAsJson,
+            newAttributeValueAsJson,
             () ->
                 ProductSetAttributeInAllVariantsActionBuilder.of()
                     .value(newProductVariantAttributeValue)
@@ -76,8 +82,8 @@ public final class ProductVariantAttributeUpdateActionUtils {
                     .staged(true)
                     .build())
         : buildUpdateAction(
-            oldProductVariantAttributeValue,
-            newProductVariantAttributeValue,
+            oldAttributeValueAsJson,
+            newAttributeValueAsJson,
             () ->
                 ProductSetAttributeActionBuilder.of()
                     .variantId(variantId)

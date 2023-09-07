@@ -306,7 +306,7 @@ public final class PriceDraftFixtures {
             .build();
     return PriceDraftBuilder.of()
         .value(typedMoney)
-        .country(Optional.ofNullable(countryCode).map(CountryCode::getName).orElse(null))
+        .country(Optional.ofNullable(countryCode).map(CountryCode::getAlpha2).orElse(null))
         .customerGroup(
             ofNullable(customerGroupId)
                 .map(id -> CustomerGroupResourceIdentifier.builder().id(id).build())
@@ -340,7 +340,7 @@ public final class PriceDraftFixtures {
             .build();
     return PriceDraftBuilder.of()
         .value(typedMoney)
-        .country(Optional.ofNullable(countryCode).map(CountryCode::getName).orElse(null))
+        .country(Optional.ofNullable(countryCode).map(CountryCode::getAlpha2).orElse(null))
         .customerGroup(
             ofNullable(customerGroupKey)
                 .map(key -> CustomerGroupResourceIdentifier.builder().key(key).build())

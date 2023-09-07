@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.ctpprojectsource.products;
 
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createReferenceObjectJson;
 import static com.commercetools.sync.sdk2.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.sdk2.products.ActionGroup.ATTRIBUTES;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
@@ -48,6 +49,9 @@ import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.products.SyncFilter;
 import com.commercetools.sync.sdk2.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.sdk2.products.utils.ProductTransformUtils;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -713,16 +717,18 @@ class ProductSyncIT {
             .toCompletableFuture()
             .join();
 
-    final ProductReference targetProductReferenceValue2 =
-        getProductReferenceWithId(targetProduct2.getId());
-    final ProductReference targetProductReferenceValue3 =
-        getProductReferenceWithId(targetProduct3.getId());
+    final ObjectNode targetProductReferenceValue2 =
+        createReferenceObjectJson(targetProduct2.getId(), ProductReference.PRODUCT);
+    final ObjectNode targetProductReferenceValue3 =
+        createReferenceObjectJson(targetProduct3.getId(), ProductReference.PRODUCT);
+    final ArrayNode referenceSet = JsonNodeFactory.instance.arrayNode();
+    referenceSet.add(targetProductReferenceValue2);
+    referenceSet.add(targetProductReferenceValue3);
 
     final Attribute targetProductRefAttr =
         AttributeBuilder.of().name("product-reference").value(targetProductReferenceValue2).build();
     final Attribute targetProductSetRefAttr =
-        getReferenceSetAttributeDraft(
-            "product-reference-set", targetProductReferenceValue2, targetProductReferenceValue3);
+        AttributeBuilder.of().name("product-reference-set").value(referenceSet).build();
 
     assertThat(updateActions)
         .containsExactlyInAnyOrder(
@@ -814,15 +820,21 @@ class ProductSyncIT {
     assertThat(warningCallBackMessages).isEmpty();
 
     final Attribute priceInfoAttrDraft =
-        AttributeBuilder.of().name("priceInfo").value("100/kg").build();
+        AttributeBuilder.of()
+            .name("priceInfo")
+            .value(JsonNodeFactory.instance.textNode("100/kg"))
+            .build();
     final Attribute angebotAttrDraft =
-        AttributeBuilder.of().name("angebot").value("big discount").build();
+        AttributeBuilder.of()
+            .name("angebot")
+            .value(JsonNodeFactory.instance.textNode("big discount"))
+            .build();
 
     assertThat(updateActions)
         .containsExactlyInAnyOrder(
             ProductSetAttributeInAllVariantsActionBuilder.of()
-                .name("priceInfo")
-                .value("100/kg")
+                .name(priceInfoAttrDraft.getName())
+                .value(priceInfoAttrDraft.getValue())
                 .staged(true)
                 .build(),
             ProductSetAttributeInAllVariantsActionBuilder.of().name("size").staged(true).build(),
@@ -866,8 +878,8 @@ class ProductSyncIT {
                 .build(),
             ProductSetAttributeActionBuilder.of()
                 .variantId(1L)
-                .name("angebot")
-                .value("big discount")
+                .name(angebotAttrDraft.getName())
+                .value(angebotAttrDraft.getValue())
                 .staged(true)
                 .build(),
             ProductPublishActionBuilder.of().build());
@@ -1012,7 +1024,7 @@ class ProductSyncIT {
         .containsExactly(
             ProductSetAttributeInAllVariantsActionBuilder.of()
                 .name(productSetRefAttr.getName())
-                .value(Collections.emptyList())
+                .value(JsonNodeFactory.instance.arrayNode())
                 .staged(true)
                 .build(),
             ProductPublishActionBuilder.of().build());

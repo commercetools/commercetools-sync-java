@@ -1,5 +1,7 @@
 package com.commercetools.sync.sdk2.services.impl;
 
+import static com.commercetools.sync.sdk2.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
+import static com.commercetools.sync.sdk2.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -7,7 +9,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.models.category.CategoryReference;
 import com.commercetools.api.models.channel.ChannelReference;
-import com.commercetools.api.models.common.Reference;
 import com.commercetools.api.models.custom_object.CustomObjectReference;
 import com.commercetools.api.models.customer.CustomerReference;
 import com.commercetools.api.models.customer_group.CustomerGroupReference;
@@ -76,7 +77,7 @@ public abstract class BaseTransformServiceImpl {
   }
 
   protected Map<GraphQlQueryResource, Set<String>> buildMapOfRequestTypeToReferencedIds(
-      final Set<Reference> references) {
+      final Set<JsonNode> references) {
     Map<GraphQlQueryResource, Set<String>> typedReferenceMap = new HashMap<>();
     typedReferenceMap.put(GraphQlQueryResource.CATEGORIES, new HashSet<>());
     typedReferenceMap.put(GraphQlQueryResource.CHANNELS, new HashSet<>());
@@ -91,39 +92,40 @@ public abstract class BaseTransformServiceImpl {
     typedReferenceMap.put(GraphQlQueryResource.TYPES, new HashSet<>());
     references.forEach(
         ref -> {
-          switch (ref.getTypeId().getJsonName()) {
+          final String refAsText = ref.get(REFERENCE_ID_FIELD).asText();
+          switch (ref.get(REFERENCE_TYPE_ID_FIELD).asText()) {
             case (ProductReference.PRODUCT):
-              typedReferenceMap.get(GraphQlQueryResource.PRODUCTS).add(ref.getId());
+              typedReferenceMap.get(GraphQlQueryResource.PRODUCTS).add(refAsText);
               break;
             case (CategoryReference.CATEGORY):
-              typedReferenceMap.get(GraphQlQueryResource.CATEGORIES).add(ref.getId());
+              typedReferenceMap.get(GraphQlQueryResource.CATEGORIES).add(refAsText);
               break;
             case (ChannelReference.CHANNEL):
-              typedReferenceMap.get(GraphQlQueryResource.CHANNELS).add(ref.getId());
+              typedReferenceMap.get(GraphQlQueryResource.CHANNELS).add(refAsText);
               break;
             case (CustomerReference.CUSTOMER):
-              typedReferenceMap.get(GraphQlQueryResource.CUSTOMERS).add(ref.getId());
+              typedReferenceMap.get(GraphQlQueryResource.CUSTOMERS).add(refAsText);
               break;
             case (CustomObjectReference.KEY_VALUE_DOCUMENT):
-              typedReferenceMap.get(GraphQlQueryResource.CUSTOM_OBJECTS).add(ref.getId());
+              typedReferenceMap.get(GraphQlQueryResource.CUSTOM_OBJECTS).add(refAsText);
               break;
             case (CustomerGroupReference.CUSTOMER_GROUP):
-              typedReferenceMap.get(GraphQlQueryResource.CUSTOMER_GROUPS).add(ref.getId());
+              typedReferenceMap.get(GraphQlQueryResource.CUSTOMER_GROUPS).add(refAsText);
               break;
             case (ProductTypeReference.PRODUCT_TYPE):
-              typedReferenceMap.get(GraphQlQueryResource.PRODUCT_TYPES).add(ref.getId());
+              typedReferenceMap.get(GraphQlQueryResource.PRODUCT_TYPES).add(refAsText);
               break;
             case (ShoppingListReference.SHOPPING_LIST):
-              typedReferenceMap.get(GraphQlQueryResource.SHOPPING_LISTS).add(ref.getId());
+              typedReferenceMap.get(GraphQlQueryResource.SHOPPING_LISTS).add(refAsText);
               break;
             case (StateReference.STATE):
-              typedReferenceMap.get(GraphQlQueryResource.STATES).add(ref.getId());
+              typedReferenceMap.get(GraphQlQueryResource.STATES).add(refAsText);
               break;
             case (TaxCategoryReference.TAX_CATEGORY):
-              typedReferenceMap.get(GraphQlQueryResource.TAX_CATEGORIES).add(ref.getId());
+              typedReferenceMap.get(GraphQlQueryResource.TAX_CATEGORIES).add(refAsText);
               break;
             case (TypeReference.TYPE):
-              typedReferenceMap.get(GraphQlQueryResource.TYPES).add(ref.getId());
+              typedReferenceMap.get(GraphQlQueryResource.TYPES).add(refAsText);
               break;
             default:
               // Nothing to do
@@ -139,8 +141,10 @@ public abstract class BaseTransformServiceImpl {
   }
 
   @Nonnull
-  protected Set<Reference> getNonCachedReferences(@Nonnull final List<Reference> references) {
-    return references.stream().filter(ref -> filterNonCachedIds(ref.getId())).collect(toSet());
+  protected Set<JsonNode> getNonCachedReferences(@Nonnull final List<JsonNode> references) {
+    return references.stream()
+        .filter(ref -> filterNonCachedIds(ref.get(REFERENCE_ID_FIELD).asText()))
+        .collect(toSet());
   }
 
   private boolean filterNonCachedIds(@Nonnull final String id) {

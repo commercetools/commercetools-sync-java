@@ -3,18 +3,19 @@ package com.commercetools.sync.sdk2.products.helpers;
 import static com.commercetools.sync.sdk2.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static com.commercetools.sync.sdk2.commons.utils.ResourceIdentifierUtils.*;
 import static com.commercetools.sync.sdk2.products.utils.AttributeUtils.getAttributeReferences;
+import static com.commercetools.sync.sdk2.products.utils.AttributeUtils.replaceAttributeValueWithJsonAndReturnValue;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 
 import com.commercetools.api.models.category.CategoryReference;
 import com.commercetools.api.models.common.AssetDraft;
 import com.commercetools.api.models.common.PriceDraft;
-import com.commercetools.api.models.common.Reference;
 import com.commercetools.api.models.custom_object.CustomObjectReference;
 import com.commercetools.api.models.customer.CustomerReference;
 import com.commercetools.api.models.product.*;
 import com.commercetools.api.models.product_type.ProductTypeReference;
 import com.commercetools.api.models.state.StateReference;
+import com.commercetools.sync.commons.utils.CompletableFutureUtils;
 import com.commercetools.sync.sdk2.commons.helpers.AssetReferenceResolver;
 import com.commercetools.sync.sdk2.commons.helpers.BaseReferenceResolver;
 import com.commercetools.sync.sdk2.commons.utils.SyncUtils;
@@ -29,13 +30,16 @@ import com.commercetools.sync.sdk2.services.ProductService;
 import com.commercetools.sync.sdk2.services.ProductTypeService;
 import com.commercetools.sync.sdk2.services.StateService;
 import com.commercetools.sync.sdk2.services.TypeService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
-import org.apache.commons.lang3.StringUtils;
 
 public final class VariantReferenceResolver
     extends BaseReferenceResolver<ProductVariantDraft, ProductSyncOptions> {
@@ -157,30 +161,41 @@ public final class VariantReferenceResolver
   @Nonnull
   private CompletionStage<Attribute> resolveAttributeReference(
       @Nonnull final Attribute attributeDraft) {
-    final List<Reference> allAttributeReferences = getAttributeReferences(attributeDraft);
 
-    if (allAttributeReferences.isEmpty()) {
+    final Object attributeDraftValue = attributeDraft.getValue();
+
+    if (attributeDraftValue == null) {
       return CompletableFuture.completedFuture(attributeDraft);
     }
+    final JsonNode attributeDraftValueAsJson =
+        replaceAttributeValueWithJsonAndReturnValue(attributeDraft);
+    List<JsonNode> allAttributeReferences = getAttributeReferences(attributeDraftValueAsJson);
 
-    return mapValuesToFutureOfCompletedValues(
-            allAttributeReferences, this::resolveReference, toList())
-        .thenApply(
-            ignoredResult ->
-                AttributeBuilder.of()
-                    .name(attributeDraft.getName())
-                    .value(attributeDraft.getValue())
-                    .build());
+    if (!allAttributeReferences.isEmpty()) {
+      return CompletableFutureUtils.mapValuesToFutureOfCompletedValues(
+              allAttributeReferences, this::resolveReference, toList())
+          .thenApply(
+              ignoredResult ->
+                  AttributeBuilder.of()
+                      .name(attributeDraft.getName())
+                      .value(attributeDraftValueAsJson)
+                      .build());
+    }
+
+    return CompletableFuture.completedFuture(attributeDraft);
   }
 
   @Nonnull
-  private CompletionStage<Void> resolveReference(@Nonnull final Reference referenceValue) {
+  private CompletionStage<Void> resolveReference(@Nonnull final JsonNode referenceValue) {
     return getResolvedId(referenceValue)
-        .thenAccept(optionalId -> optionalId.ifPresent(id -> referenceValue.setId(id)));
+        .thenAccept(
+            optionalId ->
+                optionalId.ifPresent(
+                    id -> ((ObjectNode) referenceValue).put(REFERENCE_ID_FIELD, id)));
   }
 
   @Nonnull
-  private CompletionStage<Optional<String>> getResolvedId(@Nonnull final Reference referenceValue) {
+  private CompletionStage<Optional<String>> getResolvedId(@Nonnull final JsonNode referenceValue) {
 
     if (isReferenceOfType(referenceValue, ProductReference.PRODUCT)) {
       return getResolvedIdFromKeyInReference(referenceValue, productService::getIdFromCacheOrFetch);
@@ -214,12 +229,12 @@ public final class VariantReferenceResolver
 
   @Nonnull
   private CompletionStage<Optional<String>> getResolvedIdFromKeyInReference(
-      @Nonnull final Reference referenceValue,
+      @Nonnull final JsonNode referenceValue,
       @Nonnull final Function<String, CompletionStage<Optional<String>>> resolvedIdFetcher) {
 
-    final String id = referenceValue.getId();
-    return StringUtils.isNotBlank(id)
-        ? resolvedIdFetcher.apply(id)
+    final JsonNode idField = referenceValue.get(REFERENCE_ID_FIELD);
+    return idField != null && !Objects.equals(idField, NullNode.getInstance())
+        ? resolvedIdFetcher.apply(idField.asText())
         : CompletableFuture.completedFuture(Optional.empty());
   }
 

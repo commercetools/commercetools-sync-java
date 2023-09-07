@@ -1,5 +1,6 @@
 package com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.withnestedattributes;
 
+import static com.commercetools.sync.sdk2.commons.utils.TestUtils.convertArrayNodeToList;
 import static com.commercetools.sync.sdk2.commons.utils.TestUtils.readObjectFromResource;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.getMockStateService;
 import static com.commercetools.sync.sdk2.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceAttributeValue;
@@ -16,6 +17,7 @@ import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.products.helpers.VariantReferenceResolver;
 import com.commercetools.sync.sdk2.services.*;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -67,8 +69,9 @@ class WithStateReferencesTest {
             .join();
     // assertions
     final Object value = resolvedAttributeDraft.getAttributes().get(0).getValue();
-    assertThat(value).isInstanceOf(List.class);
-    final List<Attribute> resolvedNestedAttributes = (List) value;
+    assertThat(value).isInstanceOf(ArrayNode.class);
+    final List<Attribute> resolvedNestedAttributes =
+        convertArrayNodeToList((ArrayNode) value, Attribute.typeReference());
 
     final Map<String, Object> resolvedNestedAttributesMap =
         resolvedNestedAttributes.stream()
@@ -101,8 +104,9 @@ class WithStateReferencesTest {
     assertThat(resolvedAttributeDraft.getAttributes()).isNotNull();
 
     final Object value = resolvedAttributeDraft.getAttributes().get(0).getValue();
-    assertThat(value).isInstanceOf(List.class);
-    final List<Attribute> resolvedNestedAttributes = (List) value;
+    assertThat(value).isInstanceOf(ArrayNode.class);
+    final List<Attribute> resolvedNestedAttributes =
+        convertArrayNodeToList((ArrayNode) value, Attribute.typeReference());
 
     final Map<String, Object> resolvedNestedAttributesMap =
         resolvedNestedAttributes.stream()

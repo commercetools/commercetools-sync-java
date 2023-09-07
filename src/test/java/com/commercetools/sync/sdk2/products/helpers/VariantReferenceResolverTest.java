@@ -2,6 +2,8 @@ package com.commercetools.sync.sdk2.products.helpers;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static com.commercetools.sync.sdk2.commons.MockUtils.getMockTypeService;
+import static com.commercetools.sync.sdk2.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
+import static com.commercetools.sync.sdk2.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.sync.sdk2.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.sdk2.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static com.commercetools.sync.sdk2.products.ProductSyncMockUtils.*;
@@ -23,12 +25,15 @@ import com.commercetools.api.models.state.StateReference;
 import com.commercetools.api.models.type.CustomFieldsDraft;
 import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
+import com.commercetools.sync.commons.utils.ResourceIdentifierUtils;
 import com.commercetools.sync.sdk2.products.ProductSyncOptions;
 import com.commercetools.sync.sdk2.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.sdk2.services.ChannelService;
 import com.commercetools.sync.sdk2.services.CustomerGroupService;
 import com.commercetools.sync.sdk2.services.TypeService;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
@@ -195,16 +200,17 @@ class VariantReferenceResolverTest {
     final Attribute resolvedProductReferenceSetAttribute = resolvedBuilderAttributes.get(0);
     assertThat(resolvedProductReferenceSetAttribute).isNotNull();
 
-    final List<Reference> resolvedProductReferenceSetValue =
-        AttributeAccessor.asSetReference(resolvedProductReferenceSetAttribute);
+    final JsonNode resolvedProductReferenceSetValue =
+        (JsonNode) resolvedProductReferenceSetAttribute.getValue();
     assertThat(resolvedProductReferenceSetValue).isNotNull();
 
-    final Reference resolvedProductReferenceValue = resolvedProductReferenceSetValue.get(0);
+    final JsonNode resolvedProductReferenceValue = resolvedProductReferenceSetValue.get(0);
     assertThat(resolvedProductReferenceValue).isNotNull();
 
-    final String resolvedProductReferenceId = resolvedProductReferenceValue.getId();
-    assertThat(resolvedProductReferenceId).isNotNull();
-    assertThat(resolvedProductReferenceId).isEqualTo(PRODUCT_ID);
+    final JsonNode resolvedProductReferenceIdTextNode =
+        resolvedProductReferenceValue.get(REFERENCE_ID_FIELD);
+    assertThat(resolvedProductReferenceIdTextNode).isNotNull();
+    assertThat(resolvedProductReferenceIdTextNode.asText()).isEqualTo(PRODUCT_ID);
   }
 
   @Test
@@ -260,68 +266,74 @@ class VariantReferenceResolverTest {
     final Attribute resolvedProductReferenceSetAttribute = resolvedBuilderAttributes.get(0);
     assertThat(resolvedProductReferenceSetAttribute).isNotNull();
 
-    final List<Reference> resolvedProductReferenceSetValue =
-        AttributeAccessor.asSetReference(resolvedProductReferenceSetAttribute);
+    final JsonNode resolvedProductReferenceSetValue =
+        (JsonNode) resolvedProductReferenceSetAttribute.getValue();
     assertThat(resolvedProductReferenceSetValue).isNotNull();
 
-    final Reference resolvedProductReferenceValue = resolvedProductReferenceSetValue.get(0);
+    final JsonNode resolvedProductReferenceValue = resolvedProductReferenceSetValue.get(0);
     assertThat(resolvedProductReferenceValue).isNotNull();
 
-    final String resolvedProductReferenceId = resolvedProductReferenceValue.getId();
-    assertThat(resolvedProductReferenceId).isNotNull();
-    assertThat(resolvedProductReferenceId).isEqualTo(PRODUCT_ID);
+    final JsonNode resolvedProductReferenceIdTextNode =
+        resolvedProductReferenceValue.get(REFERENCE_ID_FIELD);
+    assertThat(resolvedProductReferenceIdTextNode).isNotNull();
+    assertThat(resolvedProductReferenceIdTextNode.asText()).isEqualTo(PRODUCT_ID);
 
     final Attribute resolvedCategoryReferenceAttribute = resolvedBuilderAttributes.get(1);
     assertThat(resolvedCategoryReferenceAttribute).isNotNull();
 
-    final Reference resolvedCategoryReferenceAttributeValue =
-        AttributeAccessor.asReference(resolvedCategoryReferenceAttribute);
+    final JsonNode resolvedCategoryReferenceAttributeValue =
+        (JsonNode) resolvedCategoryReferenceAttribute.getValue();
     assertThat(resolvedCategoryReferenceAttributeValue).isNotNull();
 
-    assertThat(resolvedCategoryReferenceAttributeValue.getId()).isEqualTo(CATEGORY_ID);
-    assertThat(resolvedCategoryReferenceAttributeValue.getTypeId().getJsonName())
+    assertThat(resolvedCategoryReferenceAttributeValue.get(REFERENCE_ID_FIELD).asText())
+        .isEqualTo(CATEGORY_ID);
+    assertThat(resolvedCategoryReferenceAttributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
         .isEqualTo(CategoryReference.CATEGORY);
 
     final Attribute resolvedProductTypeReferenceAttribute = resolvedBuilderAttributes.get(2);
     assertThat(resolvedProductTypeReferenceAttribute).isNotNull();
 
-    final Reference resolvedProductTypeReferenceAttributeValue =
-        AttributeAccessor.asReference(resolvedProductTypeReferenceAttribute);
+    final JsonNode resolvedProductTypeReferenceAttributeValue =
+        (JsonNode) resolvedProductTypeReferenceAttribute.getValue();
     assertThat(resolvedProductTypeReferenceAttributeValue).isNotNull();
 
-    assertThat(resolvedProductTypeReferenceAttributeValue.getId()).isEqualTo(PRODUCT_TYPE_ID);
-    assertThat(resolvedProductTypeReferenceAttributeValue.getTypeId().getJsonName())
+    assertThat(resolvedProductTypeReferenceAttributeValue.get(REFERENCE_ID_FIELD).asText())
+        .isEqualTo(PRODUCT_TYPE_ID);
+    assertThat(resolvedProductTypeReferenceAttributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
         .isEqualTo(ProductTypeReference.PRODUCT_TYPE);
 
     final Attribute resolvedCustomerReferenceAttribute = resolvedBuilderAttributes.get(3);
     assertThat(resolvedCustomerReferenceAttribute).isNotNull();
 
-    final Reference resolvedCustomerReferenceAttributeValue =
-        AttributeAccessor.asReference(resolvedCustomerReferenceAttribute);
+    final JsonNode resolvedCustomerReferenceAttributeValue =
+        (JsonNode) resolvedCustomerReferenceAttribute.getValue();
     assertThat(resolvedCustomerReferenceAttributeValue).isNotNull();
 
-    assertThat(resolvedCustomerReferenceAttributeValue.getId()).isEqualTo(CUSTOMER_ID);
-    assertThat(resolvedCustomerReferenceAttributeValue.getTypeId().getJsonName())
+    assertThat(resolvedCustomerReferenceAttributeValue.get(REFERENCE_ID_FIELD).asText())
+        .isEqualTo(CUSTOMER_ID);
+    assertThat(resolvedCustomerReferenceAttributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
         .isEqualTo(CustomerReference.CUSTOMER);
 
     final Attribute resolvedCustomObjectReferenceAttribute = resolvedBuilderAttributes.get(5);
     assertThat(resolvedCustomObjectReferenceAttribute).isNotNull();
 
-    final Reference resolvedCustomObjectAttributeValue =
-        AttributeAccessor.asReference(resolvedCustomObjectReferenceAttribute);
+    final JsonNode resolvedCustomObjectAttributeValue =
+        (JsonNode) resolvedCustomObjectReferenceAttribute.getValue();
     assertThat(resolvedCustomObjectAttributeValue).isNotNull();
 
-    assertThat(resolvedCustomObjectAttributeValue.getId()).isEqualTo(CUSTOM_OBJECT_ID);
-    assertThat(resolvedCustomObjectAttributeValue.getTypeId().getJsonName())
+    assertThat(resolvedCustomObjectAttributeValue.get(REFERENCE_ID_FIELD).asText())
+        .isEqualTo(CUSTOM_OBJECT_ID);
+    assertThat(resolvedCustomObjectAttributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
         .isEqualTo(CustomObjectReference.KEY_VALUE_DOCUMENT);
 
     final Attribute resolvedStateReferenceAttribute = resolvedBuilderAttributes.get(6);
     assertThat(resolvedStateReferenceAttribute).isNotNull();
 
-    final Reference resolvedStateReferenceAttributeValue =
-        AttributeAccessor.asReference(resolvedStateReferenceAttribute);
-    assertThat(resolvedStateReferenceAttributeValue.getId()).isEqualTo(STATE_ID);
-    assertThat(resolvedStateReferenceAttributeValue.getTypeId().getJsonName())
+    final JsonNode resolvedStateReferenceAttributeValue =
+        (JsonNode) resolvedStateReferenceAttribute.getValue();
+    assertThat(resolvedStateReferenceAttributeValue.get(REFERENCE_ID_FIELD).asText())
+        .isEqualTo(STATE_ID);
+    assertThat(resolvedStateReferenceAttributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
         .isEqualTo(StateReference.STATE);
   }
 
@@ -348,16 +360,20 @@ class VariantReferenceResolverTest {
     assertThat(resolvedAttributeDraft).isNotNull();
     assertThat(resolvedAttributeDraft.getValue()).isNotNull();
 
-    final Spliterator<Reference> attributeReferencesIterator =
-        AttributeAccessor.asSetReference(resolvedAttributeDraft).spliterator();
+    final Spliterator<JsonNode> attributeReferencesIterator =
+        ((JsonNode) resolvedAttributeDraft.getValue()).spliterator();
     assertThat(attributeReferencesIterator).isNotNull();
-    final Set<Reference> resolvedSet =
+    final Set<JsonNode> resolvedSet =
         StreamSupport.stream(attributeReferencesIterator, false).collect(Collectors.toSet());
 
     assertThat(resolvedSet).isNotEmpty();
-    final ProductReference resolvedReference =
-        ReferenceBuilder.of().productBuilder().id(PRODUCT_ID).build();
-    assertThat(resolvedSet).containsExactlyInAnyOrder(resolvedReference, null);
+    final ObjectNode resolvedReference = JsonNodeFactory.instance.objectNode();
+    resolvedReference.put(
+        ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD,
+        io.sphere.sdk.products.Product.referenceTypeId());
+    resolvedReference.put(ResourceIdentifierUtils.REFERENCE_ID_FIELD, PRODUCT_ID);
+    assertThat(resolvedSet)
+        .containsExactlyInAnyOrder(resolvedReference, JsonNodeFactory.instance.nullNode());
   }
 
   @Test

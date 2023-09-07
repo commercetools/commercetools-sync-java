@@ -1,5 +1,7 @@
 package com.commercetools.sync.integration.commons.utils;
 
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static java.util.Arrays.asList;
@@ -39,6 +41,8 @@ import com.commercetools.api.models.type.TypeDraftBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;
 import io.vrap.rmf.base.client.error.NotFoundException;
@@ -239,6 +243,29 @@ public final class ITUtils {
         LOCALISED_STRING_CUSTOM_FIELD_NAME,
         LocalizedStringBuilder.of().addValue("de", "rot").addValue("en", "red").build());
     return customFields.build();
+  }
+
+  public static FieldContainer createCustomFieldsJsonMap(
+      @Nonnull final String fieldName, @Nullable final Object value) {
+    final FieldContainerBuilder customFields = FieldContainerBuilder.of();
+    customFields.addValue(fieldName, value);
+    return customFields.build();
+  }
+
+  /**
+   * Creates an {@link ObjectNode} that represents a reference with the supplied {@code id} in the
+   * id field and {@code typeId} field in the typeId field.
+   *
+   * @return an {@link ObjectNode} that represents a product reference with the supplied {@code id}
+   *     in the id field and {@code typeId} field in the typeId field.
+   */
+  @Nonnull
+  public static ObjectNode createReferenceObjectJson(
+      @Nonnull final String id, @Nonnull final String typeId) {
+    final ObjectNode reference = JsonNodeFactory.instance.objectNode();
+    reference.put(REFERENCE_TYPE_ID_FIELD, typeId);
+    reference.put(REFERENCE_ID_FIELD, id);
+    return reference;
   }
 
   /**

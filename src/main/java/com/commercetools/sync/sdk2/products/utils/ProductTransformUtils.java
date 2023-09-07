@@ -1,5 +1,6 @@
 package com.commercetools.sync.sdk2.products.utils;
 
+import static com.commercetools.sync.sdk2.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
 import static com.commercetools.sync.sdk2.products.utils.ProductReferenceResolutionUtils.mapToProductDrafts;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -23,6 +24,8 @@ import com.commercetools.sync.sdk2.commons.utils.ChunkUtils;
 import com.commercetools.sync.sdk2.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.sdk2.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.sdk2.services.impl.BaseTransformServiceImpl;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -292,18 +295,17 @@ public final class ProductTransformUtils {
     public CompletionStage<List<ProductProjection>> replaceAttributeReferenceIdsWithKeys(
         @Nonnull final List<ProductProjection> products) {
 
-      final List<Reference> allAttributeReferences = getAllReferences(products);
-
+      final List<JsonNode> allAttributeReferences = getAllReferences(products);
       return getIdToKeys(allAttributeReferences)
           .thenApply(
               ignored -> {
-                replaceReferences(allAttributeReferences);
+                replaceReferences(getAllReferences(products));
                 return products;
               });
     }
 
     @Nonnull
-    private List<Reference> getAllReferences(@Nonnull final List<ProductProjection> products) {
+    private List<JsonNode> getAllReferences(@Nonnull final List<ProductProjection> products) {
       return products.stream()
           .map(this::getAllReferences)
           .flatMap(Collection::stream)
@@ -311,26 +313,30 @@ public final class ProductTransformUtils {
     }
 
     @Nonnull
-    private List<Reference> getAllReferences(@Nonnull final ProductProjection product) {
+    private List<JsonNode> getAllReferences(@Nonnull final ProductProjection product) {
       final List<ProductVariant> allVariants = product.getAllVariants();
       return getAttributeReferences(allVariants);
     }
 
     @Nonnull
-    private static List<Reference> getAttributeReferences(
-        @Nonnull final List<ProductVariant> variants) {
+    private List<JsonNode> getAttributeReferences(@Nonnull final List<ProductVariant> variants) {
 
       return variants.stream()
           .map(ProductVariant::getAttributes)
           .flatMap(Collection::stream)
+          .map(AttributeUtils::replaceAttributeValueWithJsonAndReturnValue)
           .map(AttributeUtils::getAttributeReferences)
           .flatMap(Collection::stream)
           .collect(Collectors.toList());
     }
 
-    private void replaceReferences(@Nonnull final List<Reference> references) {
-      references.forEach(
-          reference -> reference.setId(this.referenceIdToKeyCache.get(reference.getId())));
+    private void replaceReferences(@Nonnull final List<JsonNode> allAttributeReferences) {
+      allAttributeReferences.forEach(
+          reference -> {
+            final String id = reference.get(REFERENCE_ID_FIELD).asText();
+            final String key = referenceIdToKeyCache.get(id);
+            ((ObjectNode) reference).put(REFERENCE_ID_FIELD, key);
+          });
     }
 
     /**
@@ -350,9 +356,9 @@ public final class ProductTransformUtils {
      *     injected {@code ctpClient}.
      */
     @Nonnull
-    CompletableFuture<Void> getIdToKeys(@Nonnull final List<Reference> allAttributeReferences) {
+    CompletableFuture<Void> getIdToKeys(@Nonnull final List<JsonNode> allAttributeReferences) {
 
-      final Set<Reference> nonCachedReferences = getNonCachedReferences(allAttributeReferences);
+      final Set<JsonNode> nonCachedReferences = getNonCachedReferences(allAttributeReferences);
       final Map<GraphQlQueryResource, Set<String>> map =
           buildMapOfRequestTypeToReferencedIds(nonCachedReferences);
 
