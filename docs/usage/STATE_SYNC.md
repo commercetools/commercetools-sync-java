@@ -1,16 +1,15 @@
 # State Sync
 
 The module used for importing/syncing States into a commercetools project. 
-It also provides utilities for generating update actions based on the comparison a [State](https://docs.commercetools.com/http-api-projects-states#states) (which basically represents what commercetools already has)
-against a [StateDraft](https://docs.commercetools.com/http-api-projects-states#statedraft) (which represents a new version of the state supplied by the user).
+It also provides utilities for generating update actions based on the comparison a [State](https://docs.commercetools.com/api/projects/states#state) (which basically represents what commercetools already has)
+against a [StateDraft](https://docs.commercetools.com/api/projects/states#statedraft) (which represents a new version of the state supplied by the user).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Usage](#usage)
-    - [Prerequisites](#prerequisites)
-    - [SphereClient](#sphereclient)
+  - [Prerequisites](#prerequisites)
+    - [ProjectApiRoot](#projectapiroot)
     - [Required Fields](#required-fields)
     - [Reference Resolution](#reference-resolution)
       - [Syncing from a commercetools project](#syncing-from-a-commercetools-project)
@@ -27,21 +26,34 @@ against a [StateDraft](https://docs.commercetools.com/http-api-projects-states#s
     - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
+- [Migration Guide](#migration-guide)
+  - [Client configuration and creation](#client-configuration-and-creation)
+  - [Signature of StateSyncOptions](#signature-of-statesyncoptions)
+  - [Build StateDraft (syncing from external project)](#build-statedraft-syncing-from-external-project)
+  - [Query for states (syncing from CTP project)](#query-for-states-syncing-from-ctp-project)
+  - [Referencing other states in transitions](#referencing-other-states-in-transitions)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Usage
 
-#### Prerequisites
-#### SphereClient
+### Prerequisites
 
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/9.2.3/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
-If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
+#### ProjectApiRoot
+
+
+Use the [ClientConfigurationUtils](#todo) which apply the best practices for `ProjectApiRoot` creation.
+To create `ClientCredentials` which are required for creating a client please use the `ClientCredentialsBuilder` provided in java-sdk-v2 [Client OAUTH2 package](#todo)
+If you have custom requirements for the client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
-final SphereClientConfig clientConfig = SphereClientConfig.of("project-key", "client-id", "client-secret");
-
-final SphereClient sphereClient = ClientConfigurationUtils.createClient(clientConfig);
+final ClientCredentials clientCredentials =
+        new ClientCredentialsBuilder()
+        .withClientId("client-id")
+        .withClientSecret("client-secret")
+        .withScopes("scopes")
+        .build();
+final ProjectApiRoot apiRoot = ClientConfigurationUtils.createClient("project-key", clientCredentials, "auth-url", "api-url");
 ````
 
 #### Required Fields
@@ -50,44 +62,38 @@ The following fields are **required** to be set in, otherwise, they won't be mat
 
 |Draft|Required Fields|Note|
 |---|---|---|
-| [StateDraft](https://docs.commercetools.com/http-api-projects-states#statedraft)| `key` |  Also, the states in the target project are expected to have the `key` fields set. | 
+| [StateDraft](https://docs.commercetools.com/api/projects/states#statedraft)| `key` |  Also, the states in the target project are expected to have the `key` fields set. | 
 
 #### Reference Resolution 
 
-`Transitions` are a way to describe possible transformations of the current state to other states of the same type (for example Initial -> Shipped). When performing a [SetTransitions](https://docs.commercetools.com/api/projects/states#set-transitions), an array of [Reference](https://docs.commercetools.com/api/types#reference) to State is needed.
-In commercetools, a reference can be created by providing the key instead of the ID with the type [ResourceIdentifier](https://docs.commercetools.com/api/types#resourceidentifier). 
-When the reference key is provided with a `ResourceIdentifier`, the sync will resolve the resource with the given key and use the ID of the found resource to create or update a reference. 
-Currently, commercetools API does not support the [ResourceIdentifier](https://docs.commercetools.com/api/types#resourceidentifier) for the `transitions`,  for those `transition` references you have to provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the 
-reference should return its `key`.
+`Transitions` are a way to describe possible transformations of the current state to other states of the same type (for example Initial -> Shipped). When performing a [SetTransitions](https://docs.commercetools.com/api/projects/states#set-transitions), an array of [ResourceIdentifiers](https://docs.commercetools.com/api/projects/states#ctp:api:type:StateResourceIdentifier) to State is needed.
+In commercetools, a [ResourceIdentifier](https://docs.commercetools.com/api/projects/states#ctp:api:type:StateResourceIdentifier) can be created by providing either the key or the ID. 
+When the key to a referenced state is provided with a `ResourceIdentifier`, the sync will resolve the resource with the given key and use the ID of the found resource to create or update a reference. 
 
-|Reference Field|Type|
-|:---|:---|
-| `transitions` | Array of Reference to State | 
+| ResourceIdentifier Field | Type                                      |
+|:-------------------------|:------------------------------------------|
+| `transitions`            | Array of StateResourceIdentifiers | 
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`toStateDrafts`](https://commercetools.github.io/commercetools-sync-java/v/9.2.3/com/commercetools/sync/states/utils/StateTransformUtils.html#toStateDrafts-java.util.List-)
+When syncing from a source commercetools project, you can use [`toStateDrafts`](#todo)
  method that transforms(resolves by querying and caching key-id pairs) and maps from a `State` to `StateDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
-// Build a StateQuery for fetching shopping lists from a source CTP project without any references expanded for the sync:
-final StateQuery stateQuery = StateQuery.of();
+// Build a ByProjectKeyStatesGet for fetching states from a source CTP project without any references expanded for the sync:
+final ByProjectKeyStatesGet byProjectKeyStatesGet = client.states().get();
 
 // Query all states (NOTE this is just for example, please adjust your logic)
-final List<State> states =
-    CtpQueryUtils
-        .queryAll(sphereClient, stateQuery, Function.identity())
-        .thenApply(fetchedResources -> fetchedResources
-            .stream()
-            .flatMap(List::stream)
-            .collect(Collectors.toList()))
+final List<State> states = QueryUtils.queryAll(byProjectKeyStatesGet,
+        (states) -> states)
+        .thenApply(lists -> lists.stream().flatMap(List::stream).collect(Collectors.toList()))
         .toCompletableFuture()
         .join();
 ````
 
 In order to transform and map the `State` to `StateDraft`, 
-Utils method `toStateDrafts` requires `sphereClient`, implementation of [`ReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java) and `states` as parameters.
-For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java).
+Utils method `toStateDrafts` requires `projectApiRoot`, implementation of [`ReferenceIdToKeyCache`](#todo) and `states` as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](#todo).
 Example as shown below:
 
 ````java
@@ -95,26 +101,29 @@ Example as shown below:
 final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
 
 //For every reference fetch its key using id, cache it and map from State to StateDraft. With help of the cache same reference keys can be reused.
-CompletableFuture<List<StateDraft>> stateDrafts = StateTransformUtils.toStateDrafts(client, referenceIdToKeyCache, states);
+final CompletableFuture<List<StateDraft>> stateDrafts = StateTransformUtils.toStateDrafts(client, referenceIdToKeyCache, states);
 ````
 
 ##### Syncing from an external resource
 
+- When syncing from an external resource, `ResourceIdentifier`s with their `key`s have to be supplied as following example:
+
 ````java
-final StateDraft stateDraft = StateDraftBuilder
-    .of("state-key", StateType.LINE_ITEM_STATE)
-    .transitions(asSet(State.referenceOfId("another-state-key"))) // note that state transition key is provided in the id field of reference.
-    .build();
+final StateDraft stateDraft = StateDraftBuilder.of()
+        .key("state-key")
+        .type(StateTypeEnum.LINE_ITEM_STATE)
+        .transitions(StateResourceIdentifierBuilder.of().key("another-state-key").build())
+        .build();
 ````
 
 
 #### SyncOptions
 
-After the `sphereClient` is set up, a `StateSyncOptions` should be built as follows: 
+After the `projectApiRoot` is set up, a `StateSyncOptions` should be built as follows: 
 
 ````java
 // instantiating a StateSyncOptions
-   final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder.of(sphereClient).build();
+   final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder.of(projectApiRoot).build();
 ````
 
 `SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
@@ -133,7 +142,7 @@ following context about the error-event:
 ````java
  final Logger logger = LoggerFactory.getLogger(StateSync.class);
  final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
-         .of(sphereClient)
+         .of(projectApiRoot)
          .errorCallback((syncException, draft, state, updateActions) -> 
             logger.error(new SyncException("My customized message"), syncException)).build();
 ````
@@ -151,8 +160,8 @@ following context about the warning message:
 ````java
  final Logger logger = LoggerFactory.getLogger(StateSync.class);
  final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
-         .of(sphereClient)
-         .warningCallback((syncException, draft, state, updateActions) -> 
+         .of(projectApiRoot)
+         .warningCallback((syncException, draft, state) -> 
             logger.warn(new SyncException("My customized message"), syncException)).build();
 ````
 
@@ -167,14 +176,14 @@ update actions array with custom actions or discard unwanted actions. The callba
 
 ````java
 final TriFunction<
-        List<UpdateAction<State>>, StateDraft, State, List<UpdateAction<State>>> 
+        List<StateUpdateAction>, StateDraft, State, List<StateUpdateAction>> 
             beforeUpdateStateCallback =
             (updateActions, newStateDraft, oldState) ->  updateActions.stream()
-                    .filter(updateAction -> !(updateAction instanceof RemoveRoles))
+                    .filter(updateAction -> !(updateAction instanceof StateRemoveRolesAction))
                     .collect(Collectors.toList());
                         
 final StateSyncOptions stateSyncOptions = 
-        StateSyncOptionsBuilder.of(sphereClient).beforeUpdateCallback(beforeUpdateStateCallback).build();
+        StateSyncOptionsBuilder.of(projectApiRoot).beforeUpdateCallback(beforeUpdateStateCallback).build();
 ````
 
 ##### beforeCreateCallback
@@ -191,7 +200,7 @@ from the target project on the commecetools platform in a single request. Playin
 
 ````java                         
 final StateSyncOptions stateSyncOptions = 
-         StateSyncOptionsBuilder.of(sphereClient).batchSize(30).build();
+         StateSyncOptionsBuilder.of(projectApiRoot).batchSize(30).build();
 ````
 
 ##### cacheSize
@@ -203,7 +212,7 @@ Playing with this option can change the memory usage of the library. If it is no
 
 ````java
 final StateSyncOptions stateSyncOptions = 
-         StateSyncOptionsBuilder.of(sphereClient).cacheSize(5000).build();
+         StateSyncOptionsBuilder.of(projectApiRoot).cacheSize(5000).build();
 ````
 
 
@@ -277,11 +286,11 @@ It being persisted as `CustomObject` means that the referenced StateDrafts with 
 As soon, as the referenced StateDrafts are supplied to the sync, the draft will be created/updated and the 
 `CustomObject` will be removed from the target project.
 
-Keeping the old custom objects around forever can negatively influence the performance of your project and the time it takes to restore it from a backup.  Deleting unused data ensures the best performance for your project. Please have a look into the [Cleanup guide](CLEANUP_GUIDE.md) to cleanup old unresolved custom objects.
+Keeping the old custom objects around forever can negatively influence the performance of your project and the time it takes to restore it from a backup. Deleting unused data ensures the best performance for your project. Please have a look into the [Cleanup guide](CLEANUP_GUIDE.md) to cleanup old unresolved custom objects.
 
 #### More examples of how to use the sync
  
- 1. [Sync usages](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/states/StateSyncIT.java).
+ 1. [Sync usages](#todo).
 
 *Make sure to read the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md) for optimal performance.*
 
@@ -291,7 +300,7 @@ Keeping the old custom objects around forever can negatively influence the perfo
 A utility method provided by the library to compare a `State` with a new `StateDraft` and results in a list of state update actions.
  update actions. 
 ```java
-List<UpdateAction<State>> updateActions = StateSyncUtils.buildActions(state, stateDraft, stateSyncOptions);
+List<StateUpdateAction> updateActions = StateSyncUtils.buildActions(state, stateDraft, stateSyncOptions);
 ```
 
 ### Build particular update action(s)
@@ -299,6 +308,110 @@ List<UpdateAction<State>> updateActions = StateSyncUtils.buildActions(state, sta
 Utility methods provided by the library to compare the specific fields of a `State` and a new `StateDraft`, and in turn builds
  the update action. One example is the `buildSetNameAction` which compares names:
 ````java
-Optional<UpdateAction<State>> updateAction = StateUpdateActionUtils.buildSetNameAction(oldState, stateDraft);
+Optional<StateUpdateAction> updateAction = StateUpdateActionUtils.buildSetNameAction(oldState, stateDraft);
 ````
-More examples of those utils for different types can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/states/utils/StateUpdateActionUtilsTest.java).
+More examples of those utils for different types can be found [here](#todo).
+
+
+## Migration Guide
+
+The state-sync uses the [JVM-SDK-V2](http://commercetools.github.io/commercetools-sdk-java-v2), therefore ensure you [Install JVM SDK](https://docs.commercetools.com/sdk/java-sdk-getting-started#install-the-java-sdk) module `commercetools-sdk-java-api` with
+any HTTP client module. The default one is `commercetools-http-client`.
+
+```xml
+ <!-- Sample maven pom.xml -->
+ <properties>
+     <commercetools.version>LATEST</commercetools.version>
+ </properties>
+
+ <dependencies>
+     <dependency>
+       <groupId>com.commercetools.sdk</groupId>
+       <artifactId>commercetools-http-client</artifactId>
+       <version>${commercetools.version}</version>
+     </dependency>
+     <dependency>
+       <groupId>com.commercetools.sdk</groupId>
+       <artifactId>commercetools-sdk-java-api</artifactId>
+       <version>${commercetools.version}</version>
+     </dependency>
+ </dependencies>
+
+```
+
+### Client configuration and creation
+
+For client creation use [ClientConfigurationUtils](#todo) which apply the best practices for `ProjectApiRoot` creation.
+If you have custom requirements for the client creation make sure to replace `SphereClientFactory` with `ApiRootBuilder` as described in this [Migration Document](https://docs.commercetools.com/sdk/java-sdk-migrate#client-configuration-and-creation).
+
+### Signature of StateSyncOptions
+
+As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a `ProjectApiRoot` as first argument. The callback functions are signed with `State`, `StateDraft` and `StateUpdateAction` from `package com.commercetools.api.models.state.*`
+
+> Note: Type `StateUpdateAction` has changed to `StateUpdateAction`. Make sure you create and supply a specific StateUpdateAction in `beforeUpdateCallback`. For that you can use the [library-utilities](#todo) or use a JVM-SDK builder ([see also](https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources)):
+
+```java
+// Example: Create a state update action to change name taking the 'newName' of the stateDraft
+    final Function<LocalizedString, StateUpdateAction> createBeforeUpdateAction =
+        (newName) -> StateSetNameAction.builder().name(newName).build();
+
+// Add the change name action to the list of update actions before update is executed
+    final TriFunction<
+            List<StateUpdateAction>, StateDraft, State, List<StateUpdateAction>>
+        beforeUpdateStateCallback =
+            (updateActions, newStateDraft, oldState) -> {
+              final StateUpdateAction beforeUpdateAction =
+                  createBeforeUpdateAction.apply(newStateDraft.getName());
+              updateActions.add(beforeUpdateAction);
+              return updateActions;
+            };
+```
+
+### Build StateDraft (syncing from external project)
+
+The state-sync expects a list of `StateDraft`s to process. If you use java-sync-library to sync your states from any external system into a commercetools platform project you have to convert your data into CTP compatible `StateDraft` type. This was done in previous version using `DraftBuilder`s.
+The V2 SDK do not have inheritance for `DraftBuilder` classes but the differences are minor and you can replace it easily. Here's an example:
+
+```java
+// StateDraftBuilder in v1 takes parameters 'key', 'type' 
+final StateDraft stateDraft =
+        StateDraftBuilder.of("key", StateType.LINE_ITEM_STATE)
+        .name(ofEnglish("state-name"))
+        .description(ofEnglish("state-desc"))
+        .roles(Collections.singleton(StateRole.RETURN))
+        .initial(false)
+        .build();
+
+// StateDraftBuilder in v2
+final StateDraft stateDraft =
+        StateDraftBuilder.of()
+        .key("key")
+        .type(StateTypeEnum.LINE_ITEM_STATE)
+        .name(ofEnglish("state-name"))
+        .description(ofEnglish("state-desc"))
+        .roles(StateRoleEnum.RETURN)
+        .initial(false)
+        .build();
+```
+For more information, see the [Guide to replace DraftBuilders](https://docs.commercetools.com/sdk/java-sdk-migrate#using-draftbuilders).
+
+### Query for states (syncing from CTP project)
+
+If you sync states between different commercetools projects you probably use [StateTransformUtils#toStateDrafts](#todo) to transform `State` into `StateDraft` which can be used by the state-sync.
+However, if you need to query `states` from a commercetools project instead of passing `StateQuery`s to a `sphereClient`, create (and execute) requests directly from the `apiRoot`.
+Here's an example:
+
+```java
+// SDK v1: StateQuery to fetch all states
+final StateQuery query = StateQuery.of();
+
+final PagedQueryResult<State> pagedQueryResult = sphereClient.executeBlocking(query);
+
+// SDK v2: Create and execute query to fetch all states in one line
+final StatePagedQueryResponse result = apiRoot.states().get().executeBlocking().getBody();
+```
+[Read more](https://docs.commercetools.com/sdk/java-sdk-migrate#query-resources) about querying resources.
+
+### Referencing other states in transitions
+
+When you use references to other states in the field `transitions`, the state-sync needs to do the reference resolution process. In the previous java-sdk-v1 it was required to provide the `key` value on the `id` field of the reference. In the current java-sdk-v2 you must provide the `key` field in `StateResourceIdentifier`. For detailed information see the [Reference resolution section](#reference-resolution).

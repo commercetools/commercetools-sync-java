@@ -1,18 +1,18 @@
 # Category Sync
 
 Module used for importing/syncing Categories into a commercetools project. 
-It also provides utilities for generating update actions based on the comparison of a [Category](https://docs.commercetools.com/http-api-projects-categories.html#category) 
-against a [CategoryDraft](https://docs.commercetools.com/http-api-projects-categories.html#categorydraft).
+It also provides utilities for generating update actions based on the comparison of a [Category](https://docs.commercetools.com/api/projects/categories#category) 
+against a [CategoryDraft](https://docs.commercetools.com/api/projects/categories#categorydraft).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [Usage](#usage)
   - [Prerequisites](#prerequisites)
-    - [SphereClient](#sphereclient)
+    - [ProjectApiRoot](#projectapiroot)
     - [Required Fields](#required-fields)
     - [Reference Resolution](#reference-resolution)
-      - [Persistence of category Drafts with irresolvable parent](#persistence-of-category-drafts-with-irresolvable-parent)
+      - [Persistence of Category Drafts with irresolvable parent](#persistence-of-category-drafts-with-irresolvable-parent)
       - [Syncing from a commercetools project](#syncing-from-a-commercetools-project)
       - [Syncing from an external resource](#syncing-from-an-external-resource)
     - [SyncOptions](#syncoptions)
@@ -26,7 +26,12 @@ against a [CategoryDraft](https://docs.commercetools.com/http-api-projects-categ
       - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
-- [Caveats](#caveats)
+- [Migration Guide](#migration-guide)
+  - [Client configuration and creation](#client-configuration-and-creation)
+  - [Signature of CategorySyncOptions](#signature-of-categorysyncoptions)
+  - [Build CategoryDraft (syncing from external project)](#build-categorydraft-syncing-from-external-project)
+  - [Query for Categories (syncing from CTP project)](#query-for-categories-syncing-from-ctp-project)
+  - [JVM-SDK-V2 migration guide](#jvm-sdk-v2-migration-guide)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -34,15 +39,20 @@ against a [CategoryDraft](https://docs.commercetools.com/http-api-projects-categ
 
 ### Prerequisites
 
-#### SphereClient
+#### ProjectApiRoot
 
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/9.2.3/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
-If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
+Use the [ClientConfigurationUtils](#todo) which apply the best practices for `ProjectApiRoot` creation.
+To create `ClientCredentials` which are required for creating a client please use the `ClientCredentialsBuilder` provided in java-sdk-v2 [Client OAUTH2 package](#todo)
+If you have custom requirements for the client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
-final SphereClientConfig clientConfig = SphereClientConfig.of("project-key", "client-id", "client-secret");
-
-final SphereClient sphereClient = ClientConfigurationUtils.createClient(clientConfig);
+final ClientCredentials clientCredentials =
+        new ClientCredentialsBuilder()
+        .withClientId("client-id")
+        .withClientSecret("client-secret")
+        .withScopes("scopes")
+        .build();
+final ProjectApiRoot apiRoot = ClientConfigurationUtils.createClient("project-key", clientCredentials, "auth-url", "api-url");
 ````
 
 #### Required Fields
@@ -51,7 +61,7 @@ The following fields are **required** to be set in, otherwise they won't be matc
 
 |Draft|Required Fields|Note|
 |---|---|---|
-| [CategoryDraft](https://docs.commercetools.com/http-api-projects-categories.html#categorydraft) | `key` |  Also, the categories in the target project are expected to have the `key` fields set. | 
+| [CategoryDraft](https://docs.commercetools.com/api/projects/categories#categorydraft) | `key` |  Also, the categories in the target project are expected to have the `key` fields set. | 
 
 #### Reference Resolution 
 
@@ -59,20 +69,20 @@ In commercetools, a reference can be created by providing the key instead of the
 When the reference key is provided with a `ResourceIdentifier`, the sync will resolve the resource with the given key and use the ID of the found resource to create or update a reference.
 Therefore, in order to resolve the actual ids of those references in sync process, `ResourceIdentifier`s with their `key`s have to be supplied. 
 
-|Reference Field|Type|
-|:---|:---|
-| `parent` | ResourceIdentifier to a Category  |  
-| `custom.type` | ResourceIdentifier to a Type |  
-| `assets.custom.type` | ResourceIdentifier to a Type | 
+|Reference Field| Type                             |
+|:---|:---------------------------------|
+| `parent` | CategoryResourceIdentifier       |  
+| `custom.type` | TypeResourceIdentifier           |  
+| `assets.custom.type` | TypeResourceIdentifier | 
 
 > Note that a reference without the key field will be considered as existing resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.
 
-##### Persistence of category Drafts with irresolvable parent
+##### Persistence of Category Drafts with irresolvable parent
 
-A categorydraft X could have a parent Category Y. But It could be that the parent Category Y is not supplied before X, 
+A CategoryDraft X could have a parent Category Y. But It could be that the parent Category Y is not supplied before X, 
 which means the sync could fail to create/updating X. It could also be that Y is not supplied at all in this batch but at a later batch.
  
-The library keeps track of such "referencing" category Drafts like X and persists them in storage 
+The library keeps track of such "referencing" Category Drafts like X and persists them in storage 
 (**Commercetools platform `customObjects` in the target project** , in this case) 
 to keep them and create/update them accordingly whenever the referenced drafts exist in the target project.
 
@@ -130,33 +140,29 @@ Being persisted as `CustomObject` means that the referenced parent Category with
     }
  
 ```
-As soon, as the referenced parent Category draft is supplied to the sync, the draft will be created/updated and the 
+As soon, as the referenced parent Category Draft is supplied to the sync, the Category will be created/updated and the 
 `CustomObject` will be removed from the target project.
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`toCategoryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/9.2.3/com/commercetools/sync/categories/utils/CategoryTransformUtils.html#toCategoryDrafts-java.util.List-)
+When syncing from a source commercetools project, you can use [`toCategoryDrafts`](#todo)
 method that transforms(resolves by querying and caching key-id pairs) and maps from a `Category` to `CategoryDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
-// Build a CategoryQuery for fetching categories from a source CTP project without any references expanded for the sync:
-final CategoryQuery categoryQuery = CategoryQuery.of();
+// Build ByProjectKeyCategoriesGet for fetching categories from a source CTP project without any references expanded for the sync:
+final ByProjectKeyCategoriesGet byProjectKeyCategoriesGet = client.categories().get();
 
 // Query all categories (NOTE this is just for example, please adjust your logic)
-final List<Category> categories =
-    CtpQueryUtils
-        .queryAll(sphereClient, categoryQuery, Function.identity())
-        .thenApply(fetchedResources -> fetchedResources
-            .stream()
-            .flatMap(List::stream)
-            .collect(Collectors.toList()))
-        .toCompletableFuture()
-        .join();
+final List<Categories> categories = QueryUtils.queryAll(byProjectKeyCategoriesGet,
+            (categories) -> categories)
+            .thenApply(lists -> lists.stream().flatMap(List::stream).collect(Collectors.toList()))
+            .toCompletableFuture()
+            .join();
 ````
 
 In order to transform and map the `Category` to `CategoryDraft`, 
-Utils method `toCategoryDrafts` requires `sphereClient`, implementation of [`ReferenceIdToKeyCache`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java) and `categories` as parameters.
-For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java).
+Utils method `toCategoryDrafts` requires `projectApiRoot`, implementation of [`ReferenceIdToKeyCache`](#todo) and `categories` as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](#todo).
 Example as shown below:
 
 ````java
@@ -164,7 +170,7 @@ Example as shown below:
 final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
 
 //For every reference fetch its key using id, cache it and map from Category to CategoryDraft. With help of the cache same reference keys can be reused.
-CompletableFuture<List<CategoryDraft>> categoryDrafts = CategoryTransformUtils.toCategoryDrafts(client, referenceIdToKeyCache, categories);
+final CompletableFuture<List<CategoryDraft>> categoryDrafts = CategoryTransformUtils.toCategoryDrafts(client, referenceIdToKeyCache, categories);
 ````
 
 ##### Syncing from an external resource
@@ -185,12 +191,38 @@ final CategoryDraft categoryDraft =
                         .build();
 ````
 
+
+````java
+final CustomFieldsDraft customFields = CustomFieldsDraftBuilder.of()
+                                       .type(TypeResourceIdentifierBuilder.of().key("type-key").build()) // note that custom type provided with key
+                                       .fields(FieldContainerBuilder.of().values(Collections.emptyMap()).build())
+                                       .build();
+
+final CategoryResourceIdentifier categoryResourceIdentifier = CategoryResourceIdentifierBuilder.of()
+        .key("category-key")
+        .build();
+
+final CategoryDraft categoryDraft = CategoryDraftBuilder.of()
+        .key("category-key")
+        .slug(LocalizedString.of(Locale.ENGLISH, "category-slug"))
+        .name(LocalizedString.of(Locale.ENGLISH, "category-name"))
+        .description(LocalizedString.of(Locale.ENGLISH, "category-description"))
+        .externalId("external-id")
+        .metaDescription(LocalizedString.of(Locale.ENGLISH, "meta-description"))
+        .metaKeywords(LocalizedString.of(Locale.ENGLISH, "meta-keywords"))
+        .metaTitle(LocalizedString.of(Locale.ENGLISH, "meta-title"))
+        .orderHint("order-hint")
+        .custom(customFields)
+        .parent(categoryResourceIdentifier)
+        .build()
+````
+
 #### SyncOptions
 
-After the `sphereClient` is set up, a `CategorySyncOptions` should be built as follows: 
+After the `ProjectApiRoot` is set up, a `CategorySyncOptions` should be built as follows:
 ````java
 // instantiating a CategorySyncOptions
-final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(sphereClient).build();
+final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(projectApiRoot).build();
 ````
 
 `SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
@@ -209,7 +241,7 @@ following context about the error-event:
 ````java
  final Logger logger = LoggerFactory.getLogger(CategorySync.class);
  final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
-         .of(sphereClient)
+         .of(projectApiRoot)
          .errorCallback((syncException, draft, category, updateActions) -> 
             logger.error(new SyncException("My customized message"), syncException)).build();
 ````
@@ -226,7 +258,7 @@ following context about the warning message:
 ````java
  final Logger logger = LoggerFactory.getLogger(CategorySync.class);
  final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
-         .of(sphereClient)
+         .of(projectApiRoot)
          .warningCallback((syncException, draft, category, updateActions) -> 
             logger.warn(new SyncException("My customized message"), syncException)).build();
 ````
@@ -241,15 +273,16 @@ update actions array with custom actions or discard unwanted actions. The callba
  * update actions that were calculated after comparing both
 
 ````java
+// Example: Ignore update actions that change category name
 final TriFunction<
-        List<UpdateAction<Category>>, CategoryDraft, Category, List<UpdateAction<Category>>> 
+        List<CategoryUpdateAction>, CategoryDraft, Category, List<CategoryUpdateAction>> 
             beforeUpdateCategoryCallback =
             (updateActions, newCategoryDraft, oldCategory) ->  updateActions.stream()
-                    .filter(updateAction -> !(updateAction instanceof RemoveAsset))
+                    .filter(updateAction -> !(updateAction instanceof CategoryChangeNameAction))
                     .collect(Collectors.toList());
                         
 final CategorySyncOptions categorySyncOptions = 
-        CategorySyncOptionsBuilder.of(sphereClient).beforeUpdateCallback(beforeUpdateCategoryCallback).build();
+        CategorySyncOptionsBuilder.of(projectApiRoot).beforeUpdateCallback(beforeUpdateCategoryCallback).build();
 ````
 
 ##### beforeCreateCallback
@@ -258,18 +291,18 @@ the **_create_** request just before it is sent to commercetools platform.  It c
 
  * category draft that should be created
  
-Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
+Please refer to [example in product sync document](PRODUCT_SYNC.md#beforeCreateCallback).
 
 ##### batchSize
 A number that could be used to set the batch size with which categories are fetched and processed,
 as categories are obtained from the target project on commercetools platform in batches for better performance. The 
 algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding categories
 from the target project on commecetools platform in a single request. Playing with this option can slightly improve or 
-reduce processing speed. If it is not set, the default batch size is 50 for category sync.
+reduce processing speed. If it is not set, the default batch size is **50** for category sync.
 
 ````java                         
 final CategorySyncOptions categorySyncOptions = 
-         CategorySyncOptionsBuilder.of(sphereClient).batchSize(30).build();
+         CategorySyncOptionsBuilder.of(projectApiRoot).batchSize(30).build();
 ````
 
 ##### cacheSize
@@ -280,7 +313,7 @@ which will improve the overall performance of the sync and commercetools API.
 Playing with this option can change the memory usage of the library. If it is not set, the default cache size is `10.000` for category sync.
 ````java
 final CategorySyncOptions categorySyncOptions = 
-         CategorySyncOptionsBuilder.of(sphereClient).cacheSize(5000).build(); 
+         CategorySyncOptionsBuilder.of(projectApiRoot).cacheSize(5000).build(); 
 ````
 
 ### Running the sync
@@ -310,8 +343,8 @@ __Note__ The statistics object contains the processing time of the last batch on
 
 ##### More examples of how to use the sync
 
-1. [Sync from another CTP project as a source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java).
-2. [Sync from an external source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java).
+1. [Sync from another CTP project as a source](#todo).
+2. [Sync from an external source](#todo).
 
 *Make sure to read the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md) for optimal performance.*
 
@@ -319,11 +352,11 @@ __Note__ The statistics object contains the processing time of the last batch on
 
 A utility method provided by the library to compare a Category with a new CategoryDraft and results in a list of category update actions. 
 ```java
-List<UpdateAction<Category>> updateActions = CategorySyncUtils.buildActions(category, categoryDraft, categorySyncOptions);
+final List<CategoryUpdateAction> updateActions = CategorySyncUtils.buildActions(category, categoryDraft, categorySyncOptions);
 ```
 
 Examples of its usage can be found in the tests 
-[here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/categories/utils/CategorySyncUtilsTest.java).
+[here](#todo).
 
 
 ### Build particular update action(s)
@@ -331,10 +364,105 @@ Examples of its usage can be found in the tests
 Utility methods provided by the library to compare the specific fields of a Category and a new CategoryDraft, and in turn, build
  the update action. One example is the `buildChangeNameUpdateAction` which compares names:
 ````java
-Optional<UpdateAction<Category>> updateAction = buildChangeNameUpdateAction(oldCategory, categoryDraft);
+final Optional<CategoryUpdateAction> updateAction = buildChangeNameUpdateAction(oldCategory, categoryDraft);
 ````
-More examples of those utils for different fields can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/categories/utils/CategoryUpdateActionUtilsTest.java).
+More examples of those utils for different fields can be found [here](#todo).
 
+## Migration Guide
 
-## Caveats   
-1. The library will sync all field types of custom fields, except `ReferenceType`. [#87](https://github.com/commercetools/commercetools-sync-java/issues/87). 
+The category-sync uses the [JVM-SDK-V2](http://commercetools.github.io/commercetools-sdk-java-v2), therefore ensure you [Install JVM SDK](https://docs.commercetools.com/sdk/java-sdk-getting-started#install-the-java-sdk) module `commercetools-sdk-java-api` with
+any HTTP client module. The default one is `commercetools-http-client`.
+
+```xml
+ <!-- Sample maven pom.xml -->
+ <properties>
+     <commercetools.version>LATEST</commercetools.version>
+ </properties>
+
+ <dependencies>
+     <dependency>
+       <groupId>com.commercetools.sdk</groupId>
+       <artifactId>commercetools-http-client</artifactId>
+       <version>${commercetools.version}</version>
+     </dependency>
+     <dependency>
+       <groupId>com.commercetools.sdk</groupId>
+       <artifactId>commercetools-sdk-java-api</artifactId>
+       <version>${commercetools.version}</version>
+     </dependency>
+ </dependencies>
+
+```
+
+### Client configuration and creation
+
+For client creation use [ClientConfigurationUtils](#todo) which apply the best practices for `ProjectApiRoot` creation.
+If you have custom requirements for the client creation make sure to replace `SphereClientFactory` with `ApiRootBuilder` as described in this [Migration Document](https://docs.commercetools.com/sdk/java-sdk-migrate#client-configuration-and-creation).
+
+### Signature of CategorySyncOptions
+
+As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a `ProjectApiRoot` as first argument. The callback functions are signed with `CategoryDraft`, `Category` and `CategoryUpdateAction` from `package com.commercetools.api.models.category.*`
+
+> Note: Type `UpdateAction<Category>` has changed to `CategoryUpdateAction`. Make sure you create and supply a specific CategoryUpdateAction in `beforeUpdateCallback`. For that you can use the [library-utilities](#todo) or use a JVM-SDK builder ([see also](https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources)):
+
+```java
+// Example: Create a category update action to change name taking the 'newName' of the categoryDraft
+    final Function<LocalizedString, CategoryUpdateAction> createBeforeUpdateAction =
+        (newName) -> CategoryChangeNameAction.builder().name(newName).build();
+
+// Add the change name action to the list of update actions before update is executed
+    final TriFunction<
+            List<CategoryUpdateAction>, CategoryDraft, Category, List<CategoryUpdateAction>>
+        beforeUpdateCategoryCallback =
+            (updateActions, newCategoryDraft, oldCategory) -> {
+              final CategoryUpdateAction beforeUpdateAction =
+                  createBeforeUpdateAction.apply(newCategoryDraft.getName());
+              updateActions.add(beforeUpdateAction);
+              return updateActions;
+            };
+```
+
+### Build CategoryDraft (syncing from external project)
+
+The category-sync expects a list of `CategoryDraft`s to process. If you use java-sync-library to sync your categories from any external system into a commercetools platform project you have to convert your data into CTP compatible `CategoryDraft` type. This was done in previous version using `DraftBuilder`s.
+The V2 SDK do not have inheritance for `DraftBuilder` classes but the differences are minor and you can replace it easily. Here's an example:
+
+```java
+// CategoryDraftBuilder in v1 takes parameters 'name' and 'slug'
+final CategoryDraft categoryDraft =
+              CategoryDraftBuilder
+                      .of(ofEnglish("name"), ofEnglish("slug"))
+                      .key("category-key")
+                      .build();
+
+// CategoryDraftBuilder in v2
+final CategoryDraft categoryDraft =
+              CategoryDraftBuilder
+                      .of()
+                      .name(LocalizedString.ofEnglish("name"))
+                      .slug(LocalizedString.ofEnglish("slug"))
+                      .key("category-key")
+                      .build();
+```
+For more information, see the [Guide to replace DraftBuilders](https://docs.commercetools.com/sdk/java-sdk-migrate#using-draftbuilders).
+
+### Query for Categories (syncing from CTP project)
+
+If you sync categories between different commercetools projects you probably use [CategoryTransformUtils#toCategoryDrafts](#todo) to transform `Category` into `CategoryDraft` which can be used by the category-sync.
+However, if you need to query `Categories` from a commercetools project instead of passing `CategoryQuery`s to a `sphereClient`, create (and execute) requests directly from the `apiRoot`.
+Here's an example:
+
+```java
+// SDK v1: CategoryQuery to fetch all categories
+final CategoryQuery query = CategoryQuery.of();
+
+final PagedQueryResult<Category> pagedQueryResult = sphereClient.executeBlocking(query);
+
+// SDK v2: Create and execute query to fetch all categories in one line
+final CategoryPagedQueryResponse result = apiRoot.categories().get().executeBlocking().getBody();
+```
+[Read more](https://docs.commercetools.com/sdk/java-sdk-migrate#query-resources) about querying resources.
+
+### JVM-SDK-V2 migration guide
+
+On any other needs to migrate your project using jvm-sdk-v2 please refer to it's [Migration Guide](https://docs.commercetools.com/sdk/java-sdk-migrate). 

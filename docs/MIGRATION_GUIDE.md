@@ -4,17 +4,17 @@
 
 - [Migration Guide](#migration-guide)
   - [Migrate syncers of supported resources](#migrate-syncers-of-supported-resources)
-    - [Categories](/docs/sdk2/usage/CATEGORY_SYNC.md#migration-guide), 
-    - [Products](/docs/sdk2/usage/PRODUCT_SYNC.md#migration-guide)
-    - [InventoryEntries](/docs/sdk2/usage/INVENTORY_SYNC.md#migration-guide)
-    - [ProductTypes](/docs/sdk2/usage/PRODUCT_TYPE_SYNC.md#migration-guide)
-    - [Types](/docs/sdk2/usage/TYPE_SYNC.md#migration-guide)
-    - [CartDiscounts](/docs/sdk2/usage/CART_DISCOUNT_SYNC.md#migration-guide)
-    - [States](/docs/sdk2/usage/STATE_SYNC.md#migration-guide)
-    - [TaxCategories](/docs/sdk2/usage/TAX_CATEGORY_SYNC.md#migration-guide)
-    - [CustomObjects](/docs/sdk2/usage/CUSTOM_OBJECT_SYNC.md#migration-guide)
-    - [Customers](/docs/sdk2/usage/CUSTOMER_SYNC.md#migration-guide)
-    - [ShoppingLists](/docs/sdk2/usage/SHOPPING_LIST_SYNC.md#migration-guide)
+    - [Categories](/docs/usage/CATEGORY_SYNC.md#migration-guide), 
+    - [Products](/docs/usage/PRODUCT_SYNC.md#migration-guide)
+    - [InventoryEntries](/docs/usage/INVENTORY_SYNC.md#migration-guide)
+    - [ProductTypes](/docs/usage/PRODUCT_TYPE_SYNC.md#migration-guide)
+    - [Types](/docs/usage/TYPE_SYNC.md#migration-guide)
+    - [CartDiscounts](/docs/usage/CART_DISCOUNT_SYNC.md#migration-guide)
+    - [States](/docs/usage/STATE_SYNC.md#migration-guide)
+    - [TaxCategories](/docs/usage/TAX_CATEGORY_SYNC.md#migration-guide)
+    - [CustomObjects](/docs/usage/CUSTOM_OBJECT_SYNC.md#migration-guide)
+    - [Customers](/docs/usage/CUSTOMER_SYNC.md#migration-guide)
+    - [ShoppingLists](/docs/usage/SHOPPING_LIST_SYNC.md#migration-guide)
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Migration Guide
@@ -60,17 +60,17 @@ private static <T, S, U extends Collection<CompletableFuture<S>>> U mapValuesToF
 ```
 ## Migrate syncers of supported resources
 
-- [Categories](/docs/sdk2/usage/CATEGORY_SYNC.md#migration-guide), 
-- [Products](/docs/sdk2/usage/PRODUCT_SYNC.md#migration-guide)
-- [InventoryEntries](/docs/sdk2/usage/INVENTORY_SYNC.md#migration-guide)
-- [ProductTypes](/docs/sdk2/usage/PRODUCT_TYPE_SYNC.md#migration-guide)
-- [Types](/docs/sdk2/usage/TYPE_SYNC.md#migration-guide)
-- [CartDiscounts](/docs/sdk2/usage/CART_DISCOUNT_SYNC.md#migration-guide)
-- [States](/docs/sdk2/usage/STATE_SYNC.md#migration-guide)
-- [TaxCategories](/docs/sdk2/usage/TAX_CATEGORY_SYNC.md#migration-guide)
-- [CustomObjects](/docs/sdk2/usage/CUSTOM_OBJECT_SYNC.md#migration-guide)
-- [Customers](/docs/sdk2/usage/CUSTOMER_SYNC.md#migration-guide)
-- [ShoppingLists](/docs/sdk2/usage/SHOPPING_LIST_SYNC.md#migration-guide)
+- [Categories](/docs/usage/CATEGORY_SYNC.md#migration-guide), 
+- [Products](/docs/usage/PRODUCT_SYNC.md#migration-guide)
+- [InventoryEntries](/docs/usage/INVENTORY_SYNC.md#migration-guide)
+- [ProductTypes](/docs/usage/PRODUCT_TYPE_SYNC.md#migration-guide)
+- [Types](/docs/usage/TYPE_SYNC.md#migration-guide)
+- [CartDiscounts](/docs/usage/CART_DISCOUNT_SYNC.md#migration-guide)
+- [States](/docs/usage/STATE_SYNC.md#migration-guide)
+- [TaxCategories](/docs/usage/TAX_CATEGORY_SYNC.md#migration-guide)
+- [CustomObjects](/docs/usage/CUSTOM_OBJECT_SYNC.md#migration-guide)
+- [Customers](/docs/usage/CUSTOMER_SYNC.md#migration-guide)
+- [ShoppingLists](/docs/usage/SHOPPING_LIST_SYNC.md#migration-guide)
 
 
  

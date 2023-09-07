@@ -1,8 +1,8 @@
 # Type Sync
 
 The module used for importing/syncing Types into a commercetools project. 
-It also provides utilities for generating update actions based on the comparison of a [Type](https://docs.commercetools.com/http-api-projects-types.html#type) 
-against a [TypeDraft](https://docs.commercetools.com/http-api-projects-types.html#typedraft).
+It also provides utilities for generating update actions based on the comparison of a [Type](https://docs.commercetools.com/api/projects/types#type) 
+against a [TypeDraft](https://docs.commercetools.com/api/projects/types#typedraft).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -31,15 +31,21 @@ against a [TypeDraft](https://docs.commercetools.com/http-api-projects-types.htm
 ## Usage
 
 ### Prerequisites
-#### SphereClient
 
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/9.2.3/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
-If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
+#### ProjectApiRoot
+
+Use the [ClientConfigurationUtils](#todo) which apply the best practices for `ProjectApiRoot` creation.
+To create `ClientCredentials` which are required for creating a client please use the `ClientCredentialsBuilder` provided in java-sdk-v2 [Client OAUTH2 package](#todo)
+If you have custom requirements for the client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
-final SphereClientConfig clientConfig = SphereClientConfig.of("project-key", "client-id", "client-secret");
-
-final SphereClient sphereClient = ClientConfigurationUtils.createClient(clientConfig);
+final ClientCredentials clientCredentials =
+        new ClientCredentialsBuilder()
+        .withClientId("client-id")
+        .withClientSecret("client-secret")
+        .withScopes("scopes")
+        .build();
+final ProjectApiRoot apiRoot = ClientConfigurationUtils.createClient("project-key", clientCredentials, "auth-url", "api-url");
 ````
 
 #### Required Fields
@@ -48,14 +54,14 @@ The following fields are **required** to be set in, otherwise, they won't be mat
 
 |Draft|Required Fields|Note|
 |---|---|---|
-| [TypeDraft](https://docs.commercetools.com/http-api-projects-types.html#typedraft) | `key` |  Also, the types in the target project are expected to have the `key` fields set. | 
+| [TypeDraft](https://docs.commercetools.com/api/projects/types#typedraft) | `key` |  Also, the types in the target project are expected to have the `key` fields set. | 
 
 #### SyncOptions
 
-After the `sphereClient` is set up, a `TypeSyncOptions` should be built as follows:
+After the `projectApiRoot` is set up, a `TypeSyncOptions` should be built as follows:
 ````java
 // instantiating a TypeSyncOptions
-final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(sphereClient).build();
+final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(projectApiRoot).build();
 ````
 
 `SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
@@ -74,7 +80,7 @@ following context about the error-event:
 ````java
  final Logger logger = LoggerFactory.getLogger(TypeSync.class);
  final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
-         .of(sphereClient)
+         .of(projectApiRoot)
          .errorCallback((syncException, draft, type, updateActions) -> 
             logger.error(new SyncException("My customized message"), syncException)).build();
 ````
@@ -91,8 +97,8 @@ following context about the warning message:
 ````java
  final Logger logger = LoggerFactory.getLogger(TypeSync.class);
  final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
-         .of(sphereClient)
-         .warningCallback((syncException, draft, type, updateActions) -> 
+         .of(projectApiRoot)
+         .warningCallback((syncException, draft, type) -> 
             logger.warn(new SyncException("My customized message"), syncException)).build();
 ````
 
@@ -106,15 +112,16 @@ update actions array with custom actions or discard unwanted actions. The callba
  * update actions that were calculated after comparing both
 
 ````java
+// Example: Ignore update actions that remove field definition
 final TriFunction<
-        List<UpdateAction<Type>>, TypeDraft, Type, List<UpdateAction<Type>>> 
+        List<TypeUpdateAction>, TypeDraft, Type, List<TypeUpdateAction>> 
             beforeUpdateTypeCallback =
             (updateActions, newTypeDraft, oldType) ->  updateActions.stream()
-                    .filter(updateAction -> !(updateAction instanceof RemoveFieldDefinition))
+                    .filter(updateAction -> !(updateAction instanceof TypeRemoveFieldDefinitionAction))
                     .collect(Collectors.toList());
                         
 final TypeSyncOptions typeSyncOptions = 
-        TypeSyncOptionsBuilder.of(sphereClient).beforeUpdateCallback(beforeUpdateTypeCallback).build();
+        TypeSyncOptionsBuilder.of(projectApiRoot).beforeUpdateCallback(beforeUpdateTypeCallback).build();
 ````
 
 ##### beforeCreateCallback
@@ -122,7 +129,7 @@ During the sync process, if a type draft should be created, this callback can be
 
  * type draft that should be created
  
-Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
+Please refer to [example in product sync document](PRODUCT_SYNC.md#beforecreatecallback).
 
 ##### batchSize
 A number that could be used to set the batch size with which types are fetched and processed,
@@ -130,7 +137,7 @@ as types are obtained from the target project on commercetools platform in batch
 
 ````java                         
 final TypeSyncOptions typeSyncOptions = 
-         TypeSyncOptionsBuilder.of(sphereClient).batchSize(30).build();
+         TypeSyncOptionsBuilder.of(projectApiRoot).batchSize(30).build();
 ````
 
 ##### cacheSize
@@ -142,7 +149,7 @@ Playing with this option can change the memory usage of the library. If it is no
 
 ````java
 final TypeSyncOptions typeSyncOptions = 
-         TypeSyncOptionsBuilder.of(sphereClient).cacheSize(5000).build();
+         TypeSyncOptionsBuilder.of(projectApiRoot).cacheSize(5000).build();
 ````
 
 
@@ -175,12 +182,12 @@ __Note__ The statistics object contains the processing time of the last batch on
 1. If two matching `fieldDefinition`s (old and new) on the matching `type`s (old and new) have a different `FieldType`, the sync will
 **remove** the existing `fieldDefinition` and then **add** a new `fieldDefinition` with the new `FieldType`.
 
-2. The `fieldDefinition` for which the `fieldType` is not defined (`null`) will not be synced.
+2. The `fieldDefinition` with missing `fieldType` (is `null`) will not be synced.
  
 #### More examples of how to use the sync
  
- 1. [Sync from another CTP project as a source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/types/TypeSyncIT.java).
- 2. [Sync from an external source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/types/TypeSyncIT.java).
+ 1. [Sync from another CTP project as a source](#todo).
+ 2. [Sync from an external source](#todo).
 
 *Make sure to read the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md) for optimal performance.*
 
@@ -188,7 +195,7 @@ __Note__ The statistics object contains the processing time of the last batch on
 
 A utility method provided by the library to compare a `Type` with a new `TypeDraft` and results in a list of type update actions.
 ```java
-List<UpdateAction<Type>> updateActions = TypeSyncUtils.buildActions(type, typeDraft, typeSyncOptions);
+List<TypeUpdateAction> updateActions = TypeSyncUtils.buildActions(type, typeDraft, typeSyncOptions);
 ```
 
 ### Build particular update action(s)
@@ -196,12 +203,102 @@ List<UpdateAction<Type>> updateActions = TypeSyncUtils.buildActions(type, typeDr
 Utility methods provided by the library to compare the specific fields of a `Type` and a new `TypeDraft`, and in turn builds
  the update action. One example is the `buildChangeNameUpdateAction` which compares names:
 ````java
-Optional<UpdateAction<Type>> updateAction = TypeUpdateActionUtils.buildChangeNameAction(oldType, typeDraft);
+Optional<TypeUpdateAction> updateAction = TypeUpdateActionUtils.buildChangeNameUpdateAction(oldType, typeDraft);
 ````
-More examples of those utils for different types can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/types/utils/TypeUpdateActionUtilsTest.java).
+More examples of those utils for different types can be found [here](#todo).
 
-## Caveats
+## Migration Guide
 
-1. Updating the label of enum values and localized enum values of field definition are not supported yet. [#339](https://github.com/commercetools/commercetools-sync-java/issues/339)
-2. Removing the enum values and localized enum values from the field definition are not supported yet. [#339](https://github.com/commercetools/commercetools-sync-java/issues/339)
-3. Updating the input hint of a field definition is not supported yet. [#339](https://github.com/commercetools/commercetools-sync-java/issues/339)
+The type-sync uses the [JVM-SDK-V2](http://commercetools.github.io/commercetools-sdk-java-v2), therefore ensure you [Install JVM SDK](https://docs.commercetools.com/sdk/java-sdk-getting-started#install-the-java-sdk) module `commercetools-sdk-java-api` with
+any HTTP client module. The default one is `commercetools-http-client`.
+
+```xml
+ <!-- Sample maven pom.xml -->
+ <properties>
+     <commercetools.version>LATEST</commercetools.version>
+ </properties>
+
+ <dependencies>
+     <dependency>
+       <groupId>com.commercetools.sdk</groupId>
+       <artifactId>commercetools-http-client</artifactId>
+       <version>${commercetools.version}</version>
+     </dependency>
+     <dependency>
+       <groupId>com.commercetools.sdk</groupId>
+       <artifactId>commercetools-sdk-java-api</artifactId>
+       <version>${commercetools.version}</version>
+     </dependency>
+ </dependencies>
+
+```
+
+### Client configuration and creation
+
+For client creation use [ClientConfigurationUtils](#todo) which apply the best practices for `ProjectApiRoot` creation.
+If you have custom requirements for the client creation make sure to replace `SphereClientFactory` with `ApiRootBuilder` as described in this [Migration Document](https://docs.commercetools.com/sdk/java-sdk-migrate#client-configuration-and-creation).
+
+### Signature of TypeSyncOptions
+
+As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a `ProjectApiRoot` as first argument. The callback functions are signed with `TypeDraft`, `Type` and `TypeUpdateAction` from `package com.commercetools.api.models.type.*`
+
+> Note: Type `UpdateAction<Type>` has changed to `TypeUpdateAction`. Make sure you create and supply a specific TypeUpdateAction in `beforeUpdateCallback`. For that you can use the [library-utilities](#todo) or use a JVM-SDK builder ([see also](https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources)):
+
+```java
+// Example: Create a type update action to change name taking the 'newName' of the typeDraft
+    final Function<LocalizedString, TypeUpdateAction> changeNameBeforeUpdateAction =
+        (newName) -> TypeChangeNameAction.builder().name(newName).build();
+
+// Add the change name action to the list of update actions before update is executed
+    final TriFunction<
+            List<TypeUpdateAction>, TypeDraft, Type, List<TypeUpdateAction>>
+        beforeUpdateTypeCallback =
+            (updateActions, newTypeDraft, oldType) -> {
+              final TypeUpdateAction beforeUpdateAction =
+                  changeNameBeforeUpdateAction.apply(newTypeDraft.getName());
+              updateActions.add(beforeUpdateAction);
+              return updateActions;
+            };
+```
+
+### Build TypeDraft (syncing from external project)
+
+The type-sync expects a list of `TypeDraft`s to process. If you use java-sync-library to sync your types from any external system into a commercetools platform project you have to convert your data into CTP compatible `TypeDraft` type. This was done in previous version using `DraftBuilder`s.
+The V2 SDK do not have inheritance for `DraftBuilder` classes but the differences are minor and you can replace it easily. Here's an example:
+
+```java
+// TypeDraftBuilder in v1 takes parameters 'key', 'name' and a set of 'resourceTypeIds'
+final TypeDraft typeDraft =
+              TypeDraftBuilder
+                      .of("type-key", ofEnglish("name"), ResourceTypeIdsSetBuilder.of().addCategories().build())
+                      .build();
+
+// TypeDraftBuilder in v2. 'resourceTypeIds' is a list
+    TypeDraftBuilder.of()
+            .key("type-key")
+            .name(LocalizedString.ofEnglish("name"))
+            .resourceTypeIds(ResourceTypeId.CATEGORY)
+            .build();
+```
+For more information, see the [Guide to replace DraftBuilders](https://docs.commercetools.com/sdk/java-sdk-migrate#using-draftbuilders).
+
+### Query for Types (syncing from CTP project)
+
+If you sync types between different commercetools projects you have to transform `Type` into `TypeDraft`.
+However, if you need to query `Types` from a commercetools project instead of passing `TypeQuery`s to a `sphereClient`, create (and execute) requests directly from the `apiRoot`.
+Here's an example:
+
+```java
+// SDK v1: TypeQuery to fetch all types
+final TypeQuery query = TypeQuery.of();
+
+final PagedQueryResult<Type> pagedQueryResult = sphereClient.executeBlocking(query);
+
+// SDK v2: Create and execute query to fetch all types in one line
+final TypePagedQueryResponse result = apiRoot.types().get().executeBlocking().getBody();
+```
+[Read more](https://docs.commercetools.com/sdk/java-sdk-migrate#query-resources) about querying resources.
+
+### JVM-SDK-V2 migration guide
+
+On any other needs to migrate your project using jvm-sdk-v2 please refer to it's [Migration Guide](https://docs.commercetools.com/sdk/java-sdk-migrate). 

@@ -12,7 +12,7 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ### 1. Installation
-- Make sure you have `JDK 11` installed.
+- Make sure you have `JDK 11` or higher installed.
 - Add the following dependency in your application:
 - For Maven users: 
 ````xml
@@ -20,13 +20,13 @@
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>9.2.3</version>
+  <version>10.0.0</version>
 </dependency>
 ````
 - For Gradle users:
 ````groovy
 // Add commercetools-sync-java dependency.
-implementation 'com.commercetools:commercetools-sync-java:9.2.3'
+implementation 'com.commercetools:commercetools-sync-java:10.0.0'
 ````
 
 ### 2. Setup Syncing Options
@@ -34,7 +34,7 @@ implementation 'com.commercetools:commercetools-sync-java:9.2.3'
  ```java
  final Logger logger = LoggerFactory.getLogger(MySync.class);
  final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder
-                                 .of(sphereClient)
+                                 .of(projectApiRoot)
                                  .errorCallback((syncException, draft, productProjection, updateActions) -> 
                                     logger.error(syncException.getMessage(), syncException))
                                  .warningCallback((exception, oldProductProjection, newResources) -> 
@@ -66,6 +66,6 @@ implementation 'com.commercetools:commercetools-sync-java:9.2.3'
 *[Product Sync](PRODUCT_SYNC.md), [ProductType Sync](PRODUCT_TYPE_SYNC.md), 
 [Category Sync](CATEGORY_SYNC.md), [Inventory Sync](INVENTORY_SYNC.md), 
 [Type Sync](TYPE_SYNC.md), [CartDiscount Sync](CART_DISCOUNT_SYNC.md),
-[TaxCategory Sync](TAX_CATEGORY_SYNC.md), [State Sync](STATE_SYNC.md), 
+[TaxCategory Sync](#todo), [State Sync](STATE_SYNC.md), 
 [CustomObject Sync](CUSTOM_OBJECT_SYNC.md), [Customer Sync](CUSTOMER_SYNC.md),
-[ShoppingLists Sync](SHOPPING_LIST_SYNC.md)*
+[ShoppingLists Sync](#todo)*
