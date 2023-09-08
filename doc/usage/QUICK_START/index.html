@@ -735,25 +735,25 @@
 
 <h3 id="1-installation">1. Installation<a class="headerlink" href="#1-installation" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Make sure you have <code>JDK 11</code> installed.</li>
+<li>Make sure you have <code>JDK 11</code> or higher installed.</li>
 <li>Add the following dependency in your application:</li>
 <li>For Maven users: 
 <div class="highlight"><pre><span></span><code><span class="cm">&lt;!-- Add commercetools-sync-java dependency. --&gt;</span>
 <span class="nt">&lt;dependency&gt;</span>
   <span class="nt">&lt;groupId&gt;</span>com.commercetools<span class="nt">&lt;/groupId&gt;</span>
   <span class="nt">&lt;artifactId&gt;</span>commercetools-sync-java<span class="nt">&lt;/artifactId&gt;</span>
-  <span class="nt">&lt;version&gt;</span>9.2.2<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;version&gt;</span>10.0.0<span class="nt">&lt;/version&gt;</span>
 <span class="nt">&lt;/dependency&gt;</span>
 </code></pre></div></li>
 <li>For Gradle users:
 <div class="highlight"><pre><span></span><code><span class="c1">// Add commercetools-sync-java dependency.</span><span class="w"></span>
-<span class="n">implementation</span><span class="w"> </span><span class="s1">&#39;com.commercetools:commercetools-sync-java:9.2.2&#39;</span><span class="w"></span>
+<span class="n">implementation</span><span class="w"> </span><span class="s1">&#39;com.commercetools:commercetools-sync-java:10.0.0&#39;</span><span class="w"></span>
 </code></pre></div></li>
 </ul>
 <h3 id="2-setup-syncing-options">2. Setup Syncing Options<a class="headerlink" href="#2-setup-syncing-options" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">Logger</span><span class="w"> </span><span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LoggerFactory</span><span class="p">.</span><span class="na">getLogger</span><span class="p">(</span><span class="n">MySync</span><span class="p">.</span><span class="na">class</span><span class="p">);</span><span class="w"></span>
 <span class="kd">final</span><span class="w"> </span><span class="n">ProductSyncOptions</span><span class="w"> </span><span class="n">productsyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ProductSyncOptionsBuilder</span><span class="w"></span>
-<span class="w">                                </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">)</span><span class="w"></span>
 <span class="w">                                </span><span class="p">.</span><span class="na">errorCallback</span><span class="p">((</span><span class="n">syncException</span><span class="p">,</span><span class="w"> </span><span class="n">draft</span><span class="p">,</span><span class="w"> </span><span class="n">productProjection</span><span class="p">,</span><span class="w"> </span><span class="n">updateActions</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
 <span class="w">                                   </span><span class="n">logger</span><span class="p">.</span><span class="na">error</span><span class="p">(</span><span class="n">syncException</span><span class="p">.</span><span class="na">getMessage</span><span class="p">(),</span><span class="w"> </span><span class="n">syncException</span><span class="p">))</span><span class="w"></span>
 <span class="w">                                </span><span class="p">.</span><span class="na">warningCallback</span><span class="p">((</span><span class="n">exception</span><span class="p">,</span><span class="w"> </span><span class="n">oldProductProjection</span><span class="p">,</span><span class="w"> </span><span class="n">newResources</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
@@ -780,9 +780,9 @@
 <p><em><a href="../PRODUCT_SYNC/">Product Sync</a>, <a href="../PRODUCT_TYPE_SYNC/">ProductType Sync</a>, 
 <a href="../CATEGORY_SYNC/">Category Sync</a>, <a href="../INVENTORY_SYNC/">Inventory Sync</a>, 
 <a href="../TYPE_SYNC/">Type Sync</a>, <a href="../CART_DISCOUNT_SYNC/">CartDiscount Sync</a>,
-<a href="../TAX_CATEGORY_SYNC/">TaxCategory Sync</a>, <a href="../STATE_SYNC/">State Sync</a>, 
+<a href="#todo">TaxCategory Sync</a>, <a href="../STATE_SYNC/">State Sync</a>, 
 <a href="../CUSTOM_OBJECT_SYNC/">CustomObject Sync</a>, <a href="../CUSTOMER_SYNC/">Customer Sync</a>,
-<a href="../SHOPPING_LIST_SYNC/">ShoppingLists Sync</a></em></p>
+<a href="#todo">ShoppingLists Sync</a></em></p>
 
 
 

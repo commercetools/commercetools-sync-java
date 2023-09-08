@@ -404,8 +404,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#sphereclient" class="md-nav__link">
-    SphereClient
+  <a href="#projectapiroot" class="md-nav__link">
+    ProjectApiRoot
   </a>
   
 </li>
@@ -507,6 +507,54 @@
           <li class="md-nav__item">
   <a href="#build-particular-update-actions" class="md-nav__link">
     Build particular update action(s)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migration-guide" class="md-nav__link">
+    Migration Guide
+  </a>
+  
+    <nav class="md-nav" aria-label="Migration Guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#client-configuration-and-creation" class="md-nav__link">
+    Client configuration and creation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signature-of-taxcategorysyncoptions" class="md-nav__link">
+    Signature of TaxCategorySyncOptions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-taxcategorydraft-syncing-from-external-project" class="md-nav__link">
+    Build TaxCategoryDraft (syncing from external project)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-for-taxcategories-syncing-from-ctp-project" class="md-nav__link">
+    Query for TaxCategories (syncing from CTP project)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jvm-sdk-v2-migration-guide" class="md-nav__link">
+    JVM-SDK-V2 migration guide
   </a>
   
 </li>
@@ -765,8 +813,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#sphereclient" class="md-nav__link">
-    SphereClient
+  <a href="#projectapiroot" class="md-nav__link">
+    ProjectApiRoot
   </a>
   
 </li>
@@ -877,6 +925,54 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#migration-guide" class="md-nav__link">
+    Migration Guide
+  </a>
+  
+    <nav class="md-nav" aria-label="Migration Guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#client-configuration-and-creation" class="md-nav__link">
+    Client configuration and creation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signature-of-taxcategorysyncoptions" class="md-nav__link">
+    Signature of TaxCategorySyncOptions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-taxcategorydraft-syncing-from-external-project" class="md-nav__link">
+    Build TaxCategoryDraft (syncing from external project)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-for-taxcategories-syncing-from-ctp-project" class="md-nav__link">
+    Query for TaxCategories (syncing from CTP project)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jvm-sdk-v2-migration-guide" class="md-nav__link">
+    JVM-SDK-V2 migration guide
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -899,15 +995,15 @@
 
 <h1 id="tax-category-sync">Tax Category Sync<a class="headerlink" href="#tax-category-sync" title="Permanent link">&para;</a></h1>
 <p>Allows importing/syncing TaxCategory into a commercetools project. 
-It also provides utilities for generating update actions based on the comparison of a <a href="https://docs.commercetools.com/http-api-projects-taxCategories#taxcategory">TaxCategory</a> 
-against a <a href="https://docs.commercetools.com/http-api-projects-taxCategories#taxcategorydraft">TaxCategoryDraft</a>.</p>
+It also provides utilities for generating update actions based on the comparison of a <a href="https://docs.commercetools.com/api/projects/taxCategories#taxcategory">TaxCategory</a> 
+against a <a href="https://docs.commercetools.com/api/projects/taxCategories#taxcategorydraft">TaxCategoryDraft</a>.</p>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 <ul>
 <li><a href="#usage">Usage</a></li>
 <li><a href="#prerequisites">Prerequisites</a><ul>
-<li><a href="#sphereclient">SphereClient</a></li>
+<li><a href="#projectapiroot">ProjectApiRoot</a></li>
 <li><a href="#required-fields">Required Fields</a></li>
 <li><a href="#syncoptions">SyncOptions</a></li>
 <li><a href="#errorcallback">errorCallback</a></li>
@@ -924,17 +1020,28 @@ against a <a href="https://docs.commercetools.com/http-api-projects-taxCategorie
 </li>
 <li><a href="#build-all-update-actions">Build all update actions</a></li>
 <li><a href="#build-particular-update-actions">Build particular update action(s)</a></li>
+<li><a href="#migration-guide">Migration Guide</a></li>
+<li><a href="#client-configuration-and-creation">Client configuration and creation</a></li>
+<li><a href="#signature-of-taxcategorysyncoptions">Signature of TaxCategorySyncOptions</a></li>
+<li><a href="#build-taxcategorydraft-syncing-from-external-project">Build TaxCategoryDraft (syncing from external project)</a></li>
+<li><a href="#query-for-taxcategories-syncing-from-ctp-project">Query for TaxCategories (syncing from CTP project)</a></li>
+<li><a href="#jvm-sdk-v2-migration-guide">JVM-SDK-V2 migration guide</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
-<h4 id="sphereclient">SphereClient<a class="headerlink" href="#sphereclient" title="Permanent link">&para;</a></h4>
-<p>Use the <a href="https://github.com/commercetools/commercetools-sync-java/blob/9.2.2/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45">ClientConfigurationUtils</a> which apply the best practices for <code>SphereClient</code> creation.
-If you have custom requirements for the sphere client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
-<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">SphereClientConfig</span><span class="w"> </span><span class="n">clientConfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SphereClientConfig</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;project-key&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;client-id&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;client-secret&quot;</span><span class="p">);</span><span class="w"></span>
-
-<span class="kd">final</span><span class="w"> </span><span class="n">SphereClient</span><span class="w"> </span><span class="n">sphereClient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ClientConfigurationUtils</span><span class="p">.</span><span class="na">createClient</span><span class="p">(</span><span class="n">clientConfig</span><span class="p">);</span><span class="w"></span>
+<h4 id="projectapiroot">ProjectApiRoot<a class="headerlink" href="#projectapiroot" title="Permanent link">&para;</a></h4>
+<p>Use the <a href="#todo">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+To create <code>ClientCredentials</code> which are required for creating a client please use the <code>ClientCredentialsBuilder</code> provided in java-sdk-v2 <a href="#todo">Client OAUTH2 package</a>
+If you have custom requirements for the client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ClientCredentials</span><span class="w"> </span><span class="n">clientCredentials</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">        </span><span class="k">new</span><span class="w"> </span><span class="n">ClientCredentialsBuilder</span><span class="p">()</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="na">withClientId</span><span class="p">(</span><span class="s">&quot;client-id&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="na">withClientSecret</span><span class="p">(</span><span class="s">&quot;client-secret&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="na">withScopes</span><span class="p">(</span><span class="s">&quot;scopes&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">ProjectApiRoot</span><span class="w"> </span><span class="n">apiRoot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ClientConfigurationUtils</span><span class="p">.</span><span class="na">createClient</span><span class="p">(</span><span class="s">&quot;project-key&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">clientCredentials</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;auth-url&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;api-url&quot;</span><span class="p">);</span><span class="w"></span>
 </code></pre></div>
 <h4 id="required-fields">Required Fields<a class="headerlink" href="#required-fields" title="Permanent link">&para;</a></h4>
 <p>The following fields are <strong>required</strong> to be set in, otherwise, they won't be matched by sync:</p>
@@ -948,16 +1055,16 @@ If you have custom requirements for the sphere client creation, have a look into
 </thead>
 <tbody>
 <tr>
-<td><a href="https://docs.commercetools.com/http-api-projects-taxCategories#taxcategorydraft">TaxCategoryDraft</a></td>
+<td><a href="https://docs.commercetools.com/api/projects/taxCategories#taxcategorydraft">TaxCategoryDraft</a></td>
 <td><code>key</code></td>
 <td>Also, the tax categories in the target project are expected to have the <code>key</code> fields set.</td>
 </tr>
 </tbody>
 </table>
 <h4 id="syncoptions">SyncOptions<a class="headerlink" href="#syncoptions" title="Permanent link">&para;</a></h4>
-<p>After the <code>sphereClient</code> is set up, a <code>TaxCategorySyncOptions</code> should be built as follows:
+<p>After the <code>projectApiRoot</code> is set up, a <code>TaxCategorySyncOptions</code> should be built as follows:
 <div class="highlight"><pre><span></span><code><span class="c1">// instantiating a TaxCategorySyncOptions</span><span class="w"></span>
-<span class="kd">final</span><span class="w"> </span><span class="n">TaxCategorySyncOptions</span><span class="w"> </span><span class="n">taxCategorySyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TaxCategorySyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">TaxCategorySyncOptions</span><span class="w"> </span><span class="n">taxCategorySyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TaxCategorySyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div></p>
 <p><code>SyncOptions</code> is an object which provides a place for users to add certain configurations to customize the sync process.
 Available configurations:</p>
@@ -973,7 +1080,7 @@ following context about the error-event:</p>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Logger</span><span class="w"> </span><span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LoggerFactory</span><span class="p">.</span><span class="na">getLogger</span><span class="p">(</span><span class="n">TaxCategorySync</span><span class="p">.</span><span class="na">class</span><span class="p">);</span><span class="w"></span>
 <span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">TaxCategorySyncOptions</span><span class="w"> </span><span class="n">taxCategorySyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TaxCategorySyncOptionsBuilder</span><span class="w"></span>
-<span class="w">         </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">)</span><span class="w"></span>
+<span class="w">         </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">)</span><span class="w"></span>
 <span class="w">         </span><span class="p">.</span><span class="na">errorCallback</span><span class="p">((</span><span class="n">syncException</span><span class="p">,</span><span class="w"> </span><span class="n">draft</span><span class="p">,</span><span class="w"> </span><span class="n">taxCategory</span><span class="p">,</span><span class="w"> </span><span class="n">updateActions</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
 <span class="w">            </span><span class="n">logger</span><span class="p">.</span><span class="na">error</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">SyncException</span><span class="p">(</span><span class="s">&quot;My customized message&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">syncException</span><span class="p">)).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
@@ -988,8 +1095,8 @@ following context about the warning message:</p>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Logger</span><span class="w"> </span><span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LoggerFactory</span><span class="p">.</span><span class="na">getLogger</span><span class="p">(</span><span class="n">TaxCategorySync</span><span class="p">.</span><span class="na">class</span><span class="p">);</span><span class="w"></span>
 <span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">TaxCategorySyncOptions</span><span class="w"> </span><span class="n">taxCategorySyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TaxCategorySyncOptionsBuilder</span><span class="w"></span>
-<span class="w">         </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">)</span><span class="w"></span>
-<span class="w">         </span><span class="p">.</span><span class="na">warningCallback</span><span class="p">((</span><span class="n">syncException</span><span class="p">,</span><span class="w"> </span><span class="n">draft</span><span class="p">,</span><span class="w"> </span><span class="n">taxCategory</span><span class="p">,</span><span class="w"> </span><span class="n">updateActions</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">         </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">)</span><span class="w"></span>
+<span class="w">         </span><span class="p">.</span><span class="na">warningCallback</span><span class="p">((</span><span class="n">syncException</span><span class="p">,</span><span class="w"> </span><span class="n">draft</span><span class="p">,</span><span class="w"> </span><span class="n">taxCategory</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
 <span class="w">            </span><span class="n">logger</span><span class="p">.</span><span class="na">warn</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">SyncException</span><span class="p">(</span><span class="s">&quot;My customized message&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">syncException</span><span class="p">)).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <h5 id="beforeupdatecallback">beforeUpdateCallback<a class="headerlink" href="#beforeupdatecallback" title="Permanent link">&para;</a></h5>
@@ -1002,26 +1109,26 @@ update actions array with custom actions or discard unwanted actions. The callba
 <li>update actions that were calculated after comparing both</li>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">TriFunction</span><span class="o">&lt;</span><span class="w"></span>
-<span class="w">        </span><span class="n">List</span><span class="o">&lt;</span><span class="n">UpdateAction</span><span class="o">&lt;</span><span class="n">TaxCategory</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">TaxCategoryDraft</span><span class="p">,</span><span class="w"> </span><span class="n">TaxCategory</span><span class="p">,</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">UpdateAction</span><span class="o">&lt;</span><span class="n">TaxCategory</span><span class="o">&gt;&gt;&gt;</span><span class="w"> </span>
+<span class="w">        </span><span class="n">List</span><span class="o">&lt;</span><span class="n">TaxCategoryUpdateAction</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">TaxCategoryDraft</span><span class="p">,</span><span class="w"> </span><span class="n">TaxCategory</span><span class="p">,</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">TaxCategoryUpdateAction</span><span class="o">&gt;&gt;</span><span class="w"> </span>
 <span class="w">            </span><span class="n">beforeUpdateTaxCategoryCallback</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
 <span class="w">            </span><span class="p">(</span><span class="n">updateActions</span><span class="p">,</span><span class="w"> </span><span class="n">newTaxCategoryDraft</span><span class="p">,</span><span class="w"> </span><span class="n">oldTaxCategory</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">  </span><span class="n">updateActions</span><span class="p">.</span><span class="na">stream</span><span class="p">()</span><span class="w"></span>
-<span class="w">                    </span><span class="p">.</span><span class="na">filter</span><span class="p">(</span><span class="n">updateAction</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">!</span><span class="p">(</span><span class="n">updateAction</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">RemoveTaxRate</span><span class="p">))</span><span class="w"></span>
+<span class="w">                    </span><span class="p">.</span><span class="na">filter</span><span class="p">(</span><span class="n">updateAction</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">!</span><span class="p">(</span><span class="n">updateAction</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">TaxCategoryRemoveTaxRateAction</span><span class="p">))</span><span class="w"></span>
 <span class="w">                    </span><span class="p">.</span><span class="na">collect</span><span class="p">(</span><span class="n">Collectors</span><span class="p">.</span><span class="na">toList</span><span class="p">());</span><span class="w"></span>
 
 <span class="kd">final</span><span class="w"> </span><span class="n">TaxCategorySyncOptions</span><span class="w"> </span><span class="n">taxCategorySyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
-<span class="w">        </span><span class="n">TaxCategorySyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">beforeUpdateCallback</span><span class="p">(</span><span class="n">beforeUpdateTaxCategoryCallback</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="w">        </span><span class="n">TaxCategorySyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">beforeUpdateCallback</span><span class="p">(</span><span class="n">beforeUpdateTaxCategoryCallback</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <h5 id="beforecreatecallback">beforeCreateCallback<a class="headerlink" href="#beforecreatecallback" title="Permanent link">&para;</a></h5>
 <p>During the sync process, if a tax category draft should be created, this callback can be used to intercept the <strong><em>create</em></strong> request just before it is sent to the commercetools platform.  It contains the following information : </p>
 <ul>
 <li>tax category draft that should be created</li>
 </ul>
-<p>Please refer to <a href="../PRODUCT_SYNC/#example-set-publish-stage-if-category-references-of-given-product-draft-exists">example in product sync document</a>.</p>
+<p>Please refer to <a href="../PRODUCT_SYNC/#beforecreatecallback">example in product sync document</a>.</p>
 <h5 id="batchsize">batchSize<a class="headerlink" href="#batchsize" title="Permanent link">&para;</a></h5>
 <p>A number that could be used to set the batch size with which tax categories are fetched and processed,
 as tax categories are obtained from the target project on the commercetools platform in batches for better performance. The algorithm accumulates up to <code>batchSize</code> resources from the input list, then fetches the corresponding tax categories from the target project on commecetools platform in a single request. Playing with this option can slightly improve or reduce processing speed. If it is not set, the default batch size is 50 for tax category sync.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">TaxCategorySyncOptions</span><span class="w"> </span><span class="n">taxCategorySyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
-<span class="w">         </span><span class="n">TaxCategorySyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">batchSize</span><span class="p">(</span><span class="mi">30</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="w">         </span><span class="n">TaxCategorySyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">batchSize</span><span class="p">(</span><span class="mi">30</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <h5 id="cachesize">cacheSize<a class="headerlink" href="#cachesize" title="Permanent link">&para;</a></h5>
 <p>In the service classes of the commercetools-sync-java library, we have implemented an in-memory <a href="https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)">LRU cache</a> to store a map used for the reference resolution of the library.
@@ -1029,7 +1136,7 @@ The cache reduces the reference resolution based calls to the commercetools API 
 which will improve the overall performance of the sync and commercetools API.</p>
 <p>Playing with this option can change the memory usage of the library. If it is not set, the default cache size is <code>10.000</code> for tax category sync.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">TaxCategorySyncOptions</span><span class="w"> </span><span class="n">taxCategorySyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
-<span class="w">         </span><span class="n">TaxCategorySyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">cacheSize</span><span class="p">(</span><span class="mi">5000</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="w">         </span><span class="n">TaxCategorySyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">cacheSize</span><span class="p">(</span><span class="mi">5000</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <h3 id="running-the-sync">Running the sync<a class="headerlink" href="#running-the-sync" title="Permanent link">&para;</a></h3>
 <p>After all the aforementioned points in the previous section have been fulfilled, to run the sync:
@@ -1054,19 +1161,98 @@ human-readable format.</p>
 </ol>
 <h4 id="more-examples-of-how-to-use-the-sync">More examples of how to use the sync<a class="headerlink" href="#more-examples-of-how-to-use-the-sync" title="Permanent link">&para;</a></h4>
 <ul>
-<li><a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/taxcategories/TaxCategorySyncIT.java">Sync from an external source</a>.</li>
+<li><a href="#todo">Sync from an external source</a>.</li>
 </ul>
 <p><em>Make sure to read the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a> for optimal performance.</em></p>
 <h3 id="build-all-update-actions">Build all update actions<a class="headerlink" href="#build-all-update-actions" title="Permanent link">&para;</a></h3>
 <p>A utility method provided by the library to compare a <code>TaxCategory</code> with a new <code>TaxCategoryDraft</code> and results in a list of tax category update actions.
-<div class="highlight"><pre><span></span><code><span class="n">List</span><span class="o">&lt;</span><span class="n">UpdateAction</span><span class="o">&lt;</span><span class="n">TaxCategory</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">updateActions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TaxCategorySyncUtils</span><span class="p">.</span><span class="na">buildActions</span><span class="p">(</span><span class="n">taxCategory</span><span class="p">,</span><span class="w"> </span><span class="n">taxCategoryDraft</span><span class="p">,</span><span class="w"> </span><span class="n">taxCategorySyncOptions</span><span class="p">);</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="n">List</span><span class="o">&lt;</span><span class="n">TaxCategoryUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">updateActions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TaxCategorySyncUtils</span><span class="p">.</span><span class="na">buildActions</span><span class="p">(</span><span class="n">taxCategory</span><span class="p">,</span><span class="w"> </span><span class="n">taxCategoryDraft</span><span class="p">,</span><span class="w"> </span><span class="n">taxCategorySyncOptions</span><span class="p">);</span><span class="w"></span>
 </code></pre></div></p>
 <h3 id="build-particular-update-actions">Build particular update action(s)<a class="headerlink" href="#build-particular-update-actions" title="Permanent link">&para;</a></h3>
 <p>Utility methods provided by the library to compare the specific fields of a <code>TaxCategory</code> and a new <code>TaxCategoryDraft</code>, and in turn builds
  the update action. One example is the <code>buildChangeNameUpdateAction</code> which compares names:
-<div class="highlight"><pre><span></span><code><span class="n">Optional</span><span class="o">&lt;</span><span class="n">UpdateAction</span><span class="o">&lt;</span><span class="n">TaxCategory</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">updateAction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TaxCategoryUpdateActionUtils</span><span class="p">.</span><span class="na">buildChangeNameAction</span><span class="p">(</span><span class="n">oldTaxCategory</span><span class="p">,</span><span class="w"> </span><span class="n">taxCategoryDraft</span><span class="p">);</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="n">Optional</span><span class="o">&lt;</span><span class="n">TaxCategoryUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">updateAction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TaxCategoryUpdateActionUtils</span><span class="p">.</span><span class="na">buildChangeNameAction</span><span class="p">(</span><span class="n">oldTaxCategory</span><span class="p">,</span><span class="w"> </span><span class="n">taxCategoryDraft</span><span class="p">);</span><span class="w"></span>
 </code></pre></div>
-More examples of those utils for different tax categories can be found <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/taxcategories/utils/TaxCategoryUpdateActionUtilsTest.java">here</a>.</p>
+More examples of those utils for different tax categories can be found <a href="#todo">here</a>.</p>
+<h2 id="migration-guide">Migration Guide<a class="headerlink" href="#migration-guide" title="Permanent link">&para;</a></h2>
+<p>The tax-category-sync uses the <a href="http://commercetools.github.io/commercetools-sdk-java-v2">JVM-SDK-V2</a>, therefore ensure you <a href="https://docs.commercetools.com/sdk/java-sdk-getting-started#install-the-java-sdk">Install JVM SDK</a> module <code>commercetools-sdk-java-api</code> with
+any HTTP client module. The default one is <code>commercetools-http-client</code>.</p>
+<div class="highlight"><pre><span></span><code> <span class="cm">&lt;!-- Sample maven pom.xml --&gt;</span>
+ <span class="nt">&lt;properties&gt;</span>
+     <span class="nt">&lt;commercetools.version&gt;</span>LATEST<span class="nt">&lt;/commercetools.version&gt;</span>
+ <span class="nt">&lt;/properties&gt;</span>
+
+ <span class="nt">&lt;dependencies&gt;</span>
+     <span class="nt">&lt;dependency&gt;</span>
+       <span class="nt">&lt;groupId&gt;</span>com.commercetools.sdk<span class="nt">&lt;/groupId&gt;</span>
+       <span class="nt">&lt;artifactId&gt;</span>commercetools-http-client<span class="nt">&lt;/artifactId&gt;</span>
+       <span class="nt">&lt;version&gt;</span>${commercetools.version}<span class="nt">&lt;/version&gt;</span>
+     <span class="nt">&lt;/dependency&gt;</span>
+     <span class="nt">&lt;dependency&gt;</span>
+       <span class="nt">&lt;groupId&gt;</span>com.commercetools.sdk<span class="nt">&lt;/groupId&gt;</span>
+       <span class="nt">&lt;artifactId&gt;</span>commercetools-sdk-java-api<span class="nt">&lt;/artifactId&gt;</span>
+       <span class="nt">&lt;version&gt;</span>${commercetools.version}<span class="nt">&lt;/version&gt;</span>
+     <span class="nt">&lt;/dependency&gt;</span>
+ <span class="nt">&lt;/dependencies&gt;</span>
+</code></pre></div>
+<h3 id="client-configuration-and-creation">Client configuration and creation<a class="headerlink" href="#client-configuration-and-creation" title="Permanent link">&para;</a></h3>
+<p>For client creation use <a href="#todo">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+If you have custom requirements for the client creation make sure to replace <code>SphereClientFactory</code> with <code>ApiRootBuilder</code> as described in this <a href="https://docs.commercetools.com/sdk/java-sdk-migrate#client-configuration-and-creation">Migration Document</a>.</p>
+<h3 id="signature-of-taxcategorysyncoptions">Signature of TaxCategorySyncOptions<a class="headerlink" href="#signature-of-taxcategorysyncoptions" title="Permanent link">&para;</a></h3>
+<p>As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a <code>ProjectApiRoot</code> as first argument. The callback functions are signed with <code>TaxCategoryDraft</code>, <code>TaxCategory</code> and <code>TaxCategoryUpdateAction</code> from <code>package com.commercetools.api.models.tax_category.*</code></p>
+<blockquote>
+<p>Note: Type <code>UpdateAction&lt;TaxCategory&gt;</code> has changed to <code>TaxCategoryUpdateAction</code>. Make sure you create and supply a specific TaxCategoryUpdateAction in <code>beforeUpdateCallback</code>. For that you can use the <a href="#todo">library-utilities</a> or use a JVM-SDK builder (<a href="https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources">see also</a>):</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="c1">// Example: Create a tax-category update action to change name taking the &#39;newName&#39; of the taxCategoryDraft</span><span class="w"></span>
+<span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">Function</span><span class="o">&lt;</span><span class="n">String</span><span class="p">,</span><span class="w"> </span><span class="n">TaxCategoryUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">changeNameBeforeUpdateAction</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">        </span><span class="p">(</span><span class="n">newName</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">TaxCategoryChangeNameAction</span><span class="p">.</span><span class="na">builder</span><span class="p">().</span><span class="na">name</span><span class="p">(</span><span class="n">newName</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+
+<span class="c1">// Add the change name action to the list of update actions before update is executed</span><span class="w"></span>
+<span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">TriFunction</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">            </span><span class="n">List</span><span class="o">&lt;</span><span class="n">TaxCategoryUpdateAction</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">TaxCategoryDraft</span><span class="p">,</span><span class="w"> </span><span class="n">TaxCategory</span><span class="p">,</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">TaxCategoryUpdateAction</span><span class="o">&gt;&gt;</span><span class="w"></span>
+<span class="w">        </span><span class="n">beforeUpdateTypeCallback</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">            </span><span class="p">(</span><span class="n">updateActions</span><span class="p">,</span><span class="w"> </span><span class="n">newTaxCategoryDraft</span><span class="p">,</span><span class="w"> </span><span class="n">oldTaxCategory</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">              </span><span class="kd">final</span><span class="w"> </span><span class="n">TaxCategoryUpdateAction</span><span class="w"> </span><span class="n">beforeUpdateAction</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">                  </span><span class="n">changeNameBeforeUpdateAction</span><span class="p">.</span><span class="na">apply</span><span class="p">(</span><span class="n">newTaxCategoryDraft</span><span class="p">.</span><span class="na">getName</span><span class="p">());</span><span class="w"></span>
+<span class="w">              </span><span class="n">updateActions</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">beforeUpdateAction</span><span class="p">);</span><span class="w"></span>
+<span class="w">              </span><span class="k">return</span><span class="w"> </span><span class="n">updateActions</span><span class="p">;</span><span class="w"></span>
+<span class="w">            </span><span class="p">};</span><span class="w"></span>
+</code></pre></div>
+<h3 id="build-taxcategorydraft-syncing-from-external-project">Build TaxCategoryDraft (syncing from external project)<a class="headerlink" href="#build-taxcategorydraft-syncing-from-external-project" title="Permanent link">&para;</a></h3>
+<p>The tax-category-sync expects a list of <code>TaxCategoryDraft</code>s to process. If you use java-sync-library to sync your types from any external system into a commercetools platform project you have to convert your data into CTP compatible <code>TaxCategoryDraft</code> type. This was done in previous version using <code>DraftBuilder</code>s.
+The V2 SDK do not have inheritance for <code>DraftBuilder</code> classes but the differences are minor and you can replace it easily. Here's an example:</p>
+<p><div class="highlight"><pre><span></span><code><span class="c1">// TaxCategoryDraftBuilder in v1 takes parameters &#39;name&#39;, &#39;taxRates&#39; and &#39;description&#39;</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">TaxCategoryDraft</span><span class="w"> </span><span class="n">taxCategoryDraft</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">              </span><span class="n">TaxCategoryDraftBuilder</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;name&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">emptyList</span><span class="p">(),</span><span class="w"> </span><span class="s">&quot;description&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;key&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+
+<span class="c1">// TaxCategoryDraftBuilder in v2.</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">TaxCategoryDraft</span><span class="w"> </span><span class="n">taxCategoryDraft</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">        </span><span class="n">TaxCategoryDraftBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">()</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;key&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">name</span><span class="p">(</span><span class="s">&quot;name&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">rates</span><span class="p">(</span><span class="n">emptyList</span><span class="p">())</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">description</span><span class="p">(</span><span class="s">&quot;description&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+</code></pre></div>
+For more information, see the <a href="https://docs.commercetools.com/sdk/java-sdk-migrate#using-draftbuilders">Guide to replace DraftBuilders</a>.</p>
+<h3 id="query-for-taxcategories-syncing-from-ctp-project">Query for TaxCategories (syncing from CTP project)<a class="headerlink" href="#query-for-taxcategories-syncing-from-ctp-project" title="Permanent link">&para;</a></h3>
+<p>If you sync types between different commercetools projects you have to transform <code>TaxCategory</code> into <code>TaxCategoryDraft</code>.
+However, if you need to query <code>TaxCategory</code> from a commercetools project instead of passing <code>TaxCategoryQuery</code>s to a <code>sphereClient</code>, create (and execute) requests directly from the <code>apiRoot</code>.
+Here's an example:</p>
+<p><div class="highlight"><pre><span></span><code><span class="c1">// SDK v1: TaxCategoryQuery to fetch all taxCategories</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">TaxCategoryQuery</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TaxCategoryQuery</span><span class="p">.</span><span class="na">of</span><span class="p">();</span><span class="w"></span>
+
+<span class="kd">final</span><span class="w"> </span><span class="n">PagedQueryResult</span><span class="o">&lt;</span><span class="n">TaxCategory</span><span class="o">&gt;</span><span class="w"> </span><span class="n">pagedQueryResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sphereClient</span><span class="p">.</span><span class="na">executeBlocking</span><span class="p">(</span><span class="n">query</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">// SDK v2: Create and execute query to fetch all tax-categories in one line</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">TaxCategoryPagedQueryResponse</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">apiRoot</span><span class="p">.</span><span class="na">taxCategories</span><span class="p">().</span><span class="na">get</span><span class="p">().</span><span class="na">executeBlocking</span><span class="p">().</span><span class="na">getBody</span><span class="p">();</span><span class="w"></span>
+</code></pre></div>
+<a href="https://docs.commercetools.com/sdk/java-sdk-migrate#query-resources">Read more</a> about querying resources.</p>
+<h3 id="jvm-sdk-v2-migration-guide">JVM-SDK-V2 migration guide<a class="headerlink" href="#jvm-sdk-v2-migration-guide" title="Permanent link">&para;</a></h3>
+<p>On any other needs to migrate your project using jvm-sdk-v2 please refer to it's <a href="https://docs.commercetools.com/sdk/java-sdk-migrate">Migration Guide</a>. </p>
 
 
 

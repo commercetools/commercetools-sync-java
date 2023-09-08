@@ -610,26 +610,7 @@
 
 
 <h1 id="cleanup-of-old-unresolved-reference-custom-objects">Cleanup of old unresolved reference custom objects<a class="headerlink" href="#cleanup-of-old-unresolved-reference-custom-objects" title="Permanent link">&para;</a></h1>
-<p>For some references such as state transitions,product references and category references, the library keeps tracks
-of unresolved drafts and persists them in commercetools custom objects and create/update them accordingly whenever
-the referenced drafts exist in the target project.</p>
-<p>It also means that created data might be never resolved. In this case keeping the old custom objects around forever
- can negatively influence the performance of your project and the time it takes to restore it from a backup.  So deleting unused data ensures the best performance for your project. </p>
-<p>For the cleanup, commercetools-sync-java library exposes a ready to use method so that all custom objects created by the library can be cleaned up on demand.  </p>
-<p>The cleanup can be defined with the parameter <code>deleteDaysAfterLastModification</code> (in days) of object creation. For
- example, if you configure the <code>deleteDaysAfterLastModification</code> parameter to 30 days, cleanup method will delete the custom objects which haven't been modified in the last 30 days.
-Additionally, an error callback could be configured to consume the error, that is called <code>errorCallback</code> whenever an error event occurs during the sync process.</p>
-<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">CleanupUnresolvedReferenceCustomObjects</span><span class="p">.</span><span class="na">Statistics</span><span class="w"> </span><span class="n">statistics</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
-<span class="w">            </span><span class="n">CleanupUnresolvedReferenceCustomObjects</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">)</span><span class="w"></span>
-<span class="w">                   </span><span class="p">.</span><span class="na">errorCallback</span><span class="p">(</span><span class="n">throwable</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">logger</span><span class="p">.</span><span class="na">error</span><span class="p">(</span><span class="s">&quot;Unexcepted error.&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">throwable</span><span class="p">))</span><span class="w"></span>
-<span class="w">                   </span><span class="p">.</span><span class="na">cleanup</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span><span class="w"></span>
-<span class="w">                   </span><span class="p">.</span><span class="na">join</span><span class="p">();</span><span class="w"></span>
-</code></pre></div>
-<p>The result of the previous code snippet is a <code>Statistics</code> object that contains all the statistics of the cleanup process. That includes a report message, the total number of deleted and failed custom objects.</p>
-<div class="highlight"><pre><span></span><code><span class="n">statistics</span><span class="p">.</span><span class="na">getReportMessage</span><span class="p">();</span><span class="w">  </span><span class="c1">// Summary: 100 custom objects were deleted in total (1 failed to delete).</span><span class="w"></span>
-<span class="n">statistics</span><span class="p">.</span><span class="na">getTotalDeleted</span><span class="p">();</span><span class="w"> </span><span class="c1">// Returns 100</span><span class="w"></span>
-<span class="n">statistics</span><span class="p">.</span><span class="na">getTotalFailed</span><span class="p">();</span><span class="w"> </span><span class="c1">// Returns 1</span><span class="w"></span>
-</code></pre></div>
+<p>TODO</p>
 
 
 

@@ -320,8 +320,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#sphereclient" class="md-nav__link">
-    SphereClient
+  <a href="#projectapiroot" class="md-nav__link">
+    ProjectApiRoot
   </a>
   
 </li>
@@ -484,6 +484,54 @@
   <a href="#caveats" class="md-nav__link">
     Caveats
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migration-guide" class="md-nav__link">
+    Migration Guide
+  </a>
+  
+    <nav class="md-nav" aria-label="Migration Guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#client-configuration-and-creation" class="md-nav__link">
+    Client configuration and creation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signature-of-productsyncoptions" class="md-nav__link">
+    Signature of ProductSyncOptions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-productdraft-syncing-from-external-project" class="md-nav__link">
+    Build ProductDraft (syncing from external project)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-for-products-syncing-from-ctp-project" class="md-nav__link">
+    Query for Products (syncing from CTP project)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jvm-sdk-v2-migration-guide" class="md-nav__link">
+    JVM-SDK-V2 migration guide
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -820,8 +868,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#sphereclient" class="md-nav__link">
-    SphereClient
+  <a href="#projectapiroot" class="md-nav__link">
+    ProjectApiRoot
   </a>
   
 </li>
@@ -987,6 +1035,54 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#migration-guide" class="md-nav__link">
+    Migration Guide
+  </a>
+  
+    <nav class="md-nav" aria-label="Migration Guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#client-configuration-and-creation" class="md-nav__link">
+    Client configuration and creation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signature-of-productsyncoptions" class="md-nav__link">
+    Signature of ProductSyncOptions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-productdraft-syncing-from-external-project" class="md-nav__link">
+    Build ProductDraft (syncing from external project)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-for-products-syncing-from-ctp-project" class="md-nav__link">
+    Query for Products (syncing from CTP project)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jvm-sdk-v2-migration-guide" class="md-nav__link">
+    JVM-SDK-V2 migration guide
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1010,14 +1106,14 @@
 <h1 id="product-sync">Product Sync<a class="headerlink" href="#product-sync" title="Permanent link">&para;</a></h1>
 <p>The module used for importing/syncing Products into a commercetools project. 
 It also provides utilities for generating update actions based on the comparison of a <a href="https://docs.commercetools.com/api/projects/productProjections#productprojection">ProductProjection</a> 
-against a <a href="https://docs.commercetools.com/http-api-projects-products.html#productdraft">ProductDraft</a>.</p>
+against a <a href="https://docs.commercetools.com/api/projects/products#productdraft">ProductDraft</a>.</p>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 <ul>
 <li><a href="#usage">Usage</a></li>
 <li><a href="#prerequisites">Prerequisites</a><ul>
-<li><a href="#sphereclient">SphereClient</a></li>
+<li><a href="#projectapiroot">ProjectApiRoot</a></li>
 <li><a href="#required-fields">Required Fields</a></li>
 <li><a href="#reference-resolution">Reference Resolution</a></li>
 <li><a href="#syncing-from-a-commercetools-project">Syncing from a commercetools project</a></li>
@@ -1041,17 +1137,29 @@ against a <a href="https://docs.commercetools.com/http-api-projects-products.htm
 <li><a href="#build-all-update-actions">Build all update actions</a></li>
 <li><a href="#build-particular-update-actions">Build particular update action(s)</a></li>
 <li><a href="#caveats">Caveats</a></li>
+<li><a href="#migration-guide">Migration Guide</a></li>
+<li><a href="#client-configuration-and-creation">Client configuration and creation</a></li>
+<li><a href="#signature-of-productsyncoptions">Signature of ProductSyncOptions</a></li>
+<li><a href="#build-productdraft-syncing-from-external-project">Build ProductDraft (syncing from external project)</a></li>
+<li><a href="#query-for-products-syncing-from-ctp-project">Query for Products (syncing from CTP project)</a></li>
+<li><a href="#jvm-sdk-v2-migration-guide">JVM-SDK-V2 migration guide</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
-<h4 id="sphereclient">SphereClient<a class="headerlink" href="#sphereclient" title="Permanent link">&para;</a></h4>
-<p>Use the <a href="https://github.com/commercetools/commercetools-sync-java/blob/9.2.2/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45">ClientConfigurationUtils</a> which apply the best practices for <code>SphereClient</code> creation.
-If you have custom requirements for the sphere client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
-<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">SphereClientConfig</span><span class="w"> </span><span class="n">clientConfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SphereClientConfig</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;project-key&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;client-id&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;client-secret&quot;</span><span class="p">);</span><span class="w"></span>
-
-<span class="kd">final</span><span class="w"> </span><span class="n">SphereClient</span><span class="w"> </span><span class="n">sphereClient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ClientConfigurationUtils</span><span class="p">.</span><span class="na">createClient</span><span class="p">(</span><span class="n">clientConfig</span><span class="p">);</span><span class="w"></span>
+<h4 id="projectapiroot">ProjectApiRoot<a class="headerlink" href="#projectapiroot" title="Permanent link">&para;</a></h4>
+<!-- TODO Check all github-links in this doc when this was merged to master-branch! -->
+<p>Use the <a href="https://github.com/commercetools/commercetools-sync-java/blob/java-sdk-v2-product-sync-migration/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+To create <code>ClientCredentials</code> which are required for creating a client please use the <code>ClientCredentialsBuilder</code> provided in java-sdk-v2 <a href="https://github.com/commercetools/commercetools-sdk-java-v2/blob/main/rmf/rmf-java-base/src/main/java/io/vrap/rmf/base/client/oauth2/ClientCredentialsBuilder.java">Client OAUTH2 package</a>
+If you have custom requirements for the client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ClientCredentials</span><span class="w"> </span><span class="n">clientCredentials</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">        </span><span class="k">new</span><span class="w"> </span><span class="n">ClientCredentialsBuilder</span><span class="p">()</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">withClientId</span><span class="p">(</span><span class="s">&quot;client-id&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">withClientSecret</span><span class="p">(</span><span class="s">&quot;client-secret&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">withScopes</span><span class="p">(</span><span class="s">&quot;scopes&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">ProjectApiRoot</span><span class="w"> </span><span class="n">apiRoot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ClientConfigurationUtils</span><span class="p">.</span><span class="na">createClient</span><span class="p">(</span><span class="s">&quot;project-key&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">clientCredentials</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;auth-url&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;api-url&quot;</span><span class="p">);</span><span class="w"></span>
 </code></pre></div>
 <h4 id="required-fields">Required Fields<a class="headerlink" href="#required-fields" title="Permanent link">&para;</a></h4>
 <p>The following fields are <strong>required</strong> to be set in, otherwise, they won't be matched by sync:</p>
@@ -1085,44 +1193,54 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 <tr>
 <th align="left">Reference Field</th>
 <th align="left">Type</th>
+<th align="left">Necessity</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="left"><code>productType</code> - <strong>Required</strong></td>
-<td align="left">ResourceIdentifier to a ProductType</td>
+<td align="left"><code>productType</code></td>
+<td align="left">ProductTypeResourceIdentifier</td>
+<td align="left"><strong>Required</strong></td>
 </tr>
 <tr>
 <td align="left"><code>categories</code></td>
-<td align="left">Set of ResourceIdentifier for a Category</td>
+<td align="left">List of CategoryResourceIdentifier</td>
+<td align="left">Optional</td>
 </tr>
 <tr>
 <td align="left"><code>taxCategory</code></td>
-<td align="left">ResourceIdentifier to a TaxCategory</td>
+<td align="left">TaxCategoryResourceIdentifier</td>
+<td align="left">Optional</td>
 </tr>
 <tr>
 <td align="left"><code>state</code></td>
-<td align="left">ResourceIdentifier for a State</td>
+<td align="left">StateResourceIdentifier</td>
+<td align="left">Optional</td>
 </tr>
 <tr>
 <td align="left"><code>variants.prices.channel</code></td>
-<td align="left">ResourceIdentifier to a Channel</td>
+<td align="left">ChannelResourceIdentifier</td>
+<td align="left">Optional</td>
 </tr>
 <tr>
 <td align="left"><code>variants.prices.customerGroup</code></td>
-<td align="left">ResourceIdentifier to a CustomerGroup</td>
+<td align="left">CustomerGroupResourceIdentifier</td>
+<td align="left">Optional</td>
 </tr>
 <tr>
 <td align="left"><code>variants.prices.custom.type</code></td>
-<td align="left">ResourceIdentifier to a Type</td>
+<td align="left">TypeResourceIdentifier</td>
+<td align="left"><strong>Required</strong> for <code>custom</code> (CustomFieldsDraft)</td>
 </tr>
 <tr>
 <td align="left"><code>variants.assets.custom.type</code></td>
-<td align="left">ResourceIdentifier to a Type</td>
+<td align="left">TypeResourceIdentifier</td>
+<td align="left"><strong>Required</strong> for <code>custom</code> (CustomFieldsDraft)</td>
 </tr>
 <tr>
-<td align="left"><code>variants.attributes</code> *</td>
+<td align="left"><code>variants.attributes</code></td>
 <td align="left">Only the attributes with type <a href="https://docs.commercetools.com/api/projects/productTypes#referencetype">ReferenceType</a>, <a href="https://docs.commercetools.com/api/projects/productTypes#settype">SetType</a> with <code>elementType</code> as <a href="https://docs.commercetools.com/api/projects/productTypes#referencetype">ReferenceType</a> and <a href="https://docs.commercetools.com/api/projects/productTypes#nestedtype">NestedType</a> requires <code>key</code> on the <code>id</code> field of the <code>ReferenceType</code>.</td>
+<td align="left">Optional</td>
 </tr>
 </tbody>
 </table>
@@ -1131,30 +1249,26 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.</p>
 </blockquote>
 <h5 id="syncing-from-a-commercetools-project">Syncing from a commercetools project<a class="headerlink" href="#syncing-from-a-commercetools-project" title="Permanent link">&para;</a></h5>
-<p>When syncing from a source commercetools project, you can use <a href="https://commercetools.github.io/commercetools-sync-java/v/9.2.2/com/commercetools/sync/products/utils/ProductTransformUtils.html#toProductDrafts-java.util.List-"><code>toProductDrafts</code></a>
- method that transforms(resolves by querying and caching key-id pairs) and maps from a <code>Product</code> to <code>ProductDraft</code> using cache in order to make them ready for reference resolution by the sync, for example: </p>
+<p>When syncing from a source commercetools project, you can use <a href="https://github.com/commercetools/commercetools-sync-java/blob/java-sdk-v2-product-sync-migration/src/main/java/com/commercetools/sync/products/utils/ProductTransformUtils.java#L59"><code>toProductDrafts</code></a>
+ method that transforms(resolves by querying and caching key-id pairs) and maps from a <code>ProductProjection</code> to <code>ProductDraft</code> using cache in order to make them ready for reference resolution by the sync, for example: </p>
 <div class="highlight"><pre><span></span><code><span class="c1">// Build a ProductQuery for fetching products from a source CTP project without any references expanded for the sync:</span><span class="w"></span>
-<span class="kd">final</span><span class="w"> </span><span class="n">ProductProjectionQuery</span><span class="w"> </span><span class="n">productProjectionQuery</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ProductProjectionQuery</span><span class="p">.</span><span class="na">ofStaged</span><span class="p">();</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">ByProjectKeyProductProjectionsGet</span><span class="w"> </span><span class="n">byProjectKeyProductsGet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getCtpClient</span><span class="p">().</span><span class="na">productProjections</span><span class="p">().</span><span class="na">get</span><span class="p">().</span><span class="na">addStaged</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span><span class="w"></span>
 
 <span class="c1">// Query all product projections (NOTE this is only for example, please adjust your logic)</span><span class="w"></span>
-<span class="kd">final</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">ProductProjection</span><span class="o">&gt;</span><span class="w"> </span><span class="n">productProjections</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
-<span class="w">    </span><span class="n">CtpQueryUtils</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">queryAll</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">,</span><span class="w"> </span><span class="n">productProjectionQuery</span><span class="p">,</span><span class="w"> </span><span class="n">Function</span><span class="p">.</span><span class="na">identity</span><span class="p">())</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">thenApply</span><span class="p">(</span><span class="n">fetchedResources</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">fetchedResources</span><span class="w"></span>
-<span class="w">            </span><span class="p">.</span><span class="na">stream</span><span class="p">()</span><span class="w"></span>
-<span class="w">            </span><span class="p">.</span><span class="na">flatMap</span><span class="p">(</span><span class="n">List</span><span class="p">::</span><span class="n">stream</span><span class="p">)</span><span class="w"></span>
-<span class="w">            </span><span class="p">.</span><span class="na">collect</span><span class="p">(</span><span class="n">Collectors</span><span class="p">.</span><span class="na">toList</span><span class="p">()))</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">toCompletableFuture</span><span class="p">()</span><span class="w"></span>
-<span class="w">         </span><span class="p">.</span><span class="na">join</span><span class="p">();</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">ProductProjection</span><span class="o">&gt;</span><span class="w"> </span><span class="n">products</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">QueryUtils</span><span class="p">.</span><span class="na">queryAll</span><span class="p">(</span><span class="n">byProjectKeyProductsGet</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="p">(</span><span class="n">productProjections</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">productProjections</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">thenApply</span><span class="p">(</span><span class="n">lists</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">lists</span><span class="p">.</span><span class="na">stream</span><span class="p">().</span><span class="na">flatMap</span><span class="p">(</span><span class="n">List</span><span class="p">::</span><span class="n">stream</span><span class="p">).</span><span class="na">collect</span><span class="p">(</span><span class="n">Collectors</span><span class="p">.</span><span class="na">toList</span><span class="p">()))</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">toCompletableFuture</span><span class="p">()</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">join</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
-<p>In order to transform and map the <code>Product</code> to <code>ProductDraft</code>, 
-Utils method <code>toProductDrafts</code> requires 'sphereClient', implementation of <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java"><code>ReferenceIdToKeyCache</code></a> and <code>products</code> as parameters.
+<p>In order to transform and map the <code>ProductProjections</code> to <code>ProductDraft</code>, 
+Utils method <code>toProductDrafts</code> requires <code>ProjectApiRoot</code>, implementation of <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java"><code>ReferenceIdToKeyCache</code></a> and list of <code>ProductProjection</code> as parameters.
 For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy<a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java"><code>CaffeineReferenceIdToKeyCacheImpl</code></a>.
 Example as shown below:</p>
 <div class="highlight"><pre><span></span><code><span class="c1">//Implement the cache using library class.</span><span class="w"></span>
 <span class="kd">final</span><span class="w"> </span><span class="n">ReferenceIdToKeyCache</span><span class="w"> </span><span class="n">referenceIdToKeyCache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">CaffeineReferenceIdToKeyCacheImpl</span><span class="p">();</span><span class="w"></span>
 
-<span class="c1">//For every reference fetch its key using id, cache it and map from Product to ProductDraft. With help of the cache same reference keys can be reused.</span><span class="w"></span>
+<span class="c1">//For every reference fetch its key using id, cache it and map from ProductProjection to ProductDraft. With help of the cache same reference keys can be reused.</span><span class="w"></span>
 <span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">ProductDraft</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">productDrafts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ProductTransformUtils</span><span class="p">.</span><span class="na">toProductDrafts</span><span class="p">(</span><span class="n">client</span><span class="p">,</span><span class="w"> </span><span class="n">referenceIdToKeyCache</span><span class="p">,</span><span class="w"> </span><span class="n">products</span><span class="p">);</span><span class="w"></span>
 </code></pre></div>
 <h5 id="syncing-from-an-external-resource">Syncing from an external resource<a class="headerlink" href="#syncing-from-an-external-resource" title="Permanent link">&para;</a></h5>
@@ -1162,48 +1276,53 @@ Example as shown below:</p>
 <li>When syncing from an external resource, <code>ResourceIdentifier</code>s with their <code>key</code>s have to be supplied as following example:</li>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ProductDraft</span><span class="w"> </span><span class="n">productDraft</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
-<span class="w">    </span><span class="n">ProductDraftBuilder</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">ResourceIdentifier</span><span class="p">.</span><span class="na">ofKey</span><span class="p">(</span><span class="s">&quot;product-type-key&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">ofEnglish</span><span class="p">(</span><span class="s">&quot;name&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">ofEnglish</span><span class="p">(</span><span class="s">&quot;slug&quot;</span><span class="p">),</span><span class="w"></span>
-<span class="w">            </span><span class="n">singletonList</span><span class="p">(</span><span class="n">masterVariant</span><span class="p">))</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;product-key&quot;</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">categories</span><span class="p">(</span><span class="n">asSet</span><span class="p">(</span><span class="n">ResourceIdentifier</span><span class="p">.</span><span class="na">ofKey</span><span class="p">(</span><span class="s">&quot;category1-key&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">ResourceIdentifier</span><span class="p">.</span><span class="na">ofKey</span><span class="p">(</span><span class="s">&quot;category2-key&quot;</span><span class="p">)))</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">taxCategory</span><span class="p">(</span><span class="n">ResourceIdentifier</span><span class="p">.</span><span class="na">ofKey</span><span class="p">(</span><span class="s">&quot;tax-category-key&quot;</span><span class="p">))</span><span class="w"> </span>
-<span class="w">        </span><span class="p">.</span><span class="na">state</span><span class="p">(</span><span class="n">ResourceIdentifier</span><span class="p">.</span><span class="na">ofKey</span><span class="p">(</span><span class="s">&quot;tax-category-key&quot;</span><span class="p">))</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="w">              </span><span class="n">ProductDraftBuilder</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">of</span><span class="p">()</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">productType</span><span class="p">(</span><span class="n">ProductTypeResourceIdentifierBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;product-type-key&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">())</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">name</span><span class="p">(</span><span class="n">LocalizedString</span><span class="p">.</span><span class="na">ofEnglish</span><span class="p">(</span><span class="s">&quot;name&quot;</span><span class="p">))</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">slug</span><span class="p">(</span><span class="n">LocalizedString</span><span class="p">.</span><span class="na">ofEnglish</span><span class="p">(</span><span class="s">&quot;slug&quot;</span><span class="p">))</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">masterVariant</span><span class="p">(</span><span class="n">masterVariant</span><span class="p">)</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;product-key&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">categories</span><span class="p">(</span><span class="n">CategoryResourceIdentifierBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;category1-key&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">(),</span><span class="w"></span>
+<span class="w">                              </span><span class="n">CategoryResourceIdentifierBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;category2-key&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">())</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">taxCategory</span><span class="p">(</span><span class="n">TaxCategoryResourceIdentifierBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;tax-category-key&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">())</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">state</span><span class="p">(</span><span class="n">StateResourceIdentifierBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;tax-category-key&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">())</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
-<p><code>java
- final PriceDraft priceDraft = PriceDraftBuilder
-    of(MoneyImpl.of("20", "EUR"))
-    .channel(ResourceIdentifier.ofKey("channel-key"))
-    .customerGroup(ResourceIdentifier.ofKey("customer-group-key"))
-    .custom(CustomFieldsDraft.ofTypeKeyAndJson("type-key", emptyMap()))
-    .build();</code></p>
-<ul>
-<li>The product projection variant attributes with a type <code>ReferenceType</code> do not support the <code>ResourceIdentifier</code> yet, for
- those references you have to provide the <code>key</code>  value on the <code>id</code> field of the reference. This means that calling <code>getId()</code> on the reference should return its <code>key</code>.</li>
-</ul>
-<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ObjectNode</span><span class="w"> </span><span class="n">productReference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">JsonNodeFactory</span><span class="p">.</span><span class="na">instance</span><span class="p">.</span><span class="na">objectNode</span><span class="p">();</span><span class="w"></span>
-<span class="n">productReference</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&quot;typeId&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Product</span><span class="p">.</span><span class="na">referenceTypeId</span><span class="p">());</span><span class="w"></span>
-<span class="n">productReference</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&quot;id&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;product-key&quot;</span><span class="p">);</span><span class="w"> </span><span class="c1">// note that reference key provided in the id field </span><span class="w"></span>
+<p>````java
+final PriceDraft priceDraft =
+          PriceDraftBuilder.of()
+              .value(MoneyBuilder.of().centAmount(20L).currencyCode("EUR").build())
+              .channel(ChannelResourceIdentifierBuilder.of().key("channel-key").build())
+              .customerGroup(
+                  CustomerGroupResourceIdentifierBuilder.of().key("customer-group-key").build())
+              .custom(
+                  CustomFieldsDraftBuilder.of()
+                      .type(TypeResourceIdentifierBuilder.of().key("type-key").build())
+                      .fields(FieldContainerBuilder.of().values(Collections.emptyMap()).build()).build())
+              .build();
+<div class="highlight"><pre><span></span><code>-  The product projection variant attributes with a type `ReferenceType` do not support the `ResourceIdentifier` yet, for
+ those references you have to provide the `key`  value on the `id` field of the reference. This means that calling `getId()` on the reference should return its `key`.
 
-<span class="kd">final</span><span class="w"> </span><span class="n">AttributeDraft</span><span class="w"> </span><span class="n">productAttributeDraft</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AttributeDraft</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;productAttrName&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">productReference</span><span class="p">);</span><span class="w"></span>
-</code></pre></div>
+````java
+final ProductReference productReference = ProductReferenceBuilder.of().id(&quot;product-key&quot;).build();
+final Attribute attr = AttributeBuilder.of().name(&quot;attribute-name&quot;).value(productReference).build();
+</code></pre></div></p>
 <ul>
-<li>For resolving <code>key-value-document</code> (custom object) references on attributes of type <code>Reference</code>, <code>Set</code> of <code>Reference</code>, <code>NestedType</code> or <code>Set</code> of <code>NestedType</code>, The <code>id</code> field of the reference in the attribute draft should be defined in the correct format. 
+<li>For resolving <code>key-value-document</code> (custom object) references on attributes of type <code>Reference</code>, <code>Set</code> of <code>Reference</code>, <code>NestedType</code> or <code>Set</code> of <code>NestedType</code>, The <code>id</code> field of the reference in the attribute should be defined in the correct format. 
 The correct format must have a vertical bar <code>|</code> character between the values of the container and key.
-For example, if the custom object has a container value <code>container</code> and key value <code>key</code>, the <code>id</code> field should be <code>container|key"</code>,<br />
-also, the key and container value should match the pattern <code>[-_~.a-zA-Z0-9]+</code>.</li>
+For example, if the custom object has a container value <code>container</code> and key value <code>key</code>, the <code>id</code> field should be <code>container|key</code>,<br />
+also, the key and container value should match the pattern <code>[-_~.a-zA-Z0-9]+</code>. Please also keep in mind that length of the key is limited to 256 characters max: <a href="https://docs.commercetools.com/api/projects/custom-objects#customobject">CustomObject</a></li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ObjectNode</span><span class="w"> </span><span class="n">customObjectReference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">JsonNodeFactory</span><span class="p">.</span><span class="na">instance</span><span class="p">.</span><span class="na">objectNode</span><span class="p">();</span><span class="w"></span>
-<span class="n">productReference</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&quot;typeId&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">CustomObject</span><span class="p">.</span><span class="na">referenceTypeId</span><span class="p">());</span><span class="w"></span>
-<span class="n">productReference</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&quot;id&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;co-container|co-key&quot;</span><span class="p">);</span><span class="w"></span>
-
-<span class="kd">final</span><span class="w"> </span><span class="n">AttributeDraft</span><span class="w"> </span><span class="n">customObjectAttributeDraft</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AttributeDraft</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;customObjectAttrName&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">productReference</span><span class="p">);</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">CustomObjectReference</span><span class="w"> </span><span class="n">coReference</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">          </span><span class="n">CustomObjectReferenceBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">id</span><span class="p">(</span><span class="s">&quot;co-container|co-key&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">Attribute</span><span class="w"> </span><span class="n">attr</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">          </span><span class="n">AttributeBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">name</span><span class="p">(</span><span class="s">&quot;attribute-name&quot;</span><span class="p">).</span><span class="na">value</span><span class="p">(</span><span class="n">coReference</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <h4 id="syncoptions">SyncOptions<a class="headerlink" href="#syncoptions" title="Permanent link">&para;</a></h4>
-<p>After the <code>sphereClient</code> is set up, a <code>ProductSyncOptions</code> should be built as follows: </p>
+<p>After the <code>ProjectApiRoot</code> is set up, a <code>ProductSyncOptions</code> should be built as follows: </p>
 <div class="highlight"><pre><span></span><code><span class="c1">// instantiating a ProductSyncOptions</span><span class="w"></span>
-<span class="kd">final</span><span class="w"> </span><span class="n">ProductSyncOptions</span><span class="w"> </span><span class="n">productSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ProductSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">ProductSyncOptions</span><span class="w"> </span><span class="n">productSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ProductSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <p><code>SyncOptions</code> is an object which provides a place for users to add certain configurations to customize the sync process.
 Available configurations:</p>
@@ -1219,7 +1338,7 @@ following context about the error-event:</p>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Logger</span><span class="w"> </span><span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LoggerFactory</span><span class="p">.</span><span class="na">getLogger</span><span class="p">(</span><span class="n">ProductSync</span><span class="p">.</span><span class="na">class</span><span class="p">);</span><span class="w"></span>
 <span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">ProductSyncOptions</span><span class="w"> </span><span class="n">productSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ProductSyncOptionsBuilder</span><span class="w"></span>
-<span class="w">         </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">)</span><span class="w"></span>
+<span class="w">         </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">)</span><span class="w"></span>
 <span class="w">         </span><span class="p">.</span><span class="na">errorCallback</span><span class="p">((</span><span class="n">syncException</span><span class="p">,</span><span class="w"> </span><span class="n">draft</span><span class="p">,</span><span class="w"> </span><span class="n">productProjection</span><span class="p">,</span><span class="w"> </span><span class="n">updateActions</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
 <span class="w">            </span><span class="n">logger</span><span class="p">.</span><span class="na">error</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">SyncException</span><span class="p">(</span><span class="s">&quot;My customized message&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">syncException</span><span class="p">)).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
@@ -1234,8 +1353,8 @@ following context about the warning message:</p>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Logger</span><span class="w"> </span><span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LoggerFactory</span><span class="p">.</span><span class="na">getLogger</span><span class="p">(</span><span class="n">ProductSync</span><span class="p">.</span><span class="na">class</span><span class="p">);</span><span class="w"></span>
 <span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">ProductSyncOptions</span><span class="w"> </span><span class="n">productSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ProductSyncOptionsBuilder</span><span class="w"></span>
-<span class="w">         </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">)</span><span class="w"></span>
-<span class="w">         </span><span class="p">.</span><span class="na">warningCallback</span><span class="p">((</span><span class="n">syncException</span><span class="p">,</span><span class="w"> </span><span class="n">draft</span><span class="p">,</span><span class="w"> </span><span class="n">productProjection</span><span class="p">,</span><span class="w"> </span><span class="n">updateActions</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">         </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">)</span><span class="w"></span>
+<span class="w">         </span><span class="p">.</span><span class="na">warningCallback</span><span class="p">((</span><span class="n">syncException</span><span class="p">,</span><span class="w"> </span><span class="n">draft</span><span class="p">,</span><span class="w"> </span><span class="n">productProjection</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
 <span class="w">            </span><span class="n">logger</span><span class="p">.</span><span class="na">warn</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">SyncException</span><span class="p">(</span><span class="s">&quot;My customized message&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">syncException</span><span class="p">)).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <h5 id="beforeupdatecallback">beforeUpdateCallback<a class="headerlink" href="#beforeupdatecallback" title="Permanent link">&para;</a></h5>
@@ -1247,43 +1366,43 @@ actions array with custom actions or discard unwanted actions. The callback prov
 <li>product projection from the target project</li>
 <li>update actions that were calculated after comparing both</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">TriFunction</span><span class="o">&lt;</span><span class="w"></span>
-<span class="w">        </span><span class="n">List</span><span class="o">&lt;</span><span class="n">UpdateAction</span><span class="o">&lt;</span><span class="n">Product</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">ProductDraft</span><span class="p">,</span><span class="w"> </span><span class="n">ProductProjection</span><span class="p">,</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">UpdateAction</span><span class="o">&lt;</span><span class="n">Product</span><span class="w"></span>
-<span class="o">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">beforeUpdateProductCallback</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="c1">// Example: Ignore update actions which contain deletion of variants</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">TriFunction</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">        </span><span class="n">List</span><span class="o">&lt;</span><span class="n">ProductUpdateAction</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">ProductDraft</span><span class="p">,</span><span class="w"> </span><span class="n">ProductProjection</span><span class="p">,</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">ProductUpdateAction</span><span class="w"></span>
+<span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">beforeUpdateProductCallback</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
 <span class="w">            </span><span class="p">(</span><span class="n">updateActions</span><span class="p">,</span><span class="w"> </span><span class="n">newProductDraft</span><span class="p">,</span><span class="w"> </span><span class="n">oldProduct</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">  </span><span class="n">updateActions</span><span class="p">.</span><span class="na">stream</span><span class="p">()</span><span class="w"></span>
-<span class="w">                    </span><span class="p">.</span><span class="na">filter</span><span class="p">(</span><span class="n">updateAction</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">!</span><span class="p">(</span><span class="n">updateAction</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">RemoveVariant</span><span class="p">))</span><span class="w"></span>
+<span class="w">                    </span><span class="p">.</span><span class="na">filter</span><span class="p">(</span><span class="n">updateAction</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">!</span><span class="p">(</span><span class="n">updateAction</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">ProductRemoveVariantActionImpl</span><span class="p">))</span><span class="w"></span>
 <span class="w">                    </span><span class="p">.</span><span class="na">collect</span><span class="p">(</span><span class="n">Collectors</span><span class="p">.</span><span class="na">toList</span><span class="p">());</span><span class="w"></span>
 
 <span class="kd">final</span><span class="w"> </span><span class="n">ProductSyncOptions</span><span class="w"> </span><span class="n">productSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
-<span class="w">        </span><span class="n">ProductSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">beforeUpdateCallback</span><span class="p">(</span><span class="n">beforeUpdateProductCallback</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="w">        </span><span class="n">ProductSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">beforeUpdateCallback</span><span class="p">(</span><span class="n">beforeUpdateProductCallback</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <h5 id="beforecreatecallback">beforeCreateCallback<a class="headerlink" href="#beforecreatecallback" title="Permanent link">&para;</a></h5>
 <p>During the sync process, if a product draft should be created, this callback can be used to intercept the <strong><em>create</em></strong> request just before it is sent to the commercetools platform.  It contains the following information : </p>
 <ul>
 <li>product draft that should be created</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="c1">// Example (Set publish stage if category references of given product draft exist)</span><span class="w"></span>
-
+<div class="highlight"><pre><span></span><code><span class="c1">// Example: Set publish stage if category references of given product draft exist</span><span class="w"></span>
 <span class="kd">final</span><span class="w"> </span><span class="n">Function</span><span class="o">&lt;</span><span class="n">ProductDraft</span><span class="p">,</span><span class="w"> </span><span class="n">ProductDraft</span><span class="o">&gt;</span><span class="w"> </span><span class="n">beforeCreateProductCallback</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
 <span class="w">        </span><span class="p">(</span><span class="n">callbackDraft</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">            </span><span class="n">Set</span><span class="o">&lt;</span><span class="n">ResourceIdentifier</span><span class="o">&lt;</span><span class="n">Category</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">categoryResourceIdentifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">callbackDraft</span><span class="p">.</span><span class="na">getCategories</span><span class="p">();</span><span class="w"></span>
+<span class="w">            </span><span class="n">List</span><span class="o">&lt;</span><span class="n">CategoryResourceIdentifier</span><span class="o">&gt;</span><span class="w"> </span><span class="n">categoryResourceIdentifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">callbackDraft</span><span class="p">.</span><span class="na">getCategories</span><span class="p">();</span><span class="w"></span>
 <span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">categoryResourceIdentifier</span><span class="o">!=</span><span class="kc">null</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">categoryResourceIdentifier</span><span class="p">.</span><span class="na">isEmpty</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">ProductDraftBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">callbackDraft</span><span class="p">).</span><span class="na">isPublish</span><span class="p">(</span><span class="kc">true</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">ProductDraftBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">callbackDraft</span><span class="p">).</span><span class="na">publish</span><span class="p">(</span><span class="kc">true</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 <span class="w">            </span><span class="p">}</span><span class="w"></span>
 <span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">callbackDraft</span><span class="p">;</span><span class="w"></span>
 <span class="w">        </span><span class="p">};</span><span class="w"></span>
 
 <span class="kd">final</span><span class="w"> </span><span class="n">ProductSyncOptions</span><span class="w"> </span><span class="n">productSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
-<span class="w">         </span><span class="n">ProductSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">beforeCreateCallback</span><span class="p">(</span><span class="n">beforeCreateProductCallback</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="w">         </span><span class="n">ProductSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">beforeCreateCallback</span><span class="p">(</span><span class="n">beforeCreateProductCallback</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <h5 id="batchsize">batchSize<a class="headerlink" href="#batchsize" title="Permanent link">&para;</a></h5>
 <p>A number that could be used to set the batch size with which product projections are fetched and processed,
 as product projections are obtained from the target project on commercetools platform in batches for better performance.
  The algorithm accumulates up to <code>batchSize</code> resources from the input list, then fetches the corresponding product
-projections from the target project on the commecetools platform in a single request. Playing with this option can
+projections from the target project on the commercetools platform in a single request. Playing with this option can
 slightly improve or reduce processing speed. If it is not set, the default batch size is 30 for product sync.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ProductSyncOptions</span><span class="w"> </span><span class="n">productSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
-<span class="w">         </span><span class="n">ProductSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">batchSize</span><span class="p">(</span><span class="mi">50</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="w">         </span><span class="n">ProductSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">batchSize</span><span class="p">(</span><span class="mi">50</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <h5 id="cachesize">cacheSize<a class="headerlink" href="#cachesize" title="Permanent link">&para;</a></h5>
 <p>In the service classes of the commercetools-sync-java library, we have implemented an in-memory <a href="https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)">LRU cache</a> to store a map used for the reference resolution of the library.
@@ -1291,7 +1410,7 @@ The cache reduces the reference resolution based calls to the commercetools API 
 which will improve the overall performance of the sync and commercetools API.</p>
 <p>Playing with this option can change the memory usage of the library. If it is not set, the default cache size is <code>10.000</code> for product sync.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ProductSyncOptions</span><span class="w"> </span><span class="n">productSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
-<span class="w">    </span><span class="n">ProductSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">cacheSize</span><span class="p">(</span><span class="mi">5000</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"> </span>
+<span class="w">    </span><span class="n">ProductSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">cacheSize</span><span class="p">(</span><span class="mi">5000</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"> </span>
 </code></pre></div>
 <h5 id="syncfilter">syncFilter<a class="headerlink" href="#syncfilter" title="Permanent link">&para;</a></h5>
 <p>It represents either a blacklist or a whitelist for filtering certain update action groups. </p>
@@ -1321,7 +1440,7 @@ target project yet.
 If it fails to create the price channel, the products won't sync and <code>errorCallback</code> will be triggered.
 - If not provided, it is set to <code>false</code> by default.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ProductSyncOptions</span><span class="w"> </span><span class="n">productSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
-<span class="w">         </span><span class="n">ProductSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">ensureChannels</span><span class="p">(</span><span class="kc">true</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="w">         </span><span class="n">ProductSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">ensureChannels</span><span class="p">(</span><span class="kc">true</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <h3 id="running-the-sync">Running the sync<a class="headerlink" href="#running-the-sync" title="Permanent link">&para;</a></h3>
 <p>After all the aforementioned points in the previous section have been fulfilled, to run the sync:
@@ -1335,7 +1454,7 @@ The result of completing the <code>syncStatisticsStage</code> in the previous co
 which contains all the stats of the sync process; which includes a report message, the total number of updated, created, 
 failed, processed products and the processing time of the sync in different time units and in a
 human-readable format.
-<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ProductSyncStatistics</span><span class="w"> </span><span class="n">stats</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">syncStatisticsStage</span><span class="p">.</span><span class="na">toCompletebleFuture</span><span class="p">().</span><span class="na">join</span><span class="p">();</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ProductSyncStatistics</span><span class="w"> </span><span class="n">stats</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">syncStatisticsStage</span><span class="p">.</span><span class="na">toCompletableFuture</span><span class="p">().</span><span class="na">join</span><span class="p">();</span><span class="w"></span>
 <span class="n">stats</span><span class="p">.</span><span class="na">getReportMessage</span><span class="p">();</span><span class="w"> </span>
 <span class="cm">/*Summary: 2000 product(s) were processed in total (1000 created, 995 updated, 5 failed to sync and 0 product(s) with missing reference(s)).*/</span><span class="w"></span>
 </code></pre></div></p>
@@ -1346,9 +1465,9 @@ human-readable format.
 </ol>
 <h5 id="persistence-of-productdrafts-with-irresolvable-references">Persistence of ProductDrafts with Irresolvable References<a class="headerlink" href="#persistence-of-productdrafts-with-irresolvable-references" title="Permanent link">&para;</a></h5>
 <p>A productDraft X could be supplied in with an attribute referencing productDraft Y. 
-It could be that Y is not supplied before X, which means the sync could fail to create/updating X. 
+It could be that Y is not supplied before X, which means the sync could fail to create/update X. 
 It could also be that Y is not supplied at all in this batch but at a later batch.</p>
-<p>The library keeps tracks of such "referencing" drafts like X and persists them in storage 
+<p>The library keeps track of such "referencing" drafts like X and persists them in storage 
 (<strong>Commercetools platform <code>customObjects</code> in the target project</strong> , in this case) 
 to keep them and create/update them accordingly whenever the referenced drafts exist in the target project.</p>
 <p>The <code>customObject</code> will have a <code>container:</code> <strong><code>"commercetools-sync-java.UnresolvedReferencesService.productDrafts"</code></strong>
@@ -1419,18 +1538,15 @@ It being persisted as <code>CustomObject</code> means that the referenced produc
 <p><em>Make sure to read the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a> for optimal performance.</em></p>
 <h3 id="build-all-update-actions">Build all update actions<a class="headerlink" href="#build-all-update-actions" title="Permanent link">&para;</a></h3>
 <p>A utility method provided by the library to compare a ProductProjection with a new ProductDraft and results in a
- list of
-t
- update actions. 
-<div class="highlight"><pre><span></span><code><span class="n">List</span><span class="o">&lt;</span><span class="n">UpdateAction</span><span class="o">&lt;</span><span class="n">Product</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">updateActions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ProductSyncUtils</span><span class="p">.</span><span class="na">buildActions</span><span class="p">(</span><span class="n">productProjection</span><span class="p">,</span><span class="w"> </span><span class="n">productDraft</span><span class="w"></span>
-<span class="p">,</span><span class="w"> </span><span class="n">productSyncOptions</span><span class="p">,</span><span class="w"> </span><span class="n">attributesMetaData</span><span class="p">);</span><span class="w"></span>
+ list of update actions. 
+<div class="highlight"><pre><span></span><code><span class="n">List</span><span class="o">&lt;</span><span class="n">ProductUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">updateActions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ProductSyncUtils</span><span class="p">.</span><span class="na">buildActions</span><span class="p">(</span><span class="n">productProjection</span><span class="p">,</span><span class="w"> </span><span class="n">productDraft</span><span class="p">,</span><span class="w"> </span><span class="n">productSyncOptions</span><span class="p">,</span><span class="w"> </span><span class="n">attributesMetaData</span><span class="p">);</span><span class="w"></span>
 </code></pre></div></p>
 <p>Examples of its usage can be found in the tests 
-<a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/products/utils/ProductSyncUtilsTest.java">here</a>.</p>
+<a href="https://github.com/commercetools/commercetools-sync-java/blob/java-sdk-v2-product-sync-migration/src/test/java/com/commercetools/sync/products/utils/ProductSyncUtilsTest.java">here</a>.</p>
 <h3 id="build-particular-update-actions">Build particular update action(s)<a class="headerlink" href="#build-particular-update-actions" title="Permanent link">&para;</a></h3>
 <p>Utility methods provided by the library to compare the specific fields of a ProductProjection and a new ProductDraft,
  build the update action. One example is the <code>buildChangeNameUpdateAction</code> which compares names:</p>
-<p><div class="highlight"><pre><span></span><code><span class="n">Optional</span><span class="o">&lt;</span><span class="n">UpdateAction</span><span class="o">&lt;</span><span class="n">Product</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">updateAction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buildChangeNameUpdateAction</span><span class="p">(</span><span class="n">oldProductProjection</span><span class="p">,</span><span class="w"> </span><span class="n">productDraft</span><span class="p">);</span><span class="w"></span>
+<p><div class="highlight"><pre><span></span><code><span class="n">Optional</span><span class="o">&lt;</span><span class="n">ProductUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">updateAction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buildChangeNameUpdateAction</span><span class="p">(</span><span class="n">oldProductProjection</span><span class="p">,</span><span class="w"> </span><span class="n">productDraft</span><span class="p">);</span><span class="w"></span>
 </code></pre></div>
 More examples of those utils for different fields can be found <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/products/utils">here</a>.</p>
 <h2 id="caveats">Caveats<a class="headerlink" href="#caveats" title="Permanent link">&para;</a></h2>
@@ -1438,8 +1554,8 @@ More examples of those utils for different fields can be found <a href="https://
 attributes.</p>
 <ol>
 <li>
-<p>List of supported variant attributes, with a  <code>AttributeType</code>: <code>ReferenceType</code>, 
- that can be synced (See more: <a href="https://github.com/commercetools/commercetools-sync-java/issues/87">#87</a>):</p>
+<p>List of supported variant attributes, with an  <code>AttributeType</code>: <code>ReferenceType</code>, 
+ that can be synced:</p>
 <table>
 <thead>
 <tr>
@@ -1507,6 +1623,87 @@ attributes.</p>
 <code>ReferenceType</code>  with any of the aforementioned <code>referenceTypeId</code>, accordingly applies.</li>
 <li>Syncing products with cyclic dependencies are not supported yet. An example of a cyclic dependency is a product <code>a</code> which references a product <code>b</code> and at the same time product <code>b</code> references product <code>a</code>. Cycles can contain more than 2 products. For example: <code>a</code> -&gt; <code>b</code> -&gt; <code>c</code> -&gt; <code>a</code>. If there are such cycles, the sync will consider all the products in the cycle as products with missing parents. They will be persisted as custom objects in the target project.</li>
 </ol>
+<h2 id="migration-guide">Migration Guide<a class="headerlink" href="#migration-guide" title="Permanent link">&para;</a></h2>
+<p>The product-sync uses the <a href="http://commercetools.github.io/commercetools-sdk-java-v2">JVM-SDK-V2</a>, therefore ensure you <a href="https://docs.commercetools.com/sdk/java-sdk-getting-started#install-the-java-sdk">Install JVM SDK</a> module <code>commercetools-sdk-java-api</code> with
+any HTTP client module. The default one is <code>commercetools-http-client</code>. </p>
+<div class="highlight"><pre><span></span><code> <span class="cm">&lt;!-- Sample maven pom.xml --&gt;</span>
+ <span class="nt">&lt;properties&gt;</span>
+     <span class="nt">&lt;commercetools.version&gt;</span>LATEST<span class="nt">&lt;/commercetools.version&gt;</span>
+ <span class="nt">&lt;/properties&gt;</span>
+
+ <span class="nt">&lt;dependencies&gt;</span>
+     <span class="nt">&lt;dependency&gt;</span>
+       <span class="nt">&lt;groupId&gt;</span>com.commercetools.sdk<span class="nt">&lt;/groupId&gt;</span>
+       <span class="nt">&lt;artifactId&gt;</span>commercetools-http-client<span class="nt">&lt;/artifactId&gt;</span>
+       <span class="nt">&lt;version&gt;</span>${commercetools.version}<span class="nt">&lt;/version&gt;</span>
+     <span class="nt">&lt;/dependency&gt;</span>
+     <span class="nt">&lt;dependency&gt;</span>
+       <span class="nt">&lt;groupId&gt;</span>com.commercetools.sdk<span class="nt">&lt;/groupId&gt;</span>
+       <span class="nt">&lt;artifactId&gt;</span>commercetools-sdk-java-api<span class="nt">&lt;/artifactId&gt;</span>
+       <span class="nt">&lt;version&gt;</span>${commercetools.version}<span class="nt">&lt;/version&gt;</span>
+     <span class="nt">&lt;/dependency&gt;</span>
+ <span class="nt">&lt;/dependencies&gt;</span>
+</code></pre></div>
+<h3 id="client-configuration-and-creation">Client configuration and creation<a class="headerlink" href="#client-configuration-and-creation" title="Permanent link">&para;</a></h3>
+<p>For client creation use <a href="https://github.com/commercetools/commercetools-sync-java/blob/java-sdk-v2-product-sync-migration/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+If you have custom requirements for the client creation make sure to replace <code>SphereClientFactory</code> with <code>ApiRootBuilder</code> as described in this <a href="https://docs.commercetools.com/sdk/java-sdk-migrate#client-configuration-and-creation">Migration Document</a>.</p>
+<h3 id="signature-of-productsyncoptions">Signature of ProductSyncOptions<a class="headerlink" href="#signature-of-productsyncoptions" title="Permanent link">&para;</a></h3>
+<p>As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a <code>ProjectApiRoot</code> as first argument. The callback functions are signed with <code>ProductDraft</code>, <code>ProductProjection</code> and <code>ProductUpdateAction</code> from <code>package com.commercetools.api.models.product.*</code></p>
+<blockquote>
+<p>Note: Type <code>UpdateAction&lt;Product&gt;</code> has changed to <code>ProductUpdateAction</code>. Make sure you create and supply a specific ProductUpdateAction in <code>beforeUpdateCallback</code>. Therefore you can use the <a href="https://github.com/commercetools/commercetools-sync-java/blob/java-sdk-v2-product-sync-migration/src/main/java/com/commercetools/sync/products/utils/ProductUpdateActionUtils.java">library-utilities</a> or use a JVM-SDK builder (<a href="https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources">see also</a>):</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="c1">// Example: Create a product update action to change name taking the &#39;newName&#39; of the productDraft</span><span class="w"></span>
+<span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">Function</span><span class="o">&lt;</span><span class="n">LocalizedString</span><span class="p">,</span><span class="w"> </span><span class="n">ProductUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">createBeforeUpdateAction</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">        </span><span class="p">(</span><span class="n">newName</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">ProductChangeNameAction</span><span class="p">.</span><span class="na">builder</span><span class="p">().</span><span class="na">name</span><span class="p">(</span><span class="n">newName</span><span class="p">).</span><span class="na">staged</span><span class="p">(</span><span class="kc">true</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+
+<span class="c1">// Add the change name action to the list of update actions before update is executed</span><span class="w"></span>
+<span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">TriFunction</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">            </span><span class="n">List</span><span class="o">&lt;</span><span class="n">ProductUpdateAction</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">ProductDraft</span><span class="p">,</span><span class="w"> </span><span class="n">ProductProjection</span><span class="p">,</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">ProductUpdateAction</span><span class="o">&gt;&gt;</span><span class="w"></span>
+<span class="w">        </span><span class="n">beforeUpdateProductCallback</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">            </span><span class="p">(</span><span class="n">updateActions</span><span class="p">,</span><span class="w"> </span><span class="n">newProductDraft</span><span class="p">,</span><span class="w"> </span><span class="n">oldProduct</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">              </span><span class="kd">final</span><span class="w"> </span><span class="n">ProductUpdateAction</span><span class="w"> </span><span class="n">beforeUpdateAction</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">                  </span><span class="n">createBeforeUpdateAction</span><span class="p">.</span><span class="na">apply</span><span class="p">(</span><span class="n">newProductDraft</span><span class="p">.</span><span class="na">getName</span><span class="p">());</span><span class="w"></span>
+<span class="w">              </span><span class="n">updateActions</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">beforeUpdateAction</span><span class="p">);</span><span class="w"></span>
+<span class="w">              </span><span class="k">return</span><span class="w"> </span><span class="n">updateActions</span><span class="p">;</span><span class="w"></span>
+<span class="w">            </span><span class="p">};</span><span class="w"></span>
+</code></pre></div>
+<h3 id="build-productdraft-syncing-from-external-project">Build ProductDraft (syncing from external project)<a class="headerlink" href="#build-productdraft-syncing-from-external-project" title="Permanent link">&para;</a></h3>
+<p>The product-sync expects a list of <code>ProductDraft</code>s to process. If you use java-sync-library to sync your products from any external system into a commercetools platform project you have to convert your data into CTP compatible <code>ProductDraft</code> type. This was done in previous version using <code>DraftBuilder</code>s. 
+The V2 SDK do not have inheritance for <code>DraftBuilder</code> classes but the differences are minor and you can replace it easily. Here's an example:</p>
+<p><div class="highlight"><pre><span></span><code><span class="c1">// ProductDraftBuilder in v1 takes parameters &#39;productType&#39;, &#39;name&#39;, &#39;slug&#39; and optional &#39;masterVariant&#39;</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">ProductDraft</span><span class="w"> </span><span class="n">productDraft</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">              </span><span class="n">ProductDraftBuilder</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">mock</span><span class="p">(</span><span class="n">ProductType</span><span class="p">.</span><span class="na">class</span><span class="p">),</span><span class="w"> </span><span class="n">ofEnglish</span><span class="p">(</span><span class="s">&quot;name&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">ofEnglish</span><span class="p">(</span><span class="s">&quot;slug&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">emptyList</span><span class="p">())</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;product-key&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+
+<span class="c1">// ProductDraftBuilder in v2</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">ProductDraft</span><span class="w"> </span><span class="n">productDraft</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">              </span><span class="n">ProductDraftBuilder</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">of</span><span class="p">()</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">productType</span><span class="p">(</span><span class="n">ProductTypeResourceIdentifierBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;product-type-key&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">())</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">name</span><span class="p">(</span><span class="n">LocalizedString</span><span class="p">.</span><span class="na">ofEnglish</span><span class="p">(</span><span class="s">&quot;name&quot;</span><span class="p">))</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">slug</span><span class="p">(</span><span class="n">LocalizedString</span><span class="p">.</span><span class="na">ofEnglish</span><span class="p">(</span><span class="s">&quot;slug&quot;</span><span class="p">))</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">masterVariant</span><span class="p">(</span><span class="n">masterVariant</span><span class="p">)</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;product-key&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+</code></pre></div>
+For more information, see the <a href="https://docs.commercetools.com/sdk/java-sdk-migrate#using-draftbuilders">Guide to replace DraftBuilders</a>.</p>
+<h3 id="query-for-products-syncing-from-ctp-project">Query for Products (syncing from CTP project)<a class="headerlink" href="#query-for-products-syncing-from-ctp-project" title="Permanent link">&para;</a></h3>
+<p>If you sync products between different commercetools projects you probably use <a href="https://github.com/commercetools/commercetools-sync-java/blob/java-sdk-v2-product-sync-migration/src/main/java/com/commercetools/sync/products/utils/ProductTransformUtils.java#L59">ProductTransformUtils#toProductDrafts</a> to transform <code>ProductProjection</code> into <code>ProductDraft</code> which can be used by the product-sync.
+However, if you need to query <code>Products</code> / <code>ProductProjections</code> from a commercetools project instead of passing <code>ProductQuery</code>s to a <code>sphereClient</code>, create (and execute) requests directly from the <code>apiRoot</code>.
+Here's an example:</p>
+<p><div class="highlight"><pre><span></span><code><span class="c1">// SDK v1: ProductProjectionQuery to fetch all staged product projections</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">ProductProjectionQuery</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ProductProjectionQuery</span><span class="p">.</span><span class="na">ofStaged</span><span class="p">();</span><span class="w"></span>
+
+<span class="kd">final</span><span class="w"> </span><span class="n">PagedQueryResult</span><span class="o">&lt;</span><span class="n">ProductProjection</span><span class="o">&gt;</span><span class="w"> </span><span class="n">pagedQueryResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sphereClient</span><span class="p">.</span><span class="na">executeBlocking</span><span class="p">(</span><span class="n">query</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">// SDK v2: Create and execute query to fetch all staged product projections in one line</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">ProductProjectionPagedQueryResponse</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">apiRoot</span><span class="p">.</span><span class="na">productProjections</span><span class="p">().</span><span class="na">get</span><span class="p">().</span><span class="na">addStaged</span><span class="p">(</span><span class="kc">true</span><span class="p">).</span><span class="na">executeBlocking</span><span class="p">().</span><span class="na">getBody</span><span class="p">();</span><span class="w"></span>
+</code></pre></div>
+<a href="https://docs.commercetools.com/sdk/java-sdk-migrate#query-resources">Read more</a> about querying resources.</p>
+<h3 id="jvm-sdk-v2-migration-guide">JVM-SDK-V2 migration guide<a class="headerlink" href="#jvm-sdk-v2-migration-guide" title="Permanent link">&para;</a></h3>
+<p>On any other needs to migrate your project using jvm-sdk-v2 please refer to it's <a href="https://docs.commercetools.com/sdk/java-sdk-migrate">Migration Guide</a>. </p>
 
 
 

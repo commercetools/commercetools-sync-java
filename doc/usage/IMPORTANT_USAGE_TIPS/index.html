@@ -500,8 +500,8 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#customized-sphereclient-creation" class="md-nav__link">
-    Customized SphereClient Creation
+  <a href="#customized-projectapiroot-creation" class="md-nav__link">
+    Customized ProjectApiRoot Creation
   </a>
   
 </li>
@@ -636,8 +636,8 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#customized-sphereclient-creation" class="md-nav__link">
-    Customized SphereClient Creation
+  <a href="#customized-projectapiroot-creation" class="md-nav__link">
+    Customized ProjectApiRoot Creation
   </a>
   
 </li>
@@ -670,26 +670,28 @@
 
 
 <h1 id="important-usage-tips">Important Usage Tips<a class="headerlink" href="#important-usage-tips" title="Permanent link">&para;</a></h1>
-<h4 id="customized-sphereclient-creation">Customized <code>SphereClient</code> Creation<a class="headerlink" href="#customized-sphereclient-creation" title="Permanent link">&para;</a></h4>
-<p>When creating a customized <code>SphereClient</code> the following remarks should be considered:</p>
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<ul>
+<li><a href="#customized-projectapiroot-creation">Customized <code>ProjectApiRoot</code> Creation</a></li>
+<li><a href="#tuning-the-sync-process">Tuning the Sync Process</a></li>
+</ul>
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+<h4 id="customized-projectapiroot-creation">Customized <code>ProjectApiRoot</code> Creation<a class="headerlink" href="#customized-projectapiroot-creation" title="Permanent link">&para;</a></h4>
+<p>When creating a customized <code>ProjectApiRoot</code> the following remarks should be considered:</p>
 <ul>
 <li>
-<p>Limit the number of concurrent requests done to CTP. This can be done by decorating the <code>sphereClient</code> with <a href="http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html">QueueSphereClientDecorator</a></p>
+<p>Limit the number of concurrent requests done to CTP. This can be done by adding a QueueMiddleware to the ApiRootBuilder <a href="https://commercetools.github.io/commercetools-sdk-java-v2/javadoc/com/commercetools/docs/meta/ClientTuning.html#limit-requests">QueueMiddleware</a></p>
 </li>
 <li>
-<p>Retry on 5xx errors with a retry strategy. This can be achieved by decorating the <code>sphereClient</code> with the <a href="http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html">RetrySphereClientDecorator</a></p>
+<p>Retry on 5xx errors with a retry strategy. This can be achieved by adding a RetryRequestMiddleware to the ApiRootBuilder <a href="https://commercetools.github.io/commercetools-sdk-java-v2/javadoc/com/commercetools/docs/meta/ClientTuning.html#retry-middleware">RetryRequestMiddleware</a></p>
 </li>
 </ul>
-<p>If you have no special requirements on the sphere client creation, then you can use the <code>ClientConfigurationUtils#createClient</code> 
-util which applies the best practices for <code>SphereClient</code> creation.</p>
-<p>As <a href="http://commercetools.github.io/commercetools-sdk-java-v2">next generation of JVM-SDK</a> has been released, now we provide an overloading method for <code>ClientConfigurationUtils#createClient</code>
-which makes use of JVM-SDK-V2 to apply the best practices for <code>SphereClient</code> creation. Meanwhile the original <code>ClientConfigurationUtils#createClient</code> is supporting the last generation of JVM-SDK to avoid breaking change. 
-<div class="highlight"><pre><span></span><code>public static SphereClient createClient(
-      @Nonnull final String projectKey,
-      @Nonnull final ClientCredentials clientCredentials,
-      @Nonnull final ServiceRegion serviceRegion) {
-</code></pre></div>
+<p>If you have no special requirements on the client creation, then you can use the <code>ClientConfigurationUtils#createClient</code> 
+util which applies the best practices for <code>ProjectApiRoot</code> creation.
 To understand how to initialize those method arguments, please refer to the <a href="https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/commons/utils/ClientV2ConfigurationUtilsTest.java#L20">unit test</a></p>
+<p>To tune / customize your client please refer to <a href="https://commercetools.github.io/commercetools-sdk-java-v2/javadoc/com/commercetools/docs/meta/ClientTuning.html">Client Tuning</a></p>
 <h4 id="tuning-the-sync-process">Tuning the Sync Process<a class="headerlink" href="#tuning-the-sync-process" title="Permanent link">&para;</a></h4>
 <p>The sync library is not meant to be executed in a parallel fashion. For example:
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ProductSync</span><span class="w"> </span><span class="n">productSync</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ProductSync</span><span class="p">(</span><span class="n">syncOptions</span><span class="p">);</span><span class="w"></span>
@@ -707,10 +709,10 @@ used in a sequential fashion:
 </code></pre></div>
 By design, scaling the sync process should <strong>not</strong> be done by executing the batches themselves in parallel. However, it can be done either by:</p>
 <ul>
-<li>Changing the number of <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116">max parallel requests</a> within the <code>sphereClient</code> configuration. It defines how many requests the client can execute in parallel.</li>
-<li>or changing the draft <a href="https://commercetools.github.io/commercetools-sync-java/v/9.2.2/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-">batch size</a>. It defines how many drafts can one batch contains.</li>
+<li>Changing the number of <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116">max parallel requests</a> within the <code>projectApiRoot</code> configuration. It defines how many requests the client can execute in parallel.</li>
+<li>or changing the draft <a href="https://commercetools.github.io/commercetools-sync-java/v/9.2.1/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-">batch size</a>. It defines how many drafts can one batch contains.</li>
 </ul>
-<p>The current overridable default <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45">configuration</a> of the <code>sphereClient</code> 
+<p>The current overridable default <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45">configuration</a> of the <code>projectApiRoot</code> 
 is the recommended good balance for stability and performance for the sync process.</p>
 <p>In order to exploit the number of <code>max parallel requests</code>, the <code>batch size</code> should have a value set that is equal or higher.</p>
 

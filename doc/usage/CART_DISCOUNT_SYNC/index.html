@@ -390,8 +390,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#sphereclient" class="md-nav__link">
-    SphereClient
+  <a href="#projectapiroot" class="md-nav__link">
+    ProjectApiRoot
   </a>
   
 </li>
@@ -520,6 +520,47 @@
           <li class="md-nav__item">
   <a href="#build-particular-update-actions" class="md-nav__link">
     Build particular update action(s)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migration-guide" class="md-nav__link">
+    Migration Guide
+  </a>
+  
+    <nav class="md-nav" aria-label="Migration Guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#client-configuration-and-creation" class="md-nav__link">
+    Client configuration and creation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signature-of-cartdiscountsyncoptions" class="md-nav__link">
+    Signature of CartDiscountSyncOptions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-cartdiscountdraft-syncing-from-external-project" class="md-nav__link">
+    Build CartDiscountDraft (syncing from external project)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-for-cart-discounts-syncing-from-ctp-project" class="md-nav__link">
+    Query for Cart Discounts (syncing from CTP project)
   </a>
   
 </li>
@@ -799,8 +840,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#sphereclient" class="md-nav__link">
-    SphereClient
+  <a href="#projectapiroot" class="md-nav__link">
+    ProjectApiRoot
   </a>
   
 </li>
@@ -939,6 +980,47 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#migration-guide" class="md-nav__link">
+    Migration Guide
+  </a>
+  
+    <nav class="md-nav" aria-label="Migration Guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#client-configuration-and-creation" class="md-nav__link">
+    Client configuration and creation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signature-of-cartdiscountsyncoptions" class="md-nav__link">
+    Signature of CartDiscountSyncOptions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-cartdiscountdraft-syncing-from-external-project" class="md-nav__link">
+    Build CartDiscountDraft (syncing from external project)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-for-cart-discounts-syncing-from-ctp-project" class="md-nav__link">
+    Query for Cart Discounts (syncing from CTP project)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#caveats" class="md-nav__link">
     Caveats
   </a>
@@ -967,15 +1049,15 @@
 
 <h1 id="cartdiscount-sync">CartDiscount Sync<a class="headerlink" href="#cartdiscount-sync" title="Permanent link">&para;</a></h1>
 <p>The module used for importing/syncing CartDiscounts into a commercetools project. 
-It also provides utilities for generating update actions based on the comparison of a <a href="https://docs.commercetools.com/http-api-projects-cartDiscounts#cartdiscount">CartDiscount</a> 
-against a <a href="https://docs.commercetools.com/http-api-projects-cartDiscounts#cartdiscountdraft">CartDiscountDraft</a>.</p>
+It also provides utilities for generating update actions based on the comparison of a <a href="https://docs.commercetools.com/api/projects/cartDiscounts#cartdiscount">CartDiscount</a> 
+against a <a href="https://docs.commercetools.com/api/projects/cartDiscounts#cartdiscountdraft">CartDiscountDraft</a>.</p>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 <ul>
 <li><a href="#usage">Usage</a></li>
 <li><a href="#prerequisites">Prerequisites</a><ul>
-<li><a href="#sphereclient">SphereClient</a></li>
+<li><a href="#projectapiroot">ProjectApiRoot</a></li>
 <li><a href="#required-fields">Required Fields</a></li>
 <li><a href="#reference-resolution">Reference Resolution</a></li>
 <li><a href="#syncing-from-a-commercetools-project">Syncing from a commercetools project</a></li>
@@ -995,18 +1077,28 @@ against a <a href="https://docs.commercetools.com/http-api-projects-cartDiscount
 </li>
 <li><a href="#build-all-update-actions">Build all update actions</a></li>
 <li><a href="#build-particular-update-actions">Build particular update action(s)</a></li>
+<li><a href="#migration-guide">Migration Guide</a></li>
+<li><a href="#client-configuration-and-creation">Client configuration and creation</a></li>
+<li><a href="#signature-of-cartdiscountsyncoptions">Signature of CartDiscountSyncOptions</a></li>
+<li><a href="#build-cartdiscountdraft-syncing-from-external-project">Build CartDiscountDraft (syncing from external project)</a></li>
+<li><a href="#query-for-cart-discounts-syncing-from-ctp-project">Query for Cart Discounts (syncing from CTP project)</a></li>
 <li><a href="#caveats">Caveats</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
-<h4 id="sphereclient">SphereClient<a class="headerlink" href="#sphereclient" title="Permanent link">&para;</a></h4>
-<p>Use the <a href="https://github.com/commercetools/commercetools-sync-java/blob/9.2.2/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45">ClientConfigurationUtils</a> which apply the best practices for <code>SphereClient</code> creation.
-If you have custom requirements for the sphere client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
-<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">SphereClientConfig</span><span class="w"> </span><span class="n">clientConfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SphereClientConfig</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;project-key&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;client-id&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;client-secret&quot;</span><span class="p">);</span><span class="w"></span>
-
-<span class="kd">final</span><span class="w"> </span><span class="n">SphereClient</span><span class="w"> </span><span class="n">sphereClient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ClientConfigurationUtils</span><span class="p">.</span><span class="na">createClient</span><span class="p">(</span><span class="n">clientConfig</span><span class="p">);</span><span class="w"></span>
+<h4 id="projectapiroot">ProjectApiRoot<a class="headerlink" href="#projectapiroot" title="Permanent link">&para;</a></h4>
+<p>Use the <a href="/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+To create <code>ClientCredentials</code> which are required for creating a client please use the <code>ClientCredentialsBuilder</code> provided in java-sdk-v2 <a href="https://github.com/commercetools/commercetools-sdk-java-v2/blob/main/rmf/rmf-java-base/src/main/java/io/vrap/rmf/base/client/oauth2/ClientCredentialsBuilder.java">Client OAUTH2 package</a>
+If you have custom requirements for the client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ClientCredentials</span><span class="w"> </span><span class="n">clientCredentials</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">        </span><span class="k">new</span><span class="w"> </span><span class="n">ClientCredentialsBuilder</span><span class="p">()</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="na">withClientId</span><span class="p">(</span><span class="s">&quot;client-id&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="na">withClientSecret</span><span class="p">(</span><span class="s">&quot;client-secret&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="na">withScopes</span><span class="p">(</span><span class="s">&quot;scopes&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">ProjectApiRoot</span><span class="w"> </span><span class="n">apiRoot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ClientConfigurationUtils</span><span class="p">.</span><span class="na">createClient</span><span class="p">(</span><span class="s">&quot;project-key&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">clientCredentials</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;auth-url&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;api-url&quot;</span><span class="p">);</span><span class="w"></span>
 </code></pre></div>
 <h4 id="required-fields">Required Fields<a class="headerlink" href="#required-fields" title="Permanent link">&para;</a></h4>
 <p>The following fields are <strong>required</strong> to be set in, otherwise, they won't be matched by sync:</p>
@@ -1020,7 +1112,7 @@ If you have custom requirements for the sphere client creation, have a look into
 </thead>
 <tbody>
 <tr>
-<td><a href="https://docs.commercetools.com/http-api-projects-cartDiscounts#cartdiscountdraft">CartDiscountDraft</a>.</td>
+<td><a href="https://docs.commercetools.com/api/projects/cartDiscounts#cartdiscountdraft">CartDiscountDraft</a></td>
 <td><code>key</code></td>
 <td>Also, the cart discounts in the target project are expected to have the <code>key</code> fields set.</td>
 </tr>
@@ -1048,25 +1140,21 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 <p>Note that a reference without the key field will be considered as an existing resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.</p>
 </blockquote>
 <h5 id="syncing-from-a-commercetools-project">Syncing from a commercetools project<a class="headerlink" href="#syncing-from-a-commercetools-project" title="Permanent link">&para;</a></h5>
-<p>When syncing from a source commercetools project, you can use <a href="https://commercetools.github.io/commercetools-sync-java/v/9.2.2/com/commercetools/sync/cartdiscounts/utils/CartDiscountTransformUtils.html#toCartDiscountDrafts-java.util.List-"><code>toCartDiscountDrafts</code></a>
+<p>When syncing from a source commercetools project, you can use <a href="#todo"><code>toCartDiscountDrafts</code></a>
 method that transforms(resolves by querying and caching key-id pairs) and maps from a <code>CartDiscount</code> to <code>CartDiscountDraft</code> using cache in order to make them ready for reference resolution by the sync, for example: </p>
-<div class="highlight"><pre><span></span><code><span class="c1">// Build a CartDiscountQuery for fetching cart discounts from a source CTP project without any references expanded for the sync:</span><span class="w"></span>
-<span class="kd">final</span><span class="w"> </span><span class="n">CartDiscountQuery</span><span class="w"> </span><span class="n">cartDiscountQuery</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CartDiscountQuery</span><span class="p">.</span><span class="na">of</span><span class="p">();</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="c1">// Build a ByProjectKeyCartDiscountsGet for fetching cart discounts from a source CTP project without any references expanded for the sync:</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">ByProjectKeyCartDiscountsGet</span><span class="w"> </span><span class="n">byProjectKeyCartDiscountsGet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="na">cartDiscounts</span><span class="p">().</span><span class="na">get</span><span class="p">();</span><span class="w"></span>
 
 <span class="c1">// Query all cart discounts (NOTE this is just for example, please adjust your logic)</span><span class="w"></span>
-<span class="kd">final</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">CartDiscount</span><span class="o">&gt;</span><span class="w"> </span><span class="n">cartDiscounts</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
-<span class="w">    </span><span class="n">CtpQueryUtils</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">queryAll</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">,</span><span class="w"> </span><span class="n">cartDiscountQuery</span><span class="p">,</span><span class="w"> </span><span class="n">Function</span><span class="p">.</span><span class="na">identity</span><span class="p">())</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">thenApply</span><span class="p">(</span><span class="n">fetchedResources</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">fetchedResources</span><span class="w"></span>
-<span class="w">            </span><span class="p">.</span><span class="na">stream</span><span class="p">()</span><span class="w"></span>
-<span class="w">            </span><span class="p">.</span><span class="na">flatMap</span><span class="p">(</span><span class="n">List</span><span class="p">::</span><span class="n">stream</span><span class="p">)</span><span class="w"></span>
-<span class="w">            </span><span class="p">.</span><span class="na">collect</span><span class="p">(</span><span class="n">Collectors</span><span class="p">.</span><span class="na">toList</span><span class="p">()))</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">CartDiscount</span><span class="o">&gt;</span><span class="w"> </span><span class="n">cartDiscounts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">QueryUtils</span><span class="p">.</span><span class="na">queryAll</span><span class="p">(</span><span class="n">byProjectKeyCartDiscountsGet</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="p">(</span><span class="n">cartDiscounts</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">cartDiscounts</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="na">thenApply</span><span class="p">(</span><span class="n">lists</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">lists</span><span class="p">.</span><span class="na">stream</span><span class="p">().</span><span class="na">flatMap</span><span class="p">(</span><span class="n">List</span><span class="p">::</span><span class="n">stream</span><span class="p">).</span><span class="na">collect</span><span class="p">(</span><span class="n">Collectors</span><span class="p">.</span><span class="na">toList</span><span class="p">()))</span><span class="w"></span>
 <span class="w">        </span><span class="p">.</span><span class="na">toCompletableFuture</span><span class="p">()</span><span class="w"></span>
 <span class="w">        </span><span class="p">.</span><span class="na">join</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <p>In order to transform and map the <code>CartDiscount</code> to <code>CartDiscountDraft</code>, 
-Utils method <code>toCartDiscountDrafts</code> requires <code>sphereClient</code>, implementation of <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java"><code>ReferenceIdToKeyCache</code></a> and <code>cartDiscounts</code> as parameters.
-For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy<a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java"><code>CaffeineReferenceIdToKeyCacheImpl</code></a>.
+Utils method <code>toCartDiscountDrafts</code> requires <code>projectApiRoot</code>, implementation of <a href="#todo"><code>ReferenceIdToKeyCache</code></a> and <code>cartDiscounts</code> as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy<a href="#todo"><code>CaffeineReferenceIdToKeyCacheImpl</code></a>.
 Example as shown below:</p>
 <div class="highlight"><pre><span></span><code><span class="c1">//Implement the cache using library class.</span><span class="w"></span>
 <span class="kd">final</span><span class="w"> </span><span class="n">ReferenceIdToKeyCache</span><span class="w"> </span><span class="n">referenceIdToKeyCache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">CaffeineReferenceIdToKeyCacheImpl</span><span class="p">();</span><span class="w"></span>
@@ -1078,21 +1166,27 @@ Example as shown below:</p>
 <ul>
 <li>When syncing from an external resource, <code>ResourceIdentifier</code>s with their <code>key</code>s have to be supplied as following example:</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">CartDiscountDraft</span><span class="w"> </span><span class="n">cartDiscountDraft</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CartDiscountDraftBuilder</span><span class="w"></span>
-<span class="w">    </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;cartPredicate&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="n">LocalizedString</span><span class="p">.</span><span class="na">ofEnglish</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">),</span><span class="w"></span>
-<span class="w">        </span><span class="kc">true</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="s">&quot;0.1&quot;</span><span class="p">,</span><span class="w"></span>
-<span class="w">        </span><span class="n">ShippingCostTarget</span><span class="p">.</span><span class="na">of</span><span class="p">(),</span><span class="w"></span>
-<span class="w">        </span><span class="n">CartDiscountValue</span><span class="p">.</span><span class="na">ofAbsolute</span><span class="p">(</span><span class="n">MoneyImpl</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="n">DefaultCurrencyUnits</span><span class="p">.</span><span class="na">EUR</span><span class="p">)))</span><span class="w"></span>
-<span class="w">    </span><span class="p">.</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;cart-discount-key&quot;</span><span class="p">)</span><span class="w"></span>
-<span class="w">    </span><span class="p">.</span><span class="na">custom</span><span class="p">(</span><span class="n">CustomFieldsDraft</span><span class="p">.</span><span class="na">ofTypeKeyAndJson</span><span class="p">(</span><span class="s">&quot;type-key&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">emptyMap</span><span class="p">()))</span><span class="w"> </span><span class="c1">// note that custom type provided with key </span><span class="w"></span>
-<span class="w">    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"> </span>
+<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">CartDiscountDraft</span><span class="w"> </span><span class="n">cartDiscountDraft</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CartDiscountDraftBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">()</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">cartPredicate</span><span class="p">(</span><span class="s">&quot;cartPredicate&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">name</span><span class="p">(</span><span class="n">LocalizedString</span><span class="p">.</span><span class="na">ofEnglish</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">))</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">requiresDiscountCode</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">sortOrder</span><span class="p">(</span><span class="s">&quot;0.1&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">target</span><span class="p">(</span><span class="n">CartDiscountTargetBuilder</span><span class="p">::</span><span class="n">shippingBuilder</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="n">CartDiscountValueAbsoluteDraftBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">()</span><span class="w"></span>
+<span class="w">                    </span><span class="p">.</span><span class="na">money</span><span class="p">(</span><span class="w"></span>
+<span class="w">                            </span><span class="n">MoneyBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">()</span><span class="w"></span>
+<span class="w">                                    </span><span class="p">.</span><span class="na">centAmount</span><span class="p">(</span><span class="mi">10L</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                    </span><span class="p">.</span><span class="na">currencyCode</span><span class="p">(</span><span class="n">DefaultCurrencyUnits</span><span class="p">.</span><span class="na">EUR</span><span class="p">.</span><span class="na">getCurrencyCode</span><span class="p">())</span><span class="w"></span>
+<span class="w">                                    </span><span class="p">.</span><span class="na">build</span><span class="p">())</span><span class="w"></span>
+<span class="w">                    </span><span class="p">.</span><span class="na">build</span><span class="p">())</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;cart-discount-key&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">custom</span><span class="p">(</span><span class="n">CustomFieldsDraftBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">type</span><span class="p">(</span><span class="n">typeResourceIdentifierBuilder</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">typeResourceIdentifierBuilder</span><span class="p">.</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;type-key&quot;</span><span class="p">)).</span><span class="na">fields</span><span class="p">(</span><span class="n">fieldContainerBuilder</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">fieldContainerBuilder</span><span class="p">.</span><span class="na">values</span><span class="p">(</span><span class="n">emptyMap</span><span class="p">())).</span><span class="na">build</span><span class="p">())</span><span class="w"> </span><span class="c1">// note that custom type provided with key</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <h4 id="syncoptions">SyncOptions<a class="headerlink" href="#syncoptions" title="Permanent link">&para;</a></h4>
-<p>After the <code>sphereClient</code> is set up, a <code>CartDiscountSyncOptions</code> should be built as follows:</p>
+<p>After the <code>ProjectApiRoot</code> is set up, a <code>CartDiscountSyncOptions</code> should be built as follows:</p>
 <div class="highlight"><pre><span></span><code><span class="c1">// instantiating a CartDiscountSyncOptions</span><span class="w"></span>
-<span class="kd">final</span><span class="w"> </span><span class="n">CartDiscountSyncOptions</span><span class="w"> </span><span class="n">cartDiscountSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CartDiscountSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">CartDiscountSyncOptions</span><span class="w"> </span><span class="n">cartDiscountSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CartDiscountSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <p><code>SyncOptions</code> is an object which provides a place for users to add certain configurations to customize the sync process.
 Available configurations:</p>
@@ -1123,7 +1217,7 @@ following context about the warning message:</p>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Logger</span><span class="w"> </span><span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LoggerFactory</span><span class="p">.</span><span class="na">getLogger</span><span class="p">(</span><span class="n">CartDiscountSync</span><span class="p">.</span><span class="na">class</span><span class="p">);</span><span class="w"></span>
 <span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">CartDiscountSyncOptions</span><span class="w"> </span><span class="n">cartDiscountSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CartDiscountSyncOptionsBuilder</span><span class="w"></span>
-<span class="w">         </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">)</span><span class="w"></span>
+<span class="w">         </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">)</span><span class="w"></span>
 <span class="w">         </span><span class="p">.</span><span class="na">warningCallback</span><span class="p">((</span><span class="n">syncException</span><span class="p">,</span><span class="w"> </span><span class="n">draft</span><span class="p">,</span><span class="w"> </span><span class="n">cartDiscount</span><span class="p">,</span><span class="w"> </span><span class="n">updateActions</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
 <span class="w">            </span><span class="n">logger</span><span class="p">.</span><span class="na">warn</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">SyncException</span><span class="p">(</span><span class="s">&quot;My customized message&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">syncException</span><span class="p">)).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
@@ -1137,26 +1231,26 @@ update actions array with custom actions or discard unwanted actions. The callba
 <li>update actions that were calculated after comparing both</li>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">TriFunction</span><span class="o">&lt;</span><span class="w"></span>
-<span class="w">        </span><span class="n">List</span><span class="o">&lt;</span><span class="n">UpdateAction</span><span class="o">&lt;</span><span class="n">CartDiscount</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">CartDiscountDraft</span><span class="p">,</span><span class="w"> </span><span class="n">CartDiscount</span><span class="p">,</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">UpdateAction</span><span class="o">&lt;</span><span class="n">CartDiscount</span><span class="o">&gt;&gt;&gt;</span><span class="w"> </span>
+<span class="w">        </span><span class="n">List</span><span class="o">&lt;</span><span class="n">CartDiscountUpdateAction</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">CartDiscountDraft</span><span class="p">,</span><span class="w"> </span><span class="n">CartDiscount</span><span class="p">,</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">CartDiscountUpdateAction</span><span class="o">&gt;&gt;</span><span class="w"> </span>
 <span class="w">            </span><span class="n">beforeUpdateCartDiscountCallback</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
 <span class="w">            </span><span class="p">(</span><span class="n">updateActions</span><span class="p">,</span><span class="w"> </span><span class="n">newCartDiscountDraft</span><span class="p">,</span><span class="w"> </span><span class="n">oldCartDiscount</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">  </span><span class="n">updateActions</span><span class="p">.</span><span class="na">stream</span><span class="p">()</span><span class="w"></span>
-<span class="w">                    </span><span class="p">.</span><span class="na">filter</span><span class="p">(</span><span class="n">updateAction</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">!</span><span class="p">(</span><span class="n">updateAction</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">ChangeCartPredicate</span><span class="p">))</span><span class="w"></span>
+<span class="w">                    </span><span class="p">.</span><span class="na">filter</span><span class="p">(</span><span class="n">updateAction</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">!</span><span class="p">(</span><span class="n">updateAction</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">CartDiscountChangeCartPredicateAction</span><span class="p">))</span><span class="w"></span>
 <span class="w">                    </span><span class="p">.</span><span class="na">collect</span><span class="p">(</span><span class="n">Collectors</span><span class="p">.</span><span class="na">toList</span><span class="p">());</span><span class="w"></span>
 
 <span class="kd">final</span><span class="w"> </span><span class="n">CartDiscountSyncOptions</span><span class="w"> </span><span class="n">cartDiscountSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
-<span class="w">        </span><span class="n">CartDiscountSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">beforeUpdateCallback</span><span class="p">(</span><span class="n">beforeUpdateCartDiscountCallback</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="w">        </span><span class="n">CartDiscountSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">beforeUpdateCallback</span><span class="p">(</span><span class="n">beforeUpdateCartDiscountCallback</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <h5 id="beforecreatecallback">beforeCreateCallback<a class="headerlink" href="#beforecreatecallback" title="Permanent link">&para;</a></h5>
 <p>During the sync process, if a cart discount draft should be created, this callback can be used to intercept the <strong><em>create</em></strong> request just before it is sent to the commercetools platform.  It contains the following information : </p>
 <ul>
 <li>cart discount draft that should be created</li>
 </ul>
-<p>Please refer to <a href="../PRODUCT_SYNC/#example-set-publish-stage-if-category-references-of-given-product-draft-exists">example in product sync document</a>.</p>
+<p>Please refer to <a href="../PRODUCT_SYNC/#beforeCreateCallback">example in product sync document</a>.</p>
 <h5 id="batchsize">batchSize<a class="headerlink" href="#batchsize" title="Permanent link">&para;</a></h5>
 <p>A number that could be used to set the batch size with which cart discounts are fetched and processed,
 as cart discounts are obtained from the target project on the commercetools platform in batches for better performance. The algorithm accumulates up to <code>batchSize</code> resources from the input list, then fetches the corresponding cart discounts from the target project on the commecetools platform in a single request. Playing with this option can slightly improve or reduce processing speed. If it is not set, the default batch size is 50 for cart discount sync.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">CartDiscountSyncOptions</span><span class="w"> </span><span class="n">cartDiscountSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
-<span class="w">         </span><span class="n">CartDiscountSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">batchSize</span><span class="p">(</span><span class="mi">30</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="w">         </span><span class="n">CartDiscountSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">batchSize</span><span class="p">(</span><span class="mi">30</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <h5 id="cachesize">cacheSize<a class="headerlink" href="#cachesize" title="Permanent link">&para;</a></h5>
 <p>In the service classes of the commercetools-sync-java library, we have implemented an in-memory <a href="https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)">LRU cache</a> to store a map used for the reference resolution of the library.
@@ -1164,7 +1258,7 @@ The cache reduces the reference resolution based calls to the commercetools API 
 which will improve the overall performance of the sync and commercetools API.</p>
 <p>Playing with this option can change the memory usage of the library. If it is not set, the default cache size is <code>10.000</code> for cart discount sync.
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">CartDiscountSyncOptions</span><span class="w"> </span><span class="n">cartDiscountSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
-<span class="w">         </span><span class="n">CartDiscountSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">cacheSize</span><span class="p">(</span><span class="mi">5000</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"> </span>
+<span class="w">         </span><span class="n">CartDiscountSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">cacheSize</span><span class="p">(</span><span class="mi">5000</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"> </span>
 </code></pre></div></p>
 <h3 id="running-the-sync">Running the sync<a class="headerlink" href="#running-the-sync" title="Permanent link">&para;</a></h3>
 <p>After all the aforementioned points in the previous section have been fulfilled, to run the sync:
@@ -1189,20 +1283,117 @@ human-readable format.</p>
 </ol>
 <h4 id="more-examples-of-how-to-use-the-sync">More examples of how to use the sync<a class="headerlink" href="#more-examples-of-how-to-use-the-sync" title="Permanent link">&para;</a></h4>
 <ol>
-<li><a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/cartDiscounts/CartDiscountSyncIT.java">Sync from another CTP project as a source</a>.</li>
-<li><a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/cartDiscounts/CartDiscountSyncIT.java">Sync from an external source</a>.</li>
+<li><a href="#todo">Sync from another CTP project as a source</a>.</li>
+<li><a href="#todo">Sync from an external source</a>.</li>
 </ol>
 <p><em>Make sure to read the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a> for optimal performance.</em></p>
 <h3 id="build-all-update-actions">Build all update actions<a class="headerlink" href="#build-all-update-actions" title="Permanent link">&para;</a></h3>
 <p>A utility method provided by the library to compare a <code>CartDiscount</code> with a new <code>CartDiscountDraft</code> and results in a list of cart discount update actions.
-<div class="highlight"><pre><span></span><code><span class="n">List</span><span class="o">&lt;</span><span class="n">UpdateAction</span><span class="o">&lt;</span><span class="n">CartDiscount</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">updateActions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CartDiscountSyncUtils</span><span class="p">.</span><span class="na">buildActions</span><span class="p">(</span><span class="n">cartDiscount</span><span class="p">,</span><span class="w"> </span><span class="n">cartDiscountDraft</span><span class="p">,</span><span class="w"> </span><span class="n">cartDiscountSyncOptions</span><span class="p">);</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="n">List</span><span class="o">&lt;</span><span class="n">CartDiscountUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">updateActions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CartDiscountSyncUtils</span><span class="p">.</span><span class="na">buildActions</span><span class="p">(</span><span class="n">cartDiscount</span><span class="p">,</span><span class="w"> </span><span class="n">cartDiscountDraft</span><span class="p">,</span><span class="w"> </span><span class="n">cartDiscountSyncOptions</span><span class="p">);</span><span class="w"></span>
 </code></pre></div></p>
 <h3 id="build-particular-update-actions">Build particular update action(s)<a class="headerlink" href="#build-particular-update-actions" title="Permanent link">&para;</a></h3>
 <p>Utility methods provided by the library to compare the specific fields of a <code>CartDiscount</code> and a new <code>CartDiscountDraft</code>, and in turn builds
  the update action. One example is the <code>buildChangeNameUpdateAction</code> which compares names:
-<div class="highlight"><pre><span></span><code><span class="n">Optional</span><span class="o">&lt;</span><span class="n">UpdateAction</span><span class="o">&lt;</span><span class="n">CartDiscount</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">updateAction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CartDiscountUpdateActionUtils</span><span class="p">.</span><span class="na">buildChangeNameAction</span><span class="p">(</span><span class="n">oldCartDiscount</span><span class="p">,</span><span class="w"> </span><span class="n">cartDiscountDraft</span><span class="p">);</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="n">Optional</span><span class="o">&lt;</span><span class="n">CartDiscountUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">updateAction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CartDiscountUpdateActionUtils</span><span class="p">.</span><span class="na">buildChangeNameAction</span><span class="p">(</span><span class="n">oldCartDiscount</span><span class="p">,</span><span class="w"> </span><span class="n">cartDiscountDraft</span><span class="p">);</span><span class="w"></span>
 </code></pre></div>
-More examples of those utils for different cart discounts can be found <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountUpdateActionUtilsTest.java">here</a>.</p>
+More examples of those utils for different cart discounts can be found <a href="#todo">here</a>.</p>
+<h2 id="migration-guide">Migration Guide<a class="headerlink" href="#migration-guide" title="Permanent link">&para;</a></h2>
+<p>The cart-discount-sync uses the <a href="http://commercetools.github.io/commercetools-sdk-java-v2">JVM-SDK-V2</a>, therefore ensure you <a href="https://docs.commercetools.com/sdk/java-sdk-getting-started#install-the-java-sdk">Install JVM SDK</a> module <code>commercetools-sdk-java-api</code> with
+any HTTP client module. The default one is <code>commercetools-http-client</code>.</p>
+<div class="highlight"><pre><span></span><code> <span class="cm">&lt;!-- Sample maven pom.xml --&gt;</span>
+ <span class="nt">&lt;properties&gt;</span>
+     <span class="nt">&lt;commercetools.version&gt;</span>LATEST<span class="nt">&lt;/commercetools.version&gt;</span>
+ <span class="nt">&lt;/properties&gt;</span>
+
+ <span class="nt">&lt;dependencies&gt;</span>
+     <span class="nt">&lt;dependency&gt;</span>
+       <span class="nt">&lt;groupId&gt;</span>com.commercetools.sdk<span class="nt">&lt;/groupId&gt;</span>
+       <span class="nt">&lt;artifactId&gt;</span>commercetools-http-client<span class="nt">&lt;/artifactId&gt;</span>
+       <span class="nt">&lt;version&gt;</span>${commercetools.version}<span class="nt">&lt;/version&gt;</span>
+     <span class="nt">&lt;/dependency&gt;</span>
+     <span class="nt">&lt;dependency&gt;</span>
+       <span class="nt">&lt;groupId&gt;</span>com.commercetools.sdk<span class="nt">&lt;/groupId&gt;</span>
+       <span class="nt">&lt;artifactId&gt;</span>commercetools-sdk-java-api<span class="nt">&lt;/artifactId&gt;</span>
+       <span class="nt">&lt;version&gt;</span>${commercetools.version}<span class="nt">&lt;/version&gt;</span>
+     <span class="nt">&lt;/dependency&gt;</span>
+ <span class="nt">&lt;/dependencies&gt;</span>
+</code></pre></div>
+<h3 id="client-configuration-and-creation">Client configuration and creation<a class="headerlink" href="#client-configuration-and-creation" title="Permanent link">&para;</a></h3>
+<p>For client creation use <a href="#todo">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+If you have custom requirements for the client creation make sure to replace <code>SphereClientFactory</code> with <code>ApiRootBuilder</code> as described in this <a href="https://docs.commercetools.com/sdk/java-sdk-migrate#client-configuration-and-creation">Migration Document</a>.</p>
+<h3 id="signature-of-cartdiscountsyncoptions">Signature of CartDiscountSyncOptions<a class="headerlink" href="#signature-of-cartdiscountsyncoptions" title="Permanent link">&para;</a></h3>
+<p>As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a <code>ProjectApiRoot</code> as first argument. The callback functions are signed with <code>CartDiscount</code>, <code>CartDiscountDraft</code> and <code>CartDiscountUpdateAction</code> from <code>package com.commercetools.api.models.cart_discount.*</code></p>
+<blockquote>
+<p>Note: Type <code>UpdateAction&lt;CartDiscount&gt;</code> has changed to <code>CartDiscountUpdateAction</code>. Make sure you create and supply a specific CartDiscountUpdateAction in <code>beforeUpdateCallback</code>. For that you can use the <a href="#todo">library-utilities</a> or use a JVM-SDK builder (<a href="https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources">see also</a>):</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="c1">// Example: Create a cart discount update action to change name taking the &#39;newName&#39; of the cartDiscountDraft</span><span class="w"></span>
+<span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">Function</span><span class="o">&lt;</span><span class="n">LocalizedString</span><span class="p">,</span><span class="w"> </span><span class="n">CartDiscountUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">createBeforeUpdateAction</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">        </span><span class="p">(</span><span class="n">newName</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">CartDiscountChangeNameAction</span><span class="p">.</span><span class="na">builder</span><span class="p">().</span><span class="na">name</span><span class="p">(</span><span class="n">newName</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+
+<span class="c1">// Add the change name action to the list of update actions before update is executed</span><span class="w"></span>
+<span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">TriFunction</span><span class="o">&lt;</span><span class="w"></span>
+<span class="w">            </span><span class="n">List</span><span class="o">&lt;</span><span class="n">CartDiscountUpdateAction</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">CartDiscountDraft</span><span class="p">,</span><span class="w"> </span><span class="n">CartDiscount</span><span class="p">,</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">CartDiscountUpdateAction</span><span class="o">&gt;&gt;</span><span class="w"></span>
+<span class="w">        </span><span class="n">beforeUpdateCartDiscountCallback</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">            </span><span class="p">(</span><span class="n">updateActions</span><span class="p">,</span><span class="w"> </span><span class="n">newCartDiscountDraft</span><span class="p">,</span><span class="w"> </span><span class="n">oldCartDiscount</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">              </span><span class="kd">final</span><span class="w"> </span><span class="n">CartDiscountUpdateAction</span><span class="w"> </span><span class="n">beforeUpdateAction</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">                  </span><span class="n">createBeforeUpdateAction</span><span class="p">.</span><span class="na">apply</span><span class="p">(</span><span class="n">newCartDiscountDraft</span><span class="p">.</span><span class="na">getName</span><span class="p">());</span><span class="w"></span>
+<span class="w">              </span><span class="n">updateActions</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="n">beforeUpdateAction</span><span class="p">);</span><span class="w"></span>
+<span class="w">              </span><span class="k">return</span><span class="w"> </span><span class="n">updateActions</span><span class="p">;</span><span class="w"></span>
+<span class="w">            </span><span class="p">};</span><span class="w"></span>
+</code></pre></div>
+<h3 id="build-cartdiscountdraft-syncing-from-external-project">Build CartDiscountDraft (syncing from external project)<a class="headerlink" href="#build-cartdiscountdraft-syncing-from-external-project" title="Permanent link">&para;</a></h3>
+<p>The cartDiscount-sync expects a list of <code>CartDiscountDraft</code>s to process. If you use java-sync-library to sync your cart discounts from any external system into a commercetools platform project you have to convert your data into CTP compatible <code>CartDiscountDraft</code> type. This was done in previous version using <code>DraftBuilder</code>s.
+The V2 SDK do not have inheritance for <code>DraftBuilder</code> classes but the differences are minor and you can replace it easily. Here's an example:</p>
+<p><div class="highlight"><pre><span></span><code><span class="c1">// CartDiscountDraftBuilder in v1 takes parameters &#39;name&#39;, &#39;cartPredicate&#39;, &#39;value&#39;, &#39;target&#39;, &#39;sortOrder&#39;, &#39;requiresDiscountCode&#39; </span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">CartDiscountDraft</span><span class="w"> </span><span class="n">cartDiscountDraft</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">        </span><span class="n">CartDiscountDraftBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="w"></span>
+<span class="w">              </span><span class="n">ofEnglish</span><span class="p">(</span><span class="s">&quot;name&quot;</span><span class="p">),</span><span class="w"></span>
+<span class="w">              </span><span class="s">&quot;1 = 1&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">              </span><span class="n">CartDiscountValue</span><span class="p">.</span><span class="na">ofAbsolute</span><span class="p">(</span><span class="n">MoneyImpl</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="n">EUR</span><span class="p">)),</span><span class="w"></span>
+<span class="w">              </span><span class="s">&quot;sku = \&quot;0123456789\&quot; or sku = \&quot;0246891213\&quot;&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">              </span><span class="s">&quot;0.2&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">              </span><span class="kc">false</span><span class="p">)</span><span class="w"></span>
+<span class="w">          </span><span class="p">.</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;key&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">          </span><span class="p">.</span><span class="na">active</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span><span class="w"></span>
+<span class="w">          </span><span class="p">.</span><span class="na">build</span><span class="p">()</span><span class="w"></span>
+
+<span class="c1">// CartDiscountDraftBuilder in v2</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">CartDiscountDraft</span><span class="w"> </span><span class="n">cartDiscountDraft</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">        </span><span class="n">CartDiscountDraftBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">()</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">name</span><span class="p">(</span><span class="n">ofEnglish</span><span class="p">(</span><span class="s">&quot;name&quot;</span><span class="p">))</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">cartPredicate</span><span class="p">(</span><span class="s">&quot;1 = 1&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">value</span><span class="p">(</span><span class="w"></span>
+<span class="w">              </span><span class="n">CartDiscountValueAbsoluteDraftBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">()</span><span class="w"></span>
+<span class="w">                </span><span class="p">.</span><span class="na">money</span><span class="p">(</span><span class="w"></span>
+<span class="w">                    </span><span class="n">CentPrecisionMoneyBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">()</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">centAmount</span><span class="p">(</span><span class="mi">20L</span><span class="p">)</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">fractionDigits</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">currencyCode</span><span class="p">(</span><span class="n">DefaultCurrencyUnits</span><span class="p">.</span><span class="na">EUR</span><span class="p">.</span><span class="na">getCurrencyCode</span><span class="p">())</span><span class="w"></span>
+<span class="w">                      </span><span class="p">.</span><span class="na">build</span><span class="p">()</span><span class="w"></span>
+<span class="w">                </span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="p">.</span><span class="na">build</span><span class="p">()</span><span class="w"></span>
+<span class="w">            </span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">target</span><span class="p">(</span><span class="s">&quot;sku = \&quot;0123456789\&quot; or sku = \&quot;0246891213\&quot;&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">sortOrder</span><span class="p">(</span><span class="s">&quot;0.2&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">requiresDiscountCode</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;key&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">isActive</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+</code></pre></div>
+For more information, see the <a href="https://docs.commercetools.com/sdk/java-sdk-migrate#using-draftbuilders">Guide to replace DraftBuilders</a>.</p>
+<h3 id="query-for-cart-discounts-syncing-from-ctp-project">Query for Cart Discounts (syncing from CTP project)<a class="headerlink" href="#query-for-cart-discounts-syncing-from-ctp-project" title="Permanent link">&para;</a></h3>
+<p>If you sync cart discounts between different commercetools projects you probably use <a href="#todo">CartDiscountTransformUtils#toCartDiscountDrafts</a> to transform <code>CartDiscount</code> into <code>CartDiscountDraft</code> which can be used by the cartDiscount-sync.
+However, if you need to query <code>Cart Discounts</code> from a commercetools project instead of passing <code>CartDiscountQuery</code>s to a <code>sphereClient</code>, create (and execute) requests directly from the <code>apiRoot</code>.
+Here's an example:</p>
+<p><div class="highlight"><pre><span></span><code><span class="c1">// SDK v1: CartDiscountQuery to fetch all cart discounts</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">CartDiscountQuery</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CartDiscountQuery</span><span class="p">.</span><span class="na">of</span><span class="p">();</span><span class="w"></span>
+
+<span class="kd">final</span><span class="w"> </span><span class="n">PagedQueryResult</span><span class="o">&lt;</span><span class="n">CartDiscount</span><span class="o">&gt;</span><span class="w"> </span><span class="n">pagedQueryResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sphereClient</span><span class="p">.</span><span class="na">executeBlocking</span><span class="p">(</span><span class="n">query</span><span class="p">);</span><span class="w"></span>
+
+<span class="c1">// SDK v2: Create and execute query to fetch all cart discounts in one line</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">CartDiscountPagedQueryResponse</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">apiRoot</span><span class="p">.</span><span class="na">cart</span><span class="w"> </span><span class="nf">discounts</span><span class="p">().</span><span class="na">get</span><span class="p">().</span><span class="na">executeBlocking</span><span class="p">().</span><span class="na">getBody</span><span class="p">();</span><span class="w"></span>
+</code></pre></div>
+<a href="https://docs.commercetools.com/sdk/java-sdk-migrate#query-resources">Read more</a> about querying resources.</p>
 <h2 id="caveats">Caveats<a class="headerlink" href="#caveats" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Syncing cart discounts with a <code>CartDiscountValue</code> of type <code>giftLineItem</code> is not supported yet. <a href="https://github.com/commercetools/commercetools-sync-java/issues/411">#411</a>.</li>

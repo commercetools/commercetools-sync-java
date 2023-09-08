@@ -446,8 +446,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#sphereclient" class="md-nav__link">
-    SphereClient
+  <a href="#projectapiroot" class="md-nav__link">
+    ProjectApiRoot
   </a>
   
 </li>
@@ -799,8 +799,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#sphereclient" class="md-nav__link">
-    SphereClient
+  <a href="#projectapiroot" class="md-nav__link">
+    ProjectApiRoot
   </a>
   
 </li>
@@ -975,7 +975,7 @@ against a <a href="https://docs.commercetools.com/api/projects/customers#custome
 <ul>
 <li><a href="#usage">Usage</a></li>
 <li><a href="#prerequisites">Prerequisites</a><ul>
-<li><a href="#sphereclient">SphereClient</a></li>
+<li><a href="#projectapiroot">ProjectApiRoot</a></li>
 <li><a href="#required-fields">Required Fields</a></li>
 <li><a href="#reference-resolution">Reference Resolution</a></li>
 <li><a href="#syncing-from-a-commercetools-project">Syncing from a commercetools project</a></li>
@@ -1001,12 +1001,17 @@ against a <a href="https://docs.commercetools.com/api/projects/customers#custome
 
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
-<h4 id="sphereclient">SphereClient<a class="headerlink" href="#sphereclient" title="Permanent link">&para;</a></h4>
-<p>Use the <a href="https://github.com/commercetools/commercetools-sync-java/blob/9.2.2/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45">ClientConfigurationUtils</a> which apply the best practices for <code>SphereClient</code> creation.
-If you have custom requirements for the sphere client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
-<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">SphereClientConfig</span><span class="w"> </span><span class="n">clientConfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SphereClientConfig</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;project-key&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;client-id&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;client-secret&quot;</span><span class="p">);</span><span class="w"></span>
-
-<span class="kd">final</span><span class="w"> </span><span class="n">SphereClient</span><span class="w"> </span><span class="n">sphereClient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ClientConfigurationUtils</span><span class="p">.</span><span class="na">createClient</span><span class="p">(</span><span class="n">clientConfig</span><span class="p">);</span><span class="w"></span>
+<h4 id="projectapiroot">ProjectApiRoot<a class="headerlink" href="#projectapiroot" title="Permanent link">&para;</a></h4>
+<p>Use the <a href="https://github.com/commercetools/commercetools-sync-java/blob/java-sdk-v2-product-sync-migration/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+To create <code>ClientCredentials</code> which are required for creating a client please use the <code>ClientCredentialsBuilder</code> provided in java-sdk-v2 <a href="https://github.com/commercetools/commercetools-sdk-java-v2/blob/main/rmf/rmf-java-base/src/main/java/io/vrap/rmf/base/client/oauth2/ClientCredentialsBuilder.java">Client OAUTH2 package</a>
+If you have custom requirements for the client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ClientCredentials</span><span class="w"> </span><span class="n">clientCredentials</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">        </span><span class="k">new</span><span class="w"> </span><span class="n">ClientCredentialsBuilder</span><span class="p">()</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">withClientId</span><span class="p">(</span><span class="s">&quot;client-id&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">withClientSecret</span><span class="p">(</span><span class="s">&quot;client-secret&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">withScopes</span><span class="p">(</span><span class="s">&quot;scopes&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">ProjectApiRoot</span><span class="w"> </span><span class="n">apiRoot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ClientConfigurationUtils</span><span class="p">.</span><span class="na">createClient</span><span class="p">(</span><span class="s">&quot;project-key&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">clientCredentials</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;auth-url&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;api-url&quot;</span><span class="p">);</span><span class="w"></span>
 </code></pre></div>
 <h4 id="required-fields">Required Fields<a class="headerlink" href="#required-fields" title="Permanent link">&para;</a></h4>
 <p>The following fields are <strong>required</strong> to be set in, otherwise, they won't be matched by sync:</p>
@@ -1027,7 +1032,7 @@ If you have custom requirements for the sphere client creation, have a look into
 <tr>
 <td><a href="https://docs.commercetools.com/api/projects/customers#customerdraft">CustomerDraft</a></td>
 <td><code>address.key</code></td>
-<td>Every customer <a href="https://docs.commercetools.com/api/types#address">Address</a> needs a unique key to match the existing <code>Address</code> with the new Address.</td>
+<td>Every customer <a href="https://docs.commercetools.com/api/types#ctp:api:type:BaseAddress">BaseAddress</a> needs a unique key to match the existing <code>Address</code> with the new <code>AddressDraft</code>.</td>
 </tr>
 </tbody>
 </table>
@@ -1045,15 +1050,15 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 <tbody>
 <tr>
 <td align="left"><code>customerGroup</code></td>
-<td align="left">ResourceIdentifier to a CustomerGroup</td>
+<td align="left">CustomerGroupResourceIdentifier</td>
 </tr>
 <tr>
 <td align="left"><code>stores</code></td>
-<td align="left">Set of ResourceIdentifier to a Store</td>
+<td align="left">List of StoreResourceIdentifier</td>
 </tr>
 <tr>
 <td align="left"><code>custom.type</code></td>
-<td align="left">ResourceIdentifier to a Type</td>
+<td align="left">TypeResourceIdentifier</td>
 </tr>
 </tbody>
 </table>
@@ -1061,24 +1066,20 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 <p>Note that a reference without the key field will be considered as an existing resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.</p>
 </blockquote>
 <h5 id="syncing-from-a-commercetools-project">Syncing from a commercetools project<a class="headerlink" href="#syncing-from-a-commercetools-project" title="Permanent link">&para;</a></h5>
-<p>When syncing from a source commercetools project, you can use <a href="https://commercetools.github.io/commercetools-sync-java/v/9.2.2/com/commercetools/sync/customers/utils/CustomerTransformUtils.html#toCustomerDrafts-java.util.List-"><code>toCustomerDrafts</code></a>
+<p>When syncing from a source commercetools project, you can use <a href="https://github.com/commercetools/commercetools-sync-java/blob/java-sdk-v2-product-sync-migration/src/main/java/com/commercetools/sync/customers/utils/CustomerTransformUtils.java#L42"><code>toCustomerDrafts</code></a>
  method that transforms(resolves by querying and caching key-id pairs) and maps from a <code>Customer</code> to <code>CustomerDraft</code> using cache in order to make them ready for reference resolution by the sync, for example: </p>
-<div class="highlight"><pre><span></span><code><span class="c1">// Build a CustomerQuery for fetching customers from a source CTP project without any references expanded for the sync:</span><span class="w"></span>
-<span class="kd">final</span><span class="w"> </span><span class="n">CustomerQuery</span><span class="w"> </span><span class="n">customerQuery</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerQuery</span><span class="p">.</span><span class="na">of</span><span class="p">();</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="c1">// Build ByProjectKeyCustomersGet for fetching customers from a source CTP project without any references expanded for the sync:</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">ByProjectKeyCustomersGet</span><span class="w"> </span><span class="n">byProjectKeyCustomersGet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="na">customers</span><span class="p">().</span><span class="na">get</span><span class="p">();</span><span class="w"></span>
 
 <span class="c1">// Query all customers (NOTE this is just for example, please adjust your logic)</span><span class="w"></span>
-<span class="kd">final</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Customer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">customers</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
-<span class="w">    </span><span class="n">CtpQueryUtils</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">queryAll</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">,</span><span class="w"> </span><span class="n">customerQuery</span><span class="p">,</span><span class="w"> </span><span class="n">Function</span><span class="p">.</span><span class="na">identity</span><span class="p">())</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">thenApply</span><span class="p">(</span><span class="n">fetchedResources</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">fetchedResources</span><span class="w"></span>
-<span class="w">            </span><span class="p">.</span><span class="na">stream</span><span class="p">()</span><span class="w"></span>
-<span class="w">            </span><span class="p">.</span><span class="na">flatMap</span><span class="p">(</span><span class="n">List</span><span class="p">::</span><span class="n">stream</span><span class="p">)</span><span class="w"></span>
-<span class="w">            </span><span class="p">.</span><span class="na">collect</span><span class="p">(</span><span class="n">Collectors</span><span class="p">.</span><span class="na">toList</span><span class="p">()))</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">toCompletableFuture</span><span class="p">()</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">join</span><span class="p">();</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Customer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">customers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">QueryUtils</span><span class="p">.</span><span class="na">queryAll</span><span class="p">(</span><span class="n">byProjectKeyCustomersGet</span><span class="p">,</span><span class="w"></span>
+<span class="w">            </span><span class="p">(</span><span class="n">customers</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">customers</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">thenApply</span><span class="p">(</span><span class="n">lists</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">lists</span><span class="p">.</span><span class="na">stream</span><span class="p">().</span><span class="na">flatMap</span><span class="p">(</span><span class="n">List</span><span class="p">::</span><span class="n">stream</span><span class="p">).</span><span class="na">collect</span><span class="p">(</span><span class="n">Collectors</span><span class="p">.</span><span class="na">toList</span><span class="p">()))</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">toCompletableFuture</span><span class="p">()</span><span class="w"></span>
+<span class="w">            </span><span class="p">.</span><span class="na">join</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <p>In order to transform and map the <code>Customer</code> to <code>CustomerDraft</code>, 
-Utils method <code>toCustomerDrafts</code> requires <code>sphereClient</code>, implementation of <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java"><code>ReferenceIdToKeyCache</code></a> and <code>customers</code> as parameters.
+Utils method <code>toCustomerDrafts</code> requires <code>projectApiRoot</code>, implementation of <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java"><code>ReferenceIdToKeyCache</code></a> and <code>customers</code> as parameters.
 For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy<a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java"><code>CaffeineReferenceIdToKeyCacheImpl</code></a>.
 Example as shown below:</p>
 <div class="highlight"><pre><span></span><code><span class="c1">//Implement the cache using library class.</span><span class="w"></span>
@@ -1091,19 +1092,28 @@ Example as shown below:</p>
 <ul>
 <li>When syncing from an external resource, <code>ResourceIdentifier</code>s with their <code>key</code>s have to be supplied as following example:</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">CustomerDraftBuilder</span><span class="w"> </span><span class="n">customerDraftBuilder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerDraftBuilder</span><span class="w"></span>
-<span class="w">    </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;email@example.com&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;password&quot;</span><span class="p">)</span><span class="w"></span>
-<span class="w">    </span><span class="p">.</span><span class="na">customerGroup</span><span class="p">(</span><span class="n">ResourceIdentifier</span><span class="p">.</span><span class="na">ofKey</span><span class="p">(</span><span class="s">&quot;customer-group-key&quot;</span><span class="p">))</span><span class="w"> </span><span class="c1">// note that customer group reference provided with key</span><span class="w"></span>
-<span class="w">    </span><span class="p">.</span><span class="na">stores</span><span class="p">(</span><span class="n">asList</span><span class="p">(</span><span class="n">ResourceIdentifier</span><span class="p">.</span><span class="na">ofKey</span><span class="p">(</span><span class="s">&quot;store-key1&quot;</span><span class="p">),</span><span class="w"> </span>
-<span class="w">        </span><span class="n">ResourceIdentifier</span><span class="p">.</span><span class="na">ofKey</span><span class="p">(</span><span class="s">&quot;store-key2&quot;</span><span class="p">)))</span><span class="w"> </span><span class="c1">// note that store references provided with key</span><span class="w"></span>
-<span class="w">    </span><span class="p">.</span><span class="na">custom</span><span class="p">(</span><span class="n">CustomFieldsDraft</span><span class="p">.</span><span class="na">ofTypeKeyAndJson</span><span class="p">(</span><span class="s">&quot;type-key&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">emptyMap</span><span class="p">()))</span><span class="w"> </span><span class="c1">// note that custom type provided with key</span><span class="w"></span>
-<span class="w">    </span><span class="p">.</span><span class="na">addresses</span><span class="p">(</span><span class="n">singletonList</span><span class="p">(</span><span class="n">Address</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">CountryCode</span><span class="p">.</span><span class="na">DE</span><span class="p">).</span><span class="na">withKey</span><span class="p">(</span><span class="s">&quot;address-key-1&quot;</span><span class="p">)))</span><span class="w"> </span><span class="c1">// note that addresses has to be provided with their keys        </span><span class="w"></span>
-<span class="w">    </span><span class="p">.</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;customer-key&quot;</span><span class="p">);</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">CustomFieldsDraft</span><span class="w"> </span><span class="n">customFields</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomFieldsDraftBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">()</span><span class="w"></span>
+<span class="w">                                       </span><span class="p">.</span><span class="na">type</span><span class="p">(</span><span class="n">TypeResourceIdentifierBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;type-key&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">())</span><span class="w"> </span><span class="c1">// note that custom type provided with key</span><span class="w"></span>
+<span class="w">                                       </span><span class="p">.</span><span class="na">fields</span><span class="p">(</span><span class="n">FieldContainerBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">values</span><span class="p">(</span><span class="n">Collections</span><span class="p">.</span><span class="na">emptyMap</span><span class="p">()).</span><span class="na">build</span><span class="p">())</span><span class="w"></span>
+<span class="w">                                       </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">AddressDraft</span><span class="w"> </span><span class="n">address</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AddressDraftBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">()</span><span class="w"></span>
+<span class="w">                                                </span><span class="p">.</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;address-key-1&quot;</span><span class="p">)</span><span class="w"> </span><span class="c1">// note that addresses has to be provided with their keys</span><span class="w"></span>
+<span class="w">                                                </span><span class="p">.</span><span class="na">country</span><span class="p">(</span><span class="s">&quot;DE&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">                                                </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">CustomerDraft</span><span class="w"> </span><span class="n">customerDraft</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerDraftBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">()</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="na">email</span><span class="p">(</span><span class="s">&quot;email@example.com&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="na">password</span><span class="p">(</span><span class="s">&quot;password&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;customer-key&quot;</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="na">customerGroup</span><span class="p">(</span><span class="n">CustomerGroupRescourceIdentifierBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;customer-group-key&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">())</span><span class="w"> </span><span class="c1">// note that customergroup reference provided with key</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="na">addresses</span><span class="p">(</span><span class="n">address</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="na">custom</span><span class="p">(</span><span class="n">customFields</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="na">stores</span><span class="p">(</span><span class="n">StoresResourceIdentifierBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;store-key1&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">(),</span><span class="w"> </span><span class="n">StoresResourceIdentifierBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;store-key2&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">())</span><span class="w"> </span><span class="c1">// note that store reference provided with key</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <h4 id="syncoptions">SyncOptions<a class="headerlink" href="#syncoptions" title="Permanent link">&para;</a></h4>
-<p>After the <code>sphereClient</code> is set up, a <code>CustomerSyncOptions</code> should be built as follows:
+<p>After the <code>ProjectApiRoot</code> is set up, a <code>CustomerSyncOptions</code> should be built as follows:
 <div class="highlight"><pre><span></span><code><span class="c1">// instantiating a CustomerSyncOptions</span><span class="w"></span>
-<span class="kd">final</span><span class="w"> </span><span class="n">CustomerSyncOptions</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">CustomerSyncOptions</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div></p>
 <p><code>SyncOptions</code> is an object which provides a place for users to add certain configurations to customize the sync process.
 Available configurations:</p>
@@ -1119,7 +1129,7 @@ following context about the error-event:</p>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Logger</span><span class="w"> </span><span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LoggerFactory</span><span class="p">.</span><span class="na">getLogger</span><span class="p">(</span><span class="n">CustomerSync</span><span class="p">.</span><span class="na">class</span><span class="p">);</span><span class="w"></span>
 <span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">CustomerSyncOptions</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerSyncOptionsBuilder</span><span class="w"></span>
-<span class="w">         </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">)</span><span class="w"></span>
+<span class="w">         </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">)</span><span class="w"></span>
 <span class="w">         </span><span class="p">.</span><span class="na">errorCallback</span><span class="p">((</span><span class="n">syncException</span><span class="p">,</span><span class="w"> </span><span class="n">draft</span><span class="p">,</span><span class="w"> </span><span class="n">customer</span><span class="p">,</span><span class="w"> </span><span class="n">updateActions</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
 <span class="w">            </span><span class="n">logger</span><span class="p">.</span><span class="na">error</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">SyncException</span><span class="p">(</span><span class="s">&quot;My customized message&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">syncException</span><span class="p">)).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
@@ -1134,8 +1144,8 @@ following context about the warning message:</p>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Logger</span><span class="w"> </span><span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LoggerFactory</span><span class="p">.</span><span class="na">getLogger</span><span class="p">(</span><span class="n">CustomerSync</span><span class="p">.</span><span class="na">class</span><span class="p">);</span><span class="w"></span>
 <span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">CustomerSyncOptions</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerSyncOptionsBuilder</span><span class="w"></span>
-<span class="w">         </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">)</span><span class="w"></span>
-<span class="w">         </span><span class="p">.</span><span class="na">warningCallback</span><span class="p">((</span><span class="n">syncException</span><span class="p">,</span><span class="w"> </span><span class="n">draft</span><span class="p">,</span><span class="w"> </span><span class="n">customer</span><span class="p">,</span><span class="w"> </span><span class="n">updateActions</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
+<span class="w">         </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">)</span><span class="w"></span>
+<span class="w">         </span><span class="p">.</span><span class="na">warningCallback</span><span class="p">((</span><span class="n">syncException</span><span class="p">,</span><span class="w"> </span><span class="n">draft</span><span class="p">,</span><span class="w"> </span><span class="n">customer</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
 <span class="w">            </span><span class="n">logger</span><span class="p">.</span><span class="na">warn</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">SyncException</span><span class="p">(</span><span class="s">&quot;My customized message&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">syncException</span><span class="p">)).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <h5 id="beforeupdatecallback">beforeUpdateCallback<a class="headerlink" href="#beforeupdatecallback" title="Permanent link">&para;</a></h5>
@@ -1147,15 +1157,16 @@ update actions array with custom actions or discard unwanted actions. The callba
 <li>customer from the target project</li>
 <li>update actions that were calculated after comparing both</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">TriFunction</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">UpdateAction</span><span class="o">&lt;</span><span class="n">Customer</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">CustomerDraft</span><span class="p">,</span><span class="w"> </span><span class="n">Customer</span><span class="p">,</span><span class="w"></span>
-<span class="w">                  </span><span class="n">List</span><span class="o">&lt;</span><span class="n">UpdateAction</span><span class="o">&lt;</span><span class="n">Customer</span><span class="o">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">beforeUpdateCallback</span><span class="p">,</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="c1">// Example: Ignore update actions which contain setting of lastName action</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">TriFunction</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">CustomerUpdateAction</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">CustomerDraft</span><span class="p">,</span><span class="w"> </span><span class="n">Customer</span><span class="p">,</span><span class="w"></span>
+<span class="w">                  </span><span class="n">List</span><span class="o">&lt;</span><span class="n">CustomerUpdateAction</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">beforeUpdateCallback</span><span class="p">,</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
 <span class="w">            </span><span class="p">(</span><span class="n">updateActions</span><span class="p">,</span><span class="w"> </span><span class="n">newCustomerDraft</span><span class="p">,</span><span class="w"> </span><span class="n">oldCustomer</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">  </span><span class="n">updateActions</span><span class="w"></span>
 <span class="w">                    </span><span class="p">.</span><span class="na">stream</span><span class="p">()</span><span class="w"></span>
-<span class="w">                    </span><span class="p">.</span><span class="na">filter</span><span class="p">(</span><span class="n">updateAction</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">!</span><span class="p">(</span><span class="n">updateAction</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">SetLastName</span><span class="p">))</span><span class="w"></span>
+<span class="w">                    </span><span class="p">.</span><span class="na">filter</span><span class="p">(</span><span class="n">updateAction</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">!</span><span class="p">(</span><span class="n">updateAction</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">CustomerSetLastNameActionImpl</span><span class="p">))</span><span class="w"></span>
 <span class="w">                    </span><span class="p">.</span><span class="na">collect</span><span class="p">(</span><span class="n">Collectors</span><span class="p">.</span><span class="na">toList</span><span class="p">());</span><span class="w"></span>
 
 <span class="kd">final</span><span class="w"> </span><span class="n">CustomerSyncOptions</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerSyncOptionsBuilder</span><span class="w"></span>
-<span class="w">                    </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">CTP_CLIENT</span><span class="p">)</span><span class="w"></span>
+<span class="w">                    </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">)</span><span class="w"></span>
 <span class="w">                    </span><span class="p">.</span><span class="na">beforeUpdateCallback</span><span class="p">(</span><span class="n">beforeUpdateCallback</span><span class="p">)</span><span class="w"></span>
 <span class="w">                    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
@@ -1170,7 +1181,7 @@ update actions array with custom actions or discard unwanted actions. The callba
 as customers are obtained from the target project on the commercetools platform in batches for better performance. The algorithm accumulates up to <code>batchSize</code> resources from the input list, then fetches the corresponding customers
 from the target project on the commercetools platform in a single request. Playing with this option can slightly improve or reduce processing speed. If it is not set, the default batch size is 50 for customer sync.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">CustomerSyncOptions</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
-<span class="w">         </span><span class="n">CustomerSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">batchSize</span><span class="p">(</span><span class="mi">30</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="w">         </span><span class="n">CustomerSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">batchSize</span><span class="p">(</span><span class="mi">30</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <h5 id="cachesize">cacheSize<a class="headerlink" href="#cachesize" title="Permanent link">&para;</a></h5>
 <p>In the service classes of the commercetools-sync-java library, we have implemented an in-memory <a href="https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)">LRU cache</a> to store a map used for the reference resolution of the library.
@@ -1178,7 +1189,7 @@ The cache reduces the reference resolution based calls to the commercetools API 
 which will improve the overall performance of the sync and commercetools API.</p>
 <p>Playing with this option can change the memory usage of the library. If it is not set, the default cache size is <code>10.000</code> for customer sync.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">CustomerSyncOptions</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
-<span class="w">         </span><span class="n">CustomerSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">cacheSize</span><span class="p">(</span><span class="mi">5000</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="w">         </span><span class="n">CustomerSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">cacheSize</span><span class="p">(</span><span class="mi">5000</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <h3 id="running-the-sync">Running the sync<a class="headerlink" href="#running-the-sync" title="Permanent link">&para;</a></h3>
 <p>When all prerequisites are fulfilled, follow those steps to run the sync:</p>
@@ -1206,12 +1217,12 @@ human-readable format.</p>
 <p><em>Make sure to read the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a> for optimal performance.</em></p>
 <h3 id="build-all-update-actions">Build all update actions<a class="headerlink" href="#build-all-update-actions" title="Permanent link">&para;</a></h3>
 <p>A utility method provided by the library to compare a <code>Customer</code> to a new <code>CustomerDraft</code>. The results are collected in a list of customer update actions.
-<div class="highlight"><pre><span></span><code><span class="n">List</span><span class="o">&lt;</span><span class="n">UpdateAction</span><span class="o">&lt;</span><span class="n">Customer</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">updateActions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerSyncUtils</span><span class="p">.</span><span class="na">buildActions</span><span class="p">(</span><span class="n">customer</span><span class="p">,</span><span class="w"> </span><span class="n">customerDraft</span><span class="p">,</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="p">);</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="n">List</span><span class="o">&lt;</span><span class="n">CustomerUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">updateActions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerSyncUtils</span><span class="p">.</span><span class="na">buildActions</span><span class="p">(</span><span class="n">customer</span><span class="p">,</span><span class="w"> </span><span class="n">customerDraft</span><span class="p">,</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="p">);</span><span class="w"></span>
 </code></pre></div></p>
 <h3 id="build-particular-update-actions">Build particular update action(s)<a class="headerlink" href="#build-particular-update-actions" title="Permanent link">&para;</a></h3>
 <p>The library provides utility methods to compare specific fields of a <code>Customer</code> and a new <code>CustomerDraft</code>, and builds the update action(s) as a result.
 One example is the <code>buildChangeEmailUpdateAction</code> which compare email addresses:
-<div class="highlight"><pre><span></span><code><span class="n">Optional</span><span class="o">&lt;</span><span class="n">UpdateAction</span><span class="o">&lt;</span><span class="n">Customer</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">updateAction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerUpdateActionUtils</span><span class="p">.</span><span class="na">buildChangeEmailAction</span><span class="p">(</span><span class="n">oldCustomer</span><span class="p">,</span><span class="w"> </span><span class="n">customerDraft</span><span class="p">);</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="n">Optional</span><span class="o">&lt;</span><span class="n">CustomerUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">updateAction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerUpdateActionUtils</span><span class="p">.</span><span class="na">buildChangeEmailUpdateAction</span><span class="p">(</span><span class="n">oldCustomer</span><span class="p">,</span><span class="w"> </span><span class="n">customerDraft</span><span class="p">);</span><span class="w"></span>
 </code></pre></div></p>
 <p>More examples for particular update actions can be found in the test scenarios for <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/customers/utils/CustomerUpdateActionUtilsTest.java">CustomerUpdateActionUtils</a>
 and <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/customers/utils/AddressUpdateActionUtilsTest.java">AddressUpdateActionUtils</a>.</p>
