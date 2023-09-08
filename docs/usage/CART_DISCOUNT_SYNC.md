@@ -76,7 +76,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`toCartDiscountDrafts`](#todo)
+When syncing from a source commercetools project, you can use [`toCartDiscountDrafts`](/src/main/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountTransformUtils.java)
 method that transforms(resolves by querying and caching key-id pairs) and maps from a `CartDiscount` to `CartDiscountDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
@@ -92,8 +92,8 @@ final List<CartDiscount> cartDiscounts = QueryUtils.queryAll(byProjectKeyCartDis
 ````
 
 In order to transform and map the `CartDiscount` to `CartDiscountDraft`, 
-Utils method `toCartDiscountDrafts` requires `projectApiRoot`, implementation of [`ReferenceIdToKeyCache`](#todo) and `cartDiscounts` as parameters.
-For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](#todo).
+Utils method `toCartDiscountDrafts` requires `projectApiRoot`, implementation of [`ReferenceIdToKeyCache`](/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java) and `cartDiscounts` as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java).
 Example as shown below:
 
 ````java
@@ -250,8 +250,8 @@ __Note__ The statistics object contains the processing time of the last batch on
  
 #### More examples of how to use the sync
  
- 1. [Sync from another CTP project as a source](#todo).
- 2. [Sync from an external source](#todo).
+ 1. [Sync from another CTP project as a source](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/cartdiscounts).
+ 2. [Sync from an external source](/src/integration-test/java/com/commercetools/sync/integration/externalsource/cartdiscounts).
 
 *Make sure to read the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md) for optimal performance.*
 
@@ -269,7 +269,7 @@ Utility methods provided by the library to compare the specific fields of a `Car
 ````java
 Optional<CartDiscountUpdateAction> updateAction = CartDiscountUpdateActionUtils.buildChangeNameAction(oldCartDiscount, cartDiscountDraft);
 ````
-More examples of those utils for different cart discounts can be found [here](#todo).
+More examples of those utils for different cart discounts can be found [here](/src/test/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountUpdateActionUtilsTest.java).
 
 ## Migration Guide
 
@@ -299,14 +299,14 @@ any HTTP client module. The default one is `commercetools-http-client`.
 
 ### Client configuration and creation
 
-For client creation use [ClientConfigurationUtils](#todo) which apply the best practices for `ProjectApiRoot` creation.
+For client creation use [ClientConfigurationUtils](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java) which apply the best practices for `ProjectApiRoot` creation.
 If you have custom requirements for the client creation make sure to replace `SphereClientFactory` with `ApiRootBuilder` as described in this [Migration Document](https://docs.commercetools.com/sdk/java-sdk-migrate#client-configuration-and-creation).
 
 ### Signature of CartDiscountSyncOptions
 
 As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a `ProjectApiRoot` as first argument. The callback functions are signed with `CartDiscount`, `CartDiscountDraft` and `CartDiscountUpdateAction` from `package com.commercetools.api.models.cart_discount.*`
 
-> Note: Type `UpdateAction<CartDiscount>` has changed to `CartDiscountUpdateAction`. Make sure you create and supply a specific CartDiscountUpdateAction in `beforeUpdateCallback`. For that you can use the [library-utilities](#todo) or use a JVM-SDK builder ([see also](https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources)):
+> Note: Type `UpdateAction<CartDiscount>` has changed to `CartDiscountUpdateAction`. Make sure you create and supply a specific CartDiscountUpdateAction in `beforeUpdateCallback`. For that you can use the [library-utilities](/src/main/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountSyncUtils.java) or use a JVM-SDK builder ([see also](https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources)):
 
 ```java
 // Example: Create a cart discount update action to change name taking the 'newName' of the cartDiscountDraft
@@ -371,7 +371,7 @@ For more information, see the [Guide to replace DraftBuilders](https://docs.comm
 
 ### Query for Cart Discounts (syncing from CTP project)
 
-If you sync cart discounts between different commercetools projects you probably use [CartDiscountTransformUtils#toCartDiscountDrafts](#todo) to transform `CartDiscount` into `CartDiscountDraft` which can be used by the cartDiscount-sync.
+If you sync cart discounts between different commercetools projects you probably use [CartDiscountTransformUtils#toCartDiscountDrafts](/src/main/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountTransformUtils.java) to transform `CartDiscount` into `CartDiscountDraft` which can be used by the cartDiscount-sync.
 However, if you need to query `Cart Discounts` from a commercetools project instead of passing `CartDiscountQuery`s to a `sphereClient`, create (and execute) requests directly from the `apiRoot`.
 Here's an example:
 
