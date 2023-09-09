@@ -28,9 +28,9 @@
 -->
 
 ### 10.0.0-beta.1 - Sep 8, 2023
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/9.2.3...10.0.0) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.0/) |
-[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.0.0/jar)
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/9.2.3...10.0.0-beta.3) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.0-beta.3/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.0.0-beta.3/jar)
 - 🚧 **Breaking Changes** (1)
   - commercetools-sync-java is now fully migrated to `commercetools-sdk-java-v2`. See [Migration Guide](./MIGRATION_GUIDE.md) on how to use this library version.
 

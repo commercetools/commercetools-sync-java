@@ -2,12 +2,12 @@
 # commercetools sync java
 [![CI](https://github.com/commercetools/commercetools-sync-java/workflows/CI/badge.svg)](https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/commercetools/commercetools-sync-java/branch/master/graph/badge.svg)](https://codecov.io/gh/commercetools/commercetools-sync-java)
-[![Javadoc](https://javadoc.io/badge2/com.commercetools/commercetools-sync-java/javadoc.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/10.0.0/)
+[![Javadoc](https://javadoc.io/badge2/com.commercetools/commercetools-sync-java/javadoc.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/10.0.0-beta.3-beta.3/)
 [![Known Vulnerabilities](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646/badge.svg)](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646)
 
 
-> Note: The current version of this library uses [JVM-SDK-V2](http://commercetools.github.io/commercetools-sdk-java-v2). This doc already contains updated information. Please migrate to this version, using our [Migration Guide](/docs/MIGRATION_GUIDE.md).
-> If migration isn't an option for you, you can still use deprecated versions of this library available at [Maven central](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.0.0/jar).
+> Note: The current version of this library uses [JVM-SDK-V2](http://commercetools.github.io/commercetools-sdk-java-v2). This doc already contains updated information. Please migrate to this version, using our [Migration Guide](/docs/MIGRATION_GUIDE.md). The support for JVM SDK v1 has been discontinued with [commercetools-sync-java v9.2.3](https://github.com/commercetools/commercetools-sync-java/tree/9.2.3)
+> If migration isn't an option for you, you can still use deprecated versions of this library available at [Maven central](https://central.sonatype.com/artifact/com.commercetools/commercetools-sync-java/9.2.3).
 
 More at https://commercetools.github.io/commercetools-sync-java
 
@@ -60,26 +60,26 @@ Here are the most popular ones:
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>10.0.0</version>
+  <version>10.0.0-beta.3</version>
 </dependency>
 ````
 
 #### Gradle
 
 ````groovy
-implementation 'com.commercetools:commercetools-sync-java:10.0.0'
+implementation 'com.commercetools:commercetools-sync-java:10.0.0-beta.3'
 ````
 
 #### SBT 
 
 ````
-libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "10.0.0"
+libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "10.0.0-beta.3"
 ````
 
 #### Ivy 
 
 ````xml
-<dependency org="com.commercetools" name="commercetools-sync-java" rev="10.0.0"/>
+<dependency org="com.commercetools" name="commercetools-sync-java" rev="10.0.0-beta.3"/>
 ````
 
 **Note**: To avoid `commercetools JVM SDK` libraries version mismatch between projects.
