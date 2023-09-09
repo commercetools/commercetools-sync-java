@@ -36,8 +36,8 @@ against a [CustomObjectDraft](https://docs.commercetools.com/api/projects/custom
 
 #### ProjectApiRoot
 
-Use the [ClientConfigurationUtils](#todo) which apply the best practices for `ProjectApiRoot` creation.
-To create `ClientCredentials` which are required for creating a client please use the `ClientCredentialsBuilder` provided in java-sdk-v2 [Client OAUTH2 package](#todo)
+Use the [ClientConfigurationUtils](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java) which apply the best practices for `ProjectApiRoot` creation.
+To create `ClientCredentials` which are required for creating a client please use the `ClientCredentialsBuilder` provided in java-sdk-v2 [Client OAUTH2 package](https://github.com/commercetools/commercetools-sdk-java-v2/blob/main/rmf/rmf-java-base/src/main/java/io/vrap/rmf/base/client/oauth2/ClientCredentialsBuilder.java)
 If you have custom requirements for the client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
@@ -78,7 +78,7 @@ following context about the error-event:
 * sync exception
 * custom object draft from the source
 * custom object of the target project (only provided if an existing custom object could be found)
-* a fake list of update actions, as custom objects API does not provide update actions. [NoopResourceUpdateAction.java](#todo)
+* a fake list of update actions, as custom objects API does not provide update actions. [NoopResourceUpdateAction.java](/src/main/java/com/commercetools/sync/customobjects/models/NoopResourceUpdateAction.java)
 
 ````java
  final Logger logger = LoggerFactory.getLogger(CustomObjectSync.class);
@@ -168,11 +168,9 @@ __Note__ The statistics object contains the processing time of the last batch on
   
 #### More examples of how to use the sync
  
-- [Sync from an external source](#todo).
+- [Sync from an external source](/src/integration-test/java/com/commercetools/sync/integration/externalsource/customobjects/CustomObjectSyncIT.java).
 
 *Make sure to read the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md) for optimal performance.*
-
-More examples of those utils for different custom objects can be found [here](#todo).
 
 ## Migration Guide
 
@@ -202,7 +200,7 @@ any HTTP client module. The default one is `commercetools-http-client`.
 
 ### Client configuration and creation
 
-For client creation use [ClientConfigurationUtils](#todo) which apply the best practices for `ProjectApiRoot` creation.
+For client creation use [ClientConfigurationUtils](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java) which apply the best practices for `ProjectApiRoot` creation.
 If you have custom requirements for the client creation make sure to replace `SphereClientFactory` with `ApiRootBuilder` as described in this [Migration Document](https://docs.commercetools.com/sdk/java-sdk-migrate#client-configuration-and-creation).
 
 ### Signature of CustomObjectSyncOptions

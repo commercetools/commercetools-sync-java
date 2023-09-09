@@ -66,6 +66,6 @@ implementation 'com.commercetools:commercetools-sync-java:10.0.0'
 *[Product Sync](PRODUCT_SYNC.md), [ProductType Sync](PRODUCT_TYPE_SYNC.md), 
 [Category Sync](CATEGORY_SYNC.md), [Inventory Sync](INVENTORY_SYNC.md), 
 [Type Sync](TYPE_SYNC.md), [CartDiscount Sync](CART_DISCOUNT_SYNC.md),
-[TaxCategory Sync](#todo), [State Sync](STATE_SYNC.md), 
+[TaxCategory Sync](TAX_CATEGORY_SYNC.md), [State Sync](STATE_SYNC.md), 
 [CustomObject Sync](CUSTOM_OBJECT_SYNC.md), [Customer Sync](CUSTOMER_SYNC.md),
-[ShoppingLists Sync](#todo)*
+[ShoppingLists Sync](SHOPPING_LIST_SYNC.md)*

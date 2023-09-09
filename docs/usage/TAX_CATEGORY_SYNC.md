@@ -37,8 +37,8 @@ against a [TaxCategoryDraft](https://docs.commercetools.com/api/projects/taxCate
 
 #### ProjectApiRoot
 
-Use the [ClientConfigurationUtils](#todo) which apply the best practices for `ProjectApiRoot` creation.
-To create `ClientCredentials` which are required for creating a client please use the `ClientCredentialsBuilder` provided in java-sdk-v2 [Client OAUTH2 package](#todo)
+Use the [ClientConfigurationUtils](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java) which apply the best practices for `ProjectApiRoot` creation.
+To create `ClientCredentials` which are required for creating a client please use the `ClientCredentialsBuilder` provided in java-sdk-v2 [Client OAUTH2 package](https://github.com/commercetools/commercetools-sdk-java-v2/blob/main/rmf/rmf-java-base/src/main/java/io/vrap/rmf/base/client/oauth2/ClientCredentialsBuilder.java)
 If you have custom requirements for the client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
@@ -180,8 +180,7 @@ __Note__ The statistics object contains the processing time of the last batch on
  2. It is not known by the sync which batch is going to be the last one supplied.
   
 #### More examples of how to use the sync
- 
-- [Sync from an external source](#todo).
+[Sync from an external source](/src/integration-test/java/com/commercetools/sync/integration/externalsource/taxcategories/TaxCategorySyncIT.java).
 
 *Make sure to read the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md) for optimal performance.*
 
@@ -199,7 +198,7 @@ Utility methods provided by the library to compare the specific fields of a `Tax
 ````java
 Optional<TaxCategoryUpdateAction> updateAction = TaxCategoryUpdateActionUtils.buildChangeNameAction(oldTaxCategory, taxCategoryDraft);
 ````
-More examples of those utils for different tax categories can be found [here](#todo).
+More examples of those utils for different tax categories can be found [here](/src/main/java/com/commercetools/sync/taxcategories/utils/TaxCategoryUpdateActionUtils.java).
 
 ## Migration Guide
 
@@ -229,14 +228,14 @@ any HTTP client module. The default one is `commercetools-http-client`.
 
 ### Client configuration and creation
 
-For client creation use [ClientConfigurationUtils](#todo) which apply the best practices for `ProjectApiRoot` creation.
+For client creation use [ClientConfigurationUtils](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java) which apply the best practices for `ProjectApiRoot` creation.
 If you have custom requirements for the client creation make sure to replace `SphereClientFactory` with `ApiRootBuilder` as described in this [Migration Document](https://docs.commercetools.com/sdk/java-sdk-migrate#client-configuration-and-creation).
 
 ### Signature of TaxCategorySyncOptions
 
 As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a `ProjectApiRoot` as first argument. The callback functions are signed with `TaxCategoryDraft`, `TaxCategory` and `TaxCategoryUpdateAction` from `package com.commercetools.api.models.tax_category.*`
 
-> Note: Type `UpdateAction<TaxCategory>` has changed to `TaxCategoryUpdateAction`. Make sure you create and supply a specific TaxCategoryUpdateAction in `beforeUpdateCallback`. For that you can use the [library-utilities](#todo) or use a JVM-SDK builder ([see also](https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources)):
+> Note: Type `UpdateAction<TaxCategory>` has changed to `TaxCategoryUpdateAction`. Make sure you create and supply a specific TaxCategoryUpdateAction in `beforeUpdateCallback`. For that you can use the [library-utilities](/src/main/java/com/commercetools/sync/taxcategories/utils/TaxCategorySyncUtils.java) or use a JVM-SDK builder ([see also](https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources)):
 
 ```java
 // Example: Create a tax-category update action to change name taking the 'newName' of the taxCategoryDraft

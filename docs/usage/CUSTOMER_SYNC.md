@@ -200,7 +200,7 @@ During the sync process, if a customer draft should be created, this callback ca
 
  * customer draft that should be created
 
- Please refer to the [example in the product sync document](https://github.com/commercetools/commercetools-sync-java/blob/master/docs/usage/PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
+ Please refer to the [example in the product sync document](./PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
 
 ##### batchSize
 A number that could be used to set the batch size with which customers are fetched and processed,

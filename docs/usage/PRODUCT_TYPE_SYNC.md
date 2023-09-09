@@ -41,8 +41,8 @@ against a [ProductTypeDraft](https://docs.commercetools.com/api/projects/product
 ### Prerequisites
 #### ProjectApiRoot
 
-Use the [ClientConfigurationUtils](#todo) which apply the best practices for `ProjectApiRoot` creation.
-To create the required `ClientCredentials` for client creation, please utilize the `ClientCredentialsBuilder` provided in the java-sdk-v2 [Client OAUTH2 package](#todo).
+Use the [ClientConfigurationUtils](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java) which apply the best practices for `ProjectApiRoot` creation.
+To create the required `ClientCredentials` for client creation, please utilize the `ClientCredentialsBuilder` provided in the java-sdk-v2 [Client OAUTH2 package](https://github.com/commercetools/commercetools-sdk-java-v2/blob/main/rmf/rmf-java-base/src/main/java/io/vrap/rmf/base/client/oauth2/ClientCredentialsBuilder.java).
 If you have custom requirements for the client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
@@ -76,7 +76,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`toProductTypeDrafts`](#todo)
+When syncing from a source commercetools project, you can use [`toProductTypeDrafts`](/src/main/java/com/commercetools/sync/producttypes/utils/ProductTypeTransformUtils.java)
  method that transforms(resolves by querying and caching key-id pairs) and maps from a `ProductType` to `ProductTypeDraft`. It can be configured to use a cache that will speed up the reference resolution performed during the sync, for example: 
 
 ````java
@@ -92,8 +92,8 @@ final List<ProductTypes> productTypes = QueryUtils.queryAll(byProjectKeyProductT
 ````
 
 In order to transform and map the `ProductType` to `ProductTypeDraft`, 
-Utils method `toProductTypeDrafts` requires `projectApiRoot`, implementation of [`ReferenceIdToKeyCache`](#todo) and a list of `productTypes` as parameters.
-For cache implementation, you have two options: you can either use your own cache implementation or utilize the class [`CaffeineReferenceIdToKeyCacheImpl`](#todo) provided in the library. This class implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy.Example as shown below:
+Utils method `toProductTypeDrafts` requires `projectApiRoot`, implementation of [`ReferenceIdToKeyCache`](/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java) and a list of `productTypes` as parameters.
+For cache implementation, you have two options: you can either use your own cache implementation or utilize the class [`CaffeineReferenceIdToKeyCacheImpl`](/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java) provided in the library. This class implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy.Example as shown below:
 
 ````java
 //Implement the cache using library class.
@@ -223,7 +223,7 @@ final ProductTypeSyncOptions productTypeSyncOptions =
 ````
 
 ##### cacheSize
-In the service classes of the commercetools-sync-java library, we have implemented an in-memory [LRU cache](#todo) to store a map used for the reference resolution of the library.
+In the service classes of the commercetools-sync-java library, we have implemented an in-memory [LRU cache](/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java) to store a map used for the reference resolution of the library.
 The cache reduces the reference resolution based calls to the commercetools API as the required fields of a resource will be fetched only one time. These cached fields then might be used by another resource referencing the already resolved resource instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
 which will improve the overall performance of the sync and commercetools API.
 
@@ -268,8 +268,8 @@ __Note__ The statistics object contains the processing time of the last batch on
 
 #### More examples of how to use the sync
  
- 1. [Sync from another CTP project as a source](#todo).
- 2. [Sync from an external source](#todo).
+ 1. [Sync from another CTP project as a source](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/producttypes).
+ 2. [Sync from an external source](/src/integration-test/java/com/commercetools/sync/integration/externalsource/producttypes).
 
 *Make sure to read the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md) for optimal performance.*
 
@@ -287,12 +287,12 @@ Utility methods provided by the library to compare the specific fields of a Prod
 ````java
 Optional<ProductTypeUpdateAction> updateAction = ProductTypeUpdateActionUtils.buildChangeNameAction(oldProductType, productTypeDraft);
 ````
-More examples of those utils for different fields can be found [here](#todo).
+More examples of those utils for different fields can be found [here](/src/main/java/com/commercetools/sync/producttypes/utils/ProductTypeUpdateActionUtils.java).
 
 
 ## Caveats    
 1. The order of attribute definitions in the synced product types is not guaranteed.
-2. Changing the attribute definition type is not supported. Instead, remove and re-add it with a new type manually, either over API or merchant center. For more information please [check](#todo).
+2. Changing the attribute definition type is not supported. Instead, remove and re-add it with a new type manually, either over API or merchant center. For more information please [check this ADR](/docs/adr/0003-syncing-attribute-type-changes.md).
 
 
 ## Migration Guide
@@ -322,14 +322,14 @@ any HTTP client module. The default one is `commercetools-http-client`.
 
 ### Client configuration and creation
 
-For client creation use [ClientConfigurationUtils](#todo) which apply the best practices for `ProjectApiRoot` creation.
+For client creation use [ClientConfigurationUtils](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java) which apply the best practices for `ProjectApiRoot` creation.
 If you have custom requirements for the client creation make sure to replace `SphereClientFactory` with `ApiRootBuilder` as described in this [Migration Document](https://docs.commercetools.com/sdk/java-sdk-migrate#client-configuration-and-creation).
 
 ### Signature of ProductTypeSyncOptions
 
 As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a `ProjectApiRoot` as first argument. The callback functions are signed with `ProductTypeDraft`, `ProductType` and `ProductTypeUpdateAction` from `package com.commercetools.api.models.product_type.*`
 
-> Note: Type `UpdateAction<ProductType>` has changed to `ProductTypeUpdateAction`. Make sure you create and supply a specific ProductTypeUpdateAction in `beforeUpdateCallback`. For that you can use the [library-utilities](#todo) or use a JVM-SDK builder ([see also](https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources)):
+> Note: Type `UpdateAction<ProductType>` has changed to `ProductTypeUpdateAction`. Make sure you create and supply a specific ProductTypeUpdateAction in `beforeUpdateCallback`. For that you can use the [library-utilities](/src/main/java/com/commercetools/sync/producttypes/utils/ProductTypeSyncUtils.java) or use a JVM-SDK builder ([see also](https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources)):
 
 ```java
 // Example: Create a producttype update action to change name taking the 'newName' of the productTypeDraft
@@ -372,7 +372,7 @@ For more information, see the [Guide to replace DraftBuilders](https://docs.comm
 
 ### Query for ProductTypes (syncing from CTP project)
 
-If you sync producttypes between different commercetools projects you probably use [ProductTypeTransformUtils#toProductTypeDrafts](#todo) to transform `ProductType` into `ProductTypeDraft` which can be used by the producttype-sync.
+If you sync producttypes between different commercetools projects you probably use [ProductTypeTransformUtils#toProductTypeDrafts](/src/main/java/com/commercetools/sync/producttypes/utils/ProductTypeTransformUtils.java) to transform `ProductType` into `ProductTypeDraft` which can be used by the producttype-sync.
 However, if you need to query `ProductTypes` from a commercetools project instead of passing `ProductTypeQuery`s to a `sphereClient`, create (and execute) requests directly from the `apiRoot`.
 Here's an example:
 

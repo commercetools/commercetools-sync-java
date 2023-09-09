@@ -43,8 +43,8 @@ against a [ShoppingListDraft](https://docs.commercetools.com/api/projects/shoppi
 ### Prerequisites
 #### ProjectApiRoot
 
-Use the [ClientConfigurationUtils](#todo) which apply the best practices for `ProjectApiRoot` creation.
-To create the required `ClientCredentials` for client creation, please utilize the `ClientCredentialsBuilder` provided in the java-sdk-v2 [Client OAUTH2 package](#todo).
+Use the [ClientConfigurationUtils](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java) which apply the best practices for `ProjectApiRoot` creation.
+To create the required `ClientCredentials` for client creation, please utilize the `ClientCredentialsBuilder` provided in the java-sdk-v2 [Client OAUTH2 package](https://github.com/commercetools/commercetools-sdk-java-v2/blob/main/rmf/rmf-java-base/src/main/java/io/vrap/rmf/base/client/oauth2/ClientCredentialsBuilder.java).
 If you have custom requirements for the client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
@@ -84,7 +84,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`toShoppingListDrafts`](#todo)
+When syncing from a source commercetools project, you can use [`toShoppingListDrafts`](/src/main/java/com/commercetools/sync/shoppinglists/utils/ShoppingListTransformUtils.java)
  method that transforms(resolves by querying and caching key-id pairs) and maps from a `ShoppingList` to `ShoppingListDraft` using cache in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
@@ -100,8 +100,8 @@ final List<ShoppingList> states = QueryUtils.queryAll(byProjectKeyShoppingListsG
 ````
 
 In order to transform and map the `ShoppingList` to `ShoppingListDraft`, 
-Utils method `toShoppingListDrafts` requires `projectApiRoot`, implementation of [`ReferenceIdToKeyCache`](#todo) and `shoppingLists` as parameters.
-For cache implementation, you can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](#todo).
+Utils method `toShoppingListDrafts` requires `projectApiRoot`, implementation of [`ReferenceIdToKeyCache`](/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java) and `shoppingLists` as parameters.
+For cache implementation, you can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy[`CaffeineReferenceIdToKeyCacheImpl`](/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java).
 Example as shown below:
 
 ````java
@@ -220,7 +220,7 @@ During the sync process, if a shopping list draft should be created, this callba
 
  * shopping list that should be created
 
- Please refer to the [example in the product sync document](#todo).
+ Please refer to the [example in the product sync document](./PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
 
 ##### batchSize
 A number that could be used to set the batch size with which shopping lists are fetched and processed,
@@ -271,8 +271,9 @@ __Note__ The statistics object contains the processing time of the last batch on
  2. It is not known by the sync which batch is going to be the last one supplied.
  
 #### More examples of how to use the sync
- 
-  [Sync from an external source](#todo).
+
+1. [Sync from another CTP project as a source](/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/shoppinglists/ShoppingListSyncIT.java).
+1. [Sync from an external source](/src/integration-test/java/com/commercetools/sync/integration/externalsource/shoppinglists/ShoppingListSyncIT.java).
  
  *Make sure to read the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md) for optimal performance.*
  
@@ -289,7 +290,7 @@ __Note__ The statistics object contains the processing time of the last batch on
  Optional<ShoppingListUpdateAction> updateAction = ShoppingListUpdateActionUtils.buildChangeNameAction(shoppingList, shoppingListDraft);
  ````
  
- More examples for particular update actions can be found in the test scenarios for [ShoppingListUpdateActionUtils](#todo).
+ More examples for particular update actions can be found in the test scenarios for [ShoppingListUpdateActionUtils](/src/main/java/com/commercetools/sync/shoppinglists/utils/ShoppingListUpdateActionUtils.java).
  
  
 ## Caveats
@@ -326,14 +327,14 @@ any HTTP client module. The default one is `commercetools-http-client`.
 
 ### Client configuration and creation
 
-For client creation use [ClientConfigurationUtils](#todo) which apply the best practices for `ProjectApiRoot` creation.
+For client creation use [ClientConfigurationUtils](/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java) which apply the best practices for `ProjectApiRoot` creation.
 If you have custom requirements for the client creation make sure to replace `SphereClientFactory` with `ApiRootBuilder` as described in this [Migration Document](https://docs.commercetools.com/sdk/java-sdk-migrate#client-configuration-and-creation).
 
 ### Signature of ShoppingListSyncOptions
 
 As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a `ProjectApiRoot` as first argument. The callback functions are signed with `ShoppingListDraft`, `ShoppingList` and `ShoppingListUpdateAction` from `package com.commercetools.api.models.shopping_list.*`
 
-> Note: Type `UpdateAction<ShoppingList>` has changed to `ShoppingListUpdateAction`. Make sure you create and supply a specific ShoppingListUpdateAction in `beforeUpdateCallback`. For that you can use the [library-utilities](#todo) or use a JVM-SDK builder ([see also](https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources)):
+> Note: Type `UpdateAction<ShoppingList>` has changed to `ShoppingListUpdateAction`. Make sure you create and supply a specific ShoppingListUpdateAction in `beforeUpdateCallback`. For that you can use the [library-utilities](/src/main/java/com/commercetools/sync/shoppinglists/utils/ShoppingListUpdateActionUtils.java) or use a JVM-SDK builder ([see also](https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources)):
 
 ```java
 // Example: Create a shopping-list update action to change name taking the 'newName' of the shoppingListDraft
@@ -377,7 +378,7 @@ For more information, see the [Guide to replace DraftBuilders](https://docs.comm
 
 ### Query for ShoppingLists (syncing from CTP project)
 
-If you sync shopping lists between different commercetools projects you probably use [ShoppingListTransformUtils#toShoppingListDrafts](#todo) to transform `ShoppingList` into `ShoppingListDraft` which can be used by the shopping-list-sync.
+If you sync shopping lists between different commercetools projects you probably use [ShoppingListTransformUtils#toShoppingListDrafts](/src/main/java/com/commercetools/sync/shoppinglists/utils/ShoppingListTransformUtils.java) to transform `ShoppingList` into `ShoppingListDraft` which can be used by the shopping-list-sync.
 However, if you need to query `ShoppingLists` from a commercetools project instead of passing `ShoppingListQuery`s to a `sphereClient`, create (and execute) requests directly from the `apiRoot`.
 Here's an example:
 
