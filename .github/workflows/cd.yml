@@ -21,7 +21,7 @@ jobs:
       SUBMIT_BENCHMARK_RESULT: true
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Fetch Library version
         id: vars
         run: echo ::set-output name=libVersion::${GITHUB_REF#refs/*/}
@@ -38,7 +38,7 @@ jobs:
       GRGIT_USER: ${{ secrets.GRGIT_USER }}
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set output
         id: vars
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
