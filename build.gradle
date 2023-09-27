@@ -19,7 +19,6 @@ ext{
     caffeineVersion = '3.1.8'
     nexusStagingPluginVersion = '0.22.0'
     commonTextVersion = '1.9'
-    commercetoolsJavaSDK2Version = '10.1.0'
 }
 
 apply from: "$rootDir/gradle-scripts/repositories.gradle"
@@ -44,13 +43,14 @@ apply from: "$rootDir/gradle-scripts/mkdocs.gradle"
 apply from: "$rootDir/gradle-scripts/spotless.gradle"
 
 dependencies {
-    implementation "com.commercetools.sdk:commercetools-http-client:${commercetoolsJavaSDK2Version}"
-    implementation "com.commercetools.sdk:commercetools-sdk-java-api:${commercetoolsJavaSDK2Version}"
-
+    implementation "com.commercetools.sdk:commercetools-http-client:${commercetoolsJavaSdkV2Version}"
+    implementation "com.commercetools.sdk:commercetools-sdk-java-api:${commercetoolsJavaSdkV2Version}"
     implementation "com.github.ben-manes.caffeine:caffeine:${caffeineVersion}"
     implementation "org.apache.commons:commons-text:${commonTextVersion}"
-    api "com.commercetools.sdk:commercetools-sdk-compat-v1:${commercetoolsJavaSdkV2Version}"
-    api "com.commercetools.sdk:commercetools-apachehttp-client:${commercetoolsJavaSdkV2Version}"
+    api 'commons-io:commons-io:2.11.0'
+    api 'commons-codec:commons-codec:1.16.0'
+    api 'com.google.code.findbugs:annotations:3.0.1'
+    api 'com.neovisionaries:nv-i18n:1.28'
     testImplementation "org.mockito:mockito-junit-jupiter:${mockitoJunitJupiterVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterApiVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-params:${jupiterApiVersion}"
@@ -58,4 +58,6 @@ dependencies {
     testRuntimeOnly "org.junit.vintage:junit-vintage-engine:${jupiterApiVersion}"
     testImplementation "org.assertj:assertj-core:${assertjVersion}"
     testImplementation 'com.github.spotbugs:spotbugs-annotations:4.7.3'
+
+
 }

@@ -63,7 +63,6 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.products.utils.ProductTransformUtils;
-import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -79,7 +78,6 @@ class ProductSyncWithUnexpandedReferencesIT {
 
   private static final String RESOURCE_KEY = "foo";
   private static final String TYPE_KEY = "typeKey";
-  private static ProductProjectionQuery productQuery;
 
   private ProductSync productSync;
   private List<String> errorCallBackMessages;
@@ -275,7 +273,6 @@ class ProductSyncWithUnexpandedReferencesIT {
             .build();
 
     CTP_SOURCE_CLIENT.products().create(productDraft).executeBlocking();
-    productQuery = ProductProjectionQuery.ofStaged();
   }
 
   @BeforeEach

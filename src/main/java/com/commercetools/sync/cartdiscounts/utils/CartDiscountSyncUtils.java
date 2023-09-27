@@ -20,10 +20,9 @@ public final class CartDiscountSyncUtils {
 
   /**
    * Compares all the fields of a {@link CartDiscount} and a {@link CartDiscountDraft}. It returns a
-   * {@link java.util.List} of {@link io.sphere.sdk.commands.UpdateAction}&lt;{@link
-   * CartDiscount}&gt; as a result. If no update action is needed, for example in case where both
-   * the {@link CartDiscount} and the {@link CartDiscountDraft} have the same fields, an empty
-   * {@link java.util.List} is returned.
+   * {@link java.util.List} of {@link CartDiscountUpdateAction} as a result. If no update action is
+   * needed, for example in case where both the {@link CartDiscount} and the {@link
+   * CartDiscountDraft} have the same fields, an empty {@link java.util.List} is returned.
    *
    * @param oldCartDiscount the cart discount which should be updated.
    * @param newCartDiscount the cart discount draft where we get the new data.

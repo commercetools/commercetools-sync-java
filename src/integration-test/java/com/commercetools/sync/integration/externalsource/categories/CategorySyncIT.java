@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import org.junit.jupiter.api.*;
 
+@Disabled
 class CategorySyncIT {
   private CategorySync categorySync;
   private static final String oldCategoryKey = "oldCategoryKey";

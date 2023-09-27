@@ -405,8 +405,7 @@ class VariantReferenceResolverTest {
     assertThat(resolvedSet).isNotEmpty();
     final ObjectNode resolvedReference = JsonNodeFactory.instance.objectNode();
     resolvedReference.put(
-        ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD,
-        io.sphere.sdk.products.Product.referenceTypeId());
+        ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD, ProductReference.PRODUCT);
     resolvedReference.put(ResourceIdentifierUtils.REFERENCE_ID_FIELD, PRODUCT_ID);
     assertThat(resolvedSet)
         .containsExactlyInAnyOrder(resolvedReference, JsonNodeFactory.instance.nullNode());

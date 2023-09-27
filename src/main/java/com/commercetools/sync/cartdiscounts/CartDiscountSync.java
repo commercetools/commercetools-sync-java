@@ -100,8 +100,8 @@ public class CartDiscountSync
    *
    * <p><strong>Inherited doc:</strong> {@inheritDoc}
    *
-   * @param cartDiscountDrafts {@link java.util.List} of {@link
-   *     io.sphere.sdk.cartdiscounts.CartDiscountDraft}'s that would be synced into CTP project.
+   * @param cartDiscountDrafts {@link java.util.List} of {@link CartDiscountDraft}'s that would be
+   *     synced into CTP project.
    * @return {@link java.util.concurrent.CompletionStage} with {@link CartDiscountSyncStatistics}
    *     holding statistics of all sync processes performed by this sync instance.
    */

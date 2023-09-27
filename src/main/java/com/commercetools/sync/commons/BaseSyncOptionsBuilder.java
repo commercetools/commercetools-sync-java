@@ -2,6 +2,8 @@ package com.commercetools.sync.commons;
 
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.models.ResourceUpdateAction;
+import com.commercetools.api.models.product.Product;
+import com.commercetools.api.models.product.ProductDraft;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
@@ -115,12 +117,11 @@ public abstract class BaseSyncOptionsBuilder<
   /**
    * Sets the beforeUpdateCallback {@link TriFunction} which can be applied on the supplied list of
    * update actions generated from comparing an old resource of type {@code U} (e.g. {@link
-   * io.sphere.sdk.products.Product}) to a new draft of type {@code V} (e.g. {@link
-   * io.sphere.sdk.products.ProductDraft}). It results in a resultant list after the specified
-   * {@link TriFunction} {@code beforeUpdateCallback} function has been applied. This can be used to
-   * intercept the sync process before issuing an update request and to be able to manipulate the
-   * update actions. <b>Note</b>: Specifying a callback that returns a {@code null} value or empty
-   * list will skip issuing the update request.
+   * Product}) to a new draft of type {@code V} (e.g. {@link ProductDraft}). It results in a
+   * resultant list after the specified {@link TriFunction} {@code beforeUpdateCallback} function
+   * has been applied. This can be used to intercept the sync process before issuing an update
+   * request and to be able to manipulate the update actions. <b>Note</b>: Specifying a callback
+   * that returns a {@code null} value or empty list will skip issuing the update request.
    *
    * @param beforeUpdateCallback function which can be applied on generated list of update actions.
    * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
@@ -139,11 +140,11 @@ public abstract class BaseSyncOptionsBuilder<
 
   /**
    * Sets the beforeCreateCallback {@link Function} which can be applied on a new resource draft of
-   * type {@code V} (e.g. {@link io.sphere.sdk.products.ProductDraft}) before it's created by the
-   * sync. It results in a resource draft of the same type which is the result of the application of
-   * the specified {@link Function} {@code beforeCreateCallback} function. This can be used to
-   * intercept the sync process before creating the resource draft and to be able to manipulate it.
-   * <b>Note</b>: Specifying a callback that returns a {@code null} value will skip draft creation.
+   * type {@code V} (e.g. {@link ProductDraft}) before it's created by the sync. It results in a
+   * resource draft of the same type which is the result of the application of the specified {@link
+   * Function} {@code beforeCreateCallback} function. This can be used to intercept the sync process
+   * before creating the resource draft and to be able to manipulate it. <b>Note</b>: Specifying a
+   * callback that returns a {@code null} value will skip draft creation.
    *
    * @param beforeCreateCallback function which can be applied on a new draft before it's created by
    *     the sync.

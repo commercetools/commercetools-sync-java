@@ -101,7 +101,7 @@ public interface CustomerService {
    * @param updateActions the update actions to update the {@link Customer} with.
    * @return {@link CompletionStage}&lt;{@link Customer}&gt; containing as a result of it's
    *     completion an instance of the {@link Customer} which was updated in the CTP project or a
-   *     {@link io.sphere.sdk.models.SphereException}.
+   *     {@link java.util.concurrent.CompletionException}.
    */
   @Nonnull
   CompletionStage<Customer> updateCustomer(

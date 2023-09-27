@@ -523,7 +523,7 @@ public class ProductTypeSync
    * of it and returns a list of update actions.
    *
    * @return a list of update actions corresponding to the supplied set of {@link
-   *     io.sphere.sdk.products.attributes.AttributeDefinitionDraft}s.
+   *     AttributeDefinitionDraft}s.
    */
   @Nonnull
   private List<ProductTypeUpdateAction> draftsToActions(

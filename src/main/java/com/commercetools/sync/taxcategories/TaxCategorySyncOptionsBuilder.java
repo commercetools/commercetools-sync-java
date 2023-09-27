@@ -22,12 +22,12 @@ public final class TaxCategorySyncOptionsBuilder
   }
 
   /**
-   * Creates a new instance of {@link TaxCategorySyncOptionsBuilder} given a {@link
-   * io.sphere.sdk.client.SphereClient} responsible for interaction with the target CTP project,
-   * with the default batch size ({@code BATCH_SIZE_DEFAULT} = 50).
+   * Creates a new instance of {@link TaxCategorySyncOptionsBuilder} given a {@link ProjectApiRoot}
+   * responsible for interaction with the target CTP project, with the default batch size ({@code
+   * BATCH_SIZE_DEFAULT} = 50).
    *
-   * @param ctpClient instance of the {@link io.sphere.sdk.client.SphereClient} responsible for
-   *     interaction with the target CTP project.
+   * @param ctpClient instance of the {@link ProjectApiRoot} responsible for interaction with the
+   *     target CTP project.
    * @return new instance of {@link TaxCategorySyncOptionsBuilder}
    */
   public static TaxCategorySyncOptionsBuilder of(@Nonnull final ProjectApiRoot ctpClient) {
