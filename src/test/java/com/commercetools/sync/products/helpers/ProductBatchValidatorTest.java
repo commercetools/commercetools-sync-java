@@ -16,22 +16,18 @@ import com.commercetools.api.models.common.PriceDraft;
 import com.commercetools.api.models.common.PriceDraftBuilder;
 import com.commercetools.api.models.custom_object.CustomObjectReference;
 import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
-import com.commercetools.api.models.product.Attribute;
-import com.commercetools.api.models.product.AttributeBuilder;
-import com.commercetools.api.models.product.ProductDraft;
-import com.commercetools.api.models.product.ProductVariantDraft;
-import com.commercetools.api.models.product.ProductVariantDraftBuilder;
+import com.commercetools.api.models.product.*;
 import com.commercetools.api.models.state.StateResourceIdentifierBuilder;
 import com.commercetools.api.models.tax_category.TaxCategoryResourceIdentifierBuilder;
 import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.api.models.type.FieldContainerBuilder;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
+import com.commercetools.sync.commons.utils.ResourceIdentifierUtils;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.products.ProductSyncMockUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -142,10 +138,29 @@ class ProductBatchValidatorTest {
   }
 
   @Test
-  void getProductKeyFromReference_WithNullJsonNode_ShouldReturnEmptyOpt() {
-    final NullNode nullNode = JsonNodeFactory.instance.nullNode();
+  void getProductKeyFromReference_WithNullId_ShouldReturnEmptyOpt() {
+    final ObjectNode referenceValue = JsonNodeFactory.instance.objectNode();
+    referenceValue.put(ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD, ProductReference.PRODUCT);
+    referenceValue.set(
+        ResourceIdentifierUtils.REFERENCE_ID_FIELD, JsonNodeFactory.instance.nullNode());
     final Attribute productReferenceAttribute =
-        AttributeBuilder.of().name("foo").value(nullNode).build();
+        AttributeBuilder.of().name("foo").value(referenceValue).build();
+
+    final ProductVariantDraft productVariantDraft =
+        ProductVariantDraftBuilder.of().attributes(productReferenceAttribute).build();
+
+    final Set<String> result = ProductBatchValidator.getReferencedProductKeys(productVariantDraft);
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  void getProductKeyFromReference_WithNullStringIdValue_ShouldReturnEmptyOpt() {
+    final Attribute productReferenceAttribute =
+        AttributeBuilder.of()
+            .name("foo")
+            .value(ProductSyncMockUtils.getProductReferenceWithId("null"))
+            .build();
 
     final ProductVariantDraft productVariantDraft =
         ProductVariantDraftBuilder.of().attributes(productReferenceAttribute).build();

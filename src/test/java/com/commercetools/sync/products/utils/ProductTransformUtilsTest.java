@@ -398,6 +398,17 @@ class ProductTransformUtilsTest {
     final ApiHttpResponse<GraphQLResponse> productTypesResponse =
         TestUtils.mockGraphQLResponse(jsonStringProductTypes);
 
+    String jsonStringTaxCategory =
+        "{ \"taxCategories\": {\"results\":[{\"id\":\"ebbe95fb-2282-4f9a-8747-fbe440e02dc0\","
+            + "\"key\":\"null\"}]}}";
+    final ApiHttpResponse<GraphQLResponse> taxCategoryResponse =
+        TestUtils.mockGraphQLResponse(jsonStringTaxCategory);
+
+    String jsonStringState =
+        "{ \"states\": {\"results\":[{\"id\": " + null + "," + "\"key\": " + null + "}]}}";
+    final ApiHttpResponse<GraphQLResponse> stateResponse =
+        TestUtils.mockGraphQLResponse(jsonStringState);
+
     final ByProjectKeyGraphqlPost byProjectKeyGraphQlPost = mock(ByProjectKeyGraphqlPost.class);
 
     when(sourceClient.graphql()).thenReturn(mock());
@@ -405,6 +416,8 @@ class ProductTransformUtilsTest {
         .thenReturn(byProjectKeyGraphQlPost);
     when(byProjectKeyGraphQlPost.execute())
         .thenReturn(CompletableFuture.completedFuture(productTypesResponse))
+        .thenReturn(CompletableFuture.completedFuture(taxCategoryResponse))
+        .thenReturn(CompletableFuture.completedFuture(stateResponse))
         .thenReturn(CompletableFuture.completedFuture(mock(ApiHttpResponse.class)));
 
     mockAttributeCustomObjectReference(sourceClient);
@@ -424,9 +437,12 @@ class ProductTransformUtilsTest {
 
     assertThat(productKey1)
         .hasValueSatisfying(
-            productDraft ->
-                assertThat(productDraft.getProductType().getKey())
-                    .isEqualTo(BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER));
+            productDraft -> {
+              assertThat(productDraft.getProductType().getKey())
+                  .isEqualTo(BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER);
+              assertThat(productDraft.getTaxCategory().getKey())
+                  .isEqualTo(BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER);
+            });
   }
 
   @Test
