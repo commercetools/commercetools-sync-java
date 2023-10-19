@@ -1,7 +1,6 @@
 package com.commercetools.sync.services.impl;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
-import static com.commercetools.sync.commons.utils.CustomValueConverter.isValidTextNode;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -28,7 +27,6 @@ import io.vrap.rmf.base.client.BodyApiMethod;
 import io.vrap.rmf.base.client.Draft;
 import io.vrap.rmf.base.client.error.NotFoundException;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
-
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -142,10 +140,10 @@ abstract class BaseService<
         .thenApply(
             graphQlResults -> {
               graphQlResults.stream()
-                      .map(ApiHttpResponse::getBody)
-                      .filter(Objects::nonNull)
-                      .map(GraphQLResponse::getData)
-                      .filter(Objects::nonNull)
+                  .map(ApiHttpResponse::getBody)
+                  .filter(Objects::nonNull)
+                  .map(GraphQLResponse::getData)
+                  .filter(Objects::nonNull)
                   .forEach(
                       data -> {
                         ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
