@@ -264,7 +264,7 @@ class ProductTypeBatchValidatorTest {
                     attributeTypeBuilder
                         .nestedBuilder()
                         .typeReference(
-                            productTypeReferenceBuilder -> productTypeReferenceBuilder.id("")))
+                            productTypeReferenceBuilder -> productTypeReferenceBuilder.id("null")))
             .name("invalidNested")
             .label(ofEnglish("koko"))
             .isRequired(true)
@@ -282,7 +282,7 @@ class ProductTypeBatchValidatorTest {
                                     .nestedBuilder()
                                     .typeReference(
                                         productTypeReferenceBuilder ->
-                                            productTypeReferenceBuilder.id(""))))
+                                            productTypeReferenceBuilder.id("null"))))
             .name("setOfInvalidNested")
             .label(ofEnglish("koko"))
             .isRequired(true)

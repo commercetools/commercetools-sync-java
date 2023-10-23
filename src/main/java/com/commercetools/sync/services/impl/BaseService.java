@@ -11,6 +11,7 @@ import com.commercetools.api.models.PagedQueryResourceRequest;
 import com.commercetools.api.models.ResourcePagedQueryResponse;
 import com.commercetools.api.models.graph_ql.GraphQLRequest;
 import com.commercetools.api.models.graph_ql.GraphQLRequestBuilder;
+import com.commercetools.api.models.graph_ql.GraphQLResponse;
 import com.commercetools.api.models.graph_ql.GraphQLVariablesMapBuilder;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
@@ -26,13 +27,7 @@ import io.vrap.rmf.base.client.BodyApiMethod;
 import io.vrap.rmf.base.client.Draft;
 import io.vrap.rmf.base.client.error.NotFoundException;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
@@ -145,10 +140,10 @@ abstract class BaseService<
         .thenApply(
             graphQlResults -> {
               graphQlResults.stream()
-                  .map(r -> r.getBody().getData())
-                  // todo: set limit to -1, the payload will have errors object but what to do with
-                  // it ?
-                  //                  .filter(Objects::nonNull)
+                  .map(ApiHttpResponse::getBody)
+                  .filter(Objects::nonNull)
+                  .map(GraphQLResponse::getData)
+                  .filter(Objects::nonNull)
                   .forEach(
                       data -> {
                         ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();

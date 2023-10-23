@@ -259,6 +259,8 @@ class ProductServiceImplIT {
         spyProductService.cacheKeysToIds(singleton(product.getKey())).toCompletableFuture().join();
     assertThat(cache).hasSize(2);
     assertThat(cache).containsKeys(product.getKey(), product2.getKey());
+    cache = spyProductService.cacheKeysToIds(singleton(null)).toCompletableFuture().join();
+    assertThat(cache).hasSize(2);
 
     // verify only 1 request was made to fetch id the first time, but not second time since it's
     // already in cache.
