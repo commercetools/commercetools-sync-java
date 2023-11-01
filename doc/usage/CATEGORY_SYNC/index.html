@@ -1104,8 +1104,8 @@ against a <a href="https://docs.commercetools.com/api/projects/categories#catego
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
 <h4 id="projectapiroot">ProjectApiRoot<a class="headerlink" href="#projectapiroot" title="Permanent link">&para;</a></h4>
-<p>Use the <a href="#todo">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
-To create <code>ClientCredentials</code> which are required for creating a client please use the <code>ClientCredentialsBuilder</code> provided in java-sdk-v2 <a href="#todo">Client OAUTH2 package</a>
+<p>Use the <a href="/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+To create <code>ClientCredentials</code> which are required for creating a client please use the <code>ClientCredentialsBuilder</code> provided in java-sdk-v2 <a href="https://github.com/commercetools/commercetools-sdk-java-v2/blob/main/rmf/rmf-java-base/src/main/java/io/vrap/rmf/base/client/oauth2/ClientCredentialsBuilder.java">Client OAUTH2 package</a>
 If you have custom requirements for the client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ClientCredentials</span><span class="w"> </span><span class="n">clientCredentials</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
 <span class="w">        </span><span class="k">new</span><span class="w"> </span><span class="n">ClientCredentialsBuilder</span><span class="p">()</span><span class="w"></span>
@@ -1221,7 +1221,7 @@ Being persisted as <code>CustomObject</code> means that the referenced parent Ca
 As soon, as the referenced parent Category Draft is supplied to the sync, the Category will be created/updated and the 
 <code>CustomObject</code> will be removed from the target project.</p>
 <h5 id="syncing-from-a-commercetools-project">Syncing from a commercetools project<a class="headerlink" href="#syncing-from-a-commercetools-project" title="Permanent link">&para;</a></h5>
-<p>When syncing from a source commercetools project, you can use <a href="#todo"><code>toCategoryDrafts</code></a>
+<p>When syncing from a source commercetools project, you can use <a href="/src/main/java/com/commercetools/sync/categories/utils/CategoryTransformUtils.java"><code>toCategoryDrafts</code></a>
 method that transforms(resolves by querying and caching key-id pairs) and maps from a <code>Category</code> to <code>CategoryDraft</code> using cache in order to make them ready for reference resolution by the sync, for example: </p>
 <div class="highlight"><pre><span></span><code><span class="c1">// Build ByProjectKeyCategoriesGet for fetching categories from a source CTP project without any references expanded for the sync:</span><span class="w"></span>
 <span class="kd">final</span><span class="w"> </span><span class="n">ByProjectKeyCategoriesGet</span><span class="w"> </span><span class="n">byProjectKeyCategoriesGet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="na">categories</span><span class="p">().</span><span class="na">get</span><span class="p">();</span><span class="w"></span>
@@ -1234,8 +1234,8 @@ method that transforms(resolves by querying and caching key-id pairs) and maps f
 <span class="w">            </span><span class="p">.</span><span class="na">join</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <p>In order to transform and map the <code>Category</code> to <code>CategoryDraft</code>, 
-Utils method <code>toCategoryDrafts</code> requires <code>projectApiRoot</code>, implementation of <a href="#todo"><code>ReferenceIdToKeyCache</code></a> and <code>categories</code> as parameters.
-For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy<a href="#todo"><code>CaffeineReferenceIdToKeyCacheImpl</code></a>.
+Utils method <code>toCategoryDrafts</code> requires <code>projectApiRoot</code>, implementation of <a href="/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java"><code>ReferenceIdToKeyCache</code></a> and <code>categories</code> as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy<a href="/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java"><code>CaffeineReferenceIdToKeyCacheImpl</code></a>.
 Example as shown below:</p>
 <div class="highlight"><pre><span></span><code><span class="c1">//Implement the cache using library class.</span><span class="w"></span>
 <span class="kd">final</span><span class="w"> </span><span class="n">ReferenceIdToKeyCache</span><span class="w"> </span><span class="n">referenceIdToKeyCache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">CaffeineReferenceIdToKeyCacheImpl</span><span class="p">();</span><span class="w"></span>
@@ -1387,22 +1387,21 @@ human-readable format.</p>
 </ol>
 <h5 id="more-examples-of-how-to-use-the-sync">More examples of how to use the sync<a class="headerlink" href="#more-examples-of-how-to-use-the-sync" title="Permanent link">&para;</a></h5>
 <ol>
-<li><a href="#todo">Sync from another CTP project as a source</a>.</li>
-<li><a href="#todo">Sync from an external source</a>.</li>
+<li><a href="/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java">Sync from another CTP project as a source</a>.</li>
+<li><a href="/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/CategorySyncIT.java">Sync from an external source</a>.</li>
 </ol>
 <p><em>Make sure to read the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a> for optimal performance.</em></p>
 <h3 id="build-all-update-actions">Build all update actions<a class="headerlink" href="#build-all-update-actions" title="Permanent link">&para;</a></h3>
 <p>A utility method provided by the library to compare a Category with a new CategoryDraft and results in a list of category update actions. 
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">CategoryUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">updateActions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CategorySyncUtils</span><span class="p">.</span><span class="na">buildActions</span><span class="p">(</span><span class="n">category</span><span class="p">,</span><span class="w"> </span><span class="n">categoryDraft</span><span class="p">,</span><span class="w"> </span><span class="n">categorySyncOptions</span><span class="p">);</span><span class="w"></span>
 </code></pre></div></p>
-<p>Examples of its usage can be found in the tests 
-<a href="#todo">here</a>.</p>
+<p>Examples of its usage can be found in the tests <a href="/src/test/java/com/commercetools/sync/categories/utils/CategorySyncUtilsTest.java">here</a>.</p>
 <h3 id="build-particular-update-actions">Build particular update action(s)<a class="headerlink" href="#build-particular-update-actions" title="Permanent link">&para;</a></h3>
 <p>Utility methods provided by the library to compare the specific fields of a Category and a new CategoryDraft, and in turn, build
  the update action. One example is the <code>buildChangeNameUpdateAction</code> which compares names:
-<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">Optional</span><span class="o">&lt;</span><span class="n">CategoryUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">updateAction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buildChangeNameUpdateAction</span><span class="p">(</span><span class="n">oldCategory</span><span class="p">,</span><span class="w"> </span><span class="n">categoryDraft</span><span class="p">);</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">Optional</span><span class="o">&lt;</span><span class="n">CategoryUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">updateAction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CategoryUpdateActionUtils</span><span class="p">.</span><span class="na">buildChangeNameUpdateAction</span><span class="p">(</span><span class="n">oldCategory</span><span class="p">,</span><span class="w"> </span><span class="n">categoryDraft</span><span class="p">);</span><span class="w"></span>
 </code></pre></div>
-More examples of those utils for different fields can be found <a href="#todo">here</a>.</p>
+More examples of those utils for different fields can be found <a href="/src/test/java/com/commercetools/sync/categories/utils/CategoryUpdateActionUtilsTest.java">here</a>.</p>
 <h2 id="migration-guide">Migration Guide<a class="headerlink" href="#migration-guide" title="Permanent link">&para;</a></h2>
 <p>The category-sync uses the <a href="http://commercetools.github.io/commercetools-sdk-java-v2">JVM-SDK-V2</a>, therefore ensure you <a href="https://docs.commercetools.com/sdk/java-sdk-getting-started#install-the-java-sdk">Install JVM SDK</a> module <code>commercetools-sdk-java-api</code> with
 any HTTP client module. The default one is <code>commercetools-http-client</code>.</p>
@@ -1425,12 +1424,12 @@ any HTTP client module. The default one is <code>commercetools-http-client</code
  <span class="nt">&lt;/dependencies&gt;</span>
 </code></pre></div>
 <h3 id="client-configuration-and-creation">Client configuration and creation<a class="headerlink" href="#client-configuration-and-creation" title="Permanent link">&para;</a></h3>
-<p>For client creation use <a href="#todo">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+<p>For client creation use <a href="/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
 If you have custom requirements for the client creation make sure to replace <code>SphereClientFactory</code> with <code>ApiRootBuilder</code> as described in this <a href="https://docs.commercetools.com/sdk/java-sdk-migrate#client-configuration-and-creation">Migration Document</a>.</p>
 <h3 id="signature-of-categorysyncoptions">Signature of CategorySyncOptions<a class="headerlink" href="#signature-of-categorysyncoptions" title="Permanent link">&para;</a></h3>
 <p>As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a <code>ProjectApiRoot</code> as first argument. The callback functions are signed with <code>CategoryDraft</code>, <code>Category</code> and <code>CategoryUpdateAction</code> from <code>package com.commercetools.api.models.category.*</code></p>
 <blockquote>
-<p>Note: Type <code>UpdateAction&lt;Category&gt;</code> has changed to <code>CategoryUpdateAction</code>. Make sure you create and supply a specific CategoryUpdateAction in <code>beforeUpdateCallback</code>. For that you can use the <a href="#todo">library-utilities</a> or use a JVM-SDK builder (<a href="https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources">see also</a>):</p>
+<p>Note: Type <code>UpdateAction&lt;Category&gt;</code> has changed to <code>CategoryUpdateAction</code>. Make sure you create and supply a specific CategoryUpdateAction in <code>beforeUpdateCallback</code>. For that you can use the <a href="/src/main/java/com/commercetools/sync/categories/utils/CategorySyncUtils.java">library-utilities</a> or use a JVM-SDK builder (<a href="https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources">see also</a>):</p>
 </blockquote>
 <div class="highlight"><pre><span></span><code><span class="c1">// Example: Create a category update action to change name taking the &#39;newName&#39; of the categoryDraft</span><span class="w"></span>
 <span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">Function</span><span class="o">&lt;</span><span class="n">LocalizedString</span><span class="p">,</span><span class="w"> </span><span class="n">CategoryUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">createBeforeUpdateAction</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
@@ -1468,7 +1467,7 @@ The V2 SDK do not have inheritance for <code>DraftBuilder</code> classes but the
 </code></pre></div>
 For more information, see the <a href="https://docs.commercetools.com/sdk/java-sdk-migrate#using-draftbuilders">Guide to replace DraftBuilders</a>.</p>
 <h3 id="query-for-categories-syncing-from-ctp-project">Query for Categories (syncing from CTP project)<a class="headerlink" href="#query-for-categories-syncing-from-ctp-project" title="Permanent link">&para;</a></h3>
-<p>If you sync categories between different commercetools projects you probably use <a href="#todo">CategoryTransformUtils#toCategoryDrafts</a> to transform <code>Category</code> into <code>CategoryDraft</code> which can be used by the category-sync.
+<p>If you sync categories between different commercetools projects you probably use <a href="/src/main/java/com/commercetools/sync/categories/utils/CategoryTransformUtils.java">CategoryTransformUtils#toCategoryDrafts</a> to transform <code>Category</code> into <code>CategoryDraft</code> which can be used by the category-sync.
 However, if you need to query <code>Categories</code> from a commercetools project instead of passing <code>CategoryQuery</code>s to a <code>sphereClient</code>, create (and execute) requests directly from the <code>apiRoot</code>.
 Here's an example:</p>
 <p><div class="highlight"><pre><span></span><code><span class="c1">// SDK v1: CategoryQuery to fetch all categories</span><span class="w"></span>

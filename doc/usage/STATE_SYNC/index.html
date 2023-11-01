@@ -1104,8 +1104,8 @@ against a <a href="https://docs.commercetools.com/api/projects/states#statedraft
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
 <h4 id="projectapiroot">ProjectApiRoot<a class="headerlink" href="#projectapiroot" title="Permanent link">&para;</a></h4>
-<p>Use the <a href="#todo">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
-To create <code>ClientCredentials</code> which are required for creating a client please use the <code>ClientCredentialsBuilder</code> provided in java-sdk-v2 <a href="#todo">Client OAUTH2 package</a>
+<p>Use the <a href="/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+To create <code>ClientCredentials</code> which are required for creating a client please use the <code>ClientCredentialsBuilder</code> provided in java-sdk-v2 <a href="https://github.com/commercetools/commercetools-sdk-java-v2/blob/main/rmf/rmf-java-base/src/main/java/io/vrap/rmf/base/client/oauth2/ClientCredentialsBuilder.java">Client OAUTH2 package</a>
 If you have custom requirements for the client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ClientCredentials</span><span class="w"> </span><span class="n">clientCredentials</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
 <span class="w">        </span><span class="k">new</span><span class="w"> </span><span class="n">ClientCredentialsBuilder</span><span class="p">()</span><span class="w"></span>
@@ -1152,7 +1152,7 @@ When the key to a referenced state is provided with a <code>ResourceIdentifier</
 </tbody>
 </table>
 <h5 id="syncing-from-a-commercetools-project">Syncing from a commercetools project<a class="headerlink" href="#syncing-from-a-commercetools-project" title="Permanent link">&para;</a></h5>
-<p>When syncing from a source commercetools project, you can use <a href="#todo"><code>toStateDrafts</code></a>
+<p>When syncing from a source commercetools project, you can use <a href="/src/main/java/com/commercetools/sync/states/utils/StateTransformUtils.java"><code>toStateDrafts</code></a>
  method that transforms(resolves by querying and caching key-id pairs) and maps from a <code>State</code> to <code>StateDraft</code> using cache in order to make them ready for reference resolution by the sync, for example: </p>
 <div class="highlight"><pre><span></span><code><span class="c1">// Build a ByProjectKeyStatesGet for fetching states from a source CTP project without any references expanded for the sync:</span><span class="w"></span>
 <span class="kd">final</span><span class="w"> </span><span class="n">ByProjectKeyStatesGet</span><span class="w"> </span><span class="n">byProjectKeyStatesGet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="na">states</span><span class="p">().</span><span class="na">get</span><span class="p">();</span><span class="w"></span>
@@ -1165,8 +1165,8 @@ When the key to a referenced state is provided with a <code>ResourceIdentifier</
 <span class="w">        </span><span class="p">.</span><span class="na">join</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <p>In order to transform and map the <code>State</code> to <code>StateDraft</code>, 
-Utils method <code>toStateDrafts</code> requires <code>projectApiRoot</code>, implementation of <a href="#todo"><code>ReferenceIdToKeyCache</code></a> and <code>states</code> as parameters.
-For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy<a href="#todo"><code>CaffeineReferenceIdToKeyCacheImpl</code></a>.
+Utils method <code>toStateDrafts</code> requires <code>projectApiRoot</code>, implementation of <a href="/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java"><code>ReferenceIdToKeyCache</code></a> and <code>states</code> as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy<a href="/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java"><code>CaffeineReferenceIdToKeyCacheImpl</code></a>.
 Example as shown below:</p>
 <div class="highlight"><pre><span></span><code><span class="c1">//Implement the cache using library class.</span><span class="w"></span>
 <span class="kd">final</span><span class="w"> </span><span class="n">ReferenceIdToKeyCache</span><span class="w"> </span><span class="n">referenceIdToKeyCache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">CaffeineReferenceIdToKeyCacheImpl</span><span class="p">();</span><span class="w"></span>
@@ -1323,7 +1323,8 @@ It being persisted as <code>CustomObject</code> means that the referenced StateD
 <p>Keeping the old custom objects around forever can negatively influence the performance of your project and the time it takes to restore it from a backup. Deleting unused data ensures the best performance for your project. Please have a look into the <a href="../CLEANUP_GUIDE/">Cleanup guide</a> to cleanup old unresolved custom objects.</p>
 <h4 id="more-examples-of-how-to-use-the-sync">More examples of how to use the sync<a class="headerlink" href="#more-examples-of-how-to-use-the-sync" title="Permanent link">&para;</a></h4>
 <ol>
-<li><a href="#todo">Sync usages</a>.</li>
+<li><a href="/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/states/StateSyncIT.java">Sync from another CTP project as a source</a>.</li>
+<li><a href="/src/integration-test/java/com/commercetools/sync/integration/externalsource/states/StateSyncIT.java">Sync from an external source</a>.</li>
 </ol>
 <p><em>Make sure to read the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a> for optimal performance.</em></p>
 <h3 id="build-all-update-actions">Build all update actions<a class="headerlink" href="#build-all-update-actions" title="Permanent link">&para;</a></h3>
@@ -1336,7 +1337,7 @@ It being persisted as <code>CustomObject</code> means that the referenced StateD
  the update action. One example is the <code>buildSetNameAction</code> which compares names:
 <div class="highlight"><pre><span></span><code><span class="n">Optional</span><span class="o">&lt;</span><span class="n">StateUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">updateAction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">StateUpdateActionUtils</span><span class="p">.</span><span class="na">buildSetNameAction</span><span class="p">(</span><span class="n">oldState</span><span class="p">,</span><span class="w"> </span><span class="n">stateDraft</span><span class="p">);</span><span class="w"></span>
 </code></pre></div>
-More examples of those utils for different types can be found <a href="#todo">here</a>.</p>
+More examples of those utils for different types can be found <a href="/src/main/java/com/commercetools/sync/states/utils/StateUpdateActionUtils.java">here</a>.</p>
 <h2 id="migration-guide">Migration Guide<a class="headerlink" href="#migration-guide" title="Permanent link">&para;</a></h2>
 <p>The state-sync uses the <a href="http://commercetools.github.io/commercetools-sdk-java-v2">JVM-SDK-V2</a>, therefore ensure you <a href="https://docs.commercetools.com/sdk/java-sdk-getting-started#install-the-java-sdk">Install JVM SDK</a> module <code>commercetools-sdk-java-api</code> with
 any HTTP client module. The default one is <code>commercetools-http-client</code>.</p>
@@ -1359,12 +1360,12 @@ any HTTP client module. The default one is <code>commercetools-http-client</code
  <span class="nt">&lt;/dependencies&gt;</span>
 </code></pre></div>
 <h3 id="client-configuration-and-creation">Client configuration and creation<a class="headerlink" href="#client-configuration-and-creation" title="Permanent link">&para;</a></h3>
-<p>For client creation use <a href="#todo">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+<p>For client creation use <a href="/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
 If you have custom requirements for the client creation make sure to replace <code>SphereClientFactory</code> with <code>ApiRootBuilder</code> as described in this <a href="https://docs.commercetools.com/sdk/java-sdk-migrate#client-configuration-and-creation">Migration Document</a>.</p>
 <h3 id="signature-of-statesyncoptions">Signature of StateSyncOptions<a class="headerlink" href="#signature-of-statesyncoptions" title="Permanent link">&para;</a></h3>
 <p>As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a <code>ProjectApiRoot</code> as first argument. The callback functions are signed with <code>State</code>, <code>StateDraft</code> and <code>StateUpdateAction</code> from <code>package com.commercetools.api.models.state.*</code></p>
 <blockquote>
-<p>Note: Type <code>StateUpdateAction</code> has changed to <code>StateUpdateAction</code>. Make sure you create and supply a specific StateUpdateAction in <code>beforeUpdateCallback</code>. For that you can use the <a href="#todo">library-utilities</a> or use a JVM-SDK builder (<a href="https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources">see also</a>):</p>
+<p>Note: Type <code>StateUpdateAction</code> has changed to <code>StateUpdateAction</code>. Make sure you create and supply a specific StateUpdateAction in <code>beforeUpdateCallback</code>. For that you can use the <a href="/src/main/java/com/commercetools/sync/states/utils/StateSyncUtils.java">library-utilities</a> or use a JVM-SDK builder (<a href="https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources">see also</a>):</p>
 </blockquote>
 <div class="highlight"><pre><span></span><code><span class="c1">// Example: Create a state update action to change name taking the &#39;newName&#39; of the stateDraft</span><span class="w"></span>
 <span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">Function</span><span class="o">&lt;</span><span class="n">LocalizedString</span><span class="p">,</span><span class="w"> </span><span class="n">StateUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">createBeforeUpdateAction</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
@@ -1406,7 +1407,7 @@ The V2 SDK do not have inheritance for <code>DraftBuilder</code> classes but the
 </code></pre></div>
 For more information, see the <a href="https://docs.commercetools.com/sdk/java-sdk-migrate#using-draftbuilders">Guide to replace DraftBuilders</a>.</p>
 <h3 id="query-for-states-syncing-from-ctp-project">Query for states (syncing from CTP project)<a class="headerlink" href="#query-for-states-syncing-from-ctp-project" title="Permanent link">&para;</a></h3>
-<p>If you sync states between different commercetools projects you probably use <a href="#todo">StateTransformUtils#toStateDrafts</a> to transform <code>State</code> into <code>StateDraft</code> which can be used by the state-sync.
+<p>If you sync states between different commercetools projects you probably use <a href="/src/main/java/com/commercetools/sync/states/utils/StateTransformUtils.java">StateTransformUtils#toStateDrafts</a> to transform <code>State</code> into <code>StateDraft</code> which can be used by the state-sync.
 However, if you need to query <code>states</code> from a commercetools project instead of passing <code>StateQuery</code>s to a <code>sphereClient</code>, create (and execute) requests directly from the <code>apiRoot</code>.
 Here's an example:</p>
 <p><div class="highlight"><pre><span></span><code><span class="c1">// SDK v1: StateQuery to fetch all states</span><span class="w"></span>

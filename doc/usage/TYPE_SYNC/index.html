@@ -1042,8 +1042,8 @@ against a <a href="https://docs.commercetools.com/api/projects/types#typedraft">
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
 <h4 id="projectapiroot">ProjectApiRoot<a class="headerlink" href="#projectapiroot" title="Permanent link">&para;</a></h4>
-<p>Use the <a href="#todo">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
-To create <code>ClientCredentials</code> which are required for creating a client please use the <code>ClientCredentialsBuilder</code> provided in java-sdk-v2 <a href="#todo">Client OAUTH2 package</a>
+<p>Use the <a href="/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+To create <code>ClientCredentials</code> which are required for creating a client please use the <code>ClientCredentialsBuilder</code> provided in java-sdk-v2 <a href="https://github.com/commercetools/commercetools-sdk-java-v2/blob/main/rmf/rmf-java-base/src/main/java/io/vrap/rmf/base/client/oauth2/ClientCredentialsBuilder.java">Client OAUTH2 package</a>
 If you have custom requirements for the client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ClientCredentials</span><span class="w"> </span><span class="n">clientCredentials</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
 <span class="w">        </span><span class="k">new</span><span class="w"> </span><span class="n">ClientCredentialsBuilder</span><span class="p">()</span><span class="w"></span>
@@ -1182,8 +1182,8 @@ human-readable format.</p>
 </ol>
 <h4 id="more-examples-of-how-to-use-the-sync">More examples of how to use the sync<a class="headerlink" href="#more-examples-of-how-to-use-the-sync" title="Permanent link">&para;</a></h4>
 <ol>
-<li><a href="#todo">Sync from another CTP project as a source</a>.</li>
-<li><a href="#todo">Sync from an external source</a>.</li>
+<li><a href="/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/types/TypeSyncIT.java">Sync from another CTP project as a source</a>.</li>
+<li><a href="/src/integration-test/java/com/commercetools/sync/integration/externalsource/types/TypeSyncIT.java">Sync from an external source</a>.</li>
 </ol>
 <p><em>Make sure to read the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a> for optimal performance.</em></p>
 <h3 id="build-all-update-actions">Build all update actions<a class="headerlink" href="#build-all-update-actions" title="Permanent link">&para;</a></h3>
@@ -1195,7 +1195,7 @@ human-readable format.</p>
  the update action. One example is the <code>buildChangeNameUpdateAction</code> which compares names:
 <div class="highlight"><pre><span></span><code><span class="n">Optional</span><span class="o">&lt;</span><span class="n">TypeUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">updateAction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TypeUpdateActionUtils</span><span class="p">.</span><span class="na">buildChangeNameUpdateAction</span><span class="p">(</span><span class="n">oldType</span><span class="p">,</span><span class="w"> </span><span class="n">typeDraft</span><span class="p">);</span><span class="w"></span>
 </code></pre></div>
-More examples of those utils for different types can be found <a href="#todo">here</a>.</p>
+More examples of those utils for different types can be found <a href="/src/main/java/com/commercetools/sync/types/utils/TypeUpdateActionUtils.java">here</a>.</p>
 <h2 id="migration-guide">Migration Guide<a class="headerlink" href="#migration-guide" title="Permanent link">&para;</a></h2>
 <p>The type-sync uses the <a href="http://commercetools.github.io/commercetools-sdk-java-v2">JVM-SDK-V2</a>, therefore ensure you <a href="https://docs.commercetools.com/sdk/java-sdk-getting-started#install-the-java-sdk">Install JVM SDK</a> module <code>commercetools-sdk-java-api</code> with
 any HTTP client module. The default one is <code>commercetools-http-client</code>.</p>
@@ -1218,12 +1218,12 @@ any HTTP client module. The default one is <code>commercetools-http-client</code
  <span class="nt">&lt;/dependencies&gt;</span>
 </code></pre></div>
 <h3 id="client-configuration-and-creation">Client configuration and creation<a class="headerlink" href="#client-configuration-and-creation" title="Permanent link">&para;</a></h3>
-<p>For client creation use <a href="#todo">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+<p>For client creation use <a href="/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
 If you have custom requirements for the client creation make sure to replace <code>SphereClientFactory</code> with <code>ApiRootBuilder</code> as described in this <a href="https://docs.commercetools.com/sdk/java-sdk-migrate#client-configuration-and-creation">Migration Document</a>.</p>
 <h3 id="signature-of-typesyncoptions">Signature of TypeSyncOptions<a class="headerlink" href="#signature-of-typesyncoptions" title="Permanent link">&para;</a></h3>
 <p>As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a <code>ProjectApiRoot</code> as first argument. The callback functions are signed with <code>TypeDraft</code>, <code>Type</code> and <code>TypeUpdateAction</code> from <code>package com.commercetools.api.models.type.*</code></p>
 <blockquote>
-<p>Note: Type <code>UpdateAction&lt;Type&gt;</code> has changed to <code>TypeUpdateAction</code>. Make sure you create and supply a specific TypeUpdateAction in <code>beforeUpdateCallback</code>. For that you can use the <a href="#todo">library-utilities</a> or use a JVM-SDK builder (<a href="https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources">see also</a>):</p>
+<p>Note: Type <code>UpdateAction&lt;Type&gt;</code> has changed to <code>TypeUpdateAction</code>. Make sure you create and supply a specific TypeUpdateAction in <code>beforeUpdateCallback</code>. For that you can use the <a href="/src/main/java/com/commercetools/sync/types/utils/TypeSyncUtils.java">library-utilities</a> or use a JVM-SDK builder (<a href="https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources">see also</a>):</p>
 </blockquote>
 <div class="highlight"><pre><span></span><code><span class="c1">// Example: Create a type update action to change name taking the &#39;newName&#39; of the typeDraft</span><span class="w"></span>
 <span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">Function</span><span class="o">&lt;</span><span class="n">LocalizedString</span><span class="p">,</span><span class="w"> </span><span class="n">TypeUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">changeNameBeforeUpdateAction</span><span class="w"> </span><span class="o">=</span><span class="w"></span>

@@ -1119,8 +1119,8 @@ against a <a href="https://docs.commercetools.com/api/projects/productTypes#ctp:
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
 <h4 id="projectapiroot">ProjectApiRoot<a class="headerlink" href="#projectapiroot" title="Permanent link">&para;</a></h4>
-<p>Use the <a href="#todo">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
-To create the required <code>ClientCredentials</code> for client creation, please utilize the <code>ClientCredentialsBuilder</code> provided in the java-sdk-v2 <a href="#todo">Client OAUTH2 package</a>.
+<p>Use the <a href="/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+To create the required <code>ClientCredentials</code> for client creation, please utilize the <code>ClientCredentialsBuilder</code> provided in the java-sdk-v2 <a href="https://github.com/commercetools/commercetools-sdk-java-v2/blob/main/rmf/rmf-java-base/src/main/java/io/vrap/rmf/base/client/oauth2/ClientCredentialsBuilder.java">Client OAUTH2 package</a>.
 If you have custom requirements for the client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ClientCredentials</span><span class="w"> </span><span class="n">clientCredentials</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
 <span class="w">        </span><span class="k">new</span><span class="w"> </span><span class="n">ClientCredentialsBuilder</span><span class="p">()</span><span class="w"></span>
@@ -1170,7 +1170,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 <p>Note that a reference without the key field will be considered as an existing resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.</p>
 </blockquote>
 <h5 id="syncing-from-a-commercetools-project">Syncing from a commercetools project<a class="headerlink" href="#syncing-from-a-commercetools-project" title="Permanent link">&para;</a></h5>
-<p>When syncing from a source commercetools project, you can use <a href="#todo"><code>toProductTypeDrafts</code></a>
+<p>When syncing from a source commercetools project, you can use <a href="/src/main/java/com/commercetools/sync/producttypes/utils/ProductTypeTransformUtils.java"><code>toProductTypeDrafts</code></a>
  method that transforms(resolves by querying and caching key-id pairs) and maps from a <code>ProductType</code> to <code>ProductTypeDraft</code>. It can be configured to use a cache that will speed up the reference resolution performed during the sync, for example: </p>
 <div class="highlight"><pre><span></span><code><span class="c1">// Build ByProjectKeyProductTypesGet for fetching product-types from a source CTP project without any references expanded for the sync:</span><span class="w"></span>
 <span class="kd">final</span><span class="w"> </span><span class="n">ByProjectKeyProductTypesGet</span><span class="w"> </span><span class="n">byProjectKeyProductTypesGet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="na">productTypes</span><span class="p">().</span><span class="na">get</span><span class="p">();</span><span class="w"></span>
@@ -1183,8 +1183,8 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 <span class="w">            </span><span class="p">.</span><span class="na">join</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <p>In order to transform and map the <code>ProductType</code> to <code>ProductTypeDraft</code>, 
-Utils method <code>toProductTypeDrafts</code> requires <code>projectApiRoot</code>, implementation of <a href="#todo"><code>ReferenceIdToKeyCache</code></a> and a list of <code>productTypes</code> as parameters.
-For cache implementation, you have two options: you can either use your own cache implementation or utilize the class <a href="#todo"><code>CaffeineReferenceIdToKeyCacheImpl</code></a> provided in the library. This class implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy.Example as shown below:</p>
+Utils method <code>toProductTypeDrafts</code> requires <code>projectApiRoot</code>, implementation of <a href="/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java"><code>ReferenceIdToKeyCache</code></a> and a list of <code>productTypes</code> as parameters.
+For cache implementation, you have two options: you can either use your own cache implementation or utilize the class <a href="/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java"><code>CaffeineReferenceIdToKeyCacheImpl</code></a> provided in the library. This class implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy.Example as shown below:</p>
 <div class="highlight"><pre><span></span><code><span class="c1">//Implement the cache using library class.</span><span class="w"></span>
 <span class="kd">final</span><span class="w"> </span><span class="n">ReferenceIdToKeyCache</span><span class="w"> </span><span class="n">referenceIdToKeyCache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">CaffeineReferenceIdToKeyCacheImpl</span><span class="p">();</span><span class="w"></span>
 
@@ -1295,7 +1295,7 @@ as product types are obtained from the target project on the commercetools platf
 <span class="w">         </span><span class="n">ProductTypeSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">batchSize</span><span class="p">(</span><span class="mi">30</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <h5 id="cachesize">cacheSize<a class="headerlink" href="#cachesize" title="Permanent link">&para;</a></h5>
-<p>In the service classes of the commercetools-sync-java library, we have implemented an in-memory <a href="#todo">LRU cache</a> to store a map used for the reference resolution of the library.
+<p>In the service classes of the commercetools-sync-java library, we have implemented an in-memory <a href="/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java">LRU cache</a> to store a map used for the reference resolution of the library.
 The cache reduces the reference resolution based calls to the commercetools API as the required fields of a resource will be fetched only one time. These cached fields then might be used by another resource referencing the already resolved resource instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
 which will improve the overall performance of the sync and commercetools API.</p>
 <p>Playing with this option can change the memory usage of the library. If it is not set, the default cache size is <code>10.000</code> for product type sync.</p>
@@ -1335,8 +1335,8 @@ human-readable format.</p>
 </ol>
 <h4 id="more-examples-of-how-to-use-the-sync">More examples of how to use the sync<a class="headerlink" href="#more-examples-of-how-to-use-the-sync" title="Permanent link">&para;</a></h4>
 <ol>
-<li><a href="#todo">Sync from another CTP project as a source</a>.</li>
-<li><a href="#todo">Sync from an external source</a>.</li>
+<li><a href="/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/producttypes">Sync from another CTP project as a source</a>.</li>
+<li><a href="/src/integration-test/java/com/commercetools/sync/integration/externalsource/producttypes">Sync from an external source</a>.</li>
 </ol>
 <p><em>Make sure to read the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a> for optimal performance.</em></p>
 <h3 id="build-all-update-actions">Build all update actions<a class="headerlink" href="#build-all-update-actions" title="Permanent link">&para;</a></h3>
@@ -1348,11 +1348,11 @@ human-readable format.</p>
  the update action. One example is the <code>buildChangeNameUpdateAction</code> which compares names:
 <div class="highlight"><pre><span></span><code><span class="n">Optional</span><span class="o">&lt;</span><span class="n">ProductTypeUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">updateAction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ProductTypeUpdateActionUtils</span><span class="p">.</span><span class="na">buildChangeNameAction</span><span class="p">(</span><span class="n">oldProductType</span><span class="p">,</span><span class="w"> </span><span class="n">productTypeDraft</span><span class="p">);</span><span class="w"></span>
 </code></pre></div>
-More examples of those utils for different fields can be found <a href="#todo">here</a>.</p>
+More examples of those utils for different fields can be found <a href="/src/main/java/com/commercetools/sync/producttypes/utils/ProductTypeUpdateActionUtils.java">here</a>.</p>
 <h2 id="caveats">Caveats<a class="headerlink" href="#caveats" title="Permanent link">&para;</a></h2>
 <ol>
 <li>The order of attribute definitions in the synced product types is not guaranteed.</li>
-<li>Changing the attribute definition type is not supported. Instead, remove and re-add it with a new type manually, either over API or merchant center. For more information please <a href="#todo">check</a>.</li>
+<li>Changing the attribute definition type is not supported. Instead, remove and re-add it with a new type manually, either over API or merchant center. For more information please <a href="/docs/adr/0003-syncing-attribute-type-changes.md">check this ADR</a>.</li>
 </ol>
 <h2 id="migration-guide">Migration Guide<a class="headerlink" href="#migration-guide" title="Permanent link">&para;</a></h2>
 <p>The producttype-sync uses the <a href="http://commercetools.github.io/commercetools-sdk-java-v2">JVM-SDK-V2</a>, therefore ensure you <a href="https://docs.commercetools.com/sdk/java-sdk-getting-started#install-the-java-sdk">Install JVM SDK</a> module <code>commercetools-sdk-java-api</code> with
@@ -1376,12 +1376,12 @@ any HTTP client module. The default one is <code>commercetools-http-client</code
  <span class="nt">&lt;/dependencies&gt;</span>
 </code></pre></div>
 <h3 id="client-configuration-and-creation">Client configuration and creation<a class="headerlink" href="#client-configuration-and-creation" title="Permanent link">&para;</a></h3>
-<p>For client creation use <a href="#todo">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+<p>For client creation use <a href="/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
 If you have custom requirements for the client creation make sure to replace <code>SphereClientFactory</code> with <code>ApiRootBuilder</code> as described in this <a href="https://docs.commercetools.com/sdk/java-sdk-migrate#client-configuration-and-creation">Migration Document</a>.</p>
 <h3 id="signature-of-producttypesyncoptions">Signature of ProductTypeSyncOptions<a class="headerlink" href="#signature-of-producttypesyncoptions" title="Permanent link">&para;</a></h3>
 <p>As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a <code>ProjectApiRoot</code> as first argument. The callback functions are signed with <code>ProductTypeDraft</code>, <code>ProductType</code> and <code>ProductTypeUpdateAction</code> from <code>package com.commercetools.api.models.product_type.*</code></p>
 <blockquote>
-<p>Note: Type <code>UpdateAction&lt;ProductType&gt;</code> has changed to <code>ProductTypeUpdateAction</code>. Make sure you create and supply a specific ProductTypeUpdateAction in <code>beforeUpdateCallback</code>. For that you can use the <a href="#todo">library-utilities</a> or use a JVM-SDK builder (<a href="https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources">see also</a>):</p>
+<p>Note: Type <code>UpdateAction&lt;ProductType&gt;</code> has changed to <code>ProductTypeUpdateAction</code>. Make sure you create and supply a specific ProductTypeUpdateAction in <code>beforeUpdateCallback</code>. For that you can use the <a href="/src/main/java/com/commercetools/sync/producttypes/utils/ProductTypeSyncUtils.java">library-utilities</a> or use a JVM-SDK builder (<a href="https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources">see also</a>):</p>
 </blockquote>
 <div class="highlight"><pre><span></span><code><span class="c1">// Example: Create a producttype update action to change name taking the &#39;newName&#39; of the productTypeDraft</span><span class="w"></span>
 <span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">Function</span><span class="o">&lt;</span><span class="n">LocalizedString</span><span class="p">,</span><span class="w"> </span><span class="n">ProductTypeUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">createBeforeUpdateAction</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
@@ -1417,7 +1417,7 @@ The V2 SDK do not have inheritance for <code>DraftBuilder</code> classes but the
 </code></pre></div>
 For more information, see the <a href="https://docs.commercetools.com/sdk/java-sdk-migrate#using-draftbuilders">Guide to replace DraftBuilders</a>.</p>
 <h3 id="query-for-producttypes-syncing-from-ctp-project">Query for ProductTypes (syncing from CTP project)<a class="headerlink" href="#query-for-producttypes-syncing-from-ctp-project" title="Permanent link">&para;</a></h3>
-<p>If you sync producttypes between different commercetools projects you probably use <a href="#todo">ProductTypeTransformUtils#toProductTypeDrafts</a> to transform <code>ProductType</code> into <code>ProductTypeDraft</code> which can be used by the producttype-sync.
+<p>If you sync producttypes between different commercetools projects you probably use <a href="/src/main/java/com/commercetools/sync/producttypes/utils/ProductTypeTransformUtils.java">ProductTypeTransformUtils#toProductTypeDrafts</a> to transform <code>ProductType</code> into <code>ProductTypeDraft</code> which can be used by the producttype-sync.
 However, if you need to query <code>ProductTypes</code> from a commercetools project instead of passing <code>ProductTypeQuery</code>s to a <code>sphereClient</code>, create (and execute) requests directly from the <code>apiRoot</code>.
 Here's an example:</p>
 <p><div class="highlight"><pre><span></span><code><span class="c1">// SDK v1: ProductTypeQuery to fetch all producttypes</span><span class="w"></span>

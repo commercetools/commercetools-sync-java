@@ -1003,8 +1003,8 @@ against a <a href="https://docs.commercetools.com/api/projects/custom-objects#cu
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
 <h4 id="projectapiroot">ProjectApiRoot<a class="headerlink" href="#projectapiroot" title="Permanent link">&para;</a></h4>
-<p>Use the <a href="#todo">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
-To create <code>ClientCredentials</code> which are required for creating a client please use the <code>ClientCredentialsBuilder</code> provided in java-sdk-v2 <a href="#todo">Client OAUTH2 package</a>
+<p>Use the <a href="/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+To create <code>ClientCredentials</code> which are required for creating a client please use the <code>ClientCredentialsBuilder</code> provided in java-sdk-v2 <a href="https://github.com/commercetools/commercetools-sdk-java-v2/blob/main/rmf/rmf-java-base/src/main/java/io/vrap/rmf/base/client/oauth2/ClientCredentialsBuilder.java">Client OAUTH2 package</a>
 If you have custom requirements for the client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ClientCredentials</span><span class="w"> </span><span class="n">clientCredentials</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
 <span class="w">        </span><span class="k">new</span><span class="w"> </span><span class="n">ClientCredentialsBuilder</span><span class="p">()</span><span class="w"></span>
@@ -1052,7 +1052,7 @@ following context about the error-event:</p>
 <li>sync exception</li>
 <li>custom object draft from the source</li>
 <li>custom object of the target project (only provided if an existing custom object could be found)</li>
-<li>a fake list of update actions, as custom objects API does not provide update actions. <a href="#todo">NoopResourceUpdateAction.java</a></li>
+<li>a fake list of update actions, as custom objects API does not provide update actions. <a href="/src/main/java/com/commercetools/sync/customobjects/models/NoopResourceUpdateAction.java">NoopResourceUpdateAction.java</a></li>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Logger</span><span class="w"> </span><span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LoggerFactory</span><span class="p">.</span><span class="na">getLogger</span><span class="p">(</span><span class="n">CustomObjectSync</span><span class="p">.</span><span class="na">class</span><span class="p">);</span><span class="w"></span>
 <span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">CustomObjectSyncOptions</span><span class="w"> </span><span class="n">customObjectSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomObjectSyncOptionsBuilder</span><span class="w"></span>
@@ -1124,10 +1124,9 @@ human-readable format.</p>
 </ol>
 <h4 id="more-examples-of-how-to-use-the-sync">More examples of how to use the sync<a class="headerlink" href="#more-examples-of-how-to-use-the-sync" title="Permanent link">&para;</a></h4>
 <ul>
-<li><a href="#todo">Sync from an external source</a>.</li>
+<li><a href="/src/integration-test/java/com/commercetools/sync/integration/externalsource/customobjects/CustomObjectSyncIT.java">Sync from an external source</a>.</li>
 </ul>
 <p><em>Make sure to read the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a> for optimal performance.</em></p>
-<p>More examples of those utils for different custom objects can be found <a href="#todo">here</a>.</p>
 <h2 id="migration-guide">Migration Guide<a class="headerlink" href="#migration-guide" title="Permanent link">&para;</a></h2>
 <p>The custom-object-sync uses the <a href="http://commercetools.github.io/commercetools-sdk-java-v2">JVM-SDK-V2</a>, therefore ensure you <a href="https://docs.commercetools.com/sdk/java-sdk-getting-started#install-the-java-sdk">Install JVM SDK</a> module <code>commercetools-sdk-java-api</code> with
 any HTTP client module. The default one is <code>commercetools-http-client</code>.</p>
@@ -1150,7 +1149,7 @@ any HTTP client module. The default one is <code>commercetools-http-client</code
  &lt;/dependencies&gt;
 </code></pre></div>
 <h3 id="client-configuration-and-creation">Client configuration and creation<a class="headerlink" href="#client-configuration-and-creation" title="Permanent link">&para;</a></h3>
-<p>For client creation use <a href="#todo">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+<p>For client creation use <a href="/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
 If you have custom requirements for the client creation make sure to replace <code>SphereClientFactory</code> with <code>ApiRootBuilder</code> as described in this <a href="https://docs.commercetools.com/sdk/java-sdk-migrate#client-configuration-and-creation">Migration Document</a>.</p>
 <h3 id="signature-of-customobjectsyncoptions">Signature of CustomObjectSyncOptions<a class="headerlink" href="#signature-of-customobjectsyncoptions" title="Permanent link">&para;</a></h3>
 <p>As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a <code>ProjectApiRoot</code> as first argument. The callback functions are signed with <code>CustomObjectDraft</code>, <code>CustomObject</code> (without type parameter as in v1) from <code>package com.commercetools.api.models.custom_object.*</code> and <code>NoopResourceUpdateAction</code> which is a fake class representing resource without update actions like custom-object.</p>

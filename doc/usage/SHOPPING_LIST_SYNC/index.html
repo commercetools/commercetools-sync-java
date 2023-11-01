@@ -1104,8 +1104,8 @@ against a <a href="https://docs.commercetools.com/api/projects/shoppingLists#sho
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
 <h4 id="projectapiroot">ProjectApiRoot<a class="headerlink" href="#projectapiroot" title="Permanent link">&para;</a></h4>
-<p>Use the <a href="#todo">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
-To create the required <code>ClientCredentials</code> for client creation, please utilize the <code>ClientCredentialsBuilder</code> provided in the java-sdk-v2 <a href="#todo">Client OAUTH2 package</a>.
+<p>Use the <a href="/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+To create the required <code>ClientCredentials</code> for client creation, please utilize the <code>ClientCredentialsBuilder</code> provided in the java-sdk-v2 <a href="https://github.com/commercetools/commercetools-sdk-java-v2/blob/main/rmf/rmf-java-base/src/main/java/io/vrap/rmf/base/client/oauth2/ClientCredentialsBuilder.java">Client OAUTH2 package</a>.
 If you have custom requirements for the client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ClientCredentials</span><span class="w"> </span><span class="n">clientCredentials</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
 <span class="w">        </span><span class="k">new</span><span class="w"> </span><span class="n">ClientCredentialsBuilder</span><span class="p">()</span><span class="w"></span>
@@ -1177,7 +1177,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 <p>Note that a reference without the key field will be considered as an existing resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.</p>
 </blockquote>
 <h5 id="syncing-from-a-commercetools-project">Syncing from a commercetools project<a class="headerlink" href="#syncing-from-a-commercetools-project" title="Permanent link">&para;</a></h5>
-<p>When syncing from a source commercetools project, you can use <a href="#todo"><code>toShoppingListDrafts</code></a>
+<p>When syncing from a source commercetools project, you can use <a href="/src/main/java/com/commercetools/sync/shoppinglists/utils/ShoppingListTransformUtils.java"><code>toShoppingListDrafts</code></a>
  method that transforms(resolves by querying and caching key-id pairs) and maps from a <code>ShoppingList</code> to <code>ShoppingListDraft</code> using cache in order to make them ready for reference resolution by the sync, for example: </p>
 <div class="highlight"><pre><span></span><code><span class="c1">// Build a ShoppingListQuery for fetching shopping lists from a source CTP project with expansion for line items for the sync:</span><span class="w"></span>
 <span class="kd">final</span><span class="w"> </span><span class="n">ByProjectKeyShoppingListsGet</span><span class="w"> </span><span class="n">byProjectKeyShoppingListsGet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="na">shoppingLists</span><span class="p">().</span><span class="na">addExpand</span><span class="p">(</span><span class="s">&quot;lineItems[*].variant&quot;</span><span class="p">).</span><span class="na">get</span><span class="p">();</span><span class="w"></span>
@@ -1190,8 +1190,8 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 <span class="w">        </span><span class="p">.</span><span class="na">join</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <p>In order to transform and map the <code>ShoppingList</code> to <code>ShoppingListDraft</code>, 
-Utils method <code>toShoppingListDrafts</code> requires <code>projectApiRoot</code>, implementation of <a href="#todo"><code>ReferenceIdToKeyCache</code></a> and <code>shoppingLists</code> as parameters.
-For cache implementation, you can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy<a href="#todo"><code>CaffeineReferenceIdToKeyCacheImpl</code></a>.
+Utils method <code>toShoppingListDrafts</code> requires <code>projectApiRoot</code>, implementation of <a href="/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java"><code>ReferenceIdToKeyCache</code></a> and <code>shoppingLists</code> as parameters.
+For cache implementation, you can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy<a href="/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java"><code>CaffeineReferenceIdToKeyCacheImpl</code></a>.
 Example as shown below:</p>
 <div class="highlight"><pre><span></span><code><span class="c1">//Implement the cache using library class.</span><span class="w"></span>
 <span class="kd">final</span><span class="w"> </span><span class="n">ReferenceIdToKeyCache</span><span class="w"> </span><span class="n">referenceIdToKeyCache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">CaffeineReferenceIdToKeyCacheImpl</span><span class="p">();</span><span class="w"></span>
@@ -1295,7 +1295,7 @@ update actions array with custom actions or discard unwanted actions. The callba
 <ul>
 <li>shopping list that should be created</li>
 </ul>
-<p>Please refer to the <a href="#todo">example in the product sync document</a>.</p>
+<p>Please refer to the <a href="../PRODUCT_SYNC/#example-set-publish-stage-if-category-references-of-given-product-draft-exists">example in the product sync document</a>.</p>
 <h5 id="batchsize">batchSize<a class="headerlink" href="#batchsize" title="Permanent link">&para;</a></h5>
 <p>A number that could be used to set the batch size with which shopping lists are fetched and processed,
 as shopping lists are obtained from the target project on the commercetools platform in batches for better performance. The algorithm accumulates up to <code>batchSize</code> resources from the input list, then fetches the corresponding shopping lists
@@ -1333,7 +1333,10 @@ human-readable format.</p>
 <li>It is not known by the sync which batch is going to be the last one supplied.</li>
 </ol>
 <h4 id="more-examples-of-how-to-use-the-sync">More examples of how to use the sync<a class="headerlink" href="#more-examples-of-how-to-use-the-sync" title="Permanent link">&para;</a></h4>
-<p><a href="#todo">Sync from an external source</a>.</p>
+<ol>
+<li><a href="/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/shoppinglists/ShoppingListSyncIT.java">Sync from another CTP project as a source</a>.</li>
+<li><a href="/src/integration-test/java/com/commercetools/sync/integration/externalsource/shoppinglists/ShoppingListSyncIT.java">Sync from an external source</a>.</li>
+</ol>
 <p><em>Make sure to read the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a> for optimal performance.</em></p>
 <h3 id="build-all-update-actions">Build all update actions<a class="headerlink" href="#build-all-update-actions" title="Permanent link">&para;</a></h3>
 <p>A utility method provided by the library to compare a <code>ShoppingList</code> to a new <code>ShoppingListDraft</code>. The results are collected in a list of shopping list update actions.
@@ -1344,7 +1347,7 @@ human-readable format.</p>
  One example is the <code>buildChangeNameUpdateAction</code> which compare shopping list names:
  <div class="highlight"><pre><span></span><code><span class="n">Optional</span><span class="o">&lt;</span><span class="n">ShoppingListUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">updateAction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ShoppingListUpdateActionUtils</span><span class="p">.</span><span class="na">buildChangeNameAction</span><span class="p">(</span><span class="n">shoppingList</span><span class="p">,</span><span class="w"> </span><span class="n">shoppingListDraft</span><span class="p">);</span><span class="w"></span>
 </code></pre></div></p>
-<p>More examples for particular update actions can be found in the test scenarios for <a href="#todo">ShoppingListUpdateActionUtils</a>.</p>
+<p>More examples for particular update actions can be found in the test scenarios for <a href="/src/main/java/com/commercetools/sync/shoppinglists/utils/ShoppingListUpdateActionUtils.java">ShoppingListUpdateActionUtils</a>.</p>
 <h2 id="caveats">Caveats<a class="headerlink" href="#caveats" title="Permanent link">&para;</a></h2>
 <p>In commercetools shopping lists API, there is no update action to change the <code>addedAt</code> field of the <code>LineItem</code> and <code>TextLineItem</code>, 
 hereby commercetools-java-sync library will not update the <code>addedAt</code> value. </p>
@@ -1373,12 +1376,12 @@ any HTTP client module. The default one is <code>commercetools-http-client</code
  <span class="nt">&lt;/dependencies&gt;</span>
 </code></pre></div>
 <h3 id="client-configuration-and-creation">Client configuration and creation<a class="headerlink" href="#client-configuration-and-creation" title="Permanent link">&para;</a></h3>
-<p>For client creation use <a href="#todo">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+<p>For client creation use <a href="/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
 If you have custom requirements for the client creation make sure to replace <code>SphereClientFactory</code> with <code>ApiRootBuilder</code> as described in this <a href="https://docs.commercetools.com/sdk/java-sdk-migrate#client-configuration-and-creation">Migration Document</a>.</p>
 <h3 id="signature-of-shoppinglistsyncoptions">Signature of ShoppingListSyncOptions<a class="headerlink" href="#signature-of-shoppinglistsyncoptions" title="Permanent link">&para;</a></h3>
 <p>As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a <code>ProjectApiRoot</code> as first argument. The callback functions are signed with <code>ShoppingListDraft</code>, <code>ShoppingList</code> and <code>ShoppingListUpdateAction</code> from <code>package com.commercetools.api.models.shopping_list.*</code></p>
 <blockquote>
-<p>Note: Type <code>UpdateAction&lt;ShoppingList&gt;</code> has changed to <code>ShoppingListUpdateAction</code>. Make sure you create and supply a specific ShoppingListUpdateAction in <code>beforeUpdateCallback</code>. For that you can use the <a href="#todo">library-utilities</a> or use a JVM-SDK builder (<a href="https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources">see also</a>):</p>
+<p>Note: Type <code>UpdateAction&lt;ShoppingList&gt;</code> has changed to <code>ShoppingListUpdateAction</code>. Make sure you create and supply a specific ShoppingListUpdateAction in <code>beforeUpdateCallback</code>. For that you can use the <a href="/src/main/java/com/commercetools/sync/shoppinglists/utils/ShoppingListUpdateActionUtils.java">library-utilities</a> or use a JVM-SDK builder (<a href="https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources">see also</a>):</p>
 </blockquote>
 <div class="highlight"><pre><span></span><code><span class="c1">// Example: Create a shopping-list update action to change name taking the &#39;newName&#39; of the shoppingListDraft</span><span class="w"></span>
 <span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">Function</span><span class="o">&lt;</span><span class="n">LocalizedString</span><span class="p">,</span><span class="w"> </span><span class="n">ShoppingListUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">createBeforeUpdateAction</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
@@ -1415,7 +1418,7 @@ The V2 SDK do not have inheritance for <code>DraftBuilder</code> classes but the
 </code></pre></div>
 For more information, see the <a href="https://docs.commercetools.com/sdk/java-sdk-migrate#using-draftbuilders">Guide to replace DraftBuilders</a>.</p>
 <h3 id="query-for-shoppinglists-syncing-from-ctp-project">Query for ShoppingLists (syncing from CTP project)<a class="headerlink" href="#query-for-shoppinglists-syncing-from-ctp-project" title="Permanent link">&para;</a></h3>
-<p>If you sync shopping lists between different commercetools projects you probably use <a href="#todo">ShoppingListTransformUtils#toShoppingListDrafts</a> to transform <code>ShoppingList</code> into <code>ShoppingListDraft</code> which can be used by the shopping-list-sync.
+<p>If you sync shopping lists between different commercetools projects you probably use <a href="/src/main/java/com/commercetools/sync/shoppinglists/utils/ShoppingListTransformUtils.java">ShoppingListTransformUtils#toShoppingListDrafts</a> to transform <code>ShoppingList</code> into <code>ShoppingListDraft</code> which can be used by the shopping-list-sync.
 However, if you need to query <code>ShoppingLists</code> from a commercetools project instead of passing <code>ShoppingListQuery</code>s to a <code>sphereClient</code>, create (and execute) requests directly from the <code>apiRoot</code>.
 Here's an example:</p>
 <p><div class="highlight"><pre><span></span><code><span class="c1">// SDK v1: ShoppingListQuery to fetch all shopping lists</span><span class="w"></span>

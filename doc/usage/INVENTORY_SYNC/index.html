@@ -1075,8 +1075,8 @@ against a <a href="https://docs.commercetools.com/api/projects/inventory#invento
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
 <h4 id="projectapiroot">ProjectApiRoot<a class="headerlink" href="#projectapiroot" title="Permanent link">&para;</a></h4>
-<p>Use the <a href="#todo">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
-To create <code>ClientCredentials</code> which are required for creating a client please use the <code>ClientCredentialsBuilder</code> provided in java-sdk-v2 <a href="#todo">Client OAUTH2 package</a>
+<p>Use the <a href="/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+To create <code>ClientCredentials</code> which are required for creating a client please use the <code>ClientCredentialsBuilder</code> provided in java-sdk-v2 <a href="https://github.com/commercetools/commercetools-sdk-java-v2/blob/main/rmf/rmf-java-base/src/main/java/io/vrap/rmf/base/client/oauth2/ClientCredentialsBuilder.java">Client OAUTH2 package</a>
 If you have custom requirements for the client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ClientCredentials</span><span class="w"> </span><span class="n">clientCredentials</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
 <span class="w">        </span><span class="k">new</span><span class="w"> </span><span class="n">ClientCredentialsBuilder</span><span class="p">()</span><span class="w"></span>
@@ -1130,7 +1130,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 <p>Note that a reference without the key field will be considered as an existing resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.</p>
 </blockquote>
 <h5 id="syncing-from-a-commercetools-project">Syncing from a commercetools project<a class="headerlink" href="#syncing-from-a-commercetools-project" title="Permanent link">&para;</a></h5>
-<p>When syncing from a source commercetools project, you can use <a href="#todo"><code>toInventoryEntryDrafts</code></a>
+<p>When syncing from a source commercetools project, you can use <a href="/src/main/java/com/commercetools/sync/inventories/utils/InventoryTransformUtils.java"><code>toInventoryEntryDrafts</code></a>
  method that transforms(resolves by querying and caching key-id pairs) and maps from a <code>InventoryEntry</code> to <code>InventoryEntryDraft</code> using cache in order to make them ready for reference resolution by the sync, for example: </p>
 <div class="highlight"><pre><span></span><code><span class="c1">// Build an ByProjectKeyInventoryGet for fetching inventories from a source CTP project without any references expanded for the sync:</span><span class="w"></span>
 <span class="kd">final</span><span class="w"> </span><span class="n">ByProjectKeyInventoryEntriesGet</span><span class="w"> </span><span class="n">inventoryEntryQuery</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="na">inventory</span><span class="p">().</span><span class="na">get</span><span class="p">();</span><span class="w"></span>
@@ -1143,8 +1143,8 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 <span class="w">            </span><span class="p">.</span><span class="na">join</span><span class="p">();</span><span class="w"></span>
 </code></pre></div>
 <p>In order to transform and map the <code>InventoryEntry</code> to <code>InventoryEntryDraft</code>, 
-Utils method <code>toInventoryEntryDrafts</code> requires <code>projectApiRoot</code>, implementation of <a href="#todo"><code>ReferenceIdToKeyCache</code></a> and <code>inventoryEntries</code> as parameters.
-For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy<a href="#todo"><code>CaffeineReferenceIdToKeyCacheImpl</code></a>.
+Utils method <code>toInventoryEntryDrafts</code> requires <code>projectApiRoot</code>, implementation of <a href="/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java"><code>ReferenceIdToKeyCache</code></a> and <code>inventoryEntries</code> as parameters.
+For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy<a href="/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java"><code>CaffeineReferenceIdToKeyCacheImpl</code></a>.
 Example as shown below:</p>
 <div class="highlight"><pre><span></span><code><span class="c1">//Implement the cache using library class.</span><span class="w"></span>
 <span class="kd">final</span><span class="w"> </span><span class="n">ReferenceIdToKeyCache</span><span class="w"> </span><span class="n">referenceIdToKeyCache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">CaffeineReferenceIdToKeyCacheImpl</span><span class="p">();</span><span class="w"></span>
@@ -1274,7 +1274,7 @@ human-readable format.
 <li>The sync processing time should not take into account the time between supplying batches to the sync. </li>
 <li>It is not known by the sync which batch is going to be the last one supplied.</li>
 </ol>
-<p>More examples of how to use the sync <a href="#todo">here</a>.</p>
+<p>More examples of how to use the sync can be found <a href="/src/integration-test/java/com/commercetools/sync/integration/externalsource/inventories/InventorySyncIT.java">here</a>.</p>
 <p><em>Make sure to read the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a> for optimal performance.</em></p>
 <h3 id="build-all-update-actions">Build all update actions<a class="headerlink" href="#build-all-update-actions" title="Permanent link">&para;</a></h3>
 <p>A utility method provided by the library to compare an InventoryEntry with a new InventoryEntryDraft and results in a list of InventoryEntry
@@ -1310,12 +1310,12 @@ any HTTP client module. The default one is <code>commercetools-http-client</code
  <span class="nt">&lt;/dependencies&gt;</span>
 </code></pre></div>
 <h3 id="client-configuration-and-creation">Client configuration and creation<a class="headerlink" href="#client-configuration-and-creation" title="Permanent link">&para;</a></h3>
-<p>For client creation use <a href="#todo">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
+<p>For client creation use <a href="/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
 If you have custom requirements for the client creation make sure to replace <code>SphereClientFactory</code> with <code>ApiRootBuilder</code> as described in this <a href="https://docs.commercetools.com/sdk/java-sdk-migrate#client-configuration-and-creation">Migration Document</a>.</p>
 <h3 id="signature-of-inventorysyncoptions">Signature of InventorySyncOptions<a class="headerlink" href="#signature-of-inventorysyncoptions" title="Permanent link">&para;</a></h3>
 <p>As models and update actions have changed in the JVM-SDK-V2 the signature of SyncOptions is different. It's constructor now takes a <code>ProjectApiRoot</code> as first argument. The callback functions are signed with <code>InventoryEntryDraft</code>, <code>InventoryEntry</code> and <code>InventoryEntryUpdateAction</code> from <code>package com.commercetools.api.models.inventory.*</code></p>
 <blockquote>
-<p>Note: Type <code>UpdateAction&lt;InventoryEntry&gt;</code> has changed to <code>InventoryEntryUpdateAction</code>. Make sure you create and supply a specific InventoryEntryUpdateAction in <code>beforeUpdateCallback</code>. For that you can use the <a href="#todo">library-utilities</a> or use a JVM-SDK builder (<a href="https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources">see also</a>):</p>
+<p>Note: Type <code>UpdateAction&lt;InventoryEntry&gt;</code> has changed to <code>InventoryEntryUpdateAction</code>. Make sure you create and supply a specific InventoryEntryUpdateAction in <code>beforeUpdateCallback</code>. For that you can use the <a href="/src/main/java/com/commercetools/sync/inventories/utils/InventorySyncUtils.java">library-utilities</a> or use a JVM-SDK builder (<a href="https://docs.commercetools.com/sdk/java-sdk-migrate#update-resources">see also</a>):</p>
 </blockquote>
 <div class="highlight"><pre><span></span><code><span class="c1">// Example: Create a inventory update action to change quantity taking the &#39;newQuantity&#39; of the InventoryEntryDraft</span><span class="w"></span>
 <span class="w">    </span><span class="kd">final</span><span class="w"> </span><span class="n">Function</span><span class="o">&lt;</span><span class="n">Long</span><span class="p">,</span><span class="w"> </span><span class="n">InventoryEntryUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">createBeforeUpdateAction</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
@@ -1353,7 +1353,7 @@ The V2 SDK do not have inheritance for <code>DraftBuilder</code> classes but the
 </code></pre></div>
 For more information, see the <a href="https://docs.commercetools.com/sdk/java-sdk-migrate#using-draftbuilders">Guide to replace DraftBuilders</a>.</p>
 <h3 id="query-for-inventories-syncing-from-ctp-project">Query for Inventories (syncing from CTP project)<a class="headerlink" href="#query-for-inventories-syncing-from-ctp-project" title="Permanent link">&para;</a></h3>
-<p>If you sync inventories between different commercetools projects you probably use <a href="#todo">InventoryTransformUtils#toInventoryEntryDrafts</a> to transform <code>InventoryEntry</code> into <code>InventoryEntryDraft</code> which can be used by the inventory-sync.
+<p>If you sync inventories between different commercetools projects you probably use <a href="/src/main/java/com/commercetools/sync/inventories/utils/InventoryTransformUtils.java">InventoryTransformUtils#toInventoryEntryDrafts</a> to transform <code>InventoryEntry</code> into <code>InventoryEntryDraft</code> which can be used by the inventory-sync.
 However, if you need to query <code>Inventories</code> from a commercetools project instead of passing <code>InventoryEntryQuery</code>s to a <code>sphereClient</code>, create (and execute) requests directly from the <code>apiRoot</code>.
 Here's an example:</p>
 <p><div class="highlight"><pre><span></span><code><span class="c1">// SDK v1: InventoryEntryQuery to fetch all inventories</span><span class="w"></span>
