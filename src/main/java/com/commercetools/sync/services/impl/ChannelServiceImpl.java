@@ -8,6 +8,7 @@ import com.commercetools.api.models.channel.ChannelDraft;
 import com.commercetools.api.models.channel.ChannelDraftBuilder;
 import com.commercetools.api.models.channel.ChannelPagedQueryResponse;
 import com.commercetools.api.models.channel.ChannelRoleEnum;
+import com.commercetools.api.predicates.query.channel.ChannelQueryBuilderDsl;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.services.ChannelService;
@@ -28,6 +29,7 @@ public final class ChannelServiceImpl
         ChannelPagedQueryResponse,
         ByProjectKeyChannelsByIDGet,
         Channel,
+        ChannelQueryBuilderDsl,
         ByProjectKeyChannelsPost>
     implements ChannelService {
 

@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toList;
 
 import com.commercetools.api.client.*;
 import com.commercetools.api.models.inventory.*;
+import com.commercetools.api.predicates.query.inventory.InventoryEntryQueryBuilderDsl;
 import com.commercetools.sync.commons.utils.ChunkUtils;
 import com.commercetools.sync.inventories.InventorySyncOptions;
 import com.commercetools.sync.inventories.helpers.InventoryEntryIdentifier;
@@ -28,6 +29,7 @@ public final class InventoryServiceImpl
         InventoryPagedQueryResponse,
         ByProjectKeyInventoryByIDGet,
         InventoryEntry,
+        InventoryEntryQueryBuilderDsl,
         ByProjectKeyInventoryPost>
     implements InventoryService {
 

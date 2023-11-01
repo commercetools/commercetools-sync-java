@@ -5,9 +5,9 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import com.commercetools.api.client.PagedQueryResourceRequest;
 import com.commercetools.api.client.QueryUtils;
 import com.commercetools.api.models.DomainResource;
-import com.commercetools.api.models.PagedQueryResourceRequest;
 import com.commercetools.api.models.ResourcePagedQueryResponse;
 import com.commercetools.api.models.graph_ql.GraphQLRequest;
 import com.commercetools.api.models.graph_ql.GraphQLRequestBuilder;
@@ -44,10 +44,12 @@ abstract class BaseService<
     SyncOptionsT extends BaseSyncOptions,
     ResourceT extends DomainResource<ResourceT>,
     ResourceDraftT extends Draft<ResourceDraftT>,
-    PagedQueryRequestT extends PagedQueryResourceRequest<PagedQueryRequestT, PagedQueryResponseT>,
+    PagedQueryRequestT extends
+        PagedQueryResourceRequest<PagedQueryRequestT, PagedQueryResponseT, QueryBuilderDslT>,
     PagedQueryResponseT extends ResourcePagedQueryResponse<ResourceT>,
     GetOneResourceQueryT extends ApiMethod<GetOneResourceQueryT, ResourceT>,
     QueryResultT,
+    QueryBuilderDslT,
     PostRequestT extends BodyApiMethod<PostRequestT, QueryResultT, ResourceDraftT>> {
 
   final SyncOptionsT syncOptions;
