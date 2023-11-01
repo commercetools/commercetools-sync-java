@@ -13,6 +13,7 @@ import com.commercetools.api.models.product.ProductProjectionPagedQueryResponse;
 import com.commercetools.api.models.product.ProductProjectionType;
 import com.commercetools.api.models.product.ProductUpdateAction;
 import com.commercetools.api.models.product.ProductUpdateBuilder;
+import com.commercetools.api.predicates.query.product.ProductProjectionQueryBuilderDsl;
 import com.commercetools.sync.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.ProductService;
@@ -35,6 +36,7 @@ public final class ProductServiceImpl
         ProductProjectionPagedQueryResponse,
         ByProjectKeyProductProjectionsKeyByKeyGet,
         Product,
+        ProductProjectionQueryBuilderDsl,
         ByProjectKeyProductsPost>
     implements ProductService {
 
