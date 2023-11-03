@@ -10,6 +10,7 @@ import com.commercetools.api.models.cart_discount.CartDiscountDraft;
 import com.commercetools.api.models.cart_discount.CartDiscountPagedQueryResponse;
 import com.commercetools.api.models.cart_discount.CartDiscountUpdateAction;
 import com.commercetools.api.models.cart_discount.CartDiscountUpdateBuilder;
+import com.commercetools.api.predicates.query.cart_discount.CartDiscountQueryBuilderDsl;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.services.CartDiscountService;
 import io.vrap.rmf.base.client.ApiHttpResponse;
@@ -31,6 +32,7 @@ public class CartDiscountServiceImpl
         CartDiscountPagedQueryResponse,
         ByProjectKeyCartDiscountsKeyByKeyGet,
         CartDiscount,
+        CartDiscountQueryBuilderDsl,
         ByProjectKeyCartDiscountsPost>
     implements CartDiscountService {
 

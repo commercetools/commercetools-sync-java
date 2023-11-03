@@ -11,6 +11,7 @@ import com.commercetools.api.models.product_type.ProductTypeDraft;
 import com.commercetools.api.models.product_type.ProductTypePagedQueryResponse;
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
 import com.commercetools.api.models.product_type.ProductTypeUpdateBuilder;
+import com.commercetools.api.predicates.query.product_type.ProductTypeQueryBuilderDsl;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.products.AttributeMetaData;
@@ -35,6 +36,7 @@ public final class ProductTypeServiceImpl
         ProductTypePagedQueryResponse,
         ByProjectKeyProductTypesKeyByKeyGet,
         ProductType,
+        ProductTypeQueryBuilderDsl,
         ByProjectKeyProductTypesPost>
     implements ProductTypeService {
 

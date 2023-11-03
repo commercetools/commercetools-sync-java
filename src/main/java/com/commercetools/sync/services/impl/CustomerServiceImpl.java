@@ -12,6 +12,7 @@ import com.commercetools.api.models.customer.CustomerPagedQueryResponse;
 import com.commercetools.api.models.customer.CustomerSignInResult;
 import com.commercetools.api.models.customer.CustomerUpdateAction;
 import com.commercetools.api.models.customer.CustomerUpdateBuilder;
+import com.commercetools.api.predicates.query.customer.CustomerQueryBuilderDsl;
 import com.commercetools.sync.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import com.commercetools.sync.services.CustomerService;
@@ -34,6 +35,7 @@ public final class CustomerServiceImpl
         CustomerPagedQueryResponse,
         ByProjectKeyCustomersKeyByKeyGet,
         CustomerSignInResult,
+        CustomerQueryBuilderDsl,
         ByProjectKeyCustomersPost>
     implements CustomerService {
 

@@ -6,6 +6,7 @@ import com.commercetools.api.client.ByProjectKeyCustomObjectsPost;
 import com.commercetools.api.models.custom_object.CustomObject;
 import com.commercetools.api.models.custom_object.CustomObjectDraft;
 import com.commercetools.api.models.custom_object.CustomObjectPagedQueryResponse;
+import com.commercetools.api.predicates.query.custom_object.CustomObjectQueryBuilderDsl;
 import com.commercetools.sync.customobjects.CustomObjectSync;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
@@ -17,7 +18,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import org.jetbrains.annotations.NotNull;
 
 /** Implementation of CustomObjectService interface. */
 public class CustomObjectServiceImpl
@@ -29,6 +29,7 @@ public class CustomObjectServiceImpl
         CustomObjectPagedQueryResponse,
         ByProjectKeyCustomObjectsByContainerByKeyGet,
         CustomObject,
+        CustomObjectQueryBuilderDsl,
         ByProjectKeyCustomObjectsPost>
     implements CustomObjectService {
 
@@ -36,10 +37,10 @@ public class CustomObjectServiceImpl
     super(syncOptions);
   }
 
-  @NotNull
+  @Nonnull
   @Override
   public CompletionStage<Map<String, String>> cacheKeysToIds(
-      @NotNull final Set<CustomObjectCompositeIdentifier> identifiers) {
+      @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
     /*
      * one example representation of the cache:
      *
@@ -57,26 +58,26 @@ public class CustomObjectServiceImpl
             });
   }
 
-  @NotNull
+  @Nonnull
   @Override
   public CompletionStage<Optional<String>> fetchCachedCustomObjectId(
-      @NotNull final CustomObjectCompositeIdentifier identifier) {
+      @Nonnull final CustomObjectCompositeIdentifier identifier) {
     return super.fetchCachedResourceId(
         identifier.toString(), this::keyMapper, queryOneIdentifier(identifier));
   }
 
-  @NotNull
+  @Nonnull
   @Override
   public CompletionStage<Set<CustomObject>> fetchMatchingCustomObjects(
-      @NotNull final Set<CustomObjectCompositeIdentifier> identifiers) {
+      @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
     return super.fetchMatchingResources(
         getKeys(identifiers), this::keyMapper, (keysNotCached) -> createQuery(identifiers));
   }
 
-  @NotNull
+  @Nonnull
   @Override
   public CompletionStage<Optional<CustomObject>> fetchCustomObject(
-      @NotNull final CustomObjectCompositeIdentifier identifier) {
+      @Nonnull final CustomObjectCompositeIdentifier identifier) {
     final ByProjectKeyCustomObjectsByContainerByKeyGet query =
         this.syncOptions
             .getCtpClient()
@@ -87,10 +88,10 @@ public class CustomObjectServiceImpl
     return super.fetchResource(identifier.toString(), query);
   }
 
-  @NotNull
+  @Nonnull
   @Override
   public CompletionStage<Optional<CustomObject>> upsertCustomObject(
-      @NotNull final CustomObjectDraft customObjectDraft) {
+      @Nonnull final CustomObjectDraft customObjectDraft) {
     return super.createResource(
         customObjectDraft,
         this::keyMapper,
@@ -121,11 +122,11 @@ public class CustomObjectServiceImpl
   @Nonnull
   @Override
   CompletionStage<Optional<CustomObject>> executeCreateCommand(
-      @NotNull CustomObjectDraft draft,
-      @NotNull String key,
-      @NotNull Function<CustomObject, String> idMapper,
-      @NotNull Function<CustomObject, CustomObject> resourceMapper,
-      @NotNull ByProjectKeyCustomObjectsPost createCommand) {
+      @Nonnull CustomObjectDraft draft,
+      @Nonnull String key,
+      @Nonnull Function<CustomObject, String> idMapper,
+      @Nonnull Function<CustomObject, CustomObject> resourceMapper,
+      @Nonnull ByProjectKeyCustomObjectsPost createCommand) {
     return createCommand
         .execute()
         .thenApply(

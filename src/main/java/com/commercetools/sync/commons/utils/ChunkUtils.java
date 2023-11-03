@@ -3,8 +3,8 @@ package com.commercetools.sync.commons.utils;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static java.util.stream.Collectors.toList;
 
+import com.commercetools.api.client.PagedQueryResourceRequest;
 import com.commercetools.api.client.ProjectApiRoot;
-import com.commercetools.api.models.PagedQueryResourceRequest;
 import com.commercetools.api.models.graph_ql.GraphQLRequest;
 import com.commercetools.api.models.graph_ql.GraphQLResponse;
 import io.vrap.rmf.base.client.ApiHttpResponse;
@@ -24,16 +24,21 @@ public class ChunkUtils {
    *
    * @param requests A list of {@link PagedQueryResourceRequest} implementation to allow {@link
    *     ProjectApiRoot} to execute queries on CTP.
-   * @param <ResourceT> the type of the underlying model.
-   * @param <QueryT> the type of the request model.
+   * @param <ResourceT> the type of the request model.
+   * @param <ResultT> the type of the underlying model.
+   * @param <QueryBuilderDslT> the type of the query builder dsl class (e.g.
+   *     CartDiscountQueryBuilderDsl, CustomerQueryBuilderDsl, ...).
    * @return a list of lists where each list represents the results of passed {@link
    *     PagedQueryResourceRequest}.
    */
-  public static <QueryT extends PagedQueryResourceRequest<QueryT, ResourceT>, ResourceT>
-      CompletableFuture<List<ApiHttpResponse<ResourceT>>> executeChunks(
-          @Nonnull final List<QueryT> requests) {
+  public static <
+          ResourceT extends PagedQueryResourceRequest<ResourceT, ResultT, QueryBuilderDslT>,
+          ResultT,
+          QueryBuilderDslT>
+      CompletableFuture<List<ApiHttpResponse<ResultT>>> executeChunks(
+          @Nonnull final List<ResourceT> requests) {
 
-    final List<CompletableFuture<ApiHttpResponse<ResourceT>>> futures =
+    final List<CompletableFuture<ApiHttpResponse<ResultT>>> futures =
         requests.stream().map(request -> request.execute()).collect(toList());
 
     return collectionOfFuturesToFutureOfCollection(futures, toList());

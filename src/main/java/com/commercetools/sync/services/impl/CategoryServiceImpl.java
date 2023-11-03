@@ -10,6 +10,7 @@ import com.commercetools.api.models.category.CategoryDraft;
 import com.commercetools.api.models.category.CategoryPagedQueryResponse;
 import com.commercetools.api.models.category.CategoryUpdateAction;
 import com.commercetools.api.models.category.CategoryUpdateBuilder;
+import com.commercetools.api.predicates.query.category.CategoryQueryBuilderDsl;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.services.CategoryService;
@@ -35,6 +36,7 @@ public final class CategoryServiceImpl
         CategoryPagedQueryResponse,
         ByProjectKeyCategoriesKeyByKeyGet,
         Category,
+        CategoryQueryBuilderDsl,
         ByProjectKeyCategoriesPost>
     implements CategoryService {
 
