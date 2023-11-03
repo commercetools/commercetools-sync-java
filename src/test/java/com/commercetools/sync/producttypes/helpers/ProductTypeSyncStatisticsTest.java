@@ -722,4 +722,18 @@ class ProductTypeSyncStatisticsTest {
     assertThat(productTypeSyncStatistics.getProductTypeKeysWithMissingParents().get("missing2"))
         .containsOnlyKeys("referencing-product-type-4");
   }
+
+  @Test
+  void getSyncStatisticsClassName_ShouldReturnCorrectClassName() {
+    // preparation
+    final ProductTypeSyncStatistics productTypeSyncStatistics =
+        new ProductTypeSyncStatistics(new ConcurrentHashMap<>());
+
+    // test
+    final String className = productTypeSyncStatistics.getSyncStatisticsClassName();
+
+    // assertion
+    assertThat(className)
+        .isEqualTo("com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics");
+  }
 }

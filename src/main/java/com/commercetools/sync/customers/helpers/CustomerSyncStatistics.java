@@ -2,7 +2,7 @@ package com.commercetools.sync.customers.helpers;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 
-public class CustomerSyncStatistics extends BaseSyncStatistics {
+public class CustomerSyncStatistics extends BaseSyncStatistics<CustomerSyncStatistics> {
 
   /**
    * Builds a summary of the customer sync statistics instance that looks like the following
@@ -16,5 +16,10 @@ public class CustomerSyncStatistics extends BaseSyncStatistics {
   @Override
   public String getReportMessage() {
     return getDefaultReportMessageForResource("customers");
+  }
+
+  @Override
+  protected CustomerSyncStatistics getThis() {
+    return this;
   }
 }

@@ -26,4 +26,10 @@ class InventorySyncStatisticsTest {
             "Summary: 3 inventory entries were processed in total "
                 + "(1 created, 1 updated and 1 failed to sync).");
   }
+
+  @Test
+  void getSyncStatisticsClassName_ShouldReturnCorrectClassName() {
+    assertThat(inventorySyncStatistics.getSyncStatisticsClassName())
+        .isEqualTo("com.commercetools.sync.inventories.helpers.InventorySyncStatistics");
+  }
 }

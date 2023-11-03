@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class CategorySyncStatistics extends BaseSyncStatistics {
+public class CategorySyncStatistics extends BaseSyncStatistics<CategorySyncStatistics> {
 
   /**
    * The following {@link java.util.Map} ({@code categoryKeysWithMissingParents}) represents
@@ -50,6 +50,11 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
         getUpdated(),
         getFailed(),
         getNumberOfCategoriesWithMissingParents());
+  }
+
+  @Override
+  protected CategorySyncStatistics getThis() {
+    return this;
   }
 
   /**

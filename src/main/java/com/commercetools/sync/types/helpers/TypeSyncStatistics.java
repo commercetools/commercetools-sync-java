@@ -2,7 +2,7 @@ package com.commercetools.sync.types.helpers;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 
-public class TypeSyncStatistics extends BaseSyncStatistics {
+public class TypeSyncStatistics extends BaseSyncStatistics<TypeSyncStatistics> {
   /**
    * Builds a summary of the type sync statistics instance that looks like the following example:
    *
@@ -13,5 +13,10 @@ public class TypeSyncStatistics extends BaseSyncStatistics {
   @Override
   public String getReportMessage() {
     return getDefaultReportMessageForResource("types");
+  }
+
+  @Override
+  protected TypeSyncStatistics getThis() {
+    return this;
   }
 }

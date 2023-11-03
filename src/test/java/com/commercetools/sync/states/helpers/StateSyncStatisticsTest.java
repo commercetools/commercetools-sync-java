@@ -134,4 +134,10 @@ class StateSyncStatisticsTest {
     assertThat(result).containsExactly("b", "c");
     assertThat(stateSyncStatistics.getNumberOfStatesWithMissingParents()).isEqualTo(1);
   }
+
+  @Test
+  void getSyncStatisticsClassName_ShouldReturnCorrectClassName() {
+    assertThat(stateSyncStatistics.getSyncStatisticsClassName())
+        .isEqualTo("com.commercetools.sync.states.helpers.StateSyncStatistics");
+  }
 }

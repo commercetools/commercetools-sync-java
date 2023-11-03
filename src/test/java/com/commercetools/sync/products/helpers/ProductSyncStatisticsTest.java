@@ -133,4 +133,10 @@ class ProductSyncStatisticsTest {
     assertThat(result).containsExactly("b", "c");
     assertThat(productSyncStatistics.getNumberOfProductsWithMissingParents()).isEqualTo(1);
   }
+
+  @Test
+  void getSyncStatisticsClassName_ShouldReturnCorrectClassName() {
+    assertThat(productSyncStatistics.getSyncStatisticsClassName())
+        .isEqualTo("com.commercetools.sync.products.helpers.ProductSyncStatistics");
+  }
 }

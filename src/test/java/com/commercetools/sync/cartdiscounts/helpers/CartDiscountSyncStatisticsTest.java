@@ -25,4 +25,10 @@ class CartDiscountSyncStatisticsTest {
             "Summary: 6 cart discounts were processed in total "
                 + "(1 created, 3 updated and 2 failed to sync).");
   }
+
+  @Test
+  void getSyncStatisticsClassName_ShouldReturnCorrectClassName() {
+    assertThat(cartDiscountSyncStatistics.getSyncStatisticsClassName())
+        .isEqualTo("com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics");
+  }
 }

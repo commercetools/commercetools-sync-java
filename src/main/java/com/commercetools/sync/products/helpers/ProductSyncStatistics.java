@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class ProductSyncStatistics extends BaseSyncStatistics {
+public class ProductSyncStatistics extends BaseSyncStatistics<ProductSyncStatistics> {
 
   /**
    * The following {@link Map} ({@code productKeysWithMissingParents}) represents products with
@@ -45,6 +45,11 @@ public class ProductSyncStatistics extends BaseSyncStatistics {
         getUpdated(),
         getFailed(),
         getNumberOfProductsWithMissingParents());
+  }
+
+  @Override
+  protected ProductSyncStatistics getThis() {
+    return this;
   }
 
   /**

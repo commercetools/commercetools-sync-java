@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
 
-public class ProductTypeSyncStatistics extends BaseSyncStatistics {
+public class ProductTypeSyncStatistics extends BaseSyncStatistics<ProductTypeSyncStatistics> {
 
   /**
    * The following {@link java.util.concurrent.ConcurrentHashMap} ({@code
@@ -80,6 +80,11 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
         getUpdated(),
         getFailed(),
         getNumberOfProductTypesWithMissingNestedProductTypes());
+  }
+
+  @Override
+  protected ProductTypeSyncStatistics getThis() {
+    return this;
   }
 
   /**
