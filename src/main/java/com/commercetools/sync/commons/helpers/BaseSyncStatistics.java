@@ -2,6 +2,7 @@ package com.commercetools.sync.commons.helpers;
 
 import static java.lang.String.format;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
@@ -302,6 +303,44 @@ public abstract class BaseSyncStatistics<SyncStatisticsT extends BaseSyncStatist
    * @return an instance of the class that overrides this method.
    */
   protected abstract SyncStatisticsT getThis();
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    final BaseSyncStatistics<?> that = (BaseSyncStatistics<?>) o;
+    return latestBatchStartTime == that.latestBatchStartTime
+        && Objects.equals(getSyncStatisticsClassName(), that.getSyncStatisticsClassName())
+        && getLatestBatchProcessingTimeInDays() == that.getLatestBatchProcessingTimeInDays()
+        && getLatestBatchProcessingTimeInHours() == that.getLatestBatchProcessingTimeInHours()
+        && getLatestBatchProcessingTimeInMinutes() == that.getLatestBatchProcessingTimeInMinutes()
+        && getLatestBatchProcessingTimeInSeconds() == that.getLatestBatchProcessingTimeInSeconds()
+        && getLatestBatchProcessingTimeInMillis() == that.getLatestBatchProcessingTimeInMillis()
+        && getUpdated().get() == that.getUpdated().get()
+        && getCreated().get() == that.getCreated().get()
+        && getFailed().get() == that.getFailed().get()
+        && getProcessed().get() == that.getProcessed().get()
+        && Objects.equals(
+            getLatestBatchHumanReadableProcessingTime(),
+            that.getLatestBatchHumanReadableProcessingTime());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        getSyncStatisticsClassName(),
+        getUpdated().get(),
+        getCreated().get(),
+        getFailed().get(),
+        getProcessed().get(),
+        latestBatchStartTime,
+        getLatestBatchProcessingTimeInDays(),
+        getLatestBatchProcessingTimeInHours(),
+        getLatestBatchProcessingTimeInMinutes(),
+        getLatestBatchProcessingTimeInSeconds(),
+        getLatestBatchProcessingTimeInMillis(),
+        getLatestBatchHumanReadableProcessingTime());
+  }
 
   /**
    * Builds a proper summary message of the statistics report of a given {@code resourceString} in
