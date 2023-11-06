@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class StateSyncStatistics extends BaseSyncStatistics {
+public class StateSyncStatistics extends BaseSyncStatistics<StateSyncStatistics> {
 
   /**
    * The following {@link java.util.Map} ({@code stateKeysWithMissingParents}) represents products
@@ -46,6 +46,11 @@ public class StateSyncStatistics extends BaseSyncStatistics {
         getUpdated(),
         getFailed(),
         getNumberOfStatesWithMissingParents());
+  }
+
+  @Override
+  protected StateSyncStatistics getThis() {
+    return this;
   }
 
   /**

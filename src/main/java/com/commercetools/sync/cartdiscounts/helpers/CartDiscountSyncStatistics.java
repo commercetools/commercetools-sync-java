@@ -2,7 +2,8 @@ package com.commercetools.sync.cartdiscounts.helpers;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 
-public final class CartDiscountSyncStatistics extends BaseSyncStatistics {
+public final class CartDiscountSyncStatistics
+    extends BaseSyncStatistics<CartDiscountSyncStatistics> {
 
   /**
    * Builds a summary of the cart discount sync statistics instance that looks like the following
@@ -16,5 +17,10 @@ public final class CartDiscountSyncStatistics extends BaseSyncStatistics {
   @Override
   public String getReportMessage() {
     return getDefaultReportMessageForResource("cart discounts");
+  }
+
+  @Override
+  protected CartDiscountSyncStatistics getThis() {
+    return this;
   }
 }

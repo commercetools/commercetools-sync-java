@@ -2,7 +2,7 @@ package com.commercetools.sync.customobjects.helpers;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 
-public class CustomObjectSyncStatistics extends BaseSyncStatistics {
+public class CustomObjectSyncStatistics extends BaseSyncStatistics<CustomObjectSyncStatistics> {
   /**
    * Builds a summary of the custom object sync statistics instance that looks like the following
    * example:
@@ -15,5 +15,10 @@ public class CustomObjectSyncStatistics extends BaseSyncStatistics {
   @Override
   public String getReportMessage() {
     return getDefaultReportMessageForResource("custom objects");
+  }
+
+  @Override
+  protected CustomObjectSyncStatistics getThis() {
+    return this;
   }
 }
