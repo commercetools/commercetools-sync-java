@@ -25,4 +25,10 @@ class CustomerSyncStatisticsTest {
             "Summary: 6 customers were processed in total "
                 + "(1 created, 3 updated and 2 failed to sync).");
   }
+
+  @Test
+  void getSyncStatisticsClassName_ShouldReturnCorrectClassName() {
+    assertThat(customerSyncStatistics.getSyncStatisticsClassName())
+        .isEqualTo("com.commercetools.sync.customers.helpers.CustomerSyncStatistics");
+  }
 }

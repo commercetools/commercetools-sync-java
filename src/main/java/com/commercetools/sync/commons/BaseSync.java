@@ -15,8 +15,8 @@ public abstract class BaseSync<
     ResourceT extends BaseResource,
     ResourceDraftT,
     ResourceUpdateActionT extends ResourceUpdateAction<ResourceUpdateActionT>,
-    SyncStatisticsT extends BaseSyncStatistics,
-    SyncOptionsT extends BaseSyncOptions> {
+    SyncStatisticsT extends BaseSyncStatistics<SyncStatisticsT>,
+    SyncOptionsT extends BaseSyncOptions<ResourceT, ResourceDraftT, ResourceUpdateActionT>> {
   protected final SyncStatisticsT statistics;
   protected final SyncOptionsT syncOptions;
 

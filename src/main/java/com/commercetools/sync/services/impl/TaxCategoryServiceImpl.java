@@ -10,6 +10,7 @@ import com.commercetools.api.models.tax_category.TaxCategoryDraft;
 import com.commercetools.api.models.tax_category.TaxCategoryPagedQueryResponse;
 import com.commercetools.api.models.tax_category.TaxCategoryUpdateAction;
 import com.commercetools.api.models.tax_category.TaxCategoryUpdateBuilder;
+import com.commercetools.api.predicates.query.tax_category.TaxCategoryQueryBuilderDsl;
 import com.commercetools.sync.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptions;
@@ -34,6 +35,7 @@ public final class TaxCategoryServiceImpl
         TaxCategoryPagedQueryResponse,
         ByProjectKeyTaxCategoriesKeyByKeyGet,
         TaxCategory,
+        TaxCategoryQueryBuilderDsl,
         ByProjectKeyTaxCategoriesPost>
     implements TaxCategoryService {
 

@@ -1,5 +1,6 @@
 package com.commercetools.sync.services.impl;
 
+import static com.commercetools.sync.commons.utils.CustomValueConverter.isValidTextNode;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static java.lang.String.format;
@@ -34,7 +35,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
 public abstract class BaseTransformServiceImpl {
@@ -224,12 +224,9 @@ public abstract class BaseTransformServiceImpl {
   }
 
   private void fillReferenceIdToKeyCache(@Nullable JsonNode id, @Nullable JsonNode key) {
-    if (id != null && !StringUtils.isBlank(id.asText())) {
+    if (isValidTextNode(id)) {
       final String idValue = id.asText();
-      final String keyValue =
-          key != null && !StringUtils.isBlank(key.asText())
-              ? key.asText()
-              : KEY_IS_NOT_SET_PLACE_HOLDER;
+      final String keyValue = isValidTextNode(key) ? key.asText() : KEY_IS_NOT_SET_PLACE_HOLDER;
       referenceIdToKeyCache.add(idValue, keyValue);
     }
   }

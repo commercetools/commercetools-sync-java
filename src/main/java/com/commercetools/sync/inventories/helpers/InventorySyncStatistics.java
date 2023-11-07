@@ -2,7 +2,7 @@ package com.commercetools.sync.inventories.helpers;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 
-public class InventorySyncStatistics extends BaseSyncStatistics {
+public class InventorySyncStatistics extends BaseSyncStatistics<InventorySyncStatistics> {
 
   public InventorySyncStatistics() {
     super();
@@ -21,5 +21,10 @@ public class InventorySyncStatistics extends BaseSyncStatistics {
   @Override
   public String getReportMessage() {
     return getDefaultReportMessageForResource("inventory entries");
+  }
+
+  @Override
+  protected InventorySyncStatistics getThis() {
+    return this;
   }
 }

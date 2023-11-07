@@ -25,4 +25,10 @@ class ShoppingListSyncStatisticsTest {
             "Summary: 6 shopping lists were processed in total "
                 + "(1 created, 3 updated and 2 failed to sync).");
   }
+
+  @Test
+  void getSyncStatisticsClassName_ShouldReturnCorrectClassName() {
+    assertThat(shoppingListSyncStatistics.getSyncStatisticsClassName())
+        .isEqualTo("com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics");
+  }
 }

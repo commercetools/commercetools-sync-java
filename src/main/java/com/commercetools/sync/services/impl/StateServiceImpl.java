@@ -10,6 +10,7 @@ import com.commercetools.api.models.state.StateDraft;
 import com.commercetools.api.models.state.StatePagedQueryResponse;
 import com.commercetools.api.models.state.StateUpdateAction;
 import com.commercetools.api.models.state.StateUpdateBuilder;
+import com.commercetools.api.predicates.query.state.StateQueryBuilderDsl;
 import com.commercetools.sync.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.states.StateSyncOptions;
@@ -34,6 +35,7 @@ public final class StateServiceImpl
         StatePagedQueryResponse,
         ByProjectKeyStatesKeyByKeyGet,
         State,
+        StateQueryBuilderDsl,
         ByProjectKeyStatesPost>
     implements StateService {
 

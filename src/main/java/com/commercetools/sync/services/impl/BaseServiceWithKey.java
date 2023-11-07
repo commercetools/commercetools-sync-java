@@ -1,7 +1,7 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.api.client.PagedQueryResourceRequest;
 import com.commercetools.api.models.DomainResource;
-import com.commercetools.api.models.PagedQueryResourceRequest;
 import com.commercetools.api.models.ResourcePagedQueryResponse;
 import com.commercetools.api.models.WithKey;
 import com.commercetools.sync.commons.BaseSyncOptions;
@@ -19,10 +19,12 @@ abstract class BaseServiceWithKey<
         SyncOptionsT extends BaseSyncOptions,
         ResourceT extends DomainResource<ResourceT> & WithKey,
         ResourceDraftT extends Draft<ResourceDraftT> & WithKey,
-        PagedQueryT extends PagedQueryResourceRequest<PagedQueryT, PagedQueryResponseT>,
+        PagedQueryT extends
+            PagedQueryResourceRequest<PagedQueryT, PagedQueryResponseT, QueryBuilderDslT>,
         PagedQueryResponseT extends ResourcePagedQueryResponse<ResourceT>,
         GetOneResourceQueryT extends ApiMethod<GetOneResourceQueryT, ResourceT>,
         QueryResultT,
+        QueryBuilderDslT,
         PostRequestT extends BodyApiMethod<PostRequestT, QueryResultT, ResourceDraftT>>
     extends BaseService<
         SyncOptionsT,
@@ -32,6 +34,7 @@ abstract class BaseServiceWithKey<
         PagedQueryResponseT,
         GetOneResourceQueryT,
         QueryResultT,
+        QueryBuilderDslT,
         PostRequestT> {
 
   BaseServiceWithKey(@Nonnull final SyncOptionsT syncOptions) {

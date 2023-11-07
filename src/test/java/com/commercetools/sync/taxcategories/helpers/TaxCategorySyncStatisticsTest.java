@@ -29,4 +29,10 @@ class TaxCategorySyncStatisticsTest {
                 + "total (%s created, %s updated and %s failed to sync).",
             processed, created, updated, failed);
   }
+
+  @Test
+  void getSyncStatisticsClassName_ShouldReturnCorrectClassName() {
+    assertThat(new TaxCategorySyncStatistics().getSyncStatisticsClassName())
+        .isEqualTo("com.commercetools.sync.taxcategories.helpers.TaxCategorySyncStatistics");
+  }
 }

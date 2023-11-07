@@ -167,7 +167,7 @@ public class ProductTypeBatchValidator
       throws InvalidReferenceException {
 
     final String key = nestedAttributeType.getTypeReference().getId();
-    if (isBlank(key)) {
+    if (isBlank(key) || "null".equals(key)) {
       throw new InvalidReferenceException(BLANK_ID_VALUE_ON_REFERENCE);
     }
     return key;

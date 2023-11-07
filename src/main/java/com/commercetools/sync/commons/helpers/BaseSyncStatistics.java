@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 
-public abstract class BaseSyncStatistics {
+public abstract class BaseSyncStatistics<SyncStatisticsT extends BaseSyncStatistics> {
   private AtomicInteger updated;
   private AtomicInteger created;
   private AtomicInteger failed;
@@ -279,6 +279,29 @@ public abstract class BaseSyncStatistics {
    * @return a summary message of the statistics report.
    */
   public abstract String getReportMessage();
+
+  /**
+   * Gets the name of the implementation class extending this abstract class. This name is then
+   * serialized into JSON and stored in the custom object of the last sync statistics. Later we
+   * could use this name to deserialize the custom object into the correct implementation class.
+   *
+   * @return name of the implementation class extending this abstract class.
+   */
+  public String getSyncStatisticsClassName() {
+    return getThis().getClass().getName();
+  }
+
+  /**
+   * Returns {@code this} instance of {@code T}, which extends {@link
+   * com.commercetools.sync.commons.helpers.BaseSyncStatistics}. The purpose of this method is to
+   * make sure that {@code this} is an instance of a class which extends {@link
+   * com.commercetools.sync.commons.helpers.BaseSyncStatistics} in order to be used in the generic
+   * methods of the class. Otherwise, without this method, the methods above would need to cast
+   * {@code this to T} which could lead to a runtime error of the class was extended in a wrong way.
+   *
+   * @return an instance of the class that overrides this method.
+   */
+  protected abstract SyncStatisticsT getThis();
 
   /**
    * Builds a proper summary message of the statistics report of a given {@code resourceString} in

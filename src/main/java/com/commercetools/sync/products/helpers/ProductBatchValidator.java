@@ -1,5 +1,6 @@
 package com.commercetools.sync.products.helpers;
 
+import static com.commercetools.sync.commons.utils.CustomValueConverter.isValidTextNode;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.isReferenceOfType;
 import static java.lang.String.format;
@@ -285,7 +286,9 @@ public class ProductBatchValidator
 
     return allAttributeReferences.stream()
         .filter(reference -> isReferenceOfType(reference, referenceTypeId))
-        .map(reference -> reference.get(REFERENCE_ID_FIELD).asText())
+        .map(reference -> reference.get(REFERENCE_ID_FIELD))
+        .filter(field -> isValidTextNode(field))
+        .map(field -> field.asText())
         .filter(Objects::nonNull)
         .collect(Collectors.toSet());
   }

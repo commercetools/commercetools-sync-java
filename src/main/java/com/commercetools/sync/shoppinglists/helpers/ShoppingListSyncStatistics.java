@@ -2,7 +2,8 @@ package com.commercetools.sync.shoppinglists.helpers;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 
-public final class ShoppingListSyncStatistics extends BaseSyncStatistics {
+public final class ShoppingListSyncStatistics
+    extends BaseSyncStatistics<ShoppingListSyncStatistics> {
 
   /**
    * Builds a summary of the shopping list sync statistics instance that looks like the following
@@ -16,5 +17,10 @@ public final class ShoppingListSyncStatistics extends BaseSyncStatistics {
   @Override
   public String getReportMessage() {
     return getDefaultReportMessageForResource("shopping lists");
+  }
+
+  @Override
+  protected ShoppingListSyncStatistics getThis() {
+    return this;
   }
 }

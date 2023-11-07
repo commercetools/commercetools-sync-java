@@ -10,6 +10,7 @@ import com.commercetools.api.models.shopping_list.ShoppingListDraft;
 import com.commercetools.api.models.shopping_list.ShoppingListPagedQueryResponse;
 import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
 import com.commercetools.api.models.shopping_list.ShoppingListUpdateBuilder;
+import com.commercetools.api.predicates.query.shopping_list.ShoppingListQueryBuilderDsl;
 import com.commercetools.sync.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.services.ShoppingListService;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
@@ -34,6 +35,7 @@ public final class ShoppingListServiceImpl
         ShoppingListPagedQueryResponse,
         ByProjectKeyShoppingListsKeyByKeyGet,
         ShoppingList,
+        ShoppingListQueryBuilderDsl,
         ByProjectKeyShoppingListsPost>
     implements ShoppingListService {
 

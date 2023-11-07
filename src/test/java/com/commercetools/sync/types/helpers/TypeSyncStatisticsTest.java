@@ -25,4 +25,10 @@ class TypeSyncStatisticsTest {
             "Summary: 6 types were processed in total "
                 + "(1 created, 3 updated and 2 failed to sync).");
   }
+
+  @Test
+  void getSyncStatisticsClassName_ShouldReturnCorrectClassName() {
+    assertThat(typeSyncStatistics.getSyncStatisticsClassName())
+        .isEqualTo("com.commercetools.sync.types.helpers.TypeSyncStatistics");
+  }
 }

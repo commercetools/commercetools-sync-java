@@ -3,7 +3,6 @@ package com.commercetools.sync.commons.helpers;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.models.common.AssetDraft;
-import com.commercetools.api.models.common.Reference;
 import com.commercetools.api.models.common.ResourceIdentifier;
 import com.commercetools.api.models.customer.CustomerDraft;
 import com.commercetools.api.models.type.CustomFieldsDraft;
@@ -67,14 +66,6 @@ public abstract class BaseBatchValidator<
       assetDrafts.forEach(
           assetDraft ->
               collectReferencedKeyFromCustomFieldsDraft(assetDraft.getCustom(), keyConsumer));
-    }
-  }
-
-  protected <T> void collectReferencedKeyFromReference(
-      @Nullable final Reference reference, @Nonnull final Consumer<String> keyInReferenceSupplier) {
-
-    if (reference != null && !isBlank(reference.getId())) {
-      keyInReferenceSupplier.accept(reference.getId());
     }
   }
 

@@ -151,4 +151,10 @@ class CategorySyncStatisticsTest {
     // assert
     assertThat(categorySyncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
   }
+
+  @Test
+  void getSyncStatisticsClassName_ShouldReturnCorrectClassName() {
+    assertThat(categorySyncStatistics.getSyncStatisticsClassName())
+        .isEqualTo("com.commercetools.sync.categories.helpers.CategorySyncStatistics");
+  }
 }
