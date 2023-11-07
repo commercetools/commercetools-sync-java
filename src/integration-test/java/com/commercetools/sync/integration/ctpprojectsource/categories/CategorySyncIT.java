@@ -33,7 +33,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.*;
 
-@Disabled
 class CategorySyncIT {
   private CategorySync categorySync;
 
