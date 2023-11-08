@@ -40,6 +40,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 @SuppressWarnings("unchecked")
 class CustomObjectServiceImplTest {
@@ -232,6 +233,55 @@ class CustomObjectServiceImplTest {
                                 .toString()))
                 .isEqualTo(customObjectId));
     verify(byProjectKeyCustomObjectsByContainerByKeyGet).execute();
+  }
+
+  @Test
+  void fetchMatchingCustomObjects_WithManyCustomObjects_ShouldChunkAndFetchCustomObjects() {
+    final ArgumentCaptor<String> requestArgumentCaptor = ArgumentCaptor.forClass(String.class);
+    final Set<CustomObjectCompositeIdentifier> customObjectCompositeIdentifiers = new HashSet<>();
+    for (int i = 0; i < 500; i++) {
+      final String key = RandomStringUtils.random(15, true, true);
+      final String container = RandomStringUtils.random(15, true, true);
+      customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(key, container));
+    }
+
+    final ByProjectKeyCustomObjectsGet byProjectKeyCustomObjectsGet =
+        mock(ByProjectKeyCustomObjectsGet.class);
+
+    when(client.customObjects()).thenReturn(mock(ByProjectKeyCustomObjectsRequestBuilder.class));
+    when(client.customObjects().get()).thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withWhere(anyString()))
+        .thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withPredicateVar(anyString(), anyString()))
+        .thenReturn(byProjectKeyCustomObjectsGet, byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withLimit(anyInt())).thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withWithTotal(anyBoolean()))
+        .thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withSort(anyString()))
+        .thenReturn(byProjectKeyCustomObjectsGet);
+    when(byProjectKeyCustomObjectsGet.withSort(anyString()))
+        .thenReturn(byProjectKeyCustomObjectsGet);
+
+    final ApiHttpResponse<CustomObjectPagedQueryResponse> apiHttpResponse =
+        mock(ApiHttpResponse.class);
+    final CustomObjectPagedQueryResponse customObjectPagedQueryResponse =
+        mock(CustomObjectPagedQueryResponse.class);
+    when(byProjectKeyCustomObjectsGet.execute())
+        .thenReturn(CompletableFuture.completedFuture(apiHttpResponse));
+    when(apiHttpResponse.getBody()).thenReturn(customObjectPagedQueryResponse);
+    when(customObjectPagedQueryResponse.getResults()).thenReturn(Collections.emptyList());
+
+    // test
+    service
+        .fetchMatchingCustomObjects(customObjectCompositeIdentifiers)
+        .toCompletableFuture()
+        .join();
+
+    // assertions
+    verify(byProjectKeyCustomObjectsGet, times(2)).execute();
+    verify(byProjectKeyCustomObjectsGet, times(2)).withWhere(requestArgumentCaptor.capture());
+    assertThat(requestArgumentCaptor.getAllValues().get(0))
+        .isNotEqualTo(requestArgumentCaptor.getAllValues().get(1));
   }
 
   @Test

@@ -70,8 +70,7 @@ public class CustomObjectServiceImpl
   @Override
   public CompletionStage<Set<CustomObject>> fetchMatchingCustomObjects(
       @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
-    return super.fetchMatchingResources(
-        getKeys(identifiers), this::keyMapper, (keysNotCached) -> createQuery(identifiers));
+    return super.fetchMatchingResources(getKeys(identifiers), this::keyMapper, this::createQuery);
   }
 
   @Nonnull
@@ -142,8 +141,10 @@ public class CustomObjectServiceImpl
   }
 
   @Nonnull
-  private ByProjectKeyCustomObjectsGet createQuery(
-      @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
+  private ByProjectKeyCustomObjectsGet createQuery(@Nonnull final Set<String> keys) {
+    final Set<CustomObjectCompositeIdentifier> identifiers =
+        keys.stream().map(CustomObjectCompositeIdentifier::of).collect(Collectors.toSet());
+
     final String whereQuery =
         identifiers.stream()
             .map(
