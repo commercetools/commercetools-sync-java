@@ -164,7 +164,7 @@ class TaxCategoryServiceImplIT {
 
   @Test
   void fetchMatchingTaxCategoriesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
-    // Mock sphere client to return BadGatewayException on any request.
+    // Mock client to return BadGatewayException on any request.
     final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
     when(spyClient.taxCategories()).thenReturn(mock(ByProjectKeyTaxCategoriesRequestBuilder.class));
     final ByProjectKeyTaxCategoriesGet getMock = mock(ByProjectKeyTaxCategoriesGet.class);

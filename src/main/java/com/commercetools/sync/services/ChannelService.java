@@ -46,7 +46,7 @@ public interface ChannelService {
    * Creates a new channel with the supplied {@code key}.
    *
    * @param key key of supply channel.
-   * @return a future containing as a result the created {@link Channel} or a sphere exception.
+   * @return a future containing as a result the created {@link Channel} or empty optional.
    */
   @Nonnull
   CompletionStage<Optional<Channel>> createChannel(@Nonnull final String key);
@@ -56,7 +56,7 @@ public interface ChannelService {
    * a cache map.
    *
    * @param key key of supply channel.
-   * @return a future containing as a result the created {@link Channel} or a sphere exception.
+   * @return a future containing as a result the created {@link Channel} or empty optional.
    */
   @Nonnull
   CompletionStage<Optional<Channel>> createAndCacheChannel(@Nonnull final String key);

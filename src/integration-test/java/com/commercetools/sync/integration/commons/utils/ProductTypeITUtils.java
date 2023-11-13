@@ -419,7 +419,7 @@ public final class ProductTypeITUtils {
   /**
    * Tries to fetch product type of {@code key} using {@code cptClient}.
    *
-   * @param cptClient sphere client used to execute requests.
+   * @param cptClient client used to execute requests.
    * @param key key of requested product type.
    * @return {@link java.util.Optional} which may contain product type of {@code key}.
    */

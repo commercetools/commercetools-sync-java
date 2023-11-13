@@ -162,10 +162,9 @@ class StateReferenceResolverTest {
             .state(StateResourceIdentifierBuilder.of().key("stateKey").build())
             .key("dummyKey");
 
-    final CompletableFuture<Optional<String>> futureThrowingSphereException =
-        new CompletableFuture<>();
-    futureThrowingSphereException.completeExceptionally(ExceptionUtils.createBadGatewayException());
-    when(stateService.fetchCachedStateId(anyString())).thenReturn(futureThrowingSphereException);
+    final CompletableFuture<Optional<String>> futureThrowingException = new CompletableFuture<>();
+    futureThrowingException.completeExceptionally(ExceptionUtils.createBadGatewayException());
+    when(stateService.fetchCachedStateId(anyString())).thenReturn(futureThrowingException);
 
     assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
         .failsWithin(1, TimeUnit.SECONDS)

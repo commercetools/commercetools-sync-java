@@ -209,14 +209,13 @@ public class CustomObjectSync
                           return customObjectOptional;
                         })
                     .exceptionally(
-                        sphereException -> {
+                        throwable -> {
                           final String errorMessage =
                               format(
                                   CTP_CUSTOM_OBJECT_CREATE_FAILED,
                                   CustomObjectCompositeIdentifier.of(customObjectDraft).toString(),
-                                  sphereException.getMessage());
-                          handleError(
-                              errorMessage, sphereException, null, customObjectDraft, null, 1);
+                                  throwable.getMessage());
+                          handleError(errorMessage, throwable, null, customObjectDraft, null, 1);
                           return Optional.empty();
                         }))
         .orElse(completedFuture(Optional.empty()));
@@ -250,24 +249,19 @@ public class CustomObjectSync
               updatedResponseEntry -> {
                 final Optional<CustomObject> updateCustomObjectOptional =
                     updatedResponseEntry.getKey();
-                final Throwable sphereException = updatedResponseEntry.getValue();
-                if (sphereException != null) {
+                final Throwable throwable = updatedResponseEntry.getValue();
+                if (throwable != null) {
                   return executeSupplierIfConcurrentModificationException(
-                      sphereException,
+                      throwable,
                       () -> fetchAndUpdate(oldCustomObject, newCustomObject),
                       () -> {
                         final String errorMessage =
                             format(
                                 CTP_CUSTOM_OBJECT_UPDATE_FAILED,
                                 CustomObjectCompositeIdentifier.of(newCustomObject).toString(),
-                                sphereException.getMessage());
+                                throwable.getMessage());
                         handleError(
-                            errorMessage,
-                            sphereException,
-                            oldCustomObject,
-                            newCustomObject,
-                            null,
-                            1);
+                            errorMessage, throwable, oldCustomObject, newCustomObject, null, 1);
                         return CompletableFuture.completedFuture(Optional.empty());
                       });
                 } else {

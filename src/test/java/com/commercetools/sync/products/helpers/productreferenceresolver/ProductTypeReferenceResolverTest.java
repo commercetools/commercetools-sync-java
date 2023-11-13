@@ -146,12 +146,11 @@ class ProductTypeReferenceResolverTest {
     final ProductDraftBuilder productBuilder =
         ProductSyncMockUtils.getBuilderWithProductTypeRefKey("anyKey").key("dummyKey");
 
-    final CompletableFuture<Optional<String>> futureThrowingSphereException =
-        new CompletableFuture<>();
-    futureThrowingSphereException.completeExceptionally(
+    final CompletableFuture<Optional<String>> futureThrowingException = new CompletableFuture<>();
+    futureThrowingException.completeExceptionally(
         ExceptionUtils.createConcurrentModificationException("CTP error on fetch"));
     when(productTypeService.fetchCachedProductTypeId(anyString()))
-        .thenReturn(futureThrowingSphereException);
+        .thenReturn(futureThrowingException);
 
     assertThat(referenceResolver.resolveProductTypeReference(productBuilder))
         .failsWithin(1, TimeUnit.SECONDS)

@@ -219,11 +219,11 @@ class CategorySyncTest {
 
     when(mockCategoryService.fetchCachedCategoryId(Mockito.eq("root")))
         .thenReturn(completedFuture(Optional.of("rootID")));
-    final CompletableFuture<Set<WaitingToBeResolvedCategories>> futureThrowingSphereException =
+    final CompletableFuture<Set<WaitingToBeResolvedCategories>> futureThrowingException =
         new CompletableFuture<>();
-    futureThrowingSphereException.completeExceptionally(new RuntimeException("CTP error on fetch"));
+    futureThrowingException.completeExceptionally(new RuntimeException("CTP error on fetch"));
     when(mockUnresolvedReferencesService.fetch(any(), any(), any()))
-        .thenReturn(futureThrowingSphereException);
+        .thenReturn(futureThrowingException);
     final CategorySync mockCategorySync =
         new CategorySync(
             categorySyncOptions,

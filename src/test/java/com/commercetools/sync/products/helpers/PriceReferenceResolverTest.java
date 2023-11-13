@@ -74,9 +74,9 @@ class PriceReferenceResolverTest {
 
     final TypeService typeService = new TypeServiceImpl(productSyncOptions);
 
-    final CompletableFuture<ApiHttpResponse<TypePagedQueryResponse>> futureThrowingSphereException =
+    final CompletableFuture<ApiHttpResponse<TypePagedQueryResponse>> futureThrowingException =
         new CompletableFuture<>();
-    futureThrowingSphereException.completeExceptionally(new Exception("CTP error on fetch"));
+    futureThrowingException.completeExceptionally(new Exception("CTP error on fetch"));
 
     final ByProjectKeyTypesGet byProjectKeyTypesGet = mock();
     when(ctpClient.types()).thenReturn(mock());
@@ -87,7 +87,7 @@ class PriceReferenceResolverTest {
     when(byProjectKeyTypesGet.withLimit(anyInt())).thenReturn(byProjectKeyTypesGet);
     when(byProjectKeyTypesGet.withWithTotal(anyBoolean())).thenReturn(byProjectKeyTypesGet);
     when(byProjectKeyTypesGet.withSort(anyString())).thenReturn(byProjectKeyTypesGet);
-    when(byProjectKeyTypesGet.execute()).thenReturn(futureThrowingSphereException);
+    when(byProjectKeyTypesGet.execute()).thenReturn(futureThrowingException);
 
     final String customTypeKey = "customTypeKey";
     final PriceDraftBuilder priceBuilder =

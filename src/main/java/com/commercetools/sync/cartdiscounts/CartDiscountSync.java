@@ -303,20 +303,20 @@ public class CartDiscountSync
         .handle(ImmutablePair::new)
         .thenCompose(
             updateResponse -> {
-              final Throwable sphereException = updateResponse.getValue();
-              if (sphereException != null) {
+              final Throwable throwable = updateResponse.getValue();
+              if (throwable != null) {
                 return executeSupplierIfConcurrentModificationException(
-                    sphereException,
+                    throwable,
                     () -> fetchAndUpdate(oldCartDiscount, newCartDiscount),
                     () -> {
                       final String errorMessage =
                           format(
                               CTP_CART_DISCOUNT_UPDATE_FAILED,
                               newCartDiscount.getKey(),
-                              sphereException.getMessage());
+                              throwable.getMessage());
                       handleError(
                           errorMessage,
-                          sphereException,
+                          throwable,
                           oldCartDiscount,
                           newCartDiscount,
                           updateActions,

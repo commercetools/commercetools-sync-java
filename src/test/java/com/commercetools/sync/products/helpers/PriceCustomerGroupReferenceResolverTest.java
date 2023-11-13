@@ -185,12 +185,11 @@ class PriceCustomerGroupReferenceResolverTest {
                     .build())
             .customerGroup(customerGroupResourceIdentifier);
 
-    final CompletableFuture<Optional<String>> futureThrowingSphereException =
-        new CompletableFuture<>();
-    futureThrowingSphereException.completeExceptionally(
+    final CompletableFuture<Optional<String>> futureThrowingException = new CompletableFuture<>();
+    futureThrowingException.completeExceptionally(
         new ReferenceResolutionException("CTP error on fetch"));
     when(customerGroupService.fetchCachedCustomerGroupId(anyString()))
-        .thenReturn(futureThrowingSphereException);
+        .thenReturn(futureThrowingException);
 
     assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
         .failsWithin(1, TimeUnit.SECONDS)

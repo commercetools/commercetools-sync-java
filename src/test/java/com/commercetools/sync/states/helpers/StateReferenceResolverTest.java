@@ -187,10 +187,10 @@ class StateReferenceResolverTest {
             .transitions(List.of(state.toResourceIdentifier()))
             .build();
 
-    final CompletableFuture<Set<State>> futureThrowingSphereException = new CompletableFuture<>();
-    futureThrowingSphereException.completeExceptionally(ExceptionUtils.createBadGatewayException());
+    final CompletableFuture<Set<State>> futureThrowingException = new CompletableFuture<>();
+    futureThrowingException.completeExceptionally(ExceptionUtils.createBadGatewayException());
     when(mockStateService.fetchMatchingStatesByKeysWithTransitions(anySet()))
-        .thenReturn(futureThrowingSphereException);
+        .thenReturn(futureThrowingException);
 
     final StateReferenceResolver stateReferenceResolver =
         new StateReferenceResolver(stateSyncOptions, mockStateService);

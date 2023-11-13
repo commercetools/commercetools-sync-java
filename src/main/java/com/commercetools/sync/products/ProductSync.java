@@ -463,16 +463,16 @@ public class ProductSync
         .handle(ImmutablePair::new)
         .thenCompose(
             updateResponse -> {
-              final Throwable sphereException = updateResponse.getValue();
-              if (sphereException != null) {
+              final Throwable throwable = updateResponse.getValue();
+              if (throwable != null) {
                 return executeSupplierIfConcurrentModificationException(
-                    sphereException,
+                    throwable,
                     () -> fetchAndUpdate(oldProduct, newProduct),
                     () -> {
                       final String productKey = oldProduct.getKey();
                       handleProductSyncError(
-                          format(UPDATE_FAILED, productKey, sphereException),
-                          sphereException,
+                          format(UPDATE_FAILED, productKey, throwable),
+                          throwable,
                           oldProduct,
                           newProduct,
                           updateActions);

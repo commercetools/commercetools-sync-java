@@ -94,7 +94,7 @@ public final class ChannelITUtils {
   /**
    * Tries to fetch channel of key {@code channelKey} using {@code ctpClient}.
    *
-   * @param ctpClient sphere client used to execute requests
+   * @param ctpClient client used to execute requests
    * @param channelKey key of requested channel
    * @return {@link java.util.Optional} which may contain channel of key {@code channelKey}
    */

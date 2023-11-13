@@ -165,8 +165,7 @@ class StateServiceImplIT {
 
   @Test
   void fetchMatchingStatesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
-    // Mock sphere client to return BadGatewayException on any request.
-
+    // Mock client to return BadGatewayException on any request.
     final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
     when(spyClient.states()).thenReturn(mock(ByProjectKeyStatesRequestBuilder.class));
     final ByProjectKeyStatesGet getMock = mock(ByProjectKeyStatesGet.class);
