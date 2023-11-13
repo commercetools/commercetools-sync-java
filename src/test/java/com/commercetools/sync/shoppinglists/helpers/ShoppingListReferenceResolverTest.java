@@ -241,7 +241,7 @@ class ShoppingListReferenceResolverTest {
             .customer(CustomerResourceIdentifierBuilder.of().key("anyKey").build())
             .description(LocalizedString.of(Locale.ENGLISH, "DESCRIPTION"));
 
-    final CompletableFuture<Optional<String>> futureThrowingxException = new CompletableFuture<>();
+    final CompletableFuture<Optional<String>> futureThrowingException = new CompletableFuture<>();
     futureThrowingException.completeExceptionally(ExceptionUtils.createBadGatewayException());
     when(customerService.fetchCachedCustomerId(anyString())).thenReturn(futureThrowingException);
 
