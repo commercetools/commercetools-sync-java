@@ -118,4 +118,12 @@ class BaseSyncStatisticsTest {
             "Summary: 0 resources were processed in total (0 created, 0 updated and 0 "
                 + "failed to sync).");
   }
+
+  @Test
+  void twoSyncsStatistics_withSameProperties_ShouldBeEqual() {
+    final CustomerSyncStatistics customerSyncStatistics = new CustomerSyncStatistics();
+    final CustomerSyncStatistics customerSyncStatisticsIdentical = new CustomerSyncStatistics();
+
+    assertThat(customerSyncStatistics).isEqualTo(customerSyncStatisticsIdentical);
+  }
 }
