@@ -1,8 +1,8 @@
 package com.commercetools.sync.products.utils.productvariantupdateactionutils.prices;
 
+import static com.commercetools.api.models.common.DefaultCurrencyUnits.EUR;
+import static com.commercetools.api.models.common.DefaultCurrencyUnits.USD;
 import static com.neovisionaries.i18n.CountryCode.*;
-import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
-import static io.sphere.sdk.models.DefaultCurrencyUnits.USD;
 import static java.util.Optional.ofNullable;
 
 import com.commercetools.api.models.channel.ChannelResourceIdentifier;
@@ -19,7 +19,6 @@ import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.neovisionaries.i18n.CountryCode;
-import io.sphere.sdk.utils.MoneyImpl;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -27,6 +26,7 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.money.CurrencyUnit;
+import javax.money.Monetary;
 
 public final class PriceDraftFixtures {
   public static final PriceDraft DRAFT_111_USD =
@@ -125,7 +125,7 @@ public final class PriceDraftFixtures {
   public static final PriceDraft DRAFT_DE_111_USD =
       getPriceDraft(BigDecimal.valueOf(111), USD, DE, null, null, null, null, null);
 
-  public static final CurrencyUnit GBP = MoneyImpl.createCurrencyByCode("GBP");
+  public static final CurrencyUnit GBP = Monetary.getCurrency("GBP");
 
   public static final PriceDraft DRAFT_UK_111_GBP =
       getPriceDraft(BigDecimal.valueOf(111), GBP, UK, null, null, null, null, null);

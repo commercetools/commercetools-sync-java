@@ -5,24 +5,24 @@ import com.commercetools.api.models.category.CategorySetAssetCustomTypeActionBui
 import com.commercetools.api.models.category.CategoryUpdateAction;
 import com.commercetools.sync.commons.helpers.GenericCustomActionBuilder;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.jetbrains.annotations.NotNull;
 
 public class AssetCustomActionBuilder implements GenericCustomActionBuilder<CategoryUpdateAction> {
 
-  @NotNull
+  @Nonnull
   @Override
   public CategoryUpdateAction buildRemoveCustomTypeAction(
       @Nullable final Long variantId, @Nullable final String assetKey) {
     return CategorySetAssetCustomTypeActionBuilder.of().build();
   }
 
-  @NotNull
+  @Nonnull
   @Override
   public CategoryUpdateAction buildSetCustomTypeAction(
       @Nullable final Long variantId,
       @Nullable final String assetKey,
-      @NotNull final String customTypeId,
+      @Nonnull final String customTypeId,
       @Nullable final Map<String, Object> customFieldsJsonMap) {
     return CategorySetAssetCustomTypeActionBuilder.of()
         .assetKey(assetKey)
@@ -31,7 +31,7 @@ public class AssetCustomActionBuilder implements GenericCustomActionBuilder<Cate
         .build();
   }
 
-  @NotNull
+  @Nonnull
   @Override
   public CategoryUpdateAction buildSetCustomFieldAction(
       @Nullable final Long variantId,

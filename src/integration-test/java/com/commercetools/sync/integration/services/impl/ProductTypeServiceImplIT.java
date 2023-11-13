@@ -180,7 +180,7 @@ class ProductTypeServiceImplIT {
 
   @Test
   void fetchMatchingProductTypesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
-    // Mock sphere client to return BadGatewayException on any request.
+    // Mock client to return BadGatewayException on any request.
 
     final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
     when(spyClient.productTypes()).thenReturn(mock(ByProjectKeyProductTypesRequestBuilder.class));

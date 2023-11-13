@@ -12,14 +12,14 @@ import com.commercetools.sync.customobjects.models.NoopResourceUpdateAction;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public final class CustomObjectSyncOptions
     extends BaseSyncOptions<CustomObject, CustomObjectDraft, NoopResourceUpdateAction> {
 
   CustomObjectSyncOptions(
-      @NotNull final ProjectApiRoot ctpClient,
+      @Nonnull final ProjectApiRoot ctpClient,
       @Nullable
           final QuadConsumer<
                   SyncException,

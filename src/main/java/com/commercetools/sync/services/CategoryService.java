@@ -1,10 +1,9 @@
 package com.commercetools.sync.services;
 
+import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.models.category.Category;
 import com.commercetools.api.models.category.CategoryDraft;
 import com.commercetools.api.models.category.CategoryUpdateAction;
-import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.commands.UpdateAction;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,8 +16,8 @@ public interface CategoryService {
 
   /**
    * Filters out the keys which are already cached and fetches only the not-cached category keys
-   * from the CTP project defined in an injected {@link SphereClient} and stores a mapping for every
-   * category to id in the cached map of keys -&gt; ids and returns this cached map.
+   * from the CTP project defined in an injected {@link ProjectApiRoot} and stores a mapping for
+   * every category to id in the cached map of keys -&gt; ids and returns this cached map.
    *
    * @param categoryKeys - a set category keys to fetch and cache the ids for
    * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion
@@ -29,7 +28,7 @@ public interface CategoryService {
 
   /**
    * Given a {@link Set} of category keys, this method fetches a set of all the categories, matching
-   * this given set of keys in the CTP project, defined in an injected {@link SphereClient}. A
+   * this given set of keys in the CTP project, defined in an injected {@link ProjectApiRoot}. A
    * mapping of the key to the id of the fetched categories is persisted in an in-memory map.
    *
    * @param categoryKeys set of category keys to fetch matching categories by.
@@ -41,7 +40,7 @@ public interface CategoryService {
 
   /**
    * Given a category key, this method fetches a category that matches this given key in the CTP
-   * project defined in a potentially injected {@link SphereClient}. If there is no matching
+   * project defined in a potentially injected {@link ProjectApiRoot}. If there is no matching
    * category an empty {@link Optional} will be returned in the returned future. A mapping of the
    * key to the id of the fetched category is persisted in an in -memory map.
    *
@@ -95,17 +94,17 @@ public interface CategoryService {
   CompletionStage<Optional<Category>> createCategory(@Nonnull CategoryDraft categoryDraft);
 
   /**
-   * Given a {@link Category} and a {@link List}&lt;{@link UpdateAction}&lt;{@link
-   * Category}&gt;&gt;, this method issues an update request with these update actions on this
-   * {@link Category} in the CTP project defined in a potentially injected {@link SphereClient}.
-   * This method returns {@link CompletionStage}&lt;{@link Category}&gt; in which the result of it's
-   * completion contains an instance of the {@link Category} which was updated in the CTP project.
+   * Given a {@link Category} and a {@link List}&lt;{@link CategoryUpdateAction}&gt;, this method
+   * issues an update request with these update actions on this {@link Category} in the CTP project
+   * defined in a potentially injected {@link ProjectApiRoot}. This method returns {@link
+   * CompletionStage}&lt;{@link Category}&gt; in which the result of it's completion contains an
+   * instance of the {@link Category} which was updated in the CTP project.
    *
    * @param category the {@link Category} to update.
    * @param updateActions the update actions to update the {@link Category} with.
    * @return {@link CompletionStage}&lt;{@link Category}&gt; containing as a result of it's
    *     completion an instance of the {@link Category} which was updated in the CTP project or a
-   *     {@link io.sphere.sdk.models.SphereException}.
+   *     {@link java.util.concurrent.CompletionException}.
    */
   @Nonnull
   CompletionStage<Category> updateCategory(

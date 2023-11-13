@@ -369,10 +369,9 @@ public final class ProductTypeITUtils {
   }
 
   /**
-   * Builds a list of two field definitions; one for a {@link
-   * io.sphere.sdk.products.attributes.LocalizedStringAttributeType} and one for a {@link
-   * io.sphere.sdk.products.attributes.BooleanAttributeType}. The JSON of the created attribute
-   * definition list looks as follows:
+   * Builds a list of two field definitions; one for a {@link AttributeLocalizableTextType} and one
+   * for a {@link AttributeBooleanType}. The JSON of the created attribute definition list looks as
+   * follows:
    *
    * <p>"attributes": [ { "name": "backgroundColor", "label": { "en": "backgroundColor" }, "type": {
    * "name": "LocalizedString" }, "inputHint": "SingleLine" }, { "name": "invisibleInShop", "label":
@@ -420,7 +419,7 @@ public final class ProductTypeITUtils {
   /**
    * Tries to fetch product type of {@code key} using {@code cptClient}.
    *
-   * @param cptClient sphere client used to execute requests.
+   * @param cptClient client used to execute requests.
    * @param key key of requested product type.
    * @return {@link java.util.Optional} which may contain product type of {@code key}.
    */

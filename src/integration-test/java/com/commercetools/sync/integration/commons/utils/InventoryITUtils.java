@@ -196,7 +196,7 @@ public final class InventoryITUtils {
    * Tries to fetch inventory entry of {@code sku} and {@code supplyChannel} using {@code
    * ctpClient}.
    *
-   * @param ctpClient sphere client used to execute requests
+   * @param ctpClient client used to execute requests
    * @param sku sku of requested inventory entry
    * @param supplyChannel optional reference to supply channel of requested inventory entry
    * @param expand

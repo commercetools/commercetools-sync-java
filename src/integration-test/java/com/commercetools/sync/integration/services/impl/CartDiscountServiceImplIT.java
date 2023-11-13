@@ -149,7 +149,7 @@ class CartDiscountServiceImplIT {
 
   @Test
   void fetchMatchingCartDiscountsByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
-    // Mock sphere client to return BadGatewayException on any request.
+    // Mock client to return BadGatewayException on any request.
     final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
     final ByProjectKeyCartDiscountsRequestBuilder byProjectKeyCartDiscountsRequestBuilder = mock();
     when(spyClient.cartDiscounts()).thenReturn(byProjectKeyCartDiscountsRequestBuilder);

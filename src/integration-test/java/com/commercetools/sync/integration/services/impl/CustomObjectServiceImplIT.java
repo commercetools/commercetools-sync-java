@@ -213,7 +213,7 @@ class CustomObjectServiceImplIT {
 
   @Test
   void fetchMatchingCustomObjectsByCompositeIdentifiers_WithBadGateWayExceptionAlways_ShouldFail() {
-    // Mock sphere client to return BadGatewayException on any request.
+    // Mock client to return BadGatewayException on any request.
     final ProjectApiRoot spyClient = Mockito.spy(TestClientUtils.CTP_TARGET_CLIENT);
     when(spyClient.customObjects()).thenReturn(mock(ByProjectKeyCustomObjectsRequestBuilder.class));
     final ByProjectKeyCustomObjectsGet getMock = mock(ByProjectKeyCustomObjectsGet.class);

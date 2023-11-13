@@ -198,7 +198,7 @@ class CategoryServiceImplIT {
 
   @Test
   void fetchMatchingCategoriesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
-    // Mock sphere client to return BadGatewayException on any request.
+    // Mock client to return BadGatewayException on any request.
 
     final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
     when(spyClient.categories()).thenReturn(mock(ByProjectKeyCategoriesRequestBuilder.class));
@@ -547,10 +547,10 @@ class CategoryServiceImplIT {
               final List<DuplicateFieldError> fieldErrors =
                   badRequestException.getErrorResponse().getErrors().stream()
                       .map(
-                          sphereError -> {
-                            assertThat(sphereError.getCode())
+                          error -> {
+                            assertThat(error.getCode())
                                 .isEqualTo(DuplicateFieldError.DUPLICATE_FIELD);
-                            return (DuplicateFieldError) sphereError;
+                            return (DuplicateFieldError) error;
                           })
                       .collect(toList());
               assertThat(fieldErrors).hasSize(1);
@@ -602,7 +602,7 @@ class CategoryServiceImplIT {
 
   @Test
   void fetchCategory_WithBadGateWayExceptionAlways_ShouldFail() {
-    // Mock sphere client to return BadGatewayException on any request.
+    // Mock client to return BadGatewayException on any request.
     final ProjectApiRoot spyClient = spy(CTP_TARGET_CLIENT);
     when(spyClient.categories()).thenReturn(mock(ByProjectKeyCategoriesRequestBuilder.class));
 

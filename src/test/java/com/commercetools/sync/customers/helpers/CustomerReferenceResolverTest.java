@@ -310,11 +310,10 @@ class CustomerReferenceResolverTest {
             .customerGroup(CustomerGroupResourceIdentifierBuilder.of().key("anyKey").build())
             .key("dummyKey");
 
-    final CompletableFuture<Optional<String>> futureThrowingSphereException =
-        new CompletableFuture<>();
-    futureThrowingSphereException.completeExceptionally(new RuntimeException("CTP error on fetch"));
+    final CompletableFuture<Optional<String>> futureThrowingException = new CompletableFuture<>();
+    futureThrowingException.completeExceptionally(new RuntimeException("CTP error on fetch"));
     when(customerGroupService.fetchCachedCustomerGroupId(anyString()))
-        .thenReturn(futureThrowingSphereException);
+        .thenReturn(futureThrowingException);
 
     assertThat(referenceResolver.resolveCustomerGroupReference(customerDraftBuilder))
         .failsWithin(1, TimeUnit.SECONDS)

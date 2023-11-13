@@ -490,10 +490,10 @@ public class ProductTypeSync
         .handle(ImmutablePair::new)
         .thenCompose(
             updateResponse -> {
-              final Throwable sphereException = updateResponse.getValue();
-              if (sphereException != null) {
+              final Throwable throwable = updateResponse.getValue();
+              if (throwable != null) {
                 return executeSupplierIfConcurrentModificationException(
-                    sphereException,
+                    throwable,
                     () ->
                         fetchAndUpdate(
                             oldProductType,
@@ -504,8 +504,8 @@ public class ProductTypeSync
                           format(
                               CTP_PRODUCT_TYPE_UPDATE_FAILED,
                               oldProductType.getKey(),
-                              sphereException.getMessage());
-                      handleError(errorMessage, sphereException, null, null, null, 1);
+                              throwable.getMessage());
+                      handleError(errorMessage, throwable, null, null, null, 1);
                       return CompletableFuture.completedFuture(null);
                     });
               } else {
@@ -523,7 +523,7 @@ public class ProductTypeSync
    * of it and returns a list of update actions.
    *
    * @return a list of update actions corresponding to the supplied set of {@link
-   *     io.sphere.sdk.products.attributes.AttributeDefinitionDraft}s.
+   *     AttributeDefinitionDraft}s.
    */
   @Nonnull
   private List<ProductTypeUpdateAction> draftsToActions(
@@ -591,10 +591,10 @@ public class ProductTypeSync
         .handle(ImmutablePair::new)
         .thenCompose(
             updateResponse -> {
-              final Throwable sphereException = updateResponse.getValue();
-              if (sphereException != null) {
+              final Throwable throwable = updateResponse.getValue();
+              if (throwable != null) {
                 return executeSupplierIfConcurrentModificationException(
-                    sphereException,
+                    throwable,
                     () ->
                         fetchAndUpdate(
                             oldProductType,
@@ -605,10 +605,10 @@ public class ProductTypeSync
                           format(
                               CTP_PRODUCT_TYPE_UPDATE_FAILED,
                               newProductType.getKey(),
-                              sphereException.getMessage());
+                              throwable.getMessage());
                       handleError(
                           errorMessage,
-                          sphereException,
+                          throwable,
                           oldProductType,
                           newProductType,
                           updateActions,

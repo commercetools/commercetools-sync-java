@@ -356,11 +356,10 @@ class CategoryReferenceResolverTest {
         ProductSyncMockUtils.getBuilderWithRandomProductType()
             .categories(categoryResourceIdentifiers);
 
-    final CompletableFuture<Set<Category>> futureThrowingSphereException =
-        new CompletableFuture<>();
-    futureThrowingSphereException.completeExceptionally(new RuntimeException("CTP error on fetch"));
+    final CompletableFuture<Set<Category>> futureThrowingException = new CompletableFuture<>();
+    futureThrowingException.completeExceptionally(new RuntimeException("CTP error on fetch"));
     when(mockCategoryService.fetchMatchingCategoriesByKeys(anySet()))
-        .thenReturn(futureThrowingSphereException);
+        .thenReturn(futureThrowingException);
 
     final ProductReferenceResolver productReferenceResolver =
         createProductReferenceResolver(mockCategoryService);

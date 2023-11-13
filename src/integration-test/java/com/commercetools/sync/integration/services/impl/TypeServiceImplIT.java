@@ -123,7 +123,7 @@ class TypeServiceImplIT {
 
   @Test
   void fetchMatchingTypesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
-    // Mock sphere client to return BadGatewayException on any request.
+    // Mock client to return BadGatewayException on any request.
     final ProjectApiRoot spyClient = Mockito.spy(TestClientUtils.CTP_TARGET_CLIENT);
     when(spyClient.types()).thenReturn(mock(ByProjectKeyTypesRequestBuilder.class));
     final ByProjectKeyTypesGet getMock = mock(ByProjectKeyTypesGet.class);

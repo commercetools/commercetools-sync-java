@@ -20,7 +20,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
-import org.jetbrains.annotations.NotNull;
 
 public final class StateReferenceResolver
     extends BaseReferenceResolver<StateDraft, StateSyncOptions> {
@@ -129,7 +128,7 @@ public final class StateReferenceResolver
             });
   }
 
-  @NotNull
+  @Nonnull
   private static List<StateResourceIdentifier> toStateResourceIdentifiers(
       final Set<StateReference> references) {
     return references.stream()

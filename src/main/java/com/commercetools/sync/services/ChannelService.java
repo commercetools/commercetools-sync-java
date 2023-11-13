@@ -1,7 +1,6 @@
 package com.commercetools.sync.services;
 
 import com.commercetools.api.models.channel.Channel;
-import io.sphere.sdk.client.SphereClient;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -12,8 +11,9 @@ public interface ChannelService {
 
   /**
    * Filters out the keys which are already cached and fetches only the not-cached channel keys from
-   * the CTP project defined in an injected {@link SphereClient} and stores a mapping for every
-   * channel to id in the cached map of keys -&gt; ids and returns this cached map.
+   * the CTP project defined in an injected {@link com.commercetools.api.client.ProjectApiRoot} and
+   * stores a mapping for every channel to id in the cached map of keys -&gt; ids and returns this
+   * cached map.
    *
    * @param channelKeys - a set of channel keys to fetch and cache the ids for
    * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion
@@ -46,7 +46,7 @@ public interface ChannelService {
    * Creates a new channel with the supplied {@code key}.
    *
    * @param key key of supply channel.
-   * @return a future containing as a result the created {@link Channel} or a sphere exception.
+   * @return a future containing as a result the created {@link Channel} or empty optional.
    */
   @Nonnull
   CompletionStage<Optional<Channel>> createChannel(@Nonnull final String key);
@@ -56,7 +56,7 @@ public interface ChannelService {
    * a cache map.
    *
    * @param key key of supply channel.
-   * @return a future containing as a result the created {@link Channel} or a sphere exception.
+   * @return a future containing as a result the created {@link Channel} or empty optional.
    */
   @Nonnull
   CompletionStage<Optional<Channel>> createAndCacheChannel(@Nonnull final String key);

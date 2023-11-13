@@ -163,10 +163,9 @@ class CategoryReferenceResolverTest {
   @Test
   void resolveParentReference_WithExceptionOnFetch_ShouldNotResolveReferences() {
     // Preparation
-    final CompletableFuture<Optional<String>> futureThrowingSphereException =
-        new CompletableFuture<>();
-    futureThrowingSphereException.completeExceptionally(new RuntimeException("CTP error on fetch"));
-    when(categoryService.fetchCachedCategoryId(any())).thenReturn(futureThrowingSphereException);
+    final CompletableFuture<Optional<String>> futureThrowingException = new CompletableFuture<>();
+    futureThrowingException.completeExceptionally(new RuntimeException("CTP error on fetch"));
+    when(categoryService.fetchCachedCategoryId(any())).thenReturn(futureThrowingException);
 
     final CategoryDraftBuilder categoryDraft =
         CategorySyncMockUtils.getMockCategoryDraftBuilder(
@@ -295,10 +294,9 @@ class CategoryReferenceResolverTest {
   @Test
   void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
     // Preparation
-    final CompletableFuture<Optional<String>> futureThrowingSphereException =
-        new CompletableFuture<>();
-    futureThrowingSphereException.completeExceptionally(new RuntimeException("CTP error on fetch"));
-    when(typeService.fetchCachedTypeId(any())).thenReturn(futureThrowingSphereException);
+    final CompletableFuture<Optional<String>> futureThrowingException = new CompletableFuture<>();
+    futureThrowingException.completeExceptionally(new RuntimeException("CTP error on fetch"));
+    when(typeService.fetchCachedTypeId(any())).thenReturn(futureThrowingException);
 
     final CategoryDraftBuilder categoryDraft =
         CategorySyncMockUtils.getMockCategoryDraftBuilder(

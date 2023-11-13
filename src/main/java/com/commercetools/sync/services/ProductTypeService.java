@@ -4,7 +4,6 @@ import com.commercetools.api.models.product_type.ProductType;
 import com.commercetools.api.models.product_type.ProductTypeDraft;
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
 import com.commercetools.sync.products.AttributeMetaData;
-import io.sphere.sdk.client.SphereClient;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,8 +16,9 @@ public interface ProductTypeService {
 
   /**
    * Filters out the keys which are already cached and fetches only the not-cached product type keys
-   * from the CTP project defined in an injected {@link SphereClient} and stores a mapping for every
-   * productType to id in the cached map of keys -&gt; ids and returns this cached map.
+   * from the CTP project defined in an injected {@link com.commercetools.api.client.ProjectApiRoot}
+   * and stores a mapping for every productType to id in the cached map of keys -&gt; ids and
+   * returns this cached map.
    *
    * <p>Note: If all the supplied keys are already cached, the cached map is returned right away
    * with no request to CTP.
@@ -76,8 +76,8 @@ public interface ProductTypeService {
   /**
    * Given a {@link Set} of ProductType keys, this method fetches a set of all the ProductTypes,
    * matching this given set of keys in the CTP project, defined in an injected {@link
-   * SphereClient}. A mapping of the key to the id of the fetched ProductType is persisted in an
-   * in-memory map.
+   * com.commercetools.api.client.ProjectApiRoot}. A mapping of the key to the id of the fetched
+   * ProductType is persisted in an in-memory map.
    *
    * @param keys set of ProductType keys to fetch matching ProductTypes by.
    * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion
@@ -124,8 +124,9 @@ public interface ProductTypeService {
 
   /**
    * Given a productType key, this method fetches a productType that matches this given key in the
-   * CTP project defined in an injected {@link SphereClient}. If there is no matching productType an
-   * empty {@link Optional} will be returned in the returned future.
+   * CTP project defined in an injected {@link com.commercetools.api.client.ProjectApiRoot}. If
+   * there is no matching productType an empty {@link Optional} will be returned in the returned
+   * future.
    *
    * @param key the key of the product type to fetch.
    * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion
