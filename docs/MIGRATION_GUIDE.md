@@ -31,6 +31,12 @@ Some utility methods aren't available in this version. Please make sure to repla
 // CollectionUtils
 public static <T> Set<T> emptyIfNull(@Nullable final Set<T> set)
 ```
+```java
+// ShoppingListReferenceResolutionUtils
+public static ShoppingListQuery buildShoppingListQuery() {
+  return ShoppingListQuery.of().plusExpansionPaths(ExpansionPath.of("lineItems[*].variant"));
+}
+```
 - Changed scope of utility method:
 ```java
 // CompletableFutureUtils
