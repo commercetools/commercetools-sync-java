@@ -27,6 +27,14 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
+### 10.0.1 - Nov 14, 2023
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.0.0...10.0.1) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.1/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.0.1/jar)
+-
+- 🚧 **Bug fixes** (1)
+  - Make commercetools-sdk-java-v2 available as a transitive dependency
+
 ### 10.0.0 - Nov 6, 2023
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/9.2.3...10.0.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.0/) |

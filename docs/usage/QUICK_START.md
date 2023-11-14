@@ -20,13 +20,13 @@
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>10.0.0-beta.3</version>
+  <version>10.0.1</version>
 </dependency>
 ````
 - For Gradle users:
 ````groovy
 // Add commercetools-sync-java dependency.
-implementation 'com.commercetools:commercetools-sync-java:10.0.0-beta.3'
+implementation 'com.commercetools:commercetools-sync-java:10.0.1'
 ````
 
 ### 2. Setup Syncing Options

@@ -44,9 +44,9 @@ apply from: "$rootDir/gradle-scripts/spotless.gradle"
 
 dependencies {
     implementation "com.commercetools.sdk:commercetools-http-client:${commercetoolsJavaSdkV2Version}"
-    implementation "com.commercetools.sdk:commercetools-sdk-java-api:${commercetoolsJavaSdkV2Version}"
     implementation "com.github.ben-manes.caffeine:caffeine:${caffeineVersion}"
     implementation "org.apache.commons:commons-text:${commonTextVersion}"
+    api "com.commercetools.sdk:commercetools-sdk-java-api:${commercetoolsJavaSdkV2Version}"
     api 'commons-io:commons-io:2.11.0'
     api 'commons-codec:commons-codec:1.16.0'
     api 'com.google.code.findbugs:annotations:3.0.1'
