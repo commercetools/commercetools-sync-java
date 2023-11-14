@@ -648,6 +648,11 @@ any HTTP client module. The default one is <code>commercetools-http-client</code
 <li>Removed utility methods:
 <div class="highlight"><pre><span></span><code><span class="c1">// CollectionUtils</span><span class="w"></span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Set</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">emptyIfNull</span><span class="p">(</span><span class="nd">@Nullable</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Set</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="n">set</span><span class="p">)</span><span class="w"></span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1">// ShoppingListReferenceResolutionUtils</span><span class="w"></span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="n">ShoppingListQuery</span><span class="w"> </span><span class="nf">buildShoppingListQuery</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">ShoppingListQuery</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">plusExpansionPaths</span><span class="p">(</span><span class="n">ExpansionPath</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;lineItems[*].variant&quot;</span><span class="p">));</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </code></pre></div></li>
 <li>Changed scope of utility method:
 <div class="highlight"><pre><span></span><code><span class="c1">// CompletableFutureUtils</span><span class="w"></span>
