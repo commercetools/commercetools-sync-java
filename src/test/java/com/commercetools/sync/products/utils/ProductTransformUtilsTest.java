@@ -1,5 +1,6 @@
 package com.commercetools.sync.products.utils;
 
+import static com.commercetools.sync.services.impl.BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,7 +26,6 @@ import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.commons.utils.TestUtils;
 import com.commercetools.sync.products.ProductSyncMockUtils;
-import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -439,9 +439,9 @@ class ProductTransformUtilsTest {
         .hasValueSatisfying(
             productDraft -> {
               assertThat(productDraft.getProductType().getKey())
-                  .isEqualTo(BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER);
+                  .isEqualTo(KEY_IS_NOT_SET_PLACE_HOLDER);
               assertThat(productDraft.getTaxCategory().getKey())
-                  .isEqualTo(BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER);
+                  .isEqualTo(KEY_IS_NOT_SET_PLACE_HOLDER);
             });
   }
 
@@ -451,9 +451,8 @@ class ProductTransformUtilsTest {
           throws Exception {
     // preparation
     final ProjectApiRoot sourceClient = mock(ProjectApiRoot.class);
-    referenceIdToKeyCache.add(
-        "cda0dbf7-b42e-40bf-8453-241d5b587f93",
-        BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER);
+    referenceIdToKeyCache.add("cda0dbf7-b42e-40bf-8453-241d5b587f93", KEY_IS_NOT_SET_PLACE_HOLDER);
+    referenceIdToKeyCache.add("ebbe95fb-2282-4f9a-8747-fbe440e02dc0", KEY_IS_NOT_SET_PLACE_HOLDER);
     final List<ProductProjection> productPage =
         Arrays.asList(
             ProductSyncMockUtils.createProductFromJson("product-with-unresolved-references.json"));
@@ -482,7 +481,6 @@ class ProductTransformUtilsTest {
             .join();
 
     // assertions
-
     final Optional<ProductDraft> productKey1 =
         productsResolved.stream()
             .filter(productDraft -> "productKeyResolved".equals(productDraft.getKey()))
@@ -490,8 +488,12 @@ class ProductTransformUtilsTest {
 
     assertThat(productKey1)
         .hasValueSatisfying(
-            productDraft ->
-                assertThat(productDraft.getProductType().getKey()).isEqualTo("productTypeKey"));
+            productDraft -> {
+              assertThat(productDraft.getProductType().getKey()).isEqualTo("productTypeKey");
+              assertThat(productDraft.getTaxCategory().getId())
+                  .isEqualTo("ebbe95fb-2282-4f9a-8747-fbe440e02dc0");
+              assertThat(productDraft.getTaxCategory().getKey()).isNull();
+            });
   }
 
   @Test
