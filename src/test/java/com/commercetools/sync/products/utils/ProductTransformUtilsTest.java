@@ -452,7 +452,7 @@ class ProductTransformUtilsTest {
     // preparation
     final ProjectApiRoot sourceClient = mock(ProjectApiRoot.class);
     referenceIdToKeyCache.add("cda0dbf7-b42e-40bf-8453-241d5b587f93", KEY_IS_NOT_SET_PLACE_HOLDER);
-    referenceIdToKeyCache.add("ebbe95fb-2282-4f9a-8747-fbe440e02dc0", KEY_IS_NOT_SET_PLACE_HOLDER);
+    referenceIdToKeyCache.add("ste95fb-2282-4f9a-8747-fbe440e02dcs0", KEY_IS_NOT_SET_PLACE_HOLDER);
     final List<ProductProjection> productPage =
         Arrays.asList(
             ProductSyncMockUtils.createProductFromJson("product-with-unresolved-references.json"));
@@ -490,9 +490,9 @@ class ProductTransformUtilsTest {
         .hasValueSatisfying(
             productDraft -> {
               assertThat(productDraft.getProductType().getKey()).isEqualTo("productTypeKey");
-              assertThat(productDraft.getTaxCategory().getId())
-                  .isEqualTo("ebbe95fb-2282-4f9a-8747-fbe440e02dc0");
-              assertThat(productDraft.getTaxCategory().getKey()).isNull();
+              assertThat(productDraft.getState().getId())
+                  .isEqualTo("ste95fb-2282-4f9a-8747-fbe440e02dcs0");
+              assertThat(productDraft.getState().getKey()).isNull();
             });
   }
 
