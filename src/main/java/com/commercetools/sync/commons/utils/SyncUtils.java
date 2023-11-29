@@ -2,7 +2,6 @@ package com.commercetools.sync.commons.utils;
 
 import com.commercetools.api.models.common.Reference;
 import com.commercetools.api.models.common.ResourceIdentifier;
-import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -71,8 +70,7 @@ public final class SyncUtils {
           @Nullable final String key,
           final BiFunction<String, String, ResourceIdentifierT> toResourceIdentifier) {
 
-    if (!StringUtils.isBlank(key)
-        && !BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER.equals(key)) {
+    if (!StringUtils.isBlank(key)) {
       return toResourceIdentifier.apply(null, key);
     }
     return toResourceIdentifier.apply(id, null);
