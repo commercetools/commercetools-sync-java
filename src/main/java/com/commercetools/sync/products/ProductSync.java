@@ -1,9 +1,11 @@
 package com.commercetools.sync.products;
 
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.SELF_REFERENCING_ID_PLACE_HOLDER;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.products.utils.ProductSyncUtils.buildActions;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.getAllVariants;
 import static java.lang.String.format;
+import static java.util.Collections.singleton;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.function.Function.identity;
@@ -48,7 +50,6 @@ import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptionsBuilder;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -106,8 +107,7 @@ public class ProductSync
         new CategoryServiceImpl(
             CategorySyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()),
         new TypeServiceImpl(productSyncOptions),
-        new ChannelServiceImpl(
-            productSyncOptions, Collections.singleton(ChannelRoleEnum.PRODUCT_DISTRIBUTION)),
+        new ChannelServiceImpl(productSyncOptions, singleton(ChannelRoleEnum.PRODUCT_DISTRIBUTION)),
         new CustomerGroupServiceImpl(productSyncOptions),
         new TaxCategoryServiceImpl(
             TaxCategorySyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()),
@@ -258,8 +258,15 @@ public class ProductSync
                   final Set<String> missingReferencedProductKeys =
                       getMissingReferencedProductKeys(newDraft, keyToIdCache);
 
+                  boolean selfReferenceExists =
+                      missingReferencedProductKeys.remove(newDraft.getKey());
+
                   if (!missingReferencedProductKeys.isEmpty()) {
                     return keepTrackOfMissingReferences(newDraft, missingReferencedProductKeys);
+                  } else if (selfReferenceExists) {
+                    keyToIdCache.put(newDraft.getKey(), SELF_REFERENCING_ID_PLACE_HOLDER);
+                    return keepTrackOfMissingReferences(newDraft, singleton(newDraft.getKey()))
+                        .thenCompose(optional -> syncDraft(oldProducts, newDraft));
                   } else {
                     return syncDraft(oldProducts, newDraft);
                   }

@@ -2,6 +2,7 @@ package com.commercetools.sync.products.helpers;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.*;
+import static com.commercetools.sync.products.utils.AttributeUtils.cleanupAttributeValue;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 
@@ -175,11 +176,16 @@ public final class VariantReferenceResolver
       return CompletableFutureUtils.mapValuesToFutureOfCompletedValues(
               allAttributeReferences, this::resolveReference, toList())
           .thenApply(
-              ignoredResult ->
-                  AttributeBuilder.of()
+              ignoredResult -> {
+                if (cleanupAttributeValue(attributeDraftValueAsJson, attributeDraft).isEmpty()) {
+                  return null;
+                } else {
+                  return AttributeBuilder.of()
                       .name(attributeDraft.getName())
                       .value(attributeDraftValueAsJson)
-                      .build());
+                      .build();
+                }
+              });
     }
 
     return CompletableFuture.completedFuture(attributeDraft);

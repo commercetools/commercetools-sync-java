@@ -28,6 +28,7 @@ public abstract class BaseReferenceResolver<
   public static final String BLANK_ID_VALUE_ON_REFERENCE =
       "The value of the 'id' field of the Reference"
           + " is blank (null/empty). Expecting the key of the referenced resource.";
+  public static final String SELF_REFERENCING_ID_PLACE_HOLDER = "SELF_REFERENCE_ID";
   protected SyncOptionsT options;
 
   protected BaseReferenceResolver(@Nonnull final SyncOptionsT options) {
