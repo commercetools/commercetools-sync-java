@@ -77,7 +77,6 @@ public final class AttributeUtils {
         entryIterator.remove();
       }
     }
-    attribute.setValue(attributeValueAsJson);
     return attributeValueAsJson;
   }
 
