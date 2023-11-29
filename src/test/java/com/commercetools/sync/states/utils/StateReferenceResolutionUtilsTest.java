@@ -126,11 +126,27 @@ class StateReferenceResolutionUtilsTest {
     final State mockState = mock(State.class);
     when(mockState.getTransitions()).thenReturn(null);
 
-    // test
-    final List<StateDraft> referenceReplacedDrafts =
-        StateReferenceResolutionUtils.mapToStateDrafts(List.of(mockState), referenceIdToKeyCache);
+    // asserts
+    assertThat(
+            StateReferenceResolutionUtils.mapToStateDrafts(
+                    List.of(mockState), referenceIdToKeyCache)
+                .get(0))
+        .isEqualTo(StateDraft.of());
 
-    assertThat(referenceReplacedDrafts.get(0)).isEqualTo(StateDraft.of());
+    when(mockState.getKey()).thenReturn("Any key");
+    assertThat(
+            StateReferenceResolutionUtils.mapToStateDrafts(
+                    List.of(mockState), referenceIdToKeyCache)
+                .get(0))
+        .isEqualTo(StateDraft.of());
+
+    when(mockState.getKey()).thenReturn(null);
+    when(mockState.getType()).thenReturn(StateTypeEnum.LINE_ITEM_STATE);
+    assertThat(
+            StateReferenceResolutionUtils.mapToStateDrafts(
+                    List.of(mockState), referenceIdToKeyCache)
+                .get(0))
+        .isEqualTo(StateDraft.of());
   }
 
   @Nonnull
