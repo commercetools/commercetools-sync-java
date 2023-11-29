@@ -182,7 +182,7 @@ class SyncUtilsTest {
 
   @Test
   void
-      getResourceIdentifierWithKey_WithCachedReferenceIsEmptyPlaceholder_ShouldReturnResourceIdentifierWithId() {
+      getResourceIdentifierWithKey_WithCachedReferenceIsEmptyPlaceholder_ShouldReturnResourceIdentifierWithKeyPlaceholder() {
     final String categoryId = UUID.randomUUID().toString();
     referenceIdToKeyCache.add(categoryId, KEY_IS_NOT_SET_PLACE_HOLDER);
 
@@ -196,6 +196,6 @@ class SyncUtilsTest {
             (id, key) -> CategoryResourceIdentifierBuilder.of().id(id).key(key).build());
 
     assertThat(resourceIdentifier).isNotNull();
-    assertThat(resourceIdentifier.getId()).isEqualTo(categoryId);
+    assertThat(resourceIdentifier.getKey()).isEqualTo(KEY_IS_NOT_SET_PLACE_HOLDER);
   }
 }

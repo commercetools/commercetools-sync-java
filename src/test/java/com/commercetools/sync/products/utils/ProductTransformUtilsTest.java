@@ -490,9 +490,7 @@ class ProductTransformUtilsTest {
         .hasValueSatisfying(
             productDraft -> {
               assertThat(productDraft.getProductType().getKey()).isEqualTo("productTypeKey");
-              assertThat(productDraft.getState().getId())
-                  .isEqualTo("ste95fb-2282-4f9a-8747-fbe440e02dcs0");
-              assertThat(productDraft.getState().getKey()).isNull();
+              assertThat(productDraft.getState().getKey()).isEqualTo(KEY_IS_NOT_SET_PLACE_HOLDER);
             });
   }
 
