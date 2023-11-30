@@ -1,5 +1,6 @@
 package com.commercetools.sync.commons.utils;
 
+import static com.commercetools.sync.services.impl.BaseTransformServiceImpl.KEY_IS_NOT_SET_PLACE_HOLDER;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -160,5 +161,41 @@ class SyncUtilsTest {
             referenceIdToKeyCache,
             (id, key) -> CategoryResourceIdentifierBuilder.of().id(id).key(key).build());
     assertThat(resourceIdentifier).isNull();
+  }
+
+  @Test
+  void getResourceIdentifierWithKey_WithNotCachedReference_ShouldReturnResourceIdentifierWithId() {
+    final String categoryId = UUID.randomUUID().toString();
+
+    final CategoryReference categoryReference =
+        CategoryReferenceBuilder.of().id(categoryId).build();
+
+    final CategoryResourceIdentifier resourceIdentifier =
+        SyncUtils.getResourceIdentifierWithKey(
+            categoryReference,
+            referenceIdToKeyCache,
+            (id, key) -> CategoryResourceIdentifierBuilder.of().id(id).key(key).build());
+
+    assertThat(resourceIdentifier).isNotNull();
+    assertThat(resourceIdentifier.getId()).isEqualTo(categoryId);
+  }
+
+  @Test
+  void
+      getResourceIdentifierWithKey_WithCachedReferenceIsEmptyPlaceholder_ShouldReturnResourceIdentifierWithKeyPlaceholder() {
+    final String categoryId = UUID.randomUUID().toString();
+    referenceIdToKeyCache.add(categoryId, KEY_IS_NOT_SET_PLACE_HOLDER);
+
+    final CategoryReference categoryReference =
+        CategoryReferenceBuilder.of().id(categoryId).build();
+
+    final CategoryResourceIdentifier resourceIdentifier =
+        SyncUtils.getResourceIdentifierWithKey(
+            categoryReference,
+            referenceIdToKeyCache,
+            (id, key) -> CategoryResourceIdentifierBuilder.of().id(id).key(key).build());
+
+    assertThat(resourceIdentifier).isNotNull();
+    assertThat(resourceIdentifier.getKey()).isEqualTo(KEY_IS_NOT_SET_PLACE_HOLDER);
   }
 }

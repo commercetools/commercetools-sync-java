@@ -65,17 +65,35 @@ public final class StateReferenceResolutionUtils {
             state -> {
               final List<StateResourceIdentifier> newTransitions =
                   replaceTransitionIdsWithKeys(state, referenceIdToKeyCache);
-              return StateDraftBuilder.of()
-                  .key(state.getKey())
-                  .type(state.getType())
-                  .name(state.getName())
-                  .description(state.getDescription())
-                  .initial(state.getInitial())
-                  .roles(state.getRoles())
-                  .transitions(newTransitions)
-                  .build();
+              return getStateDraft(state, newTransitions);
             })
         .collect(Collectors.toList());
+  }
+
+  /**
+   * Creates a new {@link StateDraft} from given {@link State} and transitions as {@link
+   * java.util.List}&lt; {@link StateResourceIdentifier}&gt;
+   *
+   * @param state - template state to build the draft from
+   * @param newTransitions - transformed list of state resource identifiers
+   * @return a new {@link StateDraft} with all fields copied from the {@param state} and transitions
+   *     set {@param newTransitions} - it will return empty StateDraft if key or type are missing.
+   */
+  private static StateDraft getStateDraft(
+      State state, List<StateResourceIdentifier> newTransitions) {
+    if (state.getKey() != null && state.getType() != null) {
+      return StateDraftBuilder.of()
+          .key(state.getKey())
+          .type(state.getType())
+          .name(state.getName())
+          .description(state.getDescription())
+          .initial(state.getInitial())
+          .roles(state.getRoles())
+          .transitions(newTransitions)
+          .build();
+    } else {
+      return StateDraft.of();
+    }
   }
 
   @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")

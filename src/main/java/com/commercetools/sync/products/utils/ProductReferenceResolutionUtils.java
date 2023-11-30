@@ -149,41 +149,19 @@ public final class ProductReferenceResolutionUtils {
                   getResourceIdentifierWithKey(
                       product.getProductType(),
                       referenceIdToKeyCache,
-                      (id, key) -> {
-                        final ProductTypeResourceIdentifierBuilder builder =
-                            ProductTypeResourceIdentifierBuilder.of();
-                        if (id == null) {
-                          return builder.key(key).build();
-                        } else {
-                          return builder.id(id).build();
-                        }
-                      });
+                      (id, key) ->
+                          ProductTypeResourceIdentifierBuilder.of().id(id).key(key).build());
               final TaxCategoryResourceIdentifier taxCategoryResourceIdentifier =
                   getResourceIdentifierWithKey(
                       product.getTaxCategory(),
                       referenceIdToKeyCache,
-                      (id, key) -> {
-                        final TaxCategoryResourceIdentifierBuilder builder =
-                            TaxCategoryResourceIdentifierBuilder.of();
-                        if (id == null) {
-                          return builder.key(key).build();
-                        } else {
-                          return builder.id(id).build();
-                        }
-                      });
+                      (id, key) ->
+                          TaxCategoryResourceIdentifierBuilder.of().key(key).id(id).build());
               final StateResourceIdentifier stateResourceIdentifier =
                   getResourceIdentifierWithKey(
                       product.getState(),
                       referenceIdToKeyCache,
-                      (id, key) -> {
-                        final StateResourceIdentifierBuilder builder =
-                            StateResourceIdentifierBuilder.of();
-                        if (id == null) {
-                          return builder.key(key).build();
-                        } else {
-                          return builder.id(id).build();
-                        }
-                      });
+                      (id, key) -> StateResourceIdentifierBuilder.of().key(key).id(id).build());
               return productDraftBuilder
                   .masterVariant(masterVariantDraftWithKeys)
                   .variants(variantDraftsWithKeys)

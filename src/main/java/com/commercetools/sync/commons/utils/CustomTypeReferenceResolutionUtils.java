@@ -70,16 +70,11 @@ public final class CustomTypeReferenceResolutionUtils {
                                     SyncUtils.getResourceIdentifierWithKey(
                                         typeReference,
                                         referenceIdToKeyCache,
-                                        (id, key) -> {
-                                          final TypeResourceIdentifierBuilder builder =
-                                              TypeResourceIdentifierBuilder.of();
-                                          if (id == null) {
-
-                                            return builder.key(key).build();
-                                          } else {
-                                            return builder.id(id).build();
-                                          }
-                                        }))
+                                        (id, key) ->
+                                            TypeResourceIdentifierBuilder.of()
+                                                .key(key)
+                                                .id(id)
+                                                .build()))
                             .orElse(null))
                     .build())
         .orElse(null);
