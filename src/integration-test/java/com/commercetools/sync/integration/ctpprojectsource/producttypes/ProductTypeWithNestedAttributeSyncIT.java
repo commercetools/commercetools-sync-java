@@ -2,20 +2,27 @@ package com.commercetools.sync.integration.ctpprojectsource.producttypes;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_5;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_5;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_5;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateProjectWithNestedAttributes;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.removeAttributeReferencesAndDeleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
 import com.commercetools.api.models.product_type.AttributeDefinitionDraftBuilder;
 import com.commercetools.api.models.product_type.AttributeNestedType;
+import com.commercetools.api.models.product_type.AttributeNestedTypeBuilder;
+import com.commercetools.api.models.product_type.AttributeSetTypeBuilder;
 import com.commercetools.api.models.product_type.ProductType;
 import com.commercetools.api.models.product_type.ProductTypeChangeLabelActionBuilder;
 import com.commercetools.api.models.product_type.ProductTypeDraft;
 import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
 import com.commercetools.api.models.product_type.ProductTypePagedQueryResponse;
+import com.commercetools.api.models.product_type.ProductTypeReferenceBuilder;
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
@@ -113,6 +120,75 @@ class ProductTypeWithNestedAttributeSyncIT {
         .isEqualTo(
             "Summary: 4 product types were processed in total"
                 + " (4 created, 0 updated, 0 failed to sync and 0 product types with at least one NestedType or a Set"
+                + " of NestedType attribute definition(s) referencing a missing product type).");
+  }
+
+  @Test
+  void sync_WithProductTypeReferencingItselfAsAttribute_ShouldCreateProductType() {
+    // preparation
+    final AttributeDefinitionDraft nestedTypeAttr =
+        AttributeDefinitionDraftBuilder.of()
+            .name("selfReferenceAttr")
+            .label(LocalizedString.ofEnglish("selfReferenceAttr"))
+            .type(
+                AttributeSetTypeBuilder.of()
+                    .elementType(
+                        AttributeSetTypeBuilder.of()
+                            .elementType(
+                                AttributeSetTypeBuilder.of()
+                                    .elementType(
+                                        AttributeNestedTypeBuilder.of()
+                                            .typeReference(
+                                                ProductTypeReferenceBuilder.of()
+                                                    .id(PRODUCT_TYPE_KEY_5)
+                                                    .build())
+                                            .build())
+                                    .build())
+                            .build())
+                    .build())
+            .isSearchable(false)
+            .isRequired(false)
+            .build();
+
+    final ProductTypeDraft oldProductTypeDraft =
+        ProductTypeDraftBuilder.of()
+            .key(PRODUCT_TYPE_KEY_5)
+            .name(PRODUCT_TYPE_NAME_5)
+            .description(PRODUCT_TYPE_DESCRIPTION_5)
+            .attributes(nestedTypeAttr)
+            .build();
+
+    // Sync productDraft with attribute referencing itself to source project
+    new ProductTypeSync(ProductTypeSyncOptionsBuilder.of(CTP_SOURCE_CLIENT).build())
+        .sync(List.of(oldProductTypeDraft))
+        .toCompletableFuture()
+        .join();
+    final ProductType oldProductType =
+        CTP_SOURCE_CLIENT
+            .productTypes()
+            .withKey(PRODUCT_TYPE_KEY_5)
+            .get()
+            .executeBlocking()
+            .getBody();
+
+    // test
+    final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
+    final ProductTypeSyncStatistics productTypeSyncStatistics =
+        ProductTypeTransformUtils.toProductTypeDrafts(
+                CTP_SOURCE_CLIENT, referenceIdToKeyCache, List.of(oldProductType))
+            .thenCompose(newDrafts -> productTypeSync.sync(newDrafts))
+            .toCompletableFuture()
+            .join();
+
+    // assertion
+    assertThat(errorMessages).isEmpty();
+    assertThat(exceptions).isEmpty();
+    assertThat(builtUpdateActions).isEmpty();
+    assertThat(productTypeSyncStatistics).hasValues(1, 1, 0, 0, 0);
+    assertThat(productTypeSyncStatistics.getReportMessage())
+        .isEqualTo(
+            "Summary: 1 product types were processed in total"
+                + " (1 created, 0 updated, 0 failed to sync and 0 product types with at least one NestedType or a Set"
                 + " of NestedType attribute definition(s) referencing a missing product type).");
   }
 
