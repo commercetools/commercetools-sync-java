@@ -1,6 +1,8 @@
 package com.commercetools.sync.producttypes.utils;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static com.commercetools.sync.producttypes.MockBuilderUtils.createMockAttributeDefinitionDraftBuilder;
+import static com.commercetools.sync.producttypes.MockBuilderUtils.createMockProductTypeDraftBuilder;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -18,7 +20,6 @@ import com.commercetools.api.models.product_type.ProductTypeReferenceBuilder;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.producttypes.MockBuilderUtils;
-import com.commercetools.sync.producttypes.helpers.ResourceToDraftConverters;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -113,9 +114,20 @@ class ProductTypeReferenceResolutionUtilsTest {
 
     // assertion
     assertThat(productTypeDrafts)
-        .containsExactly(
-            ResourceToDraftConverters.toProductTypeDraft(productTypeFoo),
-            ResourceToDraftConverters.toProductTypeDraft(productTypeBar));
+        .containsExactlyInAnyOrder(
+            createMockProductTypeDraftBuilder()
+                .key(productTypeFoo.getKey())
+                .attributes(createMockAttributeDefinitionDraftBuilder().build())
+                .build(),
+            createMockProductTypeDraftBuilder()
+                .key(productTypeBar.getKey())
+                .attributes(
+                    createMockAttributeDefinitionDraftBuilder()
+                        .name(numberAttr.getName())
+                        .label(numberAttr.getLabel())
+                        .type(numberAttr.getType())
+                        .build())
+                .build());
   }
 
   @Test

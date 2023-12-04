@@ -1,6 +1,7 @@
 package com.commercetools.sync.producttypes.utils;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static com.commercetools.sync.producttypes.MockBuilderUtils.createMockAttributeDefinitionDraftBuilder;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,7 +31,6 @@ import com.commercetools.api.models.product_type.ProductTypeSetInputTipActionBui
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
 import com.commercetools.api.models.product_type.TextInputHint;
 import com.commercetools.sync.producttypes.MockBuilderUtils;
-import com.commercetools.sync.producttypes.helpers.ResourceToDraftConverters;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -51,7 +51,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
   void buildChangeLabelAction_WithDifferentValues_ShouldReturnAction() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder().label(ofEnglish("x")).build();
+        createMockAttributeDefinitionDraftBuilder().label(ofEnglish("x")).build();
 
     final AttributeDefinition attributeDefinition =
         MockBuilderUtils.createMockAttributeDefinitionBuilder().label(ofEnglish("y")).build();
@@ -73,8 +73,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
   @Test
   void buildChangeLabelAction_WithSameValues_ShouldReturnEmptyOptional() {
     // Preparation
-    final AttributeDefinitionDraft draft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder().build();
+    final AttributeDefinitionDraft draft = createMockAttributeDefinitionDraftBuilder().build();
 
     final AttributeDefinition attributeDefinition =
         MockBuilderUtils.createMockAttributeDefinitionBuilder().build();
@@ -92,9 +91,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
   void buildSetInputTipAction_WithDifferentValues_ShouldReturnAction() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
-            .inputTip(ofEnglish("foo"))
-            .build();
+        createMockAttributeDefinitionDraftBuilder().inputTip(ofEnglish("foo")).build();
 
     final AttributeDefinition attributeDefinition =
         MockBuilderUtils.createMockAttributeDefinitionBuilder().inputTip(ofEnglish("bar")).build();
@@ -117,9 +114,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
   void buildSetInputTipAction_WithSameValues_ShouldReturnEmptyOptional() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
-            .inputTip(ofEnglish("foo"))
-            .build();
+        createMockAttributeDefinitionDraftBuilder().inputTip(ofEnglish("foo")).build();
 
     final AttributeDefinition attributeDefinition =
         MockBuilderUtils.createMockAttributeDefinitionBuilder().inputTip(ofEnglish("foo")).build();
@@ -137,9 +132,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
   void buildSetInputTipAction_WithSourceNullValues_ShouldReturnAction() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
-            .inputTip((LocalizedString) null)
-            .build();
+        createMockAttributeDefinitionDraftBuilder().inputTip((LocalizedString) null).build();
 
     final AttributeDefinition attributeDefinition =
         MockBuilderUtils.createMockAttributeDefinitionBuilder().inputTip(ofEnglish("foo")).build();
@@ -162,9 +155,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
   void buildSetInputTipAction_WithTargetNullValues_ShouldReturnAction() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
-            .inputTip(ofEnglish("foo"))
-            .build();
+        createMockAttributeDefinitionDraftBuilder().inputTip(ofEnglish("foo")).build();
 
     final AttributeDefinition attributeDefinition =
         MockBuilderUtils.createMockAttributeDefinitionBuilder()
@@ -189,7 +180,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
   void buildChangeIsSearchableAction_WithDifferentValues_ShouldReturnAction() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder().isSearchable(true).build();
+        createMockAttributeDefinitionDraftBuilder().isSearchable(true).build();
 
     final AttributeDefinition attributeDefinition =
         MockBuilderUtils.createMockAttributeDefinitionBuilder().isSearchable(false).build();
@@ -211,7 +202,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
   void buildChangeIsSearchableAction_WithSameValues_ShouldReturnEmptyOptional() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder().isSearchable(true).build();
+        createMockAttributeDefinitionDraftBuilder().isSearchable(true).build();
 
     final AttributeDefinition attributeDefinition =
         MockBuilderUtils.createMockAttributeDefinitionBuilder().isSearchable(true).build();
@@ -228,7 +219,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
   void buildChangeIsSearchableAction_WithNullSourceAndNonDefaultTarget_ShouldBuildAction() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder().isSearchable(null).build();
+        createMockAttributeDefinitionDraftBuilder().isSearchable(null).build();
 
     final AttributeDefinition attributeDefinition =
         MockBuilderUtils.createMockAttributeDefinitionBuilder().isSearchable(false).build();
@@ -250,7 +241,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
   void buildChangeIsSearchableAction_WithNullSourceAndDefaultTarget_ShouldNotBuildAction() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder().isSearchable(null).build();
+        createMockAttributeDefinitionDraftBuilder().isSearchable(null).build();
 
     final AttributeDefinition attributeDefinition =
         MockBuilderUtils.createMockAttributeDefinitionBuilder().isSearchable(true).build();
@@ -267,9 +258,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
   void buildChangeInputHintAction_WithDifferentValues_ShouldReturnAction() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
-            .inputHint(TextInputHint.MULTI_LINE)
-            .build();
+        createMockAttributeDefinitionDraftBuilder().inputHint(TextInputHint.MULTI_LINE).build();
 
     final AttributeDefinition attributeDefinition =
         MockBuilderUtils.createMockAttributeDefinitionBuilder()
@@ -293,9 +282,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
   void buildChangeInputHintAction_WithSameValues_ShouldReturnEmptyOptional() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
-            .inputHint(TextInputHint.MULTI_LINE)
-            .build();
+        createMockAttributeDefinitionDraftBuilder().inputHint(TextInputHint.MULTI_LINE).build();
 
     final AttributeDefinition attributeDefinition =
         MockBuilderUtils.createMockAttributeDefinitionBuilder()
@@ -314,7 +301,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
   void buildChangeInputHintAction_WithSourceNullValuesAndNonDefaultTargetValue_ShouldBuildAction() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder().inputHint(null).build();
+        createMockAttributeDefinitionDraftBuilder().inputHint(null).build();
 
     final AttributeDefinition attributeDefinition =
         MockBuilderUtils.createMockAttributeDefinitionBuilder()
@@ -338,7 +325,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
   void buildChangeInputHintAction_WithSourceNullValuesAndDefaultTargetValue_ShouldNotBuildAction() {
     // Preparation
     final AttributeDefinitionDraft draft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder().inputHint(null).build();
+        createMockAttributeDefinitionDraftBuilder().inputHint(null).build();
 
     final AttributeDefinition attributeDefinition =
         MockBuilderUtils.createMockAttributeDefinitionBuilder()
@@ -358,7 +345,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
       throws UnsupportedOperationException {
     // Preparation
     final AttributeDefinitionDraft draft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+        createMockAttributeDefinitionDraftBuilder()
             .attributeConstraint(AttributeConstraintEnum.NONE)
             .build();
 
@@ -385,7 +372,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
       throws UnsupportedOperationException {
     // Preparation
     final AttributeDefinitionDraft draft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+        createMockAttributeDefinitionDraftBuilder()
             .attributeConstraint(AttributeConstraintEnum.COMBINATION_UNIQUE)
             .build();
 
@@ -408,9 +395,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
           throws UnsupportedOperationException {
     // Preparation
     final AttributeDefinitionDraft draft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
-            .attributeConstraint(null)
-            .build();
+        createMockAttributeDefinitionDraftBuilder().attributeConstraint(null).build();
 
     final AttributeDefinition attributeDefinition =
         MockBuilderUtils.createMockAttributeDefinitionBuilder()
@@ -440,7 +425,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
             .build();
 
     final AttributeDefinitionDraft draft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+        createMockAttributeDefinitionDraftBuilder()
             .attributeConstraint(AttributeConstraintEnum.COMBINATION_UNIQUE)
             .build();
     // test
@@ -469,7 +454,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
             .build();
 
     final AttributeDefinitionDraft newDifferent =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+        createMockAttributeDefinitionDraftBuilder()
             .label(ofEnglish("label2"))
             .isRequired(true)
             .attributeConstraint(AttributeConstraintEnum.NONE)
@@ -509,8 +494,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
   void buildActions_WithSameValues_ShouldReturnEmpty() throws UnsupportedOperationException {
     final AttributeDefinition old = MockBuilderUtils.createMockAttributeDefinitionBuilder().build();
 
-    final AttributeDefinitionDraft newSame =
-        ResourceToDraftConverters.toAttributeDefinitionDraftBuilder(old).build();
+    final AttributeDefinitionDraft newSame = createMockAttributeDefinitionDraftBuilder().build();
 
     final List<ProductTypeUpdateAction> result =
         AttributeDefinitionUpdateActionUtils.buildActions(old, newSame);
@@ -525,9 +509,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
         MockBuilderUtils.createMockAttributeDefinitionBuilder().label(ofEnglish("label1")).build();
 
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
-            .label(ofEnglish("label2"))
-            .build();
+        createMockAttributeDefinitionDraftBuilder().label(ofEnglish("label2")).build();
 
     final List<ProductTypeUpdateAction> result =
         AttributeDefinitionUpdateActionUtils.buildActions(
@@ -568,7 +550,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
             .build();
 
     final AttributeDefinitionDraft newDraft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+        createMockAttributeDefinitionDraftBuilder()
             .type(
                 attributeTypeBuilder ->
                     attributeTypeBuilder
@@ -653,7 +635,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
             .build();
 
     final AttributeDefinitionDraft newDefinition =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+        createMockAttributeDefinitionDraftBuilder()
             .type(
                 attributeTypeBuilder ->
                     attributeTypeBuilder
@@ -722,7 +704,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
             .build();
 
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+        createMockAttributeDefinitionDraftBuilder()
             .type(
                 attributeTypeBuilder ->
                     attributeTypeBuilder.enumBuilder().values(ENUM_VALUE_A, ENUM_VALUE_B))
@@ -748,7 +730,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
             .build();
 
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+        createMockAttributeDefinitionDraftBuilder()
             .type(attributeTypeBuilder -> attributeTypeBuilder.enumBuilder().values(emptyList()))
             .build();
 
@@ -775,7 +757,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
         AttributePlainEnumValueBuilder.of().key("a").label("label_a_different").build();
 
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+        createMockAttributeDefinitionDraftBuilder()
             .type(
                 attributeTypeBuilder ->
                     attributeTypeBuilder.enumBuilder().values(enumValueDiffLabel))
@@ -803,7 +785,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
             .build();
 
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+        createMockAttributeDefinitionDraftBuilder()
             .type(
                 attributeTypeBuilder ->
                     attributeTypeBuilder
@@ -833,7 +815,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
             .build();
 
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+        createMockAttributeDefinitionDraftBuilder()
             .type(attributeTypeBuilder -> attributeTypeBuilder.lenumBuilder().values(emptyList()))
             .build();
 
@@ -863,7 +845,7 @@ class AttributeDefinitionUpdateActionUtilsTest {
         AttributeLocalizedEnumValueBuilder.of().key("a").label(ofEnglish("label_a_diff")).build();
 
     final AttributeDefinitionDraft attributeDefinitionDraft =
-        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+        createMockAttributeDefinitionDraftBuilder()
             .type(
                 attributeTypeBuilder ->
                     attributeTypeBuilder.lenumBuilder().values(localizedEnumValueDiffLabel))

@@ -18,7 +18,6 @@ import com.commercetools.api.client.error.BadRequestException;
 import com.commercetools.api.defaultconfig.ApiRootBuilder;
 import com.commercetools.api.models.product_type.AttributeConstraintEnum;
 import com.commercetools.api.models.product_type.AttributeDefinition;
-import com.commercetools.api.models.product_type.AttributeDefinitionBuilder;
 import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
 import com.commercetools.api.models.product_type.AttributeDefinitionDraftBuilder;
 import com.commercetools.api.models.product_type.AttributeLocalizedEnumValueBuilder;
@@ -36,7 +35,6 @@ import com.commercetools.sync.producttypes.ProductTypeSync;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
 import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
-import com.commercetools.sync.producttypes.helpers.ResourceToDraftConverters;
 import io.vrap.rmf.base.client.ApiHttpMethod;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;
@@ -870,8 +868,8 @@ class ProductTypeSyncIT {
     final ProductTypeSyncOptions productTypeSyncOptions =
         ProductTypeSyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
 
-    final AttributeDefinition referenceTypeAttr =
-        AttributeDefinitionBuilder.of()
+    final AttributeDefinitionDraft referenceTypeAttr =
+        AttributeDefinitionDraftBuilder.of()
             .name("referenceTypeAttr")
             .label(ofEnglish("referenceTypeAttr"))
             .type(
@@ -893,9 +891,7 @@ class ProductTypeSyncIT {
             .key(PRODUCT_TYPE_KEY_3)
             .name(PRODUCT_TYPE_NAME_3)
             .description(PRODUCT_TYPE_DESCRIPTION_3)
-            .attributes(
-                ResourceToDraftConverters.toAttributeDefinitionDraftBuilder(referenceTypeAttr)
-                    .build())
+            .attributes(referenceTypeAttr)
             .build();
 
     final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
@@ -906,10 +902,7 @@ class ProductTypeSyncIT {
             .key(PRODUCT_TYPE_KEY_3)
             .name(PRODUCT_TYPE_NAME_3)
             .description(PRODUCT_TYPE_DESCRIPTION_3)
-            .attributes(
-                ATTRIBUTE_DEFINITION_DRAFT_1,
-                ResourceToDraftConverters.toAttributeDefinitionDraftBuilder(referenceTypeAttr)
-                    .build())
+            .attributes(ATTRIBUTE_DEFINITION_DRAFT_1, referenceTypeAttr)
             .build();
 
     productTypeSync.sync(singletonList(updatedProductTypeDraft)).toCompletableFuture().join();
