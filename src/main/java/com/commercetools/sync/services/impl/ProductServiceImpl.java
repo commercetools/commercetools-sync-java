@@ -1,5 +1,6 @@
 package com.commercetools.sync.services.impl;
 
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.SELF_REFERENCING_ID_PLACE_HOLDER;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 
 import com.commercetools.api.client.ByProjectKeyProductProjectionsGet;
@@ -49,6 +50,11 @@ public final class ProductServiceImpl
   public CompletionStage<Optional<String>> getIdFromCacheOrFetch(@Nullable final String key) {
     if (key == null) {
       return CompletableFuture.completedFuture(Optional.empty());
+    }
+    // Return placeholder in case of self-references
+    final String cachedId = this.keyToIdCache.getIfPresent(key);
+    if (SELF_REFERENCING_ID_PLACE_HOLDER.equals(cachedId)) {
+      return CompletableFuture.completedFuture(Optional.of(SELF_REFERENCING_ID_PLACE_HOLDER));
     }
 
     final ByProjectKeyProductProjectionsGet query =
