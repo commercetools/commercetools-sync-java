@@ -258,7 +258,7 @@ public class ProductSync
                   final Set<String> missingReferencedProductKeys =
                       getMissingReferencedProductKeys(newDraft, keyToIdCache);
 
-                  boolean selfReferenceExists =
+                  final boolean selfReferenceExists =
                       missingReferencedProductKeys.remove(newDraft.getKey());
 
                   if (!missingReferencedProductKeys.isEmpty()) {
