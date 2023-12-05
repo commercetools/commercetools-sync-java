@@ -83,15 +83,7 @@ public final class CategoryReferenceResolutionUtils {
         getResourceIdentifierWithKey(
             category.getParent(),
             referenceIdToKeyCache,
-            (id, key) -> {
-              final CategoryResourceIdentifierBuilder builder =
-                  CategoryResourceIdentifierBuilder.of();
-              if (id == null) {
-                return builder.key(key).build();
-              } else {
-                return builder.id(id).build();
-              }
-            });
+            (id, key) -> CategoryResourceIdentifierBuilder.of().key(key).id(id).build());
     return CategoryDraftBuilder.of()
         .key(category.getKey())
         .slug(category.getSlug())

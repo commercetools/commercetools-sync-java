@@ -120,6 +120,35 @@ class StateReferenceResolutionUtilsTest {
     assertThat(referenceReplacedDrafts.get(0).getTransitions()).isEqualTo(null);
   }
 
+  @Test
+  void mapToStateDrafts_WithMissingRequiredFields_ShouldNotFailAndReturnEmptyDraft() {
+    // preparation
+    final State mockState = mock(State.class);
+    when(mockState.getTransitions()).thenReturn(null);
+
+    // asserts
+    assertThat(
+            StateReferenceResolutionUtils.mapToStateDrafts(
+                    List.of(mockState), referenceIdToKeyCache)
+                .get(0))
+        .isEqualTo(StateDraft.of());
+
+    when(mockState.getKey()).thenReturn("Any key");
+    assertThat(
+            StateReferenceResolutionUtils.mapToStateDrafts(
+                    List.of(mockState), referenceIdToKeyCache)
+                .get(0))
+        .isEqualTo(StateDraft.of());
+
+    when(mockState.getKey()).thenReturn(null);
+    when(mockState.getType()).thenReturn(StateTypeEnum.LINE_ITEM_STATE);
+    assertThat(
+            StateReferenceResolutionUtils.mapToStateDrafts(
+                    List.of(mockState), referenceIdToKeyCache)
+                .get(0))
+        .isEqualTo(StateDraft.of());
+  }
+
   @Nonnull
   private static State getStateMock(@Nonnull final String key) {
     final State state = mock(State.class);

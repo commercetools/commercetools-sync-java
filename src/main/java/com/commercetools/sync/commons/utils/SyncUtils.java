@@ -70,7 +70,7 @@ public final class SyncUtils {
           @Nullable final String key,
           final BiFunction<String, String, ResourceIdentifierT> toResourceIdentifier) {
 
-    if (!StringUtils.isEmpty(key)) {
+    if (!StringUtils.isBlank(key)) {
       return toResourceIdentifier.apply(null, key);
     }
     return toResourceIdentifier.apply(id, null);
