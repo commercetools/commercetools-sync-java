@@ -28,9 +28,9 @@
 -->
 
 ### 10.0.2 - Dec 05, 2023
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.0.1...10.1.0) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.1.0/) |
-[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.1.0/jar)
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.0.1...10.0.2) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.2/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.0.2/jar)
 -
 - 🐞 **Bug Fixes** (4)
     - **Product Sync** - Sync now supports syncing of products with attributes referencing themselves. [#478](https://github.com/commercetools/commercetools-project-sync/issues/478)
