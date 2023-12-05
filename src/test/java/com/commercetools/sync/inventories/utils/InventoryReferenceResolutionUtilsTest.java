@@ -125,4 +125,33 @@ class InventoryReferenceResolutionUtilsTest {
       assertThat(referenceReplacedDraft.getSupplyChannel()).isNull();
     }
   }
+
+  @Test
+  void mapToInventoryEntryDrafts_WithMissingRequiredFields_ShouldNotFailAndReturnEmptyDraft() {
+    // preparation
+    final InventoryEntry mockInventory = mock(InventoryEntry.class);
+    when(mockInventory.getQuantityOnStock()).thenReturn(null);
+
+    // asserts
+    assertThat(
+            InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts(
+                    List.of(mockInventory), referenceIdToKeyCache)
+                .get(0))
+        .isEqualTo(InventoryEntryDraft.of());
+
+    when(mockInventory.getSku()).thenReturn("Any sku");
+    assertThat(
+            InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts(
+                    List.of(mockInventory), referenceIdToKeyCache)
+                .get(0))
+        .isEqualTo(InventoryEntryDraft.of());
+
+    when(mockInventory.getSku()).thenReturn(null);
+    when(mockInventory.getQuantityOnStock()).thenReturn(1L);
+    assertThat(
+            InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts(
+                    List.of(mockInventory), referenceIdToKeyCache)
+                .get(0))
+        .isEqualTo(InventoryEntryDraft.of());
+  }
 }
