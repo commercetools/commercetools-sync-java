@@ -1,6 +1,8 @@
 package com.commercetools.sync.producttypes.utils;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
+import static com.commercetools.sync.producttypes.MockBuilderUtils.createMockAttributeDefinitionDraftBuilder;
+import static com.commercetools.sync.producttypes.MockBuilderUtils.createMockProductTypeDraftBuilder;
 import static io.vrap.rmf.base.client.utils.json.JsonUtils.fromJsonString;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -16,7 +18,9 @@ import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.models.graph_ql.GraphQLRequest;
 import com.commercetools.api.models.graph_ql.GraphQLResponse;
 import com.commercetools.api.models.product_type.AttributeDefinition;
+import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
 import com.commercetools.api.models.product_type.AttributeNestedType;
+import com.commercetools.api.models.product_type.AttributeReferenceTypeId;
 import com.commercetools.api.models.product_type.AttributeSetType;
 import com.commercetools.api.models.product_type.AttributeTypeBuilder;
 import com.commercetools.api.models.product_type.ProductType;
@@ -26,7 +30,6 @@ import com.commercetools.api.models.product_type.ProductTypeReferenceBuilder;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.producttypes.MockBuilderUtils;
-import com.commercetools.sync.producttypes.helpers.ResourceToDraftConverters;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.List;
 import java.util.UUID;
@@ -36,6 +39,7 @@ import org.junit.jupiter.api.Test;
 
 class ProductTypeTransformUtilsTest {
 
+  private static final String MAIN_PRODUCT_TYPE_KEY = "main-product-type";
   final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
 
   @AfterEach
@@ -61,7 +65,8 @@ class ProductTypeTransformUtilsTest {
 
     // assertion
     assertThat(productTypeDrafts)
-        .containsExactly(ResourceToDraftConverters.toProductTypeDraft(productTypeFoo));
+        .containsExactly(
+            createMockProductTypeDraftBuilder().key("foo").attributes(emptyList()).build());
   }
 
   @Test
@@ -102,9 +107,95 @@ class ProductTypeTransformUtilsTest {
 
     // assertion
     assertThat(productTypeDrafts)
+        .containsExactlyInAnyOrder(
+            createMockProductTypeDraftBuilder()
+                .key(productTypeFoo.getKey())
+                .attributes(createMockAttributeDefinitionDraftBuilder().build())
+                .build(),
+            createMockProductTypeDraftBuilder()
+                .key(productTypeBar.getKey())
+                .attributes(
+                    createMockAttributeDefinitionDraftBuilder()
+                        .name(numberAttr.getName())
+                        .label(numberAttr.getLabel())
+                        .type(numberAttr.getType())
+                        .build())
+                .build());
+  }
+
+  @Test
+  void mapToProductDrafts_WithReferencesAndSetOfReferences_ShouldResolveAttributesCorrectly() {
+    // preparation
+    final AttributeDefinition attributeProductReference =
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .name("product-reference")
+            .label(ofEnglish("product-reference"))
+            .isRequired(false)
+            .isSearchable(true)
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .referenceBuilder()
+                        .referenceTypeId(AttributeReferenceTypeId.PRODUCT))
+            .build();
+    final AttributeDefinition colorProductReferenceSetAttribute =
+        MockBuilderUtils.createMockAttributeDefinitionBuilder()
+            .name("product-reference-set")
+            .label(ofEnglish("product-reference-set"))
+            .isRequired(false)
+            .isSearchable(true)
+            .type(
+                attributeTypeBuilder ->
+                    attributeTypeBuilder
+                        .setBuilder()
+                        .elementType(
+                            typeBuilder ->
+                                typeBuilder
+                                    .referenceBuilder()
+                                    .referenceTypeId(AttributeReferenceTypeId.PRODUCT)))
+            .build();
+
+    final ProductType mainProductType =
+        MockBuilderUtils.createMockProductTypeBuilder()
+            .key(MAIN_PRODUCT_TYPE_KEY)
+            .name(MAIN_PRODUCT_TYPE_KEY)
+            .description("a main product type")
+            .attributes(attributeProductReference, colorProductReferenceSetAttribute)
+            .build();
+
+    // test
+    final List<ProductTypeDraft> productTypeDrafts =
+        ProductTypeTransformUtils.toProductTypeDrafts(
+                mock(ProjectApiRoot.class), referenceIdToKeyCache, singletonList(mainProductType))
+            .join();
+
+    // assertion
+    final AttributeDefinitionDraft productReferenceSetAttrDraft =
+        createMockAttributeDefinitionDraftBuilder()
+            .name(colorProductReferenceSetAttribute.getName())
+            .label(colorProductReferenceSetAttribute.getLabel())
+            .isRequired(false)
+            .isSearchable(true)
+            .type(colorProductReferenceSetAttribute.getType())
+            .build();
+
+    final AttributeDefinitionDraft productReferenceAttrDraft =
+        createMockAttributeDefinitionDraftBuilder()
+            .name(attributeProductReference.getName())
+            .label(attributeProductReference.getLabel())
+            .isRequired(false)
+            .isSearchable(true)
+            .type(attributeProductReference.getType())
+            .build();
+
+    assertThat(productTypeDrafts)
         .containsExactly(
-            ResourceToDraftConverters.toProductTypeDraft(productTypeFoo),
-            ResourceToDraftConverters.toProductTypeDraft(productTypeBar));
+            createMockProductTypeDraftBuilder()
+                .name(MAIN_PRODUCT_TYPE_KEY)
+                .key(MAIN_PRODUCT_TYPE_KEY)
+                .description("a main product type")
+                .attributes(productReferenceAttrDraft, productReferenceSetAttrDraft)
+                .build());
   }
 
   @Test

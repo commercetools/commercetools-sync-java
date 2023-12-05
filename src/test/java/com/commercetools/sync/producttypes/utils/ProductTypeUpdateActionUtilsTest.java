@@ -18,7 +18,6 @@ import com.commercetools.api.models.product_type.ProductTypeDraft;
 import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
 import com.commercetools.sync.producttypes.MockBuilderUtils;
-import com.commercetools.sync.producttypes.helpers.ResourceToDraftConverters;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -45,7 +44,10 @@ class ProductTypeUpdateActionUtilsTest {
 
     final List<AttributeDefinitionDraft> sameAttributeDefinitionDrafts =
         singletonList(
-            ResourceToDraftConverters.toAttributeDefinitionDraftBuilder(attributeDefinition)
+            MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+                .name("attributeName1")
+                .label(label)
+                .type(AttributeTypeBuilder::textBuilder)
                 .build());
 
     old = mock(ProductType.class);

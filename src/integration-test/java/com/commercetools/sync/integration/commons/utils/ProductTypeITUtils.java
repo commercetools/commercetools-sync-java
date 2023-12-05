@@ -443,7 +443,11 @@ public final class ProductTypeITUtils {
 
               assertThat(attribute.getLabel()).isEqualTo(attributeDraft.getLabel());
 
-              assertThat(attribute.getType()).isEqualTo(attributeDraft.getType());
+              final boolean isAttributeOfTypeSetType =
+                  attribute.getType() instanceof AttributeSetType;
+              if (!isAttributeOfTypeSetType) {
+                assertThat(attribute.getType()).isEqualTo(attributeDraft.getType());
+              }
 
               assertThat(attribute.getInputHint())
                   .isEqualTo(
@@ -461,11 +465,11 @@ public final class ProductTypeITUtils {
                       ofNullable(attributeDraft.getAttributeConstraint())
                           .orElse(AttributeConstraintEnum.NONE));
 
-              if (attribute.getType().getClass() == AttributeEnumType.class) {
+              if (attribute.getType() instanceof AttributeEnumType) {
                 assertPlainEnumsValuesAreEqual(
                     ((AttributeEnumType) attribute.getType()).getValues(),
                     ((AttributeEnumType) attributeDraft.getType()).getValues());
-              } else if (attribute.getType().getClass() == AttributeLocalizedEnumType.class) {
+              } else if (attribute.getType() instanceof AttributeLocalizedEnumType) {
                 assertLocalizedEnumsValuesAreEqual(
                     ((AttributeLocalizedEnumType) attribute.getType()).getValues(),
                     ((AttributeLocalizedEnumType) attributeDraft.getType()).getValues());

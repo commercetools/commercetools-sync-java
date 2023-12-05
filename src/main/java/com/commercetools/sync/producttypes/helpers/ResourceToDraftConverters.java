@@ -39,7 +39,7 @@ public class ResourceToDraftConverters {
         .label(attributeDefinition.getLabel())
         .isSearchable(attributeDefinition.getIsSearchable())
         .inputTip(attributeDefinition.getInputTip())
-        .isRequired(attributeDefinition.getIsSearchable())
+        .isRequired(attributeDefinition.getIsRequired())
         .attributeConstraint(attributeDefinition.getAttributeConstraint())
         .inputHint(attributeDefinition.getInputHint());
   }

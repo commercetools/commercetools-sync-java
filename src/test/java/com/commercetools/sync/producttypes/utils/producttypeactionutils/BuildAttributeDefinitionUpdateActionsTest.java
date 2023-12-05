@@ -43,7 +43,6 @@ import com.commercetools.sync.commons.utils.TestUtils;
 import com.commercetools.sync.producttypes.MockBuilderUtils;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
-import com.commercetools.sync.producttypes.helpers.ResourceToDraftConverters;
 import com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -702,7 +701,8 @@ class BuildAttributeDefinitionUpdateActionsTest {
             .build();
 
     final AttributeDefinitionDraft ofNestedTypeDraft =
-        ResourceToDraftConverters.toAttributeDefinitionDraftBuilder(ofNestedType)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+            .name(ofNestedType.getName())
             .type(
                 attributeTypeBuilder ->
                     attributeTypeBuilder
@@ -711,7 +711,8 @@ class BuildAttributeDefinitionUpdateActionsTest {
             .build();
 
     final AttributeDefinitionDraft ofSetOfNestedTypeDraft =
-        ResourceToDraftConverters.toAttributeDefinitionDraftBuilder(ofSetOfNestedType)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+            .name(ofSetOfNestedType.getName())
             .type(
                 attributeTypeBuilder ->
                     attributeTypeBuilder
@@ -725,7 +726,8 @@ class BuildAttributeDefinitionUpdateActionsTest {
             .build();
 
     final AttributeDefinitionDraft ofSetOfSetOfNestedTypeDraft =
-        ResourceToDraftConverters.toAttributeDefinitionDraftBuilder(ofSetOfSetOfNestedType)
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+            .name(ofSetOfSetOfNestedType.getName())
             .type(
                 attributeTypeBuilder ->
                     attributeTypeBuilder
@@ -824,13 +826,19 @@ class BuildAttributeDefinitionUpdateActionsTest {
             .build();
 
     final AttributeDefinitionDraft ofNestedTypeDraft =
-        ResourceToDraftConverters.toAttributeDefinitionDraftBuilder(ofNestedType).build();
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+            .name(ofNestedType.getName())
+            .build();
 
     final AttributeDefinitionDraft ofSetOfNestedTypeDraft =
-        ResourceToDraftConverters.toAttributeDefinitionDraftBuilder(ofSetOfNestedType).build();
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+            .name(ofSetOfNestedType.getName())
+            .build();
 
     final AttributeDefinitionDraft ofSetOfSetOfNestedTypeDraft =
-        ResourceToDraftConverters.toAttributeDefinitionDraftBuilder(ofSetOfSetOfNestedType).build();
+        MockBuilderUtils.createMockAttributeDefinitionDraftBuilder()
+            .name(ofSetOfSetOfNestedType.getName())
+            .build();
 
     final ProductType oldProductType =
         MockBuilderUtils.createMockProductTypeBuilder()
