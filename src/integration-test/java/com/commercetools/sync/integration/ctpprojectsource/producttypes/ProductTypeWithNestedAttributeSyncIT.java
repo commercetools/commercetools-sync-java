@@ -5,6 +5,8 @@ import static com.commercetools.sync.commons.asserts.statistics.AssertionsForSta
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_5;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_5;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_5;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.assertAttributesAreEqual;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.getProductTypeByKey;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateProjectWithNestedAttributes;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.removeAttributeReferencesAndDeleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
@@ -12,16 +14,19 @@ import static com.commercetools.sync.integration.commons.utils.TestClientUtils.C
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.api.models.common.LocalizedString;
+import com.commercetools.api.models.product_type.AttributeDefinition;
 import com.commercetools.api.models.product_type.AttributeDefinitionDraft;
 import com.commercetools.api.models.product_type.AttributeDefinitionDraftBuilder;
 import com.commercetools.api.models.product_type.AttributeNestedType;
 import com.commercetools.api.models.product_type.AttributeNestedTypeBuilder;
+import com.commercetools.api.models.product_type.AttributeSetType;
 import com.commercetools.api.models.product_type.AttributeSetTypeBuilder;
 import com.commercetools.api.models.product_type.ProductType;
 import com.commercetools.api.models.product_type.ProductTypeChangeLabelActionBuilder;
 import com.commercetools.api.models.product_type.ProductTypeDraft;
 import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
 import com.commercetools.api.models.product_type.ProductTypePagedQueryResponse;
+import com.commercetools.api.models.product_type.ProductTypeReference;
 import com.commercetools.api.models.product_type.ProductTypeReferenceBuilder;
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
@@ -34,6 +39,7 @@ import com.commercetools.sync.producttypes.utils.ProductTypeTransformUtils;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -133,20 +139,12 @@ class ProductTypeWithNestedAttributeSyncIT {
             .type(
                 AttributeSetTypeBuilder.of()
                     .elementType(
-                        AttributeSetTypeBuilder.of()
-                            .elementType(
-                                AttributeSetTypeBuilder.of()
-                                    .elementType(
-                                        AttributeNestedTypeBuilder.of()
-                                            .typeReference(
-                                                ProductTypeReferenceBuilder.of()
-                                                    .id(PRODUCT_TYPE_KEY_5)
-                                                    .build())
-                                            .build())
-                                    .build())
+                        AttributeNestedTypeBuilder.of()
+                            .typeReference(
+                                ProductTypeReferenceBuilder.of().id(PRODUCT_TYPE_KEY_5).build())
                             .build())
                     .build())
-            .isSearchable(false)
+            .isSearchable(true)
             .isRequired(false)
             .build();
 
@@ -190,6 +188,26 @@ class ProductTypeWithNestedAttributeSyncIT {
             "Summary: 1 product types were processed in total"
                 + " (1 created, 0 updated, 0 failed to sync and 0 product types with at least one NestedType or a Set"
                 + " of NestedType attribute definition(s) referencing a missing product type).");
+
+    final Optional<ProductType> newProductType =
+        getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_5);
+    assertThat(newProductType).isPresent();
+    assertThat(newProductType)
+        .hasValueSatisfying(
+            productType -> {
+              assertAttributesAreEqual(productType.getAttributes(), List.of(nestedTypeAttr));
+              final AttributeDefinition attributeDefinition1 = productType.getAttributes().get(0);
+              assertThat(attributeDefinition1.getType()).isInstanceOf(AttributeSetType.class);
+              final AttributeSetType attributeSetType =
+                  (AttributeSetType) attributeDefinition1.getType();
+              assertThat(attributeSetType.getElementType()).isInstanceOf(AttributeNestedType.class);
+              final AttributeNestedType attributeNestedType =
+                  (AttributeNestedType) attributeSetType.getElementType();
+              assertThat(attributeNestedType.getTypeReference())
+                  .isInstanceOf(ProductTypeReference.class);
+              assertThat(attributeNestedType.getTypeReference().getId())
+                  .isEqualTo(productType.getId());
+            });
   }
 
   @Test
