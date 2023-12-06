@@ -27,6 +27,17 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
+### 10.0.2 - Dec 05, 2023
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.0.1...10.0.2) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.2/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.0.2/jar)
+-
+- 🐞 **Bug Fixes** (4)
+    - **Product Sync** - Sync now supports syncing of products with attributes referencing themselves. [#478](https://github.com/commercetools/commercetools-project-sync/issues/478)
+    - **State Sync** - Fix NPE thrown by `StateDraftBuilder.build()` when required fields are missing. The `StateTransformUtils.toStateDrafts` utility returns an empty draft when key is null or empty.
+    - **Inventory Sync** - Fix NPE thrown by `InventoryEntryDraftBuilder.build()` when required fields are missing. The `InventoryTransformUtils.toInventoryEntryDrafts` utility returns an empty draft when sku is null or empty.
+    - **ProductType Sync** - Fix ReferenceResolution of product-type attributes to avoid sync errors.
+
 ### 10.0.1 - Nov 14, 2023
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.0.0...10.0.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.1/) |
