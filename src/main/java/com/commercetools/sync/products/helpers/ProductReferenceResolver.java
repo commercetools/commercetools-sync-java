@@ -306,7 +306,7 @@ public final class ProductReferenceResolver
                     .map(
                         category -> {
                           keyToCategory.put(category.getKey(), category);
-                          if (categoryOrderHints != null) {
+                          if (categoryOrderHints != null && categoryOrderHints.values() != null) {
                             ofNullable(categoryOrderHints.values().get(category.getKey()))
                                 .ifPresent(
                                     orderHintValue ->

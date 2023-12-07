@@ -176,6 +176,33 @@ class ProductReferenceResolutionUtilsTest {
     assertThat(categoryOrderHintsWithKeys).isNull();
   }
 
+  @Test
+  void mapToCategoryReferencePair_WithEmptyReferences_ShouldNotReplaceIds() {
+    final String categoryId = UUID.randomUUID().toString();
+    final String categoryKey = "categoryKey1";
+    referenceIdToKeyCache.add(categoryId, categoryKey);
+
+    final CategoryOrderHints emptyCategoryOrderHints = CategoryOrderHints.of();
+
+    final List<CategoryReference> categoryReferences =
+        singletonList(CategoryReferenceBuilder.of().id(categoryId).build());
+    final ProductProjection product = getProductMock(categoryReferences, emptyCategoryOrderHints);
+
+    final CategoryResourceIdentifierPair categoryReferencePair =
+        ProductReferenceResolutionUtils.mapToCategoryReferencePair(product, referenceIdToKeyCache);
+
+    assertThat(categoryReferencePair).isNotNull();
+
+    final List<CategoryResourceIdentifier> categoryReferencesWithKeys =
+        categoryReferencePair.getCategoryResourceIdentifiers();
+    final CategoryOrderHints categoryOrderHintsWithKeys =
+        categoryReferencePair.getCategoryOrderHints();
+    assertThat(categoryReferencesWithKeys)
+        .extracting(ResourceIdentifier::getKey)
+        .containsExactlyInAnyOrder(categoryKey);
+    assertThat(categoryOrderHintsWithKeys).isEqualTo(emptyCategoryOrderHints);
+  }
+
   @Nonnull
   private static ProductProjection getProductMock(
       @Nonnull final List<CategoryReference> references,
