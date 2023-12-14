@@ -51,12 +51,13 @@ public final class CategoryITUtils {
    * can be used for integration tests to mimic existing categories in a target CTP project for
    * example. All the newly created category drafts will have {@code parentCategory} as a parent.
    *
-   * @param numberOfCategories the number of category drafts to create.
    * @param parentCategory the parent of the drafts.
+   * @param numberOfCategories the number of category drafts to create.
+   * @param withCustom
    * @return a list of CategoryDrafts.
    */
   public static List<CategoryDraft> getCategoryDrafts(
-      @Nullable final Category parentCategory, final int numberOfCategories) {
+      @Nullable final Category parentCategory, final int numberOfCategories, boolean withCustom) {
     List<CategoryDraft> categoryDrafts = new ArrayList<>();
     for (int i = 0; i < numberOfCategories; i++) {
       final LocalizedString name = LocalizedString.of(Locale.ENGLISH, format("draft%s", i + 1));
@@ -76,7 +77,7 @@ public final class CategoryITUtils {
               .description(description)
               .key(key)
               .orderHint(orderHint)
-              .custom(getCustomFieldsDraft())
+              .custom(withCustom ? getCustomFieldsDraft() : null)
               .build();
       categoryDrafts.add(categoryDraft);
     }
@@ -100,7 +101,7 @@ public final class CategoryITUtils {
       final int numberOfCategories) {
     final List<CategoryDraft> categoryDraftsWithPrefix = new ArrayList<>();
     final List<CategoryDraft> categoryDrafts =
-        getCategoryDrafts(parentCategory, numberOfCategories);
+        getCategoryDrafts(parentCategory, numberOfCategories, true);
     for (CategoryDraft categoryDraft : categoryDrafts) {
       final LocalizedString newCategoryName =
           LocalizedString.of(locale, format("%s%s", prefix, categoryDraft.getName().get(locale)));

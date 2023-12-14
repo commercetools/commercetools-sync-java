@@ -82,11 +82,12 @@ class ProductReferenceResolverIT {
         TestClientUtils.CTP_SOURCE_CLIENT);
 
     CategoryITUtils.ensureCategories(
-        TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2));
+        TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2, true));
     categoryReferencesWithIds =
         CategoryITUtils.getReferencesWithIds(
             CategoryITUtils.ensureCategories(
-                TestClientUtils.CTP_SOURCE_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2)));
+                TestClientUtils.CTP_SOURCE_CLIENT,
+                CategoryITUtils.getCategoryDrafts(null, 2, true)));
 
     ProductTypeITUtils.ensureProductType(
         PRODUCT_TYPE_RESOURCE_PATH, TestClientUtils.CTP_TARGET_CLIENT);
