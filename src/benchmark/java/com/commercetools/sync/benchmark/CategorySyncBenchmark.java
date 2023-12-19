@@ -5,11 +5,11 @@ import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATE
 import static com.commercetools.sync.benchmark.BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.commercetools.api.client.QueryUtils;
 import com.commercetools.api.models.category.Category;
 import com.commercetools.api.models.category.CategoryDraft;
 import com.commercetools.api.models.category.CategoryDraftBuilder;
@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,12 +48,12 @@ class CategorySyncBenchmark {
 
   @BeforeAll
   static void setup() {
-    deleteAllCategories(CTP_TARGET_CLIENT);
+    deleteAllCategories();
   }
 
   @BeforeEach
   void setupTest() {
-    deleteAllCategories(CTP_TARGET_CLIENT);
+    deleteAllCategories();
     clearSyncTestCollections();
     categorySyncOptions = buildSyncOptions();
   }
@@ -290,5 +292,28 @@ class CategorySyncBenchmark {
       categoryDraftsWithDescription.add(categoryDraftBuilder.build());
     }
     return categoryDraftsWithDescription;
+  }
+
+  private static void deleteAllCategories() {
+    QueryUtils.queryAll(
+            CTP_TARGET_CLIENT.categories().get(),
+            fetchedCategories -> {
+              CompletableFuture.allOf(
+                      fetchedCategories.stream()
+                          .map(category -> deleteCategory(category))
+                          .map(CompletionStage::toCompletableFuture)
+                          .toArray(CompletableFuture[]::new))
+                  .join();
+            })
+        .toCompletableFuture()
+        .join();
+  }
+
+  private static CompletionStage<Category> deleteCategory(final Category category) {
+    return CTP_TARGET_CLIENT
+        .categories()
+        .delete(category)
+        .execute()
+        .thenApply(ApiHttpResponse::getBody);
   }
 }
