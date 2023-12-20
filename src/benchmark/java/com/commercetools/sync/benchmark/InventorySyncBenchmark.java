@@ -18,15 +18,20 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class InventorySyncBenchmark {
 
   private static final int INVENTORY_BENCHMARKS_CREATE_ACTION_THRESHOLD =
+      18_000; // (based on history of benchmarks; highest was ~9 seconds)
+  private static final int INVENTORY_BENCHMARKS_UPDATE_ACTION_THRESHOLD =
+      18_000; // (based on history of benchmarks; highest was ~9 seconds)
+  private static final int INVENTORY_BENCHMARKS_CREATE_AND_UPDATE_ACTION_THRESHOLD =
       18_000; // (based on history of benchmarks; highest was ~9 seconds)
 
   @BeforeEach
@@ -89,19 +94,128 @@ class InventorySyncBenchmark {
     }
   }
 
-  @Disabled
   @Test
   void sync_ExistingInventories_ShouldUpdateInventories() throws IOException {
-    // TODO: SHOULD BE IMPLEMENTED.
-    BenchmarkUtils.saveNewResult(BenchmarkUtils.INVENTORY_SYNC, BenchmarkUtils.UPDATES_ONLY, 50000);
+    // preparation
+    final List<InventoryEntryDraft> inventoryEntryDrafts =
+        buildInventoryDrafts(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
+    // Create drafts to target project with different quantity
+    CompletableFuture.allOf(
+            inventoryEntryDrafts.stream()
+                .map(InventoryEntryDraftBuilder::of)
+                .map(builder -> builder.quantityOnStock(0L))
+                .map(InventoryEntryDraftBuilder::build)
+                .map(draft -> CTP_TARGET_CLIENT.inventory().create(draft).execute())
+                .map(CompletionStage::toCompletableFuture)
+                .toArray(CompletableFuture[]::new))
+        .join();
+
+    final InventorySyncOptions inventorySyncOptions =
+        InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
+    final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
+
+    // benchmark
+    final long beforeSync = System.currentTimeMillis();
+    final InventorySyncStatistics inventorySyncStatistics =
+        inventorySync.sync(inventoryEntryDrafts).toCompletableFuture().join();
+    final long totalTime = System.currentTimeMillis() - beforeSync;
+
+    // assert on threshold
+    assertThat(totalTime)
+        .withFailMessage(
+            String.format(
+                BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR,
+                totalTime,
+                INVENTORY_BENCHMARKS_UPDATE_ACTION_THRESHOLD))
+        .isLessThan(INVENTORY_BENCHMARKS_UPDATE_ACTION_THRESHOLD);
+
+    // Assert actual state of CTP project (total number of existing inventories)
+    final Long totalNumberOfInventories =
+        CTP_TARGET_CLIENT
+            .inventory()
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(InventoryPagedQueryResponse::getTotal)
+            .toCompletableFuture()
+            .join();
+    assertThat(totalNumberOfInventories).isEqualTo(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
+
+    // Assert on sync statistics
+    assertThat(inventorySyncStatistics)
+        .hasValues(
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            0,
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            0);
+    if (BenchmarkUtils.SUBMIT_BENCHMARK_RESULT) {
+      BenchmarkUtils.saveNewResult(
+          BenchmarkUtils.INVENTORY_SYNC, BenchmarkUtils.UPDATES_ONLY, totalTime);
+    }
   }
 
-  @Disabled
   @Test
   void sync_WithSomeExistingInventories_ShouldSyncInventories() throws IOException {
-    // TODO: SHOULD BE IMPLEMENTED.
-    BenchmarkUtils.saveNewResult(
-        BenchmarkUtils.INVENTORY_SYNC, BenchmarkUtils.CREATES_AND_UPDATES, 30000);
+    // preparation
+    final List<InventoryEntryDraft> inventoryEntryDrafts =
+        buildInventoryDrafts(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
+    final int halfNumberOfDrafts = inventoryEntryDrafts.size() / 2;
+    final List<InventoryEntryDraft> firstHalf = inventoryEntryDrafts.subList(0, halfNumberOfDrafts);
+
+    // Create first half of drafts to target project with different quantity
+    CompletableFuture.allOf(
+            firstHalf.stream()
+                .map(InventoryEntryDraftBuilder::of)
+                .map(builder -> builder.quantityOnStock(0L))
+                .map(InventoryEntryDraftBuilder::build)
+                .map(draft -> CTP_TARGET_CLIENT.inventory().post(draft).execute())
+                .map(CompletionStage::toCompletableFuture)
+                .toArray(CompletableFuture[]::new))
+        .join();
+
+    final InventorySyncOptions inventorySyncOptions =
+        InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
+    final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
+
+    // benchmark
+    final long beforeSync = System.currentTimeMillis();
+    final InventorySyncStatistics inventorySyncStatistics =
+        inventorySync.sync(inventoryEntryDrafts).toCompletableFuture().join();
+    final long totalTime = System.currentTimeMillis() - beforeSync;
+
+    // assert on threshold
+    assertThat(totalTime)
+        .withFailMessage(
+            String.format(
+                BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR,
+                totalTime,
+                INVENTORY_BENCHMARKS_CREATE_AND_UPDATE_ACTION_THRESHOLD))
+        .isLessThan(INVENTORY_BENCHMARKS_CREATE_AND_UPDATE_ACTION_THRESHOLD);
+
+    // Assert actual state of CTP project (total number of existing inventories)
+    final Long totalNumberOfInventories =
+        CTP_TARGET_CLIENT
+            .inventory()
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(InventoryPagedQueryResponse::getTotal)
+            .toCompletableFuture()
+            .join();
+
+    assertThat(totalNumberOfInventories).isEqualTo(BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST);
+
+    // Assert on sync statistics
+    assertThat(inventorySyncStatistics)
+        .hasValues(
+            BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST,
+            halfNumberOfDrafts,
+            halfNumberOfDrafts,
+            0);
+    if (BenchmarkUtils.SUBMIT_BENCHMARK_RESULT) {
+      BenchmarkUtils.saveNewResult(
+          BenchmarkUtils.INVENTORY_SYNC, BenchmarkUtils.CREATES_AND_UPDATES, totalTime);
+    }
   }
 
   @Nonnull
