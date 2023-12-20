@@ -113,7 +113,7 @@ class ProductSyncIT {
         CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME,
         TestClientUtils.CTP_TARGET_CLIENT);
 
-    final List<CategoryDraft> categoryDrafts = CategoryITUtils.getCategoryDrafts(null, 2);
+    final List<CategoryDraft> categoryDrafts = CategoryITUtils.getCategoryDrafts(null, 2, true);
     final List<Category> categories =
         CategoryITUtils.ensureCategories(TestClientUtils.CTP_TARGET_CLIENT, categoryDrafts);
     categoryReferencesWithIds = CategoryITUtils.getReferencesWithIds(categories);

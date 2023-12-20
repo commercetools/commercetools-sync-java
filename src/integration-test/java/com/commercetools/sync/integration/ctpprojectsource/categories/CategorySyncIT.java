@@ -69,7 +69,7 @@ class CategorySyncIT {
     CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_SOURCE_CLIENT);
 
     CategoryITUtils.ensureCategories(
-        TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2));
+        TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2, true));
 
     callBackErrorResponses = new ArrayList<>();
     callBackExceptions = new ArrayList<>();

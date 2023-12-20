@@ -55,7 +55,7 @@ class ProductReferenceResolverIT {
         TestClientUtils.CTP_TARGET_CLIENT);
     categories =
         CategoryITUtils.ensureCategories(
-            TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2));
+            TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2, true));
     productType =
         ProductTypeITUtils.ensureProductType(
             PRODUCT_TYPE_RESOURCE_PATH, TestClientUtils.CTP_TARGET_CLIENT);

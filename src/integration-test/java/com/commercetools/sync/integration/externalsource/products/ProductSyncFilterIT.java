@@ -69,7 +69,7 @@ class ProductSyncFilterIT {
         OLD_CATEGORY_CUSTOM_TYPE_NAME,
         CTP_TARGET_CLIENT);
     final List<Category> categories =
-        ensureCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
+        ensureCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2, true));
     categoryReferencesWithIds = getReferencesWithIds(categories);
     categoryResourceIdentifiersWithKeys = getResourceIdentifiersWithKeys(categories);
     productType = ensureProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);

@@ -134,13 +134,13 @@ class ProductSyncIT {
 
     final List<Category> targetCategories =
         CategoryITUtils.ensureCategories(
-            TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2));
+            TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2, true));
     targetCategoryReferencesWithIds = CategoryITUtils.getReferencesWithIds(targetCategories);
     targetCategoryResourceIdentifiers =
         CategoryITUtils.getResourceIdentifiersWithIds(targetCategories);
     final List<Category> sourceCategories =
         CategoryITUtils.ensureCategories(
-            TestClientUtils.CTP_SOURCE_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2));
+            TestClientUtils.CTP_SOURCE_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2, true));
     sourceCategoryReferencesWithIds = CategoryITUtils.getReferencesWithIds(sourceCategories);
     sourceCategoryResourceIdentifiers =
         CategoryITUtils.getResourceIdentifiersWithIds(sourceCategories);
