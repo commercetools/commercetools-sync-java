@@ -189,6 +189,45 @@ class ProductReferenceResolverIT {
   }
 
   @Test
+  void sync_withNewProductWithNoCategoryOrderHints_ShouldCreateProduct() {
+    // preparation
+    final ProductDraft productDraft =
+        createProductDraft(
+            PRODUCT_KEY_1_RESOURCE_PATH,
+            productTypeSource.toReference(),
+            oldTaxCategory.toReference(),
+            oldProductState.toReference(),
+            categoryReferencesWithIds,
+            null);
+    TestClientUtils.CTP_SOURCE_CLIENT.products().create(productDraft).executeBlocking();
+
+    final List<ProductProjection> products =
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .productProjections()
+            .get()
+            .withStaged(true)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductProjectionPagedQueryResponse::getResults)
+            .join();
+
+    final List<ProductDraft> productDrafts =
+        ProductTransformUtils.toProductDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT, referenceIdToKeyCache, products)
+            .join();
+
+    // test
+    final ProductSyncStatistics syncStatistics =
+        productSync.sync(productDrafts).toCompletableFuture().join();
+
+    // assertion
+    assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+    assertThat(errorCallBackMessages).isEmpty();
+    assertThat(errorCallBackExceptions).isEmpty();
+    assertThat(warningCallBackMessages).isEmpty();
+  }
+
+  @Test
   void sync_withNewProductWithNoProductTypeKey_ShouldFailCreatingTheProduct() {
     // preparation
     final ProductDraft productDraft =
