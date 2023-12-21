@@ -27,11 +27,19 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
+### 10.0.3 - Dec 21, 2023
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.0.2...10.0.3) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.3/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.0.3/jar)
+
+- 🐞 **Bug Fixes** (1)
+  - Fix NullPointerException for products having a category but no category order hints (https://github.com/commercetools/commercetools-sync-java/pull/1134) 
+
 ### 10.0.2 - Dec 05, 2023
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.0.1...10.0.2) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.2/) |
 [Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.0.2/jar)
--
+
 - 🐞 **Bug Fixes** (4)
     - **Product Sync** - Sync now supports syncing of products with attributes referencing themselves. [#478](https://github.com/commercetools/commercetools-project-sync/issues/478)
     - **State Sync** - Fix NPE thrown by `StateDraftBuilder.build()` when required fields are missing. The `StateTransformUtils.toStateDrafts` utility returns an empty draft when key is null or empty.
@@ -42,15 +50,15 @@
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.0.0...10.0.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.1/) |
 [Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.0.1/jar)
--
-- 🚧 **Bug fixes** (1)
+
+- 🐞 **Bug fixes** (1)
   - Make commercetools-sdk-java-v2 available as a transitive dependency
 
 ### 10.0.0 - Nov 6, 2023
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/9.2.3...10.0.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.0/) |
 [Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.0.0/jar)
-- 
+
 - 🚧 **Breaking Changes** (1)
   - commercetools-sync-java is now fully migrated to `commercetools-sdk-java-v2`. See [Migration Guide](./MIGRATION_GUIDE.md) on how to use this library version.
 

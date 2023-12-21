@@ -262,7 +262,7 @@ public final class ProductReferenceResolutionUtils {
             if (referenceIdToKeyCache.containsKey(categoryId)) {
               final String categoryKey = referenceIdToKeyCache.get(categoryId);
 
-              if (categoryOrderHints != null) {
+              if (categoryOrderHints != null && categoryOrderHints.values() != null) {
                 final String categoryOrderHintValue = categoryOrderHints.values().get(categoryId);
                 if (categoryOrderHintValue != null) {
                   categoryOrderHintsMapWithKeys.put(categoryKey, categoryOrderHintValue);
