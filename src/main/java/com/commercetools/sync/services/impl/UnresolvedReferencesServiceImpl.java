@@ -14,8 +14,8 @@ import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.commons.utils.ChunkUtils;
 import com.commercetools.sync.services.UnresolvedReferencesService;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -31,8 +31,7 @@ public class UnresolvedReferencesServiceImpl<WaitingToBeResolvedT extends Waitin
 
   private final BaseSyncOptions syncOptions;
 
-  private static final ObjectMapper OBJECT_MAPPER =
-      new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+  private static final ObjectMapper OBJECT_MAPPER = JsonUtils.getConfiguredObjectMapper();
 
   private static final String SAVE_FAILED =
       "Failed to save CustomObject with key: '%s' (hash of product key: '%s').";
