@@ -148,7 +148,7 @@ abstract class BaseService<
                   .filter(Objects::nonNull)
                   .forEach(
                       data -> {
-                        ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
+                        final ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
                         final JsonNode jsonNode = objectMapper.convertValue(data, JsonNode.class);
                         final Iterator<JsonNode> elements =
                             jsonNode.get(queryResource.getName()).get("results").elements();

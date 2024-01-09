@@ -27,6 +27,13 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
+### 10.0.4 - Jan 9, 2024
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.0.3...10.0.4) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.4/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.0.4/jar)
+- 🐞 **Bug Fixes** (1)
+  - Fix getting a wrong JSON Object mapper (https://github.com/commercetools/commercetools-sync-java/issues/1138)
+
 ### 10.0.3 - Dec 21, 2023
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.0.2...10.0.3) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.3/) |
