@@ -2,132 +2,132 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/BENCHMARKS/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/BUILD/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/CODE_OF_CONDUCT/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/CONTRIBUTING/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/DOCUMENTATION_PAGES/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/MIGRATION_GUIDE/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/RELEASE_NOTES/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/adr/0001-record-architecture-decisions/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/adr/0002-shopping-lists-lineitem-and-textlineitem-update-actions/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/adr/0003-syncing-attribute-type-changes/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/usage/CART_DISCOUNT_SYNC/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/usage/CATEGORY_SYNC/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/usage/CLEANUP_GUIDE/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/usage/CUSTOMER_SYNC/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/usage/CUSTOM_OBJECT_SYNC/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/usage/IMPORTANT_USAGE_TIPS/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/usage/INVENTORY_SYNC/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/usage/PRODUCT_SYNC/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/usage/PRODUCT_TYPE_SYNC/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/usage/QUICK_START/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/usage/SHOPPING_LIST_SYNC/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/usage/STATE_SYNC/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/usage/SYNC_OPTIONS/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/usage/TAX_CATEGORY_SYNC/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://commercetools.github.io/commercetools-sync-java/doc/usage/TYPE_SYNC/</loc>
-         <lastmod>2023-12-21</lastmod>
+         <lastmod>2024-01-09</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
