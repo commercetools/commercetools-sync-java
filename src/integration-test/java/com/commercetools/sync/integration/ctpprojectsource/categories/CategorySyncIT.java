@@ -1,6 +1,7 @@
 package com.commercetools.sync.integration.ctpprojectsource.categories;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.BOOLEAN_CUSTOM_FIELD_NAME;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,6 +14,7 @@ import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.error.DuplicateFieldError;
 import com.commercetools.api.models.error.DuplicateFieldErrorBuilder;
 import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
+import com.commercetools.api.models.type.FieldContainerBuilder;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.commercetools.sync.categories.CategorySync;
 import com.commercetools.sync.categories.CategorySyncOptions;
@@ -562,5 +564,75 @@ class CategorySyncIT {
             });
 
     assertThat(callBackWarningResponses).isEmpty();
+  }
+
+  @Test
+  void syncDraft_withNewCustomType_ShouldSetCustomType() {
+    final CategoryDraft categoryDraftWithCustomField =
+        CategoryDraftBuilder.of()
+            .key("category1")
+            .name(LocalizedString.ofEnglish("sourceCategory"))
+            .slug(LocalizedString.ofEnglish("sourceCategory"))
+            .custom(
+                CustomFieldsDraftBuilder.of()
+                    .type(
+                        TypeResourceIdentifierBuilder.of()
+                            .key(CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY)
+                            .build())
+                    .fields(
+                        FieldContainerBuilder.of()
+                            .addValue(BOOLEAN_CUSTOM_FIELD_NAME, true)
+                            .build())
+                    .build())
+            .build();
+    final CategoryDraft categoryDraftNoCustomFields =
+        CategoryDraftBuilder.of()
+            .key("category1")
+            .name(LocalizedString.ofEnglish("targetCategory"))
+            .slug(LocalizedString.ofEnglish("targetCategory"))
+            .build();
+
+    final Category createdSourceCategory =
+        TestClientUtils.CTP_SOURCE_CLIENT
+            .categories()
+            .create(categoryDraftWithCustomField)
+            .execute()
+            .toCompletableFuture()
+            .thenApply(ApiHttpResponse::getBody)
+            .join();
+
+    final Category createdTargetCategory =
+        TestClientUtils.CTP_TARGET_CLIENT
+            .categories()
+            .create(categoryDraftNoCustomFields)
+            .execute()
+            .toCompletableFuture()
+            .thenApply(ApiHttpResponse::getBody)
+            .join();
+
+    assertThat(createdTargetCategory.getCustom()).isNull();
+
+    final List<CategoryDraft> categoryDrafts =
+        CategoryTransformUtils.toCategoryDrafts(
+                TestClientUtils.CTP_SOURCE_CLIENT,
+                referenceIdToKeyCache,
+                List.of(createdSourceCategory))
+            .join();
+
+    final CategorySyncStatistics syncStatistics =
+        categorySync.sync(categoryDrafts).toCompletableFuture().join();
+
+    assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
+
+    final Category updatedTargetCategory =
+        TestClientUtils.CTP_TARGET_CLIENT
+            .categories()
+            .withId(createdTargetCategory.getId())
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .join();
+
+    assertThat(updatedTargetCategory.getCustom()).isNotNull();
   }
 }
