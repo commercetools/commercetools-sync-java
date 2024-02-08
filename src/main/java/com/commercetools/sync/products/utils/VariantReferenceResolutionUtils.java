@@ -52,6 +52,7 @@ public final class VariantReferenceResolutionUtils {
         .prices(mapToPriceDrafts(productVariant, referenceIdToKeyCache))
         .attributes(productVariant.getAttributes())
         .assets(mapToAssetDrafts(productVariant.getAssets(), referenceIdToKeyCache))
+        .images(productVariant.getImages())
         .build();
   }
 

@@ -257,8 +257,8 @@ class VariantReferenceResolutionUtilsTest {
     final List<ProductVariantDraft> replacedDrafts =
         VariantReferenceResolutionUtils.mapToProductVariantDrafts(
             singletonList(masterVariant), referenceIdToKeyCache);
-    replacedDrafts
-        .get(0)
+    final ProductVariantDraft variantDraft = replacedDrafts.get(0);
+    variantDraft
         .getAttributes()
         .forEach(
             attributeDraft -> {
@@ -271,5 +271,6 @@ class VariantReferenceResolutionUtilsTest {
               assertThat(originalAttribute).isNotNull();
               assertThat(originalAttribute.getValue()).isEqualTo(attributeDraft.getValue());
             });
+    assertThat(variantDraft.getImages()).isEqualTo(masterVariant.getImages());
   }
 }
