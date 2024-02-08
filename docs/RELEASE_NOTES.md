@@ -27,6 +27,13 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
+### 10.0.5 - Feb 8, 2024
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.0.4...10.0.5) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.5/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.0.5/jar)
+- 🐞 **Bug Fixes** (1)
+  - Fix images not being returned by variant resolution utils (https://github.com/commercetools/commercetools-project-sync/issues/555)
+
 ### 10.0.4 - Jan 9, 2024
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.0.3...10.0.4) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.4/) |

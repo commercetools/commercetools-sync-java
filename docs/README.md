@@ -2,9 +2,9 @@
 # commercetools sync
 [![CI](https://github.com/commercetools/commercetools-sync-java/workflows/CI/badge.svg)](https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/commercetools/commercetools-sync-java/branch/master/graph/badge.svg)](https://codecov.io/gh/commercetools/commercetools-sync-java)
-[![Benchmarks 10.0.4](https://img.shields.io/badge/Benchmarks-10.0.4-orange.svg)](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
-[![Download from Maven Central](https://img.shields.io/badge/Maven_Central-10.0.4-blue.svg)](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.0.4/jar) 
-[![Javadoc](https://javadoc.io/badge2/com.commercetools/commercetools-sync-java/javadoc.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/10.0.4/)
+[![Benchmarks 10.0.5](https://img.shields.io/badge/Benchmarks-10.0.5-orange.svg)](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
+[![Download from Maven Central](https://img.shields.io/badge/Maven_Central-10.0.5-blue.svg)](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.0.5/jar) 
+[![Javadoc](https://javadoc.io/badge2/com.commercetools/commercetools-sync-java/javadoc.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/10.0.5/)
 [![Known Vulnerabilities](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646/badge.svg)](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646)
 
 
@@ -40,18 +40,18 @@ Here are the most popular ones:
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>10.0.4</version>
+  <version>10.0.5</version>
 </dependency>
 ````
 #### Gradle
 ````groovy
-implementation 'com.commercetools:commercetools-sync-java:10.0.4'
+implementation 'com.commercetools:commercetools-sync-java:10.0.5'
 ````
 #### SBT 
 ````
-libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "10.0.4"
+libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "10.0.5"
 ````
 #### Ivy 
 ````xml
-<dependency org="com.commercetools" name="commercetools-sync-java" rev="10.0.4"/>
+<dependency org="com.commercetools" name="commercetools-sync-java" rev="10.0.5"/>
 ````
