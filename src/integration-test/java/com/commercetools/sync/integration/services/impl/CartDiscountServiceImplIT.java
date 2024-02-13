@@ -1,5 +1,8 @@
 package com.commercetools.sync.integration.services.impl;
 
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsDraft;
+import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
@@ -13,27 +16,23 @@ import com.commercetools.api.client.ByProjectKeyCartDiscountsGet;
 import com.commercetools.api.client.ByProjectKeyCartDiscountsRequestBuilder;
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.client.error.BadRequestException;
-import com.commercetools.api.models.cart_discount.CartDiscount;
-import com.commercetools.api.models.cart_discount.CartDiscountChangeCartPredicateAction;
-import com.commercetools.api.models.cart_discount.CartDiscountChangeCartPredicateActionBuilder;
-import com.commercetools.api.models.cart_discount.CartDiscountDraft;
-import com.commercetools.api.models.cart_discount.CartDiscountDraftBuilder;
-import com.commercetools.api.models.cart_discount.CartDiscountSetKeyAction;
-import com.commercetools.api.models.cart_discount.CartDiscountSetKeyActionBuilder;
+import com.commercetools.api.models.cart_discount.*;
+import com.commercetools.api.models.category.Category;
+import com.commercetools.api.models.category.CategoryDraft;
+import com.commercetools.api.models.category.CategoryDraftBuilder;
+import com.commercetools.api.models.common.LocalizedStringBuilder;
 import com.commercetools.api.models.error.DuplicateFieldError;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
 import com.commercetools.sync.integration.commons.utils.CartDiscountITUtils;
+import com.commercetools.sync.integration.commons.utils.CategoryITUtils;
 import com.commercetools.sync.services.CartDiscountService;
 import com.commercetools.sync.services.impl.CartDiscountServiceImpl;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;
 import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
@@ -51,6 +50,8 @@ class CartDiscountServiceImplIT {
   @AfterAll
   static void tearDown() {
     CartDiscountITUtils.deleteCartDiscountsFromTargetAndSource();
+    deleteAllCategories(CTP_TARGET_CLIENT);
+    deleteAllCategories(CTP_SOURCE_CLIENT);
   }
 
   /**
@@ -392,5 +393,96 @@ class CartDiscountServiceImplIT {
             })
         .toCompletableFuture()
         .join();
+  }
+
+  @Test
+  void createCartDiscount_WithReferenceToCategoryId_ShouldCreateCartDiscountCorrectly() {
+    // Create category in target and source
+    deleteAllCategories(CTP_TARGET_CLIENT);
+    deleteAllCategories(CTP_SOURCE_CLIENT);
+    final CategoryDraft categoryDraft =
+        CategoryDraftBuilder.of()
+            .name(
+                LocalizedStringBuilder.of()
+                    .addValue(Locale.ENGLISH.toLanguageTag(), "furniture")
+                    .build())
+            .slug(
+                LocalizedStringBuilder.of()
+                    .addValue(Locale.ENGLISH.toLanguageTag(), "furniture")
+                    .build())
+            .key("categoryKey")
+            .build();
+
+    final Category sourceCategory =
+        CTP_SOURCE_CLIENT
+            .categories()
+            .post(categoryDraft)
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .toCompletableFuture()
+            .join();
+
+    CTP_TARGET_CLIENT
+        .categories()
+        .post(categoryDraft)
+        .execute()
+        .thenApply(ApiHttpResponse::getBody)
+        .toCompletableFuture()
+        .join();
+
+    final CartDiscountDraft newCartDiscountDraft =
+        CartDiscountDraftBuilder.of()
+            .name(CartDiscountITUtils.CART_DISCOUNT_NAME_2)
+            .cartPredicate(CartDiscountITUtils.CART_DISCOUNT_CART_PREDICATE_1)
+            .value(CartDiscountITUtils.CART_DISCOUNT_VALUE_DRAFT_2)
+            .target(
+                CartDiscountLineItemsTargetBuilder.of()
+                    .predicate("categories.id contains any (\"" + sourceCategory.getId() + "\")")
+                    .build())
+            .sortOrder(CartDiscountITUtils.SORT_ORDER_2)
+            .requiresDiscountCode(false)
+            .key(CartDiscountITUtils.CART_DISCOUNT_KEY_2)
+            .isActive(false)
+            .build();
+
+    final CartDiscountSyncOptions spyOptions =
+        CartDiscountSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+            .errorCallback(
+                (exception, oldResource, newResource, actions) -> {
+                  errorCallBackMessages.add(exception.getMessage());
+                  errorCallBackExceptions.add(exception);
+                })
+            .build();
+
+    final CartDiscountService spyCartDiscountService = new CartDiscountServiceImpl(spyOptions);
+
+    // test
+    final Optional<CartDiscount> createdCartDiscount =
+        spyCartDiscountService
+            .createCartDiscount(newCartDiscountDraft)
+            .toCompletableFuture()
+            .join();
+    System.out.println(errorCallBackMessages);
+
+    final CartDiscount cartDiscount =
+        CTP_TARGET_CLIENT
+            .cartDiscounts()
+            .withKey(CartDiscountITUtils.CART_DISCOUNT_KEY_2)
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .toCompletableFuture()
+            .join();
+
+    assertThat(createdCartDiscount)
+        .hasValueSatisfying(
+            created -> {
+              assertThat(created.getKey()).isEqualTo(cartDiscount.getKey());
+              assertThat(created.getName()).isEqualTo(cartDiscount.getName());
+              assertThat(created.getCartPredicate()).isEqualTo(cartDiscount.getCartPredicate());
+              assertThat(created.getValue()).isEqualTo(cartDiscount.getValue());
+              assertThat(created.getTarget()).isEqualTo(cartDiscount.getTarget());
+              assertThat(created.getSortOrder()).isEqualTo(cartDiscount.getSortOrder());
+            });
   }
 }
