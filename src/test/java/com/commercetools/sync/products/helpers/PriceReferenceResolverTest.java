@@ -178,7 +178,7 @@ class PriceReferenceResolverTest {
         .withMessageContaining(
             String.format(
                 "Failed to resolve custom type reference on PriceDraft"
-                    + " with country:'DE' and value: 'EUR 10.00'. Reason: %s",
+                    + " with country:'DE' and value: 'EUR 10'. Reason: %s",
                 BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
   }
 
