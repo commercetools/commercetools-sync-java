@@ -98,6 +98,9 @@ public class ProductSyncMockUtils {
   public static final String SIMPLE_PRODUCT_WITH_MULTIPLE_VARIANTS_RESOURCE_PATH =
       "simple-product-with-multiple-variants.json";
 
+  public static final String PRODUCT_KEY_7_WITH_IMAGES = "product-key-7-with-images.json";
+  public static final String PRODUCT_KEY_7_NO_IMAGES = "product-key-7-no-images.json";
+
   /**
    * Unfortunately, <a
    * href="http://dev.commercetools.com/http-api-projects-products.html#category-order-hints">
