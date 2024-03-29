@@ -1108,6 +1108,51 @@ class ProductSyncIT {
             ProductPublishActionBuilder.of().build());
   }
 
+  @Test
+  void sync_whenSourceProductHasNoImage_shouldSyncNewImages() {
+    final ProductDraft productDraftNoImages =
+        createProductDraft(
+            PRODUCT_KEY_7_NO_IMAGES,
+            ProductTypeResourceIdentifierBuilder.of().id(productType.getId()).build(),
+            null,
+            null,
+            null,
+            null);
+
+    TestClientUtils.CTP_TARGET_CLIENT
+        .products()
+        .create(productDraftNoImages)
+        .execute()
+        .thenApply(ApiHttpResponse::getBody)
+        .join();
+
+    final ProductDraft productDraftWithImages =
+        createProductDraft(
+            PRODUCT_KEY_7_WITH_IMAGES,
+            ProductTypeResourceIdentifierBuilder.of().id(productType.getKey()).build(),
+            null,
+            null,
+            null,
+            null);
+
+    final ProductSync productSync = new ProductSync(syncOptions);
+    final ProductSyncStatistics syncStatistics =
+        productSync.sync(singletonList(productDraftWithImages)).toCompletableFuture().join();
+
+    assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
+
+    final ProductProjection productProjection =
+        TestClientUtils.CTP_TARGET_CLIENT
+            .productProjections()
+            .withKey(productDraftNoImages.getKey())
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .join();
+
+    assertThat(productProjection.getMasterVariant().getImages()).hasSize(1);
+  }
+
   @Nonnull
   private static ProductDraft prefixDraftKey(
       @Nonnull final ProductDraft productDraft, @Nonnull final String prefix) {
