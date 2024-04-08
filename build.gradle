@@ -47,7 +47,7 @@ dependencies {
     implementation "com.github.ben-manes.caffeine:caffeine:${caffeineVersion}"
     implementation "org.apache.commons:commons-text:${commonTextVersion}"
     api "com.commercetools.sdk:commercetools-sdk-java-api:${commercetoolsJavaSdkV2Version}"
-    api 'commons-io:commons-io:2.15.1'
+    api 'commons-io:commons-io:2.16.1'
     api 'commons-codec:commons-codec:1.16.1'
     api 'com.google.code.findbugs:annotations:3.0.1'
     api 'com.neovisionaries:nv-i18n:1.29'
@@ -57,5 +57,5 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterApiVersion}"
     testRuntimeOnly "org.junit.vintage:junit-vintage-engine:${jupiterApiVersion}"
     testImplementation "org.assertj:assertj-core:${assertjVersion}"
-    testImplementation 'com.github.spotbugs:spotbugs-annotations:4.8.3'
+    testImplementation 'com.github.spotbugs:spotbugs-annotations:4.8.4'
 }
