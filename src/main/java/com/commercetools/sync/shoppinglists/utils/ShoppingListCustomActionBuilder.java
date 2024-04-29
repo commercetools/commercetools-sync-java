@@ -4,6 +4,7 @@ import com.commercetools.api.models.shopping_list.ShoppingListSetCustomFieldActi
 import com.commercetools.api.models.shopping_list.ShoppingListSetCustomTypeActionBuilder;
 import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
 import com.commercetools.sync.commons.helpers.GenericCustomActionBuilder;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,6 +20,7 @@ public final class ShoppingListCustomActionBuilder
   }
 
   @Nonnull
+  @SuppressFBWarnings
   public static ShoppingListCustomActionBuilder of() {
     return builder;
   }
