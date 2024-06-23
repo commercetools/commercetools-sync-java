@@ -57,7 +57,7 @@ public final class SyncFilter {
   }
 
   @Nonnull
-  public static SyncFilter of() {
+  public static synchronized SyncFilter of() {
     defaultSyncFilter = ofNullable(defaultSyncFilter).orElseGet(SyncFilter::new);
     return defaultSyncFilter;
   }
