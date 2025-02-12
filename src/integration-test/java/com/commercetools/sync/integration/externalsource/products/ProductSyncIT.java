@@ -961,59 +961,55 @@ class ProductSyncIT {
     // preparation
     final List<ProductUpdateAction> updateActions = new ArrayList<>();
     final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
-            warningCallBack =
+        warningCallBack =
             (exception, newResource, oldResource) ->
-                    warningCallBackMessages.add(exception.getMessage());
+                warningCallBackMessages.add(exception.getMessage());
 
     final ProductSyncOptions customOptions =
-            ProductSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT)
-                    .errorCallback(
-                            (exception, oldResource, newResource, actions) ->
-                                    collectErrors(exception.getMessage(), exception.getCause()))
-                    .warningCallback(warningCallBack)
-                    .beforeUpdateCallback(
-                            (actions, draft, old) -> {
-                              updateActions.addAll(actions);
-                              return actions;
-                            })
-                    .build();
+        ProductSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT)
+            .errorCallback(
+                (exception, oldResource, newResource, actions) ->
+                    collectErrors(exception.getMessage(), exception.getCause()))
+            .warningCallback(warningCallBack)
+            .beforeUpdateCallback(
+                (actions, draft, old) -> {
+                  updateActions.addAll(actions);
+                  return actions;
+                })
+            .build();
 
     final ProductDraft productDraft =
-            createProductDraftBuilder(
-                    PRODUCT_KEY_1_RESOURCE_PATH,
-                    ProductTypeResourceIdentifierBuilder.of().key(productType.getKey()).build())
-                    .slug(LocalizedString.of(Locale.ENGLISH, "slug"))
-                    .categories(emptyList())
-                    .taxCategory((TaxCategoryResourceIdentifier) null)
-                    .state((StateResourceIdentifier) null)
-                    .build();
+        createProductDraftBuilder(
+                PRODUCT_KEY_1_RESOURCE_PATH,
+                ProductTypeResourceIdentifierBuilder.of().key(productType.getKey()).build())
+            .slug(LocalizedString.of(Locale.ENGLISH, "slug"))
+            .categories(emptyList())
+            .taxCategory((TaxCategoryResourceIdentifier) null)
+            .state((StateResourceIdentifier) null)
+            .build();
 
     final ProductDraft productDraft2 =
-            createProductDraftBuilder(
-                    PRODUCT_KEY_1_RESOURCE_PATH,
-                    ProductTypeResourceIdentifierBuilder.of().key(productType.getKey()).build())
-                    .key(UUID.randomUUID().toString())
-                    .slug(LocalizedString.of(Locale.ENGLISH, "slug"))
-                    .categories(emptyList())
-                    .taxCategory((TaxCategoryResourceIdentifier) null)
-                    .state((StateResourceIdentifier) null)
-                    .build();
+        createProductDraftBuilder(
+                PRODUCT_KEY_1_RESOURCE_PATH,
+                ProductTypeResourceIdentifierBuilder.of().key(productType.getKey()).build())
+            .key(UUID.randomUUID().toString())
+            .slug(LocalizedString.of(Locale.ENGLISH, "slug"))
+            .categories(emptyList())
+            .taxCategory((TaxCategoryResourceIdentifier) null)
+            .state((StateResourceIdentifier) null)
+            .build();
 
     // test
     final ProductSync productSync = new ProductSync(customOptions);
-    productSync
-            .sync(singletonList(productDraft))
-            .toCompletableFuture()
-            .join();
+    productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
     final ProductSyncStatistics syncStatistics =
-            productSync
-                    .sync(singletonList(productDraft2))
-                    .toCompletableFuture()
-                    .join();
+        productSync.sync(singletonList(productDraft2)).toCompletableFuture().join();
 
     assertThat(syncStatistics).hasValues(2, 0, 1, 1, 0);
-    assertThat(this.errorCallBackExceptions.get(0).getCause().getMessage()).contains("A duplicate value '\\\"slug\\\"' exists for field");
-    assertThat(this.errorCallBackMessages.get(0)).contains("A duplicate value '\\\"slug\\\"' exists for field");
+    assertThat(this.errorCallBackExceptions.get(0).getCause().getMessage())
+        .contains("A duplicate value '\\\"slug\\\"' exists for field");
+    assertThat(this.errorCallBackMessages.get(0))
+        .contains("A duplicate value '\\\"slug\\\"' exists for field");
   }
 
   @Test
