@@ -78,6 +78,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import javax.annotation.Nonnull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -953,6 +954,62 @@ class ProductSyncIT {
     assertThat(errorCallBackExceptions).isEmpty();
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
+  }
+
+  @Test
+  void test_Generic_NPE_error_without_details_on_product_import() {
+    // preparation
+    final List<ProductUpdateAction> updateActions = new ArrayList<>();
+    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
+        warningCallBack =
+            (exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage());
+
+    final ProductSyncOptions customOptions =
+        ProductSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT)
+            .errorCallback(
+                (exception, oldResource, newResource, actions) ->
+                    collectErrors(exception.getMessage(), exception.getCause()))
+            .warningCallback(warningCallBack)
+            .beforeUpdateCallback(
+                (actions, draft, old) -> {
+                  updateActions.addAll(actions);
+                  return actions;
+                })
+            .build();
+
+    final ProductDraft productDraft =
+        createProductDraftBuilder(
+                PRODUCT_KEY_1_RESOURCE_PATH,
+                ProductTypeResourceIdentifierBuilder.of().key(productType.getKey()).build())
+            .slug(LocalizedString.of(Locale.ENGLISH, "slug"))
+            .categories(emptyList())
+            .taxCategory((TaxCategoryResourceIdentifier) null)
+            .state((StateResourceIdentifier) null)
+            .build();
+
+    final ProductDraft productDraft2 =
+        createProductDraftBuilder(
+                PRODUCT_KEY_1_RESOURCE_PATH,
+                ProductTypeResourceIdentifierBuilder.of().key(productType.getKey()).build())
+            .key(UUID.randomUUID().toString())
+            .slug(LocalizedString.of(Locale.ENGLISH, "slug"))
+            .categories(emptyList())
+            .taxCategory((TaxCategoryResourceIdentifier) null)
+            .state((StateResourceIdentifier) null)
+            .build();
+
+    // test
+    final ProductSync productSync = new ProductSync(customOptions);
+    productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
+    final ProductSyncStatistics syncStatistics =
+        productSync.sync(singletonList(productDraft2)).toCompletableFuture().join();
+
+    assertThat(syncStatistics).hasValues(2, 0, 1, 1, 0);
+    assertThat(this.errorCallBackExceptions.get(0).getCause().getMessage())
+        .contains("A duplicate value '\\\"slug\\\"' exists for field");
+    assertThat(this.errorCallBackMessages.get(0))
+        .contains("A duplicate value '\\\"slug\\\"' exists for field");
   }
 
   @Test
