@@ -1,8 +1,7 @@
 plugins {
     id 'com.adarshr.test-logger' version '4.0.0'
-    id 'org.ajoberstar.grgit' version '5.2.2'
     id "com.github.ben-manes.versions" version '0.51.0'
-    id 'ru.vyarus.mkdocs' version '4.0.1'
+    id 'ru.vyarus.mkdocs' version '4.0.1' apply false
     id "com.github.spotbugs" version "6.0.9"
     id 'com.diffplug.spotless' version '6.25.0'
     id 'io.github.gradle-nexus.publish-plugin' version '2.0.0'
@@ -35,11 +34,11 @@ apply from: "$rootDir/gradle-scripts/jacoco.gradle"
 apply from: "$rootDir/gradle-scripts/spotbugs.gradle"
 apply from: "$rootDir/gradle-scripts/maven-publish.gradle"
 apply from: "$rootDir/gradle-scripts/nexus-publish.gradle"
-apply from: "$rootDir/gradle-scripts/javadocs-publish.gradle"
 apply from: "$rootDir/gradle-scripts/set-library-version.gradle"
-apply from: "$rootDir/gradle-scripts/execution-order.gradle"
 apply from: "$rootDir/gradle-scripts/mkdocs.gradle"
+apply from: "$rootDir/gradle-scripts/javadocs-publish.gradle"
 apply from: "$rootDir/gradle-scripts/spotless.gradle"
+apply from: "$rootDir/gradle-scripts/execution-order.gradle"
 
 dependencies {
     implementation "com.commercetools.sdk:commercetools-http-client:${commercetoolsJavaSdkV2Version}"
