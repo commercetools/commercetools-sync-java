@@ -41,6 +41,10 @@ public class ProductBatchValidator
       "ProductDraft with name: %s doesn't have a key. "
           + "Please make sure all product drafts have keys.";
   static final String PRODUCT_DRAFT_IS_NULL = "ProductDraft is null.";
+
+  static final String PRODUCT_MASTER_VARIANT_DRAFT_IS_NULL =
+      "MasterVariant is null and Variants are not null for ProductDraft with key '%s'.";
+
   static final String PRODUCT_VARIANT_DRAFT_IS_NULL =
       "ProductVariantDraft at position '%d' of ProductDraft " + "with key '%s' is null.";
   static final String PRODUCT_VARIANT_DRAFT_SKU_NOT_SET =
@@ -151,7 +155,9 @@ public class ProductBatchValidator
   @Nonnull
   private List<ProductVariantDraft> getAllVariants(@Nonnull final ProductDraft productDraft) {
     final List<ProductVariantDraft> allVariants = new ArrayList<>();
-    allVariants.add(productDraft.getMasterVariant());
+    if (productDraft.getMasterVariant() != null) {
+      allVariants.add(productDraft.getMasterVariant());
+    }
     if (productDraft.getVariants() != null) {
       allVariants.addAll(
           productDraft.getVariants().stream()
@@ -203,10 +209,19 @@ public class ProductBatchValidator
       @Nonnull final ProductDraft productDraft) {
     final List<String> errorMessages = new ArrayList<>();
 
+    final ProductVariantDraft masterVariant = productDraft.getMasterVariant();
+    final List<ProductVariantDraft> variants = productDraft.getVariants();
+
+    if (masterVariant == null) {
+      if (variants != null && !variants.isEmpty()) {
+        errorMessages.add(format(PRODUCT_MASTER_VARIANT_DRAFT_IS_NULL, productDraft.getKey()));
+      }
+      return errorMessages;
+    }
+
     // don't filter the nulls
     final List<ProductVariantDraft> allVariants = new ArrayList<>();
-    allVariants.add(productDraft.getMasterVariant());
-    final List<ProductVariantDraft> variants = productDraft.getVariants();
+    allVariants.add(masterVariant);
     if (variants != null) {
       allVariants.addAll(variants);
     }

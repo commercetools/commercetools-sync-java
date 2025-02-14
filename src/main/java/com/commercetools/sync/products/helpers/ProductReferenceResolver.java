@@ -161,10 +161,14 @@ public final class ProductReferenceResolver
   private CompletionStage<ProductDraftBuilder> resolveAllVariantsReferences(
       @Nonnull final ProductDraftBuilder draftBuilder) {
     final ProductVariantDraft masterVariantDraft = draftBuilder.getMasterVariant();
-    return variantReferenceResolver
-        .resolveReferences(masterVariantDraft)
-        .thenApply(draftBuilder::masterVariant)
-        .thenCompose(this::resolveVariantsReferences);
+    if (masterVariantDraft == null) {
+      return CompletableFuture.completedFuture(draftBuilder);
+    } else {
+      return variantReferenceResolver
+          .resolveReferences(masterVariantDraft)
+          .thenApply(draftBuilder::masterVariant)
+          .thenCompose(this::resolveVariantsReferences);
+    }
   }
 
   @Nonnull
