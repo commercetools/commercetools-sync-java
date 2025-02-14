@@ -1,3 +1,5 @@
+apply plugin: 'ru.vyarus.mkdocs'
+
 mkdocs {
     // mkdocs sources
     sourcesDir = '.' // default is 'docs' in the root directory.
