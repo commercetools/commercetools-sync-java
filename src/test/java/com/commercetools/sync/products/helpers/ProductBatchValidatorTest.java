@@ -1,5 +1,6 @@
 package com.commercetools.sync.products.helpers;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -241,8 +242,7 @@ class ProductBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(
-            String.format(ProductBatchValidator.PRODUCT_DRAFT_KEY_NOT_SET, productDraft.getName()));
+        .isEqualTo(format(ProductBatchValidator.PRODUCT_DRAFT_KEY_NOT_SET, productDraft.getName()));
     assertThat(validDrafts).isEmpty();
   }
 
@@ -255,13 +255,12 @@ class ProductBatchValidatorTest {
 
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(
-            String.format(ProductBatchValidator.PRODUCT_DRAFT_KEY_NOT_SET, productDraft.getName()));
+        .isEqualTo(format(ProductBatchValidator.PRODUCT_DRAFT_KEY_NOT_SET, productDraft.getName()));
     assertThat(validDrafts).isEmpty();
   }
 
   @Test
-  void validateAndCollectReferencedKeys_WithNullVariant_ShouldHaveValidationErrors() {
+  void validateAndCollectReferencedKeys_WithNullVariant_ShouldBeValid() {
     final String productDraftKey = "key";
     final int variantPosition = 0;
 
@@ -270,14 +269,8 @@ class ProductBatchValidatorTest {
 
     final Set<ProductDraft> validDrafts = getValidDrafts(Collections.singletonList(productDraft));
 
-    assertThat(validDrafts).isEmpty();
-    assertThat(errorCallBackMessages).hasSize(1);
-    assertThat(errorCallBackMessages.get(0))
-        .isEqualTo(
-            String.format(
-                ProductBatchValidator.PRODUCT_VARIANT_DRAFT_IS_NULL,
-                variantPosition,
-                productDraftKey));
+    assertThat(validDrafts).hasSize(1);
+    assertThat(new ArrayList<>(validDrafts).get(0)).isEqualTo(productDraft);
   }
 
   @Test
@@ -296,11 +289,11 @@ class ProductBatchValidatorTest {
     assertThat(errorCallBackMessages).hasSize(2);
     assertThat(errorCallBackMessages)
         .containsExactlyInAnyOrder(
-            String.format(
+            format(
                 ProductBatchValidator.PRODUCT_VARIANT_DRAFT_SKU_NOT_SET,
                 variantPosition,
                 productDraftKey),
-            String.format(
+            format(
                 ProductBatchValidator.PRODUCT_VARIANT_DRAFT_KEY_NOT_SET,
                 variantPosition,
                 productDraftKey));
@@ -324,7 +317,7 @@ class ProductBatchValidatorTest {
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
         .isEqualTo(
-            String.format(
+            format(
                 ProductBatchValidator.PRODUCT_VARIANT_DRAFT_KEY_NOT_SET,
                 variantPosition,
                 productDraftKey));
@@ -347,7 +340,7 @@ class ProductBatchValidatorTest {
     assertThat(errorCallBackMessages).hasSize(1);
     assertThat(errorCallBackMessages.get(0))
         .isEqualTo(
-            String.format(
+            format(
                 ProductBatchValidator.PRODUCT_VARIANT_DRAFT_SKU_NOT_SET,
                 variantPosition,
                 productDraftKey));
@@ -431,19 +424,42 @@ class ProductBatchValidatorTest {
     assertThat(errorCallBackMessages)
         .containsExactlyInAnyOrder(
             ProductBatchValidator.PRODUCT_DRAFT_IS_NULL,
-            String.format(ProductBatchValidator.PRODUCT_DRAFT_KEY_NOT_SET, "null"),
-            String.format(
-                ProductBatchValidator.PRODUCT_VARIANT_DRAFT_IS_NULL,
-                0,
+            format(ProductBatchValidator.PRODUCT_DRAFT_KEY_NOT_SET, "null"),
+            format(
+                ProductBatchValidator.PRODUCT_MASTER_VARIANT_DRAFT_IS_NULL,
                 inValidProductDraft1.getKey()),
-            String.format(
+            format(
                 ProductBatchValidator.PRODUCT_VARIANT_DRAFT_SKU_NOT_SET,
                 0,
                 inValidProductDraft2.getKey()),
-            String.format(
+            format(
                 ProductBatchValidator.PRODUCT_VARIANT_DRAFT_SKU_NOT_SET,
                 1,
                 inValidProductDraft2.getKey()));
+  }
+
+  @Test
+  void
+      validateAndCollectReferencedKeys_WithNullMasterVariantsAndOneVariant_shouldHaveValidationErrors() {
+    final ProductDraft productDraft = mock(ProductDraft.class);
+    when(productDraft.getKey()).thenReturn("key");
+
+    final ProductVariantDraft validVariantDraft =
+        ProductVariantDraftBuilder.of().key("variantKey").sku("variantSku").build();
+
+    when(productDraft.getVariants()).thenReturn(singletonList(validVariantDraft));
+
+    final ProductBatchValidator productBatchValidator =
+        new ProductBatchValidator(syncOptions, syncStatistics);
+    final ImmutablePair<Set<ProductDraft>, ProductBatchValidator.ReferencedKeys> pair =
+        productBatchValidator.validateAndCollectReferencedKeys(singletonList(productDraft));
+
+    assertThat(pair.getLeft()).isEmpty();
+    assertThat(this.errorCallBackMessages).hasSize(1);
+    assertThat(this.errorCallBackMessages.get(0))
+        .isEqualTo(
+            format(
+                ProductBatchValidator.PRODUCT_MASTER_VARIANT_DRAFT_IS_NULL, productDraft.getKey()));
   }
 
   @Test
