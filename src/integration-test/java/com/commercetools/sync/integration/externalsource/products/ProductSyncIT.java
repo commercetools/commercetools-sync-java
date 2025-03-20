@@ -1016,6 +1016,121 @@ class ProductSyncIT {
   }
 
   @Test
+  void sync_withNoChangesInIntegerAttribute_shouldNotUpdateTheProduct() {
+    // preparation
+    final List<ProductUpdateAction> updateActions = new ArrayList<>();
+    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
+        warningCallBack =
+            (exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage());
+
+    final ProductSyncOptions customOptions =
+        ProductSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT)
+            .errorCallback(
+                (exception, oldResource, newResource, actions) ->
+                    collectErrors(exception.getMessage(), exception.getCause()))
+            .warningCallback(warningCallBack)
+            .beforeUpdateCallback(
+                (actions, draft, old) -> {
+                  updateActions.addAll(actions);
+                  return actions;
+                })
+            .build();
+
+    final ProductDraft productDraft =
+        createProductDraftBuilder(
+                PRODUCT_KEY_1_RESOURCE_PATH,
+                ProductTypeResourceIdentifierBuilder.of().key(productType.getKey()).build())
+            .categories(emptyList())
+            .taxCategory((TaxCategoryResourceIdentifier) null)
+            .state((StateResourceIdentifier) null)
+            .build();
+
+    // Creating the attribute draft with the changes
+    final Attribute sortAttrDraft = AttributeBuilder.of().name("sort").value(10).build();
+
+    // Creating the product variant draft with the product reference attribute
+    final List<Attribute> attributes = singletonList(sortAttrDraft);
+
+    final ProductVariantDraft masterVariant =
+        ProductVariantDraftBuilder.of(productDraft.getMasterVariant())
+            .attributes(attributes)
+            .build();
+
+    final ProductDraft productDraftWithChangedAttributes =
+        ProductDraftBuilder.of(productDraft).masterVariant(masterVariant).build();
+
+    // test
+    final ProductSync productSync = new ProductSync(customOptions);
+    productSync.sync(singletonList(productDraftWithChangedAttributes)).toCompletableFuture().join();
+    final ProductSyncStatistics syncStatistics =
+        productSync
+            .sync(singletonList(productDraftWithChangedAttributes))
+            .toCompletableFuture()
+            .join();
+
+    assertThat(syncStatistics).hasValues(2, 0, 1, 0, 0);
+  }
+
+  @Test
+  void sync_withNoChangesInLenumAttribute_shouldNotUpdateTheProduct() {
+    // preparation
+    final List<ProductUpdateAction> updateActions = new ArrayList<>();
+    final TriConsumer<SyncException, Optional<ProductDraft>, Optional<ProductProjection>>
+        warningCallBack =
+            (exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage());
+
+    final ProductSyncOptions customOptions =
+        ProductSyncOptionsBuilder.of(TestClientUtils.CTP_TARGET_CLIENT)
+            .errorCallback(
+                (exception, oldResource, newResource, actions) ->
+                    collectErrors(exception.getMessage(), exception.getCause()))
+            .warningCallback(warningCallBack)
+            .beforeUpdateCallback(
+                (actions, draft, old) -> {
+                  updateActions.addAll(actions);
+                  return actions;
+                })
+            .build();
+
+    final ProductDraft productDraft =
+        createProductDraftBuilder(
+                PRODUCT_KEY_1_RESOURCE_PATH,
+                ProductTypeResourceIdentifierBuilder.of().key(productType.getKey()).build())
+            .categories(emptyList())
+            .taxCategory((TaxCategoryResourceIdentifier) null)
+            .state((StateResourceIdentifier) null)
+            .build();
+
+    // Creating the attribute draft with the changes
+    final Attribute technologyAttrDraft =
+        AttributeBuilder.of().name("technology").value("laser").build();
+
+    // Creating the product variant draft with the product reference attribute
+    final List<Attribute> attributes = singletonList(technologyAttrDraft);
+
+    final ProductVariantDraft masterVariant =
+        ProductVariantDraftBuilder.of(productDraft.getMasterVariant())
+            .attributes(attributes)
+            .build();
+
+    final ProductDraft productDraftWithChangedAttributes =
+        ProductDraftBuilder.of(productDraft).masterVariant(masterVariant).build();
+
+    // test
+    final ProductSync productSync = new ProductSync(customOptions);
+    productSync.sync(singletonList(productDraftWithChangedAttributes)).toCompletableFuture().join();
+    final ProductSyncStatistics syncStatistics =
+        productSync
+            .sync(singletonList(productDraftWithChangedAttributes))
+            .toCompletableFuture()
+            .join();
+
+    assertThat(syncStatistics).hasValues(2, 0, 1, 0, 0);
+  }
+
+  @Test
   void sync_withProductContainingAttributeChanges_shouldSyncProductCorrectly() {
     // preparation
     final List<ProductUpdateAction> updateActions = new ArrayList<>();

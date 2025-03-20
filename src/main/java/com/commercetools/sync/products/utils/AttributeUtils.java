@@ -20,8 +20,7 @@ public final class AttributeUtils {
    * converted value in the attribute.
    *
    * @param attribute - Attribute to replace it's value with a JSON representation
-   * @return - a {@link JsonNode} representing the attribute's value. extracted from the given
-   *     attribute or empty list if the attribute * doesn't contain reference types.
+   * @return - a {@link JsonNode} representing the attribute's value.
    */
   @Nonnull
   public static JsonNode replaceAttributeValueWithJsonAndReturnValue(
