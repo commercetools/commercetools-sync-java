@@ -27,6 +27,13 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
+### 10.0.6 - Mar 20, 2025
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.0.5...10.0.6) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.6/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.0.6/jar)
+- 🐞 **Bug Fixes** (1)
+  - Fix product attributes being updated even though they did not change (https://github.com/commercetools/commercetools-sync-java/issues/1200)
+
 ### 10.0.5 - Feb 8, 2024
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.0.4...10.0.5) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.5/) |
