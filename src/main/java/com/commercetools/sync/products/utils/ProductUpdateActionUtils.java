@@ -52,6 +52,7 @@ import com.commercetools.api.models.product.ProductUnpublishAction;
 import com.commercetools.api.models.product.ProductUpdateAction;
 import com.commercetools.api.models.product.ProductVariant;
 import com.commercetools.api.models.product.ProductVariantDraft;
+import com.commercetools.api.models.product.SearchKeyword;
 import com.commercetools.api.models.product.SearchKeywords;
 import com.commercetools.api.models.state.State;
 import com.commercetools.api.models.state.StateResourceIdentifier;
@@ -337,14 +338,23 @@ public final class ProductUpdateActionUtils {
     if (newSearchKeywords == null) {
       return Optional.empty();
     } else {
-      return buildUpdateAction(
-          oldSearchKeywords,
-          newSearchKeywords,
-          () ->
-              ProductSetSearchKeywordsActionBuilder.of()
-                  .searchKeywords(newSearchKeywords)
-                  .staged(true)
-                  .build());
+      // For some reasons, values for searchKeywords could be null or {} since Java SDK v17.28.0
+      // Even though they mean the same thing, they are not equals and would trigger update action
+      // Thus I had to do a manual comparison here.
+      final Map<String, List<SearchKeyword>> newSearchValues = newSearchKeywords.values();
+      final Map<String, List<SearchKeyword>> oldSearchValue = oldSearchKeywords.values();
+      if (newSearchValues == null && (oldSearchValue == null || oldSearchValue.size() == 0)) {
+        return Optional.empty();
+      } else {
+        return buildUpdateAction(
+            oldSearchKeywords,
+            newSearchKeywords,
+            () ->
+                ProductSetSearchKeywordsActionBuilder.of()
+                    .searchKeywords(newSearchKeywords)
+                    .staged(true)
+                    .build());
+      }
     }
   }
 
