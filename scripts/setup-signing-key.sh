@@ -6,9 +6,9 @@ set -e
 echo 'Decode decrypter'
 echo ${DECRYPTER} > decrypter.json
 echo 'Decode signing key'
-echo ${SIGNING_KEY} | base64 --decode > signing_key.enc
+echo ${SIGNING_KEY} > signing_key.enc
 echo 'Decode passphrase'
-echo ${PASSPHRASE} | base64 --decode > signing_passphrase.enc
+echo ${PASSPHRASE} > signing_passphrase.enc
 
 gcloud auth activate-service-account --key-file decrypter.json
 
