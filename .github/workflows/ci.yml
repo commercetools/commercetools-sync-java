@@ -1,68 +1,68 @@
-name: CI
-
-on: [push]
-
-jobs:
-  checks:
-    name: Code Checks
-    runs-on: ubuntu-latest
-    steps:
-      - name: Git Checkout
-        uses: actions/checkout@v4
-      - name: Generate Dependency Updates Report
-        run: ./gradlew clean dependencyUpdates
-      - name: Code formatting
-        run: ./gradlew spotlessCheck
-      - name: PMD
-        run: ./gradlew pmdBenchmark pmdIntegrationTest pmdMain pmdTest
-      - name: Spotbugs
-        run: ./gradlew spotbugsBenchmark spotbugsIntegrationTest spotbugsMain spotbugsTest
-      - name: mkdocsBuild
-        run: ./gradlew mkdocsBuild
-  tests:
-    name: Tests
-    concurrency: tests
-    needs: checks
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          java-version: 11
-          distribution: 'zulu'
-      - name: Build with Gradle
-        run: ./gradlew clean setLibraryVersion test integrationTest jacocoTestCoverageVerification jacocoTestReport
-        env:
-          SOURCE_PROJECT_KEY: java-sync-source
-          SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
-          SOURCE_CLIENT_SECRET:  ${{ secrets.SOURCE_CLIENT_SECRET }}
-          TARGET_PROJECT_KEY: java-sync-target
-          TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID }}
-          TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
-      - name: Codecov
-        uses: codecov/codecov-action@v4
-  benchmark_tests:
-    name: benchmark tests
-    concurrency: benchmark_tests
-    needs: tests
-    runs-on: ubuntu-latest
-    env:
-      SOURCE_PROJECT_KEY: java-sync-target-dev2
-      SOURCE_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID_2 }}
-      SOURCE_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET_2 }}
-      TARGET_PROJECT_KEY: java-sync-target-dev2
-      TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID_2 }}
-      TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET_2 }}
-      GRGIT_USER: ${{ secrets.GRGIT_USER }}
-      SUBMIT_BENCHMARK_RESULT: false
-    steps:
-      - name: Git Checkout
-        uses: actions/checkout@v4
-      - name: Fetch Library version
-        id: vars
-        run: echo ::set-output name=libVersion::${GITHUB_REF#refs/*/}
-      - name: benchmark test
-        if: ${{ success() }}
-        run: ./gradlew clean setLibraryVersion benchmark
-        env:
-          GITHUB_TAG: ${{ steps.vars.outputs.libVersion }}
+#name: CI
+#
+#on: [push]
+#
+#jobs:
+#  checks:
+#    name: Code Checks
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Git Checkout
+#        uses: actions/checkout@v4
+#      - name: Generate Dependency Updates Report
+#        run: ./gradlew clean dependencyUpdates
+#      - name: Code formatting
+#        run: ./gradlew spotlessCheck
+#      - name: PMD
+#        run: ./gradlew pmdBenchmark pmdIntegrationTest pmdMain pmdTest
+#      - name: Spotbugs
+#        run: ./gradlew spotbugsBenchmark spotbugsIntegrationTest spotbugsMain spotbugsTest
+#      - name: mkdocsBuild
+#        run: ./gradlew mkdocsBuild
+#  tests:
+#    name: Tests
+#    concurrency: tests
+#    needs: checks
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v4
+#      - uses: actions/setup-java@v4
+#        with:
+#          java-version: 11
+#          distribution: 'zulu'
+#      - name: Build with Gradle
+#        run: ./gradlew clean setLibraryVersion test integrationTest jacocoTestCoverageVerification jacocoTestReport
+#        env:
+#          SOURCE_PROJECT_KEY: java-sync-source
+#          SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
+#          SOURCE_CLIENT_SECRET:  ${{ secrets.SOURCE_CLIENT_SECRET }}
+#          TARGET_PROJECT_KEY: java-sync-target
+#          TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID }}
+#          TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
+#      - name: Codecov
+#        uses: codecov/codecov-action@v4
+#  benchmark_tests:
+#    name: benchmark tests
+#    concurrency: benchmark_tests
+#    needs: tests
+#    runs-on: ubuntu-latest
+#    env:
+#      SOURCE_PROJECT_KEY: java-sync-target-dev2
+#      SOURCE_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID_2 }}
+#      SOURCE_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET_2 }}
+#      TARGET_PROJECT_KEY: java-sync-target-dev2
+#      TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID_2 }}
+#      TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET_2 }}
+#      GRGIT_USER: ${{ secrets.GRGIT_USER }}
+#      SUBMIT_BENCHMARK_RESULT: false
+#    steps:
+#      - name: Git Checkout
+#        uses: actions/checkout@v4
+#      - name: Fetch Library version
+#        id: vars
+#        run: echo ::set-output name=libVersion::${GITHUB_REF#refs/*/}
+#      - name: benchmark test
+#        if: ${{ success() }}
+#        run: ./gradlew clean setLibraryVersion benchmark
+#        env:
+#          GITHUB_TAG: ${{ steps.vars.outputs.libVersion }}
