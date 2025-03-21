@@ -6,33 +6,33 @@ on:
       - test-new-release-branch
 
 jobs:
-  benchmark_tests:
-    name: benchmark tests
-    concurrency: benchmark_tests
-    runs-on: ubuntu-latest
-    env:
-      SOURCE_PROJECT_KEY: java-sync-target-dev2
-      SOURCE_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID_2 }}
-      SOURCE_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET_2 }}
-      TARGET_PROJECT_KEY: java-sync-target-dev2
-      TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID_2 }}
-      TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET_2 }}
-      GRGIT_USER: ${{ secrets.GRGIT_USER }}
-      SUBMIT_BENCHMARK_RESULT: true
-    steps:
-      - name: Git Checkout
-        uses: actions/checkout@v4
-      - name: Fetch Library version
-        id: vars
-        run: echo ::set-output name=libVersion::${GITHUB_REF#refs/*/}
-      - name: benchmark test
-        if: ${{ success() }}
-        run: ./gradlew clean setLibraryVersion benchmark
-        env:
-          GITHUB_TAG: ${{ steps.vars.outputs.libVersion }}
+#  benchmark_tests:
+#    name: benchmark tests
+#    concurrency: benchmark_tests
+#    runs-on: ubuntu-latest
+#    env:
+#      SOURCE_PROJECT_KEY: java-sync-target-dev2
+#      SOURCE_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID_2 }}
+#      SOURCE_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET_2 }}
+#      TARGET_PROJECT_KEY: java-sync-target-dev2
+#      TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID_2 }}
+#      TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET_2 }}
+#      GRGIT_USER: ${{ secrets.GRGIT_USER }}
+#      SUBMIT_BENCHMARK_RESULT: true
+#    steps:
+#      - name: Git Checkout
+#        uses: actions/checkout@v4
+#      - name: Fetch Library version
+#        id: vars
+#        run: echo ::set-output name=libVersion::${GITHUB_REF#refs/*/}
+#      - name: benchmark test
+#        if: ${{ success() }}
+#        run: ./gradlew clean setLibraryVersion benchmark
+#        env:
+#          GITHUB_TAG: ${{ steps.vars.outputs.libVersion }}
   deployment:
     name: deployment
-    needs: benchmark_tests
+#    needs: benchmark_tests
     runs-on: ubuntu-latest
     env:
       GRGIT_USER: ${{ secrets.GRGIT_USER }}
