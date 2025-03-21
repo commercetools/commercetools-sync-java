@@ -14,8 +14,15 @@
       
         <link rel="canonical" href="https://commercetools.github.io/commercetools-sync-java/doc/usage/CUSTOMER_SYNC/">
       
+      
+        <link rel="prev" href="../CUSTOM_OBJECT_SYNC/">
+      
+      
+        <link rel="next" href="../SHOPPING_LIST_SYNC/">
+      
+      
       <link rel="icon" href="../../images/ct.png">
-      <meta name="generator" content="mkdocs-1.4.1, mkdocs-material-8.5.7">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.17">
     
     
       
@@ -23,19 +30,17 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.20d9efc8.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.bcfcd587.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.cbb835fc.min.css">
-        
-          
-          
-          <meta name="theme-color" content="#ffffff">
-        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
+
     
+    
+      
     
     
       
@@ -62,9 +67,8 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="white" data-md-color-accent="orange">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="orange">
   
-    
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -84,7 +88,9 @@
     
       
 
-<header class="md-header" data-md-component="header">
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../.." title="commercetools-sync-java" class="md-header__button md-logo" aria-label="commercetools-sync-java" data-md-component="logo">
       
@@ -92,6 +98,7 @@
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
+      
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
     </label>
     <div class="md-header__title" data-md-component="header-title">
@@ -111,9 +118,13 @@
       </div>
     </div>
     
+      
+    
+    
     
     
       <label class="md-header__button md-icon" for="__search">
+        
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
       </label>
       <div class="md-search" data-md-component="search" role="dialog">
@@ -122,12 +133,15 @@
     <form class="md-search__form" name="search">
       <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
+        
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
       </label>
       <nav class="md-search__options" aria-label="Search">
         
         <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
         </button>
       </nav>
@@ -139,7 +153,7 @@
           <div class="md-search-result__meta">
             Initializing search
           </div>
-          <ol class="md-search-result__list"></ol>
+          <ol class="md-search-result__list" role="presentation"></ol>
         </div>
       </div>
     </div>
@@ -151,7 +165,7 @@
         <a href="http://github.com/commercetools/commercetools-sync-java" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
     commercetools-sync-java
@@ -181,6 +195,7 @@
                     
 
 
+
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="commercetools-sync-java" class="md-nav__button md-logo" aria-label="commercetools-sync-java" data-md-component="logo">
@@ -195,7 +210,7 @@
       <a href="http://github.com/commercetools/commercetools-sync-java" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
     commercetools-sync-java
@@ -207,14 +222,19 @@
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="../.." class="md-nav__link">
-        Overview
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
       </a>
     </li>
   
@@ -222,196 +242,286 @@
     
       
       
-      
-
   
   
     
   
   
+  
+    
+    
+    
     
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_2">
-          User guide
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="User guide" data-md-level="1">
-        <label class="md-nav__title" for="__nav_2">
-          <span class="md-nav__icon md-icon"></span>
-          User guide
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
           
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    User guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            User guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../QUICK_START/" class="md-nav__link">
-        Quick Start
+        
+  
+  <span class="md-ellipsis">
+    Quick Start
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../PRODUCT_SYNC/" class="md-nav__link">
-        Product Sync
+        
+  
+  <span class="md-ellipsis">
+    Product Sync
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../PRODUCT_TYPE_SYNC/" class="md-nav__link">
-        ProductType Sync
+        
+  
+  <span class="md-ellipsis">
+    ProductType Sync
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../TYPE_SYNC/" class="md-nav__link">
-        Type Sync
+        
+  
+  <span class="md-ellipsis">
+    Type Sync
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../CATEGORY_SYNC/" class="md-nav__link">
-        Category Sync
+        
+  
+  <span class="md-ellipsis">
+    Category Sync
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../INVENTORY_SYNC/" class="md-nav__link">
-        InventoryEntry Sync
+        
+  
+  <span class="md-ellipsis">
+    InventoryEntry Sync
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../CART_DISCOUNT_SYNC/" class="md-nav__link">
-        CartDiscount Sync
+        
+  
+  <span class="md-ellipsis">
+    CartDiscount Sync
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../TAX_CATEGORY_SYNC/" class="md-nav__link">
-        TaxCategory Sync
+        
+  
+  <span class="md-ellipsis">
+    TaxCategory Sync
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../STATE_SYNC/" class="md-nav__link">
-        State Sync
+        
+  
+  <span class="md-ellipsis">
+    State Sync
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../CUSTOM_OBJECT_SYNC/" class="md-nav__link">
-        CustomObject Sync
+        
+  
+  <span class="md-ellipsis">
+    CustomObject Sync
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
   
   
     
   
   
+  
     <li class="md-nav__item md-nav__item--active">
       
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
         
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Customer Sync
+          
+  
+  <span class="md-ellipsis">
+    Customer Sync
+  </span>
+  
+
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Customer Sync
+        
+  
+  <span class="md-ellipsis">
+    Customer Sync
+  </span>
+  
+
       </a>
       
         
@@ -431,7 +541,9 @@
       
         <li class="md-nav__item">
   <a href="#usage" class="md-nav__link">
-    Usage
+    <span class="md-ellipsis">
+      Usage
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Usage">
@@ -439,7 +551,9 @@
         
           <li class="md-nav__item">
   <a href="#prerequisites" class="md-nav__link">
-    Prerequisites
+    <span class="md-ellipsis">
+      Prerequisites
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Prerequisites">
@@ -447,21 +561,27 @@
         
           <li class="md-nav__item">
   <a href="#projectapiroot" class="md-nav__link">
-    ProjectApiRoot
+    <span class="md-ellipsis">
+      ProjectApiRoot
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#required-fields" class="md-nav__link">
-    Required Fields
+    <span class="md-ellipsis">
+      Required Fields
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#reference-resolution" class="md-nav__link">
-    Reference Resolution
+    <span class="md-ellipsis">
+      Reference Resolution
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Reference Resolution">
@@ -469,14 +589,18 @@
         
           <li class="md-nav__item">
   <a href="#syncing-from-a-commercetools-project" class="md-nav__link">
-    Syncing from a commercetools project
+    <span class="md-ellipsis">
+      Syncing from a commercetools project
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#syncing-from-an-external-resource" class="md-nav__link">
-    Syncing from an external resource
+    <span class="md-ellipsis">
+      Syncing from an external resource
+    </span>
   </a>
   
 </li>
@@ -488,7 +612,9 @@
         
           <li class="md-nav__item">
   <a href="#syncoptions" class="md-nav__link">
-    SyncOptions
+    <span class="md-ellipsis">
+      SyncOptions
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="SyncOptions">
@@ -496,42 +622,54 @@
         
           <li class="md-nav__item">
   <a href="#errorcallback" class="md-nav__link">
-    errorCallback
+    <span class="md-ellipsis">
+      errorCallback
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#warningcallback" class="md-nav__link">
-    warningCallback
+    <span class="md-ellipsis">
+      warningCallback
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#beforeupdatecallback" class="md-nav__link">
-    beforeUpdateCallback
+    <span class="md-ellipsis">
+      beforeUpdateCallback
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#beforecreatecallback" class="md-nav__link">
-    beforeCreateCallback
+    <span class="md-ellipsis">
+      beforeCreateCallback
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#batchsize" class="md-nav__link">
-    batchSize
+    <span class="md-ellipsis">
+      batchSize
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#cachesize" class="md-nav__link">
-    cacheSize
+    <span class="md-ellipsis">
+      cacheSize
+    </span>
   </a>
   
 </li>
@@ -548,7 +686,9 @@
         
           <li class="md-nav__item">
   <a href="#running-the-sync" class="md-nav__link">
-    Running the sync
+    <span class="md-ellipsis">
+      Running the sync
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Running the sync">
@@ -556,7 +696,9 @@
         
           <li class="md-nav__item">
   <a href="#more-examples-of-how-to-use-the-sync" class="md-nav__link">
-    More examples of how to use the sync
+    <span class="md-ellipsis">
+      More examples of how to use the sync
+    </span>
   </a>
   
 </li>
@@ -568,14 +710,18 @@
         
           <li class="md-nav__item">
   <a href="#build-all-update-actions" class="md-nav__link">
-    Build all update actions
+    <span class="md-ellipsis">
+      Build all update actions
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#build-particular-update-actions" class="md-nav__link">
-    Build particular update action(s)
+    <span class="md-ellipsis">
+      Build particular update action(s)
+    </span>
   </a>
   
 </li>
@@ -587,7 +733,9 @@
       
         <li class="md-nav__item">
   <a href="#caveats" class="md-nav__link">
-    Caveats
+    <span class="md-ellipsis">
+      Caveats
+    </span>
   </a>
   
 </li>
@@ -599,113 +747,157 @@
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../SHOPPING_LIST_SYNC/" class="md-nav__link">
-        ShoppingList Sync
+        
+  
+  <span class="md-ellipsis">
+    ShoppingList Sync
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     
+    
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_13" type="checkbox" id="__nav_2_13" >
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_2_13">
-          Advanced
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Advanced" data-md-level="2">
-        <label class="md-nav__title" for="__nav_2_13">
-          <span class="md-nav__icon md-icon"></span>
-          Advanced
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_13" >
+        
           
+          <label class="md-nav__link" for="__nav_2_13" id="__nav_2_13_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Advanced
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_13">
+            <span class="md-nav__icon md-icon"></span>
+            Advanced
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../SYNC_OPTIONS/" class="md-nav__link">
-        Sync Options
+        
+  
+  <span class="md-ellipsis">
+    Sync Options
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../IMPORTANT_USAGE_TIPS/" class="md-nav__link">
-        Usage Tips
+        
+  
+  <span class="md-ellipsis">
+    Usage Tips
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../CLEANUP_GUIDE/" class="md-nav__link">
-        Cleanup Unresolved References
+        
+  
+  <span class="md-ellipsis">
+    Cleanup Unresolved References
+  </span>
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="https://commercetools.github.io/commercetools-sync-java/v/9.0.3/" class="md-nav__link">
-        Javadoc
+        
+  
+  <span class="md-ellipsis">
+    Javadoc
+  </span>
+  
+
       </a>
     </li>
   
@@ -713,14 +905,19 @@
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="../../RELEASE_NOTES/" class="md-nav__link">
-        Release notes
+        
+  
+  <span class="md-ellipsis">
+    Release notes
+  </span>
+  
+
       </a>
     </li>
   
@@ -728,14 +925,19 @@
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="https://github.com/commercetools/commercetools-sync-java/issues" class="md-nav__link">
-        Issues
+        
+  
+  <span class="md-ellipsis">
+    Issues
+  </span>
+  
+
       </a>
     </li>
   
@@ -743,14 +945,19 @@
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="https://commercetools.github.io/commercetools-sync-java/benchmarks/" class="md-nav__link">
-        Benchmarks
+        
+  
+  <span class="md-ellipsis">
+    Benchmarks
+  </span>
+  
+
       </a>
     </li>
   
@@ -784,7 +991,9 @@
       
         <li class="md-nav__item">
   <a href="#usage" class="md-nav__link">
-    Usage
+    <span class="md-ellipsis">
+      Usage
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Usage">
@@ -792,7 +1001,9 @@
         
           <li class="md-nav__item">
   <a href="#prerequisites" class="md-nav__link">
-    Prerequisites
+    <span class="md-ellipsis">
+      Prerequisites
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Prerequisites">
@@ -800,21 +1011,27 @@
         
           <li class="md-nav__item">
   <a href="#projectapiroot" class="md-nav__link">
-    ProjectApiRoot
+    <span class="md-ellipsis">
+      ProjectApiRoot
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#required-fields" class="md-nav__link">
-    Required Fields
+    <span class="md-ellipsis">
+      Required Fields
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#reference-resolution" class="md-nav__link">
-    Reference Resolution
+    <span class="md-ellipsis">
+      Reference Resolution
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Reference Resolution">
@@ -822,14 +1039,18 @@
         
           <li class="md-nav__item">
   <a href="#syncing-from-a-commercetools-project" class="md-nav__link">
-    Syncing from a commercetools project
+    <span class="md-ellipsis">
+      Syncing from a commercetools project
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#syncing-from-an-external-resource" class="md-nav__link">
-    Syncing from an external resource
+    <span class="md-ellipsis">
+      Syncing from an external resource
+    </span>
   </a>
   
 </li>
@@ -841,7 +1062,9 @@
         
           <li class="md-nav__item">
   <a href="#syncoptions" class="md-nav__link">
-    SyncOptions
+    <span class="md-ellipsis">
+      SyncOptions
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="SyncOptions">
@@ -849,42 +1072,54 @@
         
           <li class="md-nav__item">
   <a href="#errorcallback" class="md-nav__link">
-    errorCallback
+    <span class="md-ellipsis">
+      errorCallback
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#warningcallback" class="md-nav__link">
-    warningCallback
+    <span class="md-ellipsis">
+      warningCallback
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#beforeupdatecallback" class="md-nav__link">
-    beforeUpdateCallback
+    <span class="md-ellipsis">
+      beforeUpdateCallback
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#beforecreatecallback" class="md-nav__link">
-    beforeCreateCallback
+    <span class="md-ellipsis">
+      beforeCreateCallback
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#batchsize" class="md-nav__link">
-    batchSize
+    <span class="md-ellipsis">
+      batchSize
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#cachesize" class="md-nav__link">
-    cacheSize
+    <span class="md-ellipsis">
+      cacheSize
+    </span>
   </a>
   
 </li>
@@ -901,7 +1136,9 @@
         
           <li class="md-nav__item">
   <a href="#running-the-sync" class="md-nav__link">
-    Running the sync
+    <span class="md-ellipsis">
+      Running the sync
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Running the sync">
@@ -909,7 +1146,9 @@
         
           <li class="md-nav__item">
   <a href="#more-examples-of-how-to-use-the-sync" class="md-nav__link">
-    More examples of how to use the sync
+    <span class="md-ellipsis">
+      More examples of how to use the sync
+    </span>
   </a>
   
 </li>
@@ -921,14 +1160,18 @@
         
           <li class="md-nav__item">
   <a href="#build-all-update-actions" class="md-nav__link">
-    Build all update actions
+    <span class="md-ellipsis">
+      Build all update actions
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#build-particular-update-actions" class="md-nav__link">
-    Build particular update action(s)
+    <span class="md-ellipsis">
+      Build particular update action(s)
+    </span>
   </a>
   
 </li>
@@ -940,7 +1183,9 @@
       
         <li class="md-nav__item">
   <a href="#caveats" class="md-nav__link">
-    Caveats
+    <span class="md-ellipsis">
+      Caveats
+    </span>
   </a>
   
 </li>
@@ -959,10 +1204,8 @@
                 
                   
 
-  <a href="http://github.com/commercetools/commercetools-sync-java/edit/master/docs/usage/CUSTOMER_SYNC.md" title="Edit this page" class="md-content__button md-icon">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
-  </a>
+  
+  
 
 
 <h1 id="customer-sync">Customer Sync<a class="headerlink" href="#customer-sync" title="Permanent link">&para;</a></h1>
@@ -1005,13 +1248,13 @@ against a <a href="https://docs.commercetools.com/api/projects/customers#custome
 <p>Use the <a href="https://github.com/commercetools/commercetools-sync-java/blob/java-sdk-v2-product-sync-migration/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java">ClientConfigurationUtils</a> which apply the best practices for <code>ProjectApiRoot</code> creation.
 To create <code>ClientCredentials</code> which are required for creating a client please use the <code>ClientCredentialsBuilder</code> provided in java-sdk-v2 <a href="https://github.com/commercetools/commercetools-sdk-java-v2/blob/main/rmf/rmf-java-base/src/main/java/io/vrap/rmf/base/client/oauth2/ClientCredentialsBuilder.java">Client OAUTH2 package</a>
 If you have custom requirements for the client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
-<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ClientCredentials</span><span class="w"> </span><span class="n">clientCredentials</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
-<span class="w">        </span><span class="k">new</span><span class="w"> </span><span class="n">ClientCredentialsBuilder</span><span class="p">()</span><span class="w"></span>
-<span class="w">            </span><span class="p">.</span><span class="na">withClientId</span><span class="p">(</span><span class="s">&quot;client-id&quot;</span><span class="p">)</span><span class="w"></span>
-<span class="w">            </span><span class="p">.</span><span class="na">withClientSecret</span><span class="p">(</span><span class="s">&quot;client-secret&quot;</span><span class="p">)</span><span class="w"></span>
-<span class="w">            </span><span class="p">.</span><span class="na">withScopes</span><span class="p">(</span><span class="s">&quot;scopes&quot;</span><span class="p">)</span><span class="w"></span>
-<span class="w">            </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
-<span class="kd">final</span><span class="w"> </span><span class="n">ProjectApiRoot</span><span class="w"> </span><span class="n">apiRoot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ClientConfigurationUtils</span><span class="p">.</span><span class="na">createClient</span><span class="p">(</span><span class="s">&quot;project-key&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">clientCredentials</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;auth-url&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;api-url&quot;</span><span class="p">);</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">ClientCredentials</span><span class="w"> </span><span class="n">clientCredentials</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="k">new</span><span class="w"> </span><span class="n">ClientCredentialsBuilder</span><span class="p">()</span>
+<span class="w">            </span><span class="p">.</span><span class="na">withClientId</span><span class="p">(</span><span class="s">&quot;client-id&quot;</span><span class="p">)</span>
+<span class="w">            </span><span class="p">.</span><span class="na">withClientSecret</span><span class="p">(</span><span class="s">&quot;client-secret&quot;</span><span class="p">)</span>
+<span class="w">            </span><span class="p">.</span><span class="na">withScopes</span><span class="p">(</span><span class="s">&quot;scopes&quot;</span><span class="p">)</span>
+<span class="w">            </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
+<span class="kd">final</span><span class="w"> </span><span class="n">ProjectApiRoot</span><span class="w"> </span><span class="n">apiRoot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ClientConfigurationUtils</span><span class="p">.</span><span class="na">createClient</span><span class="p">(</span><span class="s">&quot;project-key&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">clientCredentials</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;auth-url&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;api-url&quot;</span><span class="p">);</span>
 </code></pre></div>
 <h4 id="required-fields">Required Fields<a class="headerlink" href="#required-fields" title="Permanent link">&para;</a></h4>
 <p>The following fields are <strong>required</strong> to be set in, otherwise, they won't be matched by sync:</p>
@@ -1043,22 +1286,22 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 <table>
 <thead>
 <tr>
-<th align="left">Reference Field</th>
-<th align="left">Type</th>
+<th style="text-align: left;">Reference Field</th>
+<th style="text-align: left;">Type</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="left"><code>customerGroup</code></td>
-<td align="left">CustomerGroupResourceIdentifier</td>
+<td style="text-align: left;"><code>customerGroup</code></td>
+<td style="text-align: left;">CustomerGroupResourceIdentifier</td>
 </tr>
 <tr>
-<td align="left"><code>stores</code></td>
-<td align="left">List of StoreResourceIdentifier</td>
+<td style="text-align: left;"><code>stores</code></td>
+<td style="text-align: left;">List of StoreResourceIdentifier</td>
 </tr>
 <tr>
-<td align="left"><code>custom.type</code></td>
-<td align="left">TypeResourceIdentifier</td>
+<td style="text-align: left;"><code>custom.type</code></td>
+<td style="text-align: left;">TypeResourceIdentifier</td>
 </tr>
 </tbody>
 </table>
@@ -1068,52 +1311,52 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 <h5 id="syncing-from-a-commercetools-project">Syncing from a commercetools project<a class="headerlink" href="#syncing-from-a-commercetools-project" title="Permanent link">&para;</a></h5>
 <p>When syncing from a source commercetools project, you can use <a href="https://github.com/commercetools/commercetools-sync-java/blob/java-sdk-v2-product-sync-migration/src/main/java/com/commercetools/sync/customers/utils/CustomerTransformUtils.java#L42"><code>toCustomerDrafts</code></a>
  method that transforms(resolves by querying and caching key-id pairs) and maps from a <code>Customer</code> to <code>CustomerDraft</code> using cache in order to make them ready for reference resolution by the sync, for example: </p>
-<div class="highlight"><pre><span></span><code><span class="c1">// Build ByProjectKeyCustomersGet for fetching customers from a source CTP project without any references expanded for the sync:</span><span class="w"></span>
-<span class="kd">final</span><span class="w"> </span><span class="n">ByProjectKeyCustomersGet</span><span class="w"> </span><span class="n">byProjectKeyCustomersGet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="na">customers</span><span class="p">().</span><span class="na">get</span><span class="p">();</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="c1">// Build ByProjectKeyCustomersGet for fetching customers from a source CTP project without any references expanded for the sync:</span>
+<span class="kd">final</span><span class="w"> </span><span class="n">ByProjectKeyCustomersGet</span><span class="w"> </span><span class="n">byProjectKeyCustomersGet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="na">customers</span><span class="p">().</span><span class="na">get</span><span class="p">();</span>
 
-<span class="c1">// Query all customers (NOTE this is just for example, please adjust your logic)</span><span class="w"></span>
-<span class="kd">final</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Customer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">customers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">QueryUtils</span><span class="p">.</span><span class="na">queryAll</span><span class="p">(</span><span class="n">byProjectKeyCustomersGet</span><span class="p">,</span><span class="w"></span>
-<span class="w">            </span><span class="p">(</span><span class="n">customers</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">customers</span><span class="p">)</span><span class="w"></span>
-<span class="w">            </span><span class="p">.</span><span class="na">thenApply</span><span class="p">(</span><span class="n">lists</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">lists</span><span class="p">.</span><span class="na">stream</span><span class="p">().</span><span class="na">flatMap</span><span class="p">(</span><span class="n">List</span><span class="p">::</span><span class="n">stream</span><span class="p">).</span><span class="na">collect</span><span class="p">(</span><span class="n">Collectors</span><span class="p">.</span><span class="na">toList</span><span class="p">()))</span><span class="w"></span>
-<span class="w">            </span><span class="p">.</span><span class="na">toCompletableFuture</span><span class="p">()</span><span class="w"></span>
-<span class="w">            </span><span class="p">.</span><span class="na">join</span><span class="p">();</span><span class="w"></span>
+<span class="c1">// Query all customers (NOTE this is just for example, please adjust your logic)</span>
+<span class="kd">final</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Customer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">customers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">QueryUtils</span><span class="p">.</span><span class="na">queryAll</span><span class="p">(</span><span class="n">byProjectKeyCustomersGet</span><span class="p">,</span>
+<span class="w">            </span><span class="p">(</span><span class="n">customers</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">customers</span><span class="p">)</span>
+<span class="w">            </span><span class="p">.</span><span class="na">thenApply</span><span class="p">(</span><span class="n">lists</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">lists</span><span class="p">.</span><span class="na">stream</span><span class="p">().</span><span class="na">flatMap</span><span class="p">(</span><span class="n">List</span><span class="p">::</span><span class="n">stream</span><span class="p">).</span><span class="na">collect</span><span class="p">(</span><span class="n">Collectors</span><span class="p">.</span><span class="na">toList</span><span class="p">()))</span>
+<span class="w">            </span><span class="p">.</span><span class="na">toCompletableFuture</span><span class="p">()</span>
+<span class="w">            </span><span class="p">.</span><span class="na">join</span><span class="p">();</span>
 </code></pre></div>
 <p>In order to transform and map the <code>Customer</code> to <code>CustomerDraft</code>, 
 Utils method <code>toCustomerDrafts</code> requires <code>projectApiRoot</code>, implementation of <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ReferenceIdToKeyCache.java"><code>ReferenceIdToKeyCache</code></a> and <code>customers</code> as parameters.
 For cache implementation, You can use your own cache implementation or use the class in the library - which implements the cache using caffeine library with an LRU (Least Recently Used) based cache eviction strategy<a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/CaffeineReferenceIdToKeyCacheImpl.java"><code>CaffeineReferenceIdToKeyCacheImpl</code></a>.
 Example as shown below:</p>
-<div class="highlight"><pre><span></span><code><span class="c1">//Implement the cache using library class.</span><span class="w"></span>
-<span class="kd">final</span><span class="w"> </span><span class="n">ReferenceIdToKeyCache</span><span class="w"> </span><span class="n">referenceIdToKeyCache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">CaffeineReferenceIdToKeyCacheImpl</span><span class="p">();</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="c1">//Implement the cache using library class.</span>
+<span class="kd">final</span><span class="w"> </span><span class="n">ReferenceIdToKeyCache</span><span class="w"> </span><span class="n">referenceIdToKeyCache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">CaffeineReferenceIdToKeyCacheImpl</span><span class="p">();</span>
 
-<span class="c1">//For every reference fetch its key using id, cache it and map from Customer to CustomerDraft. With help of the cache same reference keys can be reused.</span><span class="w"></span>
-<span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">CustomerDraft</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">customerDrafts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerTransformUtils</span><span class="p">.</span><span class="na">toCustomerDrafts</span><span class="p">(</span><span class="n">client</span><span class="p">,</span><span class="w"> </span><span class="n">referenceIdToKeyCache</span><span class="p">,</span><span class="w"> </span><span class="n">customers</span><span class="p">);</span><span class="w"></span>
+<span class="c1">//For every reference fetch its key using id, cache it and map from Customer to CustomerDraft. With help of the cache same reference keys can be reused.</span>
+<span class="n">CompletableFuture</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">CustomerDraft</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">customerDrafts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerTransformUtils</span><span class="p">.</span><span class="na">toCustomerDrafts</span><span class="p">(</span><span class="n">client</span><span class="p">,</span><span class="w"> </span><span class="n">referenceIdToKeyCache</span><span class="p">,</span><span class="w"> </span><span class="n">customers</span><span class="p">);</span>
 </code></pre></div>
 <h5 id="syncing-from-an-external-resource">Syncing from an external resource<a class="headerlink" href="#syncing-from-an-external-resource" title="Permanent link">&para;</a></h5>
 <ul>
 <li>When syncing from an external resource, <code>ResourceIdentifier</code>s with their <code>key</code>s have to be supplied as following example:</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">CustomFieldsDraft</span><span class="w"> </span><span class="n">customFields</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomFieldsDraftBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">()</span><span class="w"></span>
-<span class="w">                                       </span><span class="p">.</span><span class="na">type</span><span class="p">(</span><span class="n">TypeResourceIdentifierBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;type-key&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">())</span><span class="w"> </span><span class="c1">// note that custom type provided with key</span><span class="w"></span>
-<span class="w">                                       </span><span class="p">.</span><span class="na">fields</span><span class="p">(</span><span class="n">FieldContainerBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">values</span><span class="p">(</span><span class="n">Collections</span><span class="p">.</span><span class="na">emptyMap</span><span class="p">()).</span><span class="na">build</span><span class="p">())</span><span class="w"></span>
-<span class="w">                                       </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
-<span class="kd">final</span><span class="w"> </span><span class="n">AddressDraft</span><span class="w"> </span><span class="n">address</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AddressDraftBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">()</span><span class="w"></span>
-<span class="w">                                                </span><span class="p">.</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;address-key-1&quot;</span><span class="p">)</span><span class="w"> </span><span class="c1">// note that addresses has to be provided with their keys</span><span class="w"></span>
-<span class="w">                                                </span><span class="p">.</span><span class="na">country</span><span class="p">(</span><span class="s">&quot;DE&quot;</span><span class="p">)</span><span class="w"></span>
-<span class="w">                                                </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
-<span class="kd">final</span><span class="w"> </span><span class="n">CustomerDraft</span><span class="w"> </span><span class="n">customerDraft</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerDraftBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">()</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">email</span><span class="p">(</span><span class="s">&quot;email@example.com&quot;</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">password</span><span class="p">(</span><span class="s">&quot;password&quot;</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;customer-key&quot;</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">customerGroup</span><span class="p">(</span><span class="n">CustomerGroupRescourceIdentifierBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;customer-group-key&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">())</span><span class="w"> </span><span class="c1">// note that customergroup reference provided with key</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">addresses</span><span class="p">(</span><span class="n">address</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">custom</span><span class="p">(</span><span class="n">customFields</span><span class="p">)</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">stores</span><span class="p">(</span><span class="n">StoresResourceIdentifierBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;store-key1&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">(),</span><span class="w"> </span><span class="n">StoresResourceIdentifierBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;store-key2&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">())</span><span class="w"> </span><span class="c1">// note that store reference provided with key</span><span class="w"></span>
-<span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">CustomFieldsDraft</span><span class="w"> </span><span class="n">customFields</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomFieldsDraftBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">()</span>
+<span class="w">                                       </span><span class="p">.</span><span class="na">type</span><span class="p">(</span><span class="n">TypeResourceIdentifierBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;type-key&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">())</span><span class="w"> </span><span class="c1">// note that custom type provided with key</span>
+<span class="w">                                       </span><span class="p">.</span><span class="na">fields</span><span class="p">(</span><span class="n">FieldContainerBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">values</span><span class="p">(</span><span class="n">Collections</span><span class="p">.</span><span class="na">emptyMap</span><span class="p">()).</span><span class="na">build</span><span class="p">())</span>
+<span class="w">                                       </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
+<span class="kd">final</span><span class="w"> </span><span class="n">AddressDraft</span><span class="w"> </span><span class="n">address</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AddressDraftBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">()</span>
+<span class="w">                                                </span><span class="p">.</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;address-key-1&quot;</span><span class="p">)</span><span class="w"> </span><span class="c1">// note that addresses has to be provided with their keys</span>
+<span class="w">                                                </span><span class="p">.</span><span class="na">country</span><span class="p">(</span><span class="s">&quot;DE&quot;</span><span class="p">)</span>
+<span class="w">                                                </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
+<span class="kd">final</span><span class="w"> </span><span class="n">CustomerDraft</span><span class="w"> </span><span class="n">customerDraft</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerDraftBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="na">email</span><span class="p">(</span><span class="s">&quot;email@example.com&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">password</span><span class="p">(</span><span class="s">&quot;password&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;customer-key&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">customerGroup</span><span class="p">(</span><span class="n">CustomerGroupRescourceIdentifierBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;customer-group-key&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">())</span><span class="w"> </span><span class="c1">// note that customergroup reference provided with key</span>
+<span class="w">        </span><span class="p">.</span><span class="na">addresses</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">custom</span><span class="p">(</span><span class="n">customFields</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">stores</span><span class="p">(</span><span class="n">StoresResourceIdentifierBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;store-key1&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">(),</span><span class="w"> </span><span class="n">StoresResourceIdentifierBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">().</span><span class="na">key</span><span class="p">(</span><span class="s">&quot;store-key2&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">())</span><span class="w"> </span><span class="c1">// note that store reference provided with key</span>
+<span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
 <h4 id="syncoptions">SyncOptions<a class="headerlink" href="#syncoptions" title="Permanent link">&para;</a></h4>
 <p>After the <code>ProjectApiRoot</code> is set up, a <code>CustomerSyncOptions</code> should be built as follows:
-<div class="highlight"><pre><span></span><code><span class="c1">// instantiating a CustomerSyncOptions</span><span class="w"></span>
-<span class="kd">final</span><span class="w"> </span><span class="n">CustomerSyncOptions</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="c1">// instantiating a CustomerSyncOptions</span>
+<span class="kd">final</span><span class="w"> </span><span class="n">CustomerSyncOptions</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div></p>
 <p><code>SyncOptions</code> is an object which provides a place for users to add certain configurations to customize the sync process.
 Available configurations:</p>
@@ -1127,11 +1370,11 @@ following context about the error-event:</p>
 <li>customer of the target project (only provided if an existing customer could be found)</li>
 <li>the update-actions, which failed (only provided if an existing customer could be found)</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Logger</span><span class="w"> </span><span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LoggerFactory</span><span class="p">.</span><span class="na">getLogger</span><span class="p">(</span><span class="n">CustomerSync</span><span class="p">.</span><span class="na">class</span><span class="p">);</span><span class="w"></span>
-<span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">CustomerSyncOptions</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerSyncOptionsBuilder</span><span class="w"></span>
-<span class="w">         </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">)</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Logger</span><span class="w"> </span><span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LoggerFactory</span><span class="p">.</span><span class="na">getLogger</span><span class="p">(</span><span class="n">CustomerSync</span><span class="p">.</span><span class="na">class</span><span class="p">);</span>
+<span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">CustomerSyncOptions</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerSyncOptionsBuilder</span>
+<span class="w">         </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">)</span>
 <span class="w">         </span><span class="p">.</span><span class="na">errorCallback</span><span class="p">((</span><span class="n">syncException</span><span class="p">,</span><span class="w"> </span><span class="n">draft</span><span class="p">,</span><span class="w"> </span><span class="n">customer</span><span class="p">,</span><span class="w"> </span><span class="n">updateActions</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
-<span class="w">            </span><span class="n">logger</span><span class="p">.</span><span class="na">error</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">SyncException</span><span class="p">(</span><span class="s">&quot;My customized message&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">syncException</span><span class="p">)).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="w">            </span><span class="n">logger</span><span class="p">.</span><span class="na">error</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">SyncException</span><span class="p">(</span><span class="s">&quot;My customized message&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">syncException</span><span class="p">)).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
 <h5 id="warningcallback">warningCallback<a class="headerlink" href="#warningcallback" title="Permanent link">&para;</a></h5>
 <p>A callback is called whenever a warning event occurs during the sync process. Each resource executes its own 
@@ -1142,11 +1385,11 @@ following context about the warning message:</p>
 <li>customer draft from the source </li>
 <li>customer of the target project (only provided if an existing customer could be found)</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Logger</span><span class="w"> </span><span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LoggerFactory</span><span class="p">.</span><span class="na">getLogger</span><span class="p">(</span><span class="n">CustomerSync</span><span class="p">.</span><span class="na">class</span><span class="p">);</span><span class="w"></span>
-<span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">CustomerSyncOptions</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerSyncOptionsBuilder</span><span class="w"></span>
-<span class="w">         </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">)</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">Logger</span><span class="w"> </span><span class="n">logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LoggerFactory</span><span class="p">.</span><span class="na">getLogger</span><span class="p">(</span><span class="n">CustomerSync</span><span class="p">.</span><span class="na">class</span><span class="p">);</span>
+<span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">CustomerSyncOptions</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerSyncOptionsBuilder</span>
+<span class="w">         </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">)</span>
 <span class="w">         </span><span class="p">.</span><span class="na">warningCallback</span><span class="p">((</span><span class="n">syncException</span><span class="p">,</span><span class="w"> </span><span class="n">draft</span><span class="p">,</span><span class="w"> </span><span class="n">customer</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span>
-<span class="w">            </span><span class="n">logger</span><span class="p">.</span><span class="na">warn</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">SyncException</span><span class="p">(</span><span class="s">&quot;My customized message&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">syncException</span><span class="p">)).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="w">            </span><span class="n">logger</span><span class="p">.</span><span class="na">warn</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">SyncException</span><span class="p">(</span><span class="s">&quot;My customized message&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">syncException</span><span class="p">)).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
 <h5 id="beforeupdatecallback">beforeUpdateCallback<a class="headerlink" href="#beforeupdatecallback" title="Permanent link">&para;</a></h5>
 <p>During the sync process, if a target customer and a customer draft are matched, this callback can be used to 
@@ -1157,18 +1400,18 @@ update actions array with custom actions or discard unwanted actions. The callba
 <li>customer from the target project</li>
 <li>update actions that were calculated after comparing both</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="c1">// Example: Ignore update actions which contain setting of lastName action</span><span class="w"></span>
-<span class="kd">final</span><span class="w"> </span><span class="n">TriFunction</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">CustomerUpdateAction</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">CustomerDraft</span><span class="p">,</span><span class="w"> </span><span class="n">Customer</span><span class="p">,</span><span class="w"></span>
-<span class="w">                  </span><span class="n">List</span><span class="o">&lt;</span><span class="n">CustomerUpdateAction</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">beforeUpdateCallback</span><span class="p">,</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
-<span class="w">            </span><span class="p">(</span><span class="n">updateActions</span><span class="p">,</span><span class="w"> </span><span class="n">newCustomerDraft</span><span class="p">,</span><span class="w"> </span><span class="n">oldCustomer</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">  </span><span class="n">updateActions</span><span class="w"></span>
-<span class="w">                    </span><span class="p">.</span><span class="na">stream</span><span class="p">()</span><span class="w"></span>
-<span class="w">                    </span><span class="p">.</span><span class="na">filter</span><span class="p">(</span><span class="n">updateAction</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">!</span><span class="p">(</span><span class="n">updateAction</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">CustomerSetLastNameActionImpl</span><span class="p">))</span><span class="w"></span>
-<span class="w">                    </span><span class="p">.</span><span class="na">collect</span><span class="p">(</span><span class="n">Collectors</span><span class="p">.</span><span class="na">toList</span><span class="p">());</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="c1">// Example: Ignore update actions which contain setting of lastName action</span>
+<span class="kd">final</span><span class="w"> </span><span class="n">TriFunction</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">CustomerUpdateAction</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">CustomerDraft</span><span class="p">,</span><span class="w"> </span><span class="n">Customer</span><span class="p">,</span>
+<span class="w">                  </span><span class="n">List</span><span class="o">&lt;</span><span class="n">CustomerUpdateAction</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">beforeUpdateCallback</span><span class="p">,</span><span class="w"> </span><span class="o">=</span>
+<span class="w">            </span><span class="p">(</span><span class="n">updateActions</span><span class="p">,</span><span class="w"> </span><span class="n">newCustomerDraft</span><span class="p">,</span><span class="w"> </span><span class="n">oldCustomer</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">  </span><span class="n">updateActions</span>
+<span class="w">                    </span><span class="p">.</span><span class="na">stream</span><span class="p">()</span>
+<span class="w">                    </span><span class="p">.</span><span class="na">filter</span><span class="p">(</span><span class="n">updateAction</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="o">!</span><span class="p">(</span><span class="n">updateAction</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">CustomerSetLastNameActionImpl</span><span class="p">))</span>
+<span class="w">                    </span><span class="p">.</span><span class="na">collect</span><span class="p">(</span><span class="n">Collectors</span><span class="p">.</span><span class="na">toList</span><span class="p">());</span>
 
-<span class="kd">final</span><span class="w"> </span><span class="n">CustomerSyncOptions</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerSyncOptionsBuilder</span><span class="w"></span>
-<span class="w">                    </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">)</span><span class="w"></span>
-<span class="w">                    </span><span class="p">.</span><span class="na">beforeUpdateCallback</span><span class="p">(</span><span class="n">beforeUpdateCallback</span><span class="p">)</span><span class="w"></span>
-<span class="w">                    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="kd">final</span><span class="w"> </span><span class="n">CustomerSyncOptions</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerSyncOptionsBuilder</span>
+<span class="w">                    </span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">.</span><span class="na">beforeUpdateCallback</span><span class="p">(</span><span class="n">beforeUpdateCallback</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
 <h5 id="beforecreatecallback">beforeCreateCallback<a class="headerlink" href="#beforecreatecallback" title="Permanent link">&para;</a></h5>
 <p>During the sync process, if a customer draft should be created, this callback can be used to intercept the <strong><em>create</em></strong> request just before it is sent to the commercetools platform.  It contains the following information : </p>
@@ -1181,7 +1424,7 @@ update actions array with custom actions or discard unwanted actions. The callba
 as customers are obtained from the target project on the commercetools platform in batches for better performance. The algorithm accumulates up to <code>batchSize</code> resources from the input list, then fetches the corresponding customers
 from the target project on the commercetools platform in a single request. Playing with this option can slightly improve or reduce processing speed. If it is not set, the default batch size is 50 for customer sync.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">CustomerSyncOptions</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
-<span class="w">         </span><span class="n">CustomerSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">batchSize</span><span class="p">(</span><span class="mi">30</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="w">         </span><span class="n">CustomerSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">batchSize</span><span class="p">(</span><span class="mi">30</span><span class="p">).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
 <h5 id="cachesize">cacheSize<a class="headerlink" href="#cachesize" title="Permanent link">&para;</a></h5>
 <p>In the service classes of the commercetools-sync-java library, we have implemented an in-memory <a href="https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)">LRU cache</a> to store a map used for the reference resolution of the library.
@@ -1189,23 +1432,23 @@ The cache reduces the reference resolution based calls to the commercetools API 
 which will improve the overall performance of the sync and commercetools API.</p>
 <p>Playing with this option can change the memory usage of the library. If it is not set, the default cache size is <code>10.000</code> for customer sync.</p>
 <div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">CustomerSyncOptions</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>
-<span class="w">         </span><span class="n">CustomerSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">cacheSize</span><span class="p">(</span><span class="mi">5000</span><span class="p">).</span><span class="na">build</span><span class="p">();</span><span class="w"></span>
+<span class="w">         </span><span class="n">CustomerSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">projectApiRoot</span><span class="p">).</span><span class="na">cacheSize</span><span class="p">(</span><span class="mi">5000</span><span class="p">).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
 <h3 id="running-the-sync">Running the sync<a class="headerlink" href="#running-the-sync" title="Permanent link">&para;</a></h3>
 <p>When all prerequisites are fulfilled, follow those steps to run the sync:</p>
-<p><div class="highlight"><pre><span></span><code><span class="c1">// instantiating a customer sync</span><span class="w"></span>
-<span class="kd">final</span><span class="w"> </span><span class="n">CustomerSync</span><span class="w"> </span><span class="n">customerSync</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">CustomerSync</span><span class="p">(</span><span class="n">customerSyncOptions</span><span class="p">);</span><span class="w"></span>
+<p><div class="highlight"><pre><span></span><code><span class="c1">// instantiating a customer sync</span>
+<span class="kd">final</span><span class="w"> </span><span class="n">CustomerSync</span><span class="w"> </span><span class="n">customerSync</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">CustomerSync</span><span class="p">(</span><span class="n">customerSyncOptions</span><span class="p">);</span>
 
-<span class="c1">// execute the sync on your list of customers</span><span class="w"></span>
-<span class="n">CompletionStage</span><span class="o">&lt;</span><span class="n">CustomerSyncStatistics</span><span class="o">&gt;</span><span class="w"> </span><span class="n">syncStatisticsStage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">customerSync</span><span class="p">.</span><span class="na">sync</span><span class="p">(</span><span class="n">customerDrafts</span><span class="p">);</span><span class="w"></span>
+<span class="c1">// execute the sync on your list of customers</span>
+<span class="n">CompletionStage</span><span class="o">&lt;</span><span class="n">CustomerSyncStatistics</span><span class="o">&gt;</span><span class="w"> </span><span class="n">syncStatisticsStage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">customerSync</span><span class="p">.</span><span class="na">sync</span><span class="p">(</span><span class="n">customerDrafts</span><span class="p">);</span>
 </code></pre></div>
 The result of completing the <code>syncStatisticsStage</code> in the previous code snippet contains a <code>CustomerSyncStatistics</code>
 which contains all the stats of the sync process; which includes a report message, the total number of updated, created,
 failed, processed customers, and the processing time of the last sync batch in different time units and in a
 human-readable format.</p>
-<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">CustomerSyncStatistics</span><span class="w"> </span><span class="n">stats</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">syncStatisticsStage</span><span class="p">.</span><span class="na">toCompletebleFuture</span><span class="p">().</span><span class="na">join</span><span class="p">();</span><span class="w"></span>
-<span class="n">stats</span><span class="p">.</span><span class="na">getReportMessage</span><span class="p">();</span><span class="w"></span>
-<span class="cm">/*&quot;Summary: 100 customers were processed in total (11 created, 87 updated, 2 failed to sync).&quot;*/</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="kd">final</span><span class="w"> </span><span class="n">CustomerSyncStatistics</span><span class="w"> </span><span class="n">stats</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">syncStatisticsStage</span><span class="p">.</span><span class="na">toCompletebleFuture</span><span class="p">().</span><span class="na">join</span><span class="p">();</span>
+<span class="n">stats</span><span class="p">.</span><span class="na">getReportMessage</span><span class="p">();</span>
+<span class="cm">/*&quot;Summary: 100 customers were processed in total (11 created, 87 updated, 2 failed to sync).&quot;*/</span>
 </code></pre></div>
 <p><strong>Note</strong> The statistics object contains the processing time of the last batch only. This is due to two reasons:</p>
 <ol>
@@ -1217,12 +1460,12 @@ human-readable format.</p>
 <p><em>Make sure to read the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a> for optimal performance.</em></p>
 <h3 id="build-all-update-actions">Build all update actions<a class="headerlink" href="#build-all-update-actions" title="Permanent link">&para;</a></h3>
 <p>A utility method provided by the library to compare a <code>Customer</code> to a new <code>CustomerDraft</code>. The results are collected in a list of customer update actions.
-<div class="highlight"><pre><span></span><code><span class="n">List</span><span class="o">&lt;</span><span class="n">CustomerUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">updateActions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerSyncUtils</span><span class="p">.</span><span class="na">buildActions</span><span class="p">(</span><span class="n">customer</span><span class="p">,</span><span class="w"> </span><span class="n">customerDraft</span><span class="p">,</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="p">);</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="n">List</span><span class="o">&lt;</span><span class="n">CustomerUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">updateActions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerSyncUtils</span><span class="p">.</span><span class="na">buildActions</span><span class="p">(</span><span class="n">customer</span><span class="p">,</span><span class="w"> </span><span class="n">customerDraft</span><span class="p">,</span><span class="w"> </span><span class="n">customerSyncOptions</span><span class="p">);</span>
 </code></pre></div></p>
 <h3 id="build-particular-update-actions">Build particular update action(s)<a class="headerlink" href="#build-particular-update-actions" title="Permanent link">&para;</a></h3>
 <p>The library provides utility methods to compare specific fields of a <code>Customer</code> and a new <code>CustomerDraft</code>, and builds the update action(s) as a result.
 One example is the <code>buildChangeEmailUpdateAction</code> which compare email addresses:
-<div class="highlight"><pre><span></span><code><span class="n">Optional</span><span class="o">&lt;</span><span class="n">CustomerUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">updateAction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerUpdateActionUtils</span><span class="p">.</span><span class="na">buildChangeEmailUpdateAction</span><span class="p">(</span><span class="n">oldCustomer</span><span class="p">,</span><span class="w"> </span><span class="n">customerDraft</span><span class="p">);</span><span class="w"></span>
+<div class="highlight"><pre><span></span><code><span class="n">Optional</span><span class="o">&lt;</span><span class="n">CustomerUpdateAction</span><span class="o">&gt;</span><span class="w"> </span><span class="n">updateAction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CustomerUpdateActionUtils</span><span class="p">.</span><span class="na">buildChangeEmailUpdateAction</span><span class="p">(</span><span class="n">oldCustomer</span><span class="p">,</span><span class="w"> </span><span class="n">customerDraft</span><span class="p">);</span>
 </code></pre></div></p>
 <p>More examples for particular update actions can be found in the test scenarios for <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/customers/utils/CustomerUpdateActionUtilsTest.java">CustomerUpdateActionUtils</a>
 and <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/customers/utils/AddressUpdateActionUtilsTest.java">AddressUpdateActionUtils</a>.</p>
@@ -1234,52 +1477,24 @@ For customers that do not exist in the project, a password will be created with 
 
 
 
+
+
+
+
+
+
+
                 
               </article>
             </div>
           
           
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
       </main>
       
         <footer class="md-footer">
-  
-    
-    <nav class="md-footer__inner md-grid" aria-label="Footer" >
-      
-        
-        <a href="../CUSTOM_OBJECT_SYNC/" class="md-footer__link md-footer__link--prev" aria-label="Previous: CustomObject Sync" rel="prev">
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              CustomObject Sync
-            </div>
-          </div>
-        </a>
-      
-      
-        
-        <a href="../SHOPPING_LIST_SYNC/" class="md-footer__link md-footer__link--next" aria-label="Next: ShoppingList Sync" rel="next">
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              ShoppingList Sync
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
-          </div>
-        </a>
-      
-    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
@@ -1306,10 +1521,11 @@ For customers that do not exist in the project, a password will be created with 
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.8492ddcf.min.js"></script>
+      <script src="../../assets/javascripts/bundle.1e8ae164.min.js"></script>
       
     
   </body>
