@@ -4,7 +4,7 @@ set -e
 
 # Decrypt credentials
 echo 'Decode decrypter'
-echo ${DECRYPTER} > decrypter.json
+echo ${DECRYPTER} | base64 --decode > decrypter.json
 echo 'Decode signing key'
 echo ${SIGNING_KEY} | base64 --decode > signing_key.enc
 echo 'Decode passphrase'
