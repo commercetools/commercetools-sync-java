@@ -7,6 +7,40 @@
   "classifier": "Complex",
   "attributes": [
     {
+      "name": "technology",
+      "label": {
+        "en": "technology"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "lenum",
+        "values": [
+          {
+            "key": "laser",
+            "label": {
+              "en": "Laser"
+            }
+          },
+          {
+            "key": "plasma",
+            "label": {
+              "en": "Plasma"
+            }
+          },
+          {
+            "key": "waterjet",
+            "label": {
+              "en": "Waterjet"
+            }
+          }
+        ]
+      },
+      "attributeConstraint": "None",
+      "isSearchable": false,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
       "name": "priceInfo",
       "label": {
         "en": "Grundpreis"
