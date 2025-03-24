@@ -6,33 +6,33 @@ on:
       - test-new-release-branch
 
 jobs:
-#  benchmark_tests:
-#    name: benchmark tests
-#    concurrency: benchmark_tests
-#    runs-on: ubuntu-latest
-#    env:
-#      SOURCE_PROJECT_KEY: java-sync-target-dev2
-#      SOURCE_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID_2 }}
-#      SOURCE_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET_2 }}
-#      TARGET_PROJECT_KEY: java-sync-target-dev2
-#      TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID_2 }}
-#      TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET_2 }}
-#      GRGIT_USER: ${{ secrets.GRGIT_USER }}
-#      SUBMIT_BENCHMARK_RESULT: true
-#    steps:
-#      - name: Git Checkout
-#        uses: actions/checkout@v4
-#      - name: Fetch Library version
-#        id: vars
-#        run: echo ::set-output name=libVersion::${GITHUB_REF#refs/*/}
-#      - name: benchmark test
-#        if: ${{ success() }}
-#        run: ./gradlew clean setLibraryVersion benchmark
-#        env:
-#          GITHUB_TAG: ${{ steps.vars.outputs.libVersion }}
+  benchmark_tests:
+    name: benchmark tests
+    concurrency: benchmark_tests
+    runs-on: ubuntu-latest
+    env:
+      SOURCE_PROJECT_KEY: java-sync-target-dev2
+      SOURCE_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID_2 }}
+      SOURCE_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET_2 }}
+      TARGET_PROJECT_KEY: java-sync-target-dev2
+      TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID_2 }}
+      TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET_2 }}
+      GRGIT_USER: ${{ secrets.GRGIT_USER }}
+      SUBMIT_BENCHMARK_RESULT: true
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v4
+      - name: Fetch Library version
+        id: vars
+        run: echo ::set-output name=libVersion::${GITHUB_REF#refs/*/}
+      - name: benchmark test
+        if: ${{ success() }}
+        run: ./gradlew clean setLibraryVersion benchmark
+        env:
+          GITHUB_TAG: ${{ steps.vars.outputs.libVersion }}
   deployment:
     name: deployment
-#    needs: benchmark_tests
+    needs: benchmark_tests
     runs-on: ubuntu-latest
     env:
       GRGIT_USER: ${{ secrets.GRGIT_USER }}
@@ -52,37 +52,22 @@ jobs:
           DECRYPTER: ${{ secrets.DECRYPTER }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           PASSPHRASE: ${{ secrets.PASSPHRASE }}
-      - run: ./gradlew -Pversion=$REF_NAME setLibraryVersion -Dbuild.version="TEST_DEPLOYMENT" clean publishToSonatype closeAndReleaseSonatypeStagingRepository
+      - name: Publish GitHub Pages
+        run: ./gradlew --info -Dbuild.version="${{ steps.vars.outputs.tag }}" mkdocsPublish
+      - name: status
+        run: echo Build is tagged. Uploading artifact ${{ steps.vars.outputs.tag }} to maven central.
+      - name: deploy to sonatype and publish to maven central
+        run: ./gradlew -Pversion=$REF_NAME setLibraryVersion -Dbuild.version="${{ steps.vars.outputs.tag }}" clean publishToSonatype closeAndReleaseSonatypeStagingRepository
         env:
-#           GITHUB_TAG: TEST_DEPLOYMENT
-           GITHUB_TAG: TEST_DEPLOYMENT
+           GITHUB_TAG: ${{ steps.vars.outputs.tag }}
            MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
            MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-#           PGP_KEY: ${{ secrets.PGP_KEY }}
-#           PGP_PASSWORD: ${{ secrets.PGP_PASSWORD }}
-#          REF_NAME: ${{ github.ref_name }}
-#          CTP_OSS_USER: ${{ secrets.OSS_USER }}
-#          CTP_OSS_SECRET: ${{ secrets.OSS_SECRET }}
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          GITHUB_ACTOR: ${{ secrets.GITHUB_ACTOR }}
-#      - name: status
-#        run: echo Build is tagged. Uploading artifact ${{ steps.vars.outputs.tag }} to maven central.
-#      - name: Publish GitHub Pages
-#        run: ./gradlew --info -Dbuild.version="${{ steps.vars.outputs.tag }}" mkdocsPublish
-#      - name: deploy to sonatype and publish to maven central
-#        run: ./gradlew setLibraryVersion -Dbuild.version="${{ steps.vars.outputs.tag }}" publishToSonatype closeAndReleaseSonatypeStagingRepository
-#        env:
-#          GITHUB_TAG: ${{ steps.vars.outputs.tag }}
-#          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
-#          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-#          PGP_KEY: ${{ secrets.PGP_KEY }}
-#          PGP_PASSWORD: ${{ secrets.PGP_PASSWORD }}
-#      - name: Slack notification
-#        if: success() # only when previous step succeeds
-#        env:
-#          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-#          SLACK_USERNAME: Github Release Action.
-#          SLACK_CHANNEL: java-sync
-#        uses: Ilshidur/action-slack@master
-#        with:
-#          args: 'Version: <https://github.com/commercetools/commercetools-sync-java/releases/tag/${{ steps.vars.outputs.tag }}|${{ steps.vars.outputs.tag }}> of the library has been published to the <https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java/|Maven Central>.'
+      - name: Slack notification
+        if: success() # only when previous step succeeds
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_USERNAME: Github Release Action.
+          SLACK_CHANNEL: java-sync
+        uses: Ilshidur/action-slack@master
+        with:
+          args: 'Version: <https://github.com/commercetools/commercetools-sync-java/releases/tag/${{ steps.vars.outputs.tag }}|${{ steps.vars.outputs.tag }}> of the library has been published to the <https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java/|Maven Central>.'
