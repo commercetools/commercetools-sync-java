@@ -40,10 +40,12 @@ publishing {
 }
 
 signing {
-    def signingKey = System.getenv("PGP_KEY")
-    def signingPassword = System.getenv("PGP_PASSWORD")
-    useInMemoryPgpKeys(signingKey, signingPassword)
-    sign publishing.publications.mavenJava
+//    def signingKey = System.getenv("PGP_KEY")
+//    def signingPassword = System.getenv("PGP_PASSWORD")
+//    useInMemoryPgpKeys(signingKey, signingPassword)
+//    sign publishing.publications.mavenJava
+    useGpgCmd()
+    sign publishing.publications.Maven
 }
 
 
