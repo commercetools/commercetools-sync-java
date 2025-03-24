@@ -45,7 +45,6 @@ signing {
 //    useInMemoryPgpKeys(signingKey, signingPassword)
     useGpgCmd()
     sign publishing.publications.mavenJava
-//    sign publishing.publications.Maven
 }
 
 
