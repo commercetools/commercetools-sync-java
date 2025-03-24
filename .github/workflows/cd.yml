@@ -47,6 +47,8 @@ jobs:
         with:
           java-version: 11
           distribution: 'zulu'
+      - name: status
+        run: echo Build is tagged. Uploading artifact ${{ steps.vars.outputs.tag }} to maven central.
       - run: scripts/setup-signing-key.sh
         env:
           DECRYPTER: ${{ secrets.DECRYPTER }}
@@ -54,8 +56,6 @@ jobs:
           PASSPHRASE: ${{ secrets.PASSPHRASE }}
       - name: Publish GitHub Pages
         run: ./gradlew --info -Dbuild.version="${{ steps.vars.outputs.tag }}" mkdocsPublish
-      - name: status
-        run: echo Build is tagged. Uploading artifact ${{ steps.vars.outputs.tag }} to maven central.
       - name: deploy to sonatype and publish to maven central
         run: ./gradlew -Pversion=$REF_NAME setLibraryVersion -Dbuild.version="${{ steps.vars.outputs.tag }}" clean publishToSonatype closeAndReleaseSonatypeStagingRepository
         env:
