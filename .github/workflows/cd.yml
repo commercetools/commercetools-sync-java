@@ -49,16 +49,19 @@ jobs:
           distribution: 'zulu'
       - name: status
         run: echo Build is tagged. Uploading artifact ${{ steps.vars.outputs.tag }} to maven central.
+      - run: scripts/setup-signing-key.sh
+        env:
+          DECRYPTER: ${{ secrets.DECRYPTER }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          PASSPHRASE: ${{ secrets.PASSPHRASE }}
       - name: Publish GitHub Pages
         run: ./gradlew --info -Dbuild.version="${{ steps.vars.outputs.tag }}" mkdocsPublish
       - name: deploy to sonatype and publish to maven central
-        run: ./gradlew setLibraryVersion -Dbuild.version="${{ steps.vars.outputs.tag }}" publishToSonatype closeAndReleaseSonatypeStagingRepository
+        run: ./gradlew -Pversion=$REF_NAME setLibraryVersion -Dbuild.version="${{ steps.vars.outputs.tag }}" clean publishToSonatype closeAndReleaseSonatypeStagingRepository
         env:
-          GITHUB_TAG: ${{ steps.vars.outputs.tag }}
-          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-          PGP_KEY: ${{ secrets.PGP_KEY }}
-          PGP_PASSWORD: ${{ secrets.PGP_PASSWORD }}
+           GITHUB_TAG: ${{ steps.vars.outputs.tag }}
+           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
       - name: Slack notification
         if: success() # only when previous step succeeds
         env:
