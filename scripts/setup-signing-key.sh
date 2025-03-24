@@ -14,6 +14,16 @@ gcloud auth activate-service-account --key-file decrypter.json
 
 echo "Decrypt signing secrets"
 
+echo "passphrase"
+gcloud kms decrypt \
+  --project=commercetools-platform \
+  --location=global \
+  --keyring=devtooling \
+  --key=java-sdk-v2 \
+  --ciphertext-file=signing_passphrase.enc \
+  --plaintext-file=signing_passphrase.txt
+
+echo "key"
 gcloud kms decrypt \
   --project=commercetools-platform \
   --location=global \
@@ -22,13 +32,6 @@ gcloud kms decrypt \
   --ciphertext-file=signing_key.enc \
   --plaintext-file=signing_key.asc
 
-gcloud kms decrypt \
-  --project=commercetools-platform \
-  --location=global \
-  --keyring=devtooling \
-  --key=java-sdk-v2 \
-  --ciphertext-file=signing_passphrase.enc \
-  --plaintext-file=signing_passphrase.txt
 
 # Import the GPG key
 set +e
