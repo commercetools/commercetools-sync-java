@@ -4,6 +4,7 @@ import com.commercetools.api.models.customer.CustomerSetCustomFieldActionBuilder
 import com.commercetools.api.models.customer.CustomerSetCustomTypeActionBuilder;
 import com.commercetools.api.models.customer.CustomerUpdateAction;
 import com.commercetools.sync.commons.helpers.GenericCustomActionBuilder;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -18,6 +19,7 @@ public final class CustomerCustomActionBuilder
   }
 
   @Nonnull
+  @SuppressFBWarnings
   public static CustomerCustomActionBuilder of() {
     return builder;
   }
