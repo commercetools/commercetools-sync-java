@@ -53,13 +53,13 @@ jobs:
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           PASSPHRASE: ${{ secrets.PASSPHRASE }}
       - name: Publish GitHub Pages
-        run: ./gradlew --info -Dbuild.version="${{ steps.vars.outputs.tag }}" mkdocsPublish
+        run: ./gradlew --info -Dbuild.version="10.0.6" mkdocsPublish
       - name: status
-        run: echo Build is tagged. Uploading artifact ${{ steps.vars.outputs.tag }} to maven central.
+        run: echo Build is tagged. Uploading artifact 10.0.6 to maven central.
       - name: deploy to sonatype and publish to maven central
-        run: ./gradlew -Pversion=$REF_NAME setLibraryVersion -Dbuild.version="${{ steps.vars.outputs.tag }}" clean publishToSonatype closeAndReleaseSonatypeStagingRepository
+        run: ./gradlew -Pversion=$REF_NAME setLibraryVersion -Dbuild.version="10.0.6" clean publishToSonatype closeAndReleaseSonatypeStagingRepository
         env:
-           GITHUB_TAG: ${{ steps.vars.outputs.tag }}
+           GITHUB_TAG: 10.0.6
            MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
            MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
       - name: Slack notification
@@ -70,4 +70,4 @@ jobs:
           SLACK_CHANNEL: java-sync
         uses: Ilshidur/action-slack@master
         with:
-          args: 'Version: <https://github.com/commercetools/commercetools-sync-java/releases/tag/${{ steps.vars.outputs.tag }}|${{ steps.vars.outputs.tag }}> of the library has been published to the <https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java/|Maven Central>.'
+          args: 'Version: <https://github.com/commercetools/commercetools-sync-java/releases/tag/10.0.6|10.0.6> of the library has been published to the <https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java/|Maven Central>.'
