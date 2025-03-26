@@ -35,6 +35,9 @@ import com.commercetools.api.models.customer.CustomerSetVatIdActionBuilder;
 import com.commercetools.api.models.customer.CustomerUpdateAction;
 import com.commercetools.api.models.customer_group.CustomerGroup;
 import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
+import com.commercetools.api.models.project.Project;
+import com.commercetools.api.models.project.ProjectUpdateActionBuilder;
+import com.commercetools.api.models.project.ProjectUpdateBuilder;
 import com.commercetools.api.models.store.Store;
 import com.commercetools.api.models.store.StoreResourceIdentifierBuilder;
 import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
@@ -47,6 +50,7 @@ import com.commercetools.sync.integration.commons.utils.CustomerITUtils;
 import com.commercetools.sync.integration.commons.utils.ITUtils;
 import com.commercetools.sync.integration.commons.utils.TestClientUtils;
 import com.neovisionaries.i18n.CountryCode;
+import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -194,6 +198,28 @@ class CustomerSyncIT {
 
   @Test
   void sync_WithUpdatedAllFieldsOfCustomer_ShouldUpdateCustomerWithAllExpectedActions() {
+    final List<String> languages = List.of("de-DE", "en", Locale.FRENCH.toLanguageTag());
+    final Project project =
+        TestClientUtils.CTP_TARGET_CLIENT
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .join();
+    final boolean hasLanguagesBeenAdded = project.getLanguages().containsAll(languages);
+    if (!hasLanguagesBeenAdded) {
+      TestClientUtils.CTP_TARGET_CLIENT
+          .post(
+              ProjectUpdateBuilder.of()
+                  .actions(
+                      ProjectUpdateActionBuilder.of()
+                          .changeLanguagesBuilder()
+                          .languages(languages)
+                          .build())
+                  .version(project.getVersion())
+                  .build())
+          .executeBlocking();
+    }
+
     final Store storeCologne =
         CustomerITUtils.ensureStore(TestClientUtils.CTP_TARGET_CLIENT, "store-cologne");
     final CustomerGroup customerGroupSilverMember =
