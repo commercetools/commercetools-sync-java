@@ -1,24 +1,24 @@
 plugins {
     id 'com.adarshr.test-logger' version '4.0.0'
-    id 'org.ajoberstar.grgit' version '5.2.2'
-    id "com.github.ben-manes.versions" version '0.51.0'
+    id 'org.ajoberstar.grgit' version '5.3.0'
+    id "com.github.ben-manes.versions" version '0.52.0'
     id 'ru.vyarus.mkdocs' version '4.0.1' apply false
-    id "com.github.spotbugs" version "6.0.12"
+    id "com.github.spotbugs" version "6.1.7"
     id 'com.diffplug.spotless' version '7.0.2'
     id 'io.github.gradle-nexus.publish-plugin' version '2.0.0'
 }
 
 ext{
-    commercetoolsJavaSdkV2Version = '17.28.0'
+    commercetoolsJavaSdkV2Version = '17.30.0'
     mockitoJunitJupiterVersion = '5.16.1'
     jupiterApiVersion = '5.12.1'
     jupiterPlatformVersion = '1.12.1'
-    assertjVersion = '3.26.3'
-    pmdVersion = '7.7.0'
+    assertjVersion = '3.27.3'
+    pmdVersion = '7.12.0'
     jacocoVersion = '0.8.12'
-    caffeineVersion = '3.1.8'
+    caffeineVersion = '3.2.0'
     nexusStagingPluginVersion = '0.22.0'
-    commonTextVersion = '1.12.0'
+    commonTextVersion = '1.13.0'
 }
 
 apply from: "$rootDir/gradle-scripts/repositories.gradle"
@@ -47,8 +47,8 @@ dependencies {
     implementation "com.github.ben-manes.caffeine:caffeine:${caffeineVersion}"
     implementation "org.apache.commons:commons-text:${commonTextVersion}"
     api "com.commercetools.sdk:commercetools-sdk-java-api:${commercetoolsJavaSdkV2Version}"
-    api 'commons-io:commons-io:2.16.1'
-    api 'commons-codec:commons-codec:1.17.0'
+    api 'commons-io:commons-io:2.18.0'
+    api 'commons-codec:commons-codec:1.18.0'
     api 'com.google.code.findbugs:annotations:3.0.1'
     api 'com.neovisionaries:nv-i18n:1.29'
     testImplementation "org.mockito:mockito-junit-jupiter:${mockitoJunitJupiterVersion}"
@@ -58,5 +58,5 @@ dependencies {
     testRuntimeOnly "org.junit.vintage:junit-vintage-engine:${jupiterApiVersion}"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher:${jupiterPlatformVersion}"
     testImplementation "org.assertj:assertj-core:${assertjVersion}"
-    testImplementation 'com.github.spotbugs:spotbugs-annotations:4.8.4'
+    testImplementation 'com.github.spotbugs:spotbugs-annotations:4.9.3'
 }
