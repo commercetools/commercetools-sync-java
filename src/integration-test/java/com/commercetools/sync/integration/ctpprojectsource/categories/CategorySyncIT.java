@@ -456,7 +456,7 @@ class CategorySyncIT {
     final CategoryDraft oldCategoryDraft1 =
         CategoryDraftBuilder.of()
             .name(LocalizedString.of(Locale.ENGLISH, "cat1"))
-            .slug(LocalizedString.of(Locale.ENGLISH, "furniture1"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "furniture1-project-source"))
             .key("newKey1")
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
@@ -464,7 +464,7 @@ class CategorySyncIT {
     final CategoryDraft oldCategoryDraft2 =
         CategoryDraftBuilder.of()
             .name(LocalizedString.of(Locale.ENGLISH, "cat2"))
-            .slug(LocalizedString.of(Locale.ENGLISH, "furniture2"))
+            .slug(LocalizedString.of(Locale.ENGLISH, "furniture2-project-source"))
             .key("newKey2")
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
