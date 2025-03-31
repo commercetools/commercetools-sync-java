@@ -3,7 +3,7 @@ package com.commercetools.sync.commons.utils;
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.defaultconfig.ApiRootBuilder;
 import io.vrap.rmf.base.client.oauth2.ClientCredentials;
-import java.util.Arrays;
+import java.util.List;
 import javax.annotation.Nonnull;
 
 public final class ClientConfigurationUtils {
@@ -25,7 +25,11 @@ public final class ClientConfigurationUtils {
 
     return ApiRootBuilder.of()
         .defaultClient(credentials, authUrl, apiUrl)
-        .withRetryMiddleware(5, Arrays.asList(500, 502, 503, 504))
+        .withPolicies(
+            policyBuilder ->
+                policyBuilder.withRetry(
+                    retryPolicyBuilder ->
+                        retryPolicyBuilder.maxRetries(5).statusCodes(List.of(500, 502, 503, 504))))
         .build(projectKey);
   }
 }
