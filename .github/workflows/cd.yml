@@ -54,8 +54,8 @@ jobs:
           DECRYPTER: ${{ secrets.DECRYPTER }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           PASSPHRASE: ${{ secrets.PASSPHRASE }}
-      - name: Publish GitHub Pages
-        run: ./gradlew --info -Dbuild.version="${{ steps.vars.outputs.tag }}" mkdocsPublish
+#      - name: Publish GitHub Pages
+#        run: ./gradlew --info -Dbuild.version="${{ steps.vars.outputs.tag }}" mkdocsPublish
       - name: deploy to sonatype and publish to maven central
         run: ./gradlew -Pversion=$REF_NAME setLibraryVersion -Dbuild.version="${{ steps.vars.outputs.tag }}" clean publishToSonatype closeAndReleaseSonatypeStagingRepository
         env:
