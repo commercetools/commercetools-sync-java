@@ -32,6 +32,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import io.vrap.rmf.base.client.ApiHttpResponse;
+import io.vrap.rmf.base.client.error.NotFoundException;
 import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -403,6 +404,64 @@ class UnresolvedReferencesServiceImplTest {
         .singleElement(as(THROWABLE))
         .isExactlyInstanceOf(SyncException.class)
         .hasCauseExactlyInstanceOf(BadRequestException.class);
+  }
+
+  @Test
+  void delete_With404NotFoundResponse_ShouldConsiderAsDeleted() throws JsonProcessingException {
+    // preparation
+    final String key = "product-draft-key";
+    final ProductDraft productDraftMock =
+        ProductDraftBuilder.of()
+            .productType(ProductTypeResourceIdentifierBuilder.of().key("product-type").build())
+            .key(key)
+            .name(LocalizedString.ofEnglish("product-name"))
+            .slug(LocalizedString.ofEnglish("product-slug"))
+            .build();
+
+    final ApiHttpResponse<State> apiHttpResponse = mock(ApiHttpResponse.class);
+    when(apiHttpResponse.getBody()).thenReturn(mock());
+    final ErrorResponse errorResponse =
+        ErrorResponseBuilder.of()
+            .statusCode(404)
+            .errors(Collections.emptyList())
+            .message("test")
+            .build();
+
+    final ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+    final String json = ow.writeValueAsString(errorResponse);
+
+    final ByProjectKeyCustomObjectsByContainerByKeyDelete customObjectsDelete =
+        mock(ByProjectKeyCustomObjectsByContainerByKeyDelete.class);
+    when(customObjectsDelete.execute())
+        .thenReturn(
+            CompletableFutureUtils.failed(
+                new NotFoundException(
+                    404,
+                    "",
+                    null,
+                    "not found",
+                    new ApiHttpResponse<>(404, null, json.getBytes(StandardCharsets.UTF_8)))));
+    when(productSyncOptions
+            .getCtpClient()
+            .customObjects()
+            .withContainerAndKey(anyString(), anyString())
+            .delete())
+        .thenReturn(customObjectsDelete);
+
+    // test
+    final Optional<WaitingToBeResolvedProducts> toBeResolvedOptional =
+        service
+            .delete(
+                "product-draft-key",
+                UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                WaitingToBeResolvedProducts.class)
+            .toCompletableFuture()
+            .join();
+
+    // assertions
+    assertThat(toBeResolvedOptional).isEmpty();
+    assertThat(errorMessages).hasSize(0);
+    assertThat(errorExceptions).hasSize(0);
   }
 
   @SuppressWarnings("unchecked")

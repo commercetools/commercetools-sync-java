@@ -15,6 +15,7 @@ import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.commons.utils.ChunkUtils;
 import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vrap.rmf.base.client.error.NotFoundException;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.Collections;
 import java.util.List;
@@ -154,6 +155,12 @@ public class UnresolvedReferencesServiceImpl<WaitingToBeResolvedT extends Waitin
                 return Optional.of(
                     OBJECT_MAPPER.convertValue(resource.getBody().getValue(), clazz));
               } else {
+                if (exception instanceof NotFoundException) {
+                  // if we try to delete and the custom object is already gone, then everything is
+                  // fine
+                  // and there is no need to invoke the error callback
+                  return Optional.empty();
+                }
                 syncOptions.applyErrorCallback(
                     new SyncException(format(DELETE_FAILED, hash(key), key), exception));
                 return Optional.empty();
