@@ -60,26 +60,26 @@ Here are the most popular ones:
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>10.0.6</version>
+  <version>10.0.7</version>
 </dependency>
 ````
 
 #### Gradle
 
 ````groovy
-implementation 'com.commercetools:commercetools-sync-java:10.0.6'
+implementation 'com.commercetools:commercetools-sync-java:10.0.7'
 ````
 
 #### SBT 
 
 ````
-libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "10.0.6"
+libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "10.0.7"
 ````
 
 #### Ivy 
 
 ````xml
-<dependency org="com.commercetools" name="commercetools-sync-java" rev="10.0.6"/>
+<dependency org="com.commercetools" name="commercetools-sync-java" rev="10.0.7"/>
 ````
 
 **Note**: To avoid `commercetools JVM SDK` libraries version mismatch between projects.

@@ -27,6 +27,13 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
+### 10.0.7 - Apr 03, 2025
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.0.6...10.0.7) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.7/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.0.7/jar)
+- 🐞 **Bug Fixes** (1)
+  - dont report not found object as error when delete (https://github.com/commercetools/commercetools-sync-java/pull/1210)
+
 ### 10.0.6 - Mar 20, 2025
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.0.5...10.0.6) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.6/) |
