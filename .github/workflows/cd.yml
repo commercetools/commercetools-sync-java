@@ -60,8 +60,8 @@ jobs:
         run: ./gradlew -Pversion=$REF_NAME setLibraryVersion -Dbuild.version="${{ steps.vars.outputs.tag }}" clean publishToSonatype closeAndReleaseSonatypeStagingRepository
         env:
            GITHUB_TAG: ${{ steps.vars.outputs.tag }}
-           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
-           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
       - name: Slack notification
         if: success() # only when previous step succeeds
         env:
