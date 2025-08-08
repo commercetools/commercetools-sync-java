@@ -31,8 +31,12 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class ProductTransformUtils {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ProductTransformUtils.class);
 
   /**
    * Transforms products by resolving the references and map them to ProductDrafts.
@@ -113,9 +117,14 @@ public final class ProductTransformUtils {
       return CompletableFuture.allOf(
               transformReferencesToRunParallel.stream().toArray(CompletableFuture[]::new))
           .thenApply(
-              ignore ->
-                  ProductReferenceResolutionUtils.mapToProductDrafts(
-                      products, this.referenceIdToKeyCache));
+              ignore -> {
+                LOGGER.info(
+                    "Transform references complete: products={}, cacheSize(id->key)~{}",
+                    products.size(),
+                    this.referenceIdToKeyCache.size());
+                return ProductReferenceResolutionUtils.mapToProductDrafts(
+                    products, this.referenceIdToKeyCache);
+              });
     }
 
     @Nonnull
@@ -335,8 +344,19 @@ public final class ProductTransformUtils {
     private void replaceReferences(@Nonnull final List<JsonNode> allAttributeReferences) {
       allAttributeReferences.forEach(
           reference -> {
-            final String id = reference.get(REFERENCE_ID_FIELD).asText();
+            final String typeId =
+                reference.has(REFERENCE_TYPE_ID_FIELD)
+                    ? reference.get(REFERENCE_TYPE_ID_FIELD).asText()
+                    : "";
+            final JsonNode idNode = reference.get(REFERENCE_ID_FIELD);
+            final String id = idNode != null ? idNode.asText(null) : null;
             final String key = referenceIdToKeyCache.get(id);
+            if (key == null) {
+              LOGGER.warn(
+                  "Attribute reference id->key not found in source cache. typeId='{}', id='{}' -> key=null",
+                  typeId,
+                  id);
+            }
             ((ObjectNode) reference).put(REFERENCE_ID_FIELD, key);
           });
     }
@@ -363,6 +383,16 @@ public final class ProductTransformUtils {
       final Set<JsonNode> nonCachedReferences = getNonCachedReferences(allAttributeReferences);
       final Map<GraphQlQueryResource, Set<String>> map =
           buildMapOfRequestTypeToReferencedIds(nonCachedReferences);
+      LOGGER.info(
+          "Collect non-cached ids by resource: PRODUCTS={}, CATEGORIES={}, PRODUCT_TYPES={}, STATES={}, CHANNELS={}, CUSTOMER_GROUPS={}, TYPES={}, CUSTOM_OBJECTS={}",
+          map.getOrDefault(GraphQlQueryResource.PRODUCTS, Collections.emptySet()).size(),
+          map.getOrDefault(GraphQlQueryResource.CATEGORIES, Collections.emptySet()).size(),
+          map.getOrDefault(GraphQlQueryResource.PRODUCT_TYPES, Collections.emptySet()).size(),
+          map.getOrDefault(GraphQlQueryResource.STATES, Collections.emptySet()).size(),
+          map.getOrDefault(GraphQlQueryResource.CHANNELS, Collections.emptySet()).size(),
+          map.getOrDefault(GraphQlQueryResource.CUSTOMER_GROUPS, Collections.emptySet()).size(),
+          map.getOrDefault(GraphQlQueryResource.TYPES, Collections.emptySet()).size(),
+          map.getOrDefault(GraphQlQueryResource.CUSTOM_OBJECTS, Collections.emptySet()).size());
 
       final Set<String> nonCachedCustomObjectIds = map.remove(GraphQlQueryResource.CUSTOM_OBJECTS);
 
@@ -376,6 +406,11 @@ public final class ProductTransformUtils {
               .map(
                   resource -> {
                     List<List<String>> chunk = ChunkUtils.chunk(map.get(resource), CHUNK_SIZE);
+                    LOGGER.info(
+                        "Preparing GraphQL fetch for {} ids: chunks={} chunkSize={}",
+                        resource,
+                        chunk.size(),
+                        CHUNK_SIZE);
                     return createGraphQLRequests(chunk, resource);
                   })
               .flatMap(Collection::stream)

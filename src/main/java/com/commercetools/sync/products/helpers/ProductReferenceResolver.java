@@ -51,9 +51,12 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class ProductReferenceResolver
     extends BaseReferenceResolver<ProductDraft, ProductSyncOptions> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(ProductReferenceResolver.class);
   private final ProductTypeService productTypeService;
   private final CategoryService categoryService;
   private final VariantReferenceResolver variantReferenceResolver;
@@ -547,6 +550,19 @@ public final class ProductReferenceResolver
 
     return collectionOfFuturesToFutureOfCollection(futures, toList())
         .thenCompose(
-            ignored -> productService.cacheKeysToIds(Collections.emptySet())); // return all cache.
+            ignored -> {
+              LOGGER.info(
+                  "populateKeyToIdCaches: products={}, productTypes={}, categories={}, taxCategories={}, types={}, channels={}, states={}, customerGroups={}, customObjects={}",
+                  referencedKeys.getProductKeys().size(),
+                  referencedKeys.getProductTypeKeys().size(),
+                  referencedKeys.getCategoryKeys().size(),
+                  referencedKeys.getTaxCategoryKeys().size(),
+                  referencedKeys.getTypeKeys().size(),
+                  referencedKeys.getChannelKeys().size(),
+                  referencedKeys.getStateKeys().size(),
+                  referencedKeys.getCustomerGroupKeys().size(),
+                  referencedKeys.getCustomObjectCompositeIdentifiers().size());
+              return productService.cacheKeysToIds(Collections.emptySet());
+            }); // return all cache.
   }
 }

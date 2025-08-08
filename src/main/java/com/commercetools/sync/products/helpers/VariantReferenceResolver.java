@@ -40,9 +40,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class VariantReferenceResolver
     extends BaseReferenceResolver<ProductVariantDraft, ProductSyncOptions> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(VariantReferenceResolver.class);
   private final PriceReferenceResolver priceReferenceResolver;
   private final AssetReferenceResolver assetReferenceResolver;
   private final ProductService productService;
@@ -174,7 +177,9 @@ public final class VariantReferenceResolver
 
     if (!allAttributeReferences.isEmpty()) {
       return CompletableFutureUtils.mapValuesToFutureOfCompletedValues(
-              allAttributeReferences, this::resolveReference, toList())
+              allAttributeReferences,
+              referenceNode -> resolveReference(referenceNode, attributeDraft.getName()),
+              toList())
           .thenApply(
               ignoredResult -> {
                 if (cleanupAttributeValue(attributeDraftValueAsJson, attributeDraft).isEmpty()) {
@@ -192,12 +197,33 @@ public final class VariantReferenceResolver
   }
 
   @Nonnull
-  private CompletionStage<Void> resolveReference(@Nonnull final JsonNode referenceValue) {
+  private CompletionStage<Void> resolveReference(
+      @Nonnull final JsonNode referenceValue, @Nonnull final String attributeName) {
+    final String typeId =
+        referenceValue.has(REFERENCE_TYPE_ID_FIELD) ? referenceValue.get(REFERENCE_TYPE_ID_FIELD).asText() : "";
+
+    final JsonNode idFieldNode = referenceValue.get(REFERENCE_ID_FIELD);
+    if (idFieldNode == null || Objects.equals(idFieldNode, NullNode.getInstance())) {
+      LOGGER.warn(
+          "Attribute reference has empty id field. attribute='{}', typeId='{}', value={}",
+          attributeName,
+          typeId,
+          referenceValue.toString());
+    }
+
     return getResolvedId(referenceValue)
         .thenAccept(
-            optionalId ->
-                optionalId.ifPresent(
-                    id -> ((ObjectNode) referenceValue).put(REFERENCE_ID_FIELD, id)));
+            optionalId -> {
+              if (optionalId.isPresent()) {
+                ((ObjectNode) referenceValue).put(REFERENCE_ID_FIELD, optionalId.get());
+              } else {
+                LOGGER.warn(
+                    "Failed to resolve reference id. attribute='{}', typeId='{}', refPayload={}",
+                    attributeName,
+                    typeId,
+                    referenceValue.toString());
+              }
+            });
   }
 
   @Nonnull

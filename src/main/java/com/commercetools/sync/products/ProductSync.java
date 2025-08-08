@@ -62,6 +62,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public class ProductSync
@@ -90,6 +92,7 @@ public class ProductSync
   private final ProductBatchValidator batchValidator;
 
   private ConcurrentHashMap.KeySetView<String, Boolean> readyToResolve;
+  private static final Logger LOGGER = LoggerFactory.getLogger(ProductSync.class);
 
   /**
    * Takes a {@link ProductSyncOptions} instance to instantiate a new {@link ProductSync} instance
@@ -177,6 +180,12 @@ public class ProductSync
       return CompletableFuture.completedFuture(statistics);
     }
 
+    LOGGER.info(
+        "Processing batch: size={}, distinctDraftKeys={}, referencedProductKeys={}",
+        batch.size(),
+        validDrafts.stream().map(ProductDraft::getKey).filter(Objects::nonNull).count(),
+        result.getRight().getProductKeys().size());
+
     return productReferenceResolver
         .populateKeyToIdCachesForReferencedKeys(result.getRight())
         .handle(ImmutablePair::new)
@@ -195,6 +204,11 @@ public class ProductSync
               }
 
               final Map<String, String> productKeyToIdCache = cachingResponse.getKey();
+              LOGGER.info(
+                  "Cache primed: productKeysCached={}, productTypeKeysCached={}, categoryKeysCached={}",
+                  result.getRight().getProductKeys().size(),
+                  result.getRight().getProductTypeKeys().size(),
+                  result.getRight().getCategoryKeys().size());
               return syncBatch(validDrafts, productKeyToIdCache);
             })
         .thenApply(
@@ -295,6 +309,11 @@ public class ProductSync
 
     missingReferencedProductKeys.forEach(
         missingParentKey -> statistics.addMissingDependency(missingParentKey, newProduct.getKey()));
+    LOGGER.warn(
+        "Missing referenced product keys for draft. draftKey={}, missingKeysCount={}, sampleKeys={}",
+        newProduct.getKey(),
+        missingReferencedProductKeys.size(),
+        missingReferencedProductKeys.stream().limit(5).collect(Collectors.toSet()));
     return unresolvedReferencesService.save(
         new WaitingToBeResolvedProducts(newProduct, missingReferencedProductKeys),
         UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
@@ -399,10 +418,12 @@ public class ProductSync
     final Map<String, ProductProjection> oldProductMap =
         oldProducts.stream().collect(toMap(ProductProjection::getKey, identity()));
 
+    LOGGER.debug("Resolving references for draftKey={}", newProductDraft.getKey());
     return productReferenceResolver
         .resolveReferences(newProductDraft)
         .thenCompose(
             resolvedDraft -> {
+              LOGGER.debug("Resolved references for draftKey={}", newProductDraft.getKey());
               final ProductProjection oldProduct = oldProductMap.get(newProductDraft.getKey());
 
               return ofNullable(oldProduct)
