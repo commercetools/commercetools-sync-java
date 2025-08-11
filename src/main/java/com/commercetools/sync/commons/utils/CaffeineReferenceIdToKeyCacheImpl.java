@@ -16,7 +16,7 @@ import java.util.Map;
  */
 public class CaffeineReferenceIdToKeyCacheImpl implements ReferenceIdToKeyCache {
   private static final Cache<String, String> referenceIdToKeyCache =
-      Caffeine.newBuilder().maximumSize(10_000).executor(Runnable::run).build();
+      Caffeine.newBuilder().maximumSize(1_000_000).executor(Runnable::run).build();
 
   public CaffeineReferenceIdToKeyCacheImpl() {}
 
