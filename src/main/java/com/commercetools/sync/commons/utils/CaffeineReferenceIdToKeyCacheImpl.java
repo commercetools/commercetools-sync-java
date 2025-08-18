@@ -9,14 +9,10 @@ import java.util.Map;
  *
  * <p>Designed to be used as an reference in memory cache as a part of {@link
  * com.commercetools.sync.services.impl.BaseTransformServiceImpl} instances.
- *
- * <p>The cache is implemented by the caffeine library which implements a LRU based cache eviction
- * strategy. It means unused id to key pairs will be evicted, also it stores max 10000 pairs to
- * ensure the minimum memory consumption.
  */
 public class CaffeineReferenceIdToKeyCacheImpl implements ReferenceIdToKeyCache {
   private static final Cache<String, String> referenceIdToKeyCache =
-      Caffeine.newBuilder().maximumSize(1_000_000).executor(Runnable::run).build();
+      Caffeine.newBuilder().executor(Runnable::run).build();
 
   public CaffeineReferenceIdToKeyCacheImpl() {}
 
