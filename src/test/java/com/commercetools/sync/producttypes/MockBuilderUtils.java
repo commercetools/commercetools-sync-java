@@ -2,13 +2,7 @@ package com.commercetools.sync.producttypes;
 
 import static com.commercetools.api.models.common.LocalizedString.ofEnglish;
 
-import com.commercetools.api.models.product_type.AttributeConstraintEnum;
-import com.commercetools.api.models.product_type.AttributeDefinitionBuilder;
-import com.commercetools.api.models.product_type.AttributeDefinitionDraftBuilder;
-import com.commercetools.api.models.product_type.AttributeTypeBuilder;
-import com.commercetools.api.models.product_type.ProductTypeBuilder;
-import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
-import com.commercetools.api.models.product_type.TextInputHint;
+import com.commercetools.api.models.product_type.*;
 import java.time.ZonedDateTime;
 
 public class MockBuilderUtils {
@@ -42,6 +36,7 @@ public class MockBuilderUtils {
   public static AttributeDefinitionBuilder createMockAttributeDefinitionBuilder() {
     return AttributeDefinitionBuilder.of()
         .name("foo")
+        .level(AttributeLevelEnum.VARIANT)
         .label(ofEnglish("x"))
         .type(AttributeTypeBuilder::textBuilder)
         .inputHint(TextInputHint.MULTI_LINE)
