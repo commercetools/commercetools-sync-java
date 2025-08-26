@@ -58,11 +58,7 @@ import com.commercetools.api.models.product.ProductVariantDraft;
 import com.commercetools.api.models.product.ProductVariantDraftBuilder;
 import com.commercetools.api.models.product.SearchKeywordBuilder;
 import com.commercetools.api.models.product.SearchKeywordsBuilder;
-import com.commercetools.api.models.product_type.AttributeConstraintEnum;
-import com.commercetools.api.models.product_type.AttributeDefinitionBuilder;
-import com.commercetools.api.models.product_type.AttributeTypeBuilder;
-import com.commercetools.api.models.product_type.ProductTypeResourceIdentifierBuilder;
-import com.commercetools.api.models.product_type.TextInputHint;
+import com.commercetools.api.models.product_type.*;
 import com.commercetools.sync.commons.utils.TestUtils;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncMockUtils;
@@ -463,6 +459,7 @@ class ProductSyncUtilsTest {
                 .name("brandName")
                 .attributeConstraint(AttributeConstraintEnum.SAME_FOR_ALL)
                 .type(AttributeTypeBuilder::textBuilder)
+                .level(AttributeLevelEnum.VARIANT)
                 .label(ofEnglish("brandName"))
                 .isRequired(false)
                 .inputHint(TextInputHint.SINGLE_LINE)
@@ -539,6 +536,7 @@ class ProductSyncUtilsTest {
                 .name("brandName")
                 .attributeConstraint(AttributeConstraintEnum.NONE)
                 .type(AttributeTypeBuilder::textBuilder)
+                .level(AttributeLevelEnum.VARIANT)
                 .label(ofEnglish("brandName"))
                 .isRequired(false)
                 .inputHint(TextInputHint.SINGLE_LINE)
@@ -550,6 +548,7 @@ class ProductSyncUtilsTest {
                 .name("orderLimit")
                 .attributeConstraint(AttributeConstraintEnum.NONE)
                 .type(AttributeTypeBuilder::textBuilder)
+                .level(AttributeLevelEnum.VARIANT)
                 .label(ofEnglish("orderLimit"))
                 .isRequired(false)
                 .inputHint(TextInputHint.SINGLE_LINE)
@@ -561,6 +560,7 @@ class ProductSyncUtilsTest {
                 .name("priceInfo")
                 .attributeConstraint(AttributeConstraintEnum.NONE)
                 .type(AttributeTypeBuilder::textBuilder)
+                .level(AttributeLevelEnum.VARIANT)
                 .label(ofEnglish("priceInfo"))
                 .isRequired(false)
                 .inputHint(TextInputHint.SINGLE_LINE)
@@ -572,6 +572,7 @@ class ProductSyncUtilsTest {
                 .name("size")
                 .attributeConstraint(AttributeConstraintEnum.NONE)
                 .type(AttributeTypeBuilder::textBuilder)
+                .level(AttributeLevelEnum.VARIANT)
                 .label(ofEnglish("size"))
                 .isRequired(false)
                 .inputHint(TextInputHint.SINGLE_LINE)
