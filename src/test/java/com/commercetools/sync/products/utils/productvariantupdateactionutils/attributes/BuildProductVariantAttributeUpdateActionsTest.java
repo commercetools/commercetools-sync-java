@@ -9,11 +9,7 @@ import com.commercetools.api.models.product.AttributeBuilder;
 import com.commercetools.api.models.product.ProductSetAttributeActionBuilder;
 import com.commercetools.api.models.product.ProductSetAttributeInAllVariantsActionBuilder;
 import com.commercetools.api.models.product.ProductUpdateAction;
-import com.commercetools.api.models.product_type.AttributeConstraintEnum;
-import com.commercetools.api.models.product_type.AttributeDefinition;
-import com.commercetools.api.models.product_type.AttributeDefinitionBuilder;
-import com.commercetools.api.models.product_type.AttributeTextTypeBuilder;
-import com.commercetools.api.models.product_type.TextInputHint;
+import com.commercetools.api.models.product_type.*;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils;
@@ -39,6 +35,7 @@ class BuildProductVariantAttributeUpdateActionsTest {
             .name(newAttribute.getName())
             .label(ofEnglish("foo"))
             .type(AttributeTextTypeBuilder.of().build())
+            .level(AttributeLevelEnum.VARIANT)
             .attributeConstraint(AttributeConstraintEnum.NONE)
             .inputHint(TextInputHint.SINGLE_LINE)
             .isSearchable(true)
@@ -76,6 +73,7 @@ class BuildProductVariantAttributeUpdateActionsTest {
             .name(newAttribute.getName())
             .label(ofEnglish("foo"))
             .type(AttributeTextTypeBuilder.of().build())
+            .level(AttributeLevelEnum.VARIANT)
             .attributeConstraint(AttributeConstraintEnum.SAME_FOR_ALL)
             .inputHint(TextInputHint.SINGLE_LINE)
             .isSearchable(true)
@@ -136,6 +134,7 @@ class BuildProductVariantAttributeUpdateActionsTest {
             .name(newAttribute.getName())
             .label(ofEnglish("foo"))
             .type(AttributeTextTypeBuilder.of().build())
+            .level(AttributeLevelEnum.VARIANT)
             .attributeConstraint(AttributeConstraintEnum.NONE)
             .inputHint(TextInputHint.SINGLE_LINE)
             .isSearchable(true)
@@ -172,6 +171,7 @@ class BuildProductVariantAttributeUpdateActionsTest {
             .name(newAttribute.getName())
             .label(ofEnglish("foo"))
             .type(AttributeTextTypeBuilder.of().build())
+            .level(AttributeLevelEnum.VARIANT)
             .attributeConstraint(AttributeConstraintEnum.SAME_FOR_ALL)
             .inputHint(TextInputHint.SINGLE_LINE)
             .isSearchable(true)

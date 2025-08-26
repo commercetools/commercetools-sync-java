@@ -31,11 +31,7 @@ import com.commercetools.api.models.product.ProductUpdateAction;
 import com.commercetools.api.models.product.ProductVariant;
 import com.commercetools.api.models.product.ProductVariantDraft;
 import com.commercetools.api.models.product.ProductVariantDraftBuilder;
-import com.commercetools.api.models.product_type.AttributeConstraintEnum;
-import com.commercetools.api.models.product_type.AttributeDefinitionBuilder;
-import com.commercetools.api.models.product_type.AttributeTypeBuilder;
-import com.commercetools.api.models.product_type.ProductTypeResourceIdentifier;
-import com.commercetools.api.models.product_type.TextInputHint;
+import com.commercetools.api.models.product_type.*;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncMockUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
@@ -91,6 +87,7 @@ class ProductUpdateActionUtilsTest {
                 .label(LocalizedString.ofEnglish("priceInfo"))
                 .attributeConstraint(AttributeConstraintEnum.NONE)
                 .type(AttributeTypeBuilder::textBuilder)
+                .level(AttributeLevelEnum.VARIANT)
                 .isRequired(false)
                 .isSearchable(true)
                 .inputHint(TextInputHint.SINGLE_LINE)
@@ -103,6 +100,7 @@ class ProductUpdateActionUtilsTest {
                 .label(LocalizedString.ofEnglish("size"))
                 .attributeConstraint(AttributeConstraintEnum.NONE)
                 .type(AttributeTypeBuilder::textBuilder)
+                .level(AttributeLevelEnum.VARIANT)
                 .isRequired(false)
                 .isSearchable(true)
                 .inputHint(TextInputHint.SINGLE_LINE)
@@ -245,6 +243,7 @@ class ProductUpdateActionUtilsTest {
                 .label(LocalizedString.ofEnglish("priceInfo"))
                 .attributeConstraint(AttributeConstraintEnum.SAME_FOR_ALL)
                 .type(AttributeTypeBuilder::textBuilder)
+                .level(AttributeLevelEnum.VARIANT)
                 .isRequired(false)
                 .isSearchable(true)
                 .inputHint(TextInputHint.SINGLE_LINE)
@@ -256,6 +255,7 @@ class ProductUpdateActionUtilsTest {
                 .label(LocalizedString.ofEnglish("size"))
                 .attributeConstraint(AttributeConstraintEnum.NONE)
                 .type(AttributeTypeBuilder::textBuilder)
+                .level(AttributeLevelEnum.VARIANT)
                 .isRequired(false)
                 .isSearchable(true)
                 .inputHint(TextInputHint.SINGLE_LINE)
