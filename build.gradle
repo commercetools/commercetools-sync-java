@@ -10,7 +10,7 @@ plugins {
 
 ext{
     commercetoolsJavaSdkV2Version = '19.3.0'
-    mockitoJunitJupiterVersion = '5.19.0'
+    mockitoJunitJupiterVersion = '5.20.0'
     jupiterApiVersion = '5.13.4'
     jupiterPlatformVersion = '1.13.4'
     assertjVersion = '3.27.3'
