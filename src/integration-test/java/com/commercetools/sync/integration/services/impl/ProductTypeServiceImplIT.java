@@ -450,16 +450,16 @@ class ProductTypeServiceImplIT {
   }
 
   /*
-   * This test verifies the cache stampede fix by making concurrent calls
-     and ensuring the cache is populated correctly without race conditions.
-    
-     What this test verifies:
-     1. All concurrent calls complete successfully (no race conditions)
-     2. All calls return the same cached data (cache consistency)
-     3. No exceptions occur during concurrent access
-     
-     NOTE: The tests were execute with logs and it can be seen that only one query is executed.
-   */
+  * This test verifies the cache stampede fix by making concurrent calls
+    and ensuring the cache is populated correctly without race conditions.
+
+    What this test verifies:
+    1. All concurrent calls complete successfully (no race conditions)
+    2. All calls return the same cached data (cache consistency)
+    3. No exceptions occur during concurrent access
+
+    NOTE: The tests were execute with logs and it can be seen that only one query is executed.
+  */
   @Test
   void
       fetchCachedProductAttributeMetaDataMap_WithConcurrentCalls_ShouldHandleCacheStampedeCorrectly()
@@ -479,7 +479,8 @@ class ProductTypeServiceImplIT {
 
     final ProductTypeSyncOptions productTypeSyncOptions =
         ProductTypeSyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
-    final ProductTypeService productTypeService = new ProductTypeServiceImpl(productTypeSyncOptions);
+    final ProductTypeService productTypeService =
+        new ProductTypeServiceImpl(productTypeSyncOptions);
 
     // test - make 10 concurrent calls to fetchCachedProductAttributeMetaDataMap
     // Used a CountDownLatch to ensure all threads start at approximately the same time
@@ -490,26 +491,28 @@ class ProductTypeServiceImplIT {
         new java.util.concurrent.CountDownLatch(numberOfConcurrentCalls);
     final java.util.concurrent.ExecutorService executorService =
         java.util.concurrent.Executors.newFixedThreadPool(numberOfConcurrentCalls);
-    final java.util.List<java.util.concurrent.CompletableFuture<Optional<Map<String, AttributeMetaData>>>>
+    final java.util.List<
+            java.util.concurrent.CompletableFuture<Optional<Map<String, AttributeMetaData>>>>
         futures = new java.util.ArrayList<>();
 
     for (int i = 0; i < numberOfConcurrentCalls; i++) {
-      final java.util.concurrent.CompletableFuture<Optional<Map<String, AttributeMetaData>>> future =
-          java.util.concurrent.CompletableFuture.supplyAsync(
-              () -> {
-                try {
-                  readyLatch.countDown();
-                  startLatch.await(); // Wait for all threads to be ready
-                  return productTypeService
-                      .fetchCachedProductAttributeMetaDataMap(createdProductType.getId())
-                      .toCompletableFuture()
-                      .join();
-                } catch (InterruptedException e) {
-                  Thread.currentThread().interrupt();
-                  throw new RuntimeException(e);
-                }
-              },
-              executorService);
+      final java.util.concurrent.CompletableFuture<Optional<Map<String, AttributeMetaData>>>
+          future =
+              java.util.concurrent.CompletableFuture.supplyAsync(
+                  () -> {
+                    try {
+                      readyLatch.countDown();
+                      startLatch.await(); // Wait for all threads to be ready
+                      return productTypeService
+                          .fetchCachedProductAttributeMetaDataMap(createdProductType.getId())
+                          .toCompletableFuture()
+                          .join();
+                    } catch (InterruptedException e) {
+                      Thread.currentThread().interrupt();
+                      throw new RuntimeException(e);
+                    }
+                  },
+                  executorService);
       futures.add(future);
     }
 
@@ -519,7 +522,8 @@ class ProductTypeServiceImplIT {
     startLatch.countDown();
 
     // Wait for all futures to complete
-    java.util.concurrent.CompletableFuture.allOf(futures.toArray(new java.util.concurrent.CompletableFuture[0]))
+    java.util.concurrent.CompletableFuture.allOf(
+            futures.toArray(new java.util.concurrent.CompletableFuture[0]))
         .join();
 
     executorService.shutdown();
@@ -567,7 +571,8 @@ class ProductTypeServiceImplIT {
 
     final ProductTypeSyncOptions productTypeSyncOptions =
         ProductTypeSyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
-    final ProductTypeService productTypeService = new ProductTypeServiceImpl(productTypeSyncOptions);
+    final ProductTypeService productTypeService =
+        new ProductTypeServiceImpl(productTypeSyncOptions);
 
     // test - first call to populate cache
     final Optional<Map<String, AttributeMetaData>> firstResult =
@@ -588,8 +593,9 @@ class ProductTypeServiceImplIT {
     assertThat(secondResult).isPresent();
     assertThat(firstResult.get()).isEqualTo(secondResult.get());
     assertThat(firstResult.get()).hasSize(2);
-    assertThat(firstResult.get()).containsKeys(
-        ATTRIBUTE_DEFINITION_DRAFT_1.getName(), ATTRIBUTE_DEFINITION_DRAFT_2.getName());
+    assertThat(firstResult.get())
+        .containsKeys(
+            ATTRIBUTE_DEFINITION_DRAFT_1.getName(), ATTRIBUTE_DEFINITION_DRAFT_2.getName());
 
     // cleanup
     CTP_TARGET_CLIENT
@@ -607,7 +613,8 @@ class ProductTypeServiceImplIT {
     // preparation
     final ProductTypeSyncOptions productTypeSyncOptions =
         ProductTypeSyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
-    final ProductTypeService productTypeService = new ProductTypeServiceImpl(productTypeSyncOptions);
+    final ProductTypeService productTypeService =
+        new ProductTypeServiceImpl(productTypeSyncOptions);
 
     // test - query for non-existent product type ID
     final Optional<Map<String, AttributeMetaData>> result =
