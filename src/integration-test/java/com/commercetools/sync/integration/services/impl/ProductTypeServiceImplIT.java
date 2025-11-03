@@ -516,12 +516,9 @@ class ProductTypeServiceImplIT {
       futures.add(future);
     }
 
-    final boolean allThreadsReady =
-        readyLatch.await(5, java.util.concurrent.TimeUnit.SECONDS);
-    assertThat(allThreadsReady)
-        .as("All threads should be ready within timeout")
-        .isTrue();
-    
+    final boolean allThreadsReady = readyLatch.await(5, java.util.concurrent.TimeUnit.SECONDS);
+    assertThat(allThreadsReady).as("All threads should be ready within timeout").isTrue();
+
     // Start all threads at once
     startLatch.countDown();
 
@@ -533,9 +530,7 @@ class ProductTypeServiceImplIT {
     executorService.shutdown();
     final boolean executorTerminated =
         executorService.awaitTermination(10, java.util.concurrent.TimeUnit.SECONDS);
-    assertThat(executorTerminated)
-        .as("Executor service should terminate within timeout")
-        .isTrue();
+    assertThat(executorTerminated).as("Executor service should terminate within timeout").isTrue();
 
     // assertions - all calls should return the same result
     final Optional<Map<String, AttributeMetaData>> firstResult = futures.get(0).join();
