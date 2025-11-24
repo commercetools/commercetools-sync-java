@@ -68,16 +68,6 @@ class CategorySyncIT {
     CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_TARGET_CLIENT);
     CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_SOURCE_CLIENT);
 
-    // Force delete any orphaned categories with specific slugs that deleteAllCategories might miss
-    CategoryITUtils.deleteCategoriesBySlug(
-        TestClientUtils.CTP_TARGET_CLIENT,
-        Locale.ENGLISH,
-        List.of("furniture1-project-source", "furniture2-project-source"));
-    CategoryITUtils.deleteCategoriesBySlug(
-        TestClientUtils.CTP_SOURCE_CLIENT,
-        Locale.ENGLISH,
-        List.of("furniture1-project-source", "furniture2-project-source"));
-
     CategoryITUtils.ensureCategories(
         TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2, true));
 
@@ -108,7 +98,7 @@ class CategorySyncIT {
    */
   @AfterEach
   void cleanupAfterTest() {
-    // Clean up, including any categories without keys
+    // Clean up specific problematic slugs first (categories without keys from failed tests)
     CategoryITUtils.deleteCategoriesBySlug(
         TestClientUtils.CTP_TARGET_CLIENT,
         Locale.ENGLISH,
@@ -117,7 +107,8 @@ class CategorySyncIT {
         TestClientUtils.CTP_SOURCE_CLIENT,
         Locale.ENGLISH,
         List.of("furniture1-project-source", "furniture2-project-source"));
-
+    
+    // Then clean up everything else
     CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_TARGET_CLIENT);
     CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_SOURCE_CLIENT);
   }
@@ -516,14 +507,13 @@ class CategorySyncIT {
     CompletableFuture.allOf(futureCreations.toArray(new CompletableFuture[futureCreations.size()]))
         .join();
 
-    // Create two categories in the target without Keys (sequentially to avoid race conditions).
+    // Create two categories in the target without Keys.
     final CategoryDraft newCategoryDraft1 =
         CategoryDraftBuilder.of(oldCategoryDraft1).key(null).build();
     final CategoryDraft newCategoryDraft2 =
         CategoryDraftBuilder.of(oldCategoryDraft2).key(null).build();
 
     TestClientUtils.CTP_TARGET_CLIENT.categories().create(newCategoryDraft1).executeBlocking();
-
     TestClientUtils.CTP_TARGET_CLIENT.categories().create(newCategoryDraft2).executeBlocking();
 
     // ---------

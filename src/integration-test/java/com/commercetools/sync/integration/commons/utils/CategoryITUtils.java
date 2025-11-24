@@ -331,6 +331,10 @@ public final class CategoryITUtils {
       @Nonnull final ProjectApiRoot ctpClient,
       @Nonnull final Locale locale,
       @Nonnull final List<String> slugs) {
+    if (slugs == null || slugs.isEmpty()) {
+      return;
+    }
+
     for (String slug : slugs) {
       try {
         ctpClient
@@ -354,18 +358,21 @@ public final class CategoryITUtils {
                         .execute()
                         .toCompletableFuture()
                         .join();
-                  } catch (RuntimeException e) {
-                    // Expected: already deleted, cascade deleted, or version conflict
+                  } catch (NotFoundException e) {
+                    // Already deleted
                     logger.debug(
-                        "Could not delete category with slug '{}', ID: {}. Reason: {}",
-                        slug,
-                        cat.getId(),
-                        e.getMessage());
+                      "Category with slug '{}' already deleted", slug);
+
+                  } catch (RuntimeException e) {
+                    // May have been deleted by parent cascade or version conflict
+                    logger.debug(
+                        "Could not delete category with slug '{}', ID: {}", slug, cat.getId());
                   }
                 });
       } catch (RuntimeException e) {
-        // Expected: slug doesn't exist or query failed
-        logger.debug("Could not query categories with slug '{}'. Reason: {}", slug, e.getMessage());
+        // Slug doesn't exist or query failed - this is expected
+        logger.debug(
+            "Category with slug '{}' does not exist", slug);
       }
     }
   }
