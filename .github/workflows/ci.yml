@@ -60,7 +60,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Fetch Library version
         id: vars
-        run: echo ::set-output name=libVersion::${GITHUB_REF#refs/*/}
+        run: echo libVersion=${GITHUB_REF#refs/*/} >> $GITHUB_OUTPUT
       - name: benchmark test
         if: ${{ success() }}
         run: ./gradlew clean setLibraryVersion benchmark

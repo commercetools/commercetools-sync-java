@@ -43,6 +43,9 @@ public final class ProductTypeServiceImpl
   private final Map<String, Map<String, AttributeMetaData>> productsAttributesMetaData =
       new ConcurrentHashMap<>();
 
+  private volatile CompletableFuture<Void> cacheLoadingFuture = null;
+  private final Object cacheLoadingLock = new Object();
+
   public ProductTypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
     super(syncOptions);
   }
@@ -82,16 +85,58 @@ public final class ProductTypeServiceImpl
   public CompletionStage<Optional<Map<String, AttributeMetaData>>>
       fetchCachedProductAttributeMetaDataMap(@Nonnull final String productTypeId) {
 
-    if (productsAttributesMetaData.isEmpty()) {
-      return fetchAndCacheProductMetaData(productTypeId);
+    if (!productsAttributesMetaData.isEmpty()) {
+      return CompletableFuture.completedFuture(
+          Optional.ofNullable(productsAttributesMetaData.get(productTypeId)));
     }
-    return CompletableFuture.completedFuture(
-        Optional.ofNullable(productsAttributesMetaData.get(productTypeId)));
+
+    CompletableFuture<Void> loadingFuture = cacheLoadingFuture;
+    if (loadingFuture != null && !loadingFuture.isDone()) {
+      return loadingFuture.thenApply(
+          ignored -> Optional.ofNullable(productsAttributesMetaData.get(productTypeId)));
+    }
+
+    synchronized (cacheLoadingLock) {
+      if (!productsAttributesMetaData.isEmpty()) {
+        return CompletableFuture.completedFuture(
+            Optional.ofNullable(productsAttributesMetaData.get(productTypeId)));
+      }
+
+      loadingFuture = cacheLoadingFuture;
+      if (loadingFuture != null && !loadingFuture.isDone()) {
+        return loadingFuture.thenApply(
+            ignored -> Optional.ofNullable(productsAttributesMetaData.get(productTypeId)));
+      }
+
+      final CompletableFuture<Void> newLoadingFuture = new CompletableFuture<>();
+      cacheLoadingFuture = newLoadingFuture;
+
+      fetchAndCacheAllProductMetaData()
+          .whenComplete(
+              (result, throwable) -> {
+                if (throwable != null) {
+                  newLoadingFuture.completeExceptionally(throwable);
+                } else {
+                  newLoadingFuture.complete(null);
+                }
+              });
+
+      return newLoadingFuture.thenApply(
+          ignored -> Optional.ofNullable(productsAttributesMetaData.get(productTypeId)));
+    }
   }
 
+  /**
+   * Fetches all product types from CTP and caches their attribute metadata.
+   *
+   * <p>This method is called only once during the first request for attribute metadata. All
+   * subsequent requests will use the cached data.
+   *
+   * @return a {@link CompletionStage} that completes when all product types have been fetched and
+   *     cached
+   */
   @Nonnull
-  private CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchAndCacheProductMetaData(
-      @Nonnull final String productTypeId) {
+  private CompletionStage<Void> fetchAndCacheAllProductMetaData() {
     final Consumer<List<ProductType>> productTypePageConsumer =
         productTypePage ->
             productTypePage.forEach(
@@ -102,8 +147,7 @@ public final class ProductTypeServiceImpl
     final ByProjectKeyProductTypesGet byProjectKeyProductTypesGet =
         this.syncOptions.getCtpClient().productTypes().get();
 
-    return QueryUtils.queryAll(byProjectKeyProductTypesGet, productTypePageConsumer)
-        .thenApply(result -> Optional.ofNullable(productsAttributesMetaData.get(productTypeId)));
+    return QueryUtils.queryAll(byProjectKeyProductTypesGet, productTypePageConsumer);
   }
 
   @Nonnull
