@@ -68,6 +68,16 @@ class CategorySyncIT {
     CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_TARGET_CLIENT);
     CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_SOURCE_CLIENT);
 
+    // Clean up any categories without keys that deleteAllCategories() might have missed
+    CategoryITUtils.deleteCategoriesBySlug(
+        TestClientUtils.CTP_TARGET_CLIENT,
+        Locale.ENGLISH,
+        List.of("furniture1-project-source", "furniture2-project-source"));
+    CategoryITUtils.deleteCategoriesBySlug(
+        TestClientUtils.CTP_SOURCE_CLIENT,
+        Locale.ENGLISH,
+        List.of("furniture1-project-source", "furniture2-project-source"));
+
     CategoryITUtils.ensureCategories(
         TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2, true));
 
@@ -485,6 +495,12 @@ class CategorySyncIT {
             .toCompletableFuture());
     CompletableFuture.allOf(futureCreations.toArray(new CompletableFuture[futureCreations.size()]))
         .join();
+
+    // Ensure TARGET is clean before creating categories without keys (defensive cleanup)
+    CategoryITUtils.deleteCategoriesBySlug(
+        TestClientUtils.CTP_TARGET_CLIENT,
+        Locale.ENGLISH,
+        List.of("furniture1-project-source", "furniture2-project-source"));
 
     // Create two categories in the target without Keys.
     futureCreations = new ArrayList<>();
