@@ -6,11 +6,8 @@ import com.commercetools.api.models.category.Category;
 import com.commercetools.api.models.category.CategoryDraft;
 import com.commercetools.api.models.category.CategoryDraftBuilder;
 import com.commercetools.api.models.common.LocalizedString;
-import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,9 +19,7 @@ import org.junit.jupiter.api.Test;
  */
 class CategoryITUtilsIT {
 
-  /**
-   * Delete all categories and types from target project before running tests.
-   */
+  /** Delete all categories and types from target project before running tests. */
   @BeforeAll
   static void setup() {
     CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_TARGET_CLIENT);
@@ -82,9 +77,7 @@ class CategoryITUtilsIT {
 
     // test - delete categories with slugs test-slug-1 and test-slug-2
     CategoryITUtils.deleteCategoriesBySlug(
-        TestClientUtils.CTP_TARGET_CLIENT,
-        Locale.ENGLISH,
-        List.of("test-slug-1", "test-slug-2"));
+        TestClientUtils.CTP_TARGET_CLIENT, Locale.ENGLISH, List.of("test-slug-1", "test-slug-2"));
 
     // assertion - verify only 2 categories remain (test-slug-3 and other-slug)
     final List<Category> remainingCategories =
@@ -150,8 +143,7 @@ class CategoryITUtilsIT {
             .getResults();
 
     assertThat(remainingCategories).hasSize(1);
-    assertThat(remainingCategories.get(0).getSlug().get(Locale.ENGLISH))
-        .isEqualTo("with-key-slug");
+    assertThat(remainingCategories.get(0).getSlug().get(Locale.ENGLISH)).isEqualTo("with-key-slug");
     assertThat(remainingCategories.get(0).getKey()).isEqualTo("with-key");
   }
 
@@ -185,8 +177,7 @@ class CategoryITUtilsIT {
             .getResults();
 
     assertThat(remainingCategories).hasSize(1);
-    assertThat(remainingCategories.get(0).getSlug().get(Locale.ENGLISH))
-        .isEqualTo("existing-slug");
+    assertThat(remainingCategories.get(0).getSlug().get(Locale.ENGLISH)).isEqualTo("existing-slug");
   }
 
   @Test
@@ -311,4 +302,3 @@ class CategoryITUtilsIT {
     assertThat(remainingCategories).isEmpty();
   }
 }
-
