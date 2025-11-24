@@ -38,8 +38,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class CategoryITUtils {
+  private static final Logger logger = LoggerFactory.getLogger(CategoryITUtils.class);
+
   public static final String OLD_CATEGORY_CUSTOM_TYPE_KEY = "oldCategoryCustomTypeKey";
   public static final String OLD_CATEGORY_CUSTOM_TYPE_NAME = "old_type_name";
 
@@ -299,8 +303,13 @@ public final class CategoryITUtils {
             } catch (NotFoundException e) {
               // Already deleted, mark as deleted
               deletedIds.add(categoryId);
-            } catch (Exception e) {
-              // Ignore - may have been deleted by parent cascade
+            } catch (RuntimeException e) {
+              // May have been deleted by parent cascade - this is expected behavior
+              logger.debug(
+                  "Could not delete category ID: {}, key: {}. Reason: {}",
+                  categoryId,
+                  category.getKey(),
+                  e.getMessage());
             }
           }
         });
@@ -345,12 +354,18 @@ public final class CategoryITUtils {
                         .execute()
                         .toCompletableFuture()
                         .join();
-                  } catch (Exception e) {
-                    // Ignore - already deleted or cascade deleted
+                  } catch (RuntimeException e) {
+                    // Expected: already deleted, cascade deleted, or version conflict
+                    logger.debug(
+                        "Could not delete category with slug '{}', ID: {}. Reason: {}",
+                        slug,
+                        cat.getId(),
+                        e.getMessage());
                   }
                 });
-      } catch (Exception e) {
-        // Ignore - slug doesn't exist
+      } catch (RuntimeException e) {
+        // Expected: slug doesn't exist or query failed
+        logger.debug("Could not query categories with slug '{}'. Reason: {}", slug, e.getMessage());
       }
     }
   }
