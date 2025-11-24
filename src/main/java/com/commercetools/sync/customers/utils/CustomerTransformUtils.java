@@ -3,6 +3,7 @@ package com.commercetools.sync.customers.utils;
 import static java.util.stream.Collectors.toSet;
 
 import com.commercetools.api.client.ProjectApiRoot;
+import com.commercetools.api.models.common.Address;
 import com.commercetools.api.models.common.Reference;
 import com.commercetools.api.models.customer.Customer;
 import com.commercetools.api.models.customer.CustomerDraft;
@@ -83,6 +84,17 @@ public final class CustomerTransformUtils {
               .map(CustomFields::getType)
               .map(Reference::getId)
               .collect(toSet());
+
+      final Set<String> setOfAddressCustomTypeIds =
+          customers.stream()
+              .flatMap(c -> c.getAddresses().stream())
+              .map(Address::getCustom)
+              .filter(Objects::nonNull)
+              .map(CustomFields::getType)
+              .map(Reference::getId)
+              .collect(toSet());
+
+      setOfTypeIds.addAll(setOfAddressCustomTypeIds);
 
       return fetchAndFillReferenceIdToKeyCache(setOfTypeIds, GraphQlQueryResource.TYPES);
     }

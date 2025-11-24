@@ -111,7 +111,7 @@ public final class CustomerReferenceResolutionUtils {
         .dateOfBirth(customer.getDateOfBirth())
         .isEmailVerified(customer.getIsEmailVerified())
         .vatId(customer.getVatId())
-        .addresses(mapToAddressesDraft(customer.getAddresses()))
+        .addresses(mapToAddressesDraft(customer.getAddresses(), referenceIdToKeyCache))
         .defaultBillingAddress(
             getAddressIndex(customer.getAddresses(), customer.getDefaultBillingAddressId()))
         .billingAddresses(
@@ -143,7 +143,9 @@ public final class CustomerReferenceResolutionUtils {
     return null;
   }
 
-  private static List<BaseAddress> mapToAddressesDraft(@Nonnull List<Address> addresses) {
+  private static List<BaseAddress> mapToAddressesDraft(
+      @Nonnull List<Address> addresses,
+      @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
     if (addresses.isEmpty()) {
       return emptyList();
     }
@@ -178,8 +180,9 @@ public final class CustomerReferenceResolutionUtils {
                       .externalId(address.getExternalId());
 
               if (address.getCustom() != null) {
-                builder.custom(
-                    CustomFieldsDraftBuilder.of().fields(address.getCustom().getFields()).build());
+                CustomFieldsDraft draft =
+                    mapToCustomFieldsDraft(address.getCustom(), referenceIdToKeyCache);
+                builder.custom(draft);
               }
               return builder.build();
             })
