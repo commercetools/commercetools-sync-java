@@ -67,7 +67,7 @@ class CategorySyncIT {
   void setupTest() {
     CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_TARGET_CLIENT);
     CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_SOURCE_CLIENT);
-    
+
     // Clean up any categories without keys that deleteAllCategories() might have missed
     CategoryITUtils.deleteCategoriesBySlug(
         TestClientUtils.CTP_TARGET_CLIENT,
