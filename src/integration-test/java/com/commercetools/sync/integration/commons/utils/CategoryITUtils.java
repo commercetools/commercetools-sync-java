@@ -279,7 +279,7 @@ public final class CategoryITUtils {
    * @param ctpClient defines the CTP project to delete the categories from.
    */
   public static void deleteAllCategories(@Nonnull final ProjectApiRoot ctpClient) {
-    final Set<String> keys = new HashSet<>();
+    final Set<String> deletedIds = new HashSet<>();
     final List<Category> categories =
         QueryUtils.queryAll(
                 ctpClient.categories().get().addExpand("ancestors[*]"), categories1 -> categories1)
@@ -291,31 +291,28 @@ public final class CategoryITUtils {
             .join();
     categories.forEach(
         category -> {
-          final String categoryKey = category.getKey();
-          if (!hasADeletedAncestor(category, keys)) {
-            ctpClient
-                .categories()
-                .delete(category)
-                .execute()
-                .thenAccept(deletedCategory -> keys.add(categoryKey))
-                .handle(
-                    (result, throwable) -> {
-                      if (throwable != null && !(throwable instanceof NotFoundException)) {
-                        return throwable;
-                      }
-                      return result;
-                    })
-                .toCompletableFuture()
-                .join();
+          final String categoryId = category.getId();
+          if (!hasADeletedAncestor(category, deletedIds)) {
+            try {
+              ctpClient.categories().delete(category).execute().toCompletableFuture().join();
+              deletedIds.add(categoryId);
+            } catch (NotFoundException e) {
+              // Already deleted, mark as deleted
+              deletedIds.add(categoryId);
+            } catch (Exception e) {
+              // Ignore - may have been deleted by parent cascade
+            }
           }
         });
   }
 
   /**
    * Deletes categories from CTP projects defined by the {@code ctpClient} that match any of the
-   * supplied slugs in the specified locale. This method is useful for cleaning up categories that
-   * may not have keys set (which prevents them from being properly tracked by {@link
-   * #deleteAllCategories(ProjectApiRoot)}).
+   * supplied slugs in the specified locale. This method is useful for cleaning up specific
+   * categories by slug, especially those without keys.
+   *
+   * <p>This method handles errors gracefully and will not throw exceptions if categories don't
+   * exist or have already been deleted.
    *
    * @param ctpClient defines the CTP project to delete the categories from.
    * @param locale the locale to use when matching slugs.
@@ -325,29 +322,37 @@ public final class CategoryITUtils {
       @Nonnull final ProjectApiRoot ctpClient,
       @Nonnull final Locale locale,
       @Nonnull final List<String> slugs) {
-    slugs.forEach(
-        slug -> {
-          ctpClient
-              .categories()
-              .get()
-              .addWhere("slug(" + locale.getLanguage() + "=:slug)")
-              .addPredicateVar("slug", slug)
-              .execute()
-              .toCompletableFuture()
-              .join()
-              .getBody()
-              .getResults()
-              .forEach(
-                  category ->
-                      ctpClient
-                          .categories()
-                          .withId(category.getId())
-                          .delete()
-                          .withVersion(category.getVersion())
-                          .execute()
-                          .toCompletableFuture()
-                          .join());
-        });
+    for (String slug : slugs) {
+      try {
+        ctpClient
+            .categories()
+            .get()
+            .addWhere("slug(" + locale.getLanguage() + "=:slug)")
+            .addPredicateVar("slug", slug)
+            .execute()
+            .toCompletableFuture()
+            .join()
+            .getBody()
+            .getResults()
+            .forEach(
+                cat -> {
+                  try {
+                    ctpClient
+                        .categories()
+                        .withId(cat.getId())
+                        .delete()
+                        .withVersion(cat.getVersion())
+                        .execute()
+                        .toCompletableFuture()
+                        .join();
+                  } catch (Exception e) {
+                    // Ignore - already deleted or cascade deleted
+                  }
+                });
+      } catch (Exception e) {
+        // Ignore - slug doesn't exist
+      }
+    }
   }
 
   private static List<Category> sortCategoriesByLeastAncestors(
@@ -357,14 +362,14 @@ public final class CategoryITUtils {
   }
 
   private static boolean hasADeletedAncestor(
-      @Nonnull final Category category, @Nonnull final Set<String> keysOfDeletedAncestors) {
+      @Nonnull final Category category, @Nonnull final Set<String> idsOfDeletedAncestors) {
     final List<CategoryReference> categoryAncestors = category.getAncestors();
     return categoryAncestors.stream()
         .filter(Objects::nonNull)
         .anyMatch(
             ancestor ->
                 ancestor.getObj() != null
-                    && keysOfDeletedAncestors.contains(ancestor.getObj().getKey()));
+                    && idsOfDeletedAncestors.contains(ancestor.getObj().getId()));
   }
 
   /**
