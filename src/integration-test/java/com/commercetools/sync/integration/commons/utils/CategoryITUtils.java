@@ -311,6 +311,45 @@ public final class CategoryITUtils {
         });
   }
 
+  /**
+   * Deletes categories from CTP projects defined by the {@code ctpClient} that match any of the
+   * supplied slugs in the specified locale. This method is useful for cleaning up categories that
+   * may not have keys set (which prevents them from being properly tracked by {@link
+   * #deleteAllCategories(ProjectApiRoot)}).
+   *
+   * @param ctpClient defines the CTP project to delete the categories from.
+   * @param locale the locale to use when matching slugs.
+   * @param slugs the list of slugs to match for deletion.
+   */
+  public static void deleteCategoriesBySlug(
+      @Nonnull final ProjectApiRoot ctpClient,
+      @Nonnull final Locale locale,
+      @Nonnull final List<String> slugs) {
+    slugs.forEach(
+        slug -> {
+          ctpClient
+              .categories()
+              .get()
+              .addWhere("slug(" + locale.getLanguage() + "=:slug)")
+              .addPredicateVar("slug", slug)
+              .execute()
+              .toCompletableFuture()
+              .join()
+              .getBody()
+              .getResults()
+              .forEach(
+                  category ->
+                      ctpClient
+                          .categories()
+                          .withId(category.getId())
+                          .delete()
+                          .withVersion(category.getVersion())
+                          .execute()
+                          .toCompletableFuture()
+                          .join());
+        });
+  }
+
   private static List<Category> sortCategoriesByLeastAncestors(
       @Nonnull final List<Category> categories) {
     categories.sort(Comparator.comparingInt(category -> category.getAncestors().size()));

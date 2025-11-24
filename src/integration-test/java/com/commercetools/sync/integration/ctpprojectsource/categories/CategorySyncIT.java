@@ -486,6 +486,12 @@ class CategorySyncIT {
     CompletableFuture.allOf(futureCreations.toArray(new CompletableFuture[futureCreations.size()]))
         .join();
 
+    // Delete any existing categories in TARGET with the same slugs to avoid conflicts
+    CategoryITUtils.deleteCategoriesBySlug(
+        TestClientUtils.CTP_TARGET_CLIENT,
+        Locale.ENGLISH,
+        List.of("furniture1-project-source", "furniture2-project-source"));
+
     // Create two categories in the target without Keys.
     futureCreations = new ArrayList<>();
     final CategoryDraft newCategoryDraft1 =
