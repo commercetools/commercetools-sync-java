@@ -360,8 +360,7 @@ public final class CategoryITUtils {
                         .join();
                   } catch (NotFoundException e) {
                     // Already deleted
-                    logger.debug(
-                      "Category with slug '{}' already deleted", slug);
+                    logger.debug("Category with slug '{}' already deleted", slug);
 
                   } catch (RuntimeException e) {
                     // May have been deleted by parent cascade or version conflict
@@ -371,8 +370,7 @@ public final class CategoryITUtils {
                 });
       } catch (RuntimeException e) {
         // Slug doesn't exist or query failed - this is expected
-        logger.debug(
-            "Category with slug '{}' does not exist", slug);
+        logger.debug("Category with slug '{}' does not exist", slug);
       }
     }
   }

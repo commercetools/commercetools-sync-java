@@ -107,7 +107,7 @@ class CategorySyncIT {
         TestClientUtils.CTP_SOURCE_CLIENT,
         Locale.ENGLISH,
         List.of("furniture1-project-source", "furniture2-project-source"));
-    
+
     // Then clean up everything else
     CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_TARGET_CLIENT);
     CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_SOURCE_CLIENT);
