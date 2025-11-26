@@ -97,6 +97,7 @@ public final class CustomerReferenceResolutionUtils {
     return CustomerDraftBuilder.of()
         .email(customer.getEmail())
         .password(customer.getPassword())
+        .authenticationMode(customer.getAuthenticationMode())
         .customerNumber(customer.getCustomerNumber())
         .key(customer.getKey())
         .firstName(customer.getFirstName())

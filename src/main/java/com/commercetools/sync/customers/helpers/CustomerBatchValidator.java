@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.commercetools.api.models.common.BaseAddress;
+import com.commercetools.api.models.customer.AuthenticationMode;
 import com.commercetools.api.models.customer.CustomerDraft;
 import com.commercetools.sync.commons.helpers.BaseBatchValidator;
 import com.commercetools.sync.customers.CustomerSyncOptions;
@@ -107,7 +108,8 @@ public class CustomerBatchValidator
       handleError(format(CUSTOMER_DRAFT_KEY_NOT_SET, customerDraft.getEmail()));
     } else if (isBlank(customerDraft.getEmail())) {
       handleError(format(CUSTOMER_DRAFT_EMAIL_NOT_SET, customerDraft.getKey()));
-    } else if (isBlank(customerDraft.getPassword())) {
+    } else if (isBlank(customerDraft.getPassword())
+        && customerDraft.getAuthenticationMode() != AuthenticationMode.EXTERNAL_AUTH) {
       handleError(format(CUSTOMER_DRAFT_PASSWORD_NOT_SET, customerDraft.getKey()));
     } else if (hasValidAddresses(customerDraft)) {
       return hasValidBillingAndShippingAddresses(customerDraft);

@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mock;
 import com.commercetools.api.client.ProjectApiRoot;
 import com.commercetools.api.models.common.AddressDraftBuilder;
 import com.commercetools.api.models.common.BaseAddress;
+import com.commercetools.api.models.customer.AuthenticationMode;
 import com.commercetools.api.models.customer.CustomerDraft;
 import com.commercetools.api.models.customer.CustomerDraftBuilder;
 import com.commercetools.api.models.customer_group.CustomerGroupResourceIdentifierBuilder;
@@ -159,6 +160,23 @@ class CustomerBatchValidatorTest {
             String.format(
                 CustomerBatchValidator.CUSTOMER_DRAFT_PASSWORD_NOT_SET, customerDraft.getKey()));
     assertThat(validDrafts).isEmpty();
+  }
+
+  @Test
+  void
+      validateAndCollectReferencedKeys_WithCustomerDraftWithEmptyPasswordAndExternalAuth_ShouldBeValid() {
+    final CustomerDraft customerDraft =
+        CustomerDraftBuilder.of()
+            .email("email")
+            .password(EMPTY)
+            .authenticationMode(AuthenticationMode.EXTERNAL_AUTH)
+            .key("key")
+            .build();
+
+    final Set<CustomerDraft> validDrafts = getValidDrafts(singletonList(customerDraft));
+
+    assertThat(errorCallBackMessages).hasSize(0);
+    assertThat(validDrafts).containsExactly(customerDraft);
   }
 
   @Test
