@@ -479,6 +479,12 @@ class CategorySyncIT {
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
 
+    // Ensure SOURCE is clean before creating categories (defensive cleanup)
+    CategoryITUtils.deleteCategoriesBySlug(
+        TestClientUtils.CTP_SOURCE_CLIENT,
+        Locale.ENGLISH,
+        List.of("furniture1-project-source", "furniture2-project-source"));
+
     // Create two categories in the source with Keys.
     List<CompletableFuture<ApiHttpResponse<Category>>> futureCreations = new ArrayList<>();
     futureCreations.add(
