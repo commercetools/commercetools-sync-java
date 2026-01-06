@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.*;
@@ -67,16 +68,6 @@ class CategorySyncIT {
   void setupTest() {
     CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_TARGET_CLIENT);
     CategoryITUtils.deleteAllCategories(TestClientUtils.CTP_SOURCE_CLIENT);
-
-    // Clean up any categories without keys that deleteAllCategories() might have missed
-    CategoryITUtils.deleteCategoriesBySlug(
-        TestClientUtils.CTP_TARGET_CLIENT,
-        Locale.ENGLISH,
-        List.of("furniture1-project-source", "furniture2-project-source"));
-    CategoryITUtils.deleteCategoriesBySlug(
-        TestClientUtils.CTP_SOURCE_CLIENT,
-        Locale.ENGLISH,
-        List.of("furniture1-project-source", "furniture2-project-source"));
 
     CategoryITUtils.ensureCategories(
         TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2, true));
@@ -463,52 +454,34 @@ class CategorySyncIT {
 
   @Test
   void syncDrafts_fromCategoriesWithoutKeys_ShouldNotUpdateCategories() {
+    // Generate unique identifiers for this test run to avoid collisions
+    final String testRunId = UUID.randomUUID().toString();
+    final String key1 = "cat-key-1-" + testRunId;
+    final String key2 = "cat-key-2-" + testRunId;
+    final String slug1 = "cat-slug-1-" + testRunId;
+    final String slug2 = "cat-slug-2-" + testRunId;
+
     final CategoryDraft oldCategoryDraft1 =
         CategoryDraftBuilder.of()
             .name(LocalizedString.of(Locale.ENGLISH, "cat1"))
-            .slug(LocalizedString.of(Locale.ENGLISH, "furniture1-project-source"))
-            .key("newKey1")
+            .slug(LocalizedString.of(Locale.ENGLISH, slug1))
+            .key(key1)
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
 
     final CategoryDraft oldCategoryDraft2 =
         CategoryDraftBuilder.of()
             .name(LocalizedString.of(Locale.ENGLISH, "cat2"))
-            .slug(LocalizedString.of(Locale.ENGLISH, "furniture2-project-source"))
-            .key("newKey2")
+            .slug(LocalizedString.of(Locale.ENGLISH, slug2))
+            .key(key2)
             .custom(CategoryITUtils.getCustomFieldsDraft())
             .build();
 
-    // Ensure SOURCE is clean before creating categories (defensive cleanup)
-    CategoryITUtils.deleteCategoriesBySlug(
-        TestClientUtils.CTP_SOURCE_CLIENT,
-        Locale.ENGLISH,
-        List.of("furniture1-project-source", "furniture2-project-source"));
-
     // Create two categories in the source with Keys.
-    List<CompletableFuture<ApiHttpResponse<Category>>> futureCreations = new ArrayList<>();
-    futureCreations.add(
-        TestClientUtils.CTP_SOURCE_CLIENT
-            .categories()
-            .create(oldCategoryDraft1)
-            .execute()
-            .toCompletableFuture());
-    futureCreations.add(
-        TestClientUtils.CTP_SOURCE_CLIENT
-            .categories()
-            .create(oldCategoryDraft2)
-            .execute()
-            .toCompletableFuture());
-    CompletableFuture.allOf(futureCreations.toArray(new CompletableFuture[futureCreations.size()]))
-        .join();
+    TestClientUtils.CTP_SOURCE_CLIENT.categories().create(oldCategoryDraft1).executeBlocking();
+    TestClientUtils.CTP_SOURCE_CLIENT.categories().create(oldCategoryDraft2).executeBlocking();
 
-    // Ensure TARGET is clean before creating categories without keys (defensive cleanup)
-    CategoryITUtils.deleteCategoriesBySlug(
-        TestClientUtils.CTP_TARGET_CLIENT,
-        Locale.ENGLISH,
-        List.of("furniture1-project-source", "furniture2-project-source"));
-
-    // Create two categories in the target without Keys (sequentially to ensure both are created).
+    // Create two categories in the target without Keys (same slugs but no keys).
     final CategoryDraft newCategoryDraft1 =
         CategoryDraftBuilder.of(oldCategoryDraft1).key(null).build();
     final CategoryDraft newCategoryDraft2 =
@@ -525,7 +498,7 @@ class CategorySyncIT {
             .categories()
             .get()
             .withWhere("key in :keys")
-            .withPredicateVar("keys", List.of("newKey1", "newKey2"))
+            .withPredicateVar("keys", List.of(key1, key2))
             .execute()
             .toCompletableFuture()
             .join()

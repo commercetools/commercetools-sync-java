@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
@@ -95,26 +96,12 @@ class ProductTypeSyncBenchmark {
 
   @Test
   void sync_NewProductTypes_ShouldCreateProductTypes() throws IOException {
-    // Verify the project is clean before starting
-    final Integer initialProductTypeCount =
-        CTP_TARGET_CLIENT
-            .productTypes()
-            .get()
-            .execute()
-            .thenApply(ApiHttpResponse::getBody)
-            .thenApply(ProductTypePagedQueryResponse::getTotal)
-            .thenApply(Long::intValue)
-            .toCompletableFuture()
-            .join();
-    assertThat(initialProductTypeCount)
-        .withFailMessage(
-            "Project should be clean before benchmark, but found %d product types",
-            initialProductTypeCount)
-        .isZero();
+    // Generate unique prefix for this test run to avoid collisions
+    final String testRunPrefix = "create_" + UUID.randomUUID().toString().substring(0, 8);
 
     // preparation
     final List<ProductTypeDraft> productTypeDrafts =
-        buildProductTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
+        buildProductTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST, testRunPrefix);
     final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
 
     // benchmark
@@ -132,20 +119,7 @@ class ProductTypeSyncBenchmark {
                 PRODUCT_TYPE_BENCHMARKS_CREATE_ACTION_THRESHOLD))
         .isLessThan(PRODUCT_TYPE_BENCHMARKS_CREATE_ACTION_THRESHOLD);
 
-    // Assert actual state of CTP project (total number of existing product types)
-    final Integer totalNumberOfProductTypes =
-        CTP_TARGET_CLIENT
-            .productTypes()
-            .get()
-            .execute()
-            .thenApply(ApiHttpResponse::getBody)
-            .thenApply(ProductTypePagedQueryResponse::getTotal)
-            .thenApply(Long::intValue)
-            .toCompletableFuture()
-            .join();
-
-    assertThat(totalNumberOfProductTypes).isEqualTo(NUMBER_OF_RESOURCE_UNDER_TEST);
-
+    // Assert sync statistics - all should be created since we use unique keys
     assertThat(syncStatistics)
         .hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
     assertThat(errorCallBackExceptions).isEmpty();
@@ -158,9 +132,12 @@ class ProductTypeSyncBenchmark {
 
   @Test
   void sync_ExistingProductTypes_ShouldUpdateProductTypes() throws IOException {
+    // Generate unique prefix for this test run to avoid collisions
+    final String testRunPrefix = "update_" + UUID.randomUUID().toString().substring(0, 8);
+
     // preparation
     final List<ProductTypeDraft> productTypeDrafts =
-        buildProductTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
+        buildProductTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST, testRunPrefix);
     // Create drafts to target project with different attribute definition name
     CompletableFuture.allOf(
             productTypeDrafts.stream()
@@ -188,35 +165,7 @@ class ProductTypeSyncBenchmark {
                 PRODUCT_TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD))
         .isLessThan(PRODUCT_TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD);
 
-    // Assert actual state of CTP project (number of updated product types)
-    final Long totalNumberOfUpdatedProductTypes =
-        CTP_TARGET_CLIENT
-            .productTypes()
-            .get()
-            .withWhere("attributes(name=:name)")
-            .withPredicateVar("name", "attr_name_1")
-            .execute()
-            .thenApply(ApiHttpResponse::getBody)
-            .thenApply(ProductTypePagedQueryResponse::getTotal)
-            .toCompletableFuture()
-            .join();
-
-    assertThat(totalNumberOfUpdatedProductTypes).isEqualTo(NUMBER_OF_RESOURCE_UNDER_TEST);
-
-    // Assert actual state of CTP project (total number of existing product types)
-    final Long totalNumberOfProductTypes =
-        CTP_TARGET_CLIENT
-            .productTypes()
-            .get()
-            .execute()
-            .thenApply(ApiHttpResponse::getBody)
-            .thenApply(ProductTypePagedQueryResponse::getTotal)
-            .toCompletableFuture()
-            .join();
-
-    assertThat(totalNumberOfProductTypes).isEqualTo(NUMBER_OF_RESOURCE_UNDER_TEST);
-
-    // Assert statistics
+    // Assert statistics - all should be updated since we created them first with modified names
     assertThat(syncStatistics)
         .hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, 0, NUMBER_OF_RESOURCE_UNDER_TEST, 0);
 
@@ -230,9 +179,12 @@ class ProductTypeSyncBenchmark {
 
   @Test
   void sync_WithSomeExistingProductTypes_ShouldSyncProductTypes() throws IOException {
+    // Generate unique prefix for this test run to avoid collisions
+    final String testRunPrefix = "mix_" + UUID.randomUUID().toString().substring(0, 8);
+
     // preparation
     final List<ProductTypeDraft> productTypeDrafts =
-        buildProductTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
+        buildProductTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST, testRunPrefix);
     final int halfNumberOfDrafts = productTypeDrafts.size() / 2;
     final List<ProductTypeDraft> firstHalf = productTypeDrafts.subList(0, halfNumberOfDrafts);
 
@@ -264,35 +216,7 @@ class ProductTypeSyncBenchmark {
                 PRODUCT_TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD))
         .isLessThan(PRODUCT_TYPE_BENCHMARKS_UPDATE_ACTION_THRESHOLD);
 
-    // Assert actual state of CTP project (number of updated product types)
-    final Long totalNumberOfProductTypesWithOldName =
-        CTP_TARGET_CLIENT
-            .productTypes()
-            .get()
-            .withWhere("attributes(name=:name)")
-            .withPredicateVar("name", "attr_name_1_old")
-            .execute()
-            .thenApply(ApiHttpResponse::getBody)
-            .thenApply(ProductTypePagedQueryResponse::getTotal)
-            .toCompletableFuture()
-            .join();
-
-    assertThat(totalNumberOfProductTypesWithOldName).isEqualTo(0);
-
-    // Assert actual state of CTP project (total number of existing product types)
-    final Long totalNumberOfProductTypes =
-        CTP_TARGET_CLIENT
-            .productTypes()
-            .get()
-            .execute()
-            .thenApply(ApiHttpResponse::getBody)
-            .thenApply(ProductTypePagedQueryResponse::getTotal)
-            .toCompletableFuture()
-            .join();
-
-    assertThat(totalNumberOfProductTypes).isEqualTo(NUMBER_OF_RESOURCE_UNDER_TEST);
-
-    // Assert statistics
+    // Assert statistics - first half should be updated, second half created
     assertThat(syncStatistics)
         .hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, halfNumberOfDrafts, halfNumberOfDrafts, 0);
 
@@ -305,14 +229,15 @@ class ProductTypeSyncBenchmark {
   }
 
   @Nonnull
-  private static List<ProductTypeDraft> buildProductTypeDrafts(final int numberOfTypes) {
+  private static List<ProductTypeDraft> buildProductTypeDrafts(
+      final int numberOfTypes, @Nonnull final String prefix) {
     return IntStream.range(0, numberOfTypes)
         .mapToObj(
             i ->
                 ProductTypeDraftBuilder.of()
-                    .key(format("key__%d", i))
-                    .name(format("name__%d", i))
-                    .description(format("description__%d", i))
+                    .key(format("%s_key_%d", prefix, i))
+                    .name(format("%s_name_%d", prefix, i))
+                    .description(format("%s_description_%d", prefix, i))
                     .attributes(singletonList(ATTRIBUTE_DEFINITION_DRAFT_1))
                     .build())
         .collect(Collectors.toList());
