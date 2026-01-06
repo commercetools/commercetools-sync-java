@@ -212,4 +212,69 @@ class CustomerReferenceResolutionUtilsTest {
     assertThat(customerDraft.getBillingAddresses()).isEqualTo(asList(0, 2));
     assertThat(customerDraft.getShippingAddresses()).isEmpty();
   }
+
+  @Test
+  void mapToCustomerDrafts_WithStateAndAdditionalStreetInfo_ShouldMapFieldsCorrectly() {
+    final Customer mockCustomer = mock(Customer.class);
+    when(mockCustomer.getEmail()).thenReturn("email");
+    when(mockCustomer.getPassword()).thenReturn("password");
+    when(mockCustomer.getAddresses())
+        .thenReturn(
+            asList(
+                AddressBuilder.of()
+                    .country(CountryCode.US.toString())
+                    .id("address-id1")
+                    .key("address-key1")
+                    .state("California")
+                    .additionalStreetInfo("Suite 100")
+                    .build(),
+                AddressBuilder.of()
+                    .country(CountryCode.DE.toString())
+                    .id("address-id2")
+                    .key("address-key2")
+                    .state("Bavaria")
+                    .additionalStreetInfo("Building A")
+                    .build()));
+
+    final List<CustomerDraft> referenceReplacedDrafts =
+        CustomerReferenceResolutionUtils.mapToCustomerDrafts(
+            singletonList(mockCustomer), referenceIdToKeyCache);
+
+    final CustomerDraft customerDraft = referenceReplacedDrafts.get(0);
+
+    assertThat(customerDraft.getAddresses()).hasSize(2);
+    assertThat(customerDraft.getAddresses().get(0).getState()).isEqualTo("California");
+    assertThat(customerDraft.getAddresses().get(0).getAdditionalStreetInfo())
+        .isEqualTo("Suite 100");
+    assertThat(customerDraft.getAddresses().get(1).getState()).isEqualTo("Bavaria");
+    assertThat(customerDraft.getAddresses().get(1).getAdditionalStreetInfo())
+        .isEqualTo("Building A");
+  }
+
+  @Test
+  void mapToCustomerDrafts_WithNullStateAndAdditionalStreetInfo_ShouldMapFieldsAsNull() {
+    final Customer mockCustomer = mock(Customer.class);
+    when(mockCustomer.getEmail()).thenReturn("email");
+    when(mockCustomer.getPassword()).thenReturn("password");
+    when(mockCustomer.getAddresses())
+        .thenReturn(
+            singletonList(
+                AddressBuilder.of()
+                    .country(CountryCode.US.toString())
+                    .id("address-id1")
+                    .key("address-key1")
+                    .state(null)
+                    .additionalStreetInfo(null)
+                    .build()));
+
+    final List<CustomerDraft> referenceReplacedDrafts =
+        CustomerReferenceResolutionUtils.mapToCustomerDrafts(
+            singletonList(mockCustomer), referenceIdToKeyCache);
+
+    final CustomerDraft customerDraft = referenceReplacedDrafts.get(0);
+
+    assertThat(customerDraft.getAddresses()).hasSize(1);
+    assertThat(customerDraft.getAddresses().get(0).getState()).isNull();
+    assertThat(customerDraft.getAddresses().get(0).getAdditionalStreetInfo()).isNull();
+  }
 }

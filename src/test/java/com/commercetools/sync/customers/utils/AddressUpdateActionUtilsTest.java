@@ -530,6 +530,121 @@ class AddressUpdateActionUtilsTest {
   }
 
   @Test
+  void buildChangeAddressUpdateActions_WithDifferentState_ShouldReturnChangeAddressAction() {
+
+    when(oldCustomer.getAddresses())
+        .thenReturn(
+            singletonList(
+                AddressBuilder.of()
+                    .country(CountryCode.US.toString())
+                    .key("address-key-1")
+                    .id("address-id-1")
+                    .state("California")
+                    .build()));
+
+    final AddressDraft address1 =
+        AddressDraftBuilder.of()
+            .country(CountryCode.US.toString())
+            .key("address-key-1")
+            .state("Texas")
+            .id("address-id-new-1")
+            .build();
+
+    final CustomerDraft newCustomer =
+        CustomerDraftBuilder.of()
+            .email("email")
+            .password("pass")
+            .addresses(singletonList(address1))
+            .build();
+
+    final List<CustomerUpdateAction> updateActions =
+        CustomerUpdateActionUtils.buildChangeAddressUpdateActions(oldCustomer, newCustomer);
+
+    assertThat(updateActions)
+        .containsExactly(
+            CustomerChangeAddressActionBuilder.of()
+                .addressId("address-id-1")
+                .address(address1)
+                .build());
+  }
+
+  @Test
+  void
+      buildChangeAddressUpdateActions_WithDifferentAdditionalStreetInfo_ShouldReturnChangeAddressAction() {
+
+    when(oldCustomer.getAddresses())
+        .thenReturn(
+            singletonList(
+                AddressBuilder.of()
+                    .country(CountryCode.US.toString())
+                    .key("address-key-1")
+                    .id("address-id-1")
+                    .additionalStreetInfo("Suite 100")
+                    .build()));
+
+    final AddressDraft address1 =
+        AddressDraftBuilder.of()
+            .country(CountryCode.US.toString())
+            .key("address-key-1")
+            .additionalStreetInfo("Suite 200")
+            .id("address-id-new-1")
+            .build();
+
+    final CustomerDraft newCustomer =
+        CustomerDraftBuilder.of()
+            .email("email")
+            .password("pass")
+            .addresses(singletonList(address1))
+            .build();
+
+    final List<CustomerUpdateAction> updateActions =
+        CustomerUpdateActionUtils.buildChangeAddressUpdateActions(oldCustomer, newCustomer);
+
+    assertThat(updateActions)
+        .containsExactly(
+            CustomerChangeAddressActionBuilder.of()
+                .addressId("address-id-1")
+                .address(address1)
+                .build());
+  }
+
+  @Test
+  void
+      buildChangeAddressUpdateActions_WithSameStateAndAdditionalStreetInfo_ShouldNotReturnAction() {
+
+    when(oldCustomer.getAddresses())
+        .thenReturn(
+            singletonList(
+                AddressBuilder.of()
+                    .country(CountryCode.US.toString())
+                    .key("address-key-1")
+                    .id("address-id-1")
+                    .state("California")
+                    .additionalStreetInfo("Suite 100")
+                    .build()));
+
+    final CustomerDraft newCustomer =
+        CustomerDraftBuilder.of()
+            .email("email")
+            .password("pass")
+            .addresses(
+                singletonList(
+                    AddressBuilder.of()
+                        .country(CountryCode.US.toString())
+                        .key("address-key-1")
+                        .id("address-id-new-1")
+                        .state("California")
+                        .additionalStreetInfo("Suite 100")
+                        .build()))
+            .build();
+
+    final List<CustomerUpdateAction> updateActions =
+        CustomerUpdateActionUtils.buildChangeAddressUpdateActions(oldCustomer, newCustomer);
+
+    assertThat(updateActions).isEmpty();
+  }
+
+  @Test
   void
       buildChangeAddressUpdateActions_WithAddressesWithoutKeys_ShouldNotReturnChangeAddressActions() {
 
