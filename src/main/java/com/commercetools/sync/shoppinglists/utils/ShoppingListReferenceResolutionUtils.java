@@ -15,6 +15,8 @@ import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraftBuild
 import com.commercetools.api.models.shopping_list.TextLineItem;
 import com.commercetools.api.models.shopping_list.TextLineItemDraft;
 import com.commercetools.api.models.shopping_list.TextLineItemDraftBuilder;
+import com.commercetools.api.models.store.StoreResourceIdentifier;
+import com.commercetools.api.models.store.StoreResourceIdentifierBuilder;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import java.util.List;
 import java.util.Objects;
@@ -46,6 +48,11 @@ public final class ShoppingListReferenceResolutionUtils {
    *        <td>customer</td>
    *        <td>{@link com.commercetools.api.models.customer.CustomerReference}</td>
    *        <td>{@link com.commercetools.api.models.customer.CustomerResourceIdentifier}</td>
+   *     </tr>
+   *     <tr>
+   *        <td>store</td>
+   *        <td>{@link com.commercetools.api.models.store.StoreKeyReference}</td>
+   *        <td>{@link com.commercetools.api.models.store.StoreResourceIdentifier}</td>
    *     </tr>
    *     <tr>
    *        <td>custom.type</td>
@@ -107,6 +114,11 @@ public final class ShoppingListReferenceResolutionUtils {
    *        <td>{@link com.commercetools.api.models.customer.CustomerResourceIdentifier}</td>
    *     </tr>
    *     <tr>
+   *        <td>store</td>
+   *        <td>{@link com.commercetools.api.models.store.StoreKeyReference}</td>
+   *        <td>{@link com.commercetools.api.models.store.StoreResourceIdentifier}</td>
+   *     </tr>
+   *     <tr>
    *        <td>custom.type</td>
    *        <td>{@link com.commercetools.api.models.type.TypeReference}</td>
    *        <td>{@link com.commercetools.api.models.type.TypeResourceIdentifier}</td>
@@ -139,16 +151,18 @@ public final class ShoppingListReferenceResolutionUtils {
       @Nonnull final ShoppingList shoppingList,
       @Nonnull final ReferenceIdToKeyCache referenceIdToKeyCache) {
 
-    final CustomerResourceIdentifier resourceIdentifierWithKey =
+    final CustomerResourceIdentifier customerResourceIdentifierWithKey =
         getResourceIdentifierWithKey(
             shoppingList.getCustomer(),
             referenceIdToKeyCache,
             (id, key) -> CustomerResourceIdentifierBuilder.of().id(id).key(key).build());
+
     return ShoppingListDraftBuilder.of()
         .name(shoppingList.getName())
         .description(shoppingList.getDescription())
         .key(shoppingList.getKey())
-        .customer(resourceIdentifierWithKey)
+        .customer(customerResourceIdentifierWithKey)
+        .store(mapToStoreResourceIdentifier(shoppingList))
         .slug(shoppingList.getSlug())
         .lineItems(mapToLineItemDrafts(shoppingList.getLineItems(), referenceIdToKeyCache))
         .textLineItems(
@@ -215,6 +229,15 @@ public final class ShoppingListReferenceResolutionUtils {
         .addedAt(textLineItem.getAddedAt())
         .custom(mapToCustomFieldsDraft(textLineItem.getCustom(), referenceIdToKeyCache))
         .build();
+  }
+
+  @Nullable
+  private static StoreResourceIdentifier mapToStoreResourceIdentifier(
+      @Nonnull final ShoppingList shoppingList) {
+    if (shoppingList.getStore() != null) {
+      return StoreResourceIdentifierBuilder.of().key(shoppingList.getStore().getKey()).build();
+    }
+    return null;
   }
 
   private ShoppingListReferenceResolutionUtils() {}

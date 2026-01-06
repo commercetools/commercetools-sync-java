@@ -11,6 +11,7 @@ import com.commercetools.api.models.shopping_list.ShoppingListSetCustomerActionB
 import com.commercetools.api.models.shopping_list.ShoppingListSetDeleteDaysAfterLastModificationActionBuilder;
 import com.commercetools.api.models.shopping_list.ShoppingListSetDescriptionActionBuilder;
 import com.commercetools.api.models.shopping_list.ShoppingListSetSlugActionBuilder;
+import com.commercetools.api.models.shopping_list.ShoppingListSetStoreActionBuilder;
 import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -114,6 +115,38 @@ public final class ShoppingListUpdateActionUtils {
             ShoppingListSetCustomerActionBuilder.of()
                 .customer(newShoppingList.getCustomer())
                 .build());
+  }
+
+  /**
+   * Compares the store references of a {@link ShoppingList} and a {@link ShoppingListDraft} and
+   * returns an {@link ShoppingListUpdateAction} as a result in an {@link java.util.Optional}. If
+   * both the {@link ShoppingList} and the {@link ShoppingListDraft} have the same store, then no
+   * update action is needed and hence an empty {@link java.util.Optional} is returned.
+   *
+   * <p>Note: This method compares store keys since {@link
+   * com.commercetools.api.models.store.StoreKeyReference} contains the key directly.
+   *
+   * @param oldShoppingList the shopping list which should be updated.
+   * @param newShoppingList the shopping list draft which holds the new store.
+   * @return A filled optional with the update action or an empty optional if the stores are
+   *     identical.
+   */
+  @Nonnull
+  public static Optional<ShoppingListUpdateAction> buildSetStoreUpdateAction(
+      @Nonnull final ShoppingList oldShoppingList,
+      @Nonnull final ShoppingListDraft newShoppingList) {
+
+    final String oldStoreKey =
+        oldShoppingList.getStore() != null ? oldShoppingList.getStore().getKey() : null;
+    final String newStoreKey =
+        newShoppingList.getStore() != null && newShoppingList.getStore().getKey() != null
+            ? newShoppingList.getStore().getKey()
+            : (newShoppingList.getStore() != null ? newShoppingList.getStore().getId() : null);
+
+    return buildUpdateAction(
+        oldStoreKey,
+        newStoreKey,
+        () -> ShoppingListSetStoreActionBuilder.of().store(newShoppingList.getStore()).build());
   }
 
   /**

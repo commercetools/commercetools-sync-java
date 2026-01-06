@@ -16,6 +16,8 @@ import com.commercetools.api.models.shopping_list.ShoppingListLineItem;
 import com.commercetools.api.models.shopping_list.ShoppingListLineItemDraftBuilder;
 import com.commercetools.api.models.shopping_list.TextLineItem;
 import com.commercetools.api.models.shopping_list.TextLineItemDraftBuilder;
+import com.commercetools.api.models.store.StoreKeyReference;
+import com.commercetools.api.models.store.StoreKeyReferenceBuilder;
 import com.commercetools.api.models.type.CustomFields;
 import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.api.models.type.TypeReference;
@@ -224,5 +226,50 @@ class ShoppingListsReferenceResolutionUtilsTest {
                 .deleteDaysAfterLastModification(2L)
                 .anonymousId("anonymousId")
                 .build());
+  }
+
+  @Test
+  void mapToShoppingListDrafts_WithStoreReference_ShouldReturnDraftsWithStoreKey() {
+    final String storeKey = "store-key";
+
+    final ShoppingList mockShoppingList = mock(ShoppingList.class);
+    when(mockShoppingList.getName()).thenReturn(ofEnglish("name"));
+    when(mockShoppingList.getKey()).thenReturn("key");
+
+    final StoreKeyReference storeKeyReference = StoreKeyReferenceBuilder.of().key(storeKey).build();
+    when(mockShoppingList.getStore()).thenReturn(storeKeyReference);
+
+    when(mockShoppingList.getCustomer()).thenReturn(null);
+    when(mockShoppingList.getCustom()).thenReturn(null);
+    when(mockShoppingList.getLineItems()).thenReturn(null);
+    when(mockShoppingList.getTextLineItems()).thenReturn(null);
+
+    final List<ShoppingListDraft> shoppingListDrafts =
+        ShoppingListReferenceResolutionUtils.mapToShoppingListDrafts(
+            singletonList(mockShoppingList), referenceIdToKeyCache);
+
+    assertThat(shoppingListDrafts).hasSize(1);
+    assertThat(shoppingListDrafts.get(0).getStore()).isNotNull();
+    assertThat(shoppingListDrafts.get(0).getStore().getKey()).isEqualTo(storeKey);
+  }
+
+  @Test
+  void mapToShoppingListDrafts_WithNullStore_ShouldReturnDraftsWithNullStore() {
+    final ShoppingList mockShoppingList = mock(ShoppingList.class);
+    when(mockShoppingList.getName()).thenReturn(ofEnglish("name"));
+    when(mockShoppingList.getKey()).thenReturn("key");
+    when(mockShoppingList.getStore()).thenReturn(null);
+
+    when(mockShoppingList.getCustomer()).thenReturn(null);
+    when(mockShoppingList.getCustom()).thenReturn(null);
+    when(mockShoppingList.getLineItems()).thenReturn(null);
+    when(mockShoppingList.getTextLineItems()).thenReturn(null);
+
+    final List<ShoppingListDraft> shoppingListDrafts =
+        ShoppingListReferenceResolutionUtils.mapToShoppingListDrafts(
+            singletonList(mockShoppingList), referenceIdToKeyCache);
+
+    assertThat(shoppingListDrafts).hasSize(1);
+    assertThat(shoppingListDrafts.get(0).getStore()).isNull();
   }
 }

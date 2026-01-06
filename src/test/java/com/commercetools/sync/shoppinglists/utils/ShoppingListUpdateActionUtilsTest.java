@@ -17,7 +17,12 @@ import com.commercetools.api.models.shopping_list.ShoppingListSetCustomerAction;
 import com.commercetools.api.models.shopping_list.ShoppingListSetDeleteDaysAfterLastModificationAction;
 import com.commercetools.api.models.shopping_list.ShoppingListSetDescriptionAction;
 import com.commercetools.api.models.shopping_list.ShoppingListSetSlugAction;
+import com.commercetools.api.models.shopping_list.ShoppingListSetStoreAction;
 import com.commercetools.api.models.shopping_list.ShoppingListUpdateAction;
+import com.commercetools.api.models.store.StoreKeyReference;
+import com.commercetools.api.models.store.StoreKeyReferenceBuilder;
+import com.commercetools.api.models.store.StoreResourceIdentifier;
+import com.commercetools.api.models.store.StoreResourceIdentifierBuilder;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
@@ -350,5 +355,95 @@ class ShoppingListUpdateActionUtilsTest {
     assertThat(setDeleteDaysUpdateAction).isNotNull();
     assertThat(setDeleteDaysUpdateAction)
         .containsInstanceOf(ShoppingListSetDeleteDaysAfterLastModificationAction.class);
+  }
+
+  @Test
+  void buildSetStoreUpdateAction_WithDifferentStoreKeys_ShouldBuildUpdateAction() {
+    final StoreKeyReference oldStoreReference =
+        StoreKeyReferenceBuilder.of().key("old-store-key").build();
+    final ShoppingList oldShoppingList = mock(ShoppingList.class);
+    when(oldShoppingList.getStore()).thenReturn(oldStoreReference);
+
+    final StoreResourceIdentifier newStoreIdentifier =
+        StoreResourceIdentifierBuilder.of().key("new-store-key").build();
+    final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
+    when(newShoppingList.getStore()).thenReturn(newStoreIdentifier);
+
+    final ShoppingListUpdateAction setStoreUpdateAction =
+        ShoppingListUpdateActionUtils.buildSetStoreUpdateAction(oldShoppingList, newShoppingList)
+            .orElse(null);
+
+    assertThat(setStoreUpdateAction).isNotNull();
+    assertThat(setStoreUpdateAction.getAction()).isEqualTo("setStore");
+    assertThat(((ShoppingListSetStoreAction) setStoreUpdateAction).getStore())
+        .isEqualTo(newStoreIdentifier);
+  }
+
+  @Test
+  void buildSetStoreUpdateAction_WithSameStoreKeys_ShouldNotBuildUpdateAction() {
+    final StoreKeyReference oldStoreReference =
+        StoreKeyReferenceBuilder.of().key("same-store-key").build();
+    final ShoppingList oldShoppingList = mock(ShoppingList.class);
+    when(oldShoppingList.getStore()).thenReturn(oldStoreReference);
+
+    final StoreResourceIdentifier newStoreIdentifier =
+        StoreResourceIdentifierBuilder.of().key("same-store-key").build();
+    final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
+    when(newShoppingList.getStore()).thenReturn(newStoreIdentifier);
+
+    final Optional<ShoppingListUpdateAction> setStoreUpdateAction =
+        ShoppingListUpdateActionUtils.buildSetStoreUpdateAction(oldShoppingList, newShoppingList);
+
+    assertThat(setStoreUpdateAction).isNotPresent();
+  }
+
+  @Test
+  void buildSetStoreUpdateAction_WithNullOldStore_ShouldBuildUpdateAction() {
+    final ShoppingList oldShoppingList = mock(ShoppingList.class);
+    when(oldShoppingList.getStore()).thenReturn(null);
+
+    final StoreResourceIdentifier newStoreIdentifier =
+        StoreResourceIdentifierBuilder.of().key("new-store-key").build();
+    final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
+    when(newShoppingList.getStore()).thenReturn(newStoreIdentifier);
+
+    final ShoppingListUpdateAction setStoreUpdateAction =
+        ShoppingListUpdateActionUtils.buildSetStoreUpdateAction(oldShoppingList, newShoppingList)
+            .orElse(null);
+
+    assertThat(setStoreUpdateAction).isNotNull();
+    assertThat(setStoreUpdateAction.getAction()).isEqualTo("setStore");
+  }
+
+  @Test
+  void buildSetStoreUpdateAction_WithNullNewStore_ShouldBuildUpdateAction() {
+    final StoreKeyReference oldStoreReference =
+        StoreKeyReferenceBuilder.of().key("old-store-key").build();
+    final ShoppingList oldShoppingList = mock(ShoppingList.class);
+    when(oldShoppingList.getStore()).thenReturn(oldStoreReference);
+
+    final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
+    when(newShoppingList.getStore()).thenReturn(null);
+
+    final ShoppingListUpdateAction setStoreUpdateAction =
+        ShoppingListUpdateActionUtils.buildSetStoreUpdateAction(oldShoppingList, newShoppingList)
+            .orElse(null);
+
+    assertThat(setStoreUpdateAction).isNotNull();
+    assertThat(setStoreUpdateAction.getAction()).isEqualTo("setStore");
+  }
+
+  @Test
+  void buildSetStoreUpdateAction_WithBothNull_ShouldNotBuildUpdateAction() {
+    final ShoppingList oldShoppingList = mock(ShoppingList.class);
+    when(oldShoppingList.getStore()).thenReturn(null);
+
+    final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
+    when(newShoppingList.getStore()).thenReturn(null);
+
+    final Optional<ShoppingListUpdateAction> setStoreUpdateAction =
+        ShoppingListUpdateActionUtils.buildSetStoreUpdateAction(oldShoppingList, newShoppingList);
+
+    assertThat(setStoreUpdateAction).isNotPresent();
   }
 }
