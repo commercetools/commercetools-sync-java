@@ -508,39 +508,32 @@ class CategorySyncIT {
         Locale.ENGLISH,
         List.of("furniture1-project-source", "furniture2-project-source"));
 
-    // Create two categories in the target without Keys.
-    futureCreations = new ArrayList<>();
+    // Create two categories in the target without Keys (sequentially to ensure both are created).
     final CategoryDraft newCategoryDraft1 =
         CategoryDraftBuilder.of(oldCategoryDraft1).key(null).build();
     final CategoryDraft newCategoryDraft2 =
         CategoryDraftBuilder.of(oldCategoryDraft2).key(null).build();
-    futureCreations.add(
-        TestClientUtils.CTP_TARGET_CLIENT
-            .categories()
-            .create(newCategoryDraft1)
-            .execute()
-            .toCompletableFuture());
-    futureCreations.add(
-        TestClientUtils.CTP_TARGET_CLIENT
-            .categories()
-            .create(newCategoryDraft2)
-            .execute()
-            .toCompletableFuture());
 
-    CompletableFuture.allOf(futureCreations.toArray(new CompletableFuture[futureCreations.size()]))
-        .join();
+    TestClientUtils.CTP_TARGET_CLIENT.categories().create(newCategoryDraft1).executeBlocking();
+    TestClientUtils.CTP_TARGET_CLIENT.categories().create(newCategoryDraft2).executeBlocking();
 
     // ---------
 
+    // Fetch only the categories we created for this test (by keys)
     final List<Category> categories =
         TestClientUtils.CTP_SOURCE_CLIENT
             .categories()
             .get()
+            .withWhere("key in :keys")
+            .withPredicateVar("keys", List.of("newKey1", "newKey2"))
             .execute()
             .toCompletableFuture()
             .join()
             .getBody()
             .getResults();
+
+    // Verify we have exactly 2 categories from SOURCE
+    assertThat(categories).hasSize(2);
 
     final List<CategoryDraft> categoryDrafts =
         CategoryTransformUtils.toCategoryDrafts(
