@@ -46,6 +46,7 @@ public final class ShoppingListSyncUtils {
             buildSetDescriptionUpdateAction(oldShoppingList, newShoppingList),
             buildSetAnonymousIdUpdateAction(oldShoppingList, newShoppingList),
             buildSetCustomerUpdateAction(oldShoppingList, newShoppingList),
+            buildSetStoreUpdateAction(oldShoppingList, newShoppingList),
             buildSetDeleteDaysAfterLastModificationUpdateAction(oldShoppingList, newShoppingList));
 
     updateActions.addAll(

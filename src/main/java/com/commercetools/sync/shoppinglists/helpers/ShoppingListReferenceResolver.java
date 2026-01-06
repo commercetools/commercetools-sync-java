@@ -11,6 +11,8 @@ import com.commercetools.api.models.customer.CustomerResourceIdentifier;
 import com.commercetools.api.models.customer.CustomerResourceIdentifierBuilder;
 import com.commercetools.api.models.shopping_list.ShoppingListDraft;
 import com.commercetools.api.models.shopping_list.ShoppingListDraftBuilder;
+import com.commercetools.api.models.store.StoreResourceIdentifier;
+import com.commercetools.api.models.store.StoreResourceIdentifierBuilder;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.CustomReferenceResolver;
 import com.commercetools.sync.services.CustomerService;
@@ -32,6 +34,9 @@ public final class ShoppingListReferenceResolver
       "Failed to resolve customer resource identifier on "
           + "ShoppingListDraft with key:'%s'. Reason: %s";
   static final String CUSTOMER_DOES_NOT_EXIST = "Customer with key '%s' doesn't exist.";
+  static final String FAILED_TO_RESOLVE_STORE_REFERENCE =
+      "Failed to resolve store resource identifier on "
+          + "ShoppingListDraft with key:'%s'. Reason: %s";
   static final String FAILED_TO_RESOLVE_CUSTOM_TYPE =
       "Failed to resolve custom type reference on ShoppingListDraft with key:'%s'. ";
 
@@ -66,9 +71,9 @@ public final class ShoppingListReferenceResolver
   }
 
   /**
-   * Given a {@link ShoppingListDraft} this method attempts to resolve the customer and custom type
-   * references to return a {@link java.util.concurrent.CompletionStage} which contains a new
-   * instance of the draft with the resolved references.
+   * Given a {@link ShoppingListDraft} this method attempts to resolve the customer, store and
+   * custom type references to return a {@link java.util.concurrent.CompletionStage} which contains
+   * a new instance of the draft with the resolved references.
    *
    * @param shoppingListDraft the shoppingListDraft to resolve its references.
    * @return a {@link java.util.concurrent.CompletionStage} that contains as a result a new
@@ -79,6 +84,7 @@ public final class ShoppingListReferenceResolver
   public CompletionStage<ShoppingListDraft> resolveReferences(
       @Nonnull final ShoppingListDraft shoppingListDraft) {
     return resolveCustomerReference(ShoppingListDraftBuilder.of(shoppingListDraft))
+        .thenCompose(this::resolveStoreReference)
         .thenCompose(this::resolveCustomTypeReference)
         .thenCompose(this::resolveLineItemReferences)
         .thenCompose(this::resolveTextLineItemReferences)
@@ -134,6 +140,32 @@ public final class ShoppingListReferenceResolver
                                       draftBuilder.getKey(),
                                       errorMessage)));
                         }));
+  }
+
+  @Nonnull
+  protected CompletionStage<ShoppingListDraftBuilder> resolveStoreReference(
+      @Nonnull final ShoppingListDraftBuilder draftBuilder) {
+
+    final StoreResourceIdentifier storeResourceIdentifier = draftBuilder.getStore();
+    if (storeResourceIdentifier != null && storeResourceIdentifier.getId() == null) {
+      try {
+        final String storeKey = getKeyFromResourceIdentifier(storeResourceIdentifier);
+        return completedFuture(
+            draftBuilder.store(StoreResourceIdentifierBuilder.of().key(storeKey).build()));
+      } catch (ReferenceResolutionException referenceResolutionException) {
+        return exceptionallyCompletedFuture(
+            new ReferenceResolutionException(
+                format(
+                    FAILED_TO_RESOLVE_STORE_REFERENCE,
+                    draftBuilder.getKey(),
+                    referenceResolutionException.getMessage())));
+      }
+    } else if (storeResourceIdentifier != null && storeResourceIdentifier.getId() != null) {
+      return completedFuture(
+          draftBuilder.store(
+              StoreResourceIdentifierBuilder.of().id(storeResourceIdentifier.getId()).build()));
+    }
+    return completedFuture(draftBuilder);
   }
 
   @Nonnull
