@@ -4,7 +4,7 @@ import static com.commercetools.sync.benchmark.BenchmarkUtils.*;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_1;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.removeAttributeReferencesAndDeleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
@@ -52,7 +52,7 @@ class ProductTypeSyncBenchmark {
   @AfterAll
   static void tearDown() {
     deleteAllProducts(CTP_TARGET_CLIENT);
-    deleteProductTypes(CTP_TARGET_CLIENT);
+    removeAttributeReferencesAndDeleteProductTypes(CTP_TARGET_CLIENT);
   }
 
   @BeforeEach
@@ -60,7 +60,8 @@ class ProductTypeSyncBenchmark {
     clearSyncTestCollections();
     // Delete products first because they reference product types
     deleteAllProducts(CTP_TARGET_CLIENT);
-    deleteProductTypes(CTP_TARGET_CLIENT);
+    // Remove attribute references between product types before deleting them
+    removeAttributeReferencesAndDeleteProductTypes(CTP_TARGET_CLIENT);
     productTypeSyncOptions = buildSyncOptions();
   }
 
@@ -94,6 +95,23 @@ class ProductTypeSyncBenchmark {
 
   @Test
   void sync_NewProductTypes_ShouldCreateProductTypes() throws IOException {
+    // Verify the project is clean before starting
+    final Integer initialProductTypeCount =
+        CTP_TARGET_CLIENT
+            .productTypes()
+            .get()
+            .execute()
+            .thenApply(ApiHttpResponse::getBody)
+            .thenApply(ProductTypePagedQueryResponse::getTotal)
+            .thenApply(Long::intValue)
+            .toCompletableFuture()
+            .join();
+    assertThat(initialProductTypeCount)
+        .withFailMessage(
+            "Project should be clean before benchmark, but found %d product types",
+            initialProductTypeCount)
+        .isZero();
+
     // preparation
     final List<ProductTypeDraft> productTypeDrafts =
         buildProductTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
