@@ -344,4 +344,115 @@ class CustomerSyncIT {
         .isEqualTo(
             "Summary: 1 customers were processed in total (0 created, 1 updated and 0 failed to sync).");
   }
+
+  @Test
+  void sync_WithUpdatedAddressStateAndAdditionalStreetInfo_ShouldUpdateCustomer() {
+    // Create a customer with addresses containing state and additionalStreetInfo
+    final CustomerDraft customerDraftWithAddressFields =
+        CustomerDraftBuilder.of()
+            .email("address-test@example.com")
+            .password("12345")
+            .key("customer-key-address-test")
+            .addresses(
+                asList(
+                    AddressBuilder.of()
+                        .country(CountryCode.US.name())
+                        .city("San Francisco")
+                        .key("address1")
+                        .state("California")
+                        .additionalStreetInfo("Suite 100")
+                        .build(),
+                    AddressBuilder.of()
+                        .country(CountryCode.DE.name())
+                        .city("Munich")
+                        .key("address2")
+                        .state("Bavaria")
+                        .additionalStreetInfo("Building A")
+                        .build()))
+            .build();
+
+    // Create the customer
+    final CustomerSyncStatistics createStatistics =
+        customerSync
+            .sync(singletonList(customerDraftWithAddressFields))
+            .toCompletableFuture()
+            .join();
+
+    assertThat(createStatistics.getCreated().get()).isEqualTo(1);
+    assertThat(errorMessages).isEmpty();
+    assertThat(warningMessages).isEmpty();
+
+    // Verify the created customer has the correct fields
+    final Customer createdCustomer =
+        TestClientUtils.CTP_TARGET_CLIENT
+            .customers()
+            .withKey("customer-key-address-test")
+            .get()
+            .executeBlocking()
+            .getBody();
+
+    assertThat(createdCustomer.getAddresses()).hasSize(2);
+    assertThat(createdCustomer.getAddresses().get(0).getState()).isEqualTo("California");
+    assertThat(createdCustomer.getAddresses().get(0).getAdditionalStreetInfo())
+        .isEqualTo("Suite 100");
+    assertThat(createdCustomer.getAddresses().get(1).getState()).isEqualTo("Bavaria");
+    assertThat(createdCustomer.getAddresses().get(1).getAdditionalStreetInfo())
+        .isEqualTo("Building A");
+
+    // Update the customer with different state and additionalStreetInfo
+    final CustomerDraft updatedCustomerDraft =
+        CustomerDraftBuilder.of()
+            .email("address-test@example.com")
+            .password("12345")
+            .key("customer-key-address-test")
+            .addresses(
+                asList(
+                    AddressBuilder.of()
+                        .country(CountryCode.US.name())
+                        .city("San Francisco")
+                        .key("address1")
+                        .state("Texas") // Changed from California
+                        .additionalStreetInfo("Suite 200") // Changed from Suite 100
+                        .build(),
+                    AddressBuilder.of()
+                        .country(CountryCode.DE.name())
+                        .city("Munich")
+                        .key("address2")
+                        .state("Berlin") // Changed from Bavaria
+                        .additionalStreetInfo("Building B") // Changed from Building A
+                        .build()))
+            .build();
+
+    // Clear previous update actions
+    updateActionList.clear();
+
+    // Sync the updated customer
+    final CustomerSyncStatistics updateStatistics =
+        customerSync.sync(singletonList(updatedCustomerDraft)).toCompletableFuture().join();
+
+    assertThat(updateStatistics.getUpdated().get()).isEqualTo(1);
+    assertThat(errorMessages).isEmpty();
+    assertThat(warningMessages).isEmpty();
+
+    // Verify update actions were generated for the changed fields
+    assertThat(updateActionList).isNotEmpty();
+    assertThat(updateActionList.toString()).contains("changeAddress");
+
+    // Verify the updated customer has the new values
+    final Customer updatedCustomer =
+        TestClientUtils.CTP_TARGET_CLIENT
+            .customers()
+            .withKey("customer-key-address-test")
+            .get()
+            .executeBlocking()
+            .getBody();
+
+    assertThat(updatedCustomer.getAddresses()).hasSize(2);
+    assertThat(updatedCustomer.getAddresses().get(0).getState()).isEqualTo("Texas");
+    assertThat(updatedCustomer.getAddresses().get(0).getAdditionalStreetInfo())
+        .isEqualTo("Suite 200");
+    assertThat(updatedCustomer.getAddresses().get(1).getState()).isEqualTo("Berlin");
+    assertThat(updatedCustomer.getAddresses().get(1).getAdditionalStreetInfo())
+        .isEqualTo("Building B");
+  }
 }
