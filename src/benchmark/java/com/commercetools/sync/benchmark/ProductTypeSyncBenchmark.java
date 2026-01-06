@@ -2,6 +2,7 @@ package com.commercetools.sync.benchmark;
 
 import static com.commercetools.sync.benchmark.BenchmarkUtils.*;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_1;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.TestClientUtils.CTP_TARGET_CLIENT;
@@ -50,12 +51,15 @@ class ProductTypeSyncBenchmark {
 
   @AfterAll
   static void tearDown() {
+    deleteAllProducts(CTP_TARGET_CLIENT);
     deleteProductTypes(CTP_TARGET_CLIENT);
   }
 
   @BeforeEach
   void setupTest() {
     clearSyncTestCollections();
+    // Delete products first because they reference product types
+    deleteAllProducts(CTP_TARGET_CLIENT);
     deleteProductTypes(CTP_TARGET_CLIENT);
     productTypeSyncOptions = buildSyncOptions();
   }
