@@ -31,9 +31,10 @@
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.4.0...10.5.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.5.0/) |
 [Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.5.0/jar)
-- 🐞 **Bug Fixes** (2)
+- 🐞 **Bug Fixes** (3)
   - **Customer Sync** - Fix additional address and state fields in customer reference resolution (https://github.com/commercetools/commercetools-sync-java/pull/1237)
   - **Shopping List Sync** - Fix store reference resolution and update actions in shopping lists (https://github.com/commercetools/commercetools-sync-java/pull/1238)
+  - **Category Sync** - Fix IndexOutOfBoundsException in CategoryReferenceResolver when resolving parent references with empty cache results
 
 ### 10.4.0 - Nov 26, 2025
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.3.0...10.4.0) |
