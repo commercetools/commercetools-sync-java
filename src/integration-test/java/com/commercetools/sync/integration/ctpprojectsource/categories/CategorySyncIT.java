@@ -485,8 +485,10 @@ class CategorySyncIT {
 
     assertThat(oldCategoryDraft1.getKey()).isNotEqualTo(newCategoryDraft2.getKey());
     assertThat(oldCategoryDraft2.getKey()).isNotEqualTo(newCategoryDraft2.getKey());
-    assertThat(oldCategoryDraft1.getSlug().get(Locale.ENGLISH)).isEqualTo(newCategoryDraft1.getSlug().get(Locale.ENGLISH));
-    assertThat(oldCategoryDraft2.getSlug().get(Locale.ENGLISH)).isEqualTo(newCategoryDraft2.getSlug().get(Locale.ENGLISH));
+    assertThat(oldCategoryDraft1.getSlug().get(Locale.ENGLISH))
+        .isEqualTo(newCategoryDraft1.getSlug().get(Locale.ENGLISH));
+    assertThat(oldCategoryDraft2.getSlug().get(Locale.ENGLISH))
+        .isEqualTo(newCategoryDraft2.getSlug().get(Locale.ENGLISH));
 
     final Category targetCat1 =
         TestClientUtils.CTP_TARGET_CLIENT
