@@ -33,9 +33,13 @@ import org.junit.jupiter.api.*;
 class CategorySyncIT {
   private CategorySync categorySync;
 
-  private List<String> callBackErrorResponses = new ArrayList<>();
-  private List<Throwable> callBackExceptions = new ArrayList<>();
-  private List<String> callBackWarningResponses = new ArrayList<>();
+  // Use thread-safe lists because callbacks are called from parallel threads
+  private List<String> callBackErrorResponses =
+      java.util.Collections.synchronizedList(new ArrayList<>());
+  private List<Throwable> callBackExceptions =
+      java.util.Collections.synchronizedList(new ArrayList<>());
+  private List<String> callBackWarningResponses =
+      java.util.Collections.synchronizedList(new ArrayList<>());
   private ReferenceIdToKeyCache referenceIdToKeyCache;
 
   /**
@@ -68,9 +72,9 @@ class CategorySyncIT {
     CategoryITUtils.ensureCategories(
         TestClientUtils.CTP_TARGET_CLIENT, CategoryITUtils.getCategoryDrafts(null, 2, true));
 
-    callBackErrorResponses = new ArrayList<>();
-    callBackExceptions = new ArrayList<>();
-    callBackWarningResponses = new ArrayList<>();
+    callBackErrorResponses = java.util.Collections.synchronizedList(new ArrayList<>());
+    callBackExceptions = java.util.Collections.synchronizedList(new ArrayList<>());
+    callBackWarningResponses = java.util.Collections.synchronizedList(new ArrayList<>());
     categorySync = new CategorySync(buildCategorySyncOptions(50));
     referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();
   }
