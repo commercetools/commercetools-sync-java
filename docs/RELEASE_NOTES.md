@@ -27,6 +27,54 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
+### 10.5.0 - Jan 07, 2026
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.4.0...10.5.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.5.0/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.5.0/jar)
+- 🐞 **Bug Fixes** (2)
+  - **Customer Sync** - Fix additional address and state fields in customer reference resolution (https://github.com/commercetools/commercetools-sync-java/pull/1237)
+  - **Shopping List Sync** - Fix store reference resolution and update actions in shopping lists (https://github.com/commercetools/commercetools-sync-java/pull/1238)
+
+### 10.4.0 - Nov 26, 2025
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.3.0...10.4.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.4.0/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.4.0/jar)
+- 🐞 **Bug Fixes** (1)
+  - **Customer Sync** - Password is no longer required when authMode is external (https://github.com/commercetools/commercetools-sync-java/pull/1235)
+
+### 10.3.0 - Nov 24, 2025
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.2.0...10.3.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.3.0/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.3.0/jar)
+- 🐞 **Bug Fixes** (2)
+  - Fix product-type cache race condition (https://github.com/commercetools/commercetools-sync-java/pull/1232)
+  - Fix delete category by slug (https://github.com/commercetools/commercetools-sync-java/pull/1234)
+
+### 10.2.0 - Nov 24, 2025
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.0.9...10.2.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.2.0/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.2.0/jar)
+- ✨ **Enhancements** (1)
+  - **Customer Sync** - Support custom type resolution in customer's address (https://github.com/commercetools/commercetools-sync-java/pull/1233)
+- 🛠️ **Dependency Updates** (1)
+  - Update SDK version for latest product-draft model (https://github.com/commercetools/commercetools-sync-java/pull/1227)
+
+### 10.0.9 - Aug 18, 2025
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.0.8...10.0.9) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.9/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.0.9/jar)
+- 🐞 **Bug Fixes** (1)
+  - Remove cache boundary to avoid null reference issues (https://github.com/commercetools/commercetools-sync-java/pull/1226)
+
+### 10.0.8 - Aug 11, 2025
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.0.7...10.0.8) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.8/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/10.0.8/jar)
+- 🐞 **Bug Fixes** (1)
+  - Increase cache size to circumvent null reference caused by LRU race condition (https://github.com/commercetools/commercetools-sync-java/pull/1223)
+- 🛠️ **Dependency Updates** (1)
+  - Update SDK to v18 and other dependencies (https://github.com/commercetools/commercetools-sync-java/pull/1215)
+
 ### 10.0.7 - Apr 03, 2025
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.0.6...10.0.7) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.0.7/) |
