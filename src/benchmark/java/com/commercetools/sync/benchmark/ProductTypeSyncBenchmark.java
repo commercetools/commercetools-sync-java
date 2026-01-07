@@ -15,7 +15,6 @@ import com.commercetools.api.models.product_type.AttributeDefinitionDraftBuilder
 import com.commercetools.api.models.product_type.ProductType;
 import com.commercetools.api.models.product_type.ProductTypeDraft;
 import com.commercetools.api.models.product_type.ProductTypeDraftBuilder;
-import com.commercetools.api.models.product_type.ProductTypePagedQueryResponse;
 import com.commercetools.api.models.product_type.ProductTypeUpdateAction;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
@@ -24,7 +23,6 @@ import com.commercetools.sync.producttypes.ProductTypeSync;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
 import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
-import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

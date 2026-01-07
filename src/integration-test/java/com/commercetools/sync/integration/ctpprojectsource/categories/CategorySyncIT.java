@@ -24,13 +24,11 @@ import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.integration.commons.utils.CategoryITUtils;
 import com.commercetools.sync.integration.commons.utils.ITUtils;
 import com.commercetools.sync.integration.commons.utils.TestClientUtils;
-import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.*;
 
@@ -487,8 +485,24 @@ class CategorySyncIT {
     final CategoryDraft newCategoryDraft2 =
         CategoryDraftBuilder.of(oldCategoryDraft2).key(null).build();
 
-    TestClientUtils.CTP_TARGET_CLIENT.categories().create(newCategoryDraft1).executeBlocking();
-    TestClientUtils.CTP_TARGET_CLIENT.categories().create(newCategoryDraft2).executeBlocking();
+    final Category targetCat1 =
+        TestClientUtils.CTP_TARGET_CLIENT
+            .categories()
+            .create(newCategoryDraft1)
+            .executeBlocking()
+            .getBody();
+    final Category targetCat2 =
+        TestClientUtils.CTP_TARGET_CLIENT
+            .categories()
+            .create(newCategoryDraft2)
+            .executeBlocking()
+            .getBody();
+
+    // Verify both categories were created in TARGET
+    assertThat(targetCat1).isNotNull();
+    assertThat(targetCat1.getSlug().get(Locale.ENGLISH)).isEqualTo(slug1);
+    assertThat(targetCat2).isNotNull();
+    assertThat(targetCat2.getSlug().get(Locale.ENGLISH)).isEqualTo(slug2);
 
     // ---------
 
