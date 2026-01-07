@@ -1,7 +1,6 @@
 package com.commercetools.sync.integration.ctpprojectsource.categories;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.api.client.error.BadRequestException;
