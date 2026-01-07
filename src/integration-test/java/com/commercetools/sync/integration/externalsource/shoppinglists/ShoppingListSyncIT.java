@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -526,15 +527,16 @@ class ShoppingListSyncIT {
 
   @Test
   void sync_WithStoreChange_ShouldUpdateShoppingListStore() {
+    // Generate unique store key to avoid collisions with other test runs
+    final String storeKey = "test-store-" + UUID.randomUUID();
+
     // Create the store that will be referenced
-    ensureStore(CTP_TARGET_CLIENT, "different-store-key");
+    ensureStore(CTP_TARGET_CLIENT, storeKey);
 
     // Create a shopping list draft with a different store
     final ShoppingListDraft modifiedDraft =
         ShoppingListDraftBuilder.of(shoppingListDraftSampleCarrotCake)
-            .store(
-                storeResourceIdentifierBuilder ->
-                    storeResourceIdentifierBuilder.key("different-store-key"))
+            .store(storeResourceIdentifierBuilder -> storeResourceIdentifierBuilder.key(storeKey))
             .build();
 
     final ShoppingListSyncStatistics shoppingListSyncStatistics =
