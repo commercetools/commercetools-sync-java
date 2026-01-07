@@ -459,7 +459,7 @@ class CategorySyncIT {
 
     final CategoryDraft oldCategoryDraft1 =
         CategoryDraftBuilder.of()
-            .name(LocalizedString.of(Locale.ENGLISH, "cat1"))
+            .name(LocalizedString.of(Locale.ENGLISH, key1))
             .slug(LocalizedString.of(Locale.ENGLISH, slug1))
             .key(key1)
             .custom(CategoryITUtils.getCustomFieldsDraft())
@@ -467,7 +467,7 @@ class CategorySyncIT {
 
     final CategoryDraft oldCategoryDraft2 =
         CategoryDraftBuilder.of()
-            .name(LocalizedString.of(Locale.ENGLISH, "cat2"))
+            .name(LocalizedString.of(Locale.ENGLISH, key2))
             .slug(LocalizedString.of(Locale.ENGLISH, slug2))
             .key(key2)
             .custom(CategoryITUtils.getCustomFieldsDraft())
@@ -482,6 +482,11 @@ class CategorySyncIT {
         CategoryDraftBuilder.of(oldCategoryDraft1).key(null).build();
     final CategoryDraft newCategoryDraft2 =
         CategoryDraftBuilder.of(oldCategoryDraft2).key(null).build();
+
+    assertThat(oldCategoryDraft1.getKey()).isNotEqualTo(newCategoryDraft2.getKey());
+    assertThat(oldCategoryDraft2.getKey()).isNotEqualTo(newCategoryDraft2.getKey());
+    assertThat(oldCategoryDraft1.getSlug().get(Locale.ENGLISH)).isEqualTo(newCategoryDraft1.getSlug().get(Locale.ENGLISH));
+    assertThat(oldCategoryDraft2.getSlug().get(Locale.ENGLISH)).isEqualTo(newCategoryDraft2.getSlug().get(Locale.ENGLISH));
 
     final Category targetCat1 =
         TestClientUtils.CTP_TARGET_CLIENT

@@ -189,6 +189,6 @@ public final class CategoryReferenceResolver
     }
 
     return collectionOfFuturesToFutureOfCollection(futures, toList())
-        .thenApply(maps -> maps.get(0));
+        .thenApply(maps -> maps.isEmpty() ? java.util.Collections.emptyMap() : maps.get(0));
   }
 }
