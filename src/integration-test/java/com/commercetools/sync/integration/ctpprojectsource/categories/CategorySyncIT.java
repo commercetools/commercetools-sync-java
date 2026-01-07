@@ -504,6 +504,25 @@ class CategorySyncIT {
     assertThat(targetCat2).isNotNull();
     assertThat(targetCat2.getSlug().get(Locale.ENGLISH)).isEqualTo(slug2);
 
+    // Re-fetch TARGET categories by slug to ensure they're fully indexed before syncing
+    // This addresses potential eventual consistency issues with the commercetools API
+    final long targetCategoriesWithOurSlugs =
+        TestClientUtils.CTP_TARGET_CLIENT
+            .categories()
+            .get()
+            .withWhere("slug(en in :slugs)")
+            .withPredicateVar("slugs", List.of(slug1, slug2))
+            .execute()
+            .toCompletableFuture()
+            .join()
+            .getBody()
+            .getTotal();
+    assertThat(targetCategoriesWithOurSlugs)
+        .withFailMessage(
+            "Expected 2 categories with slugs %s and %s in TARGET, but found %d",
+            slug1, slug2, targetCategoriesWithOurSlugs)
+        .isEqualTo(2L);
+
     // ---------
 
     // Fetch only the categories we created for this test (by keys)
