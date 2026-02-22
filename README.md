@@ -15,6 +15,8 @@ Java library which allows to import/synchronise (import changes) the data from a
 
 Supported resources: [Categories](/docs/usage/CATEGORY_SYNC.md), [Products](/docs/usage/PRODUCT_SYNC.md), [InventoryEntries](/docs/usage/INVENTORY_SYNC.md), [ProductTypes](/docs/usage/PRODUCT_TYPE_SYNC.md), [Types](/docs/usage/TYPE_SYNC.md), [CartDiscounts](/docs/usage/CART_DISCOUNT_SYNC.md), [States](/docs/usage/STATE_SYNC.md), [TaxCategories](/docs/usage/TAX_CATEGORY_SYNC.md), [CustomObjects](/docs/usage/CUSTOM_OBJECT_SYNC.md), [Customers](/docs/usage/CUSTOMER_SYNC.md), [ShoppingLists](/docs/usage/SHOPPING_LIST_SYNC.md)
 
+> **Important:** Active development of new features for this library has been deprioritized. However, the library is designed to be extensible, and **community contributions are welcome**. If you need to sync a field that isn't supported yet, you can add support for it yourself by following the [Adding Additional Fields](/docs/usage/ADDING_ADDITIONAL_FIELDS.md) guide. For a full list of currently supported fields per resource, see the [Supported Resources and Fields](/docs/SUPPORTED_RESOURCES.md) document.
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
