@@ -24,9 +24,9 @@
 
 ## Overview
 
-The library supports specific fields for each resource type. For a full list of currently supported fields, see the [Supported Resources and Fields](../SUPPORTED_RESOURCES.md) document.
+The commercetools-sync-java library supports specific fields for each resource type. For a full list of supported fields, see the [Supported Resources and Fields](../SUPPORTED_RESOURCES.md) document.
 
-If the field you need is not listed there, you can add native support by following the steps in this guide. All changes are made within the existing library files — no external dependencies are needed.
+If the field you need is not listed, you can add native support by following the steps in this guide. All changes are made within the existing library files — no external dependencies are needed.
 
 ## Step-by-Step Guide
 
@@ -36,9 +36,9 @@ This guide walks through a concrete example: adding support for a hypothetical u
 
 Open the `{Resource}UpdateActionUtils.java` file for the resource you want to extend. For CartDiscounts, this is:
 
-`src/main/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountUpdateActionUtils.java`
+[`src/main/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountUpdateActionUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountUpdateActionUtils.java)
 
-Add a new static method that compares the field's old and new values and returns an `Optional<{Resource}UpdateAction>`. Use the `buildUpdateAction()` helper from `CommonTypeUpdateActionUtils` for the comparison.
+Add a new static method that compares the field's old and new values and returns an `Optional<{Resource}UpdateAction>`. Use the `buildUpdateAction()` helper from [`CommonTypeUpdateActionUtils`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/commons/utils/CommonTypeUpdateActionUtils.java) for the comparison.
 
 **Example — adding a `store` field to CartDiscounts:**
 
@@ -78,7 +78,7 @@ public static Optional<CartDiscountUpdateAction> buildSetStoresUpdateAction(
 
 Open the `{Resource}SyncUtils.java` file. For CartDiscounts:
 
-`src/main/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountSyncUtils.java`
+[`src/main/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountSyncUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountSyncUtils.java)
 
 Add a call to your new builder method inside the `buildActions()` method, within the `filterEmptyOptionals()` call:
 
@@ -105,7 +105,7 @@ That single line is all that's needed to wire the new field into the sync proces
 
 Open the `{Resource}UpdateActionUtilsTest.java` file. For CartDiscounts:
 
-`src/test/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountUpdateActionUtilsTest.java`
+[`src/test/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountUpdateActionUtilsTest.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountUpdateActionUtilsTest.java)
 
 Write tests covering these cases:
 
@@ -246,7 +246,7 @@ When syncing from an external source, references are provided by **key**. When s
 
 In `{Resource}ReferenceResolver.java`, add a resolve method and chain it in `resolveReferences()`:
 
-File: `src/main/java/com/commercetools/sync/shoppinglists/helpers/ShoppingListReferenceResolver.java`
+File: [`src/main/java/com/commercetools/sync/shoppinglists/helpers/ShoppingListReferenceResolver.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/shoppinglists/helpers/ShoppingListReferenceResolver.java)
 
 ````java
 // Chain the new resolver in the resolveReferences() method:
@@ -290,11 +290,11 @@ protected CompletionStage<ShoppingListDraftBuilder> resolveStoreReference(
 
 #### Reference resolution utils (mapping)
 
-When syncing from a commercetools project, resources are fetched as full objects and need to be converted to drafts. The `{Resource}ReferenceResolutionUtils` handles this mapping.
+When syncing from a commercetools project, resources are fetched as full objects and must be converted to drafts. The `{Resource}ReferenceResolutionUtils` handles this mapping.
 
 In `{Resource}ReferenceResolutionUtils.java`, add a mapping method and call it from `mapTo{Resource}Draft()`:
 
-File: `src/main/java/com/commercetools/sync/shoppinglists/utils/ShoppingListReferenceResolutionUtils.java`
+File: [`src/main/java/com/commercetools/sync/shoppinglists/utils/ShoppingListReferenceResolutionUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/shoppinglists/utils/ShoppingListReferenceResolutionUtils.java)
 
 ````java
 // In the mapToShoppingListDraft() method, add the store mapping:
@@ -365,7 +365,7 @@ Products support filtering update actions by group via `SyncFilter`. When adding
 
 **1. Add an enum value to `ActionGroup`** (if an appropriate group doesn't already exist):
 
-File: `src/main/java/com/commercetools/sync/products/ActionGroup.java`
+File: [`src/main/java/com/commercetools/sync/products/ActionGroup.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/products/ActionGroup.java)
 
 ````java
 public enum ActionGroup {
@@ -378,7 +378,7 @@ public enum ActionGroup {
 
 **2. Wrap the action builder with `buildActionIfPassesFilter`** in `ProductSyncUtils.buildActions()`:
 
-File: `src/main/java/com/commercetools/sync/products/utils/ProductSyncUtils.java`
+File: [`src/main/java/com/commercetools/sync/products/utils/ProductSyncUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/products/utils/ProductSyncUtils.java)
 
 ````java
 buildActionIfPassesFilter(
@@ -397,27 +397,27 @@ For each resource type, the files you need to modify follow this pattern:
 
 | Resource | UpdateActionUtils | SyncUtils | Test File |
 |----------|-------------------|-----------|-----------|
-| Products | `products/utils/ProductUpdateActionUtils.java` | `products/utils/ProductSyncUtils.java` | `products/utils/ProductUpdateActionUtilsTest.java` |
-| Categories | `categories/utils/CategoryUpdateActionUtils.java` | `categories/utils/CategorySyncUtils.java` | `categories/utils/CategoryUpdateActionUtilsTest.java` |
-| ProductTypes | `producttypes/utils/ProductTypeUpdateActionUtils.java` | `producttypes/utils/ProductTypeSyncUtils.java` | `producttypes/utils/ProductTypeUpdateActionUtilsTest.java` |
-| Types | `types/utils/TypeUpdateActionUtils.java` | `types/utils/TypeSyncUtils.java` | `types/utils/TypeUpdateActionUtilsTest.java` |
-| InventoryEntries | `inventories/utils/InventoryUpdateActionUtils.java` | `inventories/utils/InventorySyncUtils.java` | `inventories/utils/InventoryUpdateActionUtilsTest.java` |
-| CartDiscounts | `cartdiscounts/utils/CartDiscountUpdateActionUtils.java` | `cartdiscounts/utils/CartDiscountSyncUtils.java` | `cartdiscounts/utils/CartDiscountUpdateActionUtilsTest.java` |
-| States | `states/utils/StateUpdateActionUtils.java` | `states/utils/StateSyncUtils.java` | `states/utils/StateUpdateActionUtilsTest.java` |
-| TaxCategories | `taxcategories/utils/TaxCategoryUpdateActionUtils.java` | `taxcategories/utils/TaxCategorySyncUtils.java` | `taxcategories/utils/TaxCategoryUpdateActionUtilsTest.java` |
-| Customers | `customers/utils/CustomerUpdateActionUtils.java` | `customers/utils/CustomerSyncUtils.java` | `customers/utils/CustomerUpdateActionUtilsTest.java` |
-| ShoppingLists | `shoppinglists/utils/ShoppingListUpdateActionUtils.java` | `shoppinglists/utils/ShoppingListSyncUtils.java` | `shoppinglists/utils/ShoppingListUpdateActionUtilsTest.java` |
+| Products | [`ProductUpdateActionUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/products/utils/ProductUpdateActionUtils.java) | [`ProductSyncUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/products/utils/ProductSyncUtils.java) | [`ProductUpdateActionUtilsTest.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/products/utils/ProductUpdateActionUtilsTest.java) |
+| Categories | [`CategoryUpdateActionUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/categories/utils/CategoryUpdateActionUtils.java) | [`CategorySyncUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/categories/utils/CategorySyncUtils.java) | [`CategoryUpdateActionUtilsTest.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/categories/utils/CategoryUpdateActionUtilsTest.java) |
+| ProductTypes | [`ProductTypeUpdateActionUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/producttypes/utils/ProductTypeUpdateActionUtils.java) | [`ProductTypeSyncUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/producttypes/utils/ProductTypeSyncUtils.java) | [`ProductTypeUpdateActionUtilsTest.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/producttypes/utils/ProductTypeUpdateActionUtilsTest.java) |
+| Types | [`TypeUpdateActionUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/types/utils/TypeUpdateActionUtils.java) | [`TypeSyncUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/types/utils/TypeSyncUtils.java) | [`TypeUpdateActionUtilsTest.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/types/utils/TypeUpdateActionUtilsTest.java) |
+| InventoryEntries | [`InventoryUpdateActionUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/inventories/utils/InventoryUpdateActionUtils.java) | [`InventorySyncUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/inventories/utils/InventorySyncUtils.java) | [`InventoryUpdateActionUtilsTest.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/inventories/utils/InventoryUpdateActionUtilsTest.java) |
+| CartDiscounts | [`CartDiscountUpdateActionUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountUpdateActionUtils.java) | [`CartDiscountSyncUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountSyncUtils.java) | [`CartDiscountUpdateActionUtilsTest.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountUpdateActionUtilsTest.java) |
+| States | [`StateUpdateActionUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/states/utils/StateUpdateActionUtils.java) | [`StateSyncUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/states/utils/StateSyncUtils.java) | [`StateUpdateActionUtilsTest.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/states/utils/StateUpdateActionUtilsTest.java) |
+| TaxCategories | [`TaxCategoryUpdateActionUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/taxcategories/utils/TaxCategoryUpdateActionUtils.java) | [`TaxCategorySyncUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/taxcategories/utils/TaxCategorySyncUtils.java) | [`TaxCategoryUpdateActionUtilsTest.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/taxcategories/utils/TaxCategoryUpdateActionUtilsTest.java) |
+| Customers | [`CustomerUpdateActionUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/customers/utils/CustomerUpdateActionUtils.java) | [`CustomerSyncUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/customers/utils/CustomerSyncUtils.java) | [`CustomerUpdateActionUtilsTest.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/customers/utils/CustomerUpdateActionUtilsTest.java) |
+| ShoppingLists | [`ShoppingListUpdateActionUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/shoppinglists/utils/ShoppingListUpdateActionUtils.java) | [`ShoppingListSyncUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/shoppinglists/utils/ShoppingListSyncUtils.java) | [`ShoppingListUpdateActionUtilsTest.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/shoppinglists/utils/ShoppingListUpdateActionUtilsTest.java) |
 
 ### Additional files for reference fields only
 
 | Resource | ReferenceResolver | ReferenceResolutionUtils |
 |----------|-------------------|--------------------------|
-| Products | `products/helpers/ProductReferenceResolver.java` | `products/utils/ProductReferenceResolutionUtils.java` |
-| Categories | `categories/helpers/CategoryReferenceResolver.java` | `categories/utils/CategoryReferenceResolutionUtils.java` |
-| InventoryEntries | `inventories/helpers/InventoryReferenceResolver.java` | `inventories/utils/InventoryReferenceResolutionUtils.java` |
-| CartDiscounts | `cartdiscounts/helpers/CartDiscountReferenceResolver.java` | `cartdiscounts/utils/CartDiscountReferenceResolutionUtils.java` |
-| Customers | `customers/helpers/CustomerReferenceResolver.java` | `customers/utils/CustomerReferenceResolutionUtils.java` |
-| ShoppingLists | `shoppinglists/helpers/ShoppingListReferenceResolver.java` | `shoppinglists/utils/ShoppingListReferenceResolutionUtils.java` |
+| Products | [`ProductReferenceResolver.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/products/helpers/ProductReferenceResolver.java) | [`ProductReferenceResolutionUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/products/utils/ProductReferenceResolutionUtils.java) |
+| Categories | [`CategoryReferenceResolver.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/categories/helpers/CategoryReferenceResolver.java) | [`CategoryReferenceResolutionUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/categories/utils/CategoryReferenceResolutionUtils.java) |
+| InventoryEntries | [`InventoryReferenceResolver.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/inventories/helpers/InventoryReferenceResolver.java) | [`InventoryReferenceResolutionUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/inventories/utils/InventoryReferenceResolutionUtils.java) |
+| CartDiscounts | [`CartDiscountReferenceResolver.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/cartdiscounts/helpers/CartDiscountReferenceResolver.java) | [`CartDiscountReferenceResolutionUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountReferenceResolutionUtils.java) |
+| Customers | [`CustomerReferenceResolver.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/customers/helpers/CustomerReferenceResolver.java) | [`CustomerReferenceResolutionUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/customers/utils/CustomerReferenceResolutionUtils.java) |
+| ShoppingLists | [`ShoppingListReferenceResolver.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/shoppinglists/helpers/ShoppingListReferenceResolver.java) | [`ShoppingListReferenceResolutionUtils.java`](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/shoppinglists/utils/ShoppingListReferenceResolutionUtils.java) |
 
 All paths are relative to `src/main/java/com/commercetools/sync/` (source) and `src/test/java/com/commercetools/sync/` (tests).
 
