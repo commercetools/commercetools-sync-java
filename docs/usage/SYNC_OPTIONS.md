@@ -19,7 +19,9 @@ about the warning message:
 
 #### `beforeUpdateCallback`
 during the sync process, if a target resource and a resource draft are matched, this callback can be used to intercept the **_update_** request just before it is sent to CTP. It contains information about the resource draft, the target
-resource, and the update actions that were calculated after comparing both.  
+resource, and the update actions that were calculated after comparing both.
+
+> If you need to add support for a field that the library doesn't sync natively, see [Adding Additional Fields](ADDING_ADDITIONAL_FIELDS.md) for a step-by-step guide on contributing field support directly in the library code.
 
 #### `beforeCreateCallback`
 during the sync process, if a resource draft should be created, this callback can be used to intercept the **_create_** request just before it sent to CTP.  It contains information about the resource draft that should be
