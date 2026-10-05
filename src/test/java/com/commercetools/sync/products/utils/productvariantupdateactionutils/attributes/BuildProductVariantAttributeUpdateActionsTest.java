@@ -13,11 +13,12 @@ import com.commercetools.api.models.product_type.*;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.utils.ProductVariantAttributeUpdateActionUtils;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 class BuildProductVariantAttributeUpdateActionsTest {
 
@@ -122,11 +123,11 @@ class BuildProductVariantAttributeUpdateActionsTest {
     // Preparation
     final Long variantId = 1L;
     final Attribute oldAttribute =
-        AttributeBuilder.of().name("foo").value(JsonNodeFactory.instance.textNode("bar")).build();
+        AttributeBuilder.of().name("foo").value(JsonNodeFactory.instance.stringNode("bar")).build();
     final Attribute newAttribute =
         AttributeBuilder.of()
             .name("foo")
-            .value(JsonNodeFactory.instance.textNode("other-bar"))
+            .value(JsonNodeFactory.instance.stringNode("other-bar"))
             .build();
     final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
     final AttributeDefinition attributeDefinition =
@@ -162,9 +163,9 @@ class BuildProductVariantAttributeUpdateActionsTest {
   void withSameValues_ShouldNotBuildAction() throws BuildUpdateActionException {
     // Preparation
     final Attribute oldAttribute =
-        AttributeBuilder.of().name("foo").value(JsonNodeFactory.instance.textNode("foo")).build();
+        AttributeBuilder.of().name("foo").value(JsonNodeFactory.instance.stringNode("foo")).build();
     final Attribute newAttribute =
-        AttributeBuilder.of().name("foo").value(JsonNodeFactory.instance.textNode("foo")).build();
+        AttributeBuilder.of().name("foo").value(JsonNodeFactory.instance.stringNode("foo")).build();
     final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
     final AttributeDefinition attributeDefinition =
         AttributeDefinitionBuilder.of()
@@ -189,14 +190,47 @@ class BuildProductVariantAttributeUpdateActionsTest {
   }
 
   @Test
+  void withSameNumberValues_WithLongOldAndIntegerNew_ShouldNotBuildAction()
+      throws BuildUpdateActionException {
+    // Preparation
+    final Attribute oldAttribute = AttributeBuilder.of().name("sort").value(10L).build();
+    final Attribute newAttribute = AttributeBuilder.of().name("sort").value(10).build();
+
+    // Test
+    final Optional<ProductUpdateAction> actionOptional =
+        ProductVariantAttributeUpdateActionUtils.buildProductVariantAttributeUpdateAction(
+            1, oldAttribute, newAttribute, numberAttributeMetaData(newAttribute.getName()));
+
+    // Assertion
+    assertThat(actionOptional).isEmpty();
+  }
+
+  @Test
+  void withSameNumberSetValues_WithLongOldAndIntegerNew_ShouldNotBuildAction()
+      throws BuildUpdateActionException {
+    // Preparation
+    final Attribute oldAttribute =
+        AttributeBuilder.of().name("sort").value(List.of(1L, 2L)).build();
+    final Attribute newAttribute = AttributeBuilder.of().name("sort").value(List.of(1, 2)).build();
+
+    // Test
+    final Optional<ProductUpdateAction> actionOptional =
+        ProductVariantAttributeUpdateActionUtils.buildProductVariantAttributeUpdateAction(
+            1, oldAttribute, newAttribute, numberAttributeMetaData(newAttribute.getName()));
+
+    // Assertion
+    assertThat(actionOptional).isEmpty();
+  }
+
+  @Test
   void withDifferentValues_WithNoExistingAttributeInMetaData_ShouldThrowException() {
     // Preparation
     final Attribute oldAttribute =
-        AttributeBuilder.of().name("foo").value(JsonNodeFactory.instance.textNode("bar")).build();
+        AttributeBuilder.of().name("foo").value(JsonNodeFactory.instance.stringNode("bar")).build();
     final Attribute newAttribute =
         AttributeBuilder.of()
             .name("foo")
-            .value(JsonNodeFactory.instance.textNode("other-bar"))
+            .value(JsonNodeFactory.instance.stringNode("other-bar"))
             .build();
     final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
 
@@ -216,9 +250,9 @@ class BuildProductVariantAttributeUpdateActionsTest {
   void withSameValues_WithNoExistingAttributeInMetaData_ShouldThrowException() {
     // Preparation
     final Attribute oldAttribute =
-        AttributeBuilder.of().name("foo").value(JsonNodeFactory.instance.textNode("foo")).build();
+        AttributeBuilder.of().name("foo").value(JsonNodeFactory.instance.stringNode("foo")).build();
     final Attribute newAttribute =
-        AttributeBuilder.of().name("foo").value(JsonNodeFactory.instance.textNode("foo")).build();
+        AttributeBuilder.of().name("foo").value(JsonNodeFactory.instance.stringNode("foo")).build();
     final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
 
     // Test and assertion
@@ -231,5 +265,22 @@ class BuildProductVariantAttributeUpdateActionsTest {
                 ProductVariantAttributeUpdateActionUtils.ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA,
                 newAttribute.getName()))
         .isExactlyInstanceOf(BuildUpdateActionException.class);
+  }
+
+  private static Map<String, AttributeMetaData> numberAttributeMetaData(final String name) {
+    final AttributeDefinition attributeDefinition =
+        AttributeDefinitionBuilder.of()
+            .name(name)
+            .label(ofEnglish(name))
+            .type(AttributeNumberTypeBuilder.of().build())
+            .level(AttributeLevelEnum.VARIANT)
+            .attributeConstraint(AttributeConstraintEnum.NONE)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .isSearchable(true)
+            .isRequired(false)
+            .build();
+    final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
+    attributesMetaData.put(name, AttributeMetaData.of(attributeDefinition));
+    return attributesMetaData;
   }
 }

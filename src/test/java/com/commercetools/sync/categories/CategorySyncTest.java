@@ -36,9 +36,6 @@ import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import io.vrap.rmf.base.client.ApiHttpException;
 import io.vrap.rmf.base.client.ApiHttpHeaders;
 import io.vrap.rmf.base.client.ApiHttpResponse;
@@ -54,6 +51,9 @@ import javax.annotation.Nonnull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
 
 @SuppressWarnings("unchecked")
 class CategorySyncTest {
@@ -698,7 +698,7 @@ class CategorySyncTest {
     String json;
     try {
       json = ow.writeValueAsString(errorResponse);
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       // ignore the error
       json = null;
     }

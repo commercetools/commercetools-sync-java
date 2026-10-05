@@ -26,10 +26,6 @@ import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.commons.utils.TestUtils;
 import com.commercetools.sync.products.ProductSyncMockUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.vrap.rmf.base.client.ApiHttpMethod;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;
@@ -46,6 +42,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
 
 @SuppressWarnings("unchecked")
 class ProductTransformUtilsTest {
@@ -290,7 +290,7 @@ class ProductTransformUtilsTest {
                     try {
                       graphQLRequest =
                           objectMapper.readValue(encodedRequestBody, GraphQLRequest.class);
-                    } catch (JsonProcessingException e) {
+                    } catch (JacksonException e) {
                       graphQLRequest = GraphQLRequestBuilder.of().build();
                     }
                     final String graphQLRequestQuery = graphQLRequest.getQuery();

@@ -22,7 +22,7 @@ public final class WaitingToBeResolvedTransitions implements WaitingToBeResolved
     this.missingTransitionStateKeys = missingTransitionStateKeys;
   }
 
-  // Needed for the 'com.fasterxml.jackson' deserialization, for example, when fetching
+  // Needed for the 'tools.jackson' deserialization, for example, when fetching
   // from CTP custom objects.
   public WaitingToBeResolvedTransitions() {}
 

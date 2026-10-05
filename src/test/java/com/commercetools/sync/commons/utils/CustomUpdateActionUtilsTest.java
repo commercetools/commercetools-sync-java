@@ -47,8 +47,6 @@ import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.AssetCustomActionBuilder;
 import com.commercetools.sync.products.helpers.PriceCustomActionBuilder;
 import com.commercetools.sync.products.models.PriceCustomTypeAdapter;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,6 +54,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 class CustomUpdateActionUtilsTest {
   private static final ProjectApiRoot CTP_CLIENT = mock(ProjectApiRoot.class);
@@ -675,7 +675,7 @@ class CustomUpdateActionUtilsTest {
     oldCustomFields.put("backgroundColor", "");
 
     final Map<String, Object> newCustomFields = new HashMap<>();
-    newCustomFields.put("backgroundColor", JsonNodeFactory.instance.textNode(""));
+    newCustomFields.put("backgroundColor", JsonNodeFactory.instance.stringNode(""));
 
     final Asset newAssetDraft =
         AssetBuilder.of().id("test").sources(emptyList()).name(ofEnglish("assetName")).build();

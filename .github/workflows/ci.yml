@@ -9,6 +9,10 @@ jobs:
     steps:
       - name: Git Checkout
         uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'zulu'
       - name: Generate Dependency Updates Report
         run: ./gradlew clean dependencyUpdates
       - name: Code formatting
@@ -28,7 +32,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
-          java-version: 11
+          java-version: 17
           distribution: 'zulu'
       - name: Build with Gradle
         run: ./gradlew clean setLibraryVersion test integrationTest jacocoTestCoverageVerification jacocoTestReport
@@ -58,6 +62,10 @@ jobs:
     steps:
       - name: Git Checkout
         uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'zulu'
       - name: Fetch Library version
         id: vars
         run: echo libVersion=${GITHUB_REF#refs/*/} >> $GITHUB_OUTPUT

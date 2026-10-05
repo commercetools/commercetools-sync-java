@@ -34,7 +34,6 @@ import com.commercetools.api.models.type.FieldContainer;
 import com.commercetools.api.models.type.TypeReferenceBuilder;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,6 +42,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 class CategoryAssetUpdateActionUtilsTest {
   private static final CategorySyncOptions SYNC_OPTIONS =

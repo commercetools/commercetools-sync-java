@@ -1,11 +1,11 @@
 package com.commercetools.sync.commons.utils;
 
 import com.commercetools.api.models.common.Reference;
-import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
+import tools.jackson.databind.JsonNode;
 
 public final class ResourceIdentifierUtils {
 
@@ -49,7 +49,7 @@ public final class ResourceIdentifierUtils {
   @Nonnull
   private static Optional<String> getReferenceTypeId(@Nonnull final JsonNode referenceValue) {
     final JsonNode typeId = referenceValue.get(REFERENCE_TYPE_ID_FIELD);
-    return Optional.ofNullable(typeId).map(JsonNode::asText);
+    return Optional.ofNullable(typeId).map(JsonNode::asString);
   }
 
   private ResourceIdentifierUtils() {}

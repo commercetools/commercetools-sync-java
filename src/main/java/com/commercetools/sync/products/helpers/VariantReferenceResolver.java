@@ -30,9 +30,6 @@ import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TypeService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -40,6 +37,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.ObjectNode;
 
 public final class VariantReferenceResolver
     extends BaseReferenceResolver<ProductVariantDraft, ProductSyncOptions> {
@@ -240,7 +240,7 @@ public final class VariantReferenceResolver
 
     final JsonNode idField = referenceValue.get(REFERENCE_ID_FIELD);
     return idField != null && !Objects.equals(idField, NullNode.getInstance())
-        ? resolvedIdFetcher.apply(idField.asText())
+        ? resolvedIdFetcher.apply(idField.asString())
         : CompletableFuture.completedFuture(Optional.empty());
   }
 
