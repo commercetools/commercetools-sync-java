@@ -25,10 +25,16 @@ public final class AttributeUtils {
   @Nonnull
   public static JsonNode replaceAttributeValueWithJsonAndReturnValue(
       @Nonnull final Attribute attribute) {
-    final Object attributeValue = attribute.getValue();
-    final JsonNode attributeValueAsJson = JsonUtils.toJsonNode(attributeValue);
+    final JsonNode attributeValueAsJson = convertAttributeValueToJsonNode(attribute.getValue());
     attribute.setValue(attributeValueAsJson);
     return attributeValueAsJson;
+  }
+
+  // Not JsonUtils.toJsonNode: it keeps Integer values as IntNode, while numbers from the API are
+  // deserialized as Long. convertValue turns both into LongNode, so equal values compare as equal.
+  @Nonnull
+  static JsonNode convertAttributeValueToJsonNode(@Nullable final Object attributeValue) {
+    return JsonUtils.getConfiguredObjectMapper().convertValue(attributeValue, JsonNode.class);
   }
 
   /**

@@ -11,7 +11,6 @@ import com.commercetools.api.models.product.ProductUpdateAction;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils;
 import com.commercetools.sync.products.AttributeMetaData;
-import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -63,8 +62,10 @@ public final class ProductVariantAttributeUpdateActionUtils {
         oldProductVariantAttribute != null ? oldProductVariantAttribute.getValue() : null;
 
     // Make the attribute values comparable - convert to JsonNode
-    final JsonNode newAttributeValueAsJson = JsonUtils.toJsonNode(newProductVariantAttributeValue);
-    final JsonNode oldAttributeValueAsJson = JsonUtils.toJsonNode(oldProductVariantAttributeValue);
+    final JsonNode newAttributeValueAsJson =
+        AttributeUtils.convertAttributeValueToJsonNode(newProductVariantAttributeValue);
+    final JsonNode oldAttributeValueAsJson =
+        AttributeUtils.convertAttributeValueToJsonNode(oldProductVariantAttributeValue);
 
     final AttributeMetaData attributeMetaData =
         attributesMetaData.get(newProductVariantAttributeName);
