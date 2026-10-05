@@ -47,8 +47,8 @@ Notes:
 
 ### Prerequisites
  
- - Library requires the min JDK version `>= 11`.
-   > The library tested with each major JDK version (i.e: 11, 12, 13...) as well as some specific updates of LTS versions (i.e: 11.0.3 and above).
+ - Library requires the min JDK version `>= 17`.
+   > Version 11.x of the library uses [JVM-SDK-V2](http://commercetools.github.io/commercetools-sdk-java-v2) 20.x, which is based on Jackson 3. If your application uses JVM SDK 19.x or earlier (based on Jackson 2), or runs on JDK 11 to 16, use version 10.x of this library.
  - A target commercetools project for syncing your source data to.
 
 ### Installation
@@ -111,6 +111,7 @@ For Maven users, remove:
 
 If you want to use a different `commercetools JVM SDK` version than the version used in this project. 
 , below you will find examples on how to exclude `commercetools JVM SDK` from commercetools-sync-java library. Beware that library might not work with the older `commercetools JVM SDK` versions.
+In particular, version 10.x of the library doesn't work with JVM SDK 20.x, and version 11.x doesn't work with JVM SDK 19.x or earlier, because they are based on different major versions of Jackson.
 
 For Gradle:
 ````groovy

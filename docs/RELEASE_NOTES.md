@@ -27,6 +27,21 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
 
+### 11.0.0 - Oct 05, 2026
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.5.0...11.0.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/11.0.0/) |
+[Jar](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/11.0.0/jar)
+
+This release makes the library compatible with commercetools JVM SDK 20.x and Jackson 3. Use version 11.x with JVM SDK 20.x, and keep using version 10.x with JVM SDK 19.x or earlier.
+Unresolved references that version 10.x stored as custom objects keep working after the upgrade, because their JSON format didn't change.
+
+- 🚧 **Breaking Changes** (3)
+  - Minimum Java 17 or above is required.
+  - The library now uses commercetools JVM SDK 20.x, which is based on Jackson 3 (package `tools.jackson`) instead of Jackson 2 (package `com.fasterxml.jackson`). Using version 10.x of the library with JVM SDK 20.x fails at runtime with a `NoSuchMethodError`.
+  - Public methods that take or return Jackson types now use the Jackson 3 types, for example `tools.jackson.databind.JsonNode` instead of `com.fasterxml.jackson.databind.JsonNode`. This affects `CustomValueConverter`, `AttributeUtils`, `ResourceIdentifierUtils.isReferenceOfType(JsonNode, String)` and the protected helpers of `BaseTransformServiceImpl`. If you call them, update your Jackson imports, see the [Jackson 3 migration guide](https://github.com/FasterXML/jackson/blob/main/jackson3/MIGRATING_TO_JACKSON_3.md).
+- 🛠️ **Dependency Updates** (1)
+  - `commercetools-sdk-java-api` and `commercetools-http-client` `19.3.0` -> `20.2.0`
+
 ### 10.5.0 - Jan 07, 2026
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/10.4.0...10.5.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/10.5.0/) |

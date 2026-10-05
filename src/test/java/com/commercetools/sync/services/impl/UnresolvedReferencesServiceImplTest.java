@@ -28,9 +28,6 @@ import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.NotFoundException;
 import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
@@ -41,6 +38,9 @@ import javax.annotation.Nonnull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
 
 @SuppressWarnings("unchecked")
 class UnresolvedReferencesServiceImplTest {
@@ -269,7 +269,7 @@ class UnresolvedReferencesServiceImplTest {
   }
 
   @Test
-  void save_WithUnsuccessfulMockCtpResponse_ShouldNotSaveMock() throws JsonProcessingException {
+  void save_WithUnsuccessfulMockCtpResponse_ShouldNotSaveMock() throws JacksonException {
     // preparation
     final String productKey = "product-draft-key";
     final ProductDraft productDraftMock =
@@ -337,7 +337,7 @@ class UnresolvedReferencesServiceImplTest {
 
   @Test
   void delete_WithUnsuccessfulMockCtpResponse_ShouldReturnProperException()
-      throws JsonProcessingException {
+      throws JacksonException {
     // preparation
     final String key = "product-draft-key";
     final ProductDraft productDraftMock =
@@ -407,7 +407,7 @@ class UnresolvedReferencesServiceImplTest {
   }
 
   @Test
-  void delete_With404NotFoundResponse_ShouldConsiderAsDeleted() throws JsonProcessingException {
+  void delete_With404NotFoundResponse_ShouldConsiderAsDeleted() throws JacksonException {
     // preparation
     final String key = "product-draft-key";
     final ProductDraft productDraftMock =

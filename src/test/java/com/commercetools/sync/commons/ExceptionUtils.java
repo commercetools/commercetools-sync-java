@@ -3,14 +3,14 @@ package com.commercetools.sync.commons;
 import com.commercetools.api.client.error.ConcurrentModificationException;
 import com.commercetools.api.models.error.ErrorResponse;
 import com.commercetools.api.models.error.ErrorResponseBuilder;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;
 import io.vrap.rmf.base.client.error.BadRequestException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
 
 public class ExceptionUtils {
 
@@ -50,7 +50,7 @@ public class ExceptionUtils {
     String json;
     try {
       json = ow.writeValueAsString(errorResponse);
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       // ignore the error
       json = null;
     }

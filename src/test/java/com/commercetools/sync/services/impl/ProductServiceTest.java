@@ -29,9 +29,6 @@ import com.commercetools.api.models.product.ProductVariant;
 import com.commercetools.api.models.product_type.ProductTypeReference;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
 import java.nio.charset.StandardCharsets;
@@ -43,6 +40,9 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
 
 class ProductServiceTest {
 
@@ -117,7 +117,7 @@ class ProductServiceTest {
 
   @Test
   void createProduct_WithUnsuccessfulMockCtpResponse_ShouldNotCreateProduct()
-      throws JsonProcessingException {
+      throws JacksonException {
     // preparation
     final Product mock = mock(Product.class);
     when(mock.getId()).thenReturn("productId");

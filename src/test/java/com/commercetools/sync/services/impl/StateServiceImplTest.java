@@ -28,9 +28,6 @@ import com.commercetools.api.models.state.StateUpdate;
 import com.commercetools.api.models.state.StateUpdateAction;
 import com.commercetools.sync.states.StateSyncOptions;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -45,6 +42,9 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
 
 class StateServiceImplTest {
 
@@ -250,7 +250,7 @@ class StateServiceImplTest {
   }
 
   @Test
-  void createState_WithRequestException_ShouldNotCreateState() throws JsonProcessingException {
+  void createState_WithRequestException_ShouldNotCreateState() throws JacksonException {
     State mock = mock(State.class);
     when(mock.getId()).thenReturn(stateId);
 

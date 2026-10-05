@@ -4,14 +4,14 @@ import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.SELF_
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.*;
 
 import com.commercetools.api.models.product.Attribute;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 public final class AttributeUtils {
 
@@ -64,7 +64,7 @@ public final class AttributeUtils {
       return cleanupAttributeValue(
           JsonNodeFactory.instance.arrayNode().add(attributeValueAsJson), attribute);
     }
-    final Iterator<JsonNode> entryIterator = attributeValueAsJson.elements();
+    final Iterator<JsonNode> entryIterator = attributeValueAsJson.values().iterator();
     while (entryIterator.hasNext()) {
       final JsonNode entry = entryIterator.next();
       final List<JsonNode> nodeValues = entry.findValues("value");
@@ -86,7 +86,7 @@ public final class AttributeUtils {
     try {
       return attributeEntryValue == null
           || JsonUtils.toJsonString(attributeEntryValue).contains(SELF_REFERENCING_ID_PLACE_HOLDER);
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       return true;
     }
   }

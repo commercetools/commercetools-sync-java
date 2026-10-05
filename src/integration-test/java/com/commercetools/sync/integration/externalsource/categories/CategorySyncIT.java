@@ -20,7 +20,6 @@ import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.integration.commons.utils.CategoryITUtils;
 import com.commercetools.sync.integration.commons.utils.ITUtils;
 import com.commercetools.sync.integration.commons.utils.TestClientUtils;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.vrap.rmf.base.client.ApiHttpMethod;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;
@@ -29,6 +28,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import org.junit.jupiter.api.*;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 class CategorySyncIT {
   private CategorySync categorySync;

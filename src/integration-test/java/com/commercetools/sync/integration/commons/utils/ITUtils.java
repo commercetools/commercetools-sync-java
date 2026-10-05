@@ -38,11 +38,6 @@ import com.commercetools.api.models.type.ResourceTypeId;
 import com.commercetools.api.models.type.Type;
 import com.commercetools.api.models.type.TypeDraft;
 import com.commercetools.api.models.type.TypeDraftBuilder;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;
 import io.vrap.rmf.base.client.error.NotFoundException;
@@ -56,6 +51,11 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 /** This class is meant only meant for internal use of the library's integration tests. */
 public final class ITUtils {
@@ -534,7 +534,7 @@ public final class ITUtils {
     String json;
     try {
       json = ow.writeValueAsString(errorResponse);
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       // ignore the error
       json = null;
     }

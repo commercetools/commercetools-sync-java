@@ -38,7 +38,6 @@ import com.commercetools.api.models.type.TypeReferenceBuilder;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Stream;
@@ -48,6 +47,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 class ProductVariantPriceUpdateActionUtilsTest {
   private static final ProductSyncOptions SYNC_OPTIONS =
@@ -228,7 +228,7 @@ class ProductVariantPriceUpdateActionUtilsTest {
                 ProductSetProductPriceCustomFieldAction.builder()
                     .name("foo")
                     .priceId(DE_222_EUR_01_02_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDY.getId())
-                    .value(JsonNodeFactory.instance.textNode("X"))
+                    .value(JsonNodeFactory.instance.stringNode("X"))
                     .staged(true)
                     .build()),
             emptyList()),

@@ -25,7 +25,6 @@ import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentif
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.ProductService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;
 import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
@@ -44,6 +43,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
+import tools.jackson.core.JacksonException;
 
 @SuppressWarnings("unchecked")
 class BaseServiceImplTest {
@@ -385,7 +385,7 @@ class BaseServiceImplTest {
 
   @Test
   void cacheKeysToIds_WithCachedKeysExceedingCacheSize_ShouldNotReturnLeastUsedKeys()
-      throws JsonProcessingException {
+      throws JacksonException {
     // preparation
     final ProductProjectionPagedQueryResponse pagedQueryResponse =
         mock(ProductProjectionPagedQueryResponse.class);
@@ -422,7 +422,7 @@ class BaseServiceImplTest {
 
   @Test
   void cacheKeysToIdsUsingGraphQl_WithNoCachedKeys_ShouldMakeRequestAndReturnCachedEntry()
-      throws JsonProcessingException {
+      throws JacksonException {
     // preparation
     final String key = "testKey";
     final String id = "testId";
@@ -443,7 +443,7 @@ class BaseServiceImplTest {
 
   @Test
   void cacheKeysToIdsUsingGraphQl_With500Keys_ShouldChunkAndMakeRequestAndReturnCachedEntry()
-      throws JsonProcessingException {
+      throws JacksonException {
     // preparation
     Set<String> randomKeys = new HashSet<>();
     IntStream.range(0, 500).forEach(ignore -> randomKeys.add(RandomStringUtils.random(15)));

@@ -18,10 +18,10 @@ import com.commercetools.api.models.type.FieldContainerBuilder;
 import com.commercetools.api.models.type.TypeReferenceBuilder;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
 import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 class CustomerSyncUtilsTest {
 
@@ -41,7 +41,7 @@ class CustomerSyncUtilsTest {
 
     FieldContainerBuilder fieldContainer = new FieldContainerBuilder();
     fieldContainer.addValue(
-        CUSTOM_FIELD_NAME, JsonNodeFactory.instance.textNode(CUSTOM_FIELD_VALUE));
+        CUSTOM_FIELD_NAME, JsonNodeFactory.instance.stringNode(CUSTOM_FIELD_VALUE));
     when(customFields.getFields()).thenReturn(fieldContainer.build());
 
     when(oldCustomer.getCustom()).thenReturn(customFields);
@@ -54,7 +54,7 @@ class CustomerSyncUtilsTest {
             .type(TypeResourceIdentifierBuilder.of().id("newId").build())
             .fields(
                 FieldContainerBuilder.of()
-                    .addValue("newField", JsonNodeFactory.instance.textNode("newValue"))
+                    .addValue("newField", JsonNodeFactory.instance.stringNode("newValue"))
                     .build())
             .build();
 
@@ -86,8 +86,8 @@ class CustomerSyncUtilsTest {
             .fields(
                 FieldContainerBuilder.of()
                     .addValue(
-                        CUSTOM_FIELD_NAME, JsonNodeFactory.instance.textNode(CUSTOM_FIELD_VALUE))
-                    .addValue("name_2", JsonNodeFactory.instance.textNode("value_2"))
+                        CUSTOM_FIELD_NAME, JsonNodeFactory.instance.stringNode(CUSTOM_FIELD_VALUE))
+                    .addValue("name_2", JsonNodeFactory.instance.stringNode("value_2"))
                     .build())
             .build();
 
@@ -108,7 +108,7 @@ class CustomerSyncUtilsTest {
         .containsExactly(
             CustomerSetCustomFieldActionBuilder.of()
                 .name("name_2")
-                .value(JsonNodeFactory.instance.textNode("value_2"))
+                .value(JsonNodeFactory.instance.stringNode("value_2"))
                 .build());
   }
 
@@ -119,7 +119,7 @@ class CustomerSyncUtilsTest {
             .type(TypeResourceIdentifierBuilder.of().id(CUSTOM_TYPE_ID).build())
             .fields(
                 FieldContainerBuilder.of()
-                    .addValue(CUSTOM_FIELD_NAME, JsonNodeFactory.instance.textNode("newValue"))
+                    .addValue(CUSTOM_FIELD_NAME, JsonNodeFactory.instance.stringNode("newValue"))
                     .build())
             .build();
 
@@ -140,7 +140,7 @@ class CustomerSyncUtilsTest {
         .containsExactly(
             CustomerSetCustomFieldActionBuilder.of()
                 .name(CUSTOM_FIELD_NAME)
-                .value(JsonNodeFactory.instance.textNode("newValue"))
+                .value(JsonNodeFactory.instance.stringNode("newValue"))
                 .build());
   }
 

@@ -20,7 +20,6 @@ import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.helpers.GenericCustomActionBuilder;
 import com.commercetools.sync.commons.models.Custom;
 import com.commercetools.sync.commons.models.CustomDraft;
-import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +29,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import tools.jackson.databind.JsonNode;
 
 public final class CustomUpdateActionUtils {
   private static final String CUSTOM_TYPE_IDS_NOT_SET =

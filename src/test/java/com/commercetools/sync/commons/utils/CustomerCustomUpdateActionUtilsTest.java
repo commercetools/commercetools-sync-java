@@ -14,11 +14,11 @@ import com.commercetools.sync.commons.models.Custom;
 import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
 import com.commercetools.sync.customers.models.CustomerCustomTypeAdapter;
 import com.commercetools.sync.customers.utils.CustomerCustomActionBuilder;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import java.util.HashMap;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 class CustomerCustomUpdateActionUtilsTest {
 
@@ -65,7 +65,7 @@ class CustomerCustomUpdateActionUtilsTest {
 
   @Test
   void buildSetCustomFieldAction_WithCustomerResource_ShouldBuildCustomerUpdateAction() {
-    final JsonNode customFieldValue = JsonNodeFactory.instance.textNode("foo");
+    final JsonNode customFieldValue = JsonNodeFactory.instance.stringNode("foo");
     final String customFieldName = "name";
 
     final CustomerUpdateAction updateAction =

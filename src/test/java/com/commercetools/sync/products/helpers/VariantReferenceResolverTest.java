@@ -28,9 +28,6 @@ import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.TypeService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
@@ -42,6 +39,9 @@ import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 class VariantReferenceResolverTest {
 
@@ -210,7 +210,7 @@ class VariantReferenceResolverTest {
     final JsonNode resolvedProductReferenceIdTextNode =
         resolvedProductReferenceValue.get(ResourceIdentifierUtils.REFERENCE_ID_FIELD);
     assertThat(resolvedProductReferenceIdTextNode).isNotNull();
-    assertThat(resolvedProductReferenceIdTextNode.asText()).isEqualTo(PRODUCT_ID);
+    assertThat(resolvedProductReferenceIdTextNode.asString()).isEqualTo(PRODUCT_ID);
   }
 
   @Test
@@ -281,7 +281,7 @@ class VariantReferenceResolverTest {
     final JsonNode resolvedProductReferenceIdTextNode =
         resolvedProductReferenceValue.get(ResourceIdentifierUtils.REFERENCE_ID_FIELD);
     assertThat(resolvedProductReferenceIdTextNode).isNotNull();
-    assertThat(resolvedProductReferenceIdTextNode.asText()).isEqualTo(PRODUCT_ID);
+    assertThat(resolvedProductReferenceIdTextNode.asString()).isEqualTo(PRODUCT_ID);
 
     final Attribute resolvedCategoryReferenceAttribute = resolvedBuilderAttributes.get(1);
     assertThat(resolvedCategoryReferenceAttribute).isNotNull();
@@ -293,12 +293,12 @@ class VariantReferenceResolverTest {
     assertThat(
             resolvedCategoryReferenceAttributeValue
                 .get(ResourceIdentifierUtils.REFERENCE_ID_FIELD)
-                .asText())
+                .asString())
         .isEqualTo(CATEGORY_ID);
     assertThat(
             resolvedCategoryReferenceAttributeValue
                 .get(ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD)
-                .asText())
+                .asString())
         .isEqualTo(CategoryReference.CATEGORY);
 
     final Attribute resolvedProductTypeReferenceAttribute = resolvedBuilderAttributes.get(2);
@@ -311,12 +311,12 @@ class VariantReferenceResolverTest {
     assertThat(
             resolvedProductTypeReferenceAttributeValue
                 .get(ResourceIdentifierUtils.REFERENCE_ID_FIELD)
-                .asText())
+                .asString())
         .isEqualTo(PRODUCT_TYPE_ID);
     assertThat(
             resolvedProductTypeReferenceAttributeValue
                 .get(ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD)
-                .asText())
+                .asString())
         .isEqualTo(ProductTypeReference.PRODUCT_TYPE);
 
     final Attribute resolvedCustomerReferenceAttribute = resolvedBuilderAttributes.get(3);
@@ -329,12 +329,12 @@ class VariantReferenceResolverTest {
     assertThat(
             resolvedCustomerReferenceAttributeValue
                 .get(ResourceIdentifierUtils.REFERENCE_ID_FIELD)
-                .asText())
+                .asString())
         .isEqualTo(CUSTOMER_ID);
     assertThat(
             resolvedCustomerReferenceAttributeValue
                 .get(ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD)
-                .asText())
+                .asString())
         .isEqualTo(CustomerReference.CUSTOMER);
 
     final Attribute resolvedCustomObjectReferenceAttribute = resolvedBuilderAttributes.get(5);
@@ -347,12 +347,12 @@ class VariantReferenceResolverTest {
     assertThat(
             resolvedCustomObjectAttributeValue
                 .get(ResourceIdentifierUtils.REFERENCE_ID_FIELD)
-                .asText())
+                .asString())
         .isEqualTo(CUSTOM_OBJECT_ID);
     assertThat(
             resolvedCustomObjectAttributeValue
                 .get(ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD)
-                .asText())
+                .asString())
         .isEqualTo(CustomObjectReference.KEY_VALUE_DOCUMENT);
 
     final Attribute resolvedStateReferenceAttribute = resolvedBuilderAttributes.get(6);
@@ -363,12 +363,12 @@ class VariantReferenceResolverTest {
     assertThat(
             resolvedStateReferenceAttributeValue
                 .get(ResourceIdentifierUtils.REFERENCE_ID_FIELD)
-                .asText())
+                .asString())
         .isEqualTo(STATE_ID);
     assertThat(
             resolvedStateReferenceAttributeValue
                 .get(ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD)
-                .asText())
+                .asString())
         .isEqualTo(StateReference.STATE);
   }
 

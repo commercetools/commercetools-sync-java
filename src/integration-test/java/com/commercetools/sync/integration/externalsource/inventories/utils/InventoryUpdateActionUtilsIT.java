@@ -18,13 +18,13 @@ import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
 import com.commercetools.sync.inventories.helpers.InventoryCustomActionBuilder;
 import com.commercetools.sync.inventories.models.InventoryEntryCustomTypeAdapter;
 import com.commercetools.sync.inventories.models.InventoryEntryDraftCustomTypeAdapter;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.*;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 class InventoryUpdateActionUtilsIT {
 

@@ -12,7 +12,6 @@ import com.commercetools.api.models.graph_ql.GraphQLVariablesMap;
 import com.commercetools.api.models.graph_ql.GraphQLVariablesMapBuilder;
 import com.commercetools.sync.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
-import com.fasterxml.jackson.databind.JsonNode;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.NotFoundException;
 import java.time.Instant;
@@ -24,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import tools.jackson.databind.JsonNode;
 
 public final class CleanupUnresolvedReferenceCustomObjects {
 
@@ -333,10 +333,11 @@ public final class CleanupUnresolvedReferenceCustomObjects {
               .get("data")
               .get(GraphQlQueryResource.CUSTOM_OBJECTS.getName())
               .get("results")
-              .elements();
+              .values()
+              .iterator();
       while (elements.hasNext()) {
         final JsonNode entry = elements.next();
-        idKeyMap.put(entry.get("id").asText(), entry.get("key").asText());
+        idKeyMap.put(entry.get("id").asString(), entry.get("key").asString());
       }
       if (!idKeyMap.isEmpty()) {
         consumePageElements(idKeyMap);

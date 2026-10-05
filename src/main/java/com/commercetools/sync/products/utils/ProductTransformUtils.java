@@ -23,14 +23,14 @@ import com.commercetools.sync.commons.utils.ChunkUtils;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.services.impl.BaseTransformServiceImpl;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 public final class ProductTransformUtils {
 
@@ -335,7 +335,7 @@ public final class ProductTransformUtils {
     private void replaceReferences(@Nonnull final List<JsonNode> allAttributeReferences) {
       allAttributeReferences.forEach(
           reference -> {
-            final String id = reference.get(REFERENCE_ID_FIELD).asText();
+            final String id = reference.get(REFERENCE_ID_FIELD).asString();
             final String key = referenceIdToKeyCache.get(id);
             ((ObjectNode) reference).put(REFERENCE_ID_FIELD, key);
           });

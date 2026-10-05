@@ -19,7 +19,6 @@ import com.commercetools.api.models.common.TypedMoney;
 import com.commercetools.api.models.customer_group.CustomerGroupReferenceBuilder;
 import com.commercetools.api.models.type.CustomFields;
 import com.commercetools.sync.commons.MockUtils;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.neovisionaries.i18n.CountryCode;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -28,6 +27,7 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.money.CurrencyUnit;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 public final class PriceFixtures {
   public static final Price USD_111 =
@@ -171,7 +171,7 @@ public final class PriceFixtures {
           byMonth(2),
           "channel1",
           MockUtils.getMockCustomFields(
-              "customType1", "foo", JsonNodeFactory.instance.textNode("Y")));
+              "customType1", "foo", JsonNodeFactory.instance.stringNode("Y")));
 
   public static final Price DE_222_EUR_01_02_CHANNEL2_CUSTOMTYPE2_CUSTOMFIELDX =
       getPrice(
@@ -183,7 +183,7 @@ public final class PriceFixtures {
           byMonth(2),
           "channel2",
           MockUtils.getMockCustomFields(
-              "customType2", "foo", JsonNodeFactory.instance.textNode("X")));
+              "customType2", "foo", JsonNodeFactory.instance.stringNode("X")));
 
   public static final Price UK_22_GBP_CUSTOMTYPE1_CUSTOMFIELDY =
       getPrice(
@@ -195,7 +195,7 @@ public final class PriceFixtures {
           null,
           null,
           MockUtils.getMockCustomFields(
-              "customType1", "foo", JsonNodeFactory.instance.textNode("Y")));
+              "customType1", "foo", JsonNodeFactory.instance.stringNode("Y")));
 
   public static final Price UK_22_USD_CUSTOMTYPE2_CUSTOMFIELDX =
       getPrice(
@@ -207,7 +207,7 @@ public final class PriceFixtures {
           null,
           null,
           MockUtils.getMockCustomFields(
-              "customType2", "foo", JsonNodeFactory.instance.textNode("X")));
+              "customType2", "foo", JsonNodeFactory.instance.stringNode("X")));
 
   public static final Price UK_1_GBP_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDX =
       getPrice(
@@ -219,7 +219,7 @@ public final class PriceFixtures {
           null,
           "channel1",
           MockUtils.getMockCustomFields(
-              "customType1", "foo", JsonNodeFactory.instance.textNode("X")));
+              "customType1", "foo", JsonNodeFactory.instance.stringNode("X")));
 
   public static final Price DE_22_USD =
       getPrice(BigDecimal.valueOf(22), USD, DE, null, null, null, null, null);

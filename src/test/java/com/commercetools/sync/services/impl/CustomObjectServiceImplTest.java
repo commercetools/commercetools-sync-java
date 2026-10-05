@@ -19,11 +19,6 @@ import com.commercetools.api.models.error.ErrorResponseBuilder;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -41,6 +36,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 @SuppressWarnings("unchecked")
 class CustomObjectServiceImplTest {
@@ -322,7 +322,7 @@ class CustomObjectServiceImplTest {
 
   @Test
   void createCustomObject_WithRequestException_ShouldNotCreateCustomObject()
-      throws JsonProcessingException {
+      throws JacksonException {
     final CustomObject mock = mock(CustomObject.class);
     when(mock.getId()).thenReturn(customObjectId);
 

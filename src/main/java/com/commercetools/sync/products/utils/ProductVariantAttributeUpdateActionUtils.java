@@ -11,9 +11,6 @@ import com.commercetools.api.models.product.ProductUpdateAction;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils;
 import com.commercetools.sync.products.AttributeMetaData;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +19,9 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.StringNode;
 
 public final class ProductVariantAttributeUpdateActionUtils {
   public static final String ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA =
@@ -103,9 +103,9 @@ public final class ProductVariantAttributeUpdateActionUtils {
       final JsonNode newAttributeValueAsJson,
       final Supplier<ProductUpdateAction> actionSupplier) {
     if (oldAttributeValueAsJson instanceof ObjectNode
-        && newAttributeValueAsJson instanceof TextNode) {
-      String oldKey = oldAttributeValueAsJson.get("key").asText();
-      String newKey = newAttributeValueAsJson.asText();
+        && newAttributeValueAsJson instanceof StringNode) {
+      String oldKey = oldAttributeValueAsJson.get("key").asString();
+      String newKey = newAttributeValueAsJson.asString();
       return !Objects.equals(oldKey, newKey)
           ? Optional.ofNullable(actionSupplier.get())
           : Optional.empty();
