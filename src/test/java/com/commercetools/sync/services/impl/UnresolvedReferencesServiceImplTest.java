@@ -38,7 +38,6 @@ import javax.annotation.Nonnull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectWriter;
 
@@ -269,7 +268,7 @@ class UnresolvedReferencesServiceImplTest {
   }
 
   @Test
-  void save_WithUnsuccessfulMockCtpResponse_ShouldNotSaveMock() throws JacksonException {
+  void save_WithUnsuccessfulMockCtpResponse_ShouldNotSaveMock() {
     // preparation
     final String productKey = "product-draft-key";
     final ProductDraft productDraftMock =
@@ -336,8 +335,7 @@ class UnresolvedReferencesServiceImplTest {
   }
 
   @Test
-  void delete_WithUnsuccessfulMockCtpResponse_ShouldReturnProperException()
-      throws JacksonException {
+  void delete_WithUnsuccessfulMockCtpResponse_ShouldReturnProperException() {
     // preparation
     final String key = "product-draft-key";
     final ProductDraft productDraftMock =
@@ -407,7 +405,7 @@ class UnresolvedReferencesServiceImplTest {
   }
 
   @Test
-  void delete_With404NotFoundResponse_ShouldConsiderAsDeleted() throws JacksonException {
+  void delete_With404NotFoundResponse_ShouldConsiderAsDeleted() {
     // preparation
     final String key = "product-draft-key";
     final ProductDraft productDraftMock =

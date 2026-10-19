@@ -36,7 +36,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectWriter;
 import tools.jackson.databind.node.JsonNodeFactory;
@@ -321,8 +320,7 @@ class CustomObjectServiceImplTest {
   }
 
   @Test
-  void createCustomObject_WithRequestException_ShouldNotCreateCustomObject()
-      throws JacksonException {
+  void createCustomObject_WithRequestException_ShouldNotCreateCustomObject() {
     final CustomObject mock = mock(CustomObject.class);
     when(mock.getId()).thenReturn(customObjectId);
 

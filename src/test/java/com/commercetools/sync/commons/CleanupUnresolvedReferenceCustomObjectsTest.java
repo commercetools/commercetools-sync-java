@@ -18,7 +18,6 @@ import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 
 @SuppressWarnings("unchecked")
@@ -54,8 +53,7 @@ class CleanupUnresolvedReferenceCustomObjectsTest {
   }
 
   @Test
-  void cleanup_withDeleteDaysAfterLastModification_ShouldDeleteAndReturnCleanupStatistics()
-      throws JacksonException {
+  void cleanup_withDeleteDaysAfterLastModification_ShouldDeleteAndReturnCleanupStatistics() {
     String jsonStringCustomObjects =
         "{ \"data\": {\"customObjects\": {\"results\":[{\"id\":\"coId1\", \"key\":\"coKey1\"}, {"
             + "\"id\":\"coId1\", \"key\":\"coKey2\"}]}}}";
@@ -83,7 +81,7 @@ class CleanupUnresolvedReferenceCustomObjectsTest {
   }
 
   @Test
-  void cleanup_withNotFound404Exception_ShouldNotIncrementFailedCounter() throws JacksonException {
+  void cleanup_withNotFound404Exception_ShouldNotIncrementFailedCounter() {
     String jsonStringCustomObjects =
         "{ \"data\": {\"customObjects\": {\"results\":[{\"id\":\"coId1\", \"key\":\"coKey1\"}]}}}";
     final ApiHttpResponse<JsonNode> fetchedCustomObjectsApiHttpResponse =
@@ -117,8 +115,7 @@ class CleanupUnresolvedReferenceCustomObjectsTest {
   }
 
   @Test
-  void cleanup_withBadRequest400Exception_ShouldIncrementFailedCounterAndTriggerErrorCallback()
-      throws JacksonException {
+  void cleanup_withBadRequest400Exception_ShouldIncrementFailedCounterAndTriggerErrorCallback() {
     String jsonStringCustomObjects =
         "{ \"data\": {\"customObjects\": {\"results\":[{\"id\":\"coId1\", \"key\":\"coKey1\"}]}}}";
     final ApiHttpResponse<JsonNode> fetchedCustomObjectsApiHttpResponse =

@@ -42,7 +42,6 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectWriter;
 
@@ -250,7 +249,7 @@ class StateServiceImplTest {
   }
 
   @Test
-  void createState_WithRequestException_ShouldNotCreateState() throws JacksonException {
+  void createState_WithRequestException_ShouldNotCreateState() {
     State mock = mock(State.class);
     when(mock.getId()).thenReturn(stateId);
 

@@ -24,13 +24,12 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
-import tools.jackson.core.JacksonException;
 
 class InventoryEntryTransformUtilsTest {
 
   @Test
-  void transform_InventoryReferences_ShouldResolveReferencesUsingCacheAndMapToInventoryEntryDraft()
-      throws JacksonException {
+  void
+      transform_InventoryReferences_ShouldResolveReferencesUsingCacheAndMapToInventoryEntryDraft() {
     // preparation
     final ProjectApiRoot sourceClient = mock(ProjectApiRoot.class);
     final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();

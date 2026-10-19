@@ -26,13 +26,12 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
-import tools.jackson.core.JacksonException;
 
 class CartDiscountTransformUtilsTest {
 
   @Test
-  void transform_CartDiscountReferences_ShouldResolveReferencesUsingCacheAndMapToCartDiscountDraft()
-      throws JacksonException {
+  void
+      transform_CartDiscountReferences_ShouldResolveReferencesUsingCacheAndMapToCartDiscountDraft() {
     // preparation
     final ProjectApiRoot sourceClient = mock(ProjectApiRoot.class);
     final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();

@@ -31,13 +31,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
-import tools.jackson.core.JacksonException;
 
 class ShoppingListTransformUtilsTest {
 
   @Test
-  void transform_ShoppingListReferences_ShouldResolveReferencesUsingCacheAndMapToShoppingListDraft()
-      throws JacksonException {
+  void
+      transform_ShoppingListReferences_ShouldResolveReferencesUsingCacheAndMapToShoppingListDraft() {
     // preparation
     final ProjectApiRoot sourceClient = mock(ProjectApiRoot.class);
     final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();

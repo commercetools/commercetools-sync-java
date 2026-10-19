@@ -40,7 +40,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectWriter;
 
@@ -116,8 +115,7 @@ class ProductServiceTest {
   }
 
   @Test
-  void createProduct_WithUnsuccessfulMockCtpResponse_ShouldNotCreateProduct()
-      throws JacksonException {
+  void createProduct_WithUnsuccessfulMockCtpResponse_ShouldNotCreateProduct() {
     // preparation
     final Product mock = mock(Product.class);
     when(mock.getId()).thenReturn("productId");

@@ -43,7 +43,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
-import tools.jackson.core.JacksonException;
 
 @SuppressWarnings("unchecked")
 class BaseServiceImplTest {
@@ -384,8 +383,7 @@ class BaseServiceImplTest {
   }
 
   @Test
-  void cacheKeysToIds_WithCachedKeysExceedingCacheSize_ShouldNotReturnLeastUsedKeys()
-      throws JacksonException {
+  void cacheKeysToIds_WithCachedKeysExceedingCacheSize_ShouldNotReturnLeastUsedKeys() {
     // preparation
     final ProductProjectionPagedQueryResponse pagedQueryResponse =
         mock(ProductProjectionPagedQueryResponse.class);
@@ -421,8 +419,7 @@ class BaseServiceImplTest {
   }
 
   @Test
-  void cacheKeysToIdsUsingGraphQl_WithNoCachedKeys_ShouldMakeRequestAndReturnCachedEntry()
-      throws JacksonException {
+  void cacheKeysToIdsUsingGraphQl_WithNoCachedKeys_ShouldMakeRequestAndReturnCachedEntry() {
     // preparation
     final String key = "testKey";
     final String id = "testId";
@@ -442,8 +439,7 @@ class BaseServiceImplTest {
   }
 
   @Test
-  void cacheKeysToIdsUsingGraphQl_With500Keys_ShouldChunkAndMakeRequestAndReturnCachedEntry()
-      throws JacksonException {
+  void cacheKeysToIdsUsingGraphQl_With500Keys_ShouldChunkAndMakeRequestAndReturnCachedEntry() {
     // preparation
     Set<String> randomKeys = new HashSet<>();
     IntStream.range(0, 500).forEach(ignore -> randomKeys.add(RandomStringUtils.random(15)));

@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
-import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -28,7 +27,7 @@ public class TestUtils {
 
   @Nonnull
   public static ApiHttpResponse<GraphQLResponse> mockGraphQLResponse(
-      final String jsonResponseString) throws JacksonException {
+      final String jsonResponseString) {
     final ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
     final Map responseMap = objectMapper.readValue(jsonResponseString, Map.class);
     final ApiHttpResponse<GraphQLResponse> apiHttpResponse = mock(ApiHttpResponse.class);
@@ -38,8 +37,7 @@ public class TestUtils {
   }
 
   @Nonnull
-  public static ApiHttpResponse<JsonNode> mockJsonNodeResponse(final String jsonResponseString)
-      throws JacksonException {
+  public static ApiHttpResponse<JsonNode> mockJsonNodeResponse(final String jsonResponseString) {
     final ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
     final JsonNode jsonNode = objectMapper.readValue(jsonResponseString, JsonNode.class);
     final ApiHttpResponse<JsonNode> apiHttpResponse = mock(ApiHttpResponse.class);
