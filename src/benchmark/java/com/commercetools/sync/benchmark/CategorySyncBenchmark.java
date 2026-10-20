@@ -294,15 +294,13 @@ class CategorySyncBenchmark {
   }
 
   private static void deleteAllCategories() {
+    // One at a time: the API rejects deleting a Category while another operation on the Category
+    // tree is in progress.
     QueryUtils.queryAll(
             CTP_TARGET_CLIENT.categories().get(),
             fetchedCategories -> {
-              CompletableFuture.allOf(
-                      fetchedCategories.stream()
-                          .map(category -> deleteCategory(category))
-                          .map(CompletionStage::toCompletableFuture)
-                          .toArray(CompletableFuture[]::new))
-                  .join();
+              fetchedCategories.forEach(
+                  category -> deleteCategory(category).toCompletableFuture().join());
             })
         .toCompletableFuture()
         .join();
