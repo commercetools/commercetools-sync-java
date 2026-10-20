@@ -6,10 +6,10 @@ import com.commercetools.api.models.category.*;
 import com.commercetools.api.models.common.ReferenceImpl;
 import com.commercetools.api.models.product.ProductReference;
 import com.commercetools.api.models.product.ProductReferenceBuilder;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.ObjectNode;
 
 class ResourceIdentifierUtilsTest {
 

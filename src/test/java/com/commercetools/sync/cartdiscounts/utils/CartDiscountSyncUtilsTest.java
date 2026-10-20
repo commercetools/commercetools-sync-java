@@ -40,7 +40,6 @@ import com.commercetools.api.models.type.FieldContainer;
 import com.commercetools.api.models.type.TypeReferenceBuilder;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +48,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 class CartDiscountSyncUtilsTest {
 
@@ -101,7 +101,7 @@ class CartDiscountSyncUtilsTest {
     final FieldContainer fieldContainerMock = mock();
     final Map<String, Object> customFieldsJsonMapMock = new HashMap<>();
     customFieldsJsonMapMock.put(
-        CUSTOM_FIELD_NAME, JsonNodeFactory.instance.textNode(CUSTOM_FIELD_VALUE));
+        CUSTOM_FIELD_NAME, JsonNodeFactory.instance.stringNode(CUSTOM_FIELD_VALUE));
     when(customFields.getFields()).thenReturn(fieldContainerMock);
     when(fieldContainerMock.values()).thenReturn(customFieldsJsonMapMock);
 

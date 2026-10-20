@@ -2,13 +2,13 @@ package com.commercetools.sync.commons.utils;
 
 import com.commercetools.api.models.type.CustomFields;
 import com.commercetools.api.models.type.CustomFieldsDraft;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.JsonNodeType;
 
 public final class CustomValueConverter {
 
@@ -39,7 +39,7 @@ public final class CustomValueConverter {
   public static boolean isValidTextNode(@Nullable JsonNode node) {
     return node != null
         && JsonNodeType.STRING.equals(node.getNodeType())
-        && !StringUtils.isBlank(node.asText())
-        && !"null".equals(node.asText());
+        && !StringUtils.isBlank(node.asString())
+        && !"null".equals(node.asString());
   }
 }

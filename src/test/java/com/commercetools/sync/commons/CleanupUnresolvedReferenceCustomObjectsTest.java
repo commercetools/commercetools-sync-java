@@ -9,8 +9,6 @@ import com.commercetools.api.client.*;
 import com.commercetools.api.models.custom_object.CustomObject;
 import com.commercetools.api.models.graph_ql.GraphQLRequest;
 import com.commercetools.sync.commons.utils.TestUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.NotFoundException;
 import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
@@ -20,6 +18,7 @@ import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
 
 @SuppressWarnings("unchecked")
 class CleanupUnresolvedReferenceCustomObjectsTest {
@@ -54,8 +53,7 @@ class CleanupUnresolvedReferenceCustomObjectsTest {
   }
 
   @Test
-  void cleanup_withDeleteDaysAfterLastModification_ShouldDeleteAndReturnCleanupStatistics()
-      throws JsonProcessingException {
+  void cleanup_withDeleteDaysAfterLastModification_ShouldDeleteAndReturnCleanupStatistics() {
     String jsonStringCustomObjects =
         "{ \"data\": {\"customObjects\": {\"results\":[{\"id\":\"coId1\", \"key\":\"coKey1\"}, {"
             + "\"id\":\"coId1\", \"key\":\"coKey2\"}]}}}";
@@ -83,8 +81,7 @@ class CleanupUnresolvedReferenceCustomObjectsTest {
   }
 
   @Test
-  void cleanup_withNotFound404Exception_ShouldNotIncrementFailedCounter()
-      throws JsonProcessingException {
+  void cleanup_withNotFound404Exception_ShouldNotIncrementFailedCounter() {
     String jsonStringCustomObjects =
         "{ \"data\": {\"customObjects\": {\"results\":[{\"id\":\"coId1\", \"key\":\"coKey1\"}]}}}";
     final ApiHttpResponse<JsonNode> fetchedCustomObjectsApiHttpResponse =
@@ -118,8 +115,7 @@ class CleanupUnresolvedReferenceCustomObjectsTest {
   }
 
   @Test
-  void cleanup_withBadRequest400Exception_ShouldIncrementFailedCounterAndTriggerErrorCallback()
-      throws JsonProcessingException {
+  void cleanup_withBadRequest400Exception_ShouldIncrementFailedCounterAndTriggerErrorCallback() {
     String jsonStringCustomObjects =
         "{ \"data\": {\"customObjects\": {\"results\":[{\"id\":\"coId1\", \"key\":\"coKey1\"}]}}}";
     final ApiHttpResponse<JsonNode> fetchedCustomObjectsApiHttpResponse =

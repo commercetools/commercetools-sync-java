@@ -43,7 +43,6 @@ import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.vrap.rmf.base.client.ApiHttpMethod;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
@@ -61,6 +60,7 @@ import javax.annotation.Nonnull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 class CartDiscountSyncIT {
 

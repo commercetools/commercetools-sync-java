@@ -25,7 +25,6 @@ import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentif
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.ProductService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;
 import io.vrap.rmf.base.client.utils.CompletableFutureUtils;
@@ -384,8 +383,7 @@ class BaseServiceImplTest {
   }
 
   @Test
-  void cacheKeysToIds_WithCachedKeysExceedingCacheSize_ShouldNotReturnLeastUsedKeys()
-      throws JsonProcessingException {
+  void cacheKeysToIds_WithCachedKeysExceedingCacheSize_ShouldNotReturnLeastUsedKeys() {
     // preparation
     final ProductProjectionPagedQueryResponse pagedQueryResponse =
         mock(ProductProjectionPagedQueryResponse.class);
@@ -421,8 +419,7 @@ class BaseServiceImplTest {
   }
 
   @Test
-  void cacheKeysToIdsUsingGraphQl_WithNoCachedKeys_ShouldMakeRequestAndReturnCachedEntry()
-      throws JsonProcessingException {
+  void cacheKeysToIdsUsingGraphQl_WithNoCachedKeys_ShouldMakeRequestAndReturnCachedEntry() {
     // preparation
     final String key = "testKey";
     final String id = "testId";
@@ -442,8 +439,7 @@ class BaseServiceImplTest {
   }
 
   @Test
-  void cacheKeysToIdsUsingGraphQl_With500Keys_ShouldChunkAndMakeRequestAndReturnCachedEntry()
-      throws JsonProcessingException {
+  void cacheKeysToIdsUsingGraphQl_With500Keys_ShouldChunkAndMakeRequestAndReturnCachedEntry() {
     // preparation
     Set<String> randomKeys = new HashSet<>();
     IntStream.range(0, 500).forEach(ignore -> randomKeys.add(RandomStringUtils.random(15)));

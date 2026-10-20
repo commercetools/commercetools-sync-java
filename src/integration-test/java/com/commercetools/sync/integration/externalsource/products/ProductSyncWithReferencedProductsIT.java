@@ -27,9 +27,6 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +38,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 class ProductSyncWithReferencedProductsIT {
   private static ProductType productType;
@@ -395,9 +395,9 @@ class ProductSyncWithReferencedProductsIT {
         .hasValueSatisfying(
             attribute -> {
               final JsonNode attributeValue = JsonUtils.toJsonNode(attribute.getValue());
-              assertThat(attributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
+              assertThat(attributeValue.get(REFERENCE_TYPE_ID_FIELD).asString())
                   .isEqualTo(ProductReference.PRODUCT);
-              assertThat(attributeValue.get(REFERENCE_ID_FIELD).asText())
+              assertThat(attributeValue.get(REFERENCE_ID_FIELD).asString())
                   .isEqualTo(product.getId());
             });
   }
@@ -493,9 +493,9 @@ class ProductSyncWithReferencedProductsIT {
         .hasValueSatisfying(
             attribute -> {
               final JsonNode attributeValue = JsonUtils.toJsonNode(attribute.getValue());
-              assertThat(attributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
+              assertThat(attributeValue.get(REFERENCE_TYPE_ID_FIELD).asString())
                   .isEqualTo(ProductReference.PRODUCT);
-              assertThat(attributeValue.get(REFERENCE_ID_FIELD).asText())
+              assertThat(attributeValue.get(REFERENCE_ID_FIELD).asString())
                   .isEqualTo(product2.getId());
             });
   }
@@ -631,9 +631,9 @@ class ProductSyncWithReferencedProductsIT {
         .hasValueSatisfying(
             attribute -> {
               final JsonNode attributeValue = JsonUtils.toJsonNode(attribute.getValue());
-              assertThat(attributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
+              assertThat(attributeValue.get(REFERENCE_TYPE_ID_FIELD).asString())
                   .isEqualTo(ProductReference.PRODUCT);
-              assertThat(attributeValue.get(REFERENCE_ID_FIELD).asText())
+              assertThat(attributeValue.get(REFERENCE_ID_FIELD).asString())
                   .isEqualTo(product.getId());
             });
 

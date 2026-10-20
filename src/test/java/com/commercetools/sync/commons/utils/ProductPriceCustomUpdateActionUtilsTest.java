@@ -14,11 +14,11 @@ import com.commercetools.api.models.type.ResourceTypeId;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.PriceCustomActionBuilder;
 import com.commercetools.sync.products.models.PriceCustomTypeAdapter;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import java.util.HashMap;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 class ProductPriceCustomUpdateActionUtilsTest {
 
@@ -73,7 +73,7 @@ class ProductPriceCustomUpdateActionUtilsTest {
   void buildSetCustomFieldAction_WithProductPrice_ShouldBuildProductUpdateAction() {
     final String priceId = "1";
     final String customFieldName = "name";
-    final JsonNode customFieldValue = JsonNodeFactory.instance.textNode("foo");
+    final JsonNode customFieldValue = JsonNodeFactory.instance.stringNode("foo");
 
     final ProductUpdateAction updateAction =
         new PriceCustomActionBuilder()

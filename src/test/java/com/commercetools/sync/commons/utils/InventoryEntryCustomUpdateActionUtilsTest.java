@@ -10,11 +10,11 @@ import com.commercetools.api.models.type.ResourceTypeId;
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
 import com.commercetools.sync.inventories.helpers.InventoryCustomActionBuilder;
 import com.commercetools.sync.inventories.models.InventoryEntryCustomTypeAdapter;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import java.util.HashMap;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 class InventoryEntryCustomUpdateActionUtilsTest {
 
@@ -57,7 +57,7 @@ class InventoryEntryCustomUpdateActionUtilsTest {
 
   @Test
   void buildSetCustomFieldAction_WithInventoryResource_ShouldBuildInventoryUpdateAction() {
-    final JsonNode customFieldValue = JsonNodeFactory.instance.textNode("foo");
+    final JsonNode customFieldValue = JsonNodeFactory.instance.stringNode("foo");
     final String customFieldName = "name";
 
     final InventoryEntryUpdateAction updateAction =

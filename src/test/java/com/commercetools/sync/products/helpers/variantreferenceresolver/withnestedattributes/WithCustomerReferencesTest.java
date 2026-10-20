@@ -22,7 +22,6 @@ import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TypeService;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -30,6 +29,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import tools.jackson.databind.node.ArrayNode;
 
 class WithCustomerReferencesTest {
   private VariantReferenceResolver referenceResolver;

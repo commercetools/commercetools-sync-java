@@ -17,8 +17,6 @@ import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.commons.utils.ChunkUtils;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.vrap.rmf.base.client.ApiHttpResponse;
@@ -39,6 +37,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 abstract class BaseService<
     SyncOptionsT extends BaseSyncOptions,
@@ -151,11 +151,15 @@ abstract class BaseService<
                         final ObjectMapper objectMapper = JsonUtils.getConfiguredObjectMapper();
                         final JsonNode jsonNode = objectMapper.convertValue(data, JsonNode.class);
                         final Iterator<JsonNode> elements =
-                            jsonNode.get(queryResource.getName()).get("results").elements();
+                            jsonNode
+                                .get(queryResource.getName())
+                                .get("results")
+                                .values()
+                                .iterator();
                         while (elements.hasNext()) {
                           final JsonNode idAndKey = elements.next();
                           keyToIdCache.put(
-                              idAndKey.get("key").asText(), idAndKey.get("id").asText());
+                              idAndKey.get("key").asString(), idAndKey.get("id").asString());
                         }
                       });
               return keyToIdCache.asMap();

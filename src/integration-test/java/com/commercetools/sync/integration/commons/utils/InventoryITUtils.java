@@ -18,8 +18,6 @@ import com.commercetools.api.models.type.ResourceTypeId;
 import com.commercetools.api.models.type.Type;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -30,6 +28,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 public final class InventoryITUtils {
 

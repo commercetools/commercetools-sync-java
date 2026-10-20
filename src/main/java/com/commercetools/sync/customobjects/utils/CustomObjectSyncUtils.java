@@ -4,8 +4,8 @@ import static com.commercetools.sync.commons.utils.CustomValueConverter.convertC
 
 import com.commercetools.api.models.custom_object.CustomObject;
 import com.commercetools.api.models.custom_object.CustomObjectDraft;
-import com.fasterxml.jackson.databind.JsonNode;
 import javax.annotation.Nonnull;
+import tools.jackson.databind.JsonNode;
 
 public class CustomObjectSyncUtils {
 

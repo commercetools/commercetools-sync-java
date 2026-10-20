@@ -26,8 +26,6 @@ import com.commercetools.api.models.type.TypeReference;
 import com.commercetools.sync.commons.models.GraphQlQueryResource;
 import com.commercetools.sync.commons.utils.ChunkUtils;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.*;
@@ -36,6 +34,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.text.StringEscapeUtils;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 public abstract class BaseTransformServiceImpl {
   /*
@@ -92,8 +92,8 @@ public abstract class BaseTransformServiceImpl {
     typedReferenceMap.put(GraphQlQueryResource.TYPES, new HashSet<>());
     references.forEach(
         ref -> {
-          final String refAsText = ref.get(REFERENCE_ID_FIELD).asText();
-          switch (ref.get(REFERENCE_TYPE_ID_FIELD).asText()) {
+          final String refAsText = ref.get(REFERENCE_ID_FIELD).asString();
+          switch (ref.get(REFERENCE_TYPE_ID_FIELD).asString()) {
             case (ProductReference.PRODUCT):
               typedReferenceMap.get(GraphQlQueryResource.PRODUCTS).add(refAsText);
               break;
@@ -143,7 +143,7 @@ public abstract class BaseTransformServiceImpl {
   @Nonnull
   protected Set<JsonNode> getNonCachedReferences(@Nonnull final List<JsonNode> references) {
     return references.stream()
-        .filter(ref -> filterNonCachedIds(ref.get(REFERENCE_ID_FIELD).asText()))
+        .filter(ref -> filterNonCachedIds(ref.get(REFERENCE_ID_FIELD).asString()))
         .collect(toSet());
   }
 
@@ -214,7 +214,7 @@ public abstract class BaseTransformServiceImpl {
               if (jsonNode.get(requestTypeName) != null
                   && jsonNode.get(requestTypeName).get("results") != null) {
                 final Iterator<JsonNode> elements =
-                    jsonNode.get(requestTypeName).get("results").elements();
+                    jsonNode.get(requestTypeName).get("results").values().iterator();
                 while (elements.hasNext()) {
                   JsonNode idAndKey = elements.next();
                   fillReferenceIdToKeyCache(idAndKey.get("id"), idAndKey.get("key"));
@@ -225,8 +225,8 @@ public abstract class BaseTransformServiceImpl {
 
   private void fillReferenceIdToKeyCache(@Nullable JsonNode id, @Nullable JsonNode key) {
     if (isValidTextNode(id)) {
-      final String idValue = id.asText();
-      final String keyValue = isValidTextNode(key) ? key.asText() : KEY_IS_NOT_SET_PLACE_HOLDER;
+      final String idValue = id.asString();
+      final String keyValue = isValidTextNode(key) ? key.asString() : KEY_IS_NOT_SET_PLACE_HOLDER;
       referenceIdToKeyCache.add(idValue, keyValue);
     }
   }

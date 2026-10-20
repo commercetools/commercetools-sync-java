@@ -8,10 +8,10 @@ import com.commercetools.api.models.common.*;
 import com.commercetools.api.models.custom_object.CustomObject;
 import com.commercetools.api.models.custom_object.CustomObjectDraft;
 import com.commercetools.api.models.custom_object.CustomObjectDraftBuilder;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 class CustomObjectSyncUtilsTest {
 
@@ -80,10 +80,10 @@ class CustomObjectSyncUtilsTest {
 
   @Test
   void hasIdenticalValue_WithSameStringValue_ShouldBeIdentical() {
-    final JsonNode newDraftValue = JsonNodeFactory.instance.textNode("\"CommerceTools\"");
+    final JsonNode newDraftValue = JsonNodeFactory.instance.stringNode("\"CommerceTools\"");
     final String oldValue = "\"CommerceTools\"";
     prepareMockObjects(newDraftValue, oldValue);
-    assertThat(newDraftValue.isTextual()).isTrue();
+    assertThat(newDraftValue.isString()).isTrue();
     assertThat(CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft))
         .isTrue();
   }

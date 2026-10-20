@@ -17,7 +17,7 @@ public final class WaitingToBeResolvedCategories implements WaitingToBeResolved 
     this.missingReferencedCategoriesKeys = missingReferencedCategoriesKeys;
   }
 
-  // Needed for the 'com.fasterxml.jackson' deserialization, for example, when fetching
+  // Needed for the 'tools.jackson' deserialization, for example, when fetching
   // from CTP custom objects.
   public WaitingToBeResolvedCategories() {}
 

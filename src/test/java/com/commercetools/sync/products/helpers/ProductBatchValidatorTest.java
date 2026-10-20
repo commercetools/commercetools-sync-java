@@ -28,8 +28,6 @@ import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentif
 import com.commercetools.sync.products.ProductSyncMockUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,6 +39,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 class ProductBatchValidatorTest {
   private List<String> errorCallBackMessages;

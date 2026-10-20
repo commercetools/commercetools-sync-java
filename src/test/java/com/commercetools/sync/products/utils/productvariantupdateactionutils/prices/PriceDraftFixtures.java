@@ -16,8 +16,6 @@ import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.api.models.type.FieldContainer;
 import com.commercetools.api.models.type.FieldContainerBuilder;
 import com.commercetools.api.models.type.TypeResourceIdentifierBuilder;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.neovisionaries.i18n.CountryCode;
 import java.math.BigDecimal;
 import java.time.ZoneId;
@@ -27,6 +25,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.money.CurrencyUnit;
 import javax.money.Monetary;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 public final class PriceDraftFixtures {
   public static final PriceDraft DRAFT_111_USD =
@@ -211,7 +211,7 @@ public final class PriceDraftFixtures {
           "channel1",
           CustomFieldsDraftBuilder.of()
               .type(TypeResourceIdentifierBuilder.of().id("customType1").build())
-              .fields(createCustomFieldsContainer("foo", JsonNodeFactory.instance.textNode("X")))
+              .fields(createCustomFieldsContainer("foo", JsonNodeFactory.instance.stringNode("X")))
               .build());
 
   public static final PriceDraft DRAFT_DE_100_EUR_01_02_CHANNEL2_CUSTOMTYPE1_CUSTOMFIELDX =
@@ -225,7 +225,7 @@ public final class PriceDraftFixtures {
           "channel2",
           CustomFieldsDraftBuilder.of()
               .type(TypeResourceIdentifierBuilder.of().id("customType1").build())
-              .fields(createCustomFieldsContainer("foo", JsonNodeFactory.instance.textNode("X")))
+              .fields(createCustomFieldsContainer("foo", JsonNodeFactory.instance.stringNode("X")))
               .build());
 
   public static final PriceDraft DRAFT_UK_22_GBP_CUSTOMTYPE1_CUSTOMFIELDX =
@@ -239,7 +239,7 @@ public final class PriceDraftFixtures {
           null,
           CustomFieldsDraftBuilder.of()
               .type(TypeResourceIdentifierBuilder.of().id("customType1").build())
-              .fields(createCustomFieldsContainer("foo", JsonNodeFactory.instance.textNode("X")))
+              .fields(createCustomFieldsContainer("foo", JsonNodeFactory.instance.stringNode("X")))
               .build());
 
   public static final PriceDraft DRAFT_UK_22_USD_CUSTOMTYPE1_CUSTOMFIELDX =
@@ -253,7 +253,7 @@ public final class PriceDraftFixtures {
           null,
           CustomFieldsDraftBuilder.of()
               .type(TypeResourceIdentifierBuilder.of().id("customType1").build())
-              .fields(createCustomFieldsContainer("foo", JsonNodeFactory.instance.textNode("X")))
+              .fields(createCustomFieldsContainer("foo", JsonNodeFactory.instance.stringNode("X")))
               .build());
 
   public static final PriceDraft DRAFT_UK_666_GBP_CHANNEL1_CUSTOMTYPE1_CUSTOMFIELDX =
@@ -267,7 +267,7 @@ public final class PriceDraftFixtures {
           "channel1",
           CustomFieldsDraftBuilder.of()
               .type(TypeResourceIdentifierBuilder.of().id("customType1").build())
-              .fields(createCustomFieldsContainer("foo", JsonNodeFactory.instance.textNode("X")))
+              .fields(createCustomFieldsContainer("foo", JsonNodeFactory.instance.stringNode("X")))
               .build());
 
   public static final PriceDraft DRAFT_DE_22_USD =

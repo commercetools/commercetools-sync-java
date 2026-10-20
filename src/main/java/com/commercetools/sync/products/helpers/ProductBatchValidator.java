@@ -21,7 +21,6 @@ import com.commercetools.sync.commons.utils.SyncUtils;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.utils.AttributeUtils;
-import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,6 +32,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import tools.jackson.databind.JsonNode;
 
 public class ProductBatchValidator
     extends BaseBatchValidator<ProductDraft, ProductSyncOptions, ProductSyncStatistics> {
@@ -303,7 +303,7 @@ public class ProductBatchValidator
         .filter(reference -> isReferenceOfType(reference, referenceTypeId))
         .map(reference -> reference.get(REFERENCE_ID_FIELD))
         .filter(field -> isValidTextNode(field))
-        .map(field -> field.asText())
+        .map(field -> field.asString())
         .filter(Objects::nonNull)
         .collect(Collectors.toSet());
   }

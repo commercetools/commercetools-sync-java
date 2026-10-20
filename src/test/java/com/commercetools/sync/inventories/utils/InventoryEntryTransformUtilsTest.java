@@ -17,7 +17,6 @@ import com.commercetools.api.models.type.TypeReferenceBuilder;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.commons.utils.TestUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +28,8 @@ import org.junit.jupiter.api.Test;
 class InventoryEntryTransformUtilsTest {
 
   @Test
-  void transform_InventoryReferences_ShouldResolveReferencesUsingCacheAndMapToInventoryEntryDraft()
-      throws JsonProcessingException {
+  void
+      transform_InventoryReferences_ShouldResolveReferencesUsingCacheAndMapToInventoryEntryDraft() {
     // preparation
     final ProjectApiRoot sourceClient = mock(ProjectApiRoot.class);
     final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();

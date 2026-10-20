@@ -25,7 +25,6 @@ import com.commercetools.sync.inventories.InventorySyncOptions;
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import com.commercetools.sync.inventories.utils.InventoryTransformUtils;
-import com.fasterxml.jackson.databind.JsonNode;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +37,7 @@ import javax.annotation.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
 
 /** Contains integration tests of inventory sync. */
 class InventorySyncIT {

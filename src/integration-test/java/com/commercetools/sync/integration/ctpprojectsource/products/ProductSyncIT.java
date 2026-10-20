@@ -49,9 +49,6 @@ import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.SyncFilter;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.products.utils.ProductTransformUtils;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,6 +61,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 class ProductSyncIT {
   private static ProductType sourceProductType;
@@ -822,12 +822,12 @@ class ProductSyncIT {
     final Attribute priceInfoAttrDraft =
         AttributeBuilder.of()
             .name("priceInfo")
-            .value(JsonNodeFactory.instance.textNode("100/kg"))
+            .value(JsonNodeFactory.instance.stringNode("100/kg"))
             .build();
     final Attribute angebotAttrDraft =
         AttributeBuilder.of()
             .name("angebot")
-            .value(JsonNodeFactory.instance.textNode("big discount"))
+            .value(JsonNodeFactory.instance.stringNode("big discount"))
             .build();
 
     assertThat(updateActions)

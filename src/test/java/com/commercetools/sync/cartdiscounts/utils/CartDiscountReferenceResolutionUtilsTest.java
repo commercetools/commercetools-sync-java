@@ -15,6 +15,7 @@ import com.commercetools.api.models.cart_discount.StackingMode;
 import com.commercetools.api.models.channel.ChannelReferenceBuilder;
 import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.product.ProductResourceIdentifierBuilder;
+import com.commercetools.api.models.recurring_order.RecurringOrderScopeBuilder;
 import com.commercetools.api.models.type.CustomFields;
 import com.commercetools.api.models.type.TypeReference;
 import com.commercetools.api.models.type.TypeReferenceBuilder;
@@ -120,6 +121,7 @@ class CartDiscountReferenceResolutionUtilsTest {
             .references(List.of())
             .stackingMode(StackingMode.STACKING)
             .stores(List.of())
+            .recurringOrderScope(RecurringOrderScopeBuilder.of().anyOrderBuilder().build())
             .build();
 
     // Cache customTypeId and customTypeKey Value
@@ -168,6 +170,7 @@ class CartDiscountReferenceResolutionUtilsTest {
             .references(List.of())
             .stackingMode(StackingMode.STACKING)
             .stores(List.of())
+            .recurringOrderScope(RecurringOrderScopeBuilder.of().anyOrderBuilder().build())
             .build();
 
     // Cache customTypeId and customTypeKey Value

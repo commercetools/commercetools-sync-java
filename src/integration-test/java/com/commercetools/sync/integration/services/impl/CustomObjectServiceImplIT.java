@@ -18,8 +18,6 @@ import com.commercetools.sync.integration.commons.utils.CustomObjectITUtils;
 import com.commercetools.sync.integration.commons.utils.TestClientUtils;
 import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.impl.CustomObjectServiceImpl;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.BadGatewayException;
 import java.util.ArrayList;
@@ -35,6 +33,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 @SuppressWarnings("unchecked")
 class CustomObjectServiceImplIT {
@@ -360,9 +360,9 @@ class CustomObjectServiceImplIT {
     assertThat(errorCallBackExceptions).hasSize(0);
     final LinkedHashMap<String, String> value =
         (LinkedHashMap<String, String>) result.get().getValue();
-    final String firstJsonField = NEW_CUSTOM_OBJECT_VALUE.fieldNames().next();
+    final String firstJsonField = NEW_CUSTOM_OBJECT_VALUE.propertyNames().iterator().next();
     assertThat(value.get(firstJsonField))
-        .isEqualTo(NEW_CUSTOM_OBJECT_VALUE.get(firstJsonField).asText());
+        .isEqualTo(NEW_CUSTOM_OBJECT_VALUE.get(firstJsonField).asString());
     assertThat(result.get().getContainer()).isEqualTo(OLD_CUSTOM_OBJECT_CONTAINER);
     assertThat(result.get().getKey()).isEqualTo(OLD_CUSTOM_OBJECT_KEY);
   }

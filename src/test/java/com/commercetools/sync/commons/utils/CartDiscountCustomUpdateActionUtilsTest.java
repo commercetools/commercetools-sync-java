@@ -14,11 +14,11 @@ import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountCustomActionBuilder;
 import com.commercetools.sync.cartdiscounts.models.CartDiscountCustomTypeAdapter;
 import com.commercetools.sync.commons.models.Custom;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import java.util.HashMap;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 class CartDiscountCustomUpdateActionUtilsTest {
 
@@ -67,7 +67,7 @@ class CartDiscountCustomUpdateActionUtilsTest {
 
   @Test
   void buildSetCustomFieldAction_WithCartDiscountResource_ShouldBuildCartDiscountUpdateAction() {
-    final JsonNode customFieldValue = JsonNodeFactory.instance.textNode("foo");
+    final JsonNode customFieldValue = JsonNodeFactory.instance.stringNode("foo");
     final String customFieldName = "name";
 
     final CartDiscountUpdateAction updateAction =

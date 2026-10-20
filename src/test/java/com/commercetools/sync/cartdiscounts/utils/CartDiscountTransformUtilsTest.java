@@ -19,7 +19,6 @@ import com.commercetools.api.models.type.TypeReferenceBuilder;
 import com.commercetools.sync.commons.utils.CaffeineReferenceIdToKeyCacheImpl;
 import com.commercetools.sync.commons.utils.ReferenceIdToKeyCache;
 import com.commercetools.sync.commons.utils.TestUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,8 +30,8 @@ import org.junit.jupiter.api.Test;
 class CartDiscountTransformUtilsTest {
 
   @Test
-  void transform_CartDiscountReferences_ShouldResolveReferencesUsingCacheAndMapToCartDiscountDraft()
-      throws JsonProcessingException {
+  void
+      transform_CartDiscountReferences_ShouldResolveReferencesUsingCacheAndMapToCartDiscountDraft() {
     // preparation
     final ProjectApiRoot sourceClient = mock(ProjectApiRoot.class);
     final ReferenceIdToKeyCache referenceIdToKeyCache = new CaffeineReferenceIdToKeyCacheImpl();

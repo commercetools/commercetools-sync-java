@@ -36,9 +36,9 @@ import com.commercetools.api.models.type.TypeReferenceBuilder;
 import com.commercetools.api.models.type.TypeResourceIdentifier;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import java.util.*;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 class ProductVariantAssetUpdateActionUtilsTest {
   private static final ProductSyncOptions SYNC_OPTIONS =

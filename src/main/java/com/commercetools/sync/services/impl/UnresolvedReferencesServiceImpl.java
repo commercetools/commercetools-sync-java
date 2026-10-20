@@ -14,7 +14,6 @@ import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.commons.utils.ChunkUtils;
 import com.commercetools.sync.services.UnresolvedReferencesService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vrap.rmf.base.client.error.NotFoundException;
 import io.vrap.rmf.base.client.utils.json.JsonUtils;
 import java.util.Collections;
@@ -26,6 +25,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import tools.jackson.databind.ObjectMapper;
 
 public class UnresolvedReferencesServiceImpl<WaitingToBeResolvedT extends WaitingToBeResolved>
     implements UnresolvedReferencesService<WaitingToBeResolvedT> {

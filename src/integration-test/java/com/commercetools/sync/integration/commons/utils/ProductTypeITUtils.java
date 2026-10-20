@@ -10,9 +10,6 @@ import com.commercetools.api.models.common.LocalizedString;
 import com.commercetools.api.models.product.Attribute;
 import com.commercetools.api.models.product.AttributeBuilder;
 import com.commercetools.api.models.product_type.*;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.vrap.rmf.base.client.ApiHttpResponse;
 import io.vrap.rmf.base.client.error.NotFoundException;
 import java.util.ArrayList;
@@ -28,6 +25,9 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 public final class ProductTypeITUtils {
   private static final String LOCALISED_STRING_ATTRIBUTE_NAME = "backgroundColor";

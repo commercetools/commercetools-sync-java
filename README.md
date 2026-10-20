@@ -2,7 +2,7 @@
 # commercetools sync java
 [![CI](https://github.com/commercetools/commercetools-sync-java/workflows/CI/badge.svg)](https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/commercetools/commercetools-sync-java/branch/master/graph/badge.svg)](https://codecov.io/gh/commercetools/commercetools-sync-java)
-[![Javadoc](https://javadoc.io/badge2/com.commercetools/commercetools-sync-java/javadoc.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/10.0.6/)
+[![Javadoc](https://javadoc.io/badge2/com.commercetools/commercetools-sync-java/javadoc.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/11.0.0/)
 [![Known Vulnerabilities](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646/badge.svg)](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646)
 
 
@@ -47,8 +47,8 @@ Notes:
 
 ### Prerequisites
  
- - Library requires the min JDK version `>= 11`.
-   > The library tested with each major JDK version (i.e: 11, 12, 13...) as well as some specific updates of LTS versions (i.e: 11.0.3 and above).
+ - Library requires the min JDK version `>= 17`.
+   > Version 11.x of the library uses [JVM-SDK-V2](http://commercetools.github.io/commercetools-sdk-java-v2) 20.x, which is based on Jackson 3. If your application uses JVM SDK 19.x or earlier (based on Jackson 2), or runs on JDK 11 to 16, use version 10.x of this library.
  - A target commercetools project for syncing your source data to.
 
 ### Installation
@@ -62,26 +62,26 @@ Here are the most popular ones:
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>10.0.7</version>
+  <version>11.0.0</version>
 </dependency>
 ````
 
 #### Gradle
 
 ````groovy
-implementation 'com.commercetools:commercetools-sync-java:10.0.7'
+implementation 'com.commercetools:commercetools-sync-java:11.0.0'
 ````
 
 #### SBT 
 
 ````
-libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "10.0.7"
+libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "11.0.0"
 ````
 
 #### Ivy 
 
 ````xml
-<dependency org="com.commercetools" name="commercetools-sync-java" rev="10.0.7"/>
+<dependency org="com.commercetools" name="commercetools-sync-java" rev="11.0.0"/>
 ````
 
 **Note**: To avoid `commercetools JVM SDK` libraries version mismatch between projects.
@@ -111,6 +111,7 @@ For Maven users, remove:
 
 If you want to use a different `commercetools JVM SDK` version than the version used in this project. 
 , below you will find examples on how to exclude `commercetools JVM SDK` from commercetools-sync-java library. Beware that library might not work with the older `commercetools JVM SDK` versions.
+In particular, version 10.x of the library doesn't work with JVM SDK 20.x, and version 11.x doesn't work with JVM SDK 19.x or earlier, because they are based on different major versions of Jackson.
 
 For Gradle:
 ````groovy

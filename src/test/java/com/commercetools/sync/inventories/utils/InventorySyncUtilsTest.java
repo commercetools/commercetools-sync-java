@@ -14,12 +14,12 @@ import com.commercetools.api.models.type.CustomFieldsDraftBuilder;
 import com.commercetools.sync.commons.MockUtils;
 import com.commercetools.sync.inventories.InventorySyncMockUtils;
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 class InventorySyncUtilsTest {
   private static final String CUSTOM_TYPE_ID = "testId";
@@ -50,7 +50,7 @@ class InventorySyncUtilsTest {
         MockUtils.getMockCustomFields(
             CUSTOM_TYPE_ID,
             CUSTOM_FIELD_1_NAME,
-            JsonNodeFactory.instance.textNode(CUSTOM_FIELD_1_VALUE));
+            JsonNodeFactory.instance.stringNode(CUSTOM_FIELD_1_VALUE));
 
     inventoryEntry =
         InventorySyncMockUtils.getMockInventoryEntry(
