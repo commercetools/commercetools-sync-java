@@ -50,7 +50,7 @@ dependencies {
     api 'commons-io:commons-io:2.19.0'
     api 'commons-codec:commons-codec:1.18.0'
     api 'com.google.code.findbugs:annotations:3.0.1'
-    api 'com.neovisionaries:nv-i18n:1.29'
+    api 'uk.co.foundationsedge:nv-i18n:1.33'
     testImplementation "org.mockito:mockito-junit-jupiter:${mockitoJunitJupiterVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterApiVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-params:${jupiterApiVersion}"
